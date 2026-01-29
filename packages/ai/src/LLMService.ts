@@ -51,7 +51,7 @@ export class LLMService {
         console.log(`[LLMService] Cost: $${cost.toFixed(6)} | Total: $${this.totalUsage.estimatedCostUSD.toFixed(4)}`);
     }
 
-    async generateText(provider: string, modelId: string, systemPrompt: string, userPrompt: string): Promise<LLMResponse> {
+    async generateText(provider: string, modelId: string, systemPrompt: string, userPrompt: string, options?: { timeout?: number }): Promise<LLMResponse> {
         console.log(`[LLMService] Generating with ${provider}/${modelId}...`);
 
         let response: LLMResponse;
@@ -172,7 +172,8 @@ export class LLMService {
                 // Assumes running on localhost:1234
                 const lmClient = new OpenAI({
                     apiKey: 'lm-studio', // Not used usually, but required by SDK
-                    baseURL: 'http://localhost:1234/v1'
+                    baseURL: 'http://localhost:1234/v1',
+                    timeout: options?.timeout || 60000 // Default 60s if not specified
                 });
 
                 const completion = await lmClient.chat.completions.create({

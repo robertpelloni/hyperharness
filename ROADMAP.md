@@ -17,6 +17,8 @@
 - [x] **Dashboard Config:** Added `DirectorStatusWidget` and consolidated UI.
 - [x] **Documentation:** Sync all docs with actual codebase state.
 - [x] **Roadmap Sync:** Verify `ROADMAP.md` is the source of truth.
+- [ ] **Backlog Processing:** Automate triage of `INBOX_LINKS.md` (300+ items).
+- [ ] **Dashboard Polish:** Unify styling and layout for "Mission Control".
 
 ## Phase 15: Deep Research & Absorption (Continuous)
 **Goal:** Achieve feature parity with the "Definitive Borg Resource Index".

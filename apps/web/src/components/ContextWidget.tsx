@@ -78,10 +78,10 @@ export function ContextWidget() {
                 />
                 <button
                     onClick={handleAdd}
-                    disabled={addMutation.isLoading || !filePath}
+                    disabled={addMutation.isPending || !filePath}
                     className="bg-purple-600 hover:bg-purple-700 text-white px-3 py-1 rounded text-xs font-medium disabled:opacity-50"
                 >
-                    {addMutation.isLoading ? '...' : 'Add'}
+                    {addMutation.isPending ? '...' : 'Add'}
                 </button>
             </div>
             {addMutation.error && <p className="text-xs text-red-400 mt-2">{addMutation.error.message}</p>}

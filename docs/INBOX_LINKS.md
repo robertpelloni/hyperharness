@@ -11,15 +11,15 @@
 
 ### MCP & Agents
 - [x] https://github.com/punkpeye/awesome-mcp-servers?tab=readme-ov-file#finance--fintech (Added as submodule `external/awesome-mcp-servers`)
-- https://github.com/appcypher/awesome-mcp-servers
-- https://github.com/wong2/awesome-mcp-servers
+- [x] https://github.com/appcypher/awesome-mcp-servers (Added as submodule `external/awesome-mcp-servers-appcypher`)
+- [x] https://github.com/wong2/awesome-mcp-servers (Added as submodule `external/awesome-mcp-servers-wong2`)
 - https://www.pulsemcp.com/servers
 - https://playbooks.com/mcp/
-- https://github.com/toolsdk-ai/toolsdk-mcp-registry
+- [x] https://github.com/toolsdk-ai/toolsdk-mcp-registry (Added as submodule `external/toolsdk-mcp-registry`)
 - https://hub.docker.com/mcp...
 - https://github.com/mcp
 - https://enact.tools/
-- https://github.com/Arindam200/awesome-ai-apps
+- [x] https://github.com/Arindam200/awesome-ai-apps (Added as submodule `external/awesome-ai-apps`)
 - [x] https://github.com/robertpelloni/metamcp (Added as submodule `external/mcp-directories/metamcp`)
 - https://docs.roocode.com/roo-code-cloud/roomote-control
 - https://github.com/The-Pocket/PocketFlow-Tutorial-Cursor/blob/main/blog.md
@@ -31,8 +31,8 @@
 - https://developers.openai.com/codex/skills/
 - [x] https://github.com/anthropics/skills (Added as submodule `external/skills_repos/anthropic-skills`)
 - [x] https://github.com/openai/skills (Added as submodule `external/skills_repos/openai-skills`)
-- https://github.com/stared/gemini-claude-skills
-- https://github.com/bkircher/skills
+- [x] https://github.com/stared/gemini-claude-skills (Added as submodule `external/skills_repos/gemini-claude-skills`)
+- [x] https://github.com/bkircher/skills (Added as submodule `external/skills_repos/bkircher-skills`)
 - https://github.com/ykdojo/claude-code-tips
 - https://github.com/joel-jeremy/emissary
 - https://github.com/microsoft/dcp

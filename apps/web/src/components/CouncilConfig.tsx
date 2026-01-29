@@ -45,7 +45,7 @@ export default function CouncilConfig() {
         updateMutation.mutate({ council });
     };
 
-    if (configQuery.isLoading) return null;
+    if (configQuery.isPending) return null;
 
     return (
         <div className="bg-gray-900 border border-gray-800 rounded-lg overflow-hidden">

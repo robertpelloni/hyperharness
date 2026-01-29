@@ -145,10 +145,10 @@ export const SquadWidget: React.FC = () => {
                                 </button>
                                 <button
                                     onClick={handleSpawn}
-                                    disabled={!branch || !goal || spawnMutation.isLoading}
+                                    disabled={!branch || !goal || (spawnMutation as any).isPending || (spawnMutation as any).isLoading}
                                     className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded font-bold disabled:opacity-50"
                                 >
-                                    {spawnMutation.isLoading ? 'Spawning...' : 'Deploy Agent'}
+                                    {(spawnMutation as any).isPending || (spawnMutation as any).isLoading ? 'Spawning...' : 'Deploy Agent'}
                                 </button>
                             </div>
                         </motion.div>

@@ -1,0 +1,3 @@
+STOP_DIRECTOR defined.
+Remove this file to allow the Director to run autonomously.
+This is an emergency brake for runaway loops.

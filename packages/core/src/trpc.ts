@@ -216,6 +216,10 @@ export const appRouter = t.router({
             pasteToSubmitDelayMs: z.number().optional(),
             acceptDetectionMode: z.enum(['state', 'polling']).optional(),
             pollingIntervalMs: z.number().optional(),
+            // Personalization & Council
+            persona: z.enum(['default', 'homie', 'professional', 'chaos']).optional(),
+            customInstructions: z.string().optional(),
+            council: z.any().optional()
         })).mutation(({ input }) => {
             // @ts-ignore
             if (global.mcpServerInstance && global.mcpServerInstance.director) {

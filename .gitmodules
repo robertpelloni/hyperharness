@@ -3085,3 +3085,21 @@
 [submodule "external/skills_repos/openai-skills"]
 	path = external/skills_repos/openai-skills
 	url = https://github.com/openai/skills.git
+[submodule "external/awesome-mcp-servers-appcypher"]
+	path = external/awesome-mcp-servers-appcypher
+	url = https://github.com/appcypher/awesome-mcp-servers
+[submodule "external/awesome-mcp-servers-wong2"]
+	path = external/awesome-mcp-servers-wong2
+	url = https://github.com/wong2/awesome-mcp-servers
+[submodule "external/toolsdk-mcp-registry"]
+	path = external/toolsdk-mcp-registry
+	url = https://github.com/toolsdk-ai/toolsdk-mcp-registry
+[submodule "external/awesome-ai-apps"]
+	path = external/awesome-ai-apps
+	url = https://github.com/Arindam200/awesome-ai-apps
+[submodule "external/skills_repos/gemini-claude-skills"]
+	path = external/skills_repos/gemini-claude-skills
+	url = https://github.com/stared/gemini-claude-skills
+[submodule "external/skills_repos/bkircher-skills"]
+	path = external/skills_repos/bkircher-skills
+	url = https://github.com/bkircher/skills

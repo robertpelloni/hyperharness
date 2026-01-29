@@ -43,7 +43,7 @@ export function DirectorChat() {
             console.log("Emergency Break: Ignoring Director injection:", text);
             // setInput(text);
             // if (autoSubmit) {
-            //     // Short delay to allow state update?
+            //     // Short delay to allow state update
             //     setTimeout(() => submitMessage(text), 100);
             // }
         };

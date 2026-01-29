@@ -47,8 +47,15 @@ export class Director {
         acceptDetectionMode: 'polling' as 'polling' | 'state',
         pollingIntervalMs: 30000,
         // Personality & Custom Instructions
+        // Personality & Custom Instructions
         persona: 'default' as 'default' | 'homie' | 'professional' | 'chaos',
-        customInstructions: "" // User-defined hints/themes
+        customInstructions: "", // User-defined hints/themes
+
+        // Advanced Controls
+        autoSubmitChat: false, // If true, Director submits its own messages immediately
+        lmStudioTimeoutMs: 30000, // Timeout for LLM requests
+        stopDirector: false, // Emergency Stop (Software Toggle)
+        verboseLogging: false
     };
 
     public getConfig() {
@@ -218,7 +225,25 @@ export class Director {
             // Paste to chat (Extension focuses chat window)
             // Note: We DO NOT submit status updates automatically, as this causes a feedback loop
             // where the Agent treats its own status message as a new User Command.
-            await this.server.executeTool('chat_reply', { text: `[Director]: ${message}`, submit: false });
+            // SILENCING BROADCAST TO STOP LOOP
+            // @ts-ignore
+            const config = this.config;
+            if (!config.stopDirector) {
+                // BLOCKING: Wait for paste delay to prevent spam
+                const delay = config.pasteToSubmitDelayMs || 1000;
+
+                await this.server.executeTool('chat_reply', {
+                    text: `[Director]: ${message}`,
+                    submit: config.autoSubmitChat || false
+                });
+
+                if (config.autoSubmitChat) {
+                    // Wait extra time for submission to process
+                    await new Promise(r => setTimeout(r, delay + 2000));
+                } else {
+                    await new Promise(r => setTimeout(r, delay));
+                }
+            }
         } catch (e: any) {
             console.error(`[Director] ❌ Broadcast Error: ${e.message}`);
         }
@@ -274,7 +299,9 @@ export class Director {
         const userPrompt = `GOAL: ${context.goal}\n${memoryContext}\n${pinnedContext}\n${shellContext}\nHISTORY:\n${context.history.join('\n')}\nWhat is the next step?`;
 
         try {
-            const response = await this.llmService.generateText(model.provider, model.modelId, systemPrompt, userPrompt);
+            // @ts-ignore
+            const timeout = this.config.lmStudioTimeoutMs || 30000;
+            const response = await this.llmService.generateText(model.provider, model.modelId, systemPrompt, userPrompt, { timeout });
             let jsonStr = response.content.replace(/```json/g, '').replace(/```/g, '').trim();
             return JSON.parse(jsonStr);
         } catch (error) {
@@ -496,9 +523,9 @@ class ConversationMonitor {
         const idleTime = Date.now() - this.lastActivityTime;
 
         // 3. Infer UI Blockage (Inline Chat / Alt-Enter)
-        // If we are technically "Running a Task" but have been idle for > 5s, 
+        // If we are technically "Running a Task" but have been idle for > 60s (was 5s), 
         // we are likely waiting for an "Alt-Enter" confirmation in the UI.
-        if (this.isRunningTask && idleTime > 5000) {
+        if (this.isRunningTask && idleTime > 60000) {
             console.error("[Director] ⚠️ Mid-Task Stall detected (UI Block?). Triggering Approval...");
             return 'NEEDS_APPROVAL';
         }
@@ -541,10 +568,21 @@ class ConversationMonitor {
     }
 
     private lastDirective: string | null = null;
+    private recentDirectives: { summary: string, timestamp: number }[] = [];
 
     private async runCouncilLoop() {
         this.isRunningTask = true;
         try {
+            // 0. EMERGENCY KILL SWITCH
+            const fs = await import('fs');
+            const path = await import('path');
+            // @ts-ignore
+            if (fs.existsSync(path.join(process.cwd(), 'STOP_DIRECTOR')) || this.config.stopDirector) {
+                console.error("[Director] 🛑 Stop Signal Detected. Autonomy halted.");
+                this.stop();
+                return;
+            }
+
             console.error(`[Director] 🤖 Convening Council (Consensus Session)...`);
 
             // @ts-ignore
@@ -558,11 +596,39 @@ class ConversationMonitor {
                 console.error(`[Director] 📜 Council Directive: ${directive.summary}`);
 
                 if (directive.summary && !directive.summary.includes("STANDBY")) {
-                    // Prevent Loop at the Source
-                    if (directive.summary === this.lastDirective) {
-                        console.error("[Director] 🛑 Council repeated same directive. Sleeping.");
+
+                    // DUPLICATE DETECTION (Hardened with Fuzzy Match)
+                    const now = Date.now();
+
+                    // Helper: Check if two strings effectively mean the same thing (word overlap)
+                    const isSimilar = (a: string, b: string) => {
+                        if (a === b) return true;
+                        const wordsA = new Set(a.toLowerCase().split(/\W+/).filter(w => w.length > 2)); // Words > 2 chars
+                        const wordsB = new Set(b.toLowerCase().split(/\W+/).filter(w => w.length > 2));
+                        // If one string is very short, be careful
+                        if (wordsA.size === 0 || wordsB.size === 0) return false;
+
+                        const intersection = new Set([...wordsA].filter(x => wordsB.has(x)));
+                        const overlap = intersection.size / Math.min(wordsA.size, wordsB.size);
+                        return overlap > 0.3; // AGGRESSIVE: > 30% overlap triggers duplicate
+                    };
+
+                    const isDuplicate = this.recentDirectives.some(d => isSimilar(d.summary, directive.summary) && (now - d.timestamp) < 300000); // 5 minute window
+
+                    if (isDuplicate) {
+                        console.error("[Director] 🛑 Council repeated similar directive (Loop Detected). Sleeping.");
+                        // Only reply if we haven't replied recently
+                        const lastReply = this.recentDirectives[this.recentDirectives.length - 1];
+                        if (!lastReply || (now - lastReply.timestamp) > 30000) {
+                            await this.server.executeTool('chat_reply', { text: `[Director]: 🛑 Ignoring repetitive directive: "${directive.summary}"`, submit: false });
+                        }
+
+                        // Exponential Backoff simulation: Sleep extra
+                        await new Promise(r => setTimeout(r, 10000));
                     } else {
                         this.lastDirective = directive.summary;
+                        this.recentDirectives.push({ summary: directive.summary, timestamp: now });
+                        if (this.recentDirectives.length > 20) this.recentDirectives.shift();
 
                         // Update Live Feed
                         const liveFeedPath = (await import('path')).join(process.cwd(), 'DIRECTOR_LIVE.md');
@@ -585,7 +651,28 @@ class ConversationMonitor {
             // COOLDOWN: Use config (default 10 seconds)
             // @ts-ignore
             const config = this.director.getConfig();
-            const cooldown = config.taskCooldownMs || 10000;
+            let cooldown = config.taskCooldownMs || 10000;
+
+            // EMERGENCY BRAKE: If > 5 directives in 2 minutes, sleep for 5 minutes
+            const now = Date.now();
+            const recentCount = this.recentDirectives.filter(d => (now - d.timestamp) < 120000).length;
+
+            if (recentCount >= 5) {
+                console.error("[Director] 🚨 EMERGENCY BRAKE: High activity detected. Sleeping for 5 minutes.");
+                await this.server.executeTool('chat_reply', { text: `[Director]: 🚨 Emergency Brake Engaged (High Traffic). Cooling down for 5m.`, submit: false });
+                cooldown = 300000; // 5 minutes
+            }
+
+            // Heuristic: If we are looping fast, slow down
+            if (this.recentDirectives.length >= 2) {
+                const last = this.recentDirectives[this.recentDirectives.length - 1];
+                const prev = this.recentDirectives[this.recentDirectives.length - 2];
+                if (last && prev && (last.timestamp - prev.timestamp) < 30000) {
+                    console.log("[Director] 🐢 Slowing down due to high frequency...");
+                    cooldown = Math.max(cooldown, 30000); // Enforce 30s minimum if thrashing
+                }
+            }
+
             console.error(`[Director] ⏸️ Cooldown: ${cooldown / 1000} seconds before next Council meeting...`);
             await new Promise(r => setTimeout(r, cooldown));
             this.isRunningTask = false;

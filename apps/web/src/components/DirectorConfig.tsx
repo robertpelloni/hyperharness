@@ -139,6 +139,51 @@ export default function DirectorConfig() {
                     </div>
                 </div>
 
+                {/* Advanced Controls */}
+                <div className="space-y-4">
+                    <h3 className="text-gray-400 font-medium border-b border-gray-800 pb-2">Advanced Controls</h3>
+
+                    <div className="flex items-center justify-between bg-gray-800/50 p-3 rounded border border-gray-700/50">
+                        <div>
+                            <span className="text-sm text-gray-300 block">Auto-Submit Chat</span>
+                            <span className="text-xs text-gray-500">Director presses Enter automatically</span>
+                        </div>
+                        <label className="relative inline-flex items-center cursor-pointer">
+                            <input
+                                type="checkbox"
+                                className="sr-only peer"
+                                checked={formState.autoSubmitChat || false}
+                                onChange={(e) => handleChange('autoSubmitChat', e.target.checked)}
+                            />
+                            <div className="w-11 h-6 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                        </label>
+                    </div>
+
+                    <div className="flex items-center justify-between bg-gray-800/50 p-3 rounded border border-gray-700/50">
+                        <div>
+                            <span className="text-sm text-gray-300 block">Emergency Stop (Software)</span>
+                            <span className="text-xs text-gray-500">Halt all Director Loops</span>
+                        </div>
+                        <label className="relative inline-flex items-center cursor-pointer">
+                            <input
+                                type="checkbox"
+                                className="sr-only peer"
+                                checked={formState.stopDirector || false}
+                                onChange={(e) => handleChange('stopDirector', e.target.checked)}
+                            />
+                            <div className="w-11 h-6 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-red-600"></div>
+                        </label>
+                    </div>
+
+                    <ConfigSlider
+                        label="LLM Timeout"
+                        value={formState.lmStudioTimeoutMs || 30000}
+                        onChange={(v) => handleChange('lmStudioTimeoutMs', v)}
+                        min={5000} max={120000} step={5000}
+                        unit="ms"
+                    />
+                </div>
+
                 {/* Diagnostics */}
                 <div className="space-y-4">
                     <h3 className="text-gray-400 font-medium border-b border-gray-800 pb-2">Diagnostics</h3>

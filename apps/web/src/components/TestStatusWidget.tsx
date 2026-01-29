@@ -4,21 +4,21 @@ import React from 'react';
 import { trpc } from '../utils/trpc';
 
 export function TestStatusWidget() {
-    const { data: results } = trpc.autotest.getResults.useQuery(undefined, { refetchInterval: 2000 });
-    const { data: status, refetch: refetchStatus } = trpc.autotest.getStatus.useQuery();
+    const { data: results } = trpc.autoTest.getResults.useQuery(undefined, { refetchInterval: 2000 });
+    const { data: status, refetch: refetchStatus } = trpc.autoTest.getStatus.useQuery();
 
     const utils = trpc.useContext();
-    const startMutation = trpc.autotest.start.useMutation({
+    const startMutation = trpc.autoTest.start.useMutation({
         onSuccess: () => { refetchStatus(); }
     });
-    const stopMutation = trpc.autotest.stop.useMutation({
+    const stopMutation = trpc.autoTest.stop.useMutation({
         onSuccess: () => { refetchStatus(); }
     });
     // @ts-ignore
-    const clearMutation = (trpc as any).autotest.clear.useMutation({
+    const clearMutation = (trpc as any).autoTest.clear.useMutation({
         onSuccess: () => {
             // @ts-ignore
-            (utils as any).autotest.getResults.invalidate();
+            (utils as any).autoTest.getResults.invalidate();
         }
     });
 
