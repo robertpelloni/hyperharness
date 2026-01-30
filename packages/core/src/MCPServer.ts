@@ -69,6 +69,7 @@ console.log("[MCPServer] ✓ Commands");
 
 import { ContextManager } from "./context/ContextManager.js";
 import { SymbolPinService } from "./services/SymbolPinService.js";
+import { AutoDevService } from "./services/AutoDevService.js";
 
 
 import { PermissionManager, AutonomyLevel } from "./security/PermissionManager.js";
@@ -125,6 +126,7 @@ export class MCPServer {
     public commandRegistry: CommandRegistry;
     public contextManager: ContextManager;
     public symbolPinService: SymbolPinService;
+    public autoDevService: AutoDevService;
     private activeAgents: Map<string, AgentAdapter> = new Map();
     public directorConfig = {
         taskCooldownMs: 10000,
@@ -176,6 +178,7 @@ export class MCPServer {
         // Context Manager
         this.contextManager = new ContextManager();
         this.symbolPinService = new SymbolPinService();
+        this.autoDevService = new AutoDevService(process.cwd());
         this.shellService = new ShellService(); // Added this line
         this.commandRegistry = new CommandRegistry(); // Corrected typo from instruction
         this.commandRegistry.register(new GitCommand());
