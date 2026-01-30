@@ -1,4 +1,13 @@
 # Changelog
+## [1.5.1] - 2026-01-30
+### Added
+- **Universal Documentation**: Created `docs/UNIVERSAL_LLM_INSTRUCTIONS.md` as the single source of truth for all AI agents.
+- **Model Specifics**: Updated `CLAUDE.md`, `AGENTS.md`, `GEMINI.md`, `GPT.md` to reference the universal file.
+- **Resource Index**: Initialized `docs/RESOURCE_INDEX.md` for tracking external tools and links.
+
+### Changed
+- **Core Instructions**: Refactored `CORE_INSTRUCTIONS.md` into `docs/UNIVERSAL_LLM_INSTRUCTIONS.md`.
+
 ## [1.5.0] - 2026-01-28
 ### Added
 - **Supervisor Personality:** Configurable "Default Topic" (Standing Order) effectively curing "awaiting instructions" spam.

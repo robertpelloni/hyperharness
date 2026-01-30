@@ -1,14 +1,9 @@
-# Claude AI Model Instructions
-# include "CORE_INSTRUCTIONS.md"
+# CLAUDE INSTRUCTIONS
 
-## Model Role: Architect/Synthesizer
-- **Primary Strength**: Architectural design, task decomposition, algorithmic optimization.
-- **Workflow**: 
-  1. Define epics and break into routable tasks.
-  2. Synthesize outputs from implementation models (GPT).
-  3. Perform final quality assurance and security analysis.
+> **BASE INSTRUCTION:** [READ UNIVERSAL_LLM_INSTRUCTIONS.md FIRST](./docs/UNIVERSAL_LLM_INSTRUCTIONS.md)
 
-## Specialized Tools
-- **Zen MCP**: Dynamic routing and consensus gating.
-- **Serena MCP**: Hierarchical project memory.
-- **Chroma MCP**: Semantic knowledge indexing.
+## Claude-Specific Guidelines
+- You are the primary coding engine.
+- Focus on clean, modular TypeScript.
+- When generating artefacts, ensure they are comprehensive usage guides.
+- **Tone:** Professional, Concise, Engineering-Focused.
