@@ -64,6 +64,7 @@ import { CommandRegistry } from "./commands/CommandRegistry.js";
 import { GitCommand } from "./commands/lib/GitCommands.js";
 import { HelpCommand, VersionCommand, DirectorCommand } from "./commands/lib/SystemCommands.js";
 import { ContextCommand } from "./commands/lib/ContextCommands.js";
+import { UndoCommand, DiffCommand, StashCommand } from "./commands/lib/WorkflowCommands.js";
 console.log("[MCPServer] ✓ Commands");
 
 import { ContextManager } from "./context/ContextManager.js";
@@ -179,6 +180,9 @@ export class MCPServer {
         this.commandRegistry.register(new VersionCommand());
         this.commandRegistry.register(new DirectorCommand(() => this.director));
         this.commandRegistry.register(new ContextCommand(this.contextManager));
+        this.commandRegistry.register(new UndoCommand());
+        this.commandRegistry.register(new DiffCommand());
+        this.commandRegistry.register(new StashCommand());
 
         // Memory System - LAZY LOADED on first use to speed up startup
         // VectorStore and Indexer are created in initializeMemorySystem()

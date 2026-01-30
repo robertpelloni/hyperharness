@@ -6,6 +6,7 @@ import { councilRouter } from './routers/councilRouter.js';
 import { graphRouter } from './routers/graphRouter.js';
 import { testsRouter } from './routers/testsRouter.js';
 import { contextRouter } from './routers/contextRouter.js';
+import { commandsRouter } from './routers/commandsRouter.js';
 
 // Re-export core definitions for other files that might rely on them
 export { t, publicProcedure, adminProcedure };
@@ -14,6 +15,7 @@ export const appRouter = t.router({
     graph: graphRouter,
     tests: testsRouter,
     context: contextRouter,
+    commands: commandsRouter,
     health: publicProcedure.query(() => {
         return { status: 'running', service: '@borg/core' };
     }),
