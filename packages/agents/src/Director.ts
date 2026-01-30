@@ -466,7 +466,9 @@ class ConversationMonitor {
 
             // Broadcast to chat with Alt-Enter submit
             const statusPrefix = config.statusPrefix || "📊 [Director Status]:";
-            await this.server.executeTool('chat_reply', { text: `${statusPrefix} ${summary}`, submit: false });
+            if (config.enableChatPaste !== false) {
+                await this.server.executeTool('chat_reply', { text: `${statusPrefix} ${summary}`, submit: false });
+            }
             // await new Promise(r => setTimeout(r, 500));
             // await this.server.executeTool('vscode_submit_chat', {});
 
@@ -648,7 +650,10 @@ class ConversationMonitor {
                         // Only reply if we haven't replied recently
                         const lastReply = this.recentDirectives[this.recentDirectives.length - 1];
                         if (!lastReply || (now - lastReply.timestamp) > 30000) {
-                            await this.server.executeTool('chat_reply', { text: `[Director]: 🛑 Ignoring repetitive directive: "${directive.summary}"`, submit: false });
+                            // @ts-ignore
+                            if (this.director.getConfig().enableChatPaste !== false) {
+                                await this.server.executeTool('chat_reply', { text: `[Director]: 🛑 Ignoring repetitive directive: "${directive.summary}"`, submit: false });
+                            }
                         }
 
                         // Exponential Backoff simulation: Sleep extra
@@ -666,7 +671,10 @@ class ConversationMonitor {
                         await this.director.executeTask(directive.summary, 10, 'council');
 
                         // Report Back
-                        await this.server.executeTool('chat_reply', { text: `🏛️ [Council]: ${directive.summary}`, submit: false });
+                        // @ts-ignore
+                        if (this.director.getConfig().enableChatPaste !== false) {
+                            await this.server.executeTool('chat_reply', { text: `🏛️ [Council]: ${directive.summary}`, submit: false });
+                        }
                     }
                 }
             } else {
@@ -687,7 +695,10 @@ class ConversationMonitor {
 
             if (recentCount >= 5) {
                 console.error("[Director] 🚨 EMERGENCY BRAKE: High activity detected. Sleeping for 5 minutes.");
-                await this.server.executeTool('chat_reply', { text: `[Director]: 🚨 Emergency Brake Engaged (High Traffic). Cooling down for 5m.`, submit: false });
+                // @ts-ignore
+                if (this.director.getConfig().enableChatPaste !== false) {
+                    await this.server.executeTool('chat_reply', { text: `[Director]: 🚨 Emergency Brake Engaged (High Traffic). Cooling down for 5m.`, submit: false });
+                }
                 cooldown = 300000; // 5 minutes
             }
 
