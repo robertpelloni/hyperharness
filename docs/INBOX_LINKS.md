@@ -18,6 +18,11 @@
 - [x] https://github.com/Jacck/mcp-reasoner (Added as submodule `external/mcp-servers/Jacck-mcp-reasoner`)
 - [x] https://github.com/KeaBase/kea-research (Added as submodule `external/research/kea-research`)
 - [x] https://github.com/toolsdk-ai/toolsdk-mcp-registry (Added as submodule `external/toolsdk-mcp-registry`)
+- [x] https://github.com/lobehub/lobehub (Added as submodule `external/chat/lobehub`)
+- [x] https://github.com/tensorchord/Awesome-LLMOps (Added as submodule `external/awesome/Awesome-LLMOps`)
+- [x] https://github.com/NevaMind-AI/memU (Added as submodule `external/memory/memU`)
+- [x] https://github.com/openclaw/openclaw (Added as submodule `external/misc/openclaw`)
+- [x] https://github.com/Shubhamsaboo/awesome-llm-apps (Added as submodule `external/awesome/awesome-llm-apps`)
 - https://hub.docker.com/mcp...
 - https://github.com/mcp
 - https://enact.tools/

@@ -3148,3 +3148,18 @@
 [submodule "external/research/kea-research"]
 	path = external/research/kea-research
 	url = https://github.com/KeaBase/kea-research
+[submodule "external/chat/lobehub"]
+	path = external/chat/lobehub
+	url = https://github.com/lobehub/lobehub
+[submodule "external/awesome/Awesome-LLMOps"]
+	path = external/awesome/Awesome-LLMOps
+	url = https://github.com/tensorchord/Awesome-LLMOps
+[submodule "external/memory/memU"]
+	path = external/memory/memU
+	url = https://github.com/NevaMind-AI/memU
+[submodule "external/misc/openclaw"]
+	path = external/misc/openclaw
+	url = https://github.com/openclaw/openclaw
+[submodule "external/awesome/awesome-llm-apps"]
+	path = external/awesome/awesome-llm-apps
+	url = https://github.com/Shubhamsaboo/awesome-llm-apps

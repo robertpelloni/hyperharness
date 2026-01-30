@@ -1,54 +1,9 @@
 # AIOS Ecosystem Dashboard
 
-**Last Updated:** 2026-01-29 23:43:15
-**Total Modules:** 874
+**Last Updated:** 2026-01-30 01:41:37
+**Total Modules:** 785
 
-This dashboard tracks the status of all 874 integrated submodules and tools within the AIOS ecosystem.
-
-## SuperAI CLI Ecosystem (40)
-
-| Name | Path | Version/Commit | Description |
-|------|------|----------------|-------------|
-| **anthropic-tools** | `superai-cli/mcp-advanced/anthropic-tools` | `795f706` <br> *((heads/main))* | > **⚠️ DEPRECATION NOTICE** |
-| **awesome-mcp-servers** | `superai-cli/mcp-advanced/awesome-mcp-servers` | `05a6a75` <br> *((heads/main))* | > [!IMPORTANT] |
-| **cc-switch** | `superai-cli/tools/cc-switch` | `6021274` <br> *((v3.7.1-238-g6021274))* | <div align="center"> |
-| **cc-switch-cli** | `superai-cli/tools/cc-switch-cli` | `175bc8f` <br> *((v4.2.10))* | <div align="center"> |
-| **ccproxy** | `superai-cli/proxies/ccproxy` | `3d4faa5` <br> *((v1.2.0-8-g3d4faa5))* | > Join starbased HQ for questions, sharing setups, and contributing to development. |
-| **ccs** | `superai-cli/tools/ccs` | `affdaea` <br> *((v5.0.0-1040-gaffdaea))* | <div align="center"> |
-| **claude-code-madapp** | `superai-cli/clis/claude-code-madapp` | `d6d66a0` <br> *((plugins/agentdev/v1.4.0))* | > **Battle-tested AI workflows from the top 1% of developers** |
-| **code-assistant-manager** | `superai-cli/tools/code-assistant-manager` | `c629454` <br> *((1.3.0-2-gc629454))* | <div align="center"> |
-| **codebuff** | `superai-cli/clis/codebuff` | `cd54f10` <br> *((v1.0.582))* | Codebuff is an **open-source AI coding assistant** that edits your codebase through natural language instructions. Instead of using one model for ever... |
-| **CodeNomad** | `superai-cli/clis/CodeNomad` | `d76cf8a` <br> *((v0.5.1-15-gd76cf8a))* | CodeNomad is built for people who live inside OpenCode for hours on end and need a cockpit, not a kiosk. It delivers a premium, low-latency workspace ... |
-| **codex-kaioken** | `superai-cli/clis/codex-kaioken` | `cba3914` <br> *((rust-v0.1.11-13-gcba3914b))* | ██╗  ██╗ █████╗ ██╗ ██████╗ ██╗  ██╗███████╗███╗   ██╗ |
-| **convx** | `superai-cli/tools/convx` | `4acf3a0` <br> *((heads/main))* | A terminal UI application that scans local Claude Code and OpenCode conversation histories, displaying them in an interactive interface for browsing a... |
-| **crewai** | `superai-cli/agents/crewai` | `6050a7b` <br> *((1.8.1~11))* | <p align="center"> |
-| **cupcake** | `superai-cli/tools/cupcake` | `da8fd54` <br> *((v0.5.1-9-gda8fd54))* | <p align="left"> |
-| **fabric** | `superai-cli/clis-refs/fabric` | `45d06f8` <br> *((v1.4.13-1859-g45d06f88))* | <div align="center"> |
-| **gemini-cli** | `superai-cli/clis-refs/gemini-cli` | `fb22f5b` <br> *((MK_TAG_TEST-2585-gfb22f5b8e))* | !Gemini CLI Screenshot |
-| **gemini-cli-router** | `superai-cli/routers/gemini-cli-router` | `5cbeed4` <br> *((heads/main))* | **Route your Gemini CLI requests to third-party AI providers seamlessly** |
-| **gemini-openai-proxy-2** | `superai-cli/proxies/gemini-openai-proxy-2` | `0e0e9ba` <br> *((v0.14.2-30-g0e0e9ba))* | Bring OpenAI style API with low cost. |
-| **gemini-openai-proxy-zhu** | `superai-cli/proxies/gemini-openai-proxy-zhu` | `1e54746` <br> *((heads/main))* | Gemini-OpenAI-Proxy is a proxy designed to convert the OpenAI API protocol to the Google Gemini protocol. This enables applications built for the Open... |
-| **gemini-openai-proxy-zuisong** | `superai-cli/proxies/gemini-openai-proxy-zuisong` | `0e0e9ba` <br> *((v0.14.2-30-g0e0e9ba))* | Bring OpenAI style API with low cost. |
-| **gemini-router** | `superai-cli/routers/gemini-router` | `1c38c5e` <br> *((heads/main))* | English - 中文 |
-| **gemini-superclaude-mcp-server** | `superai-cli/extensions/gemini-superclaude-mcp-server` | `05f2d99` <br> *((2.0.2))* | A **fully upgraded** MCP server providing SuperClaude Framework v4.0.9 compatibility for Gemini CLI. Features enhanced command routing with **22 speci... |
-| **gomuxai** | `superai-cli/tools/gomuxai` | `2857cca` <br> *((heads/main))* | CLI tool for orchestrating AI coding agents in tmux sessions. Agents can use the same binary to spawn and communicate with other agents. |
-| **GoogleGeminiRouter** | `superai-cli/routers/GoogleGeminiRouter` | `bbd9b59` <br> *((heads/master))* | > **⚠️ Temporary Workaround for Xcode 26** |
-| **goose** | `superai-cli/clis-refs/goose` | `31eaa47` <br> *((ls-320-g31eaa47209))* | <div align="center"> |
-| **grok-cli** | `superai-cli/clis-refs/grok-cli` | `ad177ec` <br> *((@vibe-kit/grok-cli@0.0.34))* | A conversational AI CLI tool powered by Grok with intelligent text editor capabilities and tool usage. |
-| **kilocode** | `superai-cli/clis-refs/kilocode` | `905bcac` <br> *((v4.140.3-1-g905bcacb64))* | <p align="center"> |
-| **kimi-cli** | `superai-cli/clis/kimi-cli` | `3997cac` <br> *((kosong-0.38.0~5))* | Kimi Code - Documentation - 文档 |
-| **langgraph** | `superai-cli/agents/langgraph` | `454af21` <br> *((sdk==0.3.2))* | <picture class="github-only"> |
-| **lunaroute** | `superai-cli/tools/lunaroute` | `4e3eafe` <br> *((v0.1.9-19-g4e3eafe))* | .--         --. |
-| **Lynkr** | `superai-cli/tools/Lynkr` | `d1c150d` <br> *((heads/main))* | > ** Claude Code proxy server supporting Databricks, AWS Bedrock (100+ models), OpenRouter, Ollama & Azure. Features MCP integration, prompt caching &... |
-| **mcp-servers** | `superai-cli/mcp-advanced/mcp-servers` | `9691b95` <br> *((heads/main))* | This repository is a collection of *reference implementations* for the Model Context Protocol (MCP), as well as references to community-built servers ... |
-| **occtx** | `superai-cli/tools/occtx` | `8546933` <br> *((v0.1.0))* | !GitHub release (latest by date) |
-| **openai-gemini** | `superai-cli/proxies/openai-gemini` | `61a83bd` <br> *((gemini-2.0-flash-thinking-exp-47-g61a83bd))* | The Gemini API has Free Tier |
-| **openai-gemini-2** | `superai-cli/proxies/openai-gemini-2` | `61a83bd` <br> *((gemini-2.0-flash-thinking-exp-47-g61a83bd))* | The Gemini API has Free Tier |
-| **openhands** | `superai-cli/agents/openhands` | `778a1cf` <br> *((heads/main))* | <a name="readme-top"></a> |
-| **poe-code** | `superai-cli/tools/poe-code` | `cc27ebf` <br> *((v1.0.3-152-gcc27ebf))* | > Configure coding agents to use the Poe API. |
-| **splitrail** | `superai-cli/tools/splitrail` | `b6340be` <br> *((v3.2.1-8-gb6340be))* | <div align="right"> |
-| **SuperClaude_Framework** | `superai-cli/harnesses/SuperClaude_Framework` | `04c9b85` <br> *((v4.0.7-139-g04c9b85))* | <div align="center"> |
-| **vercel-ai-proxy** | `superai-cli/proxies/vercel-ai-proxy` | `976cab0` <br> *((heads/main))* | AI API proxy based on vercel routes |
+This dashboard tracks the status of all 785 integrated submodules and tools within the AIOS ecosystem.
 
 ## MCP Servers (43)
 
@@ -206,54 +161,6 @@ This dashboard tracks the status of all 874 integrated submodules and tools with
 | **bloop** | `code-indexing/tools/bloop` | `431e9e8` <br> *((heads/oss))* | <source media="(prefers-color-scheme: dark)" srcset="https://assets.bloop.ai/bloop_github_logo_dark.png"> |
 | **tree-sitter** | `code-indexing/ast/tree-sitter` | `630fa52` <br> *((heads/master))* | Tree-sitter is a parser generator tool and an incremental parsing library. It can build a concrete syntax tree for a source file and efficiently updat... |
 
-## Core Submodules (33)
-
-| Name | Path | Version/Commit | Description |
-|------|------|----------------|-------------|
-| **agent-client-protocol** | `submodules/agent-client-protocol` | `1544427` <br> *((v0.10.5-12-g1544427))* | <a href="https://agentclientprotocol.com/" > |
-| **Agent-MCP** | `submodules/Agent-MCP` | `13d98b2` <br> *((v4.20.0-19-g13d98b2c))* | > 🚀 **Advanced Tool Notice**: This framework is designed for experienced AI developers who need sophisticated multi-agent orchestration capabilities. ... |
-| **agentmux** | `submodules/agentmux` | `76c9b79` <br> *((heads/main))* | AgentMux orchestrates multiple Claude Code instances via tmux sessions, enabling autonomous team collaboration with web-based monitoring and filesyste... |
-| **ai-that-works** | `submodules/ai-that-works` | `9a5ca6c` <br> *((heads/main))* | <div align="center"> |
-| **aichat** | `submodules/aichat` | `236097b` <br> *((v0.30.0-26-g236097b))* | AIChat is an all-in-one LLM CLI tool featuring Shell Assistant, CMD & REPL Mode, RAG, AI Tools & Agents, and More. |
-| **Auditor** | `submodules/Auditor` | `9f2f37a` <br> *((v2.0.2))* | **Database-First Static Analysis and Code Context Intelligence** |
-| **browser-use** | `submodules/browser-use` | `6b4ed25` <br> *((0.11.2-54-g6b4ed253))* | <source media="(prefers-color-scheme: light)" srcset="https://github.com/user-attachments/assets/2ccdb752-22fb-41c7-8948-857fc1ad7e24""> |
-| **claude-code** | `submodules/claude-code` | `d213a74` <br> *((v2.0.74))* | ![](https://img.shields.io/badge/Node.js-18%2B-brightgreen?style=flat-square) [![npm]](https://www.npmjs.com/package/@anthropic-ai/claude-code) |
-| **claude-squad** | `submodules/claude-squad` | `fc1b967` <br> *((v1.0.10-9-gfc1b967))* | Claude Squad is a terminal app that manages multiple Claude Code, Codex, Gemini (and other local agents including Aider) in separate workspaces, allow... |
-| **claudex** | `submodules/claudex` | `9c79f31` <br> *((heads/main))* | Your own Claude Code UI. Open source, self-hosted, runs entirely on your machine. |
-| **CLIProxyAPI** | `submodules/CLIProxyAPI` | `857c880` <br> *((v6.6.70))* | English - 中文 |
-| **code-conductor** | `submodules/code-conductor` | `ea7c276` <br> *((v0.1.3-12-gea7c276))* | <img width="800" height="800" alt="image" src="https://github.com/user-attachments/assets/be1b47d2-8384-4012-b437-4d8316eaf9f7" /> |
-| **copilot-cli** | `submodules/copilot-cli` | `8a0dd1a` <br> *((v0.0.373-1-g8a0dd1a))* | The power of GitHub Copilot, now in your terminal. |
-| **emdash** | `submodules/emdash` | `8ce8228` <br> *((v0.3.39-2-g8ce8228c))* | <img width="4856" height="1000" alt="Github_banner (1)" src="https://github.com/user-attachments/assets/9dfdd1fd-ea4f-4b86-9daf-d4a46952594a" /> |
-| **gemini-bridge** | `submodules/gemini-bridge` | `e6af078` <br> *((v1.2.0))* | !CI Status |
-| **jules-agent-sdk-python** | `submodules/jules-agent-sdk-python` | `51685d6` <br> *((heads/main))* | > **Disclaimer**: This is an open source implementation of Jules API SDK wrapper in Python and does not have any association with Google. For the offi... |
-| **jules-app** | `submodules/jules-app` | `fa251dd` <br> *((remotes/origin/HEAD))* | !Build Status |
-| **mcp-manager** | `submodules/mcp-manager` | `66b4d03` <br> *((heads/main))* | MCP Manager is an Electron-based desktop application for managing Model Context Protocol (MCP) servers. It provides an intuitive graphical interface t... |
-| **mcp-reticle** | `submodules/mcp-reticle` | `37b1517` <br> *((v0.1.0-rc.7-4-g37b1517))* | <p align="center"> |
-| **mcp-shark** | `submodules/mcp-shark` | `6d7abfc` <br> *((1.5.9))* | <div align="center"> |
-| **mcpc** | `submodules/mcpc` | `5eccff2` <br> *((v0.1.6-5-g5eccff2))* | `mcpc` is a CLI for the Model Context Protocol (MCP) |
-| **mcpenetes** | `submodules/mcpenetes` | `f0fd60e` <br> *((v1.0.3-55-gf0fd60e))* | !mcpenetes |
-| **opencode-autopilot** | `submodules/opencode-autopilot` | `49ecd37` <br> *((remotes/origin/HEAD))* | A multi-model AI council for autonomous development guidance. Multiple AI supervisors debate and vote on code changes through a democratic process. |
-| **pctx** | `submodules/pctx` | `e0d128d` <br> *((pctx-py-v0.1.0-rc.2-22-ge0d128d))* | <div align="center"> |
-| **plandex** | `submodules/plandex` | `e2d7720` <br> *((cli/v2.2.1-3-ge2d77207))* | <h1 align="center"> |
-| **PowerTrader_AI** | `submodules/PowerTrader_AI` | `90c961a` <br> *((heads/main))* | Fully automated crypto trading powered by a custom price prediction AI and a structured/tiered DCA system. |
-| **Puzld.ai** | `submodules/Puzld.ai` | `77ff444` <br> *((v0.1.9-53-g77ff444))* | <p align="center"> |
-| **quotio** | `submodules/quotio` | `165e877` <br> *((v0.3.2-1-g165e877))* | <p align="center"> |
-| **reag** | `submodules/reag` | `de230c7` <br> *((heads/main))* | Traditional Retrieval-Augmented Generation (RAG) systems rely on a two-step process: first, semantic search retrieves documents based on surface-level... |
-| **software-agent-sdk** | `submodules/software-agent-sdk` | `cbc8cfb` <br> *((1.0.0-242-gcbc8cfb1))* | <a name="readme-top"></a> |
-| **Unified-MCP-Tool-Graph** | `submodules/Unified-MCP-Tool-Graph` | `c8a51dd` <br> *((heads/main))* | !image |
-| **vibe-kanban** | `submodules/vibe-kanban` | `76feaef` <br> *((v0.0.144-20260106131405-3-g76feaefd))* | <p align="center"> |
-| **Windows-MCP** | `submodules/Windows-MCP` | `2cd7c35` <br> *((v0.5.4-8-g2cd7c35))* | <div align="center"> |
-
-## Developer Tools (5)
-
-| Name | Path | Version/Commit | Description |
-|------|------|----------------|-------------|
-| **claude-code-gh-dash** | `tools/github/claude-code-gh-dash` | `587dc34` <br> *((heads/master))* | A Claude Code plugin that displays GitHub PR status, CI/CD checks, and merge capability directly in your terminal. |
-| **claude-code-safety-net** | `tools/security/claude-code-safety-net` | `54ceb94` <br> *((v0.3.0-125-g54ceb94))* | <div align="center"> |
-| **pluggedin-app** | `tools/refs/pluggedin-app` | `489d25a` <br> *((v2.20.1))* | <div align="center"> |
-| **vibeship-idearater** | `tools/misc/vibeship-idearater` | `4341772` <br> *((heads/main))* | Test if your startup idea has PMF (Product-Market Fit) potential. Get a brutally honest scorecard in 30 seconds. |
-| **vibeship-scanner** | `tools/security/vibeship-scanner` | `7168af7` <br> *((heads/main))* | A security scanning tool designed for vibe coders. Analyzes GitHub repositories for vulnerabilities and generates AI-ready fix prompts. |
-
 ## External: Agents & Orchestration (17)
 
 | Name | Path | Version/Commit | Description |
@@ -275,6 +182,13 @@ This dashboard tracks the status of all 874 integrated submodules and tools with
 | **Self-Learning-Agents** | `external/orchestration/Self-Learning-Agents` | `ca6c83a` <br> *((release-8-gca6c83a))* | A lightweight Python library that allows any LLM agent to self-improve through feedback, without retraining models. |
 | **TaskSync** | `external/orchestration/TaskSync` | `b6bacf8` <br> *((v2.0.12-1-gb6bacf8))* | > [!WARNING] |
 | **tasksync-mcp** | `external/orchestration/tasksync-mcp` | `9c3b263` <br> *((heads/main))* | This is an MCP server that helps with  feedback-oriented development workflows in AI-assisted development by letting users give feedback while the age... |
+
+## External: Awesome (2)
+
+| Name | Path | Version/Commit | Description |
+|------|------|----------------|-------------|
+| **awesome-llm-apps** | `external/awesome/awesome-llm-apps` | `c4a71b9` <br> *((heads/main))* | <p align="center"> |
+| **Awesome-LLMOps** | `external/awesome/Awesome-LLMOps` | `e628643` <br> *((heads/main))* | <a href="https://discord.gg/KqswhpVgdU"><img alt="discord invitation link" src="https://img.shields.io/discord/974584200327991326?style=flat&logo=disc... |
 
 ## External: Awesome-ai-apps (1)
 
@@ -357,6 +271,12 @@ This dashboard tracks the status of all 874 integrated submodules and tools with
 | **splitrail** | `external/clis/splitrail` | `38e353c` <br> *((v3.2.1-14-g38e353c))* | <div align="right"> |
 | **SuperClaude_Framework** | `external/clis/SuperClaude_Framework` | `3294a0a` <br> *((v4.0.7-140-g3294a0a))* | <div align="center"> |
 | **vercel-ai-proxy** | `external/clis/vercel-ai-proxy` | `976cab0` <br> *((heads/main))* | AI API proxy based on vercel routes |
+
+## External: Chat (1)
+
+| Name | Path | Version/Commit | Description |
+|------|------|----------------|-------------|
+| **lobehub** | `external/chat/lobehub` | `c5a1791` <br> *((v2.0.13-1-gc5a1791e3))* | <div align="center"><a name="readme-top"></a> |
 
 ## External: Code-indexing (7)
 
@@ -560,7 +480,7 @@ This dashboard tracks the status of all 874 integrated submodules and tools with
 | **utcp-mcp** | `external/mcp-tooling/utcp-mcp` | `5ed1f04` <br> *((heads/main))* | **The last MCP server you'll ever need.** |
 | **zypher-agent** | `external/mcp-tooling/zypher-agent` | `9ffaee1` <br> *((http/v0.1.1))* | **Production-ready AI agents that live in your applications** |
 
-## External: Memory (38)
+## External: Memory (39)
 
 | Name | Path | Version/Commit | Description |
 |------|------|----------------|-------------|
@@ -590,6 +510,7 @@ This dashboard tracks the status of all 874 integrated submodules and tools with
 | **MemMachine** | `external/memory/MemMachine` | `123b33b` <br> *((v0.2.3-7-g123b33b))* | <div align="center"> |
 | **Memori** | `external/memory/Memori` | `2e44d67` <br> *((v3.1.3-3-g2e44d67))* | <p align="center"> |
 | **MemoryOS** | `external/memory/MemoryOS` | `d7a5462` <br> *((V1.2-28-gd7a5462))* | <div align="center"> |
+| **memU** | `external/memory/memU` | `a7a5516` <br> *((v1.3.0-8-ga7a5516))* | !MemU Banner |
 | **memvault-sync** | `external/memory/memvault-sync` | `81a4a42` <br> *((v1.0.1))* | !Marketplace |
 | **Mimir** | `external/memory/Mimir` | `01c0203` <br> *((v1.0.2-6-g01c0203))* | <img width="283" height="380" alt="image" src="https://github.com/user-attachments/assets/f4e3be80-79fe-4e10-b010-9a39b5f70584" /> |
 | **opencode-plugin-simple-memory** | `external/memory/opencode-plugin-simple-memory` | `5ac3fb0` <br> *((v0.0.1-11-g5ac3fb0))* | A persistent memory plugin for OpenCode that enables the AI assistant to remember context across sessions. |
@@ -603,7 +524,7 @@ This dashboard tracks the status of all 874 integrated submodules and tools with
 | **txtai** | `external/memory/txtai` | `d4e8ee4` <br> *((v3.3.0-1427-gd4e8ee4))* | <p align="center"> |
 | **zep** | `external/memory/zep` | `e503435` <br> *((zep-crewai-v1.1.1-29-ge503435))* | <p align="center"> |
 
-## External: Misc (7)
+## External: Misc (8)
 
 | Name | Path | Version/Commit | Description |
 |------|------|----------------|-------------|
@@ -611,6 +532,7 @@ This dashboard tracks the status of all 874 integrated submodules and tools with
 | **MaorBril-clauder** | `external/misc/MaorBril-clauder` | `523b272` <br> *((v0.7.2-10-g523b272))* | **Make your AI coding agents talk to each other.** |
 | **mikekelly-claude-sneakpeek** | `external/misc/mikekelly-claude-sneakpeek` | `c1c57b1` <br> *((v1.6.10))* | Get a parallel build of Claude Code that unlocks feature-flagged capabilities like swarm mode. |
 | **nuwainfo-ffl-mcp** | `external/misc/nuwainfo-ffl-mcp` | `e1c1650` <br> *((heads/master))* | MCP server for ffl. Let AI share anything for you. |
+| **openclaw** | `external/misc/openclaw` | `613724c` <br> *((v2026.1.10-3403-g613724c26))* | <p align="center"> |
 | **sivanhavkin-Entelgia** | `external/misc/sivanhavkin-Entelgia` | `da0b8f8` <br> *((LLM-11-gda0b8f8))* | **Entelgia** is a psychologically-inspired, multi-agent AI architecture designed to explore persistent identity, emotional regulation, internal confli... |
 | **sugaiketadao-sicore** | `external/misc/sugaiketadao-sicore` | `d88a4fa` <br> *((heads/main))* | English - Japanese |
 | **tchebb-openwv** | `external/misc/tchebb-openwv` | `4306a3c` <br> *((v1.1.3-1-g4306a3c))* | OpenWV is a free and open-source reimplementation of Google's Widevine Content |
@@ -988,7 +910,7 @@ This dashboard tracks the status of all 874 integrated submodules and tools with
 | **websocket-demo** | `misc/abanteai/websocket-demo` | `4ec4e9c` <br> *((heads/main))* | 1. Install python deps `pip install requirements.txt` |
 | **workspace** | `misc/gemini-extensions/workspace` | `0e4edd4` <br> *((heads/main))* | The Google Workspace extension for Gemini CLI brings the power of your Google Workspace apps to your command line. Manage your documents, spreadsheets... |
 
-## Other / Uncategorized (99)
+## Other / Uncategorized (95)
 
 | Name | Path | Version/Commit | Description |
 |------|------|----------------|-------------|
@@ -1001,7 +923,6 @@ This dashboard tracks the status of all 874 integrated submodules and tools with
 | **agentdepot-agents** | `multi-agent/agentdepot-agents` | `063606c` <br> *((heads/main))* | **Open-source database of AI coding agents for AgentDepot.dev** |
 | **agentdepot-agents-2** | `multi-agent/agentdepot-agents-2` | `063606c` <br> *((heads/main))* | **Open-source database of AI coding agents for AgentDepot.dev** |
 | **agentic-playground** | `multi-agent/agentic-playground` | `a99a84f` <br> *((heads/main))* | This project demonstrates agentic concepts, orchestration patterns and functional scenarios using GitHub models and various open souce frameworks like... |
-| **agentic-qe** | `testing/agentic-qe` | `4033ef4` <br> *((v2.3.4-196-g4033ef4a))* | <div align="center"> |
 | **agentic-ray** | `multi-agent/agentic-ray` | `2bdc5c7` <br> *((heads/main))* | <div align="center"> |
 | **agentic-ray-rayai-labs** | `multi-agent/agentic-ray-rayai-labs` | `2bdc5c7` <br> *((heads/main))* | <div align="center"> |
 | **ai-hedge-fund** | `financial/trading/ai-hedge-fund` | `9adb980` <br> *((heads/main))* | This is a proof of concept for an AI-powered hedge fund.  The goal of this project is to explore the use of AI to make trading decisions.  This projec... |
@@ -1012,7 +933,6 @@ This dashboard tracks the status of all 874 integrated submodules and tools with
 | **awesome-amp-code** | `cli-harnesses/awesome-amp-code` | `840d52a` <br> *((heads/main))* | <!--lint ignore awesome-toc--> |
 | **awesome-copilot** | `cli-harnesses/awesome-copilot` | `bdeecf2` <br> *((heads/main))* | A community created collection of custom agents, prompts, and instructions to supercharge your GitHub Copilot experience across different domains, lan... |
 | **awesome-crypto-mcp** | `financial/crypto/awesome-crypto-mcp` | `6f3db72` <br> *((heads/main))* | A curated list of awesome Model Context Protocol (MCP) servers - Crypto Edition 🔒 |
-| **awesome-mcp-servers** | `references/awesome-mcp-servers` | `0a43b82` <br> *((heads/main))* | > [!IMPORTANT] |
 | **awesome-opencode** | `cli-harnesses/awesome-opencode` | `b9986c2` <br> *((heads/main))* | <!-- HEADER --> |
 | **browser-tools-mcp** | `browsers/browser-tools-mcp` | `0befce3` <br> *((heads/main))* | > Make your AI tools 10x more aware and capable of interacting with your browser |
 | **cc-switch** | `cli-harnesses/cc-switch` | `6ce6f16` <br> *((v3.7.1-264-g6ce6f16))* | <div align="center"> |
@@ -1089,35 +1009,6 @@ This dashboard tracks the status of all 874 integrated submodules and tools with
 | **tasksync-mcp** | `multi-agent/tasksync-mcp` | `8a4040b` <br> *((heads/main))* | This is an MCP server that helps with  feedback-oriented development workflows in AI-assisted development by letting users give feedback while the age... |
 | **trade-agent-mcp** | `financial/trading/trade-agent-mcp` | `473fc2c` <br> *((heads/main))* | Now available through the _Official MCP Registry_ |
 | **vercel-ai-proxy** | `cli-harnesses/vercel-ai-proxy` | `976cab0` <br> *((heads/main))* | AI API proxy based on vercel routes |
-| **vibeship-spawner-skills** | `vibeship-spawner-skills` | `70b2e10` <br> *((heads/main))* | > **spawner.vibeship.co** - **Browse All Skills** |
-| **web-search-mcp** | `search/mcp-servers/web-search-mcp` | `eeb03f8` <br> *((v0.3.2-2-geeb03f8))* | A TypeScript MCP (Model Context Protocol) server that provides comprehensive web search capabilities using direct connections (no API keys required) w... |
-
-## Research (2)
-
-| Name | Path | Version/Commit | Description |
-|------|------|----------------|-------------|
-| **MCP-Zero** | `research/MCP-Zero` | `fd666c4` <br> *((heads/master))* | <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;"> |
-| **OpenCoder-llm** | `research/OpenCoder-llm` | `6131c47` <br> *((heads/main))* | <div align="center"> |
-
-## Skill Library (9)
-
-| Name | Path | Version/Commit | Description |
-|------|------|----------------|-------------|
-| **anthropic-quickstarts** | `skills/prompts/anthropic-quickstarts` | `2eb3b14` <br> *((heads/main))* | Claude Quickstarts is a collection of projects designed to help developers quickly get started with building  applications using the Claude API. Each ... |
-| **anthropics-skills** | `skills/anthropics-skills` | `69c0b1a` <br> *((heads/main))* | > **Note:** This repository contains Anthropic's implementation of skills for Claude. For information about the Agent Skills standard, see agentskills... |
-| **bkircher-skills** | `skills/bkircher-skills` | `3136b32` <br> *((heads/main))* | Forget about MCP; use command-line tools and tailor context to the task at hand. |
-| **claude-code-tips** | `skills/claude-code-tips` | `8b61a81` <br> *((dx-v0.3.0-11-g8b61a81))* | Here are my tips for getting the most out of Claude Code, including a custom status line script, cutting the system prompt in half, using Gemini CLI a... |
-| **ensue-skill** | `skills/external/ensue-skill` | `8990362` <br> *((heads/main))* | **Get smarter alongside your AI.** |
-| **gemini-claude-skills** | `skills/gemini-claude-skills` | `0a31cfe` <br> *((heads/main))* | Claude Code skills for integrating Google's Gemini 3 Pro models into your workflow. For more context, see this blog post. |
-| **skills-bkircher** | `skills/refs/skills-bkircher` | `3136b32` <br> *((heads/main))* | Forget about MCP; use command-line tools and tailor context to the task at hand. |
-| **skills-openai** | `skills/skills-openai` | `894d404` <br> *((heads/main))* | Agent Skills are folders of instructions, scripts, and resources that AI agents can discover and use to perform at specific tasks. Write once, use eve... |
-| **ykdojo-claude-code-tips** | `skills/ykdojo-claude-code-tips` | `8b61a81` <br> *((dx-v0.3.0-11-g8b61a81))* | Here are my tips for getting the most out of Claude Code, including a custom status line script, cutting the system prompt in half, using Gemini CLI a... |
-
-## Web Interfaces (1)
-
-| Name | Path | Version/Commit | Description |
-|------|------|----------------|-------------|
-| **web-ui** | `web-ui` | `7eb62d4` <br> *((v3.0.0))* | <img src="./assets/web-ui.png" alt="Browser Use Web UI" width="full"/> |
 
 ## Project Structure Explanation
 
