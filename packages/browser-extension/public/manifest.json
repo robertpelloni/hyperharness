@@ -1,15 +1,19 @@
 {
   "manifest_version": 3,
-  "name": "aios Browser Bridge",
-  "version": "0.0.1",
-  "description": "Connects your browser to the aios Hub.",
+  "name": "Borg Director Link",
+  "version": "0.1.0",
+  "description": "Connects web chats (ChatGPT, Claude) to Borg Director via Local MCP.",
   "permissions": [
     "activeTab",
     "scripting",
-    "tabs"
+    "storage",
+    "notifications"
   ],
   "host_permissions": [
-    "http://localhost:3000/*"
+    "ws://localhost:3001/*",
+    "http://localhost/*",
+    "https://chatgpt.com/*",
+    "https://claude.ai/*"
   ],
   "background": {
     "service_worker": "background.js",
@@ -17,8 +21,13 @@
   },
   "content_scripts": [
     {
-      "matches": ["<all_urls>"],
-      "js": ["content.js"]
+      "matches": [
+        "<all_urls>"
+      ],
+      "js": [
+        "content.js"
+      ],
+      "run_at": "document_start"
     }
   ],
   "action": {

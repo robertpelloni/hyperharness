@@ -6,9 +6,7 @@
     "build": "vite build",
     "dev": "vite build --watch"
   },
-  "dependencies": {
-    "socket.io-client": "^4.7.5"
-  },
+  "dependencies": {},
   "devDependencies": {
     "@types/chrome": "^0.0.263",
     "@types/node": "^20.11.24",
