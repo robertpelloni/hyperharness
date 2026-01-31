@@ -35,6 +35,8 @@ import { SquadService } from "./orchestrator/SquadService.js";
 import { AuditService } from "./security/AuditService.js";
 import { SkillRegistry } from "./skills/SkillRegistry.js";
 import { SuggestionService } from "./suggestions/SuggestionService.js";
+import { ResearchService } from "./services/ResearchService.js";
+import { WebSearchTool } from "./tools/WebSearchTool.js";
 console.log("[MCPServer] ✓ SkillRegistry");
 
 import {
@@ -129,6 +131,7 @@ export class MCPServer {
     public contextManager: ContextManager;
     public symbolPinService: SymbolPinService;
     public autoDevService: AutoDevService;
+    public researchService: ResearchService;
     private activeAgents: Map<string, AgentAdapter> = new Map();
     public directorConfig = {
         taskCooldownMs: 10000,
@@ -163,6 +166,7 @@ export class MCPServer {
         this.configManager = new ConfigManager();
         this.autoTestService = new AutoTestService(process.cwd());
         this.sandboxService = new SandboxService();
+        // Moved ResearchService init below MemoryManager init
 
         // Load persistent config
         const savedConfig = this.configManager.loadConfig();
@@ -195,6 +199,7 @@ export class MCPServer {
 
         // Memory System
         this.memoryManager = new MemoryManager(process.cwd());
+        this.researchService = new ResearchService(this, this.memoryManager); // Initialized AFTER memoryManager
 
         this.squadService = new SquadService(this);
 
@@ -734,10 +739,18 @@ export class MCPServer {
                     content: [{ type: "text", text: JSON.stringify(await this.chainExecutor.executeChain(args as unknown as ChainRequest), null, 2) }]
                 };
             }
+            else if (name === "research") {
+                const topic = args?.topic as string;
+                const depth = args?.depth as number || 3;
+                const report = await this.researchService.research(topic, depth);
+                result = {
+                    content: [{ type: "text", text: report }]
+                };
+            }
             else {
                 // Check Standard Library
                 const terminalTools = this.terminalService.getTools();
-                const standardTool = [...FileSystemTools, ...terminalTools, ...MemoryTools, ...TunnelTools, ...LogTools, ...ConfigTools, ...SearchTools, ...ReaderTools, ...WorktreeTools].find(t => t.name === name);
+                const standardTool = [...FileSystemTools, ...terminalTools, ...MemoryTools, ...TunnelTools, ...LogTools, ...ConfigTools, ...SearchTools, ...ReaderTools, ...WorktreeTools, WebSearchTool].find(t => t.name === name);
                 if (standardTool) {
                     // @ts-ignore
                     result = await standardTool.handler(args);

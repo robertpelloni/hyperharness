@@ -3,7 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, MessageSquare, Terminal, Settings, LayoutDashboard } from 'lucide-react';
+import { Home, MessageSquare, Terminal, Settings, LayoutDashboard, Users } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export function MobileNav() {
@@ -24,6 +24,11 @@ export function MobileNav() {
             href: '/autopilot',
             icon: Terminal,
             label: 'Agents'
+        },
+        {
+            href: '/squads',
+            icon: Users,
+            label: 'Squads'
         },
         {
             href: '/conductor',

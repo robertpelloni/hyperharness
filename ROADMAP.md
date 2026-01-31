@@ -59,8 +59,8 @@
 - [ ] **Graph Service:** Finalize `RepoGraphService` to visualize import/export dependencies.
 
 ### Secure Execution
-- [ ] **Sandboxing:** Finalize `SandboxService` for secure Docker/WASM code execution (Integrating `code-sandbox/` tools).
-- [ ] **Auto-Test Runner:** Automatically detect and run relevant tests for modified files.
+- [x] **Sandboxing:** Finalize `SandboxService` for secure Docker/WASM code execution (Integrating `code-sandbox/` tools).
+- [x] **Auto-Test Runner:** Automatically detect and run relevant tests for modified files.
 
 ## Phase 15: The SuperAI Harness (Feature Parity)
 **Goal:** Match and exceed the capabilities of Amp, Auggie, Claude Code, Codebuff, and OpenCode.
@@ -83,7 +83,7 @@
 ### Functionality Injection
 - [x] **MCP Injection:** Expose local MCP tools (FS, Git, Terminal) to web chats via browser extension.
 - [x] **Context Export:** One-click export of web chats into Borg long-term memory.
-- [ ] **Memory Recording:** Background recording of browsing research into the Vector Store.
+- [x] **Memory Recording:** Background recording of browsing research into the Vector Store.
 
 ### Browser Capabilities (via MCP)
 - [ ] **Page Scraping:** Turn current page content into markdown context (Integrating `browser-use/`).
@@ -98,7 +98,7 @@
 
 ## Phase 18: Multi-Agent Squads
 - [ ] **Consensus Protocol:** Multi-model debate engine.
-- [ ] **Git Worktree Squads:** Parallel coding agents in isolated branches.
+- [x] **Git Worktree Squads:** Parallel coding agents in isolated branches.
 - [ ] **Local-Remote Bridge:** Sync projects between local machine and cloud instances.
 
 ## Phase 19: Enterprise & Ecosystem (Restored)

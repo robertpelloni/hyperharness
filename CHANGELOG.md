@@ -1,4 +1,13 @@
 # Changelog
+## [1.6.0] - 2026-01-30
+### Added
+- **Squads:** Implemented `SquadService` for spawning autonomous coding agents in isolated Git Worktrees.
+- **Secure Execution:** Added `SandboxService` with Node.js (`vm`) and Python (`spawn`) isolation.
+- **Browser Memory:** Added `memorize_page` tool to capture web context into Vector Store.
+- **Deep Code Intel:** Implemented AST-based chunking for JavaScript/TypeScript files in `RepoGraphService`.
+- **Auto-Test:** Implemented `AutoTestService` for smart test execution on file change.
+- **System Stability:** Fixed critical `uuid` missing dependency in Core.
+
 ## [1.5.2] - 2026-01-30
 ### Added
 - **Memory Manager**: Created `MemoryManager` service to abstract vector store interactions (`packages/core/src/services/MemoryManager.ts`).
