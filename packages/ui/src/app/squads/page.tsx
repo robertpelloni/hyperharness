@@ -88,7 +88,7 @@ export default function SquadsPage() {
                                             variant="destructive"
                                             size="sm"
                                             onClick={() => killMutation.mutate({ branch: member.branch })}
-                                            disabled={killMutation.isLoading}
+                                            disabled={killMutation.isPending}
                                         >
                                             <Trash2 className="h-4 w-4 mr-2" />
                                             Terminate
@@ -124,8 +124,8 @@ export default function SquadsPage() {
                             onChange={(e) => setGoal(e.target.value)}
                         />
                     </div>
-                    <Button onClick={handleSpawn} disabled={spawnMutation.isLoading} className="w-full">
-                        {spawnMutation.isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Plus className="mr-2 h-4 w-4" />}
+                    <Button onClick={handleSpawn} disabled={spawnMutation.isPending} className="w-full">
+                        {spawnMutation.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Plus className="mr-2 h-4 w-4" />}
                         Deploy Agent
                     </Button>
                 </CardContent>

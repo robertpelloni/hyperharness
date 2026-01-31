@@ -11,6 +11,18 @@ export const symbolsRouter = t.router({
         return [];
     }),
 
+    find: publicProcedure.input(z.object({
+        query: z.string(),
+        limit: z.number().default(10)
+    })).query(async ({ input }) => {
+        // @ts-ignore
+        const mcp = global.mcpServerInstance;
+        if (mcp && mcp.memoryManager) {
+            return await mcp.memoryManager.searchSymbols(input.query, input.limit);
+        }
+        return [];
+    }),
+
     pin: publicProcedure.input(z.object({
         name: z.string(),
         file: z.string(),

@@ -1,9 +1,9 @@
 
 import { z } from 'zod';
-import { publicProcedure, router } from '../trpc.js';
+import { t, publicProcedure } from '../trpc.js';
 
-export const squadRouter = router({
-    list: publicProcedure.query(async ({ setHeaders }) => {
+export const squadRouter = t.router({
+    list: publicProcedure.query(async () => {
         // @ts-ignore
         const server = global.mcpServerInstance;
         if (!server) return [];

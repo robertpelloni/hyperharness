@@ -98,7 +98,37 @@ export class MemoryManager {
         if (!this.initialized) await this.initialize();
         if (!this.provider) return [];
 
-        return await this.provider.search(query, limit);
+        return await this.provider!.search(query, limit);
+    }
+
+    public async searchSymbols(query: string, limit: number = 5): Promise<SearchResult[]> {
+        // TODO: Implement metadata filtering in VectorProvider
+        // For now, relies on semantic similarity. Symbols usually look like "function foo()..."
+        // Prefixing query might help: "symbol for " + query?
+        return await this.search(query, limit);
+    }
+
+    /**
+     * Index structured symbols (Classes, Functions) using AST parsing.
+     */
+    public async indexSymbols(rootDir: string): Promise<number> {
+        if (!this.initialized) await this.initialize();
+        if (!this.provider) throw new Error("Provider failed to init");
+
+        console.log(`[MemoryManager] Indexing symbols at ${rootDir}...`);
+
+        // Lazy load Indexer from @borg/memory
+        // @ts-ignore
+        const { Indexer, VectorStore } = await import('@borg/memory');
+
+        const store = new VectorStore(this.dbPath);
+        const indexer = new Indexer(store);
+
+        if (!indexer.indexSymbols) {
+            throw new Error("Indexer does not utilize indexSymbols (check build?)");
+        }
+
+        return await indexer.indexSymbols(rootDir);
     }
     public async indexCodebase(rootDir: string): Promise<number> {
         if (!this.initialized) await this.initialize();
