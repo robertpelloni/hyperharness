@@ -1,88 +1,48 @@
-console.log("Borg Browser Extension Content Script Loaded");
+import { Readability } from '@mozilla/readability';
+import TurndownService from 'turndown';
 
-// 1. Inject the Bridge Script into the Page Context
-const script = document.createElement('script');
-script.textContent = `
-(function() {
-    window.borg = {
-        callTool: function(name, args) {
-            return new Promise((resolve, reject) => {
-                const id = Math.random().toString(36).substring(7);
-                
-                // Handler for Response
-                const handler = (event) => {
-                    if (event.source !== window || !event.data || event.data.type !== 'BORG_MCP_RESPONSE') return;
-                    if (event.data.payload.id !== id) return;
-                    
-                    window.removeEventListener('message', handler);
-                    
-                    if (event.data.payload.error) {
-                        reject(event.data.payload.error);
-                    } else {
-                        resolve(event.data.payload.result);
-                    }
-                };
-                
-                window.addEventListener('message', handler);
-                
-                // Send Request
-                window.postMessage({
-                    type: 'BORG_MCP_CALL',
-                    payload: {
-                        jsonrpc: '2.0',
-                        method: 'tools/call',
-                        params: { name, arguments: args },
-                        id
-                    }
-                }, '*');
-            });
-        },
-        
-        listTools: function() {
-             return new Promise((resolve, reject) => {
-                const id = Math.random().toString(36).substring(7);
-                const handler = (event) => {
-                    if (event.source !== window || !event.data || event.data.type !== 'BORG_MCP_RESPONSE') return;
-                    if (event.data.payload.id !== id) return;
-                    window.removeEventListener('message', handler);
-                    if (event.data.payload.error) reject(event.data.payload.error);
-                    else resolve(event.data.payload.result);
-                };
-                window.addEventListener('message', handler);
-                window.postMessage({
-                    type: 'BORG_MCP_CALL',
-                    payload: { jsonrpc: '2.0', method: 'tools/list', id }
-                }, '*');
-            });
-        }
-    };
-    console.log("✅ window.borg injected");
-})();
-`;
-(document.head || document.documentElement).appendChild(script);
-script.remove();
-
-// 2. Listen for Messages from Page
-window.addEventListener('message', (event) => {
-    if (event.source !== window || !event.data) return;
-
-    if (event.data.type === 'BORG_MCP_CALL') {
-        const payload = event.data.payload;
-
-        // Forward to Background
-        chrome.runtime.sendMessage({ type: "MCP_REQUEST", payload }, (response) => {
-            // Forward Response back to Page
-            window.postMessage({
-                type: 'BORG_MCP_RESPONSE',
-                payload: response
-            }, '*');
-        });
-    }
-});
-
-// Listen for messages from background script (Reverse Control)
+// Listen for messages from the background script
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-    if (request.action === "ping") {
-        sendResponse({ status: "pong" });
+    if (request.action === 'SCRAPE_PAGE') {
+        try {
+            // 1. Clone document to avoid modifying the live page
+            const documentClone = document.cloneNode(true) as Document;
+
+            // 2. Parse with Readability
+            const reader = new Readability(documentClone);
+            const article = reader.parse();
+
+            if (!article) {
+                sendResponse({ success: false, error: 'Readability failed to parse article' });
+                return;
+            }
+
+            // 3. Convert to Markdown
+            const turndownService = new TurndownService({
+                headingStyle: 'atx',
+                codeBlockStyle: 'fenced',
+                hr: '---',
+                bulletListMarker: '-'
+            });
+            const markdown = turndownService.turndown(article.content);
+
+            // 4. Return result
+            sendResponse({
+                success: true,
+                data: {
+                    title: article.title,
+                    byline: article.byline,
+                    content: markdown,
+                    url: window.location.href,
+                    timestamp: new Date().toISOString()
+                }
+            });
+        } catch (error) {
+            sendResponse({ success: false, error: (error as Error).message });
+        }
     }
+    // Return true to indicate we will send a response asynchronously
+    return true;
 });
+
+console.log('Borg Scraper Content Script Loaded 🚀');

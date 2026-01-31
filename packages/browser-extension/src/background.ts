@@ -1,5 +1,5 @@
 // Background Service Worker for Borg Director Link
-console.log("Borg Browser Extension Background Service Worker Starting...");
+console.log("Borg Browser Extension Background Service Worker Starting... 🚀");
 
 let socket: WebSocket | null = null;
 let requestIdCounter = 0;
@@ -11,7 +11,6 @@ function connect() {
 
   socket.onopen = () => {
     console.log("✅ Connected to Borg Hub");
-    // Initialize MCP Session? usually happens automatically or lazily
   };
 
   socket.onmessage = async (event) => {
@@ -27,7 +26,7 @@ function connect() {
         return;
       }
 
-      // Handle Server Requests (Reverse Control - e.g. Server calling Browser Tools)
+      // Handle Server Requests (Reverse Control)
       if (msg.method) {
         await handleServerRequest(msg);
       }
@@ -49,24 +48,24 @@ function connect() {
 }
 
 async function handleServerRequest(msg: any) {
-  // Basic Reverse Control (Server -> Browser)
-  // Matches the json-rpc 2.0 format: { jsonrpc: "2.0", method: "...", params: {...}, id: ... }
+  // JSON-RPC processing
   if (msg.method === "ping") {
     send({ jsonrpc: "2.0", result: "pong", id: msg.id });
     return;
   }
 
-  // Commands implementation (similar to previous version)
   try {
     let result;
     if (msg.method === "browser_navigate") {
       result = await navigate(msg.params.url);
     } else if (msg.method === "browser_evaluate") {
       result = await getActiveTabContent();
+    } else if (msg.method === "browser_scrape") { // <--- NEW: Scrape Handler
+      result = await scrapeActiveTab();
     } else {
-      // If unknown method, maybe it's a notification or we just ignore
       console.warn("Unknown method:", msg.method);
-      return; // Or send error
+      // Don't error, just ignore for forward compatibility
+      return;
     }
 
     if (msg.id !== undefined) {
@@ -87,45 +86,14 @@ function send(msg: any) {
   }
 }
 
-// Forwarding from Content Script (Web Page -> Background -> Server)
-chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  if (request.type === "MCP_REQUEST") {
-    // request.payload should be a JSON-RPC request object
-    // We assume the Web Page constructs a valid JSON-RPC object
-    // But we need to manage the ID mapping to reply to the correct tab/promise
+// Scrape Logic
+async function scrapeActiveTab(): Promise<any> {
+  const [tab] = await chrome.tabs.query({ active: true, lastFocusedWindow: true });
+  if (!tab?.id) throw new Error("No active tab found");
 
-    if (!socket || socket.readyState !== WebSocket.OPEN) {
-      sendResponse({ error: "Borg Disconnected" });
-      return true;
-    }
-
-    const internalId = ++requestIdCounter;
-    const originalId = request.payload.id;
-
-    // Wrap/Map ID?
-    // Actually, we can just pass it through IF we trust the session is 1:1
-    // But to be safe and handle the response back to `sendResponse`, we should track it.
-    // However, `sendResponse` is for the one-off Chrome message.
-    // We'll use pendingRequests to map back.
-
-    const outboundMsg = { ...request.payload, id: internalId };
-
-    pendingRequests.set(internalId, (responseMsg) => {
-      // Send back to content script? 
-      // Chrome message passing is async. 
-      // We need to keep `sendResponse` valid by returning true.
-
-      // Restore original ID for the client
-      const clientResponse = { ...responseMsg, id: originalId };
-      sendResponse(clientResponse);
-    });
-
-    send(outboundMsg);
-    return true; // Keep channel open
-  }
-
-  if (request.action === "ping") return sendResponse("pong");
-});
+  // Send message to content script
+  return chrome.tabs.sendMessage(tab.id, { action: 'SCRAPE_PAGE' });
+}
 
 // Browser Automation Helpers
 async function getActiveTabContent() {

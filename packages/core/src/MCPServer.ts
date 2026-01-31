@@ -532,7 +532,12 @@ export class MCPServer {
 
                         this.wssInstance.clients.forEach((client: any) => {
                             if (client.readyState === 1) {
-                                client.send(JSON.stringify({ type: 'read_page', requestId }));
+                                // Send JSON-RPC 2.0 request
+                                client.send(JSON.stringify({
+                                    jsonrpc: "2.0",
+                                    method: 'browser_scrape',
+                                    id: requestId
+                                }));
                             }
                         });
                     });
@@ -573,8 +578,12 @@ export class MCPServer {
 
                         this.wssInstance.clients.forEach((client: any) => {
                             if (client.readyState === 1) {
-                                // Reuse 'read_page' event type as it returns the data we need
-                                client.send(JSON.stringify({ type: 'read_page', requestId }));
+                                // Reuse 'browser_scrape' method
+                                client.send(JSON.stringify({
+                                    jsonrpc: "2.0",
+                                    method: 'browser_scrape',
+                                    id: requestId
+                                }));
                             }
                         });
                     });
