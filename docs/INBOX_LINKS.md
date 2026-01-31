@@ -51,7 +51,7 @@
 - [x] https://github.com/vllm-project/vllm/issues/32733 (Skipped by User)
 - [x] https://oldweb.today/ (Skipped by User)
 - [x] https://docs.gopromptless.ai/blog/technical/i-must-scream (Skipped by User)
-- [ ] https://steveklabnik.com/writing/agentic-development-basics/
+- [x] https://steveklabnik.com/writing/agentic-development-basics/ (Researched in Batch 2 - Script Verification Target)
 - [x] https://pablituuu.space/video-editor (Skipped by User)
 - [x] https://github.com/MaorBril/clauder (Indexed in RESOURCE_INDEX.md)
 - [x] https://www.mintlify.com/blog/skill-md (Indexed in RESOURCE_INDEX.md - Important for Skills Parity)

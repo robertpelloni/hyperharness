@@ -23,9 +23,16 @@ export const ReaderTools = [
             }
 
             try {
-                // Lazy Load Heavy Dependencies
-                const { default: TurndownService } = await import('turndown');
-                const { JSDOM } = await import('jsdom');
+                // Lazy Load Heavy Dependencies (Handle CJS/ESM interop)
+                const turndownModule = await import('turndown');
+                const TurndownService = turndownModule.default || turndownModule;
+
+                // Use createRequire for JSDOM/CJS compat
+                const { createRequire } = await import('module');
+                const require = createRequire(import.meta.url);
+                const { JSDOM } = require('jsdom');
+
+                if (!JSDOM) throw new Error("Failed to load JSDOM");
 
                 const turndownService = new TurndownService({
                     headingStyle: 'atx',

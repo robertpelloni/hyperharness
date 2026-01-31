@@ -25,8 +25,8 @@ export class SkillRegistry {
 
         for (const loc of this.searchPaths) {
             try {
-                // Find all SKILL.md files
-                const entries = await glob('**/SKILL.md', {
+                // Find all SKILL.md files (case-insensitive for Windows, but explicit for Linux)
+                const entries = await glob(['**/SKILL.md', '**/skill.md'], {
                     cwd: loc,
                     absolute: true,
                     deep: 3 // Go deeper just in case
