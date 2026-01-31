@@ -29,11 +29,11 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@borg/ai": "workspace:*",
     "@borg/adk": "workspace:*",
     "@borg/agents": "workspace:*",
-    "@borg/tools": "workspace:*",
+    "@borg/ai": "workspace:*",
     "@borg/memory": "workspace:*",
+    "@borg/tools": "workspace:*",
     "@lancedb/lancedb": "^0.23.0",
     "@modelcontextprotocol/sdk": "^1.0.0",
     "@modelcontextprotocol/server-filesystem": "^2026.1.14",
@@ -55,12 +55,13 @@
     "jsdom": "^27.4.0",
     "sharp": "^0.34.5",
     "turndown": "^7.2.2",
+    "typescript": "^5.3.3",
     "untun": "^0.1.3",
+    "uuid": "^13.0.0",
     "vectordb": "^0.21.2",
     "vscode-ripgrep": "^1.13.2",
     "ws": "^8.19.0",
-    "zod": "^3.22.4",
-    "typescript": "^5.3.3"
+    "zod": "^3.22.4"
   },
   "devDependencies": {
     "@types/cors": "^2.8.17",

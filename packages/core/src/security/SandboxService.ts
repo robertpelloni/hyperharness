@@ -16,7 +16,7 @@ export class SandboxService {
      * @param timeoutMs Max execution time (default 5000ms)
      */
     public async execute(language: 'node' | 'python', code: string, timeoutMs: number = 5000): Promise<{ output: string, error?: string }> {
-        if (language === 'node' || language === 'javascript') {
+        if (language === 'node') {
             return this.executeNode(code, timeoutMs);
         } else if (language === 'python') {
             return this.executePython(code, timeoutMs);
