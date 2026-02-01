@@ -60,6 +60,10 @@ async function handleServerRequest(msg: any) {
       result = await navigate(msg.params.url);
     } else if (msg.method === "browser_evaluate") {
       result = await getActiveTabContent();
+    } else if (msg.method === "browser_id") {
+      result = await getActiveTabId();
+    } else if (msg.method === "browser_screenshot") {
+      result = await captureScreenshot();
     } else if (msg.method === "browser_scrape") {
       result = await scrapeActiveTab();
     } else if (msg.method === "chat_reply" || msg.method === "browser_type") {
@@ -116,6 +120,20 @@ async function getActiveTabContent() {
   });
 
   return result[0].result;
+}
+
+async function getActiveTabId() {
+  const [tab] = await chrome.tabs.query({ active: true, lastFocusedWindow: true });
+  return tab?.id || null;
+}
+
+async function captureScreenshot() {
+  const [tab] = await chrome.tabs.query({ active: true, lastFocusedWindow: true });
+  if (!tab?.windowId) throw new Error("No active tab window found");
+
+  // Capture visible tab
+  const dataUrl = await chrome.tabs.captureVisibleTab(tab.windowId, { format: 'jpeg', quality: 60 });
+  return dataUrl; // "data:image/jpeg;base64,..."
 }
 
 async function navigate(url: string) {

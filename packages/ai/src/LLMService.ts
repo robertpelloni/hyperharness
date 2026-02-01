@@ -55,7 +55,7 @@ export class LLMService {
         console.log(`[LLMService] Cost: $${cost.toFixed(6)} | Total: $${this.totalUsage.estimatedCostUSD.toFixed(4)}`);
     }
 
-    async generateText(initialProvider: string, initialModelId: string, systemPrompt: string, userPrompt: string, options?: { timeout?: number, taskComplexity?: 'low' | 'medium' | 'high' }): Promise<LLMResponse> {
+    async generateText(initialProvider: string, initialModelId: string, systemPrompt: string, userPrompt: string, options?: { timeout?: number, taskComplexity?: 'low' | 'medium' | 'high', images?: { base64: string, mimeType: string }[] }): Promise<LLMResponse> {
         let provider = initialProvider;
         let modelId = initialModelId;
 
@@ -71,8 +71,21 @@ export class LLMService {
                 if (provider === 'google') {
                     if (!this.googleClient) throw new Error("Google API Key not configured.");
                     const model = this.googleClient.getGenerativeModel({ model: modelId });
+
+                    const parts: any[] = [{ text: userPrompt }];
+                    if (options?.images) {
+                        options.images.forEach(img => {
+                            parts.push({
+                                inlineData: {
+                                    mimeType: img.mimeType,
+                                    data: img.base64
+                                }
+                            });
+                        });
+                    }
+
                     const result = await model.generateContent({
-                        contents: [{ role: 'user', parts: [{ text: userPrompt }] }],
+                        contents: [{ role: 'user', parts: parts }],
                         systemInstruction: systemPrompt
                     });
                     const text = result.response.text();
@@ -87,11 +100,26 @@ export class LLMService {
 
                 else if (provider === 'anthropic') {
                     if (!this.anthropicClient) throw new Error("Anthropic API Key not configured.");
+
+                    const content: any[] = [{ type: "text", text: userPrompt }];
+                    if (options?.images) {
+                        options.images.forEach(img => {
+                            content.push({
+                                type: "image",
+                                source: {
+                                    type: "base64",
+                                    media_type: img.mimeType as any,
+                                    data: img.base64
+                                }
+                            });
+                        });
+                    }
+
                     const msg = await this.anthropicClient.messages.create({
                         model: modelId,
                         max_tokens: 4096, // Increased from 1024
                         system: systemPrompt,
-                        messages: [{ role: "user", content: userPrompt }]
+                        messages: [{ role: "user", content: content }]
                     });
                     response = {
                         content: (msg.content[0] as any).text,

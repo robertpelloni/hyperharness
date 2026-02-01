@@ -17,7 +17,7 @@ console.log("[MCPServer] ✓ path/url");
 import { Router } from "./Router.js";
 console.log("[MCPServer] ✓ Router");
 
-import { ModelSelector } from "@borg/ai";
+import { ModelSelector, LLMService } from "@borg/ai";
 console.log("[MCPServer] ✓ ModelSelector");
 
 import { WebSocketServer } from 'ws';
@@ -103,6 +103,7 @@ export class MCPServer {
     private wsServer: Server | null; // WebSocket Server
     private router: Router;
     public modelSelector: ModelSelector;
+    private llmService: LLMService;
     private skillRegistry: SkillRegistry;
     private director: Director;
     private council: Council;
@@ -150,6 +151,7 @@ export class MCPServer {
     constructor(options: { skipWebsocket?: boolean, inputTools?: InputTools, systemStatusTool?: SystemStatusTool, processRegistry?: ProcessRegistry } = {}) {
         this.router = new Router();
         this.modelSelector = new ModelSelector();
+        this.llmService = new LLMService(this.modelSelector);
         this.skillRegistry = new SkillRegistry([
             path.join(process.cwd(), '.borg', 'skills'),
             path.join(process.env.HOME || process.env.USERPROFILE || '', '.borg', 'skills')
@@ -291,6 +293,36 @@ export class MCPServer {
     public updateDirectorConfig(newConfig: any) {
         this.directorConfig = newConfig;
         this.configManager.saveConfig(newConfig);
+    }
+
+    private captureScreenshotFromBrowser(): Promise<string> {
+        if (!this.wssInstance || this.wssInstance.clients.size === 0) {
+            throw new Error("No Browser Extension connected.");
+        }
+
+        return new Promise((resolve, reject) => {
+            const requestId = `req_${Date.now()}_${Math.random()}`;
+            const timeout = setTimeout(() => {
+                this.pendingRequests.delete(requestId);
+                reject(new Error("Browser screenshot timed out."));
+            }, 5000);
+
+            this.pendingRequests.set(requestId, (data: any) => {
+                clearTimeout(timeout);
+                // data is the screenshot data URL
+                resolve(data);
+            });
+
+            this.wssInstance.clients.forEach((client: any) => {
+                if (client.readyState === 1) {
+                    client.send(JSON.stringify({
+                        jsonrpc: "2.0",
+                        method: 'browser_screenshot',
+                        id: requestId
+                    }));
+                }
+            });
+        });
     }
 
     public async executeTool(name: string, args: any): Promise<any> {
@@ -634,6 +666,47 @@ export class MCPServer {
 
                 const output = await responsePromise;
                 result = { content: [{ type: "text", text: output }] };
+            }
+            else if (name === "take_screenshot") {
+                try {
+                    const data = await this.captureScreenshotFromBrowser();
+                    result = {
+                        content: [
+                            { type: "text", text: "Screenshot captured." },
+                            { type: "image", data: data.split(',')[1], mimeType: "image/jpeg" }
+                        ]
+                    };
+                } catch (e: any) {
+                    result = { content: [{ type: "text", text: `Error: ${e.message}` }] };
+                }
+            }
+            else if (name === "analyze_screenshot") {
+                const prompt = args.prompt as string;
+                try {
+                    console.log(`[Borg Core] 👁️ Analyzing screenshot with prompt: "${prompt}"...`);
+                    const data = await this.captureScreenshotFromBrowser();
+                    const base64 = data.split(',')[1];
+                    const mimeType = "image/jpeg";
+
+                    const response = await this.llmService.generateText(
+                        'google',
+                        'gemini-1.5-pro',
+                        "You are a web automation assistant. Analyze the screenshot.",
+                        prompt,
+                        {
+                            images: [{ base64, mimeType }],
+                            taskComplexity: 'high'
+                        }
+                    );
+
+                    result = {
+                        content: [
+                            { type: "text", text: response.content }
+                        ]
+                    };
+                } catch (e: any) {
+                    result = { content: [{ type: "text", text: `Error analyzing screenshot: ${e.message}` }] };
+                }
             }
             // Removed obsolete start_watchdog and start_chat_daemon handlers
             else if (name === "start_auto_drive") {
@@ -1019,6 +1092,22 @@ export class MCPServer {
                             prompt: { type: "string", description: "The task or prompt to send to the agent" }
                         },
                         required: ["name", "prompt"]
+                    }
+                },
+                {
+                    name: "take_screenshot",
+                    description: "Capture a screenshot of the active browser tab",
+                    inputSchema: { type: "object", properties: {} }
+                },
+                {
+                    name: "analyze_screenshot",
+                    description: "Capture and analyze a screenshot of the active browser tab using Vision AI",
+                    inputSchema: {
+                        type: "object",
+                        properties: {
+                            prompt: { type: "string", description: "Question or instruction about the screenshot" }
+                        },
+                        required: ["prompt"]
                     }
                 },
                 {
