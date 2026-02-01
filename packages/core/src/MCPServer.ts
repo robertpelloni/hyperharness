@@ -1,5 +1,4 @@
 
-
 console.log("[MCPServer] Starting imports...");
 import './debug_marker.js';
 
@@ -1166,16 +1165,23 @@ export class MCPServer {
                                 this.pendingRequests.delete(msg.requestId);
                             }
                         }
+
                         if (msg.type === 'USER_ACTIVITY') {
-                            // Track global user activity
                             this.lastUserActivityTime = Math.max(this.lastUserActivityTime, msg.lastActivityTime);
-                            // Feed into Suggestion Engine
                             if (msg.activeEditor) {
                                 this.suggestionService.processContext({
                                     type: 'editor',
                                     path: msg.activeEditor.uri,
                                     content: '' // Could retrieve content if needed
                                 });
+                            }
+                        }
+
+                        if (msg.type === 'BROWSER_LOG') {
+                            const icon = msg.level === 'error' ? '🔴' : msg.level === 'warn' ? '🟡' : '🔵';
+                            console.log(`[Browser] ${icon} ${msg.content} (${msg.url})`);
+                            if (msg.level === 'error') {
+                                this.auditService.log('BROWSER_ERROR', { url: msg.url, error: msg.content }, 'ERROR');
                             }
                         }
                     } catch (e) {
@@ -1187,7 +1193,6 @@ export class MCPServer {
             console.log("[MCPServer] Skipping WebSocket (No wsServer instance).");
         }
 
-        // 3. Connect to Supervisor (Native Automation)
         // 3. Connect to Supervisor (Native Automation)
         console.log("[MCPServer] Connecting to Supervisor...");
 
@@ -1229,4 +1234,3 @@ export class MCPServer {
         return null;
     }
 }
-

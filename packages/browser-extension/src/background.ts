@@ -16,7 +16,7 @@ function connect() {
   socket.onmessage = async (event) => {
     try {
       const msg = JSON.parse(event.data);
-      console.log("Received:", msg);
+      // console.log("Received:", msg); // Noisy
 
       // Handle Responses to our requests
       if (msg.id !== undefined && pendingRequests.has(msg.id)) {
@@ -60,11 +60,10 @@ async function handleServerRequest(msg: any) {
       result = await navigate(msg.params.url);
     } else if (msg.method === "browser_evaluate") {
       result = await getActiveTabContent();
-    } else if (msg.method === "browser_scrape") { // <--- NEW: Scrape Handler
+    } else if (msg.method === "browser_scrape") {
       result = await scrapeActiveTab();
     } else {
       console.warn("Unknown method:", msg.method);
-      // Don't error, just ignore for forward compatibility
       return;
     }
 
@@ -82,7 +81,7 @@ function send(msg: any) {
   if (socket && socket.readyState === WebSocket.OPEN) {
     socket.send(JSON.stringify(msg));
   } else {
-    console.warn("Socket not open. Message dropped:", msg);
+    // console.warn("Socket not open. Message dropped.");
   }
 }
 
@@ -118,6 +117,42 @@ async function navigate(url: string) {
     return `Opened ${url}`;
   }
 }
+
+// Message Listener (Content Script -> Background)
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+  if (request.type === "MCP_REQUEST") {
+    if (!socket || socket.readyState !== WebSocket.OPEN) {
+      sendResponse({ error: "Borg Disconnected" });
+      return true;
+    }
+
+    const internalId = ++requestIdCounter;
+    const originalId = request.payload.id;
+    const outboundMsg = { ...request.payload, id: internalId };
+
+    pendingRequests.set(internalId, (responseMsg) => {
+      const clientResponse = { ...responseMsg, id: originalId };
+      sendResponse(clientResponse);
+    });
+
+    send(outboundMsg);
+    return true; // Keep channel open
+  }
+
+  if (request.type === "CONSOLE_LOG") {
+    // Forward to Borg Core
+    send({
+      type: "BROWSER_LOG",
+      level: request.level,
+      content: request.content,
+      url: request.url,
+      timestamp: request.timestamp
+    });
+    return; // No response needed
+  }
+
+  if (request.action === "ping") return sendResponse("pong");
+});
 
 // Start connection
 connect();
