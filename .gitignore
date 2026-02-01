@@ -38,6 +38,8 @@ coverage/
 tmp/
 temp/
 verification/
+reader_output.json
+reader_error.txt
 
 # Specific ignores
 packages/core/core.log
@@ -47,3 +49,8 @@ packages/ui/ui.log
 .borg_boot_check
 .borg_startup_marker
 .cli_startup_marker
+
+# Borg Runtime Data
+.borg/db/
+.borg/memory/
+.borg/worktrees/
