@@ -417,7 +417,10 @@ export class MCPServer {
                 const target = args?.target as string;
                 if (this.wssInstance) {
                     this.wssInstance.clients.forEach((client: any) => {
-                        if (client.readyState === 1) client.send(JSON.stringify({ type: 'CLICK_ELEMENT', target }));
+                        if (client.readyState === 1) client.send(JSON.stringify({
+                            method: 'click_element',
+                            params: { target }
+                        }));
                     });
                     result = { content: [{ type: "text", text: `Sent CLICK_ELEMENT signal for "${target}".` }] };
                 } else {
@@ -429,9 +432,28 @@ export class MCPServer {
                 const y = args?.y as number;
                 if (this.wssInstance) {
                     this.wssInstance.clients.forEach((client: any) => {
-                        if (client.readyState === 1) client.send(JSON.stringify({ type: 'CLICK_AT', x, y }));
+                        if (client.readyState === 1) client.send(JSON.stringify({
+                            method: 'click_at',
+                            params: { x, y }
+                        }));
                     });
                     result = { content: [{ type: "text", text: `Sent CLICK_AT signal for (${x},${y}).` }] };
+                } else {
+                    result = { content: [{ type: "text", text: "Error: No WebSocket server." }] };
+                }
+            }
+            else if (name === "navigate") {
+                const url = args?.url as string;
+                if (this.wssInstance) {
+                    this.wssInstance.clients.forEach((client: any) => {
+                        if (client.readyState === 1) client.send(JSON.stringify({
+                            method: 'browser_navigate',
+                            params: { url }
+                        }));
+                    });
+                    // Wait for navigation
+                    await new Promise(r => setTimeout(r, 2000));
+                    result = { content: [{ type: "text", text: `Navigated to ${url}` }] };
                 } else {
                     result = { content: [{ type: "text", text: "Error: No WebSocket server." }] };
                 }
@@ -453,6 +475,10 @@ export class MCPServer {
                 if (this.wssInstance) {
                     this.wssInstance.clients.forEach((client: any) => {
                         if (client.readyState === 1) {
+                            // VSCode might expect different format, but assuming legacy type is ok for VSCode extension
+                            // Wait, if this shares the same websocket, it needs to match protocols.
+                            // But VSCode extension might be different than Browser Extension.
+                            // Assuming VSCode extension handles 'type'.
                             client.send(JSON.stringify({
                                 type: 'VSCODE_COMMAND',
                                 command,

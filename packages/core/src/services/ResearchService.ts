@@ -41,25 +41,25 @@ export class ResearchService {
             if (this.visitedUrls.has(target.url)) continue;
             this.visitedUrls.add(target.url);
 
+            this.broadcast('RESEARCH_UPDATE', {
+                status: 'reading',
+                target: target.title,
+                url: target.url,
+                progress: (this.visitedUrls.size / targets.length) * 100
+            });
+
             console.log(`[Research] Reading: ${target.title}`);
             try {
-                // Use existing read_page tool logic via MCPServer
-                // We use executeTool to leverage the existing browser bridge if available
-                // If browser is not available, we might want a fallback (cheerio/fetch)
-                // For now, assume browser or fail gracefully.
+                // Navigate first
+                await this.server.executeTool("navigate", { url: target.url });
 
-                // Note: read_page requires a connected browser extension usually.
-                // We'll try to fetch using the server's read_page capability.
-
+                // Then scrape
                 const result = await this.server.executeTool("read_page", { url: target.url });
-
-                // Extract content from result
-                // Result format: { content: [{ type: 'text', text: '...' }] }
-                // Or error string
                 const contentText = result.content?.[0]?.text || "";
 
                 if (contentText.startsWith("Error")) {
                     report.push(`- [FAILED] ${target.title}: ${contentText}`);
+                    this.broadcast('RESEARCH_UPDATE', { status: 'error', target: target.title, error: contentText });
                     continue;
                 }
 
@@ -74,13 +74,30 @@ export class ResearchService {
                 );
 
                 report.push(`- [MEMORIZED] ${target.title} (ID: ${ctxId})`);
+                this.broadcast('RESEARCH_UPDATE', { status: 'memorized', target: target.title, id: ctxId });
 
             } catch (err: any) {
                 console.error(`[Research] Failed to process ${target.url}:`, err);
                 report.push(`- [ERROR] ${target.title}: ${err.message}`);
+                this.broadcast('RESEARCH_UPDATE', { status: 'error', target: target.title, error: err.message });
             }
         }
 
-        return report.join('\n');
+        const finalReport = report.join('\n');
+        this.broadcast('RESEARCH_COMPLETE', { report: finalReport });
+        return finalReport;
     }
-}
+
+    /**
+     * Directly ingest a specific URL
+     */
+    public async ingest(url: string): Promise<string> {
+        console.log(`[Research] Ingesting: ${url}`);
+        this.broadcast('RESEARCH_UPDATE', {
+            status: 'reading',
+            target: url,
+            url: url
+        });
+
+        try {
+            awai
