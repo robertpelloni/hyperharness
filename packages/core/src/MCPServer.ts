@@ -74,6 +74,7 @@ import { ContextManager } from "./context/ContextManager.js";
 import { SymbolPinService } from "./services/SymbolPinService.js";
 import { AutoDevService } from "./services/AutoDevService.js";
 import { MemoryManager } from "./services/MemoryManager.js";
+import { KnowledgeService } from './services/KnowledgeService.js';
 
 
 import { PermissionManager, AutonomyLevel } from "./security/PermissionManager.js";
@@ -135,6 +136,7 @@ export class MCPServer {
     public symbolPinService: SymbolPinService;
     public autoDevService: AutoDevService;
     public researchService: ResearchService;
+    private knowledgeService: KnowledgeService; // Knowledge Graph Service
     private healerService: HealerService;
     private activeAgents: Map<string, AgentAdapter> = new Map();
     public directorConfig = {
@@ -206,6 +208,7 @@ export class MCPServer {
         // Memory System
         this.memoryManager = new MemoryManager(process.cwd());
         this.researchService = new ResearchService(this, this.memoryManager); // Initialized AFTER memoryManager
+        this.knowledgeService = new KnowledgeService(this.memoryManager); // Added
 
         this.squadService = new SquadService(this);
         this.gitWorktreeManager = new GitWorktreeManager(process.cwd());
@@ -457,6 +460,9 @@ export class MCPServer {
                 } else {
                     result = { content: [{ type: "text", text: "Error: No WebSocket server." }] };
                 }
+            }
+            else if (name === "get_knowledge_graph") {
+                result = await this.knowledgeService.getGraph(args?.query, args?.depth);
             }
             else if (name === "native_input") {
                 const keys = args?.keys as string;
@@ -1244,6 +1250,17 @@ export class MCPServer {
                             }
                         },
                         required: ["tools"]
+                    }
+                },
+                {
+                    name: "get_knowledge_graph",
+                    description: "Retrieve the interconnected knowledge graph for visualization.",
+                    inputSchema: {
+                        type: "object",
+                        properties: {
+                            query: { type: "string", description: "Optional topic to focus the graph around" },
+                            depth: { type: "number", description: "Traversal depth (default: 1)" }
+                        }
                     }
                 }
             ];
