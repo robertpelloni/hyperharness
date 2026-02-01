@@ -36,6 +36,7 @@ import { AuditService } from "./security/AuditService.js";
 import { SkillRegistry } from "./skills/SkillRegistry.js";
 import { SuggestionService } from "./suggestions/SuggestionService.js";
 import { ResearchService } from "./services/ResearchService.js";
+import { HealerService } from "./services/HealerService.js";
 import { WebSearchTool } from "./tools/WebSearchTool.js";
 console.log("[MCPServer] ✓ SkillRegistry");
 
@@ -134,6 +135,7 @@ export class MCPServer {
     public symbolPinService: SymbolPinService;
     public autoDevService: AutoDevService;
     public researchService: ResearchService;
+    private healerService: HealerService;
     private activeAgents: Map<string, AgentAdapter> = new Map();
     public directorConfig = {
         taskCooldownMs: 10000,
@@ -169,6 +171,7 @@ export class MCPServer {
         this.configManager = new ConfigManager();
         this.autoTestService = new AutoTestService(process.cwd());
         this.sandboxService = new SandboxService();
+        this.healerService = new HealerService(this.llmService, this);
         // Moved ResearchService init below MemoryManager init
 
         // Load persistent config
@@ -295,7 +298,7 @@ export class MCPServer {
         this.configManager.saveConfig(newConfig);
     }
 
-    private captureScreenshotFromBrowser(): Promise<string> {
+    public captureScreenshotFromBrowser(): Promise<string> {
         if (!this.wssInstance || this.wssInstance.clients.size === 0) {
             throw new Error("No Browser Extension connected.");
         }
@@ -1295,6 +1298,9 @@ export class MCPServer {
                             console.log(`[Browser] ${icon} ${msg.content} (${msg.url})`);
                             if (msg.level === 'error') {
                                 this.auditService.log('BROWSER_ERROR', { url: msg.url, error: msg.content }, 'ERROR');
+                                // TRIGGER HEALER
+                                this.healerService.heal({ url: msg.url, error: msg.content, timestamp: msg.timestamp })
+                                    .catch(e => console.error("Healer Error:", e));
                             }
                         }
                     } catch (e) {
