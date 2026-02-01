@@ -421,6 +421,18 @@ export class MCPServer {
                     result = { content: [{ type: "text", text: "Error: No WebSocket server." }] };
                 }
             }
+            else if (name === "click_at") {
+                const x = args?.x as number;
+                const y = args?.y as number;
+                if (this.wssInstance) {
+                    this.wssInstance.clients.forEach((client: any) => {
+                        if (client.readyState === 1) client.send(JSON.stringify({ type: 'CLICK_AT', x, y }));
+                    });
+                    result = { content: [{ type: "text", text: `Sent CLICK_AT signal for (${x},${y}).` }] };
+                } else {
+                    result = { content: [{ type: "text", text: "Error: No WebSocket server." }] };
+                }
+            }
             else if (name === "native_input") {
                 const keys = args?.keys as string;
                 // Use Direct InputTools. DON'T FORCE FOCUS by default (let it hit active terminal)
@@ -1052,6 +1064,18 @@ export class MCPServer {
                             target: { type: "string", description: "Text content of the button/link to click" }
                         },
                         required: ["target"]
+                    }
+                },
+                {
+                    name: "click_at",
+                    description: "Click at specific X,Y coordinates on the page (for Vision capabilities)",
+                    inputSchema: {
+                        type: "object",
+                        properties: {
+                            x: { type: "number" },
+                            y: { type: "number" }
+                        },
+                        required: ["x", "y"]
                     }
                 },
                 {

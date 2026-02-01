@@ -70,6 +70,8 @@ async function handleServerRequest(msg: any) {
       result = await triggerActionInTab('PASTE_INTO_CHAT', msg.params);
     } else if (msg.method === "click_element" || msg.method === "browser_click") {
       result = await triggerActionInTab('CLICK_ELEMENT', msg.params);
+    } else if (msg.method === "click_at") {
+      result = await triggerActionInTab('CLICK_AT', msg.params);
     } else {
       console.warn("Unknown method:", msg.method);
       return;

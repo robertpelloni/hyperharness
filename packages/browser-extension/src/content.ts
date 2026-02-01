@@ -148,6 +148,35 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         }
     }
 
+    if (request.type === 'CLICK_AT') {
+        const x = request.x;
+        const y = request.y;
+
+        // Show indicator at coordinates
+        const indicator = document.createElement('div');
+        indicator.style.position = 'fixed';
+        indicator.style.left = `${x - 10}px`;
+        indicator.style.top = `${y - 10}px`;
+        indicator.style.width = '20px';
+        indicator.style.height = '20px';
+        indicator.style.border = '2px solid red';
+        indicator.style.borderRadius = '50%';
+        indicator.style.zIndex = '999999';
+        indicator.style.pointerEvents = 'none';
+        document.body.appendChild(indicator);
+
+        setTimeout(() => indicator.remove(), 1000);
+
+        const el = document.elementFromPoint(x, y);
+        if (el) {
+            const hEl = el as HTMLElement;
+            hEl.click();
+            sendResponse({ success: true, message: `Clicked at (${x},${y})` });
+        } else {
+            sendResponse({ success: false, error: `No element at (${x},${y})` });
+        }
+    }
+
     if (request.type === 'PASTE_INTO_CHAT') {
         // Universal "Chat Input" finder
         const inputs = Array.from(document.querySelectorAll('textarea, [contenteditable="true"]'));
