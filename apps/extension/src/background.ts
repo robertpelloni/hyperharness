@@ -29,7 +29,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         fetch(`${CORE_URL}/director.memorize`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ content: message.content, source: message.url })
+            body: JSON.stringify({ content: message.content, source: message.url, title: message.title })
         })
             .then(res => res.json())
             .then(data => sendResponse({ success: true, data }))

@@ -174,6 +174,26 @@ Please analyze this crash and provide a JSON fix.`;
         }
     }
 
+    public async getHistory(): Promise<any[]> {
+        try {
+            const fs = await import('fs/promises');
+            const path = await import('path');
+            const logFile = path.join(process.cwd(), '.borg', 'data', 'healer_events.jsonl');
+            try {
+                const content = await fs.readFile(logFile, 'utf-8');
+                return content.trim().split('\n').map(line => {
+                    try { return JSON.parse(line); } catch (e) { return null; }
+                }).filter(Boolean).reverse(); // Newest first
+            } catch (e) {
+                // File likely doesn't exist
+                return [];
+            }
+        } catch (e) {
+            console.error("[HealerService] Failed to read history:", e);
+            return [];
+        }
+    }
+
     private async logEvent(event: any) {
         try {
             const fs = await import('fs/promises');

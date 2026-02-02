@@ -1,5 +1,5 @@
-
-import React, { useEffect, useState } from 'react';
+import React from 'react';
+import { trpc } from '@/utils/trpc';
 
 interface HealerEvent {
     type: string;
@@ -10,32 +10,17 @@ interface HealerEvent {
 }
 
 export function HealerWidget() {
-    const [events, setEvents] = useState<HealerEvent[]>([]);
-    const [loading, setLoading] = useState(true);
+    // @ts-ignore
+    const { data: events, isLoading } = trpc.healer.getHistory.useQuery(undefined, {
+        refetchInterval: 5000
+    });
 
-    useEffect(() => {
-        const fetchEvents = async () => {
-            try {
-                const res = await fetch('/api/monitoring/events');
-                if (res.ok) {
-                    const data = await res.json();
-                    setEvents(data.events || []);
-                }
-            } catch (e) {
-                console.error("Failed to fetch healer events", e);
-            } finally {
-                setLoading(false);
-            }
-        };
+    // Legacy support: If undefined, use empty array
+    const eventList = events || [];
 
-        fetchEvents();
-        const interval = setInterval(fetchEvents, 5000);
-        return () => clearInterval(interval);
-    }, []);
+    if (isLoading && eventList.length === 0) return <div className="text-sm text-gray-500 p-4">Loading Healer History...</div>;
 
-    if (loading && events.length === 0) return <div className="text-sm text-gray-500 p-4">Loading Healer History...</div>;
-
-    if (events.length === 0) {
+    if (eventList.length === 0) {
         return (
             <div className="flex flex-col items-center justify-center p-8 text-gray-400">
                 <div className="text-2xl mb-2">🩺</div>
@@ -47,7 +32,7 @@ export function HealerWidget() {
 
     return (
         <div className="w-full h-full overflow-auto p-2 space-y-2">
-            {events.map((event, i) => (
+            {eventList.map((event: any, i: number) => (
                 <div key={i} className={`p-2 rounded border ${event.type === 'FIX_FAILED' ? 'border-red-500/20 bg-red-500/5' : 'border-green-500/20 bg-green-500/5'}`}>
                     <div className="flex justify-between items-start">
                         <span className="font-mono text-xs font-bold uppercase opacity-75">

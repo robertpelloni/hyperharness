@@ -26,53 +26,31 @@ interface GraphData {
     links: GraphEdge[];
 }
 
-export function KnowledgeGraph() {
+interface KnowledgeGraphProps {
+    nodes: GraphNode[];
+    links: GraphEdge[];
+    loading?: boolean;
+    onNodeClick?: (node: GraphNode) => void;
+}
+
+export function KnowledgeGraph({ nodes, links, loading = false, onNodeClick }: KnowledgeGraphProps) {
     const { theme } = useTheme();
     const fgRef = useRef<any>();
-    const [data, setData] = useState<GraphData>({ nodes: [], links: [] });
-    const [loading, setLoading] = useState(true);
 
+    // Auto-resize / re-center when data changes
+    // const [loading, setLoading] = useState(true);
+
+    // useEffect(() => {
+    //     // Internal fetch removed in favor of props
+    // }, []);
+
+    // Auto-resize / re-center when data changes
     useEffect(() => {
-        // Fetch graph data from backend
-        // TODO: Replace with real MCP call or API endpoint
-        // consistent with KnowledgeService
-        const fetchData = async () => {
-            setLoading(true);
-            try {
-                // Mocking the MCP call for now until we have a bridge
-                // In a real app, we would use a client like `mcpClient.callTool('get_knowledge_graph')`
-                // OR fetch a local API route that calls the MCPServer
+        if (fgRef.current && nodes.length > 0) {
+            // fgRef.current.zoomToFit(400); 
+        }
+    }, [nodes]);
 
-                // Simulating response for "Deep Research" context
-                const mockData: GraphData = {
-                    nodes: [
-                        { id: 'AI', label: 'Artificial Intelligence', type: 'topic', val: 10 },
-                        { id: 'MiroMindAI', label: 'MiroMindAI', type: 'document', val: 5 },
-                        { id: 'OpenCodeInterpreter', label: 'OpenCodeInterpreter', type: 'document', val: 5 },
-                        { id: 'LobeHub', label: 'LobeHub', type: 'document', val: 5 },
-                        { id: 'LLM', label: 'LLM', type: 'concept', val: 7 },
-                        { id: 'Agents', label: 'Agents', type: 'concept', val: 8 },
-                    ],
-                    links: [
-                        { source: 'AI', target: 'MiroMindAI', value: 1 },
-                        { source: 'AI', target: 'OpenCodeInterpreter', value: 1 },
-                        { source: 'AI', target: 'LobeHub', value: 1 },
-                        { source: 'MiroMindAI', target: 'Agents', value: 2 },
-                        { source: 'OpenCodeInterpreter', target: 'LLM', value: 2 },
-                        { source: 'Agents', target: 'LobeHub', value: 1 },
-                    ]
-                };
-
-                setData(mockData);
-            } catch (e) {
-                console.error("Failed to fetch graph", e);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchData();
-    }, []);
 
     const isDark = theme === 'dark';
 
@@ -88,7 +66,7 @@ export function KnowledgeGraph() {
                 ref={fgRef}
                 width={800} // TODO: Make responsive
                 height={600}
-                graphData={data}
+                graphData={{ nodes, links }}
                 nodeLabel="label"
                 nodeColor={(node: any) => {
                     const n = node as GraphNode;
@@ -106,6 +84,7 @@ export function KnowledgeGraph() {
                     // Zoom to node on click
                     fgRef.current?.centerAt(node.x, node.y, 1000);
                     fgRef.current?.zoom(3, 2000);
+                    if (onNodeClick) onNodeClick(node as GraphNode);
                 }}
             />
 

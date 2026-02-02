@@ -52,6 +52,7 @@ export interface IMCPServer {
         pollingIntervalMs: number;
     };
     autoTestService?: any; // Loose typing to avoid cycle with Core
+    llmService?: any; // Added for Council fallback (Phase 32)
     executeTool(name: string, args: any): Promise<any>;
     broadcastRequest?(messageType: string, payload: any): Promise<any>;
 }

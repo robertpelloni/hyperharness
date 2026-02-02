@@ -123,4 +123,32 @@ export class ShellService {
             return [];
         }
     }
+
+    /**
+     * Executes a command on the host shell.
+     */
+    async execute(command: string, cwd: string = process.cwd()): Promise<string> {
+        const { exec } = await import('child_process');
+        return new Promise((resolve, reject) => {
+            exec(command, { cwd }, (error, stdout, stderr) => {
+                const output = stdout || stderr || "";
+
+                // Log the execution
+                this.logCommand({
+                    command,
+                    cwd,
+                    outputSnippet: output.substring(0, 200),
+                    session: 'api-call',
+                    exitCode: error ? (typeof error.code === 'number' ? error.code : 1) : 0,
+                    duration: 0
+                }).catch(() => { });
+
+                if (error) {
+                    reject(error);
+                } else {
+                    resolve(output);
+                }
+            });
+        });
+    }
 }

@@ -115,7 +115,7 @@ export class MCPServer {
     private wsServer: Server | null; // WebSocket Server
     private router: Router;
     public modelSelector: ModelSelector;
-    private llmService: LLMService;
+    public llmService: LLMService;
     private skillRegistry: SkillRegistry;
     private director: Director;
     public permissionManager: PermissionManager;
@@ -168,7 +168,12 @@ export class MCPServer {
         pollingIntervalMs: 30000,
         council: {
             personas: ['Architect', 'Product', 'Critic'],
-            contextFiles: ['README.md', 'docs/ROADMAP.md']
+            contextFiles: ['README.md', 'docs/ROADMAP.md'],
+            prompts: {
+                Architect: "You are The Architect. Focus on system design, code patterns, and maintainability. Be strict.",
+                Product: "You are the Product Manager. Focus on user value, roadmap alignment, and core problem solving.",
+                Critic: "You are The Critic. Focus on security, edge cases, bugs, and potential risks. Be pessimistic."
+            }
         }
     };
 
@@ -184,8 +189,10 @@ export class MCPServer {
         this.council = new Council(this.modelSelector);
         this.permissionManager = new PermissionManager('high'); // Default to HIGH AUTONOMY as requested
         this.auditService = new AuditService(process.cwd());
+        this.shellService = new ShellService();
         this.gitService = new GitService(process.cwd()); // Phase 30
         this.metricsService = new MetricsService(); // Phase 31
+        this.metricsService.startMonitoring();
         this.policyService = new PolicyService(process.cwd()); // Phase 32
         this.chainExecutor = new ChainExecutor(this);
         this.inputTools = options.inputTools || new InputTools();
@@ -271,9 +278,19 @@ export class MCPServer {
         // WebSocket Server (Extension Bridge)
         if (!options.skipWebsocket) {
             this.wsServer = this.createServerInstance();
+
+            const PORT = 3001;
+            console.log(`[MCPServer] Starting WebSocket Server on port ${PORT}...`);
+            this.wssInstance = new WebSocketServer({ port: PORT });
+
+            const transport = new WebSocketServerTransport(this.wssInstance);
+            this.wsServer.connect(transport);
+
+            console.log(`[MCPServer] 🔌 WebSocket Bridge active on port ${PORT}`);
         } else {
             // @ts-ignore
             this.wsServer = null;
+            this.wssInstance = null;
         }
     }
 

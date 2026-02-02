@@ -18,6 +18,7 @@ interface DebateResult {
 export class Council {
     private agents: Map<string, IAgent> = new Map();
     private server: IMCPServer | undefined;
+    public lastResult: DebateResult | null = null;
 
     constructor(private modelSelector: ModelSelector, agents?: Map<string, IAgent>, server?: IMCPServer) {
         if (agents) {
@@ -116,6 +117,8 @@ export class Council {
             summary: finalDirective
         };
 
+        this.lastResult = result;
+
         await this.broadcast('COUNCIL_END', { result });
         return result;
     }
@@ -136,31 +139,28 @@ Keep your response concise (under 4 sentences).`;
         try {
             if (agent && agent.isActive()) {
                 console.log(`[Council] 👤 ${name} (Agent): Thinking...`);
-                // Reset agent memory for fresh debate context? 
-                // A reusable agent might carry too much baggage. 
-                // For Council V2, we might want to just send the full prompt message.
-
-                // Note: Agents are usually stateful. If we use the same GeminiAgent that is persistent, 
-                // it will remember previous debates. This is actually GOOD for continuity.
-
                 return await agent.send(systemPrompt + "\n\nPlease provide your input.");
             } else {
-                // Fallback to Generic LLM (via ModelSelector implicit usage if we had LLMService, 
-                // but we removed LLMService dependency? No, we still have modelSelector)
-                // Wait, I removed LLMService from constructor to support injection.
-                // I need to use `modelSelector` to get a model, but I need an LLM runner.
-                // Re-adding LLMService dynamic import or assume simple shim.
+                // Fallback to Generic LLM
+                console.log(`[Council] 👤 ${name} (LLM): Thinking... (No dedicated agent)`);
 
-                // Simpler: Just skip if no agent, or fail gracefully?
-                // For MVP Phase 25, let's assume we MUST have agents or we throw/skip?
-                // No, Product Manager is usually generic.
+                if (this.server && (this.server as any).llmService) {
+                    // 1. Select Model
+                    const selection = await this.modelSelector.selectModel({
+                        taskComplexity: 'high', // Council members should be smart
+                        provider: 'anthropic' // Prefer Claude for reasoning, but selector will handle fallback
+                    });
 
-                // Let's bring back a minimal LLM call via the provided selector if possible, 
-                // or just use a placeholder if no agent.
+                    // 2. Generate
+                    const response = await (this.server as any).llmService.generateText(
+                        selection.provider,
+                        selection.modelId,
+                        systemPrompt,
+                        instruction + "\nPlease provide your input."
+                    );
 
-                // Actually, the previous implementation used `this.llmService`. 
-                // I will use a quick hack to perform a fetch-based LLM call if the Director/Server exposes one.
-                // Better: Just return a stub if no agent for now, force user to register agents.
+                    return response.content;
+                }
 
                 return fallback;
             }

@@ -118,14 +118,14 @@ export const appRouter = t.router({
         })
     }),
     director: t.router({
-        memorize: t.procedure.input(z.object({ content: z.string(), source: z.string() })).mutation(async ({ input }) => {
+        memorize: t.procedure.input(z.object({ content: z.string(), source: z.string(), title: z.string().optional() })).mutation(async ({ input }) => {
             // @ts-ignore
             if (global.mcpServerInstance && global.mcpServerInstance.vectorStore) {
                 // @ts-ignore
                 await global.mcpServerInstance.vectorStore.addDocuments([{
                     id: `web-${Date.now()}`,
                     text: input.content,
-                    metadata: { source: input.source }
+                    metadata: { source: input.source, title: input.title || 'Untitled Web Page' }
                 }]);
                 return "Memorized.";
             }
@@ -582,6 +582,16 @@ export const appRouter = t.router({
             return { counts: {}, averages: {}, totalEvents: 0, series: [] };
         })
     }),
+    healer: t.router({
+        getHistory: t.procedure.query(async () => {
+            // @ts-ignore
+            if (global.mcpServerInstance && global.mcpServerInstance.healerService) {
+                // @ts-ignore
+                return global.mcpServerInstance.healerService.getHistory();
+            }
+            return [];
+        })
+    }),
     policy: t.router({
         getRules: t.procedure.query(() => {
             // @ts-ignore
@@ -633,7 +643,37 @@ export const appRouter = t.router({
             }
             throw new Error("No Server");
         })
-    }) // End policy
+    }), // End policy
+    vscode: t.router({
+        open: t.procedure.input(z.object({
+            path: z.string()
+        })).mutation(async ({ input }) => {
+            const server = (global as any).mcpServerInstance;
+            if (server && server.shellService) {
+                try {
+                    await server.shellService.execute(`code "${input.path}"`);
+                    return true;
+                } catch (e) {
+                    try {
+                        await server.executeTool('vscode_execute_command', {
+                            command: 'vscode.open', args: [input.path]
+                        });
+                        return true;
+                    } catch (e2) { return false; }
+                }
+            }
+            return false;
+        })
+    }),
+    search: t.router({
+        query: t.procedure.input(z.object({ query: z.string() })).mutation(async ({ input }) => {
+            const server = (global as any).mcpServerInstance;
+            if (server) {
+                return await server.executeTool('search_codebase', { query: input.query });
+            }
+            return { content: [] };
+        })
+    })
 });
 
 export type AppRouter = typeof appRouter;

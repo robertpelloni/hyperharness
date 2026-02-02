@@ -9,8 +9,31 @@ export interface MetricEvent {
 export class MetricsService {
     private events: MetricEvent[] = [];
     private readonly MAX_EVENTS = 10000;
+    private monitorInterval: NodeJS.Timeout | null = null;
 
     constructor() { }
+
+    public startMonitoring(intervalMs: number = 5000) {
+        if (this.monitorInterval) clearInterval(this.monitorInterval);
+
+        console.log("[MetricsService] Starting system monitoring...");
+        const os = require('os');
+
+        this.monitorInterval = setInterval(() => {
+            const mem = process.memoryUsage();
+            const totalMem = os.totalmem();
+            const freeMem = os.freemem();
+
+            this.track('memory_heap', mem.heapUsed);
+            this.track('memory_rss', mem.rss);
+            this.track('system_load', os.loadavg()[0]); // 1 min load
+            this.track('system_free_mem', freeMem);
+        }, intervalMs);
+    }
+
+    public stopMonitoring() {
+        if (this.monitorInterval) clearInterval(this.monitorInterval);
+    }
 
     track(type: string, value: number, tags?: Record<string, string>) {
         this.events.push({

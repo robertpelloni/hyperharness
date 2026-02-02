@@ -21,39 +21,45 @@ chrome.runtime.sendMessage({ type: 'CHECK_CONNECTION' }, (response) => {
 
 // 2. Save Context
 saveBtn.addEventListener('click', async () => {
-    msgDiv.textContent = 'Scraping...';
+    msgDiv.textContent = 'Scraping Page...';
 
     // Get Active Tab
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
     if (!tab.id) return;
 
-    // Execute Script to get text
-    chrome.scripting.executeScript({
-        target: { tabId: tab.id },
-        func: () => {
-            return document.body.innerText;
-        }
-    }, (results) => {
-        if (!results || !results[0]) {
-            msgDiv.textContent = 'Failed to scrape.';
-            return;
-        }
-
-        const content = results[0].result;
-        msgDiv.textContent = 'Saving to Borg...';
-
-        // Send to Background
-        chrome.runtime.sendMessage({
-            type: 'SAVE_CONTEXT',
-            content: content,
-            url: tab.url
-        }, (res) => {
-            if (res.success) {
-                msgDiv.textContent = 'Saved to Memory!';
-                setTimeout(() => msgDiv.textContent = '', 3000);
-            } else {
-                msgDiv.textContent = 'Error: ' + res.error;
+    // Send ABSORB_PAGE to content script
+    try {
+        chrome.tabs.sendMessage(tab.id, { type: 'ABSORB_PAGE' }, (response) => {
+            if (chrome.runtime.lastError) {
+                msgDiv.textContent = 'Error: Content script not ready. Try reloading page.';
+                console.error(chrome.runtime.lastError);
+                return;
             }
+
+            if (!response || !response.success) {
+                msgDiv.textContent = 'Failed: ' + (response?.error || 'Unknown error');
+                return;
+            }
+
+            const { content, title } = response;
+            msgDiv.textContent = 'Saving to Borg Core...';
+
+            // Send to Background to save to Memory
+            chrome.runtime.sendMessage({
+                type: 'SAVE_CONTEXT',
+                content: content,
+                url: tab.url,
+                title: title
+            }, (res) => {
+                if (res && res.success) {
+                    msgDiv.textContent = '✅ Absorbed into Memory!';
+                    setTimeout(() => msgDiv.textContent = '', 3000);
+                } else {
+                    msgDiv.textContent = 'Error Saving: ' + (res?.error || 'Core unreachable');
+                }
+            });
         });
-    });
+    } catch (e: any) {
+        msgDiv.textContent = 'Exception: ' + e.message;
+    }
 });
