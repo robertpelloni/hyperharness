@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo, useEffect, useCallback } from "react";
-import { useJules } from "@/lib/jules/provider";
+import { useJules } from "../lib/jules/provider";
 import type { Session } from "@/types/jules";
 import { 
   KanbanProvider, 
@@ -11,25 +11,25 @@ import {
   KanbanCards, 
   KanbanCard,
   type KanbanItemProps
-} from "@/components/ui/kanban";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+} from "./ui/kanban";
+import { Badge } from "./ui/badge";
+import { Button } from "./ui/button";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from "./ui/select";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from "@/components/ui/tooltip";
+} from "./ui/tooltip";
 import { formatDistanceToNow, parseISO, isValid, format } from "date-fns";
 import { ExternalLink, GitBranch, Clock, RefreshCw, Filter, Inbox } from "lucide-react";
-import { getArchivedSessions } from "@/lib/archive";
+import { getArchivedSessions } from "../lib/archive";
 
 interface SessionKanbanItem extends KanbanItemProps {
   session: Session;

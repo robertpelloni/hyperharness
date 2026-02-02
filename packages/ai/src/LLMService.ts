@@ -14,11 +14,13 @@ export interface LLMResponse {
 }
 
 import { ModelSelector } from "./ModelSelector.js";
+import { ForgeService } from "./ForgeService.js";
 
 export class LLMService {
     private googleClient?: GoogleGenerativeAI;
     private openaiClient?: OpenAI;
     private anthropicClient?: Anthropic;
+    private forgeClient?: ForgeService;
     private totalUsage = { inputTokens: 0, outputTokens: 0, estimatedCostUSD: 0 };
     private modelSelector?: ModelSelector;
 
@@ -33,6 +35,11 @@ export class LLMService {
         if (process.env.ANTHROPIC_API_KEY) {
             this.anthropicClient = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
         }
+        // Initialize Forge (defaults to localhost:8080)
+        this.forgeClient = new ForgeService({
+            baseUrl: process.env.FORGE_URL || "http://localhost:8080/v1",
+            apiKey: process.env.FORGE_API_KEY
+        });
     }
 
     public getCostStats() {
@@ -68,7 +75,43 @@ export class LLMService {
             try {
                 let response: LLMResponse;
 
-                if (provider === 'google') {
+                if (provider === 'forge') {
+                    if (!this.forgeClient) throw new Error("Forge Service not initialized.");
+
+                    const messages: any[] = [
+                        { role: "system", content: systemPrompt },
+                        { role: "user", content: userPrompt }
+                    ];
+
+                    // Handle images for Forge/OpenAI compatible API
+                    if (options?.images && options.images.length > 0) {
+                        const userContent: any[] = [{ type: "text", text: userPrompt }];
+                        options.images.forEach(img => {
+                            userContent.push({
+                                type: "image_url",
+                                image_url: {
+                                    url: `data:${img.mimeType};base64,${img.base64}`
+                                }
+                            });
+                        });
+                        messages[1].content = userContent;
+                    }
+
+                    const completion = await this.forgeClient.chatCompletion({
+                        messages: messages,
+                        model: modelId,
+                    });
+
+                    response = {
+                        content: completion.choices[0].message.content || "",
+                        usage: {
+                            inputTokens: completion.usage?.prompt_tokens || 0,
+                            outputTokens: completion.usage?.completion_tokens || 0
+                        }
+                    };
+                }
+
+                else if (provider === 'google') {
                     if (!this.googleClient) throw new Error("Google API Key not configured.");
                     const model = this.googleClient.getGenerativeModel({ model: modelId });
 

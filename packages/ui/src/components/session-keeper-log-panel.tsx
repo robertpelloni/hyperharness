@@ -1,7 +1,7 @@
 import React, { useRef, useEffect } from 'react';
-import { useSessionKeeperStore, Log } from '@/lib/stores/session-keeper';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Button } from '@/components/ui/button';
+import { useSessionKeeperStore, Log } from '../lib/stores/session-keeper';
+import { ScrollArea } from './ui/scroll-area';
+import { Button } from './ui/button';
 import { Trash2, X } from 'lucide-react';
 
 interface SessionKeeperLogPanelProps {

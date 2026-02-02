@@ -18,19 +18,19 @@ import {
   CheckCircle2,
   AlertCircle,
 } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
+import { Button } from './ui/button';
+import { Badge } from './ui/badge';
+import { ScrollArea } from './ui/scroll-area';
+import { Input } from './ui/input';
+import { Textarea } from './ui/textarea';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import {
   useSessions,
   type Session,
   type Handoff,
   type Message,
-} from '@/lib/hooks/use-sessions';
+} from '../lib/hooks/use-sessions';
 
 function formatTimestamp(timestamp: string): string {
   try {
@@ -65,9 +65,8 @@ function MessageBubble({ message }: { message: Message }) {
 
   return (
     <div className={`flex gap-2 ${isUser ? 'flex-row-reverse' : ''}`}>
-      <div className={`flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center ${
-        isUser ? 'bg-purple-600' : isSystem ? 'bg-yellow-600' : 'bg-zinc-700'
-      }`}>
+      <div className={`flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center ${isUser ? 'bg-purple-600' : isSystem ? 'bg-yellow-600' : 'bg-zinc-700'
+        }`}>
         {isUser ? (
           <User className="h-3 w-3 text-white" />
         ) : isSystem ? (
@@ -77,13 +76,12 @@ function MessageBubble({ message }: { message: Message }) {
         )}
       </div>
       <div className={`flex-1 max-w-[80%] ${isUser ? 'text-right' : ''}`}>
-        <div className={`inline-block px-3 py-2 rounded-lg text-sm ${
-          isUser
+        <div className={`inline-block px-3 py-2 rounded-lg text-sm ${isUser
             ? 'bg-purple-600 text-white'
             : isSystem
-            ? 'bg-yellow-600/20 text-yellow-200 border border-yellow-600/30'
-            : 'bg-zinc-800 text-white/90'
-        }`}>
+              ? 'bg-yellow-600/20 text-yellow-200 border border-yellow-600/30'
+              : 'bg-zinc-800 text-white/90'
+          }`}>
           <p className="whitespace-pre-wrap break-words">{message.content}</p>
         </div>
         <div className="text-[10px] text-white/30 mt-1 font-mono">
@@ -110,8 +108,8 @@ function SessionCard({
   const statusColor = session.status === 'active'
     ? 'bg-green-500'
     : session.status === 'paused'
-    ? 'bg-yellow-500'
-    : 'bg-gray-500';
+      ? 'bg-yellow-500'
+      : 'bg-gray-500';
 
   return (
     <Card className="bg-zinc-900/50 border-white/10">
@@ -217,11 +215,10 @@ function HandoffCard({
               {handoff.description}
             </CardTitle>
           </div>
-          <Badge className={`${
-            isPending
+          <Badge className={`${isPending
               ? 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30'
               : 'bg-green-500/20 text-green-400 border-green-500/30'
-          } border text-[10px]`}>
+            } border text-[10px]`}>
             {handoff.status}
           </Badge>
         </div>
@@ -684,11 +681,10 @@ export function SessionsDashboard() {
                               </div>
                             </div>
                             {!isSession && (
-                              <Badge className={`text-[9px] ${
-                                (item as Handoff).status === 'pending'
+                              <Badge className={`text-[9px] ${(item as Handoff).status === 'pending'
                                   ? 'bg-yellow-500/20 text-yellow-400'
                                   : 'bg-green-500/20 text-green-400'
-                              } border-0`}>
+                                } border-0`}>
                                 {(item as Handoff).status}
                               </Badge>
                             )}

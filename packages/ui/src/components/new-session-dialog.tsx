@@ -1,9 +1,9 @@
 'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { useJules } from '@/lib/jules/provider';
+import { useJules } from '../lib/jules/provider';
 import type { Source, SessionTemplate } from '@/types/jules';
-import { getTemplates } from '@/lib/templates';
+import { getTemplates } from '../lib/templates';
 import {
   Dialog,
   DialogContent,
@@ -11,16 +11,16 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Label } from '@/components/ui/label';
-import { Combobox } from '@/components/ui/combobox';
+} from './ui/dialog';
+import { Button } from './ui/button';
+import { Input } from './ui/input';
+import { Textarea } from './ui/textarea';
+import { Label } from './ui/label';
+import { Combobox } from './ui/combobox';
 import { Plus, Loader2, Save, Sparkles, LayoutTemplate } from 'lucide-react';
 import { TemplateFormDialog } from '@/components/template-form-dialog';
-import { Card, CardContent } from '@/components/ui/card';
-import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
+import { Card, CardContent } from './ui/card';
+import { ScrollArea, ScrollBar } from './ui/scroll-area';
 
 interface NewSessionDialogProps {
   onSessionCreated?: () => void;

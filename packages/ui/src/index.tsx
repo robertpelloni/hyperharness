@@ -14,10 +14,17 @@ export * from './components/WorkshopPage';
 export * from './components/SkillLibrary';
 export * from './components/LibraryPage';
 export * from './components/ChroniclePage';
+export * from './components/MetricsWidgets';
+export * from './components/SecurityPage';
+export * from './components/SecurityWidget';
+export * from './components/LoginPage';
+export * from './components/auth/LoginForm';
 // Basic UI Primitives
 export * from "./components/ui/button";
 export * from "./components/ui/input";
 export * from "./components/ui/label";
 export * from "./components/ui/card";
 export * from "./components/ui/dialog";
+export * from "./components/ui/sheet";
+export * from "./utils/trpc";
 

@@ -43,6 +43,7 @@ export function IntegratedTerminal({
       const { Terminal } = await import("@xterm/xterm");
       const { FitAddon } = await import("@xterm/addon-fit");
       const { io } = await import("socket.io-client");
+      // @ts-ignore
       await import("@xterm/xterm/css/xterm.css");
 
       if (isCancelled) return;
@@ -89,7 +90,7 @@ export function IntegratedTerminal({
 
       fitAddon = new FitAddon();
       terminal.loadAddon(fitAddon);
-      
+
       if (terminalRef.current) {
         terminal.open(terminalRef.current);
         fitAddon.fit();
@@ -194,7 +195,7 @@ export function IntegratedTerminal({
           if (!isCancelled && fitAddon) {
             fitAddon.fit();
             if (terminal) {
-               socket.emit("terminal.resize", {
+              socket.emit("terminal.resize", {
                 cols: terminal.cols,
                 rows: terminal.rows,
               });
@@ -215,7 +216,7 @@ export function IntegratedTerminal({
       isCancelled = true;
       const currentSocket = socketRef.current;
       const currentXterm = xtermRef.current;
-      
+
       if (handleWindowResize) {
         window.removeEventListener("resize", handleWindowResize);
       }

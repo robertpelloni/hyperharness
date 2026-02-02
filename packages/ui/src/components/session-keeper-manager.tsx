@@ -2,8 +2,8 @@
 
 import { useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { useJules } from '@/lib/jules/provider';
-import { useSessionKeeperStore } from '@/lib/stores/session-keeper';
+import { useJules } from '../lib/jules/provider';
+import { useSessionKeeperStore } from '../lib/stores/session-keeper';
 import { Activity } from '@/types/jules';
 
 export function SessionKeeperManager() {

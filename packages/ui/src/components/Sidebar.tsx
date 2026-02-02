@@ -2,8 +2,26 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, Settings, Activity, Box, Terminal, Zap, Cpu, Workflow, MessageSquare, Network, Book, History } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import {
+  LayoutDashboard,
+  Terminal,
+  Book,
+  Brain,
+  Settings,
+  Activity,
+  Network,
+  Users,
+  Clock,
+  Shield,
+  Home,
+  MessageSquare,
+  Zap,
+  Workflow,
+  Cpu,
+  Box,
+  History as HistoryIcon
+} from "lucide-react";
+import { cn } from '../lib/utils';
 
 const navigation = [
   { name: 'Dashboard', href: '/', icon: Home },
@@ -16,7 +34,8 @@ const navigation = [
   { name: 'Brain', href: '/dashboard/brain', icon: Network },
   { name: 'Workshop', href: '/dashboard/workshop', icon: Box },
   { name: 'Library', href: '/dashboard/library', icon: Book },
-  { name: 'Chronicle', href: '/dashboard/chronicle', icon: History },
+  { name: 'Chronicle', href: '/dashboard/chronicle', icon: HistoryIcon },
+  { name: 'Security', href: '/dashboard/security', icon: Shield },
   { name: 'MCP Servers', href: '/mcp', icon: Settings },
   { name: 'Settings', href: '/settings', icon: Settings },
 ];

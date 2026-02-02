@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import type { Session } from '@/types/jules';
-import { useJules } from '@/lib/jules/provider';
+import { useJules } from '../lib/jules/provider';
 import { DndContext, DragEndEvent, DragOverlay, closestCorners, DragStartEvent } from '@dnd-kit/core';
 import { arrayMove } from '@dnd-kit/sortable';
 import { SessionColumn } from './session-column';

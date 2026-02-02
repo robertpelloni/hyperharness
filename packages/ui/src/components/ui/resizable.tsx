@@ -6,7 +6,7 @@ import { GripVerticalIcon } from "lucide-react"
 // Node check confirmed exports are Group, Panel, Separator.
 import { Panel, Group, Separator } from "react-resizable-panels"
 
-import { cn } from "@/lib/utils"
+import { cn } from "../../lib/utils"
 
 // Explicitly define props to avoid TS issues if package types are missing/broken
 interface ResizablePanelGroupProps extends Omit<React.HTMLAttributes<HTMLDivElement>, 'id'> {

@@ -1,14 +1,14 @@
 'use client';
 
 import { useEffect, useState, useMemo, useCallback } from 'react';
-import { useJules } from '@/lib/jules/provider';
-import { useSessionKeeperStore } from '@/lib/stores/session-keeper';
+import { useJules } from '../lib/jules/provider';
+import { useSessionKeeperStore } from '../lib/stores/session-keeper';
 import type { Session, Source, Activity } from '@/types/jules';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Button } from '@/components/ui/button';
-import { BackgroundBeams } from '@/components/ui/background-beams';
-import { BorderGlow } from '@/components/ui/border-glow';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
+import { Button } from './ui/button';
+import { BackgroundBeams } from './ui/background-beams';
+import { BorderGlow } from './ui/border-glow';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   AreaChart, Area

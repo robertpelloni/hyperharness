@@ -34,6 +34,8 @@ A unified operating system for PC-based local AI tools. Manage everything from t
 - **Submodule Manager:** Visual git submodule health check and healing.
 - **Council Config:** Manage personas and context files.
 - **System Status:** Live metrics widget (CPU/RAM).
+- **Engagement Layer:** Voice feedback (TTS), Toast notifications, and actionable suggestions.
+- **Responsive Design:** Fully mobile-compatible Mission Control interface.
 
 ## 📦 Installation
 ```bash

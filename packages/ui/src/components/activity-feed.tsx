@@ -1,20 +1,20 @@
 'use client';
 
 import { useEffect, useState, useCallback, useRef } from 'react';
-import { useJules } from '@/lib/jules/provider';
+import { useJules } from '../lib/jules/provider';
 import type { Activity, Session } from '@/types/jules';
-import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Textarea } from '@/components/ui/textarea';
-import { Button } from '@/components/ui/button';
+import { Card, CardContent } from './ui/card';
+import { Badge } from './ui/badge';
+import { ScrollArea } from './ui/scroll-area';
+import { Avatar, AvatarFallback } from './ui/avatar';
+import { Textarea } from './ui/textarea';
+import { Button } from './ui/button';
 import { formatDistanceToNow, isValid, parseISO } from 'date-fns';
 import { Send, Archive, ArchiveRestore, Code, Terminal, ChevronDown, ChevronRight, Play, GitBranch, GitPullRequest, MoreVertical, Book, ArrowUp, ArrowDown, Download, Copy, Check } from 'lucide-react';
-import { archiveSession, unarchiveSession, isSessionArchived } from '@/lib/archive';
+import { archiveSession, unarchiveSession, isSessionArchived } from '../lib/archive';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import { BashOutput } from '@/components/ui/bash-output';
+import { BashOutput } from './ui/bash-output';
 import { NewSessionDialog } from './new-session-dialog';
 import {
   DropdownMenu,
@@ -25,7 +25,7 @@ import {
   DropdownMenuSub,
   DropdownMenuSubTrigger,
   DropdownMenuSubContent,
-} from "@/components/ui/dropdown-menu";
+} from "./ui/dropdown-menu";
 import { PlanContent } from './plan-content';
 
 interface ActivityFeedProps {

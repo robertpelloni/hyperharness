@@ -2,16 +2,16 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { SessionTemplate } from "@/types/jules";
-import { getTemplates, deleteTemplate, saveTemplate } from "@/lib/templates";
-import { Button } from "@/components/ui/button";
+import { getTemplates, deleteTemplate, saveTemplate } from "../lib/templates";
+import { Button } from "./ui/button";
 import {
   Card,
   CardHeader,
   CardTitle,
   CardDescription,
   CardFooter,
-} from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge"; // Import Badge
+} from "./ui/card";
+import { Badge } from "./ui/badge"; // Import Badge
 import { Plus, Trash2, Edit2, Play, LayoutTemplate, Star } from "lucide-react"; // Import Star
 import { TemplateFormDialog } from "./template-form-dialog";
 

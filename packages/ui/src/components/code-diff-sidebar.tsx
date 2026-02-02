@@ -1,8 +1,8 @@
 "use client";
 
 import { useMemo } from "react";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { DiffViewer } from "@/components/ui/diff-viewer";
+import { ScrollArea } from "./ui/scroll-area";
+import { DiffViewer } from "./ui/diff-viewer";
 import type { Activity } from "@/types/jules";
 import { FileCode } from "lucide-react";
 

@@ -403,6 +403,30 @@ export const appRouter = t.router({
                 console.error("Failed to read .gitmodules", e);
                 return [];
             }
+        }),
+        getLog: t.procedure.input(z.object({ limit: z.number().optional() })).query(async ({ input }) => {
+            // @ts-ignore
+            if (global.mcpServerInstance) {
+                // @ts-ignore
+                return global.mcpServerInstance.gitService.getLog(input.limit);
+            }
+            return [];
+        }),
+        getStatus: t.procedure.query(async () => {
+            // @ts-ignore
+            if (global.mcpServerInstance) {
+                // @ts-ignore
+                return global.mcpServerInstance.gitService.getStatus();
+            }
+            return { branch: 'unknown', clean: false, modified: [], staged: [] };
+        }),
+        revert: t.procedure.input(z.object({ hash: z.string() })).mutation(async ({ input }) => {
+            // @ts-ignore
+            if (global.mcpServerInstance) {
+                // @ts-ignore
+                return global.mcpServerInstance.gitService.revert(input.hash);
+            }
+            throw new Error("No Server");
         })
     }),
     billing: t.router({
@@ -527,32 +551,8 @@ export const appRouter = t.router({
             return [];
         })
     }),
-    git: t.router({
-        getLog: t.procedure.input(z.object({ limit: z.number().optional() })).query(async ({ input }) => {
-            // @ts-ignore
-            if (global.mcpServerInstance) {
-                // @ts-ignore
-                return global.mcpServerInstance.gitService.getLog(input.limit);
-            }
-            return [];
-        }),
-        getStatus: t.procedure.query(async () => {
-            // @ts-ignore
-            if (global.mcpServerInstance) {
-                // @ts-ignore
-                return global.mcpServerInstance.gitService.getStatus();
-            }
-            return { branch: 'unknown', clean: false, modified: [], staged: [] };
-        }),
-        revert: t.procedure.input(z.object({ hash: z.string() })).mutation(async ({ input }) => {
-            // @ts-ignore
-            if (global.mcpServerInstance) {
-                // @ts-ignore
-                return global.mcpServerInstance.gitService.revert(input.hash);
-            }
-            throw new Error("No Server");
-        })
-    }),
+    // Merged into line 375
+
     roadmap: t.router({
         get: t.procedure.query(async () => {
             const fs = await import('fs/promises');
@@ -571,7 +571,69 @@ export const appRouter = t.router({
                 }
             }
         })
-    })
+    }),
+    metrics: t.router({
+        getStats: t.procedure.query(async () => {
+            // @ts-ignore
+            if (global.mcpServerInstance) {
+                // @ts-ignore
+                return global.mcpServerInstance.metricsService.getStats();
+            }
+            return { counts: {}, averages: {}, totalEvents: 0, series: [] };
+        })
+    }),
+    policy: t.router({
+        getRules: t.procedure.query(() => {
+            // @ts-ignore
+            if (global.mcpServerInstance) {
+                // @ts-ignore
+                return global.mcpServerInstance.policyService.getRules();
+            }
+            return [];
+        }),
+        updateRules: t.procedure.input(z.object({ rules: z.array(z.any()) })).mutation(({ input }) => {
+            // @ts-ignore
+            if (global.mcpServerInstance) {
+                // @ts-ignore
+                global.mcpServerInstance.policyService.updateRules(input.rules);
+                return true;
+            }
+            throw new Error("No Server");
+        }),
+        lockdown: t.procedure.mutation(() => {
+            // @ts-ignore
+            if (global.mcpServerInstance) {
+                // @ts-ignore
+                const mcp = global.mcpServerInstance;
+                // 1. Set Autonomy to Low
+                mcp.permissionManager.setAutonomyLevel('low');
+                // 2. Add Deny All Rule to top of policy (memory only or persist?)
+                // Let's persist a lockdown rule.
+                const rules = mcp.policyService.getRules();
+                // Check if already locked
+                if (rules[0].reason !== 'SYSTEM LOCKDOWN') {
+                    rules.unshift({ action: "*", resource: "*", effect: "DENY", reason: "SYSTEM LOCKDOWN" });
+                    mcp.policyService.updateRules(rules);
+                }
+                return "SYSTEM LOCKED DOWN";
+            }
+            throw new Error("No Server");
+        }),
+        unlock: t.procedure.mutation(() => {
+            // @ts-ignore
+            if (global.mcpServerInstance) {
+                // @ts-ignore
+                const mcp = global.mcpServerInstance;
+                const rules = mcp.policyService.getRules();
+                if (rules[0].reason === 'SYSTEM LOCKDOWN') {
+                    rules.shift(); // Remove top rule
+                    mcp.policyService.updateRules(rules);
+                }
+                return "SYSTEM UNLOCKED";
+            }
+            throw new Error("No Server");
+        })
+    }) // End policy
 });
 
 export type AppRouter = typeof appRouter;

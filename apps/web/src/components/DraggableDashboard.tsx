@@ -39,9 +39,10 @@ import { TestStatusWidget } from "../components/TestStatusWidget";
 import { GraphWidget } from "../components/GraphWidget";
 import { ShellHistoryWidget } from "../components/ShellHistoryWidget";
 import SuggestionsPanel from "../components/SuggestionsPanel";
-
 import { HealerWidget } from "../components/HealerWidget";
 import IngestionStatus from "../components/IngestionStatus";
+import { ActivityPulse, SystemHealth, LatencyMonitor, SecurityWidget } from "@borg/ui";
+import { trpc } from "@/utils/trpc"; // Need tRPC to fetch stats
 
 // Widget Registry
 const WIDGETS: Record<string, { title: string, component: React.ReactNode, defaultColSpan?: string }> = {
@@ -66,12 +67,38 @@ const WIDGETS: Record<string, { title: string, component: React.ReactNode, defau
     'config': { title: 'System Config', component: <DirectorConfig /> },
     'runner': { title: 'Command Runner', component: <CommandRunner /> },
     'trace': { title: 'Trace Viewer', component: <TraceViewer /> },
-    'traffic': { title: 'Traffic Inspector', component: <TrafficInspector /> }
+    'traffic': { title: 'Traffic Inspector', component: <TrafficInspector /> },
+    'activity_pulse': { title: 'Activity Pulse', component: <ConnectedActivityPulse />, defaultColSpan: 'col-span-2' },
+    'system_health': { title: 'System Health', component: <ConnectedSystemHealth /> },
+    'latency': { title: 'Latency', component: <ConnectedLatency /> },
+    'security': { title: 'Security Shield', component: <WrappedSecurityWidget /> }
 };
+
+function WrappedSecurityWidget() {
+    return <SecurityWidget />;
+}
+
+// Wrapper Components for Data Fetching
+function ConnectedActivityPulse() {
+    const { data } = trpc.metrics.getStats.useQuery(undefined, { refetchInterval: 2000 });
+    return <ActivityPulse series={data?.series || []} />;
+}
+
+function ConnectedSystemHealth() {
+    const { data } = trpc.metrics.getStats.useQuery(undefined, { refetchInterval: 5000 });
+    return <SystemHealth counts={data?.counts || {}} />;
+}
+
+function ConnectedLatency() {
+    const { data } = trpc.metrics.getStats.useQuery(undefined, { refetchInterval: 5000 });
+    return <LatencyMonitor averages={data?.averages || {}} />;
+}
 
 // Default Order
 const DEFAULT_LAYOUT = [
     'suggestions',
+    'security', 'system_health', 'latency',
+    'activity_pulse',
     'connection', 'indexing',
     'ingestion',
     'healer',

@@ -26,13 +26,13 @@ import {
   PlayCircle,
   PauseCircle,
 } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Switch } from '@/components/ui/switch';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Input } from '@/components/ui/input';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
+import { Button } from './ui/button';
+import { Badge } from './ui/badge';
+import { Switch } from './ui/switch';
+import { ScrollArea } from './ui/scroll-area';
+import { Input } from './ui/input';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import {
   useAutopilot,
   type CLITool,
@@ -40,7 +40,7 @@ import {
   type VetoRequest,
   type DebateDecision,
   type RiskLevel,
-} from '@/lib/hooks/use-autopilot';
+} from '../lib/hooks/use-autopilot';
 
 function formatUptime(seconds: number): string {
   if (seconds < 60) return `${seconds}s`;

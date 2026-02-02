@@ -2,9 +2,9 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useJules } from "@/lib/jules/provider";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { useJules } from "../lib/jules/provider";
+import { Button } from "./ui/button";
+import { Input } from "./ui/input";
 import { Eye, EyeOff } from "lucide-react";
 import {
   Card,
@@ -12,7 +12,7 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
+} from "./ui/card";
 
 interface ApiKeySetupFormProps {
   onSuccess?: () => void;

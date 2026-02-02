@@ -2,11 +2,11 @@
 
 import { useState, useEffect } from 'react';
 import { SessionKeeperConfig } from '@/types/jules';
-import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
-import { Switch } from '@/components/ui/switch';
-import { Textarea } from '@/components/ui/textarea';
+import { Button } from './ui/button';
+import { Label } from './ui/label';
+import { Input } from './ui/input';
+import { Switch } from './ui/switch';
+import { Textarea } from './ui/textarea';
 import {
   Dialog,
   DialogContent,
@@ -14,19 +14,19 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from '@/components/ui/dialog';
+} from './ui/dialog';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import { Separator } from '@/components/ui/separator';
+} from './ui/select';
+import { Separator } from './ui/separator';
 import { Brain, Sparkles, Trash2, Settings, Loader2, Download, Users, Plus } from 'lucide-react';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Badge } from '@/components/ui/badge';
-import { cn } from '@/lib/utils';
+import { ScrollArea } from './ui/scroll-area';
+import { Badge } from './ui/badge';
+import { cn } from '../lib/utils';
 
 // Default configuration (Duplicated to allow standalone usage)
 const DEFAULT_CONFIG: SessionKeeperConfig = {

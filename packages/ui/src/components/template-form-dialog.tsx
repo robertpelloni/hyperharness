@@ -2,18 +2,18 @@
 
 import { useState, useEffect } from "react";
 import { SessionTemplate } from "@/types/jules";
-import { saveTemplate } from "@/lib/templates";
+import { saveTemplate } from "../lib/templates";
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
+} from "./ui/dialog";
+import { Button } from "./ui/button";
+import { Input } from "./ui/input";
+import { Textarea } from "./ui/textarea";
+import { Label } from "./ui/label";
 
 interface TemplateFormDialogProps {
   open: boolean;

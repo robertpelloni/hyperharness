@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { useJules } from "@/lib/jules/provider";
-import { Button } from "@/components/ui/button";
+import { useJules } from "../lib/jules/provider";
+import { Button } from "./ui/button";
 import { Play } from "lucide-react";
 
 interface QuickReviewButtonProps {

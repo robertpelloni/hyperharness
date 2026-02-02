@@ -13,9 +13,9 @@ import { DataResidencyConfig } from "@/components/enterprise/DataResidencyConfig
 import { GpuDashboard } from "@/components/enterprise/GpuDashboard";
 import { InfrastructureDashboard } from "@/components/enterprise/InfrastructureDashboard";
 import { TrafficInspector } from "@/components/enterprise/TrafficInspector";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card";
+import { Badge } from "../ui/badge";
 import { ShieldCheck, Workflow, History, Users, ShoppingBag, Network, Database, Cpu, Server } from "lucide-react";
 
 export function EnterpriseView() {

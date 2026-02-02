@@ -17,9 +17,9 @@ import ReactFlow, {
   type OnConnect
 } from 'reactflow';
 import 'reactflow/dist/style.css';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Button } from '../ui/button';
+import { Input } from '../ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { Save, Plus, Play, Trash2, Settings2, Layout } from 'lucide-react';
 
 const initialNodes: Node[] = [

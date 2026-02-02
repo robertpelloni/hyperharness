@@ -3,8 +3,8 @@
 import React from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { ScrollArea } from '@/components/ui/scroll-area';
+import { Card, CardHeader, CardTitle, CardContent } from './ui/card';
+import { ScrollArea } from './ui/scroll-area';
 import { Map } from 'lucide-react';
 
 interface RoadmapWidgetProps {

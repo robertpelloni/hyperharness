@@ -51,6 +51,13 @@ packages/ui/ui.log
 .cli_startup_marker
 
 # Borg Runtime Data
-.borg/db/
-.borg/memory/
-.borg/worktrees/
+
+**/.borg/db/
+
+**/.borg/memory/
+
+**/.borg/worktrees/
+
+**/.borg/*.json
+
+**/.borg/*.log

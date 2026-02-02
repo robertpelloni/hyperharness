@@ -1,22 +1,22 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
-import { useJules } from '@/lib/jules/provider';
+import { useJules } from '../lib/jules/provider';
 import type { Session } from '@/types/jules';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { Badge } from './ui/badge';
+import { Button } from './ui/button';
+import { Input } from './ui/input';
 import { Search, Archive, ArchiveRestore } from 'lucide-react';
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from '@/components/ui/tooltip';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { CardSpotlight } from '@/components/ui/card-spotlight';
+} from './ui/tooltip';
+import { ScrollArea } from './ui/scroll-area';
+import { CardSpotlight } from './ui/card-spotlight';
 import { formatDistanceToNow, isValid, parseISO, isToday } from 'date-fns';
-import { getArchivedSessions } from '@/lib/archive';
+import { getArchivedSessions } from '../lib/archive';
 
 function truncateText(text: string, maxLength: number) {
   if (!text) return '';

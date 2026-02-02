@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useEffect } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { useJules } from '@/lib/jules/provider';
+import { useJules } from '../lib/jules/provider';
 import type { Session, Activity, SessionTemplate } from '@/types/jules';
 import { SessionList } from './session-list';
 import { ActivityFeed } from './activity-feed';
@@ -12,13 +12,13 @@ import { NewSessionDialog } from './new-session-dialog';
 import { TemplatesPage } from './templates-page';
 import { SessionKeeperSettings } from './session-keeper-settings';
 import { SessionKeeperLogPanel } from './session-keeper-log-panel';
-import { Button } from '@/components/ui/button';
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
+import { Button } from './ui/button';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from './ui/sheet';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from './ui/dropdown-menu';
 import { Menu, LogOut, Settings, BarChart3, MessageSquare, ChevronLeft, ChevronRight, Terminal as TerminalIcon, LayoutTemplate, Plus, Activity as ActivityIcon, ShieldCheck } from 'lucide-react';
 import { TerminalPanel } from './terminal-panel';
 import { useTerminalAvailable } from '@/hooks/use-terminal-available';
-import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/components/ui/resizable';
+import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from './ui/resizable';
 import { CouncilDashboard } from './council-dashboard';
 import { SessionKeeperManager } from './session-keeper-manager';
 import { EnterpriseView } from './enterprise/EnterpriseView';

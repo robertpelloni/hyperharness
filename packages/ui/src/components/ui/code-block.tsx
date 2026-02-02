@@ -4,7 +4,7 @@ import { useLayoutEffect, useMemo, useRef, useState } from "react";
 import { Check, Copy } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 
-import { cn } from "@/lib/utils";
+import { cn } from "../../lib/utils";
 
 interface CodeTab {
   label: string;

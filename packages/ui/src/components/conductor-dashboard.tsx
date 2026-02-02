@@ -20,17 +20,17 @@ import {
   Activity,
   Server,
 } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Input } from '@/components/ui/input';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
+import { Button } from './ui/button';
+import { Badge } from './ui/badge';
+import { ScrollArea } from './ui/scroll-area';
+import { Input } from './ui/input';
 import {
   useConductor,
   type ConductorTask,
   type TaskStatus,
   type TaskRole,
-} from '@/lib/hooks/use-conductor';
+} from '../lib/hooks/use-conductor';
 
 function formatDate(dateString: string): string {
   return new Date(dateString).toLocaleString();

@@ -19,11 +19,11 @@ import {
   Server,
   ChevronDown,
 } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
+import { Button } from './ui/button';
+import { Badge } from './ui/badge';
+import { ScrollArea } from './ui/scroll-area';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import {
   useHardware,
   type SerialPortInfo,
@@ -31,7 +31,7 @@ import {
   type DiskInfo,
   type GpuInfo,
   type ActivityDataPoint,
-} from '@/lib/hooks/use-hardware';
+} from '../lib/hooks/use-hardware';
 
 const BAUD_RATES = [9600, 19200, 38400, 57600, 115200] as const;
 

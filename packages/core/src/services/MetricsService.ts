@@ -1,0 +1,81 @@
+
+export interface MetricEvent {
+    timestamp: number;
+    type: string;
+    value: number;
+    tags?: Record<string, string>;
+}
+
+export class MetricsService {
+    private events: MetricEvent[] = [];
+    private readonly MAX_EVENTS = 10000;
+
+    constructor() { }
+
+    track(type: string, value: number, tags?: Record<string, string>) {
+        this.events.push({
+            timestamp: Date.now(),
+            type,
+            value,
+            tags
+        });
+
+        if (this.events.length > this.MAX_EVENTS) {
+            this.events = this.events.slice(-this.MAX_EVENTS / 2); // Keep half
+        }
+    }
+
+    trackDuration(name: string, ms: number, tags?: Record<string, string>) {
+        this.track('duration', ms, { name, ...tags });
+    }
+
+    getStats(windowMs: number = 3600000) { // Default 1 hour
+        const now = Date.now();
+        const relevant = this.events.filter(e => e.timestamp > now - windowMs);
+
+        const counts: Record<string, number> = {};
+        const sums: Record<string, number> = {};
+
+        relevant.forEach(e => {
+            const key = e.type;
+            counts[key] = (counts[key] || 0) + 1;
+            sums[key] = (sums[key] || 0) + e.value;
+        });
+
+        // Calculate averages
+        const averages: Record<string, number> = {};
+        Object.keys(sums).forEach(k => {
+            averages[k] = sums[k] / counts[k];
+        });
+
+        return {
+            windowMs,
+            totalEvents: relevant.length,
+            counts,
+            averages,
+            // Return raw series for graphing (downsampled if needed)
+            series: this.downsample(relevant, 60) // 60 data points
+        };
+    }
+
+    private downsample(events: MetricEvent[], buckets: number) {
+        // Simple bucketing
+        if (events.length === 0) return [];
+        const start = events[0].timestamp;
+        const end = Date.now();
+        const interval = (end - start) / buckets;
+
+        const res = [];
+        for (let i = 0; i < buckets; i++) {
+            const bucketStart = start + (i * interval);
+            const bucketEnd = bucketStart + interval;
+            const inBucket = events.filter(e => e.timestamp >= bucketStart && e.timestamp < bucketEnd);
+            res.push({
+                time: bucketStart,
+                count: inBucket.length,
+                value_avg: inBucket.reduce((acc, curr) => acc + curr.value, 0) / (inBucket.length || 1)
+            });
+        }
+        return res;
+    }
+}

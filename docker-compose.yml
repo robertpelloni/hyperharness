@@ -15,3 +15,13 @@ services:
     environment:
       - MCP_PROGRESSIVE_MODE=true
     restart: unless-stopped
+
+  forge:
+    image: tensorblock/forge:latest
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./data/forge:/app/data
+    environment:
+      - PORT=8080
+    restart: unless-stopped

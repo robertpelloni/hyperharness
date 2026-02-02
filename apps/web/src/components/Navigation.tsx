@@ -1,10 +1,26 @@
-
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { Sheet, SheetContent, SheetTrigger } from "@borg/ui";
+import { Button } from "@borg/ui";
+import { Menu } from "lucide-react";
+import { useState } from "react";
+
+const NAV_ITEMS = [
+    { href: '/', label: 'Mission Control', color: 'hover:text-blue-500', activeColor: 'text-blue-500' },
+    { href: '/docs', label: 'Documentation', color: 'hover:text-blue-500', activeColor: 'text-blue-500' },
+    { href: '/status', label: 'System Status', color: 'hover:text-blue-500', activeColor: 'text-blue-500' },
+    { href: '/dashboard/council', label: 'Council', color: 'hover:text-purple-500', activeColor: 'text-purple-500' },
+    { href: '/dashboard/skills', label: 'Skills', color: 'hover:text-green-500', activeColor: 'text-green-500' },
+    { href: '/dashboard/reader', label: 'Reader', color: 'hover:text-orange-500', activeColor: 'text-orange-500' },
+    { href: '/dashboard/command', label: 'Command Center', color: 'hover:text-red-500', activeColor: 'text-red-500' },
+    { href: '/dashboard/inspector', label: 'Traffic', color: 'hover:text-yellow-500', activeColor: 'text-yellow-500' },
+    { href: '/dashboard/config', label: 'Settings', color: 'hover:text-slate-500', activeColor: 'text-slate-500' },
+];
 
 export function Navigation() {
     const pathname = usePathname();
+    const [open, setOpen] = useState(false);
 
     const isActive = (path: string) => pathname === path;
 
@@ -14,64 +30,50 @@ export function Navigation() {
                 <div className="text-xl font-bold bg-gradient-to-r from-blue-500 to-purple-500 bg-clip-text text-transparent">
                     BORG
                 </div>
-                <div className="flex gap-4">
-                    <Link
-                        href="/"
-                        className={`text-sm font-medium transition-colors hover:text-blue-500 ${isActive('/') ? 'text-blue-500' : 'text-zinc-500 dark:text-zinc-400'}`}
-                    >
-                        Mission Control
-                    </Link>
-                    <Link
-                        href="/docs"
-                        className={`text-sm font-medium transition-colors hover:text-blue-500 ${isActive('/docs') ? 'text-blue-500' : 'text-zinc-500 dark:text-zinc-400'}`}
-                    >
-                        Documentation
-                    </Link>
-                    <Link
-                        href="/status"
-                        className={`text-sm font-medium transition-colors hover:text-blue-500 ${isActive('/status') ? 'text-blue-500' : 'text-zinc-500 dark:text-zinc-400'}`}
-                    >
-                        System Status
-                    </Link>
-                    <Link
-                        href="/dashboard/council"
-                        className={`text-sm font-medium transition-colors hover:text-purple-500 ${isActive('/dashboard/council') ? 'text-purple-500' : 'text-zinc-500 dark:text-zinc-400'}`}
-                    >
-                        Council
-                    </Link>
-                    <Link
-                        href="/dashboard/skills"
-                        className={`text-sm font-medium transition-colors hover:text-green-500 ${isActive('/dashboard/skills') ? 'text-green-500' : 'text-zinc-500 dark:text-zinc-400'}`}
-                    >
-                        Skills
-                    </Link>
-                    <Link
-                        href="/dashboard/reader"
-                        className={`text-sm font-medium transition-colors hover:text-orange-500 ${isActive('/dashboard/reader') ? 'text-orange-500' : 'text-zinc-500 dark:text-zinc-400'}`}
-                    >
-                        Reader
-                    </Link>
-                    <Link
-                        href="/dashboard/command"
-                        className={`text-sm font-medium transition-colors hover:text-red-500 ${isActive('/dashboard/command') ? 'text-red-500' : 'text-zinc-500 dark:text-zinc-400'}`}
-                    >
-                        Command Center
-                    </Link>
-                    <Link
-                        href="/dashboard/inspector"
-                        className={`text-sm font-medium transition-colors hover:text-yellow-500 ${isActive('/dashboard/inspector') ? 'text-yellow-500' : 'text-zinc-500 dark:text-zinc-400'}`}
-                    >
-                        Traffic
-                    </Link>
-                    <Link
-                        href="/dashboard/config"
-                        className={`text-sm font-medium transition-colors hover:text-slate-500 ${isActive('/dashboard/config') ? 'text-slate-500' : 'text-zinc-500 dark:text-zinc-400'}`}
-                    >
-                        Settings
-                    </Link>
+
+                {/* Desktop Navigation */}
+                <div className="hidden md:flex gap-4">
+                    {NAV_ITEMS.map((item) => (
+                        <Link
+                            key={item.href}
+                            href={item.href}
+                            className={`text-sm font-medium transition-colors ${item.color} ${isActive(item.href) ? item.activeColor : 'text-zinc-500 dark:text-zinc-400'}`}
+                        >
+                            {item.label}
+                        </Link>
+                    ))}
                 </div>
             </div>
-            <div className="text-xs text-zinc-400">
+
+            {/* Mobile Navigation */}
+            <div className="md:hidden">
+                <Sheet open={open} onOpenChange={setOpen}>
+                    <SheetTrigger asChild>
+                        <Button variant="ghost" size="icon">
+                            <Menu className="h-6 w-6" />
+                        </Button>
+                    </SheetTrigger>
+                    <SheetContent side="left" className="w-[300px] sm:w-[400px]">
+                        <div className="flex flex-col gap-4 mt-8">
+                            {NAV_ITEMS.map((item) => (
+                                <Link
+                                    key={item.href}
+                                    href={item.href}
+                                    onClick={() => setOpen(false)}
+                                    className={`text-lg font-medium transition-colors ${item.color} ${isActive(item.href) ? item.activeColor : 'text-zinc-500 dark:text-zinc-400'}`}
+                                >
+                                    {item.label}
+                                </Link>
+                            ))}
+                            <div className="mt-auto pt-8 border-t border-zinc-200 dark:border-zinc-800">
+                                <span className="text-xs text-zinc-400">v0.1.0-alpha</span>
+                            </div>
+                        </div>
+                    </SheetContent>
+                </Sheet>
+            </div>
+
+            <div className="hidden md:block text-xs text-zinc-400">
                 v0.1.0-alpha
             </div>
         </nav>

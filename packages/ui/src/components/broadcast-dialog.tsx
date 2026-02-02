@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { useJules } from "@/lib/jules/provider";
-import { Button } from "@/components/ui/button";
+import { useJules } from "../lib/jules/provider";
+import { Button } from "./ui/button";
 import {
   Dialog,
   DialogContent,
@@ -11,16 +11,16 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog";
+} from "./ui/dialog";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
+} from "./ui/select";
+import { Textarea } from "./ui/textarea";
+import { Label } from "./ui/label";
 import { Loader2, Megaphone } from "lucide-react";
 import type { Session } from "@/types/jules";
 

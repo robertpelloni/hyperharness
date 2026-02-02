@@ -43,6 +43,8 @@ import { SkillRegistry } from "./skills/SkillRegistry.js";
 import { SuggestionService } from "./suggestions/SuggestionService.js";
 import { ResearchService } from "./services/ResearchService.js";
 import { HealerService } from "./services/HealerService.js";
+import { MetricsService } from "./services/MetricsService.js";
+import { PolicyService } from "./security/PolicyService.js";
 import { PromptRegistry } from "./prompts/PromptRegistry.js";
 import { WebSearchTool } from "./tools/WebSearchTool.js";
 console.log("[MCPServer] ✓ SkillRegistry");
@@ -144,6 +146,8 @@ export class MCPServer {
     public autoDevService: AutoDevService;
     public researchService: ResearchService;
     public gitService: GitService; // Phase 30
+    public metricsService: MetricsService; // Phase 31
+    public policyService: PolicyService; // Phase 32
     private knowledgeService: KnowledgeService; // Knowledge Graph Service
     private healerService: HealerService;
     public promptRegistry: PromptRegistry;
@@ -181,6 +185,8 @@ export class MCPServer {
         this.permissionManager = new PermissionManager('high'); // Default to HIGH AUTONOMY as requested
         this.auditService = new AuditService(process.cwd());
         this.gitService = new GitService(process.cwd()); // Phase 30
+        this.metricsService = new MetricsService(); // Phase 31
+        this.policyService = new PolicyService(process.cwd()); // Phase 32
         this.chainExecutor = new ChainExecutor(this);
         this.inputTools = options.inputTools || new InputTools();
         this.systemStatusTool = options.systemStatusTool || new SystemStatusTool();
@@ -379,6 +385,14 @@ export class MCPServer {
 
         try {
             // 0. Permission Check
+            // A. Policy Service (Fine-grained)
+            const policyDecision = this.policyService.check('execute', name);
+            if (policyDecision === 'DENY') {
+                this.auditService.log('TOOL_DENIED', { tool: name, args, reason: 'Policy Deny' }, 'WARN');
+                throw new Error(`Policy VIOLATION: Execution of tool '${name}' is DENIED by active policy.`);
+            }
+
+            // B. Permission Manager (High-level Autonomy)
             const permission = this.permissionManager.checkPermission(name, args);
 
             if (permission === 'DENIED') {
@@ -498,9 +512,17 @@ export class MCPServer {
                 const keys = args?.keys as string;
                 // Use Direct InputTools. DON'T FORCE FOCUS by default (let it hit active terminal)
                 try {
-                    const status = await this.inputTools.sendKeys(keys, false);
+                    const toolStartTime = Date.now();
+                    const status = await this.inputTools.sendKeys(keys);
+                    const toolDuration = Date.now() - toolStartTime;
+
+                    this.metricsService.track('tool_call', 1, { tool: name, success: 'true' });
+                    this.metricsService.trackDuration('tool_execution', toolDuration, { tool: name });
+
                     result = { content: [{ type: "text", text: status }] };
                 } catch (e: any) {
+                    this.metricsService.track('tool_call', 1, { tool: name, success: 'false' });
+                    this.metricsService.track('tool_error', 1, { tool: name });
                     result = { content: [{ type: "text", text: `Error executing native_input: ${e.message}` }] };
                 }
             }

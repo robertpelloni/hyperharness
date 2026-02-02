@@ -1,8 +1,8 @@
 'use client';
 
 import { useAccount, useConnect, useDisconnect, useBalance, useChainId, useSwitchChain } from 'wagmi';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
+import { Button } from './ui/button';
+import { Badge } from './ui/badge';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -10,7 +10,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+} from './ui/dropdown-menu';
 import { Loader2, Wallet, LogOut, ChevronDown, Link2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { formatUnits } from 'viem';
