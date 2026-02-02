@@ -296,6 +296,29 @@ export const appRouter = t.router({
                 return await global.mcpServerInstance.skillRegistry.readSkill(input.name);
             }
             return { content: [{ type: "text", text: "Error: No Server" }] };
+        }),
+        create: t.procedure.input(z.object({
+            id: z.string(),
+            name: z.string(),
+            description: z.string()
+        })).mutation(async ({ input }) => {
+            // @ts-ignore
+            if (global.mcpServerInstance) {
+                // @ts-ignore
+                return await global.mcpServerInstance.skillRegistry.createSkill(input.id, input.name, input.description);
+            }
+            throw new Error("No Server");
+        }),
+        save: t.procedure.input(z.object({
+            id: z.string(),
+            content: z.string()
+        })).mutation(async ({ input }) => {
+            // @ts-ignore
+            if (global.mcpServerInstance) {
+                // @ts-ignore
+                return await global.mcpServerInstance.skillRegistry.saveSkill(input.id, input.content);
+            }
+            throw new Error("No Server");
         })
     }),
     executeTool: adminProcedure.input(z.object({

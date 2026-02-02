@@ -11,6 +11,8 @@ export * from "./components/PromptLibrary";
 export * from './components/CouncilDebateWidget';
 export * from './widgets/DependencyGraphWidget';
 export * from './components/WorkshopPage';
+export * from './components/SkillLibrary';
+export * from './components/LibraryPage';
 // Basic UI Primitives
 export * from "./components/ui/button";
 export * from "./components/ui/input";

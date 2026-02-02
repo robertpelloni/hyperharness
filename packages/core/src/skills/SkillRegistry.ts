@@ -81,6 +81,31 @@ export class SkillRegistry {
                     },
                     required: ["skillName"]
                 }
+            },
+            {
+                name: "create_skill",
+                description: "Create a new skill (runbook)",
+                inputSchema: {
+                    type: "object",
+                    properties: {
+                        id: { type: "string", description: "Unique ID (folder name)" },
+                        name: { type: "string" },
+                        description: { type: "string" }
+                    },
+                    required: ["id", "name", "description"]
+                }
+            },
+            {
+                name: "update_skill",
+                description: "Update content of an existing skill",
+                inputSchema: {
+                    type: "object",
+                    properties: {
+                        id: { type: "string" },
+                        content: { type: "string" }
+                    },
+                    required: ["id", "content"]
+                }
             }
         ];
     }
@@ -113,5 +138,59 @@ export class SkillRegistry {
                 text: skill.content
             }]
         };
+    }
+
+    async createSkill(id: string, name: string, description: string) {
+        // Default to the first search path (usually .borg/skills in cwd)
+        const targetDir = this.searchPaths[0];
+        const skillDir = path.join(targetDir, id);
+        const skillFile = path.join(skillDir, 'SKILL.md');
+
+        try {
+            await fs.mkdir(skillDir, { recursive: true });
+
+            const content = `---
+name: ${name}
+description: ${description}
+---
+
+# ${name}
+
+${description}
+
+## Instructions
+1. ...
+`;
+            await fs.writeFile(skillFile, content, 'utf-8');
+
+            // Reload to pick up new skill
+            await this.parseSkill(skillFile);
+
+            return {
+                content: [{ type: "text", text: `Created skill '${name}' at ${skillFile}` }]
+            };
+        } catch (e: any) {
+            return { content: [{ type: "text", text: `Error creating skill: ${e.message}` }] };
+        }
+    }
+
+    async saveSkill(id: string, content: string) {
+        const skill = this.skills.get(id);
+        if (!skill) {
+            return { content: [{ type: "text", text: `Skill '${id}' not found.` }] };
+        }
+
+        try {
+            await fs.writeFile(skill.path, content, 'utf-8');
+
+            // Update in-memory
+            skill.content = content;
+            // Re-parse to update frontmatter if changed
+            await this.parseSkill(skill.path);
+
+            return { content: [{ type: "text", text: `Saved skill '${id}'.` }] };
+        } catch (e: any) {
+            return { content: [{ type: "text", text: `Error saving skill: ${e.message}` }] };
+        }
     }
 }
