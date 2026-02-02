@@ -38,6 +38,7 @@ import { SandboxService } from "./security/SandboxService.js";
 import { SquadService } from "./orchestrator/SquadService.js";
 import { GitWorktreeManager } from "./orchestrator/GitWorktreeManager.js";
 import { AuditService } from "./security/AuditService.js";
+import { GitService } from "./services/GitService.js";
 import { SkillRegistry } from "./skills/SkillRegistry.js";
 import { SuggestionService } from "./suggestions/SuggestionService.js";
 import { ResearchService } from "./services/ResearchService.js";
@@ -142,6 +143,7 @@ export class MCPServer {
     public symbolPinService: SymbolPinService;
     public autoDevService: AutoDevService;
     public researchService: ResearchService;
+    public gitService: GitService; // Phase 30
     private knowledgeService: KnowledgeService; // Knowledge Graph Service
     private healerService: HealerService;
     public promptRegistry: PromptRegistry;
@@ -178,6 +180,7 @@ export class MCPServer {
         this.council = new Council(this.modelSelector);
         this.permissionManager = new PermissionManager('high'); // Default to HIGH AUTONOMY as requested
         this.auditService = new AuditService(process.cwd());
+        this.gitService = new GitService(process.cwd()); // Phase 30
         this.chainExecutor = new ChainExecutor(this);
         this.inputTools = options.inputTools || new InputTools();
         this.systemStatusTool = options.systemStatusTool || new SystemStatusTool();

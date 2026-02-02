@@ -44,18 +44,33 @@ export class AuditService {
     }
 
     getLogs(limit: number = 50): AuditEntry[] {
+        return this.query({ limit });
+    }
+
+    query(filters: { level?: string; agentId?: string; limit?: number; event?: string }): AuditEntry[] {
         if (!fs.existsSync(this.logPath)) return [];
 
         try {
             const content = fs.readFileSync(this.logPath, 'utf-8');
             const lines = content.trim().split('\n');
-            // Parse backwards to get latest first
             const entries: AuditEntry[] = [];
-            for (let i = lines.length - 1; i >= 0 && entries.length < limit; i--) {
+
+            // Read backwards for latest first
+            for (let i = lines.length - 1; i >= 0; i--) {
                 const line = lines[i].trim();
                 if (!line) continue;
+
                 try {
-                    entries.push(JSON.parse(line));
+                    const entry = JSON.parse(line);
+
+                    // Filters
+                    if (filters.level && entry.level !== filters.level) continue;
+                    if (filters.agentId && entry.agentId !== filters.agentId) continue;
+                    if (filters.event && !entry.event.includes(filters.event)) continue;
+
+                    entries.push(entry);
+
+                    if (filters.limit && entries.length >= filters.limit) break;
                 } catch (e) {
                     // Ignore corrupted lines
                 }

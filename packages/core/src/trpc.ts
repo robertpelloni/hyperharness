@@ -512,6 +512,45 @@ export const appRouter = t.router({
                 return global.mcpServerInstance.auditService.getLogs(input.limit || 50);
             }
             return [];
+        }),
+        query: t.procedure.input(z.object({
+            level: z.string().optional(),
+            agentId: z.string().optional(),
+            event: z.string().optional(),
+            limit: z.number().optional()
+        })).query(async ({ input }) => {
+            // @ts-ignore
+            if (global.mcpServerInstance) {
+                // @ts-ignore
+                return global.mcpServerInstance.auditService.query(input);
+            }
+            return [];
+        })
+    }),
+    git: t.router({
+        getLog: t.procedure.input(z.object({ limit: z.number().optional() })).query(async ({ input }) => {
+            // @ts-ignore
+            if (global.mcpServerInstance) {
+                // @ts-ignore
+                return global.mcpServerInstance.gitService.getLog(input.limit);
+            }
+            return [];
+        }),
+        getStatus: t.procedure.query(async () => {
+            // @ts-ignore
+            if (global.mcpServerInstance) {
+                // @ts-ignore
+                return global.mcpServerInstance.gitService.getStatus();
+            }
+            return { branch: 'unknown', clean: false, modified: [], staged: [] };
+        }),
+        revert: t.procedure.input(z.object({ hash: z.string() })).mutation(async ({ input }) => {
+            // @ts-ignore
+            if (global.mcpServerInstance) {
+                // @ts-ignore
+                return global.mcpServerInstance.gitService.revert(input.hash);
+            }
+            throw new Error("No Server");
         })
     }),
     roadmap: t.router({
