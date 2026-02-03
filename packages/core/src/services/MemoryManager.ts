@@ -8,6 +8,7 @@ export class MemoryManager {
     private initialized: boolean = false;
     private dbPath: string;
     private registryPath: string;
+    public graph: any; // Type as GraphMemory when strict types are ready
 
     constructor(workspaceRoot: string = process.cwd()) {
         this.dbPath = path.join(workspaceRoot, '.borg', 'db');
@@ -21,11 +22,12 @@ export class MemoryManager {
 
         // Lazy load the default LanceDB provider from @borg/memory
         // In the future, this could allow switching to Chroma/SQLite based on config
-        const { VectorStore } = await import('@borg/memory');
+        const { VectorStore, GraphMemory } = await import('@borg/memory');
 
         // Adapt existing VectorStore to VectorProvider interface
         // @ts-ignore - The types might not match perfectly yet, acting as an adapter
         const store = new VectorStore(this.dbPath);
+        this.graph = new GraphMemory();
 
         this.provider = {
             initialize: async () => store.initialize(),

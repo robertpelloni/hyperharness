@@ -29,22 +29,29 @@ export class KnowledgeService {
 
 
     public async getGraph(query?: string, depth: number = 1): Promise<{ content: any[] }> {
-        // TODO: Implement actual Vector Graph traversal
-        // For now, return the mock/stub or simple search results as nodes
-
         let nodes: GraphNode[] = [];
         let edges: GraphEdge[] = [];
 
-
         // 1. Get Root Nodes (Recent or Query-based)
-        const roots = await this.memory.search(query || "AI", 10);
+        // Combine Vector Search with Graph Search
+        const vectorDocs = await this.memory.search(query || "AI", 10);
+
+        let graphResults: string[] = [];
+        if (this.memory.graph) {
+            try {
+                graphResults = await this.memory.graph.search(query || "AI");
+            } catch (e) {
+                console.error("Graph search failed (bridge might be offline):", e);
+            }
+        }
 
         // 2. Map to Graph Format
-        roots.forEach(doc => {
+        // Process Vector Results
+        vectorDocs.forEach(doc => {
             const nodeId = doc.id || doc.metadata?.source || "unknown";
             nodes.push({
                 id: nodeId,
-                label: (doc.metadata?.title as string) || "Untitled",
+                label: (doc.metadata?.title as string) || "Untitled " + nodeId.substring(0, 8),
                 type: 'document',
                 val: 5
             });
@@ -56,6 +63,21 @@ export class KnowledgeService {
                     target: nodeId,
                     value: 1
                 });
+            }
+        });
+
+        // Process Graph Results (Cognee returns formatted strings currently, we'd parse them if they were structured)
+        // For now, treat them as insights linked to the query
+        graphResults.forEach((res, idx) => {
+            const nodeId = `insight-${idx}`;
+            nodes.push({
+                id: nodeId,
+                label: res.substring(0, 50) + "...",
+                type: 'concept',
+                val: 8
+            });
+            if (query) {
+                edges.push({ source: query, target: nodeId, value: 2 });
             }
         });
 

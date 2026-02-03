@@ -16,6 +16,7 @@
   },
   "devDependencies": {
     "@vitest/coverage-v8": "^4.0.16",
+    "@types/node": "^20.10.0",
     "turbo": "^2.7.5",
     "typescript": "^5.3.3",
     "vitest": "^4.0.16"
