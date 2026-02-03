@@ -3232,3 +3232,9 @@
 [submodule "external/frameworks/ui-tars"]
 	path = external/frameworks/ui-tars
 	url = https://github.com/bytedance/UI-TARS-desktop
+[submodule "external/frameworks/maestro"]
+	path = external/frameworks/maestro
+	url = https://github.com/pedramamini/Maestro
+[submodule "external/frameworks/agent-lightning"]
+	path = external/frameworks/agent-lightning
+	url = https://github.com/microsoft/agent-lightning
