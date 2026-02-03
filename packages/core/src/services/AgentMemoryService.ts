@@ -88,7 +88,7 @@ export class AgentMemoryService {
     private options: Required<MemoryServiceOptions>;
     private dirty = false;
 
-    constructor(options: MemoryServiceOptions) {
+    constructor(options: MemoryServiceOptions, memoryManager?: MemoryManager) {
         this.options = {
             persistDir: options.persistDir,
             sessionTTL: options.sessionTTL ?? 30 * 60 * 1000,  // 30 minutes
@@ -97,9 +97,13 @@ export class AgentMemoryService {
             maxWorkingMemories: options.maxWorkingMemories ?? 500,
         };
 
-        // Initialize MemoryManager (parent of persistDir is workspaceRoot)
-        const workspaceRoot = path.dirname(this.options.persistDir);
-        this.memoryManager = new MemoryManager(workspaceRoot);
+        if (memoryManager) {
+            this.memoryManager = memoryManager;
+        } else {
+            // Initialize MemoryManager (parent of persistDir is workspaceRoot)
+            const workspaceRoot = path.dirname(this.options.persistDir);
+            this.memoryManager = new MemoryManager(workspaceRoot);
+        }
 
         this.loadFromDisk();
     }

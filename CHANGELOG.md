@@ -1,4 +1,14 @@
 # Changelog
+## [1.7.1] - 2026-02-03
+### Added
+- **Project Structure Audit:** Detailed `docs/PROJECT_STATUS.md` analysis of Frontend/Backend gaps.
+- **Universal Instructions:** Major update to `docs/UNIVERSAL_LLM_INSTRUCTIONS.md` (v1.7.1) replacing legacy `CORE_INSTRUCTIONS.md`.
+- **Dependency Injection:** Refactored `AgentMemoryService` for testability using `MockMemoryManager`.
+
+### Changed
+- **Documentation:** Consolidated `CLAUDE.md`, `GEMINI.md`, etc., to strictly reference Universal 1.7.1.
+- **Testing:** Fixed `AgentMemoryService` unit tests (Dependency Injection).
+
 ## [1.7.0] - 2026-02-03
 ### Added
 - **Swarm Infrastructure (Phase 17):** Implemented `BaseAgent` and `SpawnerService` for specialized sub-agent orchestration.

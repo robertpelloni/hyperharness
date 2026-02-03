@@ -33,7 +33,12 @@
 - [x] **Absorb:** Injected `treesitter-expert`, `frontend-design`, `mcp-builder` skills.
 - [x] **Submodules:** Added key repos (`anthropic-skills`, `awesome-mcp-servers`).
 
-## Phase 16: The SuperAI Browser Extension (CURRENT FOCUS)
+## Phase 15b: Deep Analysis & Stabilization (CURRENT FOCUS)
+**Goal:** Comprehensive Audit, Documentation, and Test Stabilization.
+- [x] **Project Audit:** Created `docs/PROJECT_STATUS.md` analyzing Frontend/Backend stats.
+- [x] **Instruction Consolidation:** Unified `UNIVERSAL_LLM_INSTRUCTIONS.md` (v1.7.1).
+- [x] **Legacy Cleanup:** Removed `CORE_INSTRUCTIONS.md`.
+- [ ] **Extension Wiring:** Connect `apps/extension` to `packages/memory`.
 **Goal:** Bridge local context into web-based AI models (ChatGPT, Gemini, Claude.ai).
 
 ### Functionality Injection
