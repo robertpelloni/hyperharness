@@ -107,12 +107,29 @@ Please analyze this crash and provide a JSON fix.`;
                 diagnosis = JSON.parse(cleanJson);
                 console.log(JSON.stringify(diagnosis, null, 2));
 
-                // 4. Autonomous Healing Logic
-                if (diagnosis.confidence > 0.85 && diagnosis.fixProposal && diagnosis.fixProposal.replacements.length > 0) {
-                    await this.applyFix(diagnosis.fixProposal);
+                // 4. Autonomous Healing Logic with Council Approval
+                if (diagnosis.fixProposal && diagnosis.fixProposal.replacements.length > 0) {
+                    console.log(`[HealerService] 🏛️ Proposing fix to Council (Confidence: ${diagnosis.confidence})...`);
+
+                    const topic = `Healer Fix Proposal for ${diagnosis.fixProposal.filePath}: ${diagnosis.fixProposal.description}\n\nAnalysis: ${diagnosis.analysis}`;
+
+                    // Always consult if confidence is less than absolute certainty, or just always for safety
+                    const debate = await this.mcpServer.council.runConsensusSession(topic);
+
+                    if (debate.approved) {
+                        console.log("[HealerService] ✅ Council APPROVED fix. Applying...");
+                        await this.applyFix(diagnosis.fixProposal);
+                    } else {
+                        console.log(`[HealerService] ❌ Council REJECTED fix: ${debate.summary}`);
+                        await this.logEvent({
+                            type: 'FIX_REJECTED',
+                            file: diagnosis.fixProposal.filePath,
+                            timestamp: new Date().toISOString(),
+                            reason: debate.summary
+                        });
+                    }
                 } else if (diagnosis.fixProposal) {
-                    console.log("[HealerService] Confidence too low for auto-fix. Suggestion logged.");
-                    // TODO: Write to .healer_suggestion file or notify Dashboard
+                    console.log("[HealerService] No actionable replacements found in proposal.");
                 }
 
             } catch (jsonErr) {

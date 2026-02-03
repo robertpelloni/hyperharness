@@ -139,7 +139,12 @@ export default function DocsPage() {
             <header className="bg-white dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-800 px-6 py-4">
                 <div className="max-w-4xl mx-auto flex items-center justify-between">
                     <h1 className="text-2xl font-bold text-zinc-900 dark:text-white">📖 Feature Documentation</h1>
-                    <Link href="/" className="text-sm text-blue-500 hover:text-blue-400">← Back to Dashboard</Link>
+                    <div className="flex items-center gap-4 text-sm">
+                        <Link href="/docs/tools" className="text-zinc-500 hover:text-blue-500">Tools Reference</Link>
+                        <Link href="/docs/api" className="text-zinc-500 hover:text-blue-500">API Reference</Link>
+                        <Link href="/docs/architecture" className="text-zinc-500 hover:text-blue-500">Architecture</Link>
+                        <Link href="/" className="text-blue-500 hover:text-blue-400 font-medium">← Back to Dashboard</Link>
+                    </div>
                 </div>
             </header>
 
@@ -196,6 +201,31 @@ export default function DocsPage() {
                         </div>
                     </section>
                 ))}
+
+
+                <section className="mb-16 pt-8 border-t border-zinc-200 dark:border-zinc-800">
+                    <h2 className="text-xl font-bold text-zinc-900 dark:text-white mb-6">📚 Technical Deep Dives</h2>
+                    <div className="grid md:grid-cols-3 gap-6">
+                        <Link href="/docs/tools" className="block p-6 bg-zinc-50 dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800 hover:border-green-500 transition-colors group">
+                            <h3 className="text-lg font-bold text-zinc-900 dark:text-white mb-2 group-hover:text-green-500">🛠️ MCP Tools Reference</h3>
+                            <p className="text-sm text-zinc-600 dark:text-zinc-400">
+                                Complete reference for 30 MCP tools including LSP, Plan/Build, Memory, Workflow, and Code Mode.
+                            </p>
+                        </Link>
+                        <Link href="/docs/api" className="block p-6 bg-zinc-50 dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800 hover:border-blue-500 transition-colors group">
+                            <h3 className="text-lg font-bold text-zinc-900 dark:text-white mb-2 group-hover:text-blue-500">API & Technical Reference</h3>
+                            <p className="text-sm text-zinc-600 dark:text-zinc-400">
+                                Complete specification of MCP Tools, tRPC endpoints, configuration schemas, and slash commands.
+                            </p>
+                        </Link>
+                        <Link href="/docs/architecture" className="block p-6 bg-zinc-50 dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800 hover:border-purple-500 transition-colors group">
+                            <h3 className="text-lg font-bold text-zinc-900 dark:text-white mb-2 group-hover:text-purple-500">System Architecture</h3>
+                            <p className="text-sm text-zinc-600 dark:text-zinc-400">
+                                Visual diagrams of system components, data flow, indexing pipelines, and deployment topology.
+                            </p>
+                        </Link>
+                    </div>
+                </section>
 
                 {/* Footer */}
                 <footer className="mt-12 pt-8 border-t border-zinc-200 dark:border-zinc-800 text-center text-sm text-zinc-500">

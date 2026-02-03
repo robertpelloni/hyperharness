@@ -1,0 +1,73 @@
+{
+    "version": "1.0.0",
+    "last_updated": "2026-02-02",
+    "stats": {
+        "total_links": 427,
+        "processed": 5,
+        "submodules": 2
+    },
+    "categories": {
+        "mcp_servers": [
+            {
+                "id": "owlex",
+                "name": "Owlex",
+                "url": "https://github.com/agentic-mcp-tools/owlex",
+                "summary": "AI council server for parallel CLI agent deliberation.",
+                "relevance": "High - Feature parity with Director/Council logic.",
+                "status": "assimilated"
+            },
+            {
+                "id": "roundtable",
+                "name": "Roundtable",
+                "url": "https://github.com/askbudi/roundtable",
+                "summary": "Auto-discovery and unification of AI coding assistants.",
+                "relevance": "High - Infrastructure for multi-agent workflows.",
+                "status": "assimilated"
+            },
+            {
+                "id": "vscode-mcp",
+                "name": "VSCode MCP Server",
+                "url": "https://github.com/juehang/vscode-mcp-server",
+                "summary": "MCP server to bridge VS Code workspace data to LLMs.",
+                "relevance": "Critical - Reference for our apps/vscode bridge.",
+                "status": "assimilated"
+            }
+        ],
+        "universal_harness": [
+            {
+                "id": "metamcp",
+                "name": "MetaMCP",
+                "url": "https://github.com/metamcp-dev/metamcp",
+                "summary": "Ultimate MCP Hub with Proxy, Policy, and Sandbox features.",
+                "relevance": "Top Tier - We are porting Policy Middlewares and Proxy logic.",
+                "status": "integrated_partial"
+            },
+            {
+                "id": "jules-autopilot",
+                "name": "Jules Autopilot",
+                "url": "https://github.com/sbhavani/jules-app",
+                "summary": "Engineering command center for Google Jules agent.",
+                "relevance": "High - Porting Session Keeper and Council Debate logic.",
+                "status": "integrated_partial"
+            },
+            {
+                "id": "opencode-autopilot",
+                "name": "OpenCode Autopilot",
+                "url": "https://github.com/your-org/opencode-autopilot",
+                "summary": "Democratic AI council with multiple consensus modes.",
+                "relevance": "High - Ported consensus modes (supermajority, etc).",
+                "status": "integrated_partial"
+            }
+        ],
+        "skills": [
+            {
+                "id": "claude-code-skills",
+                "name": "TheNoeTrevino Claude Skills",
+                "url": "https://github.com/TheNoeTrevino/dotfiles/tree/main/claude-code/skills",
+                "summary": "Custom skills for Claude Code.",
+                "relevance": "High - Port to Borg Skills system.",
+                "status": "awaiting_ingest"
+            }
+        ]
+    }
+}

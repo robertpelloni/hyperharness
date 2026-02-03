@@ -6,7 +6,9 @@
     "permissions": [
         "activeTab",
         "scripting",
-        "storage"
+        "storage",
+        "history",
+        "debugger"
     ],
     "host_permissions": [
         "https://chatgpt.com/*",

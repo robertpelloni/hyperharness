@@ -43,6 +43,53 @@ const injectAPI = () => {
 };
 injectAPI();
 
+// Console Log Interceptor - Inject into page context
+const injectConsoleInterceptor = () => {
+    const script = document.createElement('script');
+    script.textContent = `
+    (function() {
+        const originalConsole = {
+            log: console.log.bind(console),
+            error: console.error.bind(console),
+            warn: console.warn.bind(console),
+            info: console.info.bind(console)
+        };
+        
+        const forwardLog = (level, args) => {
+            try {
+                window.postMessage({
+                    type: 'BORG_CONSOLE_LOG',
+                    level: level,
+                    message: Array.from(args).map(a => {
+                        try { return typeof a === 'object' ? JSON.stringify(a) : String(a); }
+                        catch { return '[Object]'; }
+                    }).join(' ')
+                }, '*');
+            } catch (e) {}
+        };
+        
+        console.log = function(...args) { forwardLog('log', args); return originalConsole.log(...args); };
+        console.error = function(...args) { forwardLog('error', args); return originalConsole.error(...args); };
+        console.warn = function(...args) { forwardLog('warn', args); return originalConsole.warn(...args); };
+        console.info = function(...args) { forwardLog('info', args); return originalConsole.info(...args); };
+    })();
+    `;
+    (document.head || document.documentElement).appendChild(script);
+};
+injectConsoleInterceptor();
+
+// Listen for console logs from page context
+window.addEventListener('message', (event) => {
+    if (event.source !== window) return;
+    if (event.data.type === 'BORG_CONSOLE_LOG') {
+        chrome.runtime.sendMessage({
+            type: 'CONSOLE_LOG',
+            level: event.data.level,
+            message: event.data.message
+        });
+    }
+});
+
 // Listen for messages from Background (WebSocket events or Popup)
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (message.type === 'PASTE_INTO_CHAT') {
@@ -95,5 +142,17 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
             sendResponse({ success: false, error: error.message });
         }
         return true; // Keep channel open for async response
+    }
+
+    if (message.type === 'SCRAPE_CHAT') {
+        console.log("[Borg Bridge] Scraping chat history...");
+        // This is highly dependent on the UI structure
+        // Assuming there are elements with a specific class or we can just get all text
+        const messages = Array.from(document.querySelectorAll('.chat-message, .message-content, [data-message-id]'))
+            .map(el => el.textContent?.trim())
+            .filter(t => !!t && t.length > 0);
+
+        sendResponse({ success: true, history: messages });
+        return true;
     }
 });

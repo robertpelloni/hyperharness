@@ -21,6 +21,9 @@ src/
 ## WHERE TO LOOK
 | Task | Location | Notes |
 |------|----------|-------|
+| **Director/Council** | `src/agents/Director.ts` / `Council.ts` | Autonomy supervisor with democratic voting |
+| **Quota System**    | `src/services/QuotaService.ts` | Token usage and budget tracking |
+| **Research Pipeline**| `src/scripts/researchPipeline.ts` | Automated batch link processing |
 | **Agent Logic** | `src/agents/AgentExecutor.ts` | The core ReAct loop implementation |
 | **LLM Calls** | `src/gateway/ModelGateway.ts` | Centralized LLM interface |
 | **State Mgmt** | `src/managers/*Manager.ts` | Stateful subsystems (e.g., `MemoryManager`) |

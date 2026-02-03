@@ -40,12 +40,12 @@ export function DirectorChat() {
     useEffect(() => {
         // @ts-ignore
         window.injectDirectorMessage = (text: string, autoSubmit: boolean = false) => {
-            console.log("Emergency Break: Ignoring Director injection:", text);
-            // setInput(text);
-            // if (autoSubmit) {
-            //     // Short delay to allow state update
-            //     setTimeout(() => submitMessage(text), 100);
-            // }
+            console.log("[DirectorChat] Received external injection:", text);
+            setInput(text);
+            if (autoSubmit) {
+                // Short delay to allow state update
+                setTimeout(() => submitMessage(text), 100);
+            }
         };
         return () => {
             // @ts-ignore
@@ -88,7 +88,7 @@ export function DirectorChat() {
         }
     };
 
-    const EMERGENCY_MODE = true; // Set to true temporary
+    const EMERGENCY_MODE = false; // Emergency over
 
     return (
         <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-6 shadow-xl w-full">

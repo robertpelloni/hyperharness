@@ -33,20 +33,24 @@ export class Director {
         this.llmService = new LLMService(server.modelSelector);
         // @ts-ignore
         this.council = new Council(server.modelSelector);
+        this.council.setServer(server);
 
-        // SAFE MODE: Do not auto-start monitor
-        console.log("[Director] 🛡️ Initialized in SAFE MODE. Auto-Drive is OFF.");
+        // AUTO-DRIVE: Engaged by default for the Great Absorption phase
+        console.log("[Director] ⚡ Auto-Drive Engaged by default.");
+        // We defer starting it slightly to ensure server is fully ready
+        setTimeout(() => this.startAutoDrive(), 5000);
     }
 
     // Configuration
     private config = {
         defaultTopic: "Implement Roadmap Features",
         taskCooldownMs: 10000,
-        heartbeatIntervalMs: 30000,
+        heartbeatIntervalMs: 60000,  // Increased from 30s to reduce focus stealing
         periodicSummaryMs: 120000,
         pasteToSubmitDelayMs: 1000,
         acceptDetectionMode: 'polling' as 'polling' | 'state',
-        pollingIntervalMs: 30000,
+        pollingIntervalMs: 60000,  // Increased from 30s
+        targetWindowTitle: 'Code' as string,  // Target VS Code window for keystroke injection
         // Personality & Custom Instructions
         // Personality & Custom Instructions
         persona: 'default' as 'default' | 'homie' | 'professional' | 'chaos',
@@ -64,6 +68,7 @@ export class Director {
 
         lmStudioTimeoutMs: 30000, // Timeout for LLM requests
         stopDirector: false, // Emergency Stop (Software Toggle)
+        nudgeThresholdMs: 300000, // Inactivity nudge threshold (5 mins)
         verboseLogging: false
     };
 
@@ -440,6 +445,15 @@ class ConversationMonitor {
             context += readFile('docs/USER_DIRECTIVES_INBOX.md');
             context += readFile('DIRECTOR_LIVE.md');
 
+            // Feed actual chat history (Scraped via extension)
+            try {
+                const chatRes = await this.server.executeTool('get_chat_history', {});
+                const chatHistory = chatRes.content?.[0]?.text || "";
+                if (chatHistory && !chatHistory.includes("Error")) {
+                    context += `\n### LATEST CHAT CONVERSATION (Scraped):\n${chatHistory.slice(-2000)}\n`;
+                }
+            } catch (e) { }
+
             // Generate brief summary via LLM
             // Generate brief summary via LLM
             const config = this.director.getConfig();
@@ -525,6 +539,41 @@ class ConversationMonitor {
 
         const state = await this.detectState();
         await this.respondToState(state);
+
+        // Smart Nudge for Inactivity
+        await this.checkInactivity();
+    }
+
+    private async checkInactivity() {
+        if (!this.director.getIsActive()) return;
+        if (this.isRunningTask) return;
+
+        const idleTime = Date.now() - this.lastActivityTime;
+        // @ts-ignore
+        const config = this.director.getConfig();
+        const nudgeThreshold = config.nudgeThresholdMs || 300000; // 5 minutes
+
+        if (idleTime > nudgeThreshold) {
+            console.log("[Director] 💡 System idle for too long. Sending Smart Nudge...");
+
+            // Generate a nudge based on current goal/roadmap
+            const roadmapStr = this.director.getConfig().defaultTopic || "General improvements";
+            const prompt = `The system has been idle for 5 minutes. The current focus is "${roadmapStr}". 
+            Suggest a small, specific next task for the Director to work on. Be encouraging and brief.`;
+
+            const model = await this.server.modelSelector.selectModel({ task: 'summary' });
+            const response = await this.llmService.generateText(model.provider, model.modelId, 'Director Nudge', prompt);
+
+            const nudge = response.content.trim();
+            if (config.enableChatPaste !== false) {
+                await this.server.executeTool('chat_reply', {
+                    text: `[Director]: ⚡ **Smart Nudge**: ${nudge}`,
+                    submit: false // Don't auto-submit nudges, wait for user or council
+                });
+            }
+
+            this.lastActivityTime = Date.now(); // Reset to prevent spam
+        }
     }
 
     private async detectState(): Promise<'NEEDS_APPROVAL' | 'IDLE' | 'BUSY'> {
@@ -565,21 +614,24 @@ class ConversationMonitor {
 
     private async respondToState(state: string) {
         if (state === 'NEEDS_APPROVAL') {
-            console.error("[Director] 🟢 Auto-Approving (Sending 'y' + Enter + Alt-Enter)...");
+            // @ts-ignore
+            const config = this.director.getConfig();
+            const targetWindow = config.targetWindowTitle || 'Code';
+            console.error(`[Director] 🟢 Auto-Approving (Target: ${targetWindow}, Sending 'y' + Enter + Alt-Enter)...`);
 
-            // 1. CLI Terminal Approval
-            try { await this.server.executeTool('native_input', { keys: 'y' }); } catch (e: any) { console.error(`[Auto-Approve] 'y' failed: ${e.message}`); }
+            // 1. CLI Terminal Approval (with window targeting)
+            try { await this.server.executeTool('native_input', { keys: 'y', targetWindow }); } catch (e: any) { console.error(`[Auto-Approve] 'y' failed: ${e.message}`); }
 
             await new Promise(r => setTimeout(r, 500)); // Wait 500ms
 
-            try { await this.server.executeTool('native_input', { keys: 'enter' }); } catch (e: any) { console.error(`[Auto-Approve] 'enter' 1 failed: ${e.message}`); }
+            try { await this.server.executeTool('native_input', { keys: 'enter', targetWindow }); } catch (e: any) { console.error(`[Auto-Approve] 'enter' 1 failed: ${e.message}`); }
 
             await new Promise(r => setTimeout(r, 500)); // Double Tap
-            try { await this.server.executeTool('native_input', { keys: 'enter' }); } catch (e: any) { console.error(`[Auto-Approve] 'enter' 2 failed: ${e.message}`); }
+            try { await this.server.executeTool('native_input', { keys: 'enter', targetWindow }); } catch (e: any) { console.error(`[Auto-Approve] 'enter' 2 failed: ${e.message}`); }
 
-            // 2. VS Code UI Approval (Fallback)
+            // 2. VS Code UI Approval - Alt+Enter for Accept button
             await new Promise(r => setTimeout(r, 500));
-            try { await this.server.executeTool('native_input', { keys: 'alt+enter' }); } catch (e: any) { console.error(`[Auto-Approve] 'alt+enter' failed: ${e.message}`); }
+            try { await this.server.executeTool('native_input', { keys: 'alt+enter', targetWindow }); } catch (e: any) { console.error(`[Auto-Approve] 'alt+enter' failed: ${e.message}`); }
 
             // 3. Command Palette / Inline Chat
             try { await this.server.executeTool('vscode_execute_command', { command: 'workbench.action.terminal.chat.accept' }); } catch (e) { }

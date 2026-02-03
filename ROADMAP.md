@@ -42,14 +42,15 @@
 - [x] **Memory Recording:** Background recording of browsing research.
 
 ### Browser Capabilities (via MCP)
-- [ ] **Page Scraping:** Turn current page content into markdown context (Integrating `ReaderTools`).
-- [ ] **Console Reader:** Stream browser console logs to the Borg debugger.
-- [ ] **History & Email:** Secure access to history and GMail via authenticated MCP servers.
+- [x] **Page Scraping:** Turn current page content into markdown context (Integrating `ReaderTools`).
+- [x] **Console Reader:** Stream browser console logs to the Borg debugger.
+- [x] **History & Email:** Secure access to history and GMail via authenticated MCP servers.
+- [x] **Tab Mirroring:** Real-time visual oversight of the agent's browser tab in the Dashboard.
+- [x] **Active Debugger Proxy:** Port forwarding and remote debugging bridge.
 **Goal:** Build the "Director + Swarm" Orchestrator.
 - [x] **Scaffolding:** Monorepo (Turborepo), Next.js Dashboard, Core Package initialized.
 - [x] **ModelSelector:** Quota management logic and **Automatic Fallback** (Priority).
 - [x] **Universal MCP Host:** Basic `MCPServer` wrapper created.
-- [x] **Router Logic:** Implement sub-MCP routing.
 - [x] **Router Logic:** Implement sub-MCP routing.
 - [x] **Dashboard UI:** Connect WebUI to Core via tRPC/WebSockets.
 - [x] **Modular Architecture:** Extracted `@borg/ai`, `@borg/adk`, and `@borg/agents` from Core.
@@ -90,8 +91,8 @@
 - [x] **Memory Recording:** Background recording of browsing research into the Vector Store.
 
 ### Browser Capabilities (via MCP)
-- [ ] **Page Scraping:** Turn current page content into markdown context (Integrating `browser-use/`).
-- [ ] **Console Reader:** Stream browser console logs to the Borg debugger.
+- [x] **Page Scraping:** Turn current page content into markdown context (Integrating `browser-use/`).
+- [x] **Console Reader:** Stream browser console logs to the Borg debugger.
 - [ ] **History & Email:** Secure access to history and GMail via authenticated MCP servers.
 
 ## Phase 17: Universal MCP & Orchestration
@@ -101,7 +102,7 @@
 - [x] **Proxy System:** Bridge remote/local servers.
 
 ## Phase 18: Multi-Agent Squads
-- [ ] **Consensus Protocol:** Multi-model debate engine.
+- [x] **Consensus Protocol:** Multi-model debate engine.
 - [x] **Git Worktree Squads:** Parallel coding agents in isolated branches.
 - [ ] **Local-Remote Bridge:** Sync projects between local machine and cloud instances.
 

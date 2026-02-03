@@ -1,0 +1,60 @@
+
+import dotenv from 'dotenv';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const root = path.resolve(__dirname, '../../../../');
+
+// IMMEDIATE ENV LOADING before other imports!
+dotenv.config({ path: path.join(root, '.env') });
+dotenv.config({ path: path.join(root, 'packages/core/.env') });
+
+import fs from 'fs/promises';
+import { SkillAssimilationService } from '../skills/SkillAssimilationService.js';
+import { SkillRegistry } from '../skills/SkillRegistry.js';
+import { LLMService, ModelSelector } from '@borg/ai';
+
+async function run() {
+    const indexPath = path.join(root, 'BORG_MASTER_INDEX.jsonc');
+    const skillsRoot = path.join(root, '.borg', 'skills');
+
+    console.log(`[Assimilator] Root: ${root}`);
+    console.log(`[Assimilator] ANTHROPIC_API_KEY present: ${!!process.env.ANTHROPIC_API_KEY}`);
+
+    try {
+        const content = await fs.readFile(indexPath, 'utf-8');
+        // Safe comment removal that ignores URLs and strings
+        const cleanJSON = content.replace(/\\"|"(?:\\"|[^"])*"|(\/\/.*|\/\*[\s\S]*?\*\/)/g, (m, g) => g ? "" : m);
+        const index = JSON.parse(cleanJSON);
+
+        const selector = new ModelSelector();
+        const llm = new LLMService(selector);
+        const registry = new SkillRegistry([skillsRoot]);
+        const assimilator = new SkillAssimilationService(registry, llm, skillsRoot);
+
+        const itemsToProcess = [
+            ...index.categories.mcp_servers,
+            ...index.categories.universal_harness,
+            ...index.categories.skills
+        ].filter(i => i.status === 'researching' || i.status === 'prioritized' || i.status === 'awaiting_ingest');
+
+        console.log(`[Assimilator] Ingesting ${itemsToProcess.length} items from research index...`);
+
+        for (const item of itemsToProcess) {
+            try {
+                console.log(`[Assimilator] Processing: ${item.name}`);
+                const res = await assimilator.assimilate(item, 'anthropic');
+                console.log(res);
+            } catch (e: any) {
+                console.error(`[Assimilator] Failed to assimilate ${item.name}: ${e.message}`);
+                console.error(e);
+            }
+        }
+    } catch (e: any) {
+        console.error(`[Assimilator] Error loading index: ${e.message}`);
+    }
+}
+
+run();

@@ -12,7 +12,8 @@ console.log("[MCPServer] ✓ @modelcontextprotocol/sdk");
 
 import { fileURLToPath } from 'url';
 import path from 'path';
-console.log("[MCPServer] ✓ path/url");
+import fs from 'fs';
+console.log("[MCPServer] ✓ path/url/fs");
 
 import { Router } from "./Router.js";
 console.log("[MCPServer] ✓ Router");
@@ -47,7 +48,19 @@ import { MetricsService } from "./services/MetricsService.js";
 import { PolicyService } from "./security/PolicyService.js";
 import { PromptRegistry } from "./prompts/PromptRegistry.js";
 import { WebSearchTool } from "./tools/WebSearchTool.js";
+import { DiagnosticTools } from "./tools/DiagnosticTools.js";
+import { LSPTools } from "./tools/LSPTools.js";
+import { LSPService } from "./services/LSPService.js";
+import { PlanService } from "./services/PlanService.js";
+import { CodeModeService } from "./services/CodeModeService.js";
+import { WorkflowEngine } from "./orchestrator/WorkflowEngine.js";
+import { AgentMemoryService } from "./services/AgentMemoryService.js";
+console.log("[MCPServer] ✓ Phase 51/53 Infrastructure");
+import { SkillAssimilationService } from "./skills/SkillAssimilationService.js";
 console.log("[MCPServer] ✓ SkillRegistry");
+
+import { SpawnerService } from "./agents/SpawnerService.js";
+console.log("[MCPServer] ✓ SpawnerService");
 
 import {
     FileSystemTools,
@@ -138,6 +151,7 @@ export class MCPServer {
     private configManager: ConfigManager;
     public autoTestService: AutoTestService;
     public sandboxService: SandboxService;
+    public spawnerService: SpawnerService;
     public squadService: SquadService;
     public gitWorktreeManager: GitWorktreeManager;
     public commandRegistry: CommandRegistry;
@@ -151,6 +165,15 @@ export class MCPServer {
     private knowledgeService: KnowledgeService; // Knowledge Graph Service
     private healerService: HealerService;
     public promptRegistry: PromptRegistry;
+    public skillAssimilationService: SkillAssimilationService;
+
+    // Phase 51: Core Infrastructure
+    public lspService: LSPService;
+    public planService: PlanService;
+    public codeModeService: CodeModeService;
+    public workflowEngine: WorkflowEngine;
+    public lspTools: LSPTools;
+    public agentMemoryService: AgentMemoryService;
 
     // Core Agents
     public geminiAgent: GeminiAgent;
@@ -185,6 +208,7 @@ export class MCPServer {
             path.join(process.cwd(), '.borg', 'skills'),
             path.join(process.env.HOME || process.env.USERPROFILE || '', '.borg', 'skills')
         ]);
+        this.skillRegistry.setMasterIndexPath(path.join(process.cwd(), 'BORG_MASTER_INDEX.jsonc'));
         this.director = new Director(this);
         this.council = new Council(this.modelSelector);
         this.permissionManager = new PermissionManager('high'); // Default to HIGH AUTONOMY as requested
@@ -200,11 +224,26 @@ export class MCPServer {
         this.processRegistry = options.processRegistry || new ProcessRegistry();
         this.terminalService = new TerminalService(this.processRegistry);
         this.mcpmInstaller = new McpmInstaller(path.join(process.cwd(), '.borg', 'skills'));
+        this.spawnerService = SpawnerService.getInstance();
+        this.spawnerService.setServer(this);
         this.configManager = new ConfigManager();
         this.autoTestService = new AutoTestService(process.cwd());
         this.sandboxService = new SandboxService();
         this.healerService = new HealerService(this.llmService, this);
         this.promptRegistry = new PromptRegistry();
+        this.skillAssimilationService = new SkillAssimilationService(
+            this.skillRegistry,
+            this.llmService,
+            path.join(process.cwd(), '.borg', 'skills')
+        );
+
+        // Phase 51: Core Infrastructure Services
+        this.lspService = new LSPService(process.cwd());
+        this.planService = new PlanService({ rootPath: process.cwd() });
+        this.codeModeService = new CodeModeService({ timeout: 30000, allowAsync: true });
+        this.workflowEngine = new WorkflowEngine({ persistDir: path.join(process.cwd(), '.borg', 'workflows') });
+        this.lspTools = new LSPTools(process.cwd());
+        this.agentMemoryService = new AgentMemoryService({ persistDir: path.join(process.cwd(), '.borg', 'agent_memory') });
 
         // Initialize Core Agents
         this.geminiAgent = new GeminiAgent(this.llmService, this.promptRegistry);
@@ -468,13 +507,20 @@ export class MCPServer {
                 }
             }
             else if (name === "chat_submit") {
-                if (this.wssInstance) {
+                if (this.wssInstance && this.wssInstance.clients.size > 0) {
                     this.wssInstance.clients.forEach((client: any) => {
                         if (client.readyState === 1) client.send(JSON.stringify({ type: 'SUBMIT_CHAT' }));
                     });
                     result = { content: [{ type: "text", text: "Sent SUBMIT_CHAT signal." }] };
                 } else {
-                    result = { content: [{ type: "text", text: "Error: No WebSocket server." }] };
+                    // FALLBACK: Use Native Input for Alt-Enter
+                    console.error("[MCPServer] No Extension bridge. Falling back to Native Input for Alt-Enter.");
+                    try {
+                        const status = await this.inputTools.sendKeys('alt+enter');
+                        result = { content: [{ type: "text", text: `Fallback: ${status}` }] };
+                    } catch (e: any) {
+                        result = { content: [{ type: "text", text: `Error: No extension AND native input failed: ${e.message}` }] };
+                    }
                 }
             }
             else if (name === "click_element") {
@@ -525,12 +571,18 @@ export class MCPServer {
             else if (name === "get_knowledge_graph") {
                 result = await this.knowledgeService.getGraph(args?.query, args?.depth);
             }
+            else if (name === "system_diagnostics") {
+                const status = await DiagnosticTools.checkHealth();
+                result = { content: [{ type: "text", text: DiagnosticTools.getDiagnosticsMarkup(status) }] };
+            }
             else if (name === "native_input") {
                 const keys = args?.keys as string;
-                // Use Direct InputTools. DON'T FORCE FOCUS by default (let it hit active terminal)
+                const targetWindow = args?.targetWindow as string | undefined;
+                const forceFocus = args?.forceFocus as boolean ?? false;
+                // Use Direct InputTools with optional window targeting
                 try {
                     const toolStartTime = Date.now();
-                    const status = await this.inputTools.sendKeys(keys);
+                    const status = await this.inputTools.sendKeys(keys, forceFocus, targetWindow);
                     const toolDuration = Date.now() - toolStartTime;
 
                     this.metricsService.track('tool_call', 1, { tool: name, success: 'true' });
@@ -638,6 +690,31 @@ export class MCPServer {
                     });
                 }
             }
+            else if (name === "get_chat_history") {
+                if (!this.wssInstance || this.wssInstance.clients.size === 0) {
+                    result = { content: [{ type: "text", text: "Error: No Extension connected." }] };
+                } else {
+                    result = await new Promise((resolve) => {
+                        const requestId = `req_chat_${Date.now()}`;
+                        const timeout = setTimeout(() => {
+                            this.pendingRequests.delete(requestId);
+                            resolve({ content: [{ type: "text", text: "Error: Chat scrape timed out." }] });
+                        }, 5000);
+
+                        this.pendingRequests.set(requestId, (data: any) => {
+                            clearTimeout(timeout);
+                            const history = data.history || [];
+                            resolve({ content: [{ type: "text", text: history.join('\n') }] });
+                        });
+
+                        this.wssInstance.clients.forEach((client: any) => {
+                            if (client.readyState === 1) {
+                                client.send(JSON.stringify({ type: 'GET_CHAT_HISTORY', requestId }));
+                            }
+                        });
+                    });
+                }
+            }
             else if (name === "vscode_get_notifications") {
                 result = await this.broadcastRequestAndAwait('GET_NOTIFICATIONS');
             }
@@ -658,6 +735,119 @@ export class MCPServer {
                 result = {
                     content: [{ type: "text", text: resultStr }]
                 };
+            }
+            else if (name === "browser_get_history") {
+                if (!this.wssInstance || this.wssInstance.clients.size === 0) {
+                    result = { content: [{ type: "text", text: "Error: No Browser Extension connected." }] };
+                } else {
+                    result = await new Promise((resolve) => {
+                        const requestId = `req_${Date.now()}_${Math.random()}`;
+                        const timeout = setTimeout(() => {
+                            this.pendingRequests.delete(requestId);
+                            resolve({ content: [{ type: "text", text: "Error: Browser timed out." }] });
+                        }, 5000);
+
+                        this.pendingRequests.set(requestId, (data: any) => {
+                            clearTimeout(timeout);
+                            if (Array.isArray(data)) {
+                                const historyText = data.map((item: any) => `- [${item.title || 'Untitled'}](${item.url}) (Visits: ${item.visitCount})`).join('\n');
+                                resolve({ content: [{ type: "text", text: historyText || "No history found for this query." }] });
+                            } else {
+                                resolve({ content: [{ type: "text", text: "Error: Unexpected data format from browser." }] });
+                            }
+                        });
+
+                        this.wssInstance.clients.forEach((client: any) => {
+                            if (client.readyState === 1) {
+                                client.send(JSON.stringify({
+                                    jsonrpc: "2.0",
+                                    method: 'browser_get_history',
+                                    params: { query: args.query, maxResults: args.maxResults },
+                                    id: requestId
+                                }));
+                            }
+                        });
+                    });
+                }
+            }
+            else if (name === "browser_debug") {
+                if (!this.wssInstance || this.wssInstance.clients.size === 0) {
+                    result = { content: [{ type: "text", text: "Error: No Browser Extension connected." }] };
+                } else {
+                    result = await new Promise((resolve) => {
+                        const requestId = `req_${Date.now()}_${Math.random()}`;
+                        const timeout = setTimeout(() => {
+                            this.pendingRequests.delete(requestId);
+                            resolve({ content: [{ type: "text", text: "Error: Browser timed out." }] });
+                        }, 10000);
+
+                        this.pendingRequests.set(requestId, (data: any) => {
+                            clearTimeout(timeout);
+                            resolve({ content: [{ type: "text", text: JSON.stringify(data, null, 2) }] });
+                        });
+
+                        this.wssInstance.clients.forEach((client: any) => {
+                            if (client.readyState === 1) {
+                                client.send(JSON.stringify({
+                                    jsonrpc: "2.0",
+                                    method: 'browser_debug',
+                                    params: args,
+                                    id: requestId
+                                }));
+                            }
+                        });
+                    });
+                }
+            }
+            else if (name === "browser_proxy_fetch") {
+                if (!this.wssInstance || this.wssInstance.clients.size === 0) {
+                    result = { content: [{ type: "text", text: "Error: No Browser Extension connected." }] };
+                } else {
+                    result = await new Promise((resolve) => {
+                        const requestId = `req_${Date.now()}_${Math.random()}`;
+                        const timeout = setTimeout(() => {
+                            this.pendingRequests.delete(requestId);
+                            resolve({ content: [{ type: "text", text: "Error: Browser timed out." }] });
+                        }, 15000);
+
+                        this.pendingRequests.set(requestId, (data: any) => {
+                            clearTimeout(timeout);
+                            resolve({ content: [{ type: "text", text: JSON.stringify(data, null, 2) }] });
+                        });
+
+                        this.wssInstance.clients.forEach((client: any) => {
+                            if (client.readyState === 1) {
+                                client.send(JSON.stringify({
+                                    jsonrpc: "2.0",
+                                    method: 'browser_proxy_fetch',
+                                    params: args,
+                                    id: requestId
+                                }));
+                            }
+                        });
+                    });
+                }
+            }
+            // Swarm Tools
+            else if (name === "spawn_agent") {
+                const id = this.spawnerService.spawn(args.type, args.task);
+                result = { content: [{ type: "text", text: `Agent spawned successfully. ID: ${id}` }] };
+            }
+            else if (name === "list_agents") {
+                const agents = this.spawnerService.listAgents();
+                result = { content: [{ type: "text", text: JSON.stringify(agents, null, 2) }] };
+            }
+            else if (name === "kill_agent") {
+                const success = this.spawnerService.killAgent(args.agentId);
+                result = { content: [{ type: "text", text: success ? "Agent terminated." : "Failed to terminate agent (might not be running)." }] };
+            }
+            else if (name === "get_agent_result") {
+                const agent = this.spawnerService.getAgent(args.agentId);
+                if (!agent) {
+                    result = { content: [{ type: "text", text: "Error: Agent not found." }] };
+                } else {
+                    result = { content: [{ type: "text", text: JSON.stringify(agent.result || { status: agent.status }, null, 2) }] };
+                }
             }
             else if (name === "read_page") {
                 if (!this.wssInstance || this.wssInstance.clients.size === 0) {
@@ -962,13 +1152,19 @@ export class MCPServer {
                     content: [{ type: "text", text: text }]
                 };
             }
-            else if (name === "system_status") {
-                const status = await this.systemStatusTool.getSystemStatus();
+            else if (name === "system_diagnostics") {
+                const status = await DiagnosticTools.checkHealth();
                 result = {
                     content: [{ type: "text", text: JSON.stringify(status, null, 2) }]
                 };
             }
-            else if (name === "chain_tools") {
+            else if (name === "assimilate_skill") {
+                const response = await this.skillAssimilationService.assimilate(args as any);
+                result = {
+                    content: [{ type: "text", text: response }]
+                };
+            }
+            else if (name === "get_status") {
                 result = {
                     content: [{ type: "text", text: JSON.stringify(await this.chainExecutor.executeChain(args as unknown as ChainRequest), null, 2) }]
                 };
@@ -980,6 +1176,227 @@ export class MCPServer {
                 result = {
                     content: [{ type: "text", text: report }]
                 };
+            }
+            // Phase 51: LSP Tools
+            else if (name === "find_symbol") {
+                const output = await this.lspTools.findSymbol(args);
+                result = { content: [{ type: "text", text: output }] };
+            }
+            else if (name === "find_references") {
+                const output = await this.lspTools.findReferences(args);
+                result = { content: [{ type: "text", text: output }] };
+            }
+            else if (name === "go_to_definition") {
+                const output = await this.lspTools.goToDefinition(args);
+                result = { content: [{ type: "text", text: output }] };
+            }
+            else if (name === "get_symbols") {
+                const output = await this.lspTools.getSymbols(args);
+                result = { content: [{ type: "text", text: output }] };
+            }
+            else if (name === "rename_symbol") {
+                const output = await this.lspTools.renameSymbol(args);
+                result = { content: [{ type: "text", text: output }] };
+            }
+            else if (name === "search_symbols") {
+                const output = await this.lspTools.searchSymbols(args);
+                result = { content: [{ type: "text", text: output }] };
+            }
+            // Phase 51: Plan/Build Mode Tools
+            else if (name === "plan_mode") {
+                this.planService.enterPlanMode();
+                result = { content: [{ type: "text", text: `Switched to PLAN mode. Changes will be staged but not applied.` }] };
+            }
+            else if (name === "build_mode") {
+                this.planService.enterBuildMode();
+                result = { content: [{ type: "text", text: `Switched to BUILD mode. Approved changes can now be applied.` }] };
+            }
+            else if (name === "propose_change") {
+                const diff = this.planService.proposeChange(args.file_path, args.content, args.description);
+                result = { content: [{ type: "text", text: `Proposed change for ${args.file_path} (diff ID: ${diff.id})` }] };
+            }
+            else if (name === "review_changes") {
+                const pending = this.planService.getPendingChanges();
+                const summary = pending.map(d => `[${d.id}] ${d.filePath} - ${d.status}`).join('\n');
+                result = { content: [{ type: "text", text: pending.length === 0 ? 'No pending changes.' : `Pending changes:\n${summary}` }] };
+            }
+            else if (name === "approve_change") {
+                const success = this.planService.approveDiff(args.diff_id);
+                result = { content: [{ type: "text", text: success ? `Approved diff ${args.diff_id}` : `Failed to approve diff ${args.diff_id}` }] };
+            }
+            else if (name === "apply_changes") {
+                const applied = this.planService.applyApprovedChanges();
+                if (!applied) {
+                    result = { content: [{ type: "text", text: `Cannot apply changes. Switch to BUILD mode first.` }] };
+                } else {
+                    result = { content: [{ type: "text", text: `Applied ${applied.applied.length} changes. Failed: ${applied.failed.length}` }] };
+                }
+            }
+            else if (name === "plan_status") {
+                const status = this.planService.getStatus();
+                result = { content: [{ type: "text", text: status }] };
+            }
+            else if (name === "create_checkpoint") {
+                const checkpoint = this.planService.createCheckpoint(args.name, args.description);
+                result = { content: [{ type: "text", text: `Created checkpoint: ${checkpoint.name} (${checkpoint.id})` }] };
+            }
+            else if (name === "rollback") {
+                const success = this.planService.rollback(args.checkpoint_id);
+                result = { content: [{ type: "text", text: success ? `Rolled back to checkpoint ${args.checkpoint_id}` : 'Rollback failed' }] };
+            }
+            // Phase 53: Memory Tools
+            else if (name === "add_memory") {
+                const type = args.type || 'working';
+                const namespace = args.namespace || 'project';
+                const memory = this.agentMemoryService.add(args.content, type, namespace, {
+                    source: args.source || 'tool',
+                    tags: args.tags || [],
+                });
+                result = { content: [{ type: "text", text: `Added ${type} memory: ${memory.id}` }] };
+            }
+            else if (name === "search_memory") {
+                const memories = this.agentMemoryService.search(args.query, {
+                    type: args.type,
+                    namespace: args.namespace,
+                    limit: args.limit || 10,
+                });
+                if (memories.length === 0) {
+                    result = { content: [{ type: "text", text: `No memories found matching "${args.query}"` }] };
+                } else {
+                    const formatted = memories.map(m =>
+                        `[${m.type}/${m.namespace}] ${m.content.substring(0, 100)}${m.content.length > 100 ? '...' : ''} (score: ${(m.score ?? 0).toFixed(2)})`
+                    ).join('\n');
+                    result = { content: [{ type: "text", text: `Found ${memories.length} memories:\n${formatted}` }] };
+                }
+            }
+            else if (name === "get_recent_memories") {
+                const memories = this.agentMemoryService.getRecent(args.limit || 10, {
+                    type: args.type,
+                    namespace: args.namespace,
+                });
+                if (memories.length === 0) {
+                    result = { content: [{ type: "text", text: 'No recent memories.' }] };
+                } else {
+                    const formatted = memories.map(m =>
+                        `[${m.type}/${m.namespace}] ${m.content.substring(0, 100)}${m.content.length > 100 ? '...' : ''}`
+                    ).join('\n');
+                    result = { content: [{ type: "text", text: `Recent memories:\n${formatted}` }] };
+                }
+            }
+            else if (name === "memory_stats") {
+                const stats = this.agentMemoryService.getStats();
+                const formatted = Object.entries(stats).map(([k, v]) => `${k}: ${v}`).join('\n');
+                result = { content: [{ type: "text", text: `Memory Statistics:\n${formatted}` }] };
+            }
+            else if (name === "clear_session_memory") {
+                this.agentMemoryService.clearSession();
+                result = { content: [{ type: "text", text: 'Cleared all session memories.' }] };
+            }
+            // Phase 54: Workflow Tools
+            else if (name === "run_workflow") {
+                const workflowId = args.workflow_id;
+                const input = args.input || {};
+                try {
+                    const runResult = await this.workflowEngine.start(workflowId, { input });
+                    result = {
+                        content: [{
+                            type: "text",
+                            text: `Workflow ${workflowId} completed.\nRun ID: ${runResult.id}\nStatus: ${runResult.status}\nNode: ${runResult.currentNode}\nOutput: ${JSON.stringify(runResult.state?.output ?? runResult.state, null, 2).substring(0, 500)}`
+                        }]
+                    };
+                } catch (e: any) {
+                    result = { content: [{ type: "text", text: `Workflow error: ${e.message}` }] };
+                }
+            }
+            else if (name === "list_workflows") {
+                const executions = this.workflowEngine.listExecutions();
+                if (executions.length === 0) {
+                    result = { content: [{ type: "text", text: 'No workflow executions. Use run_workflow to start a workflow.' }] };
+                } else {
+                    const formatted = executions.map(e => `- ${e.id}: ${e.workflowId} [${e.status}] at ${e.currentNode}`).join('\n');
+                    result = { content: [{ type: "text", text: `Workflow executions:\n${formatted}` }] };
+                }
+            }
+            else if (name === "workflow_status") {
+                const runId = args.run_id;
+                const execution = this.workflowEngine.getExecution(runId);
+                if (!execution) {
+                    result = { content: [{ type: "text", text: `No workflow run found with ID: ${runId}` }] };
+                } else {
+                    result = {
+                        content: [{
+                            type: "text",
+                            text: `Workflow Run: ${runId}\nWorkflow: ${execution.workflowId}\nStatus: ${execution.status}\nCurrent Node: ${execution.currentNode}\nLast Updated: ${execution.updatedAt}`
+                        }]
+                    };
+                }
+            }
+            else if (name === "approve_workflow") {
+                const runId = args.run_id;
+                const approved = args.approved ?? true;
+                try {
+                    if (approved) {
+                        await this.workflowEngine.approve(runId);
+                    } else {
+                        this.workflowEngine.reject(runId, 'Rejected via approve_workflow tool');
+                    }
+                    result = { content: [{ type: "text", text: approved ? `Approved workflow ${runId}` : `Rejected workflow ${runId}` }] };
+                } catch (e: any) {
+                    result = { content: [{ type: "text", text: `Approval error: ${e.message}` }] };
+                }
+            }
+            // Phase 55: Code Mode Tools
+            else if (name === "execute_code") {
+                const code = args.code;
+                if (!this.codeModeService.isEnabled()) {
+                    result = { content: [{ type: "text", text: 'Code Mode is disabled. Use enable_code_mode first.' }] };
+                } else {
+                    try {
+                        const execResult = await this.codeModeService.executeCode(code, args.context || {});
+                        if (execResult.success) {
+                            result = {
+                                content: [{
+                                    type: "text",
+                                    text: `Execution successful (${execResult.executionTime}ms)\nTools called: ${execResult.toolsCalled.join(', ') || 'none'}\nOutput:\n${execResult.output || execResult.result || 'No output'}`
+                                }]
+                            };
+                        } else {
+                            result = { content: [{ type: "text", text: `Execution failed: ${execResult.error}\nOutput: ${execResult.output || 'none'}` }] };
+                        }
+                    } catch (e: any) {
+                        result = { content: [{ type: "text", text: `Code execution error: ${e.message}` }] };
+                    }
+                }
+            }
+            else if (name === "enable_code_mode") {
+                this.codeModeService.enable();
+                result = { content: [{ type: "text", text: 'Code Mode enabled. You can now execute code via execute_code.' }] };
+            }
+            else if (name === "disable_code_mode") {
+                this.codeModeService.disable();
+                result = { content: [{ type: "text", text: 'Code Mode disabled.' }] };
+            }
+            else if (name === "code_mode_status") {
+                const enabled = this.codeModeService.isEnabled();
+                const registry = this.codeModeService.getRegistry();
+                const toolCount = registry.getNames().length;
+                const reduction = this.codeModeService.calculateContextReduction();
+                result = {
+                    content: [{
+                        type: "text",
+                        text: `Code Mode Status:\n- Enabled: ${enabled}\n- Registered tools: ${toolCount}\n- Context reduction: ${reduction.reduction}% (${reduction.traditional} → ${reduction.codeMode} chars)`
+                    }]
+                };
+            }
+            else if (name === "list_code_tools") {
+                const registry = this.codeModeService.getRegistry();
+                const tools = registry.getAll();
+                if (tools.length === 0) {
+                    result = { content: [{ type: "text", text: 'No tools registered in Code Mode.' }] };
+                } else {
+                    const formatted = tools.map(t => `- ${t.name}: ${t.description}`).join('\n');
+                    result = { content: [{ type: "text", text: `Code Mode Tools:\n${formatted}` }] };
+                }
             }
             else {
                 // Check Standard Library
@@ -1085,9 +1502,104 @@ export class MCPServer {
                     inputSchema: { type: "object", properties: {} },
                 },
                 {
+                    name: "system_diagnostics",
+                    description: "Run advanced health checks on Core, Web UI, and Bridges",
+                    inputSchema: { type: "object", properties: {} },
+                },
+                {
+                    name: "assimilate_skill",
+                    description: "Convert a research item into a functional Borg Skill (runbook)",
+                    inputSchema: {
+                        type: "object",
+                        properties: {
+                            id: { type: "string" },
+                            name: { type: "string" },
+                            url: { type: "string" },
+                            summary: { type: "string" },
+                            relevance: { type: "string" }
+                        },
+                        required: ["name", "url", "summary", "relevance"]
+                    }
+                },
+                {
                     name: "memorize_page",
                     description: "Save the current browser page content to long-term memory",
                     inputSchema: { type: "object", properties: {} },
+                },
+                {
+                    name: "browser_get_history",
+                    description: "Get browser history from the connected browser extension",
+                    inputSchema: {
+                        type: "object",
+                        properties: {
+                            query: { type: "string", description: "Search query for history items" },
+                            maxResults: { type: "number", description: "Maximum number of results to return (default 20)" }
+                        }
+                    }
+                },
+                {
+                    name: "browser_debug",
+                    description: "Deep browser debugging via CDP (Chrome DevTools Protocol)",
+                    inputSchema: {
+                        type: "object",
+                        properties: {
+                            action: { type: "string", enum: ["attach", "detach", "command"], description: "Action to perform" },
+                            method: { type: "string", description: "CDP method to call (e.g. Runtime.evaluate)" },
+                            params: { type: "object", description: "CDP parameters" }
+                        },
+                        required: ["action"]
+                    }
+                },
+                {
+                    name: "browser_proxy_fetch",
+                    description: "Perform a network fetch through the browser extension (bypasses CORS, reaches local servers)",
+                    inputSchema: {
+                        type: "object",
+                        properties: {
+                            url: { type: "string", description: "URL to fetch" },
+                            options: { type: "object", description: "Fetch options (method, headers, body)" }
+                        },
+                        required: ["url"]
+                    }
+                },
+                {
+                    name: "spawn_agent",
+                    description: "Spawn a specialized sub-agent for a parallel task",
+                    inputSchema: {
+                        type: "object",
+                        properties: {
+                            type: { type: "string", enum: ["research", "code", "custom"], description: "Agent type" },
+                            task: { type: "string", description: "Detailed task description for the agent" }
+                        },
+                        required: ["type", "task"]
+                    }
+                },
+                {
+                    name: "list_agents",
+                    description: "List all active sub-agents in the swarm",
+                    inputSchema: { type: "object", properties: {} }
+                },
+                {
+                    name: "kill_agent",
+                    description: "Terminate a running sub-agent",
+                    inputSchema: {
+                        type: "object",
+                        properties: {
+                            agentId: { type: "string", description: "UUID of the agent to kill" }
+                        },
+                        required: ["agentId"]
+                    }
+                },
+                {
+                    name: "get_agent_result",
+                    description: "Retrieve the final result of a completed agent task",
+                    inputSchema: {
+                        type: "object",
+                        properties: {
+                            agentId: { type: "string", description: "UUID of the agent" }
+                        },
+                        required: ["agentId"]
+                    }
                 },
                 {
                     name: "start_task",
@@ -1331,6 +1843,280 @@ export class MCPServer {
                             depth: { type: "number", description: "Traversal depth (default: 1)" }
                         }
                     }
+                },
+                // Phase 51: LSP Tools
+                {
+                    name: "find_symbol",
+                    description: "Find a symbol (function, class, variable) by name in a file",
+                    inputSchema: {
+                        type: "object",
+                        properties: {
+                            file_path: { type: "string", description: "Relative path to the file" },
+                            symbol_name: { type: "string", description: "Name of the symbol to find" }
+                        },
+                        required: ["file_path", "symbol_name"]
+                    }
+                },
+                {
+                    name: "find_references",
+                    description: "Find all references to a symbol at a position",
+                    inputSchema: {
+                        type: "object",
+                        properties: {
+                            file_path: { type: "string" },
+                            line: { type: "number", description: "Line number (0-indexed)" },
+                            character: { type: "number", description: "Character position (0-indexed)" }
+                        },
+                        required: ["file_path", "line", "character"]
+                    }
+                },
+                {
+                    name: "go_to_definition",
+                    description: "Navigate to the definition of a symbol at a position",
+                    inputSchema: {
+                        type: "object",
+                        properties: {
+                            file_path: { type: "string" },
+                            line: { type: "number" },
+                            character: { type: "number" }
+                        },
+                        required: ["file_path", "line", "character"]
+                    }
+                },
+                {
+                    name: "get_symbols",
+                    description: "Get all symbols (functions, classes, variables) in a file",
+                    inputSchema: {
+                        type: "object",
+                        properties: {
+                            file_path: { type: "string", description: "Relative path to the file" }
+                        },
+                        required: ["file_path"]
+                    }
+                },
+                {
+                    name: "rename_symbol",
+                    description: "Rename a symbol across the entire project (semantic rename)",
+                    inputSchema: {
+                        type: "object",
+                        properties: {
+                            file_path: { type: "string" },
+                            line: { type: "number" },
+                            character: { type: "number" },
+                            new_name: { type: "string", description: "New name for the symbol" }
+                        },
+                        required: ["file_path", "line", "character", "new_name"]
+                    }
+                },
+                {
+                    name: "search_symbols",
+                    description: "Search for symbols by name across the entire project",
+                    inputSchema: {
+                        type: "object",
+                        properties: {
+                            query: { type: "string", description: "Search query for symbol names" }
+                        },
+                        required: ["query"]
+                    }
+                },
+                // Phase 51: Plan/Build Mode Tools
+                {
+                    name: "plan_mode",
+                    description: "Switch to PLAN mode - explore/propose changes without applying",
+                    inputSchema: { type: "object", properties: {} }
+                },
+                {
+                    name: "build_mode",
+                    description: "Switch to BUILD mode - approved changes can be applied",
+                    inputSchema: { type: "object", properties: {} }
+                },
+                {
+                    name: "propose_change",
+                    description: "Propose a file change (staged in diff sandbox)",
+                    inputSchema: {
+                        type: "object",
+                        properties: {
+                            file_path: { type: "string", description: "Path to file to change" },
+                            content: { type: "string", description: "New file content" },
+                            description: { type: "string", description: "Description of the change" }
+                        },
+                        required: ["file_path", "content"]
+                    }
+                },
+                {
+                    name: "review_changes",
+                    description: "View all pending changes in the diff sandbox",
+                    inputSchema: { type: "object", properties: {} }
+                },
+                {
+                    name: "approve_change",
+                    description: "Approve a pending diff by ID",
+                    inputSchema: {
+                        type: "object",
+                        properties: {
+                            diff_id: { type: "string", description: "ID of the diff to approve" }
+                        },
+                        required: ["diff_id"]
+                    }
+                },
+                {
+                    name: "apply_changes",
+                    description: "Apply all approved changes to filesystem (BUILD mode only)",
+                    inputSchema: { type: "object", properties: {} }
+                },
+                {
+                    name: "plan_status",
+                    description: "Get current mode (PLAN/BUILD) and diff sandbox status",
+                    inputSchema: { type: "object", properties: {} }
+                },
+                {
+                    name: "create_checkpoint",
+                    description: "Create a checkpoint for rollback",
+                    inputSchema: {
+                        type: "object",
+                        properties: {
+                            name: { type: "string", description: "Checkpoint name" },
+                            description: { type: "string", description: "Optional description" }
+                        },
+                        required: ["name"]
+                    }
+                },
+                {
+                    name: "rollback",
+                    description: "Rollback to a previous checkpoint",
+                    inputSchema: {
+                        type: "object",
+                        properties: {
+                            checkpoint_id: { type: "string", description: "ID of checkpoint to restore" }
+                        },
+                        required: ["checkpoint_id"]
+                    }
+                },
+                // Phase 53: Memory Tools
+                {
+                    name: "add_memory",
+                    description: "Add a memory to the agent's knowledge base",
+                    inputSchema: {
+                        type: "object",
+                        properties: {
+                            content: { type: "string", description: "Memory content to store" },
+                            type: { type: "string", enum: ["session", "working", "long_term"], description: "Memory tier (default: working)" },
+                            namespace: { type: "string", enum: ["user", "agent", "project"], description: "Memory namespace (default: project)" },
+                            source: { type: "string", description: "Source of the memory" },
+                            tags: { type: "array", items: { type: "string" }, description: "Tags for categorization" }
+                        },
+                        required: ["content"]
+                    }
+                },
+                {
+                    name: "search_memory",
+                    description: "Search memories by content similarity",
+                    inputSchema: {
+                        type: "object",
+                        properties: {
+                            query: { type: "string", description: "Search query" },
+                            type: { type: "string", enum: ["session", "working", "long_term"], description: "Filter by memory tier" },
+                            namespace: { type: "string", enum: ["user", "agent", "project"], description: "Filter by namespace" },
+                            limit: { type: "number", description: "Max results (default: 10)" }
+                        },
+                        required: ["query"]
+                    }
+                },
+                {
+                    name: "get_recent_memories",
+                    description: "Get most recently accessed memories",
+                    inputSchema: {
+                        type: "object",
+                        properties: {
+                            limit: { type: "number", description: "Max results (default: 10)" },
+                            type: { type: "string", enum: ["session", "working", "long_term"] },
+                            namespace: { type: "string", enum: ["user", "agent", "project"] }
+                        }
+                    }
+                },
+                {
+                    name: "memory_stats",
+                    description: "Get memory system statistics",
+                    inputSchema: { type: "object", properties: {} }
+                },
+                {
+                    name: "clear_session_memory",
+                    description: "Clear all ephemeral session memories",
+                    inputSchema: { type: "object", properties: {} }
+                },
+                // Phase 54: Workflow Tools
+                {
+                    name: "run_workflow",
+                    description: "Run a registered workflow with input",
+                    inputSchema: {
+                        type: "object",
+                        properties: {
+                            workflow_id: { type: "string", description: "ID of the workflow to run" },
+                            input: { type: "object", description: "Input data for the workflow" }
+                        },
+                        required: ["workflow_id"]
+                    }
+                },
+                {
+                    name: "list_workflows",
+                    description: "List all registered workflows",
+                    inputSchema: { type: "object", properties: {} }
+                },
+                {
+                    name: "workflow_status",
+                    description: "Get the status of a workflow run",
+                    inputSchema: {
+                        type: "object",
+                        properties: {
+                            run_id: { type: "string", description: "ID of the workflow run" }
+                        },
+                        required: ["run_id"]
+                    }
+                },
+                {
+                    name: "approve_workflow",
+                    description: "Approve or reject a workflow waiting for human-in-the-loop",
+                    inputSchema: {
+                        type: "object",
+                        properties: {
+                            run_id: { type: "string", description: "ID of the workflow run" },
+                            approved: { type: "boolean", description: "Whether to approve (true) or reject (false)" }
+                        },
+                        required: ["run_id"]
+                    }
+                },
+                // Phase 55: Code Mode Tools
+                {
+                    name: "execute_code",
+                    description: "Execute JavaScript/TypeScript code in a sandboxed environment with tool access",
+                    inputSchema: {
+                        type: "object",
+                        properties: {
+                            code: { type: "string", description: "JavaScript/TypeScript code to execute" },
+                            context: { type: "object", description: "Additional context variables to inject" }
+                        },
+                        required: ["code"]
+                    }
+                },
+                {
+                    name: "enable_code_mode",
+                    description: "Enable Code Mode for efficient tool calling via code execution",
+                    inputSchema: { type: "object", properties: {} }
+                },
+                {
+                    name: "disable_code_mode",
+                    description: "Disable Code Mode",
+                    inputSchema: { type: "object", properties: {} }
+                },
+                {
+                    name: "code_mode_status",
+                    description: "Get Code Mode status, registered tools, and context reduction stats",
+                    inputSchema: { type: "object", properties: {} }
+                },
+                {
+                    name: "list_code_tools",
+                    description: "List tools available in Code Mode",
+                    inputSchema: { type: "object", properties: {} }
                 }
             ];
 
@@ -1384,7 +2170,20 @@ export class MCPServer {
         if (this.wsServer) {
             console.log("[MCPServer] Starting WebSocket Server...");
             const PORT = 3001;
-            const httpServer = http.createServer();
+            const httpServer = http.createServer((req, res) => {
+                if (req.url === '/health') {
+                    res.writeHead(200, { 'Content-Type': 'application/json' });
+                    res.end(JSON.stringify({
+                        status: 'online',
+                        uptime: process.uptime(),
+                        timestamp: Date.now(),
+                        version: '0.1.0'
+                    }));
+                } else {
+                    res.writeHead(404);
+                    res.end();
+                }
+            });
             const wss = new WebSocketServer({ server: httpServer });
             this.wssInstance = wss;
             const wsTransport = new WebSocketServerTransport(wss);
@@ -1402,12 +2201,29 @@ export class MCPServer {
                 ws.on('message', (data: any) => {
                     try {
                         const msg = JSON.parse(data.toString());
-                        if (msg.type === 'STATUS_UPDATE' && msg.requestId) {
+                        // Robust Response Handling: Any message with a requestId should resolve a pending promise
+                        if (msg.requestId && this.pendingRequests.has(msg.requestId)) {
                             const resolve = this.pendingRequests.get(msg.requestId);
                             if (resolve) {
-                                resolve(msg.status);
+                                // If it's a STATUS_UPDATE, we unpack .status for legacy parity
+                                // Otherwise we pass the whole message so the caller can extract what they need (e.g. .history, .logs)
+                                if (msg.type === 'STATUS_UPDATE') {
+                                    resolve(msg.status);
+                                } else {
+                                    resolve(msg);
+                                }
                                 this.pendingRequests.delete(msg.requestId);
                             }
+                        }
+
+                        // Special handling for legacy/specific types if needed (though the above handles most)
+                        if (msg.type === 'BROWSER_MIRROR_UPDATE') {
+                            // Relay to all other clients (Web UI)
+                            wss.clients.forEach((client: any) => {
+                                if (client !== ws && client.readyState === 1) {
+                                    client.send(data.toString());
+                                }
+                            });
                         }
 
                         if (msg.type === 'USER_ACTIVITY') {
@@ -1425,59 +2241,4 @@ export class MCPServer {
                             const icon = msg.level === 'error' ? '🔴' : msg.level === 'warn' ? '🟡' : '🔵';
                             console.log(`[Browser] ${icon} ${msg.content} (${msg.url})`);
                             if (msg.level === 'error') {
-                                this.auditService.log('BROWSER_ERROR', { url: msg.url, error: msg.content }, 'ERROR');
-                                // TRIGGER HEALER
-                                this.healerService.heal({ url: msg.url, error: msg.content, timestamp: msg.timestamp })
-                                    .catch(e => console.error("Healer Error:", e));
-                            }
-                        }
-                    } catch (e) {
-                        // Ignore non-JSON
-                    }
-                });
-            });
-        } else {
-            console.log("[MCPServer] Skipping WebSocket (No wsServer instance).");
-        }
-
-        // 3. Connect to Supervisor (Native Automation)
-        console.log("[MCPServer] Connecting to Supervisor...");
-
-        try {
-            console.log(`[MCPServer] DEBUG __dirname: ${__dirname}`);
-            const rootDir = this.findMonorepoRoot(__dirname);
-            console.log(`[MCPServer] DEBUG rootDir: ${rootDir}`);
-            if (rootDir) {
-                const supervisorPath = path.join(rootDir, 'packages', 'borg-supervisor', 'dist', 'index.js');
-                console.log(`[MCPServer] Supervisor Path Resolved: ${supervisorPath}`);
-
-                await this.router.connectToServer('borg-supervisor', 'node', [supervisorPath]);
-                console.error(`Borg Core: Connected to Supervisor at ${supervisorPath}`);
-            } else {
-                console.error("[MCPServer] Failed to locate Monorepo Root. Skipping Supervisor.");
-            }
-        } catch (e: any) {
-            console.error("Borg Core: Failed to connect to Supervisor. Native automation disabled.", e.message);
-        }
-
-        if (this.wsServer && this.wssInstance) {
-            console.log("[MCPServer] Connecting internal WS transport...");
-            const wsTransport = new WebSocketServerTransport(this.wssInstance);
-            await this.wsServer.connect(wsTransport);
-        }
-        console.log("[MCPServer] Start Complete.");
-    }
-
-    private findMonorepoRoot(startDir: string): string | null {
-        const fs = require('fs');
-        let current = startDir;
-        const root = path.parse(current).root;
-        while (current !== root) {
-            if (fs.existsSync(path.join(current, 'turbo.json'))) {
-                return current;
-            }
-            current = path.dirname(current);
-        }
-        return null;
-    }
-}
+      

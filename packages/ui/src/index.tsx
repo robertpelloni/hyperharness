@@ -5,7 +5,7 @@ export * from './components/DirectorStatusWidget';
 export * from './components/DirectorConfigPanel';
 export * from "./components/ResearchPanel";
 export * from "./components/KnowledgeGraph";
-// export * from "./components/AgentChat";Panel';
+export * from './components/SquadsPanel';
 export * from './components/SymbolPinPanel';
 export * from "./components/PromptLibrary";
 export * from './components/CouncilDebateWidget';

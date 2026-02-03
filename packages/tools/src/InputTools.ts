@@ -5,8 +5,8 @@ import path from 'path';
 import os from 'os';
 
 export class InputTools {
-    async sendKeys(keys: string, forceFocus: boolean = false) {
-        console.error(`[InputTools] ⌨️ Sending keys: ${keys} (Focus: ${forceFocus})`);
+    async sendKeys(keys: string, forceFocus: boolean = false, targetWindow?: string): Promise<string> {
+        console.error(`[InputTools] ⌨️ Sending keys: ${keys} (Focus: ${forceFocus}, Target: ${targetWindow || 'active'})`);
 
         // 1. Try Direct Injection (The "God Mode" Fix)
         // 1. Try Direct Injection (The "God Mode" Fix)
@@ -37,25 +37,47 @@ export class InputTools {
 
         // Create VBScript file
         let focusLogic = "";
-        if (forceFocus) {
+
+        // If targetWindow is specified, use it for focused targeting
+        if (targetWindow) {
             focusLogic = `
-            ' Try to focus commonly used windows
-            On Error Resume Next
-            Set WshShell = WScript.CreateObject("WScript.Shell")
-            WshShell.AppActivate "Code - Insiders"
-            WshShell.AppActivate "Visual Studio Code"
-            WshShell.AppActivate "Code"
-            WshShell.AppActivate "borg"
-            WshShell.AppActivate "Terminal"
-            On Error GoTo 0
-            `;
+On Error Resume Next
+Set WshShell = WScript.CreateObject("WScript.Shell")
+result = WshShell.AppActivate("${targetWindow}")
+If Not result Then
+    ' Try alternate window titles
+    result = WshShell.AppActivate("${targetWindow} - Insiders")
+End If
+If result Then
+    WScript.Sleep 150
+End If
+On Error GoTo 0
+`;
+        } else if (forceFocus) {
+            focusLogic = `
+' Try to focus commonly used windows
+On Error Resume Next
+Set WshShell = WScript.CreateObject("WScript.Shell")
+WshShell.AppActivate "Code - Insiders"
+WshShell.AppActivate "Visual Studio Code"
+WshShell.AppActivate "Code"
+WshShell.AppActivate "borg"
+WshShell.AppActivate "Terminal"
+On Error GoTo 0
+`;
         }
 
         const vbsContent = `
 Set WshShell = WScript.CreateObject("WScript.Shell")
+On Error Resume Next
 ${focusLogic}
-WScript.Sleep 50
+WScript.Sleep 100
 WshShell.SendKeys "${command}"
+If Err.Number <> 0 Then
+WScript.Echo "Error: " & Err.Description
+WScript.Quit 1
+End If
+On Error GoTo 0
 `;
 
         const tempFile = path.join(os.tmpdir(), `borg_input_${Date.now()}.vbs`);
@@ -71,8 +93,8 @@ WshShell.SendKeys "${command}"
 
             child.on('close', (code) => {
                 try { fs.unlinkSync(tempFile); } catch (e) { }
-                if (code === 0) resolve(`Sent keys: ${keys}`);
-                else reject(new Error(`wscript exited with code ${code}`));
+                if (code === 0) resolve(`Sent keys: ${keys} `);
+                else reject(new Error(`wscript exited with code ${code} `));
             });
 
             child.on('error', (err) => {

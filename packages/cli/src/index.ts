@@ -32,6 +32,14 @@ if (command === 'start') {
     const { App } = await import('./ui/App.js');
     render(React.createElement(App, { view: 'status' }));
   })();
+} else if (command === 'research') {
+  (async () => {
+    console.log("[CLI] Starting Research Pipeline...");
+    const { MCPServer } = await import('@borg/core/MCPServer');
+    const { runResearchPipeline } = await import('@borg/core/dist/scripts/researchPipeline.js');
+    const server = new MCPServer();
+    await runResearchPipeline(server);
+  })();
 } else {
   console.log("Unknown command. Usage: borg [start|status]");
   process.exit(1);

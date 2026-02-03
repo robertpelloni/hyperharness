@@ -22,10 +22,10 @@ export class LLMService {
     private anthropicClient?: Anthropic;
     private forgeClient?: ForgeService;
     private totalUsage = { inputTokens: 0, outputTokens: 0, estimatedCostUSD: 0 };
-    private modelSelector?: ModelSelector;
+    private modelSelector: ModelSelector;
 
     constructor(modelSelector?: ModelSelector) {
-        this.modelSelector = modelSelector;
+        this.modelSelector = modelSelector || new ModelSelector();
         if (process.env.GOOGLE_API_KEY) {
             this.googleClient = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY);
         }
@@ -51,15 +51,8 @@ export class LLMService {
         this.totalUsage.inputTokens += usage.inputTokens;
         this.totalUsage.outputTokens += usage.outputTokens;
 
-        // Simple cost estimation (averaged high-tier rates: $5/1M in, $15/1M out)
-        // Adjust per model if needed in future
-        const inputRate = 5.0 / 1_000_000;
-        const outputRate = 15.0 / 1_000_000;
-
-        const cost = (usage.inputTokens * inputRate) + (usage.outputTokens * outputRate);
-        this.totalUsage.estimatedCostUSD += cost;
-
-        console.log(`[LLMService] Cost: $${cost.toFixed(6)} | Total: $${this.totalUsage.estimatedCostUSD.toFixed(4)}`);
+        this.modelSelector.getQuotaService().trackUsage(model, usage.inputTokens, usage.outputTokens);
+        this.totalUsage.estimatedCostUSD = this.modelSelector.getQuotaService().getSessionTotal();
     }
 
     async generateText(initialProvider: string, initialModelId: string, systemPrompt: string, userPrompt: string, options?: { timeout?: number, taskComplexity?: 'low' | 'medium' | 'high', images?: { base64: string, mimeType: string }[] }): Promise<LLMResponse> {

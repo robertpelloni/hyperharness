@@ -44,6 +44,7 @@ import IngestionStatus from "../components/IngestionStatus";
 import { ActivityPulse, SystemHealth, LatencyMonitor, SecurityWidget } from "@borg/ui";
 import { trpc } from "@/utils/trpc"; // Need tRPC to fetch stats
 import { HelpWidget } from "../components/HelpWidget";
+import { MirrorView } from "../components/MirrorView";
 
 // Widget Registry
 const WIDGETS: Record<string, { title: string, component: React.ReactNode, defaultColSpan?: string }> = {
@@ -73,7 +74,8 @@ const WIDGETS: Record<string, { title: string, component: React.ReactNode, defau
     'activity_pulse': { title: 'Activity Pulse', component: <ConnectedActivityPulse />, defaultColSpan: 'col-span-2' },
     'system_health': { title: 'System Health', component: <ConnectedSystemHealth /> },
     'latency': { title: 'Latency', component: <ConnectedLatency /> },
-    'security': { title: 'Security Shield', component: <WrappedSecurityWidget /> }
+    'security': { title: 'Security Shield', component: <WrappedSecurityWidget /> },
+    'mirror': { title: 'Live Tab Mirror', component: <MirrorView />, defaultColSpan: 'col-span-2' }
 };
 
 function WrappedSecurityWidget() {
@@ -101,6 +103,7 @@ const DEFAULT_LAYOUT = [
     'help',
     'suggestions',
     'security', 'system_health', 'latency',
+    'mirror',
     'activity_pulse',
     'connection', 'indexing',
     'ingestion',

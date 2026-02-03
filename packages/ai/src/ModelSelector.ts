@@ -1,5 +1,6 @@
 import fs from 'fs';
 import path from 'path';
+import { QuotaService } from './services/QuotaService.js';
 
 export interface ModelSelectionRequest {
     provider?: string;
@@ -37,14 +38,15 @@ const COOL_DOWN_MS = 60 * 1000;
 export class ModelSelector {
     private modelStates: Map<string, ModelStatus> = new Map();
     private configPath: string;
+    private quotaService: QuotaService;
 
     constructor() {
-        // Assume running from dist/ so go up to config
-        // In @borg/ai, we need to locate the config relative to the workspace root or injected config
-        // For now, let's look for it in the standard location relative to CWD
+        this.quotaService = new QuotaService();
         this.configPath = path.resolve(process.cwd(), 'packages/core/config/council.json');
         console.log("ModelSelector initialized. Config Path:", this.configPath);
     }
+
+    public getQuotaService() { return this.quotaService; }
 
     public reportFailure(modelId: string) {
         console.warn(`[ModelSelector] Reporting failure for ${modelId}. Marking as DEPLETED.`);
@@ -68,6 +70,17 @@ export class ModelSelector {
     }
 
     public async selectModel(req: ModelSelectionRequest): Promise<SelectedModel> {
+        const isBudgetExceeded = this.quotaService.isBudgetExceeded();
+
+        if (isBudgetExceeded) {
+            console.warn("[ModelSelector] Budget exceeded! Forcing FREE local models.");
+            return {
+                provider: 'lmstudio',
+                modelId: 'local',
+                reason: 'BUDGET_EXCEEDED_FORCED_LOCAL'
+            };
+        }
+
         let chain = DEFAULT_CHAINS.worker;
 
         // Dynamic Load

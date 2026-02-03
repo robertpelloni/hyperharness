@@ -1,4 +1,6 @@
 import { z } from 'zod';
+import fs from 'fs/promises';
+import path from 'path';
 import { t, publicProcedure, adminProcedure } from './lib/trpc-core.js';
 import { suggestionsRouter } from './routers/suggestionsRouter.js';
 import { squadRouter } from './routers/squadRouter.js';
@@ -248,6 +250,7 @@ export const appRouter = t.router({
             councilPrefix: z.string().optional(),
             statusPrefix: z.string().optional(),
             lmStudioTimeoutMs: z.number().optional(),
+            nudgeThresholdMs: z.number().optional(),
             verboseLogging: z.boolean().optional()
         })).mutation(({ input }) => {
             // @ts-ignore
@@ -288,6 +291,58 @@ export const appRouter = t.router({
                 return skills;
             }
             return { tools: [] };
+        }),
+        listLibrary: t.procedure.query(async () => {
+            // @ts-ignore
+            if (global.mcpServerInstance) {
+                // @ts-ignore
+                const mcp = global.mcpServerInstance;
+                const library = await mcp.skillRegistry.getLibraryIndex();
+
+                // Decorate with 'isAssimilated'
+                const decorate = (items: any[]) => items.map(item => ({
+                    ...item,
+                    isAssimilated: mcp.skillRegistry.hasSkill(item.id)
+                }));
+
+                return {
+                    mcp_servers: decorate(library.categories.mcp_servers || []),
+                    universal_harness: decorate(library.categories.universal_harness || []),
+                    skills: decorate(library.categories.skills || [])
+                };
+            }
+            return { mcp_servers: [], universal_harness: [], skills: [] };
+        }),
+        assimilate: t.procedure.input(z.object({
+            id: z.string(),
+            name: z.string(),
+            url: z.string(),
+            summary: z.string(),
+            relevance: z.string()
+        })).mutation(async ({ input }) => {
+            // @ts-ignore
+            if (global.mcpServerInstance) {
+                // @ts-ignore
+                const mcp = global.mcpServerInstance;
+                const result = await mcp.skillAssimilationService.assimilate(input);
+
+                // Update the Master Index status (we do this manually here for now)
+                try {
+                    const indexPath = path.join(process.cwd(), 'BORG_MASTER_INDEX.jsonc');
+                    const content = await fs.readFile(indexPath, 'utf-8');
+                    // Find the entry with this ID and update status
+                    const updatedContent = content.replace(
+                        new RegExp(`"id":\\s*"${input.id}"[\\s\\S]*?"status":\\s*"(.*?)"`, 'g'),
+                        (match: string) => match.replace(/"status":\s*".*?"/, `"status": "assimilated"`)
+                    );
+                    await fs.writeFile(indexPath, updatedContent, 'utf-8');
+                } catch (e) {
+                    console.error("Failed to update Master Index status in tRPC:", e);
+                }
+
+                return { success: true, result };
+            }
+            throw new Error("MCPServer instance not found");
         }),
         read: t.procedure.input(z.object({ name: z.string() })).query(async ({ input }) => {
             // @ts-ignore

@@ -6,16 +6,17 @@ let activeUrl: string | null = null;
 export const TunnelTools = [
     {
         name: "start_remote_access",
-        description: "Start a secure Cloudflare Tunnel to expose the local dashboard",
+        description: "Start a secure Cloudflare Tunnel to expose a local port",
         inputSchema: {
             type: "object",
             properties: {
-                port: { type: "number", description: "Port to expose (default: 3000)" }
+                port: { type: "number", description: "Port to expose (default: 3000)" },
+                label: { type: "string", description: "Optional label for this tunnel" }
             }
         },
-        handler: async (args: { port?: number }) => {
+        handler: async (args: { port?: number, label?: string }) => {
             if (activeTunnel) {
-                return { content: [{ type: "text", text: `Tunnel already active at: ${activeUrl}` }] };
+                return { content: [{ type: "text", text: `Tunnel already active at: ${activeUrl} (Label: ${args.label || 'none'})` }] };
             }
 
             try {
@@ -26,7 +27,7 @@ export const TunnelTools = [
                 return {
                     content: [{
                         type: "text",
-                        text: `Remote Access Enabled. URL: ${activeUrl}`
+                        text: `Remote Access Enabled for port ${port}. URL: ${activeUrl}${args.label ? ` [${args.label}]` : ''}`
                     }]
                 };
             } catch (err: any) {

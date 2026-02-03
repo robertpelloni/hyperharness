@@ -15,9 +15,35 @@ export interface Skill {
 export class SkillRegistry {
     private skills: Map<string, Skill> = new Map();
     private searchPaths: string[];
+    private masterIndexPath?: string;
 
     constructor(searchPaths: string[]) {
         this.searchPaths = searchPaths;
+    }
+
+    setMasterIndexPath(indexPath: string) {
+        this.masterIndexPath = indexPath;
+    }
+
+    async getLibraryIndex() {
+        if (!this.masterIndexPath) {
+            return { categories: { mcp_servers: [], universal_harness: [], skills: [] } };
+        }
+
+        try {
+            const content = await fs.readFile(this.masterIndexPath, 'utf-8');
+            // Remove comments (JSONC)
+            const cleanJSON = content.replace(/\\"|"(?:\\"|[^"])*"|(\/\/.*|\/\*[\s\S]*?\*\/)/g, (m, g) => g ? "" : m);
+            return JSON.parse(cleanJSON);
+        } catch (e) {
+            console.error("Error reading master index:", e);
+            return { categories: { mcp_servers: [], universal_harness: [], skills: [] } };
+        }
+    }
+
+    hasSkill(id: string): boolean {
+        // Skill IDs in the map are usually the folders/names
+        return this.skills.has(id);
     }
 
     async loadSkills() {

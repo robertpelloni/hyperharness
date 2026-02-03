@@ -12,7 +12,7 @@ import { toast } from "sonner";
 import { trpc } from '@/utils/trpc';
 import { useRouter } from 'next/navigation';
 
-export default function SquadsPanel() {
+export function SquadsPanel() {
     const router = useRouter();
     const [spawnOpen, setSpawnOpen] = useState(false);
     const [newBranch, setNewBranch] = useState('');

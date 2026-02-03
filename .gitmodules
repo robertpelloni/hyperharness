@@ -3166,3 +3166,66 @@
 [submodule "external/skills_repos/TheNoeTrevino-dotfiles"]
 	path = external/skills_repos/TheNoeTrevino-dotfiles
 	url = https://github.com/TheNoeTrevino/dotfiles
+[submodule "reference/cli/opencode"]
+	path = reference/cli/opencode
+	url = https://github.com/sst/opencode.git
+[submodule "reference/cli/crush"]
+	path = reference/cli/crush
+	url = https://github.com/charmbracelet/crush.git
+[submodule "reference/memory/mem0"]
+	path = reference/memory/mem0
+	url = https://github.com/mem0ai/mem0.git
+[submodule "reference/cli/codex"]
+	path = reference/cli/codex
+	url = https://github.com/openai/codex.git
+[submodule "reference/mcp/mcp-tool-chainer"]
+	path = reference/mcp/mcp-tool-chainer
+	url = https://github.com/thirdstrandstudio/mcp-tool-chainer.git
+[submodule "reference/protocols/a2a"]
+	path = reference/protocols/a2a
+	url = https://github.com/a2aproject/A2A.git
+[submodule "reference/cli/codebuff"]
+	path = reference/cli/codebuff
+	url = https://github.com/CodebuffAI/codebuff.git
+[submodule "reference/context/beads"]
+	path = reference/context/beads
+	url = https://github.com/steveyegge/beads.git
+[submodule "reference/cli/plandex"]
+	path = reference/cli/plandex
+	url = https://github.com/plandex-ai/plandex.git
+[submodule "reference/mcp/metamcp"]
+	path = reference/mcp/metamcp
+	url = https://github.com/robertpelloni/metamcp.git
+[submodule "reference/memory/supermemory"]
+	path = reference/memory/supermemory
+	url = https://github.com/supermemoryai/supermemory.git
+[submodule "reference/memory/zep"]
+	path = reference/memory/zep
+	url = https://github.com/getzep/zep.git
+[submodule "reference/cli/aider"]
+	path = reference/cli/aider
+	url = https://github.com/Aider-AI/aider.git
+[submodule "reference/memory/letta"]
+	path = reference/memory/letta
+	url = https://github.com/letta-ai/letta.git
+[submodule "reference/agent-ui/copilotkit"]
+	path = reference/agent-ui/copilotkit
+	url = https://github.com/CopilotKit/CopilotKit.git
+[submodule "reference/cli/goose"]
+	path = reference/cli/goose
+	url = https://github.com/block/goose.git
+[submodule "reference/indexing/serena"]
+	path = reference/indexing/serena
+	url = https://github.com/oraios/serena.git
+[submodule "reference/sandbox/e2b"]
+	path = reference/sandbox/e2b
+	url = https://github.com/e2b-dev/code-interpreter.git
+[submodule "reference/orchestration/crewai"]
+	path = reference/orchestration/crewai
+	url = https://github.com/crewAIInc/crewAI.git
+[submodule "reference/orchestration/langgraph"]
+	path = reference/orchestration/langgraph
+	url = https://github.com/langchain-ai/langgraph.git
+[submodule "reference/browser/puppeteer"]
+	path = reference/browser/puppeteer
+	url = https://github.com/puppeteer/puppeteer.git
