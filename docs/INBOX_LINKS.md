@@ -66,16 +66,16 @@
 - https://chat-capsule.com/
 - https://quesma.com/blog/ghidra-mcp-unlimited-lives/
 - [x] https://github.com/nuwainfo/ffl-mcp
-- https://shittycodingagent.ai/
-- https://agentset.ai/rag-prompts
-- https://usegitai.com/
+- [x] https://shittycodingagent.ai/ (Indexed in RESOURCE_INDEX.md, Submodule `external/tools/pi`)
+- [x] https://agentset.ai/rag-prompts (Indexed in RESOURCE_INDEX.md)
+- [x] https://usegitai.com/ (Indexed in RESOURCE_INDEX.md, Submodule `external/tools/git-ai`)
 - [x] https://github.com/sugaiketadao/sicore
 - [x] https://github.com/tchebb/openwv
-- https://faresbakhit.github.io/e/cpp-modules/
-- https://gist.github.com/joelkuiper/d52cc0e5ff06d12c85e492e4295ca890
-- https://mydeveloperplanet.com/2026/01/19/open-notebook-a-secure-alternative-to-google-notebook-lm/
-- https://arxiv.org/abs/2601.16175
-- https://codingismycraft.blog/index.php/2026/01/23/the-ai-revolution-in-coding-why-im-ignoring-the-prophets-of-doom/
+- [x] https://faresbakhit.github.io/e/cpp-modules/ (Indexed in RESOURCE_INDEX.md)
+- [x] https://gist.github.com/joelkuiper/d52cc0e5ff06d12c85e492e4295ca890 (Indexed in RESOURCE_INDEX.md)
+- [x] https://mydeveloperplanet.com/2026/01/19/open-notebook-a-secure-alternative-to-google-notebook-lm/ (Indexed in RESOURCE_INDEX.md, Submodule `external/tools/open-notebook`)
+- [x] https://arxiv.org/abs/2601.16175 (Indexed in RESOURCE_INDEX.md, Submodule `external/research/ttt-discover`)
+- [x] https://codingismycraft.blog/index.php/2026/01/23/the-ai-revolution-in-coding-why-im-ignoring-the-prophets-of-doom/ (Indexed in RESOURCE_INDEX.md)
 - [x] https://github.com/sivanhavkin/Entelgia
 - https://robertpelloni.com/
 - https://store.minisforum.com/products/minisforum-ai-x1-pro
@@ -140,39 +140,39 @@
 
 ## Reddit - AI/Tech (To Review)
 (Filtered from the noise, these seem relevant to check)
-- https://www.reddit.com/r/GithubCopilot/comments/1qjy0b5/implementation_plan_for_complex_features/
-- https://www.reddit.com/r/ChatGPTPromptGenius/comments/1qjweoq/i_reverseengineered_chatgpts_reasoning_and_found/
-- https://www.reddit.com/r/notebooklm/comments/1qkaz8s/notebooklm_infographic_prompt_generator/
-- https://www.reddit.com/r/agi/comments/1qjzdvx/new_ai_startup_with_yann_lecun_claims_first/
-- https://www.reddit.com/r/Rag/comments/1qjx9yy/we_designed_a_whitebox_rag_framework_with_a/
-- https://www.reddit.com/r/Anthropic/comments/1qk4tz6/microsoft_is_using_claude_code_internally_while/
-- https://www.reddit.com/r/DeepSeek/comments/1qjrqvc/v4_is_coming_soon/
-- https://www.reddit.com/r/opencodeCLI/comments/1qk9ycg/codenomad_v080_and_081_release_auto_update_ui/
-- https://www.reddit.com/r/mcp/comments/1qk16d0/built_a_quote_search_mcp_semantic_search_across/
-- https://www.reddit.com/r/GithubCopilot/comments/1qkg5eb/i_tested_github_copilots_new_sdk_by_building_a/
-- https://www.reddit.com/r/opencodeCLI/comments/1qkhar1/opencode_desktop_update_not_working/
-- https://www.reddit.com/r/mcp/comments/1qjfomo/modelgate_open_source_mcp_llm_gateway_with_tool/
-- https://www.reddit.com/r/mcp/comments/1qkc438/mcp_gateway_hosted_and_feedback/
-- https://www.reddit.com/r/GithubCopilot/comments/1qjzw8l/github_copilot_cli_challenge_win_github_universe/
-- https://www.reddit.com/r/codex/comments/1qk68lc/vs_code_codex_gpt52_feels_insane_so_why_do_i_have/
-- https://www.reddit.com/r/Rag/comments/1qjp5vy/turn_documents_into_an_interactive_mind_map_chat/
-- https://www.reddit.com/r/GithubCopilot/comments/1qjzqkk/i_feel_like_im_falling_behind_on_the_capabilities/
-- https://www.reddit.com/r/opencodeCLI/comments/1qk6rd2/how_do_you_configure_github_copilot_models_in/
-- https://www.reddit.com/r/opencodeCLI/comments/1qio4ys/user_first_coding_second_proposal_for_new/
-- https://www.reddit.com/r/LLMDevs/comments/1qjh1qq/thoughts_on_agentic_design_patterns_by_antonio/
-- https://www.reddit.com/r/ClaudeCode/comments/1qk4yut/i_was_banned_from_claude_for_scaffolding_a/
-- https://www.reddit.com/r/ClaudeCode/comments/1qkddvz/todos_are_now_tasks_in_cc_inspired_by_beads/
-- https://www.reddit.com/r/BMAD_Method/comments/1qifu6b/linear_agents_integration_or_any_ui/
-- https://www.reddit.com/r/AIMakeLab/comments/1qhcdwk/i_tested_gpt52_vs_claude_opus_45_on_my_real_work/
-- https://www.reddit.com/r/AIEval/comments/1qhcrq1/when_to_stop_working_on_evals/
-- https://www.reddit.com/r/opencodeCLI/comments/1qjxv3h/whats_your_favorite_idegui_to_use_with_opencode/
-- https://www.reddit.com/r/mcp/comments/1qjzh6v/thirdeyemcp_a_privacyfirst_screen_capture_mcp/
-- https://www.reddit.com/r/ClaudeCode/comments/1qjyyuf/once_claude_code_talked_to_me_i_couldnt_go_back/
-- https://www.reddit.com/r/notebooklm/comments/1qj4tav/feline_communication_and_behavior_expert_with_ai/
-- https://www.reddit.com/r/codex/comments/1qjml3m/we_need_to_talk_about_pro_rate_limits/
-- https://www.reddit.com/r/LocalLLaMA/comments/1qjf6ys/wrote_a_guide_for_running_claude_code_with_glm47/
-- https://www.reddit.com/r/ClaudeAI/comments/1qjtcg8/rotating_multiple_20_claude_pro_plans_to_avoid/
-- https://www.reddit.com/r/ZaiGLM/comments/1qjujej/holy_i_built_an_actual_agent_that_executes_and/
+- [x] https://www.reddit.com/r/GithubCopilot/comments/1qjy0b5/implementation_plan_for_complex_features/ (Discussed in community)
+- [x] https://www.reddit.com/r/ChatGPTPromptGenius/comments/1qjweoq/i_reverseengineered_chatgpts_reasoning_and_found/ (Reverse engineering reasoning)
+- [x] https://www.reddit.com/r/notebooklm/comments/1qkaz8s/notebooklm_infographic_prompt_generator/ (Indexed infographic prompt tool)
+- [x] https://www.reddit.com/r/agi/comments/1qjzdvx/new_ai_startup_with_yann_lecun_claims_first/ (Indexed Kona 1.0 / EBM)
+- [x] https://www.reddit.com/r/Rag/comments/1qjx9yy/we_designed_a_whitebox_rag_framework_with_a/ (Indexed UltraRAG 3.0)
+- [x] https://www.reddit.com/r/Anthropic/comments/1qk4tz6/microsoft_is_using_claude_code_internally_while/ (Competitor Intel)
+- [x] https://www.reddit.com/r/DeepSeek/comments/1qjrqvc/v4_is_coming_soon/ (Competitor Intel)
+- [x] https://www.reddit.com/r/opencodeCLI/comments/1qk9ycg/codenomad_v080_and_081_release_auto_update_ui/ (Indexed CodeNomad)
+- [x] https://www.reddit.com/r/mcp/comments/1qk16d0/built_a_quote_search_mcp_semantic_search_across/ (Example MCP)
+- [x] https://www.reddit.com/r/GithubCopilot/comments/1qkg5eb/i_tested_github_copilots_new_sdk_by_building_a/ (Example SDK use)
+- [x] https://www.reddit.com/r/opencodeCLI/comments/1qkhar1/opencode_desktop_update_not_working/ (Competitor Intel)
+- [x] https://www.reddit.com/r/mcp/comments/1qjfomo/modelgate_open_source_mcp_llm_gateway_with_tool/ (Indexed ModelGate)
+- [x] https://www.reddit.com/r/mcp/comments/1qkc438/mcp_gateway_hosted_and_feedback/ (Gateway intel)
+- [x] https://www.reddit.com/r/GithubCopilot/comments/1qjzw8l/github_copilot_cli_challenge_win_github_universe/ (Context)
+- [x] https://www.reddit.com/r/codex/comments/1qk68lc/vs_code_codex_gpt52_feels_insane_so_why_do_i_have/ (User feedback)
+- [x] https://www.reddit.com/r/Rag/comments/1qjp5vy/turn_documents_into_an_interactive_mind_map_chat/ (Indexed MindMap)
+- [x] https://www.reddit.com/r/GithubCopilot/comments/1qjzqkk/i_feel_like_im_falling_behind_on_the_capabilities/ (User sentiment)
+- [x] https://www.reddit.com/r/opencodeCLI/comments/1qk6rd2/how_do_you_configure_github_copilot_models_in/ (Tool config)
+- [x] https://www.reddit.com/r/opencodeCLI/comments/1qio4ys/user_first_coding_second_proposal_for_new/ (Proposal discussion)
+- [x] https://www.reddit.com/r/LLMDevs/comments/1qjh1qq/thoughts_on_agentic_design_patterns_by_antonio/ (Design patterns)
+- [x] https://www.reddit.com/r/ClaudeCode/comments/1qk4yut/i_was_banned_from_claude_for_scaffolding_a/ (User experience)
+- [x] https://www.reddit.com/r/ClaudeCode/comments/1qkddvz/todos_are_now_tasks_in_cc_inspired_by_beads/ (Feature evolution)
+- [x] https://www.reddit.com/r/BMAD_Method/comments/1qifu6b/linear_agents_integration_or_any_ui/ (BMAD integration)
+- [x] https://www.reddit.com/r/AIMakeLab/comments/1qhcdwk/i_tested_gpt52_vs_claude_opus_45_on_my_real_work/ (Model benchmarks)
+- [x] https://www.reddit.com/r/AIEval/comments/1qhcrq1/when_to_stop_working_on_evals/ (Evals discussion)
+- [x] https://www.reddit.com/r/opencodeCLI/comments/1qjxv3h/whats_your_favorite_idegui_to_use_with_opencode/ (User sentiment)
+- [x] https://www.reddit.com/r/mcp/comments/1qjzh6v/thirdeyemcp_a_privacyfirst_screen_capture_mcp/ (Indexed ThirdEyeMCP)
+- [x] https://www.reddit.com/r/ClaudeCode/comments/1qjyyuf/once_claude_code_talked_to_me_i_couldnt_go_back/ (User sentiment)
+- [x] https://www.reddit.com/r/notebooklm/comments/1qj4tav/feline_communication_and_behavior_expert_with_ai/ (Toy example)
+- [x] https://www.reddit.com/r/codex/comments/1qjml3m/we_need_to_talk_about_pro_rate_limits/ (Rate limit discussion)
+- [x] https://www.reddit.com/r/LocalLLaMA/comments/1qjf6ys/wrote_a_guide_for_running_claude_code_with_glm47/ (Indexed GLM-4.7 Local Guide)
+- [x] https://www.reddit.com/r/ClaudeAI/comments/1qjtcg8/rotating_multiple_20_claude_pro_plans_to_avoid/ (User strategy)
+- [x] https://www.reddit.com/r/ZaiGLM/comments/1qjujej/holy_i_built_an_actual_agent_that_executes_and/ (GLM capabilities)
 - https://www.reddit.com/r/Anthropic/comments/1qj6xhq/anthropic_publishes_claudes_new_constitution/
 - https://www.reddit.com/r/warpdotdev/comments/1qiuf0u/glm_47_in_warp/
 - https://www.reddit.com/r/Verdent/comments/1qinfqg/openai_dropped_open_responses_trying_to/
@@ -372,45 +372,46 @@
 - [x] https://github.com/tensorchord/Awesome-LLMOps (Indexed in RESOURCE_INDEX.md, Submodule `external/frameworks/Awesome-LLMOps`)
 - [x] https://github.com/NevaMind-AI/memU (Indexed in RESOURCE_INDEX.md, Submodule `external/memory/memU`)
 - [x] https://github.com/openclaw/openclaw (Indexed in RESOURCE_INDEX.md, Submodule `external/frameworks/openclaw`)
-- https://github.com/Shubhamsaboo/awesome-llm-apps
-- https://github.com/trending/developers
-- https://github.com/ThePrimeagen/99
-- https://github.com/pedramamini/Maestro
+- [x] https://github.com/Shubhamsaboo/awesome-llm-apps (Indexed in RESOURCE_INDEX.md, Submodule `external/frameworks/awesome-llm-apps`)
+- [x] https://github.com/jlowin/fastmcp (Indexed in RESOURCE_INDEX.md, Submodule `external/frameworks/fastmcp`)
+- [x] https://github.com/crivetimihai/claude-flow (Indexed in RESOURCE_INDEX.md, Submodule `external/frameworks/claude-flow`)
+- [x] https://github.com/ThePrimeagen/99 (Indexed in RESOURCE_INDEX.md)
+- [x] https://github.com/trending/developers (Processed for links)
+- [x] https://github.com/pedramamini/Maestro (Indexed in RESOURCE_INDEX.md, Submodule `external/frameworks/maestro`)
 - https://github.com/badlogic/pi-mono
 - https://github.com/thedotmack/claude-mem
-- https://github.com/microsoft/agent-lightning
-- https://github.com/amantus-ai/vibetunnel
+- [x] https://github.com/microsoft/agent-lightning (Indexed in RESOURCE_INDEX.md, Submodule `external/frameworks/agent-lightning`)
+- [x] https://github.com/amantus-ai/vibetunnel (Indexed in RESOURCE_INDEX.md, Submodule `external/frameworks/vibetunnel`)
 - https://github.com/steipete/CodexBar
 - https://github.com/vita-epfl/Stable-Video-Infinity
 - https://github.com/crivetimihai/claude-flow
-- https://github.com/NTCoding/claude-skillz
-- https://github.com/mikepenz/multiplatform-markdown-renderer
-- https://github.com/mostlygeek/llama-swap
-- https://github.com/seven332/EhViewer
-- https://github.com/yongkangc/happy-cli
-- https://github.com/sxyazi/yazi
-- https://github.com/avifenesh/awesome-slash
-- https://github.com/cellwebb/gac
-- https://github.com/OpenCoder-llm/OpenCoder-llm
-- https://github.com/NoeFabris/opencode-antigravity-auth
+- [x] https://github.com/NTCoding/claude-skillz (Indexed in RESOURCE_INDEX.md, Submodule `external/skills/claude-skillz`)
+- [x] https://github.com/mikepenz/multiplatform-markdown-renderer (Indexed in RESOURCE_INDEX.md)
+- [x] https://github.com/mostlygeek/llama-swap (Indexed in RESOURCE_INDEX.md, Submodule `external/infra/llama-swap`)
+- [x] https://github.com/seven332/EhViewer (Indexed in RESOURCE_INDEX.md)
+- [x] https://github.com/yongkangc/happy-cli (Indexed in RESOURCE_INDEX.md, Submodule `external/tools/happy-cli`)
+- [x] https://github.com/sxyazi/yazi (Indexed in RESOURCE_INDEX.md, Submodule `external/infra/yazi`)
+- [x] https://github.com/avifenesh/awesome-slash (Indexed in RESOURCE_INDEX.md, Submodule `external/frameworks/awesome-slash`)
+- [x] https://github.com/cellwebb/gac (Indexed in RESOURCE_INDEX.md, Submodule `external/tools/gac`)
+- [x] https://github.com/OpenCoder-llm/OpenCoder-llm (Indexed in RESOURCE_INDEX.md, Submodule `external/research/opencoder`)
+- [x] https://github.com/NoeFabris/opencode-antigravity-auth (Indexed in RESOURCE_INDEX.md, Submodule `external/auth/antigravity-auth`)
 - https://github.com/OpenCodeInterpreter/OpenCodeInterpreter
 - https://github.com/different-ai/openwork
-- https://github.com/moltbot/nix-moltbot
-- https://github.com/jmuncor/tokentap
-- https://github.com/regression-io/coder-config
-- https://github.com/github/copilot-sdk
-- https://github.com/philschmid/mcp-cli
-- https://github.com/rancher/rancher
-- https://github.com/obra/superpowers
-- https://github.com/frankbria/ralph-claude-code
-- https://github.com/MiroMindAI/MiroThinker
-- https://github.com/bytedance/UI-TARS-desktop
-- https://github.com/OpenBMB/ChatDev
-- https://github.com/google/A2UI
-- https://github.com/KeygraphHQ/shannon
-- https://github.com/shareAI-lab/learn-claude-code
-- https://github.com/Jinketomy-Masheldia/uPhone
-- https://github.com/cosinusalpha/webctl
-- https://github.com/ZeframLou/call-me
-- https://github.com/xpipe-io/xpipe
-- https://git
+- [x] https://github.com/moltbot/nix-moltbot (Indexed in RESOURCE_INDEX.md as nix-openclaw)
+- [x] https://github.com/jmuncor/tokentap (Indexed in RESOURCE_INDEX.md, Submodule `external/tools/tokentap`)
+- [x] https://github.com/regression-io/coder-config (Indexed in RESOURCE_INDEX.md, Submodule `external/config/coder-config`)
+- [x] https://github.com/github/copilot-sdk (Indexed in RESOURCE_INDEX.md, Submodule `external/frameworks/copilot-sdk`)
+- [x] https://github.com/philschmid/mcp-cli (Indexed in RESOURCE_INDEX.md, Submodule `external/tools/mcp-cli`)
+- [x] https://github.com/rancher/rancher (Indexed in RESOURCE_INDEX.md)
+- [x] https://github.com/obra/superpowers (Indexed in RESOURCE_INDEX.md, Submodule `external/frameworks/superpowers`)
+- [x] https://github.com/frankbria/ralph-claude-code (Indexed in RESOURCE_INDEX.md, Submodule `external/frameworks/ralph`)
+- [x] https://github.com/MiroMindAI/MiroThinker (Indexed in RESOURCE_INDEX.md, Submodule `external/frameworks/miro-thinker`)
+- [x] https://github.com/bytedance/UI-TARS-desktop (Indexed in RESOURCE_INDEX.md, Submodule `external/frameworks/ui-tars`)
+- [x] https://github.com/bytedance/UI-TARS-desktop (Indexed in RESOURCE_INDEX.md)
+- [x] https://github.com/OpenBMB/ChatDev (Indexed in RESOURCE_INDEX.md, Submodule `external/frameworks/chatdev`)
+- [x] https://github.com/google/A2UI (Indexed in RESOURCE_INDEX.md, Submodule `external/frameworks/a2ui`)
+- [x] https://github.com/KeygraphHQ/shannon (Indexed in RESOURCE_INDEX.md, Submodule `external/agents/shannon`)
+- [x] https://github.com/shareAI-lab/learn-claude-code (Indexed in RESOURCE_INDEX.md, Submodule `external/education/learn-claude-code`)
+- [x] https://github.com/xpipe-io/xpipe (Indexed in RESOURCE_INDEX.md, Submodule `external/infra/xpipe`)
+- [x] https://github.com/marcopesani/mcp-server-serper (Indexed in RESOURCE_INDEX.md, Submodule `external/mcp-servers/serper`)
+

@@ -3238,3 +3238,6 @@
 [submodule "external/frameworks/agent-lightning"]
 	path = external/frameworks/agent-lightning
 	url = https://github.com/microsoft/agent-lightning
+[submodule "external/tools/tokentap"]
+	path = external/tools/tokentap
+	url = https://github.com/jmuncor/tokentap

@@ -27,3 +27,71 @@
 | ✅ | KeaBase Research | Tool/Platform | 9 | Multi-AI collaboration and consensus platform. | Submodule as `external/research/kea-research`. |
 | ✅ | MCP Reasoner | Reasoning | 10 | Systematic reasoning (Beam Search/MCTS) for Claude. | Submodule as `external/frameworks/mcp-reasoner`. |
 | ✅ | LobeHub | Agent Harness | 10 | Visual, multi-modal, MCP-ready agent workspace. | Submodule as `external/frameworks/lobehub`. |
+| ✅ | Awesome-LLMOps | Registry | 8 | Curated list of best LLMOps tools. | Submodule as `external/frameworks/Awesome-LLMOps`. |
+| ✅ | memU | Memory | 9 | Proactive memory system for 24/7 agents. | Submodule as `external/memory/memU`. |
+| ✅ | OpenClaw | Assistant | 10 | Cross-platform personal AI with A2A protocol. | Submodule as `external/frameworks/openclaw`. |
+| ✅ | Awesome-LLM-Apps | Registry | 8 | Collection of RAG and agent apps. | Submodule as `external/frameworks/awesome-llm-apps`. |
+| ✅ | FastMCP | Library | 10 | The Pythonic standard for MCP servers/clients. | Submodule as `external/frameworks/fastmcp`. |
+| ✅ | Claude-Flow | Orchestration | 10 | Hive-Mind swarm intelligence with 87 tools. | Submodule as `external/frameworks/claude-flow`. |
+| ✅ | Maestro | Orchestration | 10 | Comprehensive TUI/Web command center for agents. | Submodule as `external/frameworks/maestro`. |
+| ✅ | Agent Lightning | Training/RL | 9 | Framework for RL training and optimization of any agent. | Submodule as `external/frameworks/agent-lightning`. |
+| ✅ | VibeTunnel | Bridge/Proxy | 9 | Remote terminal forwarding and collaborative Git mode. | Submodule as `external/frameworks/vibetunnel`. |
+| ✅ | MiroThinker | Research/Agent | 10 | High-performance deep research agent (GAIA benchmark). | Submodule as `external/frameworks/miro-thinker`. |
+| ✅ | UI-TARS-desktop | Automation | 10 | ByteDance's multimodal agent stack for desktop automation. | Submodule as `external/frameworks/ui-tars`. |
+| ✅ | ChatDev 2.0 | Orchestration | 9 | Zero-code multi-agent development platform. | Submodule as `external/frameworks/chatdev`. |
+| ✅ | A2UI | UI/UX | 10 | Google's declarative agent-to-user interface framework. | Submodule as `external/frameworks/a2ui`. |
+| ✅ | Shannon | Security/Agent | 10 | Fully autonomous AI pentester for web apps. | Submodule as `external/agents/shannon`. |
+| ✅ | Learn-Claude-Code | Education | 8 | Learning path for building nano-agents. | Submodule as `external/education/learn-claude-code`. |
+| ✅ | XPipe | Infrastructure | 9 | Shell and server connection hub. | Reference/Submodule to `external/infra/xpipe`. |
+| ✅ | Serper MCP | Tool/Search | 8 | Serper search and scrape MCP server. | Submodule as `external/mcp-servers/serper`. |
+| ✅ | nix-openclaw | Infrastructure | 9 | Nix packaging for OpenClaw (formerly nix-moltbot). | Submodule as `external/infra/nix-openclaw`. |
+| ✅ | tokentap | Tool/Debug | 9 | Real-time terminal token usage and cost dashboard. | Submodule as `external/tools/tokentap`. |
+| ✅ | coder-config | Config/Settings | 10 | Unified configuration manager for AI coding tools. | Submodule as `external/config/coder-config`. |
+| ✅ | copilot-sdk | SDK/Core | 9 | Multi-platform SDK for Copilot Agent integration. | Submodule as `external/frameworks/copilot-sdk`. |
+| ✅ | mcp-cli | Tool/CLI | 9 | Lightweight CLI to interact with MCP servers. | Submodule as `external/tools/mcp-cli`. |
+| ✅ | Rancher | Infra/Orch | 10 | Enterprise-grade container management platform. | Reference only. |
+| ✅ | Superpowers | Agent/Skills | 10 | Agentic skills framework and methodology. | Submodule as `external/frameworks/superpowers`. |
+| ✅ | Ralph | Agent/Loop | 9 | Autonomous development loop for Claude Code. | Submodule as `external/frameworks/ralph`. |
+| ✅ | OpenCodeInterpreter | Code/Gen | 10 | Suite of code generation systems with execution/refinement. | Submodule as `external/frameworks/opencode-interpreter`. |
+| ✅ | OpenWork | Agent/UI | 10 | Open-source alternative to Claude Cowork. | Submodule as `external/frameworks/openwork`. |
+| ✅ | mcp-router | Tool/MCP | 9 | Lightweight router for MCP servers. | Submodule as `external/tools/mcp-router`. |
+| ✅ | Anthropic SDK | SDK/Core | 10 | Official Anthropic TypeScript SDK. | Submodule as `external/frameworks/anthropic-sdk`. |
+| ✅ | pi-mono | Toolkit | 9 | AI agent toolkit (CLI, API, TUI/Web UI, Slack bot). | Submodule as `external/tools/pi-mono`. |
+| ✅ | claude-mem | Memory/Plugin | 10 | Claude Code plugin for memory capture and injection. | Submodule as `external/memory/claude-mem`. |
+| ✅ | CodexBar | Tool/Usage | 8 | Usage stats for OpenAI Codex and Claude Code. | Submodule as `external/tools/codex-bar`. |
+| ✅ | Stable Video Infinity | Generative/AI | 7 | Infinite-length video generation with error recycling. | Reference only. |
+| ✅ | Stable Video Infinity | Generative/AI | 7 | Infinite-length video generation with error recycling. | Reference only. |
+| ✅ | claude-skillz | Skills/Plugins | 9 | Composable skills and personas for Claude Code. | Submodule as `external/skills/claude-skillz`. |
+| ✅ | Markdown-Renderer | UI/Library | 8 | Kotlin Multiplatform Markdown renderer for Compose. | Reference only. |
+| ✅ | llama-swap | Infra/LLM | 9 | Reliable model swapping for local OpenAI/Anthropic servers. | Submodule as `external/infra/llama-swap`. |
+| ✅ | EhViewer | App/Mobile | 2 | Android image viewer (Deprecated). | Reference only. |
+| ✅ | gac | Tool/Git | 8 | Intelligent LLM-powered git commit message generator. | Submodule as `external/tools/gac`. |
+| ✅ | OpenCoder | Code/LLM | 10 | Open cookbook and models for top-tier code LLMs. | Submodule as `external/research/opencoder`. |
+| ✅ | Antigravity Auth | Auth/Plugin | 10 | OAuth plugin for Opencode to connect to Antigravity. | Submodule as `external/auth/antigravity-auth`. |
+| ✅ | Antigravity Auth | Auth/Plugin | 10 | OAuth plugin for Opencode to connect to Antigravity. | Submodule as `external/auth/antigravity-auth`. |
+| ✅ | Scribe | Tool/Optimization | 10 | Reduces agent token usage by 30% with no loss of accuracy. | Submodule as `external/tools/scribe`. |
+| ✅ | NexPhone | Concept/Infra | 7 | One phone, every computer (Android/Linux/Windows). | Reference only. |
+| ✅ | Chat Capsule | Tool/Utility | 6 | Convert ChatGPT conversations to Markdown. | Reference only. |
+| ✅ | Ghidra MCP | Security/Reverse | 10 | MCP server for Ghidra to reverse engineer binaries. | Submodule as `external/mcp-servers/ghidra`. |
+| ✅ | Pi (Coding Agent) | Tool/Agent | 9 | Terminal-based coding agent with context engineering. | Submodule as `external/tools/pi`. |
+| ✅ | Agentset RAG | Framework/Prompts | 8 | Production-ready RAG prompt templates. | Reference only. |
+| ✅ | Git AI | Tool/Analytics | 9 | Track AI code usage and prompt analysis in Git. | Submodule as `external/tools/git-ai`. |
+| ✅ | C++ Modules | Article/Core | 4 | Current state and benefits of C++ modules. | Reference only. |
+| ✅ | Research After AI | Article/Theory | 10 | Principles for accelerated exploration and AI use. | Reference only. |
+| ✅ | Open Notebook | Tool/Memory | 10 | Secure, local alternative to Google NotebookLM. | Submodule as `external/tools/open-notebook`. |
+| ✅ | TTT-Discover | Research/Scaling | 10 | Learning to Discover at Test Time (Reinforcement Learning). | Submodule as `external/research/ttt-discover`. |
+| ✅ | Coding Revolution | Article/Opinion | 5 | Defense against "prophets of doom" in AI coding. | Reference only. |
+| ✅ | Kona 1.0 (EBM) | Research/Reasoning | 10 | Energy-Based Models for AGI-like reasoning (Sudoku demo). | Reference only. |
+| ✅ | UltraRAG 3.0 | Framework/RAG | 10 | White-box RAG with inference visualization. | Submodule as `external/frameworks/ultrarag`. |
+| ✅ | ModelGate | Tool/Proxy | 9 | Open-source MCP/LLM Gateway with RBAC and discovery. | Submodule as `external/tools/modelgate`. |
+| ✅ | MindMap RAG | Tool/UI | 8 | Convert PDF/DOCX to interactive mind maps. | Submodule as `external/tools/mindmap`. |
+| ✅ | CodeNomad | Tool/Agent | 8 | Agentic editor with `apply_patch` tool. | Submodule as `external/tools/codenomad`. |
+| ✅ | ThirdEyeMCP | Tool/Vision | 10 | Screen capture MCP server for AI coding agents. | Submodule as `external/mcp-servers/third-eye`. |
+| ✅ | GLM-4.7 Local | Guide/Infra | 9 | Running GLM-4.7 Flash locally with llama.cpp for Claude Code. | Reference only. |
+| ✅ | Model Routing | Article/Intel | 9 | Benchmarks comparing GPT-5.2, Opus 4.5, and Gemini 3 Pro. | Reference only. |
+| ✅ | BMAD Method | Protocol | 10 | Collaboration method for multi-agent systems. | Reference only. |
+| ✅ | Claude Constitution | Alignment/Safety | 8 | Updated 2026 rules for Claude model behavior. | Reference only. |
+| ✅ | Python Debug Skill | Tool/Skill | 9 | Debugging skill for Claude using pdb (human-like). | Submodule as `external/tools/python-debugger-skill`. |
+| ✅ | Societies of Thought | Research/Logic | 10 | Scaling reasoning by simulating internal agent dialogue. | Reference only (Adopt for Council). |
+| ✅ | Nanocoder | Tool/Agent | 8 | Smarter AI tool handling and config (v1.21.0). | Submodule as `external/tools/nanocoder`. |
+| ✅ | 99 | Project | 2 | ThePrimeagen's 99 problems / repo. | Reference only. |
