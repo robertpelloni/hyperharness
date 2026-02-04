@@ -44,9 +44,9 @@
 **Goal:** Establish the robust indexing and execution layer required for high-fidelity coding.
 
 ### Robust Indexing
-- [x] **Vector Integration:** Enhance `RepoMapService` to use vector embeddings for semantic search (RAG).
+- [x] **Vector Integration:** Enhance `RepoMapService` to use vector embeddings for semantic search (RAG) using `fs-lexical` + `txtai`.
 - [x] **Tree-sitter Deep Dive:** Upgrade symbol extraction to support full call graphs and type hierarchies.
-- [x] **Graph Service:** Finalize `RepoGraphService` to visualize import/export dependencies.
+- [x] **Graph Service:** Finalize `RepoGraphService` to visualize import/export dependencies (Integrated `Cognee` for Graph Memory).
 
 ### Secure Execution
 - [x] **Sandboxing:** Finalize `SandboxService` for secure Docker/WASM code execution (Integrating `code-sandbox/` tools).
@@ -76,7 +76,7 @@
 - [x] **Memory Recording:** Background recording of browsing research.
 
 ### Browser Capabilities (via MCP)
-- [x] **Page Scraping:** Turn current page content into markdown context (Integrating `browser-use/`).
+- [x] **Page Scraping:** Turn current page content into markdown context (Integrated `browser-use` bridge).
 - [x] **Console Reader:** Stream browser console logs to the Borg debugger.
 - [x] **History:** Secure access to history via `browser_get_history` (WebSocket Bridge).
 - [x] **Tab Mirroring:** Real-time visual oversight of the agent's browser tab in the Dashboard.
@@ -87,10 +87,11 @@
 - [x] **Dynamic Disclosure:** Hide tools until needed to save context.
 - [x] **Semantic Reranking:** Optimize tool descriptions for model consumption.
 - [x] **Proxy System:** Bridge remote/local servers.
+- [x] **Workflow Engine:** Graph-based state machine for durable multi-agent execution (LangGraph-inspired).
 
 ## Phase 18: Multi-Agent Squads
 - [x] **Consensus Protocol:** Multi-model debate engine.
-- [x] **Git Worktree Squads:** Parallel coding agents in isolated branches.
+- [x] **Git Worktree Squads:** Parallel coding agents in isolated branches (Maestro Pattern via `WorktreeManager`).
 - [ ] **Local-Remote Bridge:** Sync projects between local machine and cloud instances.
 
 ## Phase 19: Enterprise & Ecosystem (Restored)
