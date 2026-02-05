@@ -20,8 +20,17 @@ export class KnowledgeService {
      * Retrieves the Knowledge Graph (generic)
      */
     public async getGraph(query?: string, depth: number = 1): Promise<{ content: any[] }> {
-        // ... (Previous logic or delegation to getDeepContext)
-        // For now, let's keep the tool API compatible
+        // If no query, return full graph
+        if (!query && this.memory.graph) {
+            // @ts-ignore - getSnapshot was just added
+            const snapshot = this.memory.graph.getSnapshot();
+            return {
+                content: [{
+                    type: "text",
+                    text: JSON.stringify(snapshot, null, 2)
+                }]
+            };
+        }
 
         if (query) {
             const context = await this.getDeepContext(query, depth);

@@ -99,4 +99,11 @@ export class GraphMemory {
             .map(id => this.nodes.get(id))
             .filter((n): n is GraphNode => !!n);
     }
+
+    public getSnapshot(): { nodes: GraphNode[], edges: GraphEdge[] } {
+        return {
+            nodes: Array.from(this.nodes.values()),
+            edges: [...this.edges]
+        };
+    }
 }
