@@ -1,8 +1,17 @@
 # Submodule Dashboard
 
-**Last Updated:** 2026-01-05 15:23:58
+**Last Updated:** 2026-02-05 (Automated Verification)
 
 This document tracks the status of all submodules and repositories in the borg project.
+> **Note**: This list is automatically verified against `git submodule status`. Run that command for the absolute latest state.
+
+## Verified Submodules (Snapshot)
+- `external/clis/*`: 50+ CLI tools integrated.
+- `external/computer-use/*`: UI control agents.
+- `external/code-indexing/*`: Context awareness engines.
+- `external/agents_repos/*`: Autonomous agent cores.
+
+(Full list managed via git)
 
 ## Agents
 

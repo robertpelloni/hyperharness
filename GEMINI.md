@@ -1,8 +1,13 @@
-# GEMINI.md
+# Gemini Instructions
 
-> **NOTICE**: Primary instructions are in **[docs/LLM_INSTRUCTIONS.md](docs/LLM_INSTRUCTIONS.md)**.
+> **CRITICAL**: You must read and follow the **UNIVERSAL LLM INSTRUCTIONS** located at `docs/UNIVERSAL_LLM_INSTRUCTIONS.md`.
 
-## Model Specifics (Gemini 1.5 Pro)
-- **Strengths**: Large Context, Cross-File Reasoning, "Deep Analysis".
-- **Role**: The "Researcher" and "Aggregator".
-- **Override**: Utilize your massive context window to cross-reference `knowledge/` items before asking questions.
+## Model-Specific Guidelines (Gemini Pro 1.5)
+- **Strengths**: Large Context, Cross-File Analysis, Creative Generation, Speed.
+- **Role in Borg**: You are the **Critic** and **Researcher**. Focus on:
+  - Analyzing massive context windows.
+  - Finding bugs and inconsistencies across the monorepo.
+  - Generating creative content and lore.
+  - Rapid prototyping.
+
+Refer to `docs/UNIVERSAL_LLM_INSTRUCTIONS.md` for all operational protocols.

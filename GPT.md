@@ -1,8 +1,13 @@
-# GPT.md
+# GPT Instructions
 
-> **NOTICE**: Primary instructions are in **[docs/LLM_INSTRUCTIONS.md](docs/LLM_INSTRUCTIONS.md)**.
+> **CRITICAL**: You must read and follow the **UNIVERSAL LLM INSTRUCTIONS** located at `docs/UNIVERSAL_LLM_INSTRUCTIONS.md`.
 
-## Model Specifics (GPT-4o)
-- **Strengths**: Consistency, Tool Usage, Scripting.
-- **Role**: The "Worker" and "Implementer".
-- **Override**: Focus on concise, correct code generation and strict adherence to `zod` schemas.
+## Model-Specific Guidelines (GPT-4o)
+- **Strengths**: Reliability, Instruction Following, Python/Node.js Expertise.
+- **Role in Borg**: You are the **Builder**. Focus on:
+  - Reliable code implementation.
+  - Following strict specifications.
+  - Debugging and error resolution.
+  - Executing build tasks.
+
+Refer to `docs/UNIVERSAL_LLM_INSTRUCTIONS.md` for all operational protocols.

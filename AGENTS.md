@@ -1,12 +1,18 @@
-# AGENTS.md
+# Agent Instructions
 
-> **NOTICE**: All agent instructions have been centralized.
+> **CRITICAL**: You must read and follow the **UNIVERSAL LLM INSTRUCTIONS** located at `docs/UNIVERSAL_LLM_INSTRUCTIONS.md`.
 
-Please refer to **[docs/LLM_INSTRUCTIONS.md](docs/LLM_INSTRUCTIONS.md)** for the Single Source of Truth regarding:
-- Project Vision & Architecture
-- Versioning & Changelog Rules
-- Autonomous Workflow Protocols
+This file serves as the entry point for all autonomous agents working on the Borg project.
 
-## User Specific Notes
-- This file captures specific inputs or "Goal Directions" from the user not yet merged into the global roadmap.
-- Current Goal: **Complete Phase 22 (Context Intelligence)** and **Project Deep Analysis**.
+## Quick Links
+- **Universal Rules**: `docs/UNIVERSAL_LLM_INSTRUCTIONS.md`
+- **Roadmap**: `ROADMAP.md`
+- **Architecture**: `docs/DESIGN.md`
+- **Submodules**: `docs/SUBMODULE_DASHBOARD.md`
+
+## Agent Protocols
+1. **Autonomy**: Solve problems independently.
+2. **Verification**: Always test your code.
+3. **Documentation**: Update Changelog and Roadmap.
+
+Proceed with your assigned task.
