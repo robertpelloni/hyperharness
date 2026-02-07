@@ -12,9 +12,12 @@ dotenv.config({ path: path.join(root, '.env') });
 dotenv.config({ path: path.join(root, 'packages/core/.env') });
 
 import fs from 'fs/promises';
-import { SkillAssimilationService } from '../skills/SkillAssimilationService.js';
+import { SkillAssimilationService } from '../services/SkillAssimilationService.js';
 import { SkillRegistry } from '../skills/SkillRegistry.js';
 import { LLMService, ModelSelector } from '@borg/ai';
+import { DeepResearchService } from '../services/DeepResearchService.js';
+import { MemoryManager } from '../services/MemoryManager.js';
+import { SearchService } from '@borg/search';
 
 async function run() {
     const indexPath = path.join(root, 'BORG_MASTER_INDEX.jsonc');
@@ -32,7 +35,12 @@ async function run() {
         const selector = new ModelSelector();
         const llm = new LLMService(selector);
         const registry = new SkillRegistry([skillsRoot]);
-        const assimilator = new SkillAssimilationService(registry, llm, skillsRoot);
+
+        const memoryManager = new MemoryManager(root);
+        const searchService = new SearchService();
+        const deepResearch = new DeepResearchService(llm, searchService, memoryManager);
+
+        const assimilator = new SkillAssimilationService(registry, llm, deepResearch);
 
         const itemsToProcess = [
             ...index.categories.mcp_servers,
@@ -45,7 +53,10 @@ async function run() {
         for (const item of itemsToProcess) {
             try {
                 console.log(`[Assimilator] Processing: ${item.name}`);
-                const res = await assimilator.assimilate(item, 'anthropic');
+                const res = await assimilator.assimilate({
+                    topic: item.name,
+                    docsUrl: item.url
+                });
                 console.log(res);
             } catch (e: any) {
                 console.error(`[Assimilator] Failed to assimilate ${item.name}: ${e.message}`);

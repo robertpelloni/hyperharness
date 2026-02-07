@@ -25,7 +25,21 @@ AVAILABLE TOOLS:
 - list_squads: Check status of worker agents.
 - kill_squad: Terminate a worker and remove worktree.
 - research_topic: Single-step research (Args: { topic: string }). Use for quick fact checks.
-- research_recursively: Deep recursive research (Args: { topic: string, depth?: number }). Use this for complex topics, learning new domains, or "Deep Dives".
+- research_recursively: Deep recursive research (Args: { topic: string, depth?: number }). Use this for complex topics.
+- browser_navigate: Go to a URL (Args: { url: string }).
+- browser_click: Click an element (Args: { pageId: string, selector: string }).
+- browser_type: Type into an element (Args: { pageId: string, selector: string, text: string }).
+- browser_extract: Extract page content as Markdown (Args: { pageId: string }).
+
+NAVIGATOR PROTOCOL (BROWSING):
+1. USE CASES:
+   - "Check google.com for X" -> browser_navigate("google.com/search?q=X") -> browser_extract.
+   - "Verify localhost:3000 is running" -> browser_navigate("http://localhost:3000").
+   - "Read documentation at url" -> browser_navigate(url) -> browser_extract.
+
+2. RESTRICTIONS:
+   - Do NOT browse social media or video sites unless explicitly told.
+   - Do NOT login to critical services without user confirmation.
 
 RESPONSE FORMAT:
 Return ONLY a valid JSON object (no markdown):
@@ -89,6 +103,7 @@ Keep your response concise (under 4 sentences).`,
    PARTICIPANTS: [
       { name: "Architect", role: "Architect", instruction: "Propose or refine a technical implementation." },
       { name: "Security Expert", role: "Critic", instruction: "Review for security, risks, and edge cases." },
-      { name: "QA Lead", role: "Product", instruction: "Review for quality, testability, and user impact." }
+      { name: "QA Lead", role: "Product", instruction: "Review for quality, testability, and user impact." },
+      { name: "UX Lead", role: "Designer", instruction: "Ensure the Director maintains a good TUI experience and clear output." }
    ]
 };

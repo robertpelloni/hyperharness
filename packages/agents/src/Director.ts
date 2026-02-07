@@ -1,9 +1,8 @@
-import type { IMCPServer } from "@borg/adk";
+import type { IMCPServer, IAgentMemoryService } from "@borg/adk";
 import { LLMService } from "@borg/ai";
 import { Council } from "./Council.js";
 import { DIRECTOR_SYSTEM_PROMPT } from "@borg/ai";
 import { WorktreeManager } from "./orchestration/WorktreeManager.js";
-import type { AgentMemoryService } from "../../core/src/services/AgentMemoryService.js";
 
 interface AgentContext {
     goal: string;
@@ -15,9 +14,8 @@ export class Director {
     private server: IMCPServer;
     private llmService: LLMService;
     private council: Council;
-    private council: Council;
     private worktreeManager: WorktreeManager;
-    private memoryService: AgentMemoryService | undefined;
+    private memoryService: IAgentMemoryService | undefined;
 
     // Auto-Drive State
     private isAutoDriveActive: boolean = false; // SAFE START: Default to false
@@ -210,7 +208,6 @@ export class Director {
                             if (this.memoryService) {
                                 await this.memoryService.addLongTerm(
                                     `Task "${goal}" completed successfully.\nSummary: ${taskResult}`,
-                                    'project',
                                     { source: 'director', confidence: 1.0, tags: ['success', 'task'] }
                                 );
                                 console.log(`[Director] 🧠 Consolidated success to long-term memory.`);

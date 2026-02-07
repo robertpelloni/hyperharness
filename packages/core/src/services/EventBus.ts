@@ -8,7 +8,9 @@ export type SystemEventType =
     | 'task:update'
     | 'task:complete'
     | 'tool:call'
-    | 'memory:prune';
+    | 'memory:prune'
+    | 'file:change'
+    | 'terminal:error';
 
 export interface SystemEvent {
     type: SystemEventType;
@@ -18,23 +20,50 @@ export interface SystemEvent {
 }
 
 export class EventBus extends EventEmitter {
+    private wildcardListeners: Array<{ pattern: RegExp, listener: (event: SystemEvent) => void }> = [];
+
     constructor() {
         super();
         this.setMaxListeners(50);
     }
 
-    public emitEvent(type: SystemEventType, source: string, payload: any) {
+    public subscribe(pattern: string, listener: (event: SystemEvent) => void) {
+        if (pattern.includes('*')) {
+            // Convert "file:*" to /^file:.*$/
+            const regex = new RegExp(`^${pattern.replace(/\*/g, '.*')}$`);
+            this.wildcardListeners.push({ pattern: regex, listener });
+        } else {
+            // Standard exact match
+            // @ts-ignore
+            this.on(pattern, listener);
+        }
+    }
+
+    public emitEvent(type: SystemEventType | string, source: string, payload: any) {
         const event: SystemEvent = {
-            type,
+            type: type as SystemEventType,
             timestamp: Date.now(),
             source,
             payload
         };
+
+        // 1. Emit exact match
         this.emit('system_event', event);
         this.emit(type, event);
+
+        // 2. Check wildcards
+        for (const { pattern, listener } of this.wildcardListeners) {
+            if (pattern.test(type)) {
+                try {
+                    listener(event);
+                } catch (e) {
+                    console.error(`[EventBus] Error in wildcard listener for ${type}:`, e);
+                }
+            }
+        }
     }
 
-    public onEvent(type: SystemEventType | 'system_event', listener: (event: SystemEvent) => void) {
-        this.on(type, listener);
+    public onEvent(type: SystemEventType | string, listener: (event: SystemEvent) => void) {
+        this.subscribe(type, listener);
     }
 }

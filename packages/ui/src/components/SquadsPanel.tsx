@@ -76,6 +76,9 @@ export function SquadsPanel() {
     };
 
     return (
+    const [brainMember, setBrainMember] = useState<any>(null);
+
+    return (
         <div className="container mx-auto p-6 max-w-6xl space-y-8">
             <div className="flex justify-between items-center">
                 <div>
@@ -170,8 +173,23 @@ export function SquadsPanel() {
                                         <Activity className="w-4 h-4 mr-2" />
                                         Director: {member.active ? 'Running' : 'Idle'}
                                     </div>
+                                    {member.brain && (
+                                        <div className="text-xs bg-muted/50 p-2 rounded border border-dashed hover:bg-muted cursor-help" onClick={() => setBrainMember(member)} title="Click to view thought process">
+                                            <div className="font-semibold mb-1">🧠 Brain Activity:</div>
+                                            <div>Step: {member.brain.step || 0} / {member.brain.totalSteps || '?'}</div>
+                                            <div className="truncate opacity-70">Goal: {member.brain.goal || 'No active goal'}</div>
+                                        </div>
+                                    )}
 
                                     <div className="flex justify-end pt-2 gap-2">
+                                        <Button
+                                            variant="secondary"
+                                            size="sm"
+                                            onClick={() => setBrainMember(member)}
+                                        >
+                                            <Activity className="w-4 h-4 mr-2" />
+                                            Brain
+                                        </Button>
                                         <Button
                                             variant="secondary"
                                             size="sm"
@@ -196,7 +214,6 @@ export function SquadsPanel() {
                                     </div>
                                 </div>
                             </CardContent>
-                            {/* Decorative background accent */}
                             <div className="absolute top-0 right-0 p-4 opacity-5 pointer-events-none">
                                 <Terminal className="w-24 h-24" />
                             </div>
@@ -244,6 +261,59 @@ export function SquadsPanel() {
                             {chatMutation.isPending ? 'Sending...' : 'Send Instruction'}
                         </Button>
                     </SheetFooter>
+                </SheetContent>
+            </Sheet>
+
+            <Sheet open={!!brainMember} onOpenChange={(open) => !open && setBrainMember(null)}>
+                <SheetContent side="left" className="min-w-[500px] sm:min-w-[600px]">
+                    <SheetHeader>
+                        <SheetTitle>Brain Activity: {brainMember?.branch}</SheetTitle>
+                        <SheetDescription>
+                            Real-time thought process and execution history.
+                        </SheetDescription>
+                    </SheetHeader>
+                    {brainMember?.brain ? (
+                        <ScrollArea className="h-[calc(100vh-120px)] mt-4 pr-4">
+                            <div className="space-y-6">
+                                <div className="space-y-2">
+                                    <h3 className="text-sm font-semibold flex items-center gap-2">
+                                        <Activity className="w-4 h-4 text-blue-500" />
+                                        Current Status
+                                    </h3>
+                                    <div className="grid grid-cols-2 gap-2 text-sm">
+                                        <div className="bg-muted p-2 rounded">
+                                            <span className="text-muted-foreground block text-xs">State</span>
+                                            <span className="font-mono">{brainMember.brain.status}</span>
+                                        </div>
+                                        <div className="bg-muted p-2 rounded">
+                                            <span className="text-muted-foreground block text-xs">Progress</span>
+                                            <span className="font-mono">{brainMember.brain.step || 0} / {brainMember.brain.totalSteps || '?'}</span>
+                                        </div>
+                                        <div className="col-span-2 bg-muted p-2 rounded">
+                                            <span className="text-muted-foreground block text-xs">Active Goal</span>
+                                            <div className="font-medium">{brainMember.brain.goal || 'No active goal'}</div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="space-y-2">
+                                    <h3 className="text-sm font-semibold flex items-center gap-2">
+                                        <Terminal className="w-4 h-4 text-green-500" />
+                                        Recent Thought Trace
+                                    </h3>
+                                    <div className="bg-black/90 text-green-400 p-4 rounded-md font-mono text-xs overflow-x-auto whitespace-pre-wrap">
+                                        {brainMember.brain.lastHistory && brainMember.brain.lastHistory.length > 0
+                                            ? brainMember.brain.lastHistory.join('\n\n')
+                                            : <span className="text-muted-foreground opacity-50">// No recent history available</span>}
+                                    </div>
+                                </div>
+                            </div>
+                        </ScrollArea>
+                    ) : (
+                        <div className="py-12 text-center text-muted-foreground">
+                            Brain data unavailable (Director might be sleeping).
+                        </div>
+                    )}
                 </SheetContent>
             </Sheet>
         </div>

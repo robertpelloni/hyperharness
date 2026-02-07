@@ -57,10 +57,15 @@ import { CodeModeService } from "./services/CodeModeService.js";
 import { WorkflowEngine } from "./orchestrator/WorkflowEngine.js";
 import { AgentMemoryService } from "./services/AgentMemoryService.js";
 console.log("[MCPServer] ✓ Phase 51/53 Infrastructure");
-import { SkillAssimilationService } from "./skills/SkillAssimilationService.js";
+import { SkillAssimilationService } from "./services/SkillAssimilationService.js";
 import { registerSystemWorkflows } from "./orchestrator/SystemWorkflows.js";
 import { MCPAggregator } from "./mcp/MCPAggregator.js";
 import { SubmoduleManager } from "./mcp/SubmoduleManager.js";
+import { SubmoduleService } from "./services/SubmoduleService.js";
+import { FileSensor } from "./sensors/FileSensor.js";
+import { TerminalSensor } from "./sensors/TerminalSensor.js";
+import { AutoTestReactor } from "./reactors/AutoTestReactor.js";
+import { HealerReactor } from "./reactors/HealerReactor.js";
 console.log("[MCPServer] ✓ SkillRegistry");
 
 import { SpawnerService } from "./agents/SpawnerService.js";
@@ -110,6 +115,7 @@ import { PermissionManager, AutonomyLevel } from "./security/PermissionManager.j
 import { BrowserTool } from "@borg/tools";
 import { SearchService } from "@borg/search";
 import { CouncilService } from "./services/CouncilService.js";
+import { BrowserService } from "./services/BrowserService.js";
 import { createCouncilTools } from "./mcp/tools/council_tools.js";
 console.log("[MCPServer] ✓ PermissionManager");
 
@@ -139,7 +145,6 @@ export class MCPServer {
     private router: Router;
     public modelSelector: ModelSelector;
     public llmService: LLMService;
-    private skillRegistry: SkillRegistry;
     private director: Director;
     public permissionManager: PermissionManager;
     public auditService: AuditService;
@@ -176,12 +181,21 @@ export class MCPServer {
     private healerService: HealerService;
     public darwinService: DarwinService;
     public promptRegistry: PromptRegistry;
+    public skillRegistry: SkillRegistry;
     public skillAssimilationService: SkillAssimilationService;
     private mcpAggregator: MCPAggregator;
     private submoduleManager: SubmoduleManager;
     public eventBus: EventBus;
     public deepResearchService: DeepResearchService;
     public councilService: CouncilService;
+    public browserService: BrowserService;
+
+    // Sensors (Phase 43)
+    public fileSensor: FileSensor;
+    public terminalSensor: TerminalSensor;
+    public autoTestReactor: AutoTestReactor;
+    public healerReactor: HealerReactor;
+    public submoduleService: SubmoduleService;
 
     // Phase 51: Core Infrastructure
     public lspService: LSPService;
@@ -252,9 +266,16 @@ export class MCPServer {
         this.sandboxService = new SandboxService();
         this.healerService = new HealerService(this.llmService, this);
         this.promptRegistry = new PromptRegistry();
-        this.deepResearchService = new DeepResearchService(this.llmService); // Initialize FIRST
+        this.skillRegistry = new SkillRegistry([
+            path.join(process.cwd(), 'packages', 'core', 'src', 'skills'),
+            path.join(process.cwd(), '.borg', 'skills')
+        ]);
+        // SearchService is needed for DeepResearchService types
+        const searchService = new SearchService();
+        this.memoryManager = new MemoryManager(process.cwd());
+        this.deepResearchService = new DeepResearchService(this.llmService, searchService, this.memoryManager); // Initialize FIRST
         this.skillAssimilationService = new SkillAssimilationService(
-            this,
+            this.skillRegistry,
             this.llmService,
             this.deepResearchService
         );
@@ -262,7 +283,23 @@ export class MCPServer {
 
         this.mcpAggregator = new MCPAggregator();
         this.submoduleManager = new SubmoduleManager(process.cwd());
+        this.submoduleService = new SubmoduleService(process.cwd(), this.mcpAggregator);
         this.eventBus = new EventBus();
+
+        // Initialize Sensors
+        this.fileSensor = new FileSensor(this.eventBus, process.cwd());
+        this.terminalSensor = new TerminalSensor(this.eventBus);
+
+        // Start Sensors (Non-blocking)
+        this.fileSensor.start();
+        this.terminalSensor.start();
+
+        // Initialize Reactors
+        this.autoTestReactor = new AutoTestReactor(this.eventBus, this.autoTestService);
+        this.autoTestReactor.start();
+
+        this.healerReactor = new HealerReactor(this.eventBus, this.healerService);
+        this.healerReactor.start();
 
         // Phase 51: Core Infrastructure Services
         this.lspService = new LSPService(process.cwd());
@@ -325,6 +362,7 @@ export class MCPServer {
         this.knowledgeService = new KnowledgeService(this.memoryManager); // Added
         this.deepResearchService = new DeepResearchService(this.llmService, this.searchService, this.memoryManager);
         this.councilService = new CouncilService();
+        this.browserService = new BrowserService();
 
         this.squadService = new SquadService(this);
         this.gitWorktreeManager = new GitWorktreeManager(process.cwd());
@@ -460,7 +498,7 @@ export class MCPServer {
     }
 
     public async executeTool(name: string, args: any): Promise<any> {
-        console.log(`[DEBUG] executeTool called with: ${name}`);
+        console.log(`[DEBUG] executeTool called with: '${name}' (len: ${name.length})`);
         const callId = Math.random().toString(36).substring(7);
         const startTime = Date.now();
 
@@ -615,14 +653,53 @@ export class MCPServer {
                 }
             }
             else if (name === "browser_screenshot") {
-                const dataUrl = await this.captureScreenshotFromBrowser();
-                // Return generic 'image' content type if MCP supports it, or text with data URL
+                // Modified to try Puppeteer if no WebSocket
+                if (this.wssInstance && this.wssInstance.clients.size > 0) {
+                    const dataUrl = await this.captureScreenshotFromBrowser();
+                    result = {
+                        content: [
+                            { type: "text", text: "Screenshot captured (Client)." },
+                            { type: "image", data: dataUrl.split(',')[1], mimeType: "image/png" }
+                        ]
+                    };
+                } else {
+                    // Fallback to Puppeteer Navigator
+                    // Note: Default screenshot of active page? Or require pageId?
+                    // For now, let's assume we want to screenshot the active Puppeteer page if available.
+                    // But BrowserService manages multiple pages.
+                    // Let's defer to specific `navigator_screenshot` or update this logic later.
+                    result = { content: [{ type: "text", text: "Error: No Client Extension. For backend browsing, use 'navigator_navigate'." }] };
+                }
+            }
+            // --- THE NAVIGATOR (Phase 48: Puppeteer Backend) ---
+            else if (name === "browser_navigate") {
+                const url = args?.url as string;
+                if (!url) throw new Error("Missing 'url'");
+                const res = await this.browserService.navigate(url);
                 result = {
-                    content: [
-                        { type: "text", text: "Screenshot captured." },
-                        { type: "image", data: dataUrl.split(',')[1], mimeType: "image/png" }
-                    ]
+                    content: [{ type: "text", text: `Navigated to "${res.title}" (ID: ${res.id})\n\nContent Preview:\n${res.content}` }]
                 };
+            }
+            else if (name === "browser_click") {
+                const pageId = args?.pageId as string;
+                const selector = args?.selector as string;
+                if (!pageId || !selector) throw new Error("Missing params: pageId, selector");
+                await this.browserService.click(pageId, selector);
+                result = { content: [{ type: "text", text: `Clicked '${selector}' on page ${pageId}` }] };
+            }
+            else if (name === "browser_type") {
+                const pageId = args?.pageId as string;
+                const selector = args?.selector as string;
+                const text = args?.text as string;
+                if (!pageId || !selector || !text) throw new Error("Missing params");
+                await this.browserService.type(pageId, selector, text);
+                result = { content: [{ type: "text", text: `Typed into '${selector}' on page ${pageId}` }] };
+            }
+            else if (name === "browser_extract") {
+                const pageId = args?.pageId as string;
+                if (!pageId) throw new Error("Missing 'pageId'");
+                const content = await this.browserService.extract(pageId);
+                result = { content: [{ type: "text", text: content.substring(0, 5000) }] }; // Limit response size
             }
             else if (name === "get_knowledge_graph") {
                 result = await this.knowledgeService.getGraph(args?.query, args?.depth);
@@ -672,6 +749,74 @@ export class MCPServer {
                     result = { content: [{ type: "text", text: `Sent VSCODE_COMMAND: ${command}` }] };
                 } else {
                     result = { content: [{ type: "text", text: "Error: No WebSocket server (Extension bridge) active." }] };
+                }
+            }
+
+            // Log flow
+            console.log(`[DEBUG] Flow check: name='${name}'`);
+
+            // --- SWARM TOOLS (Phase 51) ---
+            if (name === "start_squad") {
+                console.log("[DEBUG] ENTERED start_squad BLOCK");
+                const branch = args?.branch as string;
+                const goal = args?.goal as string;
+                if (!branch || !goal) throw new Error("Missing params: branch, goal");
+                const res = await this.squadService.spawnMember(branch, goal);
+                result = { content: [{ type: "text", text: res }] };
+            }
+            else if (name === "list_squads") {
+                const members = this.squadService.listMembers();
+                result = { content: [{ type: "text", text: JSON.stringify(members, null, 2) }] };
+            }
+            else if (name === "kill_squad") {
+                const branch = args?.branch as string;
+                if (!branch) throw new Error("Missing param: branch");
+                const res = await this.squadService.killMember(branch);
+                result = { content: [{ type: "text", text: res }] };
+            }
+            else if (name === "git_worktree_add") {
+                const worktreePath = args?.path as string;
+                const branch = args?.branch as string;
+                const cwd = (args?.cwd as string) || process.cwd();
+
+                // Construct command: git worktree add -b <branch> <path>
+                // Note: -b creates new branch. If branch exists, maybe just checkout?
+                // SquadService seems to imply new branch for task.
+                // Safest: try -b, if fails (branch exists), try without -b?
+                // For now, follow SquadService pattern: git worktree add -b ...
+                const cmd = `git worktree add -b ${branch} "${worktreePath}"`;
+                console.log(`[GitWorktree] Adding worktree: ${cmd}`);
+
+                try {
+                    const out = await this.shellService.execute(cmd, cwd);
+                    result = { content: [{ type: "text", text: out }] };
+                } catch (e: any) {
+                    throw new Error(`Git worktree add failed: ${e.message}`);
+                }
+            }
+            else if (name === "git_worktree_remove") {
+                const worktreePath = args?.path as string;
+                const force = args?.force as boolean;
+                const cwd = (args?.cwd as string) || process.cwd();
+                const cmd = `git worktree remove ${force ? '--force' : ''} "${worktreePath}"`;
+
+                try {
+                    const out = await this.shellService.execute(cmd, cwd);
+                    result = { content: [{ type: "text", text: out }] };
+                } catch (e: any) {
+                    // Start_squad might fail if dir doesn't exist, but remove implies cleanup.
+                    // If fail, maybe manual rm -rf?
+                    throw new Error(`Git worktree remove failed: ${e.message}`);
+                }
+            }
+            else if (name === "git_worktree_list") {
+                const cwd = (args?.cwd as string) || process.cwd();
+                const cmd = `git worktree list`;
+                try {
+                    const out = await this.shellService.execute(cmd, cwd);
+                    result = { content: [{ type: "text", text: out }] };
+                } catch (e: any) {
+                    throw new Error(`Git worktree list failed: ${e.message}`);
                 }
             }
             else if (name === "vscode_get_status") {

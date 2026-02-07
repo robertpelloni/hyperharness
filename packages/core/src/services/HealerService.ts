@@ -1,6 +1,8 @@
 
 import { LLMService } from '@borg/ai';
 import { MCPServer } from '../MCPServer.js';
+import path from 'path';
+import fs from 'fs';
 
 export interface Diagnosis {
     errorType: string;
@@ -23,9 +25,64 @@ export class HealerService {
     private server: MCPServer;
     private history: { timestamp: number; error: string; fix: FixPlan; success: boolean }[] = [];
 
+    public getHistory() {
+        return this.history;
+    }
+
     constructor(llm: LLMService, server: MCPServer) {
         this.llm = llm;
         this.server = server;
+    }
+
+    public async autoHeal(errorLog: string): Promise<{ success: boolean; file?: string; fix?: string }> {
+        console.log("[HealerService] 🚑 Auto-healing initialized...");
+
+        // 1. Diagnose
+        const diagnosis = await this.analyzeError(errorLog);
+        console.log("[HealerService] 🔍 Diagnosis:", diagnosis);
+
+        if (!diagnosis.file || !diagnosis.suggestedFix) {
+            console.log("[HealerService] 🤷 Could not identify file or fix.");
+            return { success: false };
+        }
+
+        // 2. Locate File
+        const filePath = path.isAbsolute(diagnosis.file)
+            ? diagnosis.file
+            : path.join(process.cwd(), diagnosis.file);
+
+        if (!fs.existsSync(filePath)) {
+            console.log(`[HealerService] ❌ File not found: ${filePath}`);
+            return { success: false };
+        }
+
+        // 3. Apply Fix (Naive replacement for now, usually would use applying diffs)
+        // For the purpose of this phase, we will trust the LLM's suggested fix is a replacement block
+        // In a real system, we'd use a more robust patching mechanism
+
+        // Let's ask LLM to generate the FULL file content with the fix applied
+        const currentContent = await fs.readFileSync(filePath, 'utf-8');
+        const prompt = `
+        You are an Expert Linter and Fixer.
+        Original File Content:
+        \`\`\`typescript
+        ${currentContent}
+        \`\`\`
+
+        Diagnosis: ${diagnosis.description}
+        Suggested Fix: ${diagnosis.suggestedFix}
+
+        Output the COMPLETE, CORRECTED file content. Do not include markdown fences.
+        `;
+
+        const response = await this.llm.generateText('anthropic', 'claude-3-5-sonnet-latest', 'You are a code fixer.', prompt);
+        const newContent = response.content.replace(/```typescript|```/g, '').trim();
+
+        // 4. Write
+        await fs.writeFileSync(filePath, newContent);
+        console.log(`[HealerService] 💉 Fix applied to ${filePath}`);
+
+        return { success: true, file: filePath, fix: diagnosis.suggestedFix };
     }
 
     public async analyzeError(error: Error | string, context?: string): Promise<Diagnosis> {
@@ -172,7 +229,5 @@ export class HealerService {
         }
     }
 
-    public getHistory() {
-        return this.history;
-    }
+
 }

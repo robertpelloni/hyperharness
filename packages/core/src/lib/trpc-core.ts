@@ -17,3 +17,13 @@ const isAdmin = t.middleware(async ({ next, ctx }) => {
 
 export const publicProcedure = t.procedure;
 export const adminProcedure = t.procedure.use(isAdmin);
+
+/**
+ * Typed accessor for the global MCPServer instance.
+ * Eliminates @ts-ignore usage throughout trpc.ts routers.
+ */
+export function getMcpServer(): any {
+    const server = (global as any).mcpServerInstance;
+    if (!server) throw new Error("MCPServer instance not found");
+    return server;
+}

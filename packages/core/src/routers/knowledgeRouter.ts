@@ -36,5 +36,18 @@ export const knowledgeRouter = t.router({
 
         const contexts = await mcp.memoryManager.listContexts();
         return { count: contexts.length };
+    }),
+    getResources: publicProcedure.query(async () => {
+        const fs = await import('fs/promises');
+        const path = await import('path');
+        const resourcePath = path.join(process.cwd(), 'knowledge', 'resources.json');
+
+        try {
+            const content = await fs.readFile(resourcePath, 'utf-8');
+            return JSON.parse(content);
+        } catch (e) {
+            console.warn("Resources file not found or invalid", e);
+            return { lastUpdated: "Never", categories: [] };
+        }
     })
 });

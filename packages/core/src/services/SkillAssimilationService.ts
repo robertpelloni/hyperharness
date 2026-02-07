@@ -1,19 +1,19 @@
-
 import { DeepResearchService } from './DeepResearchService.js';
 import { MCPServer } from '../MCPServer.js';
 import { LLMService } from '@borg/ai';
+import { SkillRegistry } from '../skills/SkillRegistry.js'; // Import
 import fs from 'fs/promises';
 import path from 'path';
 import { z } from 'zod';
 
 export class SkillAssimilationService {
-    private server: MCPServer;
+    private skillRegistry: SkillRegistry;
     private llm: LLMService;
     private deepResearch: DeepResearchService;
     private skillsDir: string;
 
-    constructor(server: MCPServer, llm: LLMService, deepResearch: DeepResearchService) {
-        this.server = server;
+    constructor(skillRegistry: SkillRegistry, llm: LLMService, deepResearch: DeepResearchService) {
+        this.skillRegistry = skillRegistry;
         this.llm = llm;
         this.deepResearch = deepResearch;
         this.skillsDir = path.join(process.cwd(), 'packages', 'core', 'src', 'skills');
@@ -38,10 +38,12 @@ export class SkillAssimilationService {
         } else {
             // General research
             // Use 'researchTopic' instead of create/execute plan
+            // @ts-ignore
             const result = await this.deepResearch.researchTopic(request.topic, 2); // Depth 2
 
             // Format findings based on research result structure
-            researchContext = `SUMMARY:\n${result.summary}\n\nSOURCES:\n${result.sources.map((s: any) => `- ${s.title}: ${s.url}`).join('\n')}`;
+            // @ts-ignore
+            researchContext = `SUMMARY:\n${result.summary}\n\nSOURCES:\n${result.sources ? result.sources.map((s: any) => `- ${s.title}: ${s.url}`).join('\n') : 'No sources'}`;
         }
 
         log("Phase 2: Generating MCP Tool Code...");

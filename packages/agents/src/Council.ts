@@ -1,9 +1,7 @@
 import { ModelSelector } from "@borg/ai";
 import { IAgent } from "@borg/ai";
-import { IMCPServer } from "@borg/adk";
+import { IMCPServer, ICouncilService, IAgentMemoryService } from "@borg/adk";
 import { COUNCIL_PROMPTS } from "@borg/ai";
-import { CouncilService } from "../../core/src/services/CouncilService.js";
-import type { AgentMemoryService } from "../../core/src/services/AgentMemoryService.js";
 
 export enum CouncilRole {
     ARCHITECT = 'Architect',
@@ -52,8 +50,8 @@ interface DebateConfig {
 export class Council {
     private agents: Map<string, IAgent> = new Map();
     private server: IMCPServer | undefined;
-    private councilService: CouncilService | undefined;
-    private memoryService: AgentMemoryService | undefined;
+    private councilService: ICouncilService | undefined;
+    private memoryService: IAgentMemoryService | undefined;
     public lastResult: DebateResult | null = null;
     private consensusMode: ConsensusMode = ConsensusMode.MAJORITY;
 

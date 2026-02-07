@@ -48,3 +48,14 @@
 
 ## Unsorted Links (See Full Prompt History for 200+ more)
 (This file indexes the high-priority items. Refer to Step 9168 in Archive for full list).
+
+## New Capabilities (Phase 48-50)
+### Navigator (Autonomous Browsing)
+- **Tools**: `browser_navigate`, `browser_click`, `browser_type`, `browser_extract`.
+- **Protocol**: Use for fact-checking, reading docs, and verifying localhost.
+- **Safety**: No social media, no unapproved logins.
+
+### TUI (Terminal Interface)
+- **Dashboard**: Run `npm start` in `@borg/cli`.
+- **Features**: Real-time "Pulse" logs, Agent Status Grid, Chat Input.
+- **Director Access**: Chat directly with `Director` via the specialized TUI input.

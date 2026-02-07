@@ -13,13 +13,17 @@ if (command === 'start') {
       // CLI MARKER
       const fs = await import('fs');
       fs.writeFileSync('.cli_startup_marker', 'CLI Started at ' + new Date().toISOString());
-      console.log("[CLI] Importing @borg/core/orchestrator...");
-      // Dynamic import to avoid top-level side effects
-      const { startOrchestrator } = await import('@borg/core/orchestrator');
-      console.log("[CLI] Core Imported. Launching...");
-      await startOrchestrator();
+
+      const React = (await import('react')).default;
+      const { render } = await import('ink');
+      // @ts-ignore
+      const { App } = await import('./ui/App.js');
+
+      console.log = function () { }; // Final silence before TUI take over, though App takes over pretty quick.
+      render(React.createElement(App));
     } catch (e) {
-      console.error("[CLI] FATAL:", e);
+      // original console error
+      process.stderr.write(`[CLI] FATAL: ${e}\n`);
       process.exit(1);
     }
   })();
@@ -36,6 +40,7 @@ if (command === 'start') {
   (async () => {
     console.log("[CLI] Starting Research Pipeline...");
     const { MCPServer } = await import('@borg/core/MCPServer');
+    // @ts-ignore
     const { runResearchPipeline } = await import('@borg/core/dist/scripts/researchPipeline.js');
     const server = new MCPServer();
     await runResearchPipeline(server);

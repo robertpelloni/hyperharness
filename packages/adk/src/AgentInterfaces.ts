@@ -55,5 +55,30 @@ export interface IMCPServer {
     llmService?: any; // Added for Council fallback (Phase 32)
     executeTool(name: string, args: any): Promise<any>;
     broadcastRequest?(messageType: string, payload: any): Promise<any>;
+    councilService?: ICouncilService;
+}
+
+export interface IAgentMemoryService {
+    search(query: string, options?: { limit?: number, type?: 'short_term' | 'long_term' }): Promise<Array<{ content: string, score?: number }>>;
+    addMemory(content: string, type: 'short_term' | 'long_term'): Promise<void>;
+    addLongTerm(content: string, metadata?: any): Promise<void>;
+}
+
+export interface CouncilSession {
+    id: string;
+    topic: string;
+    status: 'active' | 'concluded';
+    round: number;
+    opinions: any[];
+    votes: any[];
+    createdAt: number;
+}
+
+export interface ICouncilService {
+    registerAgent(role: string, agent: any): void;
+    startSession(topic: string): CouncilSession;
+    submitOpinion(sessionId: string, agentId: string, content: string): void;
+    castVote(sessionId: string, agentId: string, choice: string, reason: string): void;
+    concludeSession(sessionId: string): void;
 }
 

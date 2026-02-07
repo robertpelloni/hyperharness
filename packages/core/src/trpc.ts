@@ -22,6 +22,9 @@ import { pulseRouter } from './routers/pulseRouter.js';
 export { t, publicProcedure, adminProcedure };
 
 import { knowledgeRouter } from './routers/knowledgeRouter.js';
+import { agentMemoryRouter } from './routers/agentMemoryRouter.js';
+import { planRouter as planServiceRouter } from './routers/planRouter.js';
+import { metricsRouter as metricsServiceRouter } from './routers/metricsRouter.js';
 
 export const appRouter = t.router({
     graph: graphRouter,
@@ -33,8 +36,6 @@ export const appRouter = t.router({
     autoDev: autoDevRouter,
     shell: shellRouter,
     memory: memoryRouter,
-    knowledge: knowledgeRouter,
-    research: researchRouter,
     knowledge: knowledgeRouter,
     research: researchRouter,
     pulse: pulseRouter,
@@ -54,6 +55,14 @@ export const appRouter = t.router({
                 // @ts-ignore
                 const success = await global.mcpServerInstance.healerService.heal(input.error, input.context || "");
                 return { success };
+            }
+            throw new Error("MCPServer instance not found");
+        }),
+        getHistory: t.procedure.query(async () => {
+            // @ts-ignore
+            if (global.mcpServerInstance) {
+                // @ts-ignore
+                return global.mcpServerInstance.healerService.getHistory();
             }
             throw new Error("MCPServer instance not found");
         })
@@ -325,6 +334,8 @@ export const appRouter = t.router({
     suggestions: suggestionsRouter,
     council: councilRouter,
     squad: squadRouter,
+    agentMemory: agentMemoryRouter,
+    planService: planServiceRouter,
 
     runCommand: adminProcedure.input(z.object({ command: z.string() })).mutation(async ({ input }) => {
         // @ts-ignore
@@ -338,102 +349,7 @@ export const appRouter = t.router({
         }
         throw new Error("MCPServer instance not found");
     }),
-    skills: t.router({
-        list: t.procedure.query(async () => {
-            // @ts-ignore
-            if (global.mcpServerInstance) {
-                // @ts-ignore
-                const mcp = global.mcpServerInstance;
-                // @ts-ignore
-                const skills = await mcp.skillRegistry.listSkills();
-                return skills;
-            }
-            return { tools: [] };
-        }),
-        listLibrary: t.procedure.query(async () => {
-            // @ts-ignore
-            if (global.mcpServerInstance) {
-                // @ts-ignore
-                const mcp = global.mcpServerInstance;
-                const library = await mcp.skillRegistry.getLibraryIndex();
-
-                // Decorate with 'isAssimilated'
-                const decorate = (items: any[]) => items.map(item => ({
-                    ...item,
-                    isAssimilated: mcp.skillRegistry.hasSkill(item.id)
-                }));
-
-                return {
-                    mcp_servers: decorate(library.categories.mcp_servers || []),
-                    universal_harness: decorate(library.categories.universal_harness || []),
-                    skills: decorate(library.categories.skills || [])
-                };
-            }
-            return { mcp_servers: [], universal_harness: [], skills: [] };
-        }),
-        assimilate: t.procedure.input(z.object({
-            id: z.string(),
-            name: z.string(),
-            url: z.string(),
-            summary: z.string(),
-            relevance: z.string()
-        })).mutation(async ({ input }) => {
-            // @ts-ignore
-            if (global.mcpServerInstance) {
-                // @ts-ignore
-                const mcp = global.mcpServerInstance;
-                const result = await mcp.skillAssimilationService.assimilate(input);
-
-                // Update the Master Index status (we do this manually here for now)
-                try {
-                    const indexPath = path.join(process.cwd(), 'BORG_MASTER_INDEX.jsonc');
-                    const content = await fs.readFile(indexPath, 'utf-8');
-                    // Find the entry with this ID and update status
-                    const updatedContent = content.replace(
-                        new RegExp(`"id":\\s*"${input.id}"[\\s\\S]*?"status":\\s*"(.*?)"`, 'g'),
-                        (match: string) => match.replace(/"status":\s*".*?"/, `"status": "assimilated"`)
-                    );
-                    await fs.writeFile(indexPath, updatedContent, 'utf-8');
-                } catch (e) {
-                    console.error("Failed to update Master Index status in tRPC:", e);
-                }
-
-                return { success: true, result };
-            }
-            throw new Error("MCPServer instance not found");
-        }),
-        read: t.procedure.input(z.object({ name: z.string() })).query(async ({ input }) => {
-            // @ts-ignore
-            if (global.mcpServerInstance) {
-                // @ts-ignore
-                return await global.mcpServerInstance.skillRegistry.readSkill(input.name);
-            }
-            return { content: [{ type: "text", text: "Error: No Server" }] };
-        }),
-        create: t.procedure.input(z.object({
-            id: z.string(),
-            name: z.string(),
-            description: z.string()
-        })).mutation(async ({ input }) => {
-            // @ts-ignore
-            if (global.mcpServerInstance) {
-                // @ts-ignore
-                return await global.mcpServerInstance.skillRegistry.createSkill(input.id, input.name, input.description);
-            }
-            throw new Error("No Server");
-        }),
-        save: t.procedure.input(z.object({
-            id: z.string(),
-            content: z.string()
-        })).mutation(async ({ input }) => {
-            // @ts-ignore
-            if (global.mcpServerInstance) {
-                // @ts-ignore
-                return await global.mcpServerInstance.skillRegistry.saveSkill(input.id, input.content);
-            }
-            throw new Error("No Server");
-        })
-    }),
+    // skills router removed (duplicate)
     executeTool: adminProcedure.input(z.object({
         name: z.string(),
         args: z.any()
@@ -538,6 +454,48 @@ export const appRouter = t.router({
             if (global.mcpServerInstance) {
                 // @ts-ignore
                 return global.mcpServerInstance.gitService.revert(input.hash);
+            }
+            throw new Error("No Server");
+        })
+    }),
+    submodule: t.router({
+        list: t.procedure.query(async () => {
+            // @ts-ignore
+            if (global.mcpServerInstance) {
+                // @ts-ignore
+                return global.mcpServerInstance.submoduleService.listSubmodules();
+            }
+            throw new Error("No Server");
+        }),
+        updateAll: t.procedure.mutation(async () => {
+            // @ts-ignore
+            if (global.mcpServerInstance) {
+                // @ts-ignore
+                return global.mcpServerInstance.submoduleService.updateAll();
+            }
+            throw new Error("No Server");
+        }),
+        install: t.procedure.input(z.object({ path: z.string() })).mutation(async ({ input }) => {
+            // @ts-ignore
+            if (global.mcpServerInstance) {
+                // @ts-ignore
+                return global.mcpServerInstance.submoduleService.installDependencies(input.path);
+            }
+            throw new Error("No Server");
+        }),
+        build: t.procedure.input(z.object({ path: z.string() })).mutation(async ({ input }) => {
+            // @ts-ignore
+            if (global.mcpServerInstance) {
+                // @ts-ignore
+                return global.mcpServerInstance.submoduleService.buildSubmodule(input.path);
+            }
+            throw new Error("No Server");
+        }),
+        enable: t.procedure.input(z.object({ path: z.string() })).mutation(async ({ input }) => {
+            // @ts-ignore
+            if (global.mcpServerInstance) {
+                // @ts-ignore
+                return global.mcpServerInstance.submoduleService.enableSubmodule(input.path);
             }
             throw new Error("No Server");
         })
@@ -685,16 +643,7 @@ export const appRouter = t.router({
             }
         })
     }),
-    metrics: t.router({
-        getStats: t.procedure.query(async () => {
-            // @ts-ignore
-            if (global.mcpServerInstance) {
-                // @ts-ignore
-                return global.mcpServerInstance.metricsService.getStats();
-            }
-            return { counts: {}, averages: {}, totalEvents: 0, series: [] };
-        })
-    }),
+    metrics: metricsServiceRouter,
 
     policy: t.router({
         getRules: t.procedure.query(() => {

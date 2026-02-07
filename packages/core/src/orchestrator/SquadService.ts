@@ -119,7 +119,8 @@ export class SquadService {
             id: m.id,
             branch: m.branch,
             status: m.status,
-            active: m.director.getIsActive()
+            active: m.director.getIsActive(),
+            brain: m.director.getStatus() // Expose full brain state (Goal, Step, History)
         }));
     }
 

@@ -27,8 +27,13 @@ export interface CouncilSession {
 
 export class CouncilService {
     private sessions: Map<string, CouncilSession> = new Map();
+    private agents: Map<string, any> = new Map();
 
     constructor() { }
+
+    public registerAgent(role: string, agent: any): void {
+        this.agents.set(role, agent);
+    }
 
     public startSession(topic: string): CouncilSession {
         const id = uuidv4();
