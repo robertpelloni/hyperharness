@@ -45,6 +45,20 @@ export class Director {
             // @ts-ignore
             this.memoryService = server.agentMemoryService;
         }
+
+        // 🧠 Restore Session State
+        // @ts-ignore
+        if (server.sessionManager) {
+            // @ts-ignore
+            const state = server.sessionManager.getState();
+            if (state.isAutoDriveActive) {
+                console.log(`[Director] 🔄 Restoring Auto-Drive State (Goal: ${state.activeGoal})`);
+                this.isAutoDriveActive = true;
+                this.currentStatus = 'DRIVING';
+                this.activeGoal = state.activeGoal;
+                this.startMonitor(); // Reboot monitors
+            }
+        }
     }
 
     // Configuration
@@ -271,6 +285,18 @@ export class Director {
         }
         this.isAutoDriveActive = true;
         this.currentStatus = 'DRIVING';
+
+        // Persist State
+        // @ts-ignore
+        if (this.server.sessionManager) {
+            // @ts-ignore
+            this.server.sessionManager.updateState({
+                isAutoDriveActive: true,
+                activeGoal: this.activeGoal
+            });
+            // @ts-ignore
+            this.server.sessionManager.save();
+        }
 
         // Init Live Feed
         try {
@@ -729,30 +755,36 @@ class ConversationMonitor {
         if (state === 'NEEDS_APPROVAL') {
             // @ts-ignore
             const config = this.director.getConfig();
-            const targetWindow = config.targetWindowTitle || 'Code';
-            console.error(`[Director] 🟢 Auto-Approving (Target: ${targetWindow}, Sending 'y' + Enter + Alt-Enter)...`);
+            console.error(`[Director] 🟢 Auto-Approving via VS Code Commands...`);
 
-            // 1. CLI Terminal Approval (with window targeting)
-            try { await this.server.executeTool('native_input', { keys: 'y', targetWindow }); } catch (e: any) { console.error(`[Auto-Approve] 'y' failed: ${e.message}`); }
+            // 1. Accept Interactive Changes (Inline Chat / Diff)
+            try {
+                await this.server.executeTool('vscode_execute_command', { command: 'interactive.acceptChanges' });
+            } catch (e) { }
 
-            await new Promise(r => setTimeout(r, 500)); // Wait 500ms
+            // 2. Submit Chat (Terminal/Inline)
+            try {
+                // Try sending 'y' first just in case it's a simple y/n prompt in terminal
+                await this.server.executeTool('vscode_execute_command', {
+                    command: 'workbench.action.terminal.sendSequence',
+                    args: { text: "y\u000D" }
+                });
+            } catch (e) { }
 
-            try { await this.server.executeTool('native_input', { keys: 'enter', targetWindow }); } catch (e: any) { console.error(`[Auto-Approve] 'enter' 1 failed: ${e.message}`); }
-
-            await new Promise(r => setTimeout(r, 500)); // Double Tap
-            try { await this.server.executeTool('native_input', { keys: 'enter', targetWindow }); } catch (e: any) { console.error(`[Auto-Approve] 'enter' 2 failed: ${e.message}`); }
-
-            // 2. VS Code UI Approval - Alt+Enter for Accept button
-            await new Promise(r => setTimeout(r, 500));
-            try { await this.server.executeTool('native_input', { keys: 'alt+enter', targetWindow }); } catch (e: any) { console.error(`[Auto-Approve] 'alt+enter' failed: ${e.message}`); }
-
-            // 3. Command Palette / Inline Chat
+            // 3. Accept Terminal Chat
             try { await this.server.executeTool('vscode_execute_command', { command: 'workbench.action.terminal.chat.accept' }); } catch (e) { }
-            try { await this.server.executeTool('vscode_execute_command', { command: 'interactive.acceptChanges' }); } catch (e) { }
+
+            // 4. Fallback: Generic Enter (Less invasive than y+enter+alt+enter)
+            await new Promise(r => setTimeout(r, 200));
+            try {
+                await this.server.executeTool('vscode_execute_command', {
+                    command: 'workbench.action.terminal.sendSequence',
+                    args: { text: "\u000D" }
+                });
+            } catch (e) { }
 
             this.lastActivityTime = Date.now();
-        }
-        else if (state === 'IDLE') {
+        } else if (state === 'IDLE') {
             // IDLE -> Council Meeting -> Execution
             await this.runCouncilLoop();
             this.lastActivityTime = Date.now();

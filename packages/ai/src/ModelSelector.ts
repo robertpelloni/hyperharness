@@ -21,15 +21,21 @@ interface ModelStatus {
     retryAfter?: number; // timestamp
 }
 
-// Default Fallback
+// Default Fallback - Robust Chain
 const DEFAULT_CHAINS = {
     worker: [
+        { provider: 'google', modelId: 'gemini-2.0-flash' },
+        { provider: 'anthropic', modelId: 'claude-3-5-sonnet-20240620' },
+        { provider: 'openai', modelId: 'gpt-4o' },
+        { provider: 'deepseek', modelId: 'deepseek-chat' },
         { provider: 'lmstudio', modelId: 'local' },
         { provider: 'ollama', modelId: 'gemma:2b' }
     ],
     supervisor: [
-        { provider: 'lmstudio', modelId: 'local' },
-        { provider: 'ollama', modelId: 'gemma:2b' }
+        { provider: 'openai', modelId: 'gpt-4o' },
+        { provider: 'anthropic', modelId: 'claude-3-5-sonnet-20240620' },
+        { provider: 'google', modelId: 'gemini-1.5-pro' },
+        { provider: 'lmstudio', modelId: 'local' }
     ]
 };
 
@@ -69,6 +75,14 @@ export class ModelSelector {
         return null;
     }
 
+    private hasKey(provider: string): boolean {
+        if (provider === 'google') return !!process.env.GOOGLE_API_KEY;
+        if (provider === 'openai') return !!process.env.OPENAI_API_KEY;
+        if (provider === 'anthropic') return !!process.env.ANTHROPIC_API_KEY;
+        if (provider === 'deepseek') return !!process.env.DEEPSEEK_API_KEY;
+        return true; // Local/No-Auth
+    }
+
     public async selectModel(req: ModelSelectionRequest): Promise<SelectedModel> {
         const isBudgetExceeded = this.quotaService.isBudgetExceeded();
 
@@ -99,6 +113,13 @@ export class ModelSelector {
 
         // Iterate
         for (const candidate of chain) {
+            // 1. Check API Key
+            if (!this.hasKey(candidate.provider)) {
+                // console.warn(`[ModelSelector] Skipping ${candidate.provider} (No Key)`);
+                continue;
+            }
+
+            // 2. Check Depletion
             const status = this.modelStates.get(candidate.modelId);
 
             if (status && status.isDepleted) {
