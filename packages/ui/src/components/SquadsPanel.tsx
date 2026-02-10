@@ -40,6 +40,7 @@ export function SquadsPanel() {
 
 
     const [chatMember, setChatMember] = useState<any>(null);
+    const [brainMember, setBrainMember] = useState<any>(null);
     const [chatMessage, setChatMessage] = useState('');
 
     const chatMutation = trpc.squad.chat.useMutation({
@@ -75,8 +76,7 @@ export function SquadsPanel() {
         spawnMutation.mutate({ branch: newBranch, goal: newGoal });
     };
 
-    return (
-    const [brainMember, setBrainMember] = useState<any>(null);
+
 
     return (
         <div className="container mx-auto p-6 max-w-6xl space-y-8">

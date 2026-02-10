@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState } from 'react';
 import { trpc } from '../utils/trpc';
 import { Button } from './ui/button';
@@ -92,8 +94,8 @@ export function SkillLibrary() {
                     <CardContent className="p-0 overflow-y-auto flex-1 custom-scrollbar">
                         {isLoading ? (
                             <div className="flex justify-center p-4"><Loader2 className="animate-spin w-6 h-6 text-zinc-600" /></div>
-                        ) : skills?.content ? (
-                            JSON.parse(skills.content[0].text).map((s: any) => (
+                        ) : skills && skills.length > 0 ? (
+                            skills.map((s: any) => (
                                 <div
                                     key={s.name}
                                     onClick={() => handleSelectSkill(s)}
