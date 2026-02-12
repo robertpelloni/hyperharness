@@ -1,6 +1,6 @@
 # VISION.md - Borg: The Neural Operating System
 
-> **Version**: 2.6.0 | **Codename**: AIOS (AI Operating System)
+> **Version**: 2.6.2 | **Codename**: AIOS (AI Operating System)
 > **Tagline**: *"The Ultimate AI Tool Dashboard & Development Orchestrator"*
 
 ---
@@ -291,8 +291,9 @@ borg/
 
 ## 6. Roadmap Summary
 
-- **v2.5.0** (Current): Core engine rebuild, full CLI, WebUI dashboard, documentation overhaul
+- **v2.5.0**: Core engine rebuild, full CLI, WebUI dashboard, documentation overhaul
 - **v2.6.0**: MCP router feature completion, provider fallback system, billing dashboard
+- **v2.6.2** (Current): Build stabilization — 87 `@ts-ignore` removed, 17 component fixes, 0 build errors, 13 packages clean
 - **v2.7.0**: Memory system multi-backend, RAG pipeline, automatic context harvesting
 - **v2.8.0**: Agent orchestrator, Director/Council/Supervisor, multi-model debate
 - **v2.9.0**: Browser extension, session management, cloud dev integration
