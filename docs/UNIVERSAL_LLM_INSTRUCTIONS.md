@@ -1,6 +1,6 @@
 # UNIVERSAL LLM INSTRUCTIONS
 
-**Version:** 2.6.0
+**Version:** 2.6.2
 **Project:** Borg — The Neural Operating System (formerly AIOS)
 **Mission:** The Ultimate Meta-Orchestrator for AI-Assisted Development via the Model Context Protocol.
 

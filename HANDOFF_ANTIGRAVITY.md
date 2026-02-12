@@ -1,251 +1,144 @@
-# HANDOFF_ANTIGRAVITY.md — Session Report (2026-02-11)
+# HANDOFF_ANTIGRAVITY.md — Session Report (2026-02-12)
 
 > **For**: Any model (Claude, Gemini, GPT) picking up Borg development.
 > **From**: Antigravity Session `82e8874c-4939-4d9c-bb41-85e1f27128ad`
-> **Date**: 2026-02-11T22:00:00-05:00
+> **Date**: 2026-02-12T17:30:00-05:00
+> **Version**: 2.6.2
 
 ---
 
 ## 1. Session Summary
 
-This session focused on **build stability**, **feature completeness**, and **@ts-ignore cleanup** across the Borg monorepo. All changes target `packages/core`, `apps/web`, and supporting files.
+This session focused on **build stabilization**, **feature completion**, and **comprehensive documentation overhaul**.
 
 ### Key Accomplishments
 
 | Area | What Changed | Files |
 |------|-------------|-------|
-| **tRPC Alignment** | Upgraded all packages to tRPC v11 | `packages/core/package.json`, `packages/ui/package.json` |
-| **Router Deduplication** | Fixed duplicate `health`/`getTaskStatus` keys in appRouter | `packages/core/src/trpc.ts` |
-| **@ts-ignore Cleanup** | Refactored `getTaskStatus`, `indexingStatus`, `pulseRouter`, `researchRouter` to use `getMcpServer()` | `trpc.ts`, `pulseRouter.ts`, `researchRouter.ts` |
-| **Graph Dependencies** | Added `dependencies` map to `RepoGraphService.toJSON()` | `RepoGraphService.ts`, `graphRouter.ts` |
-| **Billing** | Real cost tracking via `QuotaService.getUsageByModel()` | `QuotaService.ts`, `billingRouter.ts` |
-| **EventBus** | Uncommented initialization in MCPServer | `MCPServer.ts` |
-| **ProjectTracker** | Removed hardcoded brain path; prioritizes local `task.md` | `ProjectTracker.ts` |
-| **Circular Deps** | Fixed `squadRouter` import (`../trpc.js` → `../lib/trpc-core.js`) | `squadRouter.ts` |
+| **Build Fix (v2.6.2)** | Fixed 18 component build errors across `apps/web` | 18 component files, `CHANGELOG.md`, `VERSION` |
+| **Router Cleanup** | Removed ~87 `@ts-ignore`, replaced `global.mcpServerInstance` with `getMcpServer()` | 14 router files |
+| **Council Members** | Implemented Members tab with 4 role-based cards + Consensus Modes | `council/page.tsx` |
+| **Dependencies** | Installed `react-force-graph-2d` for KnowledgeGraph visualizer | `apps/web/package.json` |
+| **QUICKSTART.md** | Full MCP/browser/VSCode/CLI setup guide with architecture diagram | `QUICKSTART.md` (NEW) |
+| **ROADMAP** | Marked Director, Research, Council Members as complete | `ROADMAP.md` |
+| **VISION.md** | Updated by parallel session to v2.6.2 | `VISION.md` |
+| **Docs Version** | Bumped UNIVERSAL_LLM_INSTRUCTIONS to v2.6.2 | `docs/UNIVERSAL_LLM_INSTRUCTIONS.md` |
+
+### Commits This Session
+
+| Hash | Message |
+|------|---------|
+| `3870630a` | fix: resolve all apps/web build errors — 14 routers cleaned, 18 components fixed |
+| `5ca74ed5` | fix: staged council page updates |
+| `0d6a5760` | feat: expand 5 stub routers (8→26 endpoints) |
+| `0239c931` | docs: bump VISION.md to v2.6.2 |
+| `4d92b4f3` | v2.6.2: Dashboard build stabilization |
 
 ---
 
-## 2. Architecture Overview
+## 2. Current State
 
-### Monorepo Structure
+### Build Status
+- **`apps/web`**: ✅ PASSES (39+ routes, exit code 0)
+- **`packages/core`**: ✅ Compiles (tsc)
+- **Known Warning**: Next.js workspace root inference (multiple lockfiles) — harmless
+
+### Dashboard Pages (31+)
+
+All pages render. Key pages with real data wiring:
+- `/dashboard/director` — `directorConfig.get`, `getTaskStatus`, `autonomy.getLevel`
+- `/dashboard/research` — `research.conduct` mutation
+- `/dashboard/council` — `council.listSessions`, `council.runSession` + Members tab
+- `/dashboard/billing` — Real cost data via `QuotaService.getUsageByModel()`
+- `/dashboard/pulse` — Real events via `EventBus` history buffer
+- `/dashboard/skills` — Real data via `SkillRegistry`
+
+### Architecture
 
 ```
-borg/
-├── apps/
-│   ├── web/          # Next.js 16 Dashboard (31 pages)
-│   └── extension/    # VS Code extension (tsup)
-├── packages/
-│   ├── core/         # MCPServer, tRPC routers, services (THE BRAIN)
-│   ├── ui/           # Shared React components
-│   ├── ai/           # ModelSelector, LLMService
-│   ├── memory/       # VectorStore, Indexer
-│   ├── tools/        # MCP tool definitions
-│   ├── agents/       # Agent definitions
-│   ├── supervisor/   # Autonomous supervisor
-│   ├── search/       # Code search
-│   ├── adk/          # Agent Development Kit
-│   └── cli/          # CLI interface (tsx)
+BORG CORE (MCPServer.ts — 2805 lines)
+├── Stdio Transport — Local MCP clients (Claude, Cursor, VS Code)
+├── WebSocket :3001 — Extension + Browser
+├── HTTP :3001 — /health, /director.chat, /tool/execute
+└── tRPC appRouter — 25 routers, 30+ services → Next.js :3000
 ```
-
-### packages/core — The Brain
-
-**25 Routers** (in `src/routers/`):
-
-| Router | Purpose | Status |
-|--------|---------|--------|
-| `graphRouter` | Repo dependency graph (Mermaid viz) | ✅ Working |
-| `billingRouter` | Cost tracking per model/provider | ✅ Working |
-| `pulseRouter` | Real-time event stream (EventBus) | ✅ Refactored |
-| `skillsRouter` | Skill registry CRUD | ✅ Working |
-| `squadRouter` | Agent squad management | ✅ Fixed import |
-| `researchRouter` | Deep research via MCP | ✅ Refactored |
-| `lspRouter` | Language Server Protocol queries | ✅ Working |
-| `sessionRouter` | Session persistence | ✅ Working |
-| `settingsRouter` | User settings | ✅ Working |
-| `supervisorRouter` | Autonomous supervisor | ✅ Working |
-| `metricsRouter` | System metrics | ✅ Working |
-| `councilRouter` | Multi-model council voting | ✅ Working |
-| `memoryRouter` | Memory save/recall/search | ✅ Working |
-| `knowledgeRouter` | Knowledge graph | ✅ Working |
-| `agentMemoryRouter` | Per-agent memory | ✅ Working |
-| `planRouter` | Plan CRUD | ✅ Working |
-| `contextRouter` | Context injection (aliased `borgContext`) | ✅ Working |
-| `commandsRouter` | Slash commands | ✅ Working |
-| `symbolsRouter` | Symbol index/search | ⚠️ Has @ts-ignore |
-| `autoDevRouter` | Auto-development loop | ✅ Working |
-| `shellRouter` | Shell command execution | ⚠️ Has @ts-ignore |
-| `workflowRouter` | Workflow engine CRUD | ⚠️ Has @ts-ignore |
-| `testsRouter` | Test runner | ⚠️ Has @ts-ignore |
-| `suggestionsRouter` | AI suggestions | ⚠️ Has @ts-ignore |
-| `healerRouter` | Self-healing diagnostics | ✅ Working |
-
-**30 Services** (in `src/services/`):
-
-Core services powering the routers. Key ones:
-- `ProjectTracker` — Parses `task.md`/`ROADMAP.md` for progress tracking
-- `EventBus` — System event pub/sub with history buffer
-- `RepoGraphService` — AST-based import graph builder
-- `LSPService` — Multi-language LSP server manager
-- `HealerService` — Self-healing with error analysis
-- `DarwinService` — Evolutionary code mutation
-- `MetricsService` — System metrics collection
-- `QuotaService` — Token/cost tracking per model
-- `PlanService` — Execution plan management
-- `DeepResearchService` — Multi-step research orchestration
-- `AgentMemoryService` — Per-agent persistent memory
-
-### apps/web — Mission Control Dashboard
-
-**31 Dashboard Pages** (in `src/app/dashboard/`):
-
-| Page | tRPC Router Used | Status |
-|------|-----------------|--------|
-| `/architecture` | `graph.get` | ✅ Uses `dependencies` map |
-| `/billing` | `billing.getStatus` | ✅ Real data |
-| `/brain` | `memory.*` | ✅ Working |
-| `/chronicle` | `git.getLog` | ✅ Working |
-| `/code` | `autoDev.*` | ✅ Working |
-| `/command` | `commands.*` | ✅ Working |
-| `/config` | `directorConfig.*` | ✅ Working |
-| `/council` | `council.*` | ✅ Working |
-| `/director` | `director.*` | ✅ Working |
-| `/events` | `pulse.*` | ✅ Refactored |
-| `/evolution` | `darwin.*` | ✅ Working |
-| `/healer` | `healer.*` | ✅ Working |
-| `/inspector` | Various | ✅ Working |
-| `/knowledge` | `knowledge.*` | ✅ Working |
-| `/library` | `skills.*` | ✅ Working |
-| `/manual` | Static | ✅ Working |
-| `/mcp` | Placeholder | ⚠️ Commented out |
-| `/memory` | `memory.*` | ✅ Working |
-| `/metrics` | `metrics.*` | ✅ Working |
-| `/plans` | `planService.*` | ✅ Working |
-| `/pulse` | `pulse.*` | ✅ Working |
-| `/reader` | Static | ✅ Working |
-| `/research` | `research.*` | ✅ Working |
-| `/security` | `audit.*` | ✅ Working |
-| `/settings` | `settings.*` | ✅ Working |
-| `/skills` | `skills.*` | ✅ Working |
-| `/squads` | `squad.*` | ✅ Working |
-| `/submodules` | `git.getModules` | ✅ Working |
-| `/supervisor` | `supervisor.*` | ✅ Working |
-| `/workflows` | `workflow.*` | ✅ Working |
-| `/workshop` | Placeholder | ✅ Working |
 
 ---
 
 ## 3. Remaining Technical Debt
 
-### @ts-ignore Inventory (Routers Only)
+### @ts-ignore Inventory (Routers)
 
-| File | Count | Pattern | Fix Strategy |
-|------|-------|---------|-------------|
-| `workflowRouter.ts` | 10 | `global.mcpServerInstance` | Refactor to `getMcpServer()` |
-| `symbolsRouter.ts` | 14 | `global.mcpServerInstance` | Refactor to `getMcpServer()` |
-| `suggestionsRouter.ts` | 7 | `global.mcpServerInstance` | Refactor to `getMcpServer()` |
-| `squadRouter.ts` | 5 | `global.mcpServerInstance` | Refactor to `getMcpServer()` |
-| `skillsRouter.ts` | 5 | `global.mcpServerInstance` | Refactor to `getMcpServer()` |
-| `shellRouter.ts` | 6 | `global.mcpServerInstance` | Refactor to `getMcpServer()` |
-| `testsRouter.ts` | 2 | `global.mcpServerInstance` | Refactor to `getMcpServer()` |
-| `graphRouter.ts` | 3 | `global.mcpServerInstance` | Refactor to `getMcpServer()` |
+| File | Count | Fix |
+|------|-------|-----|
+| `workflowRouter.ts` | 10 | Replace `global.mcpServerInstance` → `getMcpServer()` |
+| `symbolsRouter.ts` | 14 | Same pattern |
+| `suggestionsRouter.ts` | 7 | Same pattern |
+| `squadRouter.ts` | 5 | Same pattern |
+| `skillsRouter.ts` | 5 | Same pattern |
+| `shellRouter.ts` | 6 | Same pattern |
+| `testsRouter.ts` | 2 | Same pattern |
+| `graphRouter.ts` | 3 | Same pattern |
 
-**Pattern**: All use `global.mcpServerInstance` instead of the typed `getMcpServer()` helper from `lib/mcpHelper.js`.
+### Incomplete Features (Phase 63)
 
-**Fix**: Import `getMcpServer` from `../lib/mcpHelper.js` and replace all `global.mcpServerInstance` references.
-
-### trpc.ts Remaining @ts-ignore
-
-Lines with remaining `@ts-ignore` in `trpc.ts` appRouter:
-- `autonomy.activateFullAutonomy` — calls `director.startChatDaemon()` / `director.startWatchdog()` (private methods)
-- `director.chat` — calls `director.broadcast()` / `director.executeTask()` (private methods)
-- `executeTool` — accesses `result.isError` / `result.content[0].text` (untyped MCP response)
-
-These require adding proper method signatures to the `Director` class and typing MCP tool responses.
-
-### healer.subscribe (Disabled)
-
-The `healer.subscribe` subscription is commented out due to TS2742 errors with tRPC v11 observable types. To re-enable:
-1. Ensure `@trpc/server/observable` types are compatible
-2. Add explicit return type annotation to avoid circular type inference
+- [ ] Replace remaining ~50 `@ts-ignore global.mcpServerInstance` with `getMcpServer()`
+- [ ] Fix `councilRouter` naming inconsistency (`council` vs `councilService`)
+- [ ] Cache tool→client mapping in `Router.callTool()` (O(N²))
+- [ ] Extract inline routers from `trpc.ts` into separate files
+- [ ] Healer page: Add streaming for active infections
+- [ ] `workflowRouter.list`: Expose `WorkflowEngine` registered workflows
 
 ---
 
-## 4. Key Helper Pattern
+## 4. Key Patterns
 
-### `getMcpServer()` — The Standard Way
-
+### `getMcpServer()` — Standard Pattern
 ```typescript
-// lib/mcpHelper.ts
-export function getMcpServer(): MCPServer {
-    return (global as any).mcpServerInstance;
-}
+import { getMcpServer } from '../lib/mcpHelper.js';
+const mcp = getMcpServer();
+const result = (mcp as any).someService.someMethod();
 ```
-
-**All routers should use this** instead of raw `global.mcpServerInstance` with `@ts-ignore`. The helper is already imported in `trpc.ts`, `pulseRouter.ts`, `researchRouter.ts`, `lspRouter.ts`.
 
 ### `lib/trpc-core.js` — Break Circular Dependencies
+All routers MUST import from `lib/trpc-core.js`, NOT from `../trpc.js`.
 
-```typescript
-// lib/trpc-core.ts
-import { initTRPC } from '@trpc/server';
-const t = initTRPC.create();
-export { t };
-export const publicProcedure = t.procedure;
-export const adminProcedure = t.procedure;
-```
-
-**All routers must import from `lib/trpc-core.js`**, NOT from `../trpc.js`. The latter causes circular dependency because `trpc.ts` imports the routers.
+### VERSION.md — Single Source of Truth
+CLI reads version from `VERSION.md`. All version references should point here.
 
 ---
 
-## 5. Build Commands
-
-```bash
-# Build core (must pass before web)
-cd packages/core && npm run build
-
-# Build web (Next.js 16 + Turbopack)
-cd apps/web && npm run build
-
-# Full dev server (all packages)
-pnpm run dev
-```
-
-### Known Build Warnings
-- Turbopack warns about workspace root detection (multiple lockfiles) — harmless
-- `submodules/actions.ts` triggers a file pattern warning — harmless
-
----
-
-## 6. Priority Recommendations for Next Session
+## 5. Priority Recommendations for Next Session
 
 ### P0 — Critical
-1. **Verify `apps/web` build** passes with the `graphRouter` fallback fix
-2. **Commit all changes** — substantial progress accumulated
+1. Continue autonomous feature implementation from ROADMAP Phase 63-64
 
 ### P1 — High Value
-3. **Refactor remaining @ts-ignore routers** (workflowRouter, symbolsRouter, suggestionsRouter, etc.) — mechanical, ~30min
-4. **Type MCP tool responses** to eliminate `executeTool` @ts-ignore in `trpc.ts`
-5. **Re-enable healer.subscribe** with proper observable typing
+2. Refactor remaining @ts-ignore routers (mechanical, ~1hr)
+3. Implement Healer streaming
+4. Extract inline routers from trpc.ts
 
-### P2 — Polish
-6. Add proper typing to `Director.startChatDaemon()` / `Director.startWatchdog()` / `Director.broadcast()` / `Director.executeTask()`
-7. Create integration tests for key routers (billing, pulse, graph)
-8. Update `VISION.md` with current capabilities
+### P2 — Medium
+5. Research and document all submodules (200+ in references)
+6. Create SUBMODULE_DASHBOARD.md with versions/locations
+7. Update VISION.md with all remaining features
+
+### P3 — Polish
+8. Add integration tests for key routers
+9. Mobile-responsive dashboard improvements
+10. Performance profiling for MCPServer startup
 
 ---
 
-## 7. Files Modified This Session
+## 6. Files Modified This Session
 
 | File | Change Type |
 |------|------------|
-| `packages/core/src/trpc.ts` | Refactored getTaskStatus/indexingStatus, removed duplicates |
-| `packages/core/src/routers/pulseRouter.ts` | Refactored to getMcpServer() |
-| `packages/core/src/routers/researchRouter.ts` | Refactored to getMcpServer() |
-| `packages/core/src/routers/squadRouter.ts` | Fixed circular dependency import |
-| `packages/core/src/routers/graphRouter.ts` | Added dependencies fallback |
-| `packages/core/src/routers/billingRouter.ts` | Real cost data via QuotaService |
-| `packages/core/src/services/RepoGraphService.ts` | Added dependencies to toJSON() |
-| `packages/core/src/services/ProjectTracker.ts` | Removed hardcoded brain path |
-| `packages/core/src/MCPServer.ts` | Enabled EventBus, removed duplicate projectTracker |
-| `apps/web/src/app/dashboard/architecture/page.tsx` | Fixed trpc.graph.get alias |
+| `QUICKSTART.md` | **NEW** — Comprehensive setup guide |
+| `CHANGELOG.md` | Added v2.6.2 entry |
+| `VERSION` | Bumped to 2.6.2 |
+| `ROADMAP.md` | Marked 3 Phase 63 items complete |
+| `docs/UNIVERSAL_LLM_INSTRUCTIONS.md` | Version bumped to 2.6.2 |
+| `apps/web/src/app/dashboard/council/page.tsx` | Council Members tab implemented |
+| 18 component files | Build fixes (see CHANGELOG v2.6.2) |
+| 14 router files | @ts-ignore cleanup |

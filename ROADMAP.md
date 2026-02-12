@@ -87,8 +87,8 @@
     - [x] `billing.getStatus` → Real cost data via `QuotaService.getUsageByModel()`
     - [x] `getTaskStatus` → Returns real progress from `ProjectTracker` via `getMcpServer()`
     - [x] `indexingStatus` → Returns real state from `LSPService` via `getMcpServer()`
-    - [ ] Director page → Wire to real plan data (currently 100% mock)
-    - [ ] Research page → Wire `handleResearch()` to tRPC (currently simulated)
+    - [x] Director page → Wired to real plan data via `trpc.directorConfig.get`, `trpc.getTaskStatus`, `trpc.autonomy.getLevel`
+    - [x] Research page → Wired `handleResearch()` to `trpc.research.conduct.useMutation()`
   - **P2 — Medium** (Technical Debt)
     - [ ] Replace remaining ~50 `@ts-ignore global.mcpServerInstance` with `getMcpServer()` (8 routers: workflow, symbols, suggestions, squad, skills, shell, tests, graph)
     - [x] Fix `squadRouter.ts` import path (`../trpc.js` → `../lib/trpc-core.js`)
@@ -97,7 +97,7 @@
     - [ ] Cache tool→client mapping in `Router.callTool()` (currently O(N²))
     - [ ] Extract 15+ inline routers from `trpc.ts` into separate files
   - **P3 — Low** (Polish)
-    - [ ] Council page: Implement "Members" tab (shows "coming soon")
+    - [x] Council page: Implemented "Members" tab with 4 role-based cards + Consensus Modes
     - [ ] Healer page: Add streaming for active infections
     - [ ] `workflowRouter.list`: Expose `WorkflowEngine` registered workflows
 
