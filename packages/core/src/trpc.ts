@@ -34,6 +34,7 @@ import { settingsRouter } from './routers/settingsRouter.js';
 
 import { sessionRouter } from './routers/sessionRouter.js';
 import { billingRouter } from './routers/billingRouter.js';
+import { mcpRouter } from './routers/mcpRouter.js';
 
 
 // import { type AnyTRPCRouter } from '@trpc/server';
@@ -63,6 +64,7 @@ export const appRouter = t.router({
     settings: settingsRouter,
     session: sessionRouter,
     billing: billingRouter,
+    mcp: mcpRouter,
     healer: t.router({
         diagnose: t.procedure.input(z.object({ error: z.string(), context: z.string().optional() })).mutation(async ({ input }) => {
             return getMcpServer().healerService.analyzeError(input.error, input.context || "");

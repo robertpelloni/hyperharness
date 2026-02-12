@@ -1,14 +1,14 @@
 "use client";
 
 import { useState } from 'react';
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { Card, CardHeader, CardTitle, CardContent } from "@borg/ui";
+import { Button } from "@borg/ui";
 import { Loader2, Plus, Server, Globe, Terminal } from "lucide-react";
+import { trpc } from '@/utils/trpc';
 
-// MCP router is currently disabled — using static placeholder data
 export default function MCPDashboard() {
-    const servers: any[] = [];
-    const isLoading = false;
+    const { data: servers, isLoading } = trpc.mcp.listServers.useQuery();
+    const { data: status } = trpc.mcp.getStatus.useQuery();
     const [isAddOpen, setIsAddOpen] = useState(false);
 
     return (
@@ -16,7 +16,9 @@ export default function MCPDashboard() {
             <div className="flex justify-between items-center">
                 <div>
                     <h1 className="text-3xl font-bold tracking-tight text-white">MCP Aggregator</h1>
-                    <p className="text-zinc-500">Manage downstream Model Context Protocol servers</p>
+                    <p className="text-zinc-500">
+                        {status ? `${status.serverCount} servers · ${status.toolCount} tools · ${status.connectedCount ?? 0} connected` : 'Manage downstream Model Context Protocol servers'}
+                    </p>
                 </div>
                 <Button onClick={() => setIsAddOpen(!isAddOpen)} className="bg-blue-600 hover:bg-blue-500">
                     <Plus className="mr-2 h-4 w-4" /> Add Server
@@ -32,13 +34,13 @@ export default function MCPDashboard() {
                     <div className="col-span-3 flex justify-center p-12">
                         <Loader2 className="h-8 w-8 animate-spin text-zinc-500" />
                     </div>
-                ) : servers.length === 0 ? (
+                ) : (servers?.length ?? 0) === 0 ? (
                     <div className="col-span-3 text-center p-12 text-zinc-500">
                         <Server className="h-12 w-12 mx-auto mb-4 opacity-30" />
-                        <p className="text-lg font-medium">MCP Router Not Active</p>
-                        <p className="text-sm mt-1">The MCP aggregator router is currently disabled. Enable it in trpc.ts to manage servers.</p>
+                        <p className="text-lg font-medium">No MCP Servers Registered</p>
+                        <p className="text-sm mt-1">Add downstream MCP servers to aggregate their tools into Borg.</p>
                     </div>
-                ) : servers.map((server: any) => (
+                ) : servers?.map((server: any) => (
                     <ServerCard key={server.name} server={server} />
                 ))}
             </div>

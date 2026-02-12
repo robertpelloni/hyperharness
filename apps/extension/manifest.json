@@ -17,7 +17,10 @@
         "http://localhost:3000/*"
     ],
     "background": {
-        "service_worker": "dist/background.js"
+        "service_worker": "dist/background.js",
+        "scripts": [
+            "dist/background.js"
+        ]
     },
     "content_scripts": [
         {
