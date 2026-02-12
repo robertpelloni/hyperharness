@@ -12,7 +12,17 @@ export const workflowRouter = t.router({
     list: publicProcedure.query(() => {
         const engine = getWorkflowEngine();
         if (!engine) return [];
-        return [];
+        // Access registered workflows from the engine's internal Map
+        const workflowsMap = (engine as any).workflows as Map<string, any> | undefined;
+        if (!workflowsMap) return [];
+        return Array.from(workflowsMap.values()).map((w: any) => ({
+            id: w.id,
+            name: w.name ?? w.id,
+            description: w.description ?? '',
+            entryPoint: w.entryPoint,
+            nodeCount: w.nodes?.size ?? 0,
+            edgeCount: w.edges?.length ?? 0,
+        }));
     }),
 
     getGraph: publicProcedure
