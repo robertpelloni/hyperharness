@@ -2,11 +2,10 @@
 
 import React, { useState } from 'react';
 import { trpc } from '@/utils/trpc';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@borg/ui';
+import { Input } from '@borg/ui';
+import { Button } from '@borg/ui';
+import { Badge } from "@borg/ui";
 import { Hammer, BookOpen, Terminal, CheckCircle2, Loader2, AlertCircle } from 'lucide-react';
 
 export default function SkillsPage() {
@@ -79,7 +78,7 @@ export default function SkillsPage() {
                             <div className="flex items-center gap-2 border-b border-zinc-800 pb-2 mb-2 text-zinc-400">
                                 <Terminal className="w-4 h-4" /> Assimilation Log
                             </div>
-                            <ScrollArea className="flex-1">
+                            <div className="flex-1 overflow-y-auto">
                                 {logs.map((log, i) => (
                                     <div key={i} className="mb-1 text-zinc-300">
                                         <span className="text-zinc-600 mr-2">{'>'}</span>{log}
@@ -88,7 +87,7 @@ export default function SkillsPage() {
                                 {status === 'assimilating' && (
                                     <div className="animate-pulse text-blue-400">Processing...</div>
                                 )}
-                            </ScrollArea>
+                            </div>
                         </div>
                     </CardContent>
                 </Card>
@@ -100,7 +99,7 @@ export default function SkillsPage() {
                         <CardDescription>Available capabilities</CardDescription>
                     </CardHeader>
                     <CardContent>
-                        <ScrollArea className="h-[400px]">
+                        <div className="h-[400px] overflow-y-auto">
                             {skills?.length === 0 && <p className="text-muted-foreground italic">No custom skills loaded.</p>}
                             <div className="grid grid-cols-1 gap-2">
                                 {skills?.map((skill: any, i: number) => (
@@ -110,7 +109,7 @@ export default function SkillsPage() {
                                     </div>
                                 ))}
                             </div>
-                        </ScrollArea>
+                        </div>
                     </CardContent>
                 </Card>
             </div>
