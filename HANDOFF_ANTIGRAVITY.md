@@ -1,144 +1,44 @@
-# HANDOFF_ANTIGRAVITY.md — Session Report (2026-02-12)
+# HANDOFF — Antigravity Session (Feb 12, 2026)
 
-> **For**: Any model (Claude, Gemini, GPT) picking up Borg development.
-> **From**: Antigravity Session `82e8874c-4939-4d9c-bb41-85e1f27128ad`
-> **Date**: 2026-02-12T17:30:00-05:00
-> **Version**: 2.6.2
+## Session Summary
+Continued from v2.6.2. Focused on **wiring real data into dashboard pages** and **cross-browser extension compatibility**. 6 commits pushed to `main`.
 
----
+## Commits This Session
+| Hash | Description |
+|------|-------------|
+| `93fbb07f` | Documentation overhaul (QUICKSTART, HANDOFF, ROADMAP, UNIVERSAL_LLM) |
+| `cb7d8bd1` | workflowRouter.list + Healer page stats & active infections |
+| `a4100938` | Firefox MV3 manifests + mcpRouter + MCP page tRPC wiring |
+| `f3c506e3` | Events page real-time polling + Skills page import fixes |
 
-## 1. Session Summary
+## Key Changes
 
-This session focused on **build stabilization**, **feature completion**, and **comprehensive documentation overhaul**.
+### Dashboard Pages Wired to Real Data
+- **MCP Aggregator**: New `mcpRouter.ts` (listServers/listTools/getStatus). Page shows live server/tool counts.
+- **Healer**: Active infections derived from failed heal records. Stats row (Total Events, Neutralized, Success Rate, Last Heal).
+- **Workflows**: `workflowRouter.list` returns real `WorkflowEngine.workflows` Map data.
+- **Events**: Real-time polling via `pulse.getLatestEvents` (3s) + `getSystemStatus` (5s). Stats row + system status panel.
+- **Skills**: Import paths fixed to `@borg/ui`. ScrollArea replaced with native overflow.
 
-### Key Accomplishments
+### Extension Compatibility
+- All 3 manifests (`apps/extension`, `packages/browser-extension`, `packages/browser-extension/public`) now include `background.scripts` for Firefox MV3 alongside `service_worker` for Chrome.
 
-| Area | What Changed | Files |
-|------|-------------|-------|
-| **Build Fix (v2.6.2)** | Fixed 18 component build errors across `apps/web` | 18 component files, `CHANGELOG.md`, `VERSION` |
-| **Router Cleanup** | Removed ~87 `@ts-ignore`, replaced `global.mcpServerInstance` with `getMcpServer()` | 14 router files |
-| **Council Members** | Implemented Members tab with 4 role-based cards + Consensus Modes | `council/page.tsx` |
-| **Dependencies** | Installed `react-force-graph-2d` for KnowledgeGraph visualizer | `apps/web/package.json` |
-| **QUICKSTART.md** | Full MCP/browser/VSCode/CLI setup guide with architecture diagram | `QUICKSTART.md` (NEW) |
-| **ROADMAP** | Marked Director, Research, Council Members as complete | `ROADMAP.md` |
-| **VISION.md** | Updated by parallel session to v2.6.2 | `VISION.md` |
-| **Docs Version** | Bumped UNIVERSAL_LLM_INSTRUCTIONS to v2.6.2 | `docs/UNIVERSAL_LLM_INSTRUCTIONS.md` |
+### New Files
+- `packages/core/src/routers/mcpRouter.ts` — tRPC router for MCPAggregator
 
-### Commits This Session
+## Current Build State
+- Last known clean build at v2.6.2 (commit `3870630a`).
+- Dashboard pages updated since then; rebuild recommended to verify.
 
-| Hash | Message |
-|------|---------|
-| `3870630a` | fix: resolve all apps/web build errors — 14 routers cleaned, 18 components fixed |
-| `5ca74ed5` | fix: staged council page updates |
-| `0d6a5760` | feat: expand 5 stub routers (8→26 endpoints) |
-| `0239c931` | docs: bump VISION.md to v2.6.2 |
-| `4d92b4f3` | v2.6.2: Dashboard build stabilization |
+## Remaining Items
+1. **Events page types**: `systemStatus` uses `as any` casts for union type narrowing — could be improved with a proper shared type.
+2. **Skills page**: Still uses `@/components/ui/` for some components not available in `@borg/ui` (e.g., `ScrollArea` was replaced with div).
+3. **`@ts-ignore` cleanup**: ~20 files in `packages/core/src` still have `@ts-ignore` directives.
+4. **Inline routers in `trpc.ts`**: The healer router (lines 66-97) and several other routers remain inline — should be extracted to separate files.
+5. **MCP page Add Server form**: Currently shows error when submitting — needs a real `mcp.addServer` mutation wired to MCPAggregator.
 
----
-
-## 2. Current State
-
-### Build Status
-- **`apps/web`**: ✅ PASSES (39+ routes, exit code 0)
-- **`packages/core`**: ✅ Compiles (tsc)
-- **Known Warning**: Next.js workspace root inference (multiple lockfiles) — harmless
-
-### Dashboard Pages (31+)
-
-All pages render. Key pages with real data wiring:
-- `/dashboard/director` — `directorConfig.get`, `getTaskStatus`, `autonomy.getLevel`
-- `/dashboard/research` — `research.conduct` mutation
-- `/dashboard/council` — `council.listSessions`, `council.runSession` + Members tab
-- `/dashboard/billing` — Real cost data via `QuotaService.getUsageByModel()`
-- `/dashboard/pulse` — Real events via `EventBus` history buffer
-- `/dashboard/skills` — Real data via `SkillRegistry`
-
-### Architecture
-
-```
-BORG CORE (MCPServer.ts — 2805 lines)
-├── Stdio Transport — Local MCP clients (Claude, Cursor, VS Code)
-├── WebSocket :3001 — Extension + Browser
-├── HTTP :3001 — /health, /director.chat, /tool/execute
-└── tRPC appRouter — 25 routers, 30+ services → Next.js :3000
-```
-
----
-
-## 3. Remaining Technical Debt
-
-### @ts-ignore Inventory (Routers)
-
-| File | Count | Fix |
-|------|-------|-----|
-| `workflowRouter.ts` | 10 | Replace `global.mcpServerInstance` → `getMcpServer()` |
-| `symbolsRouter.ts` | 14 | Same pattern |
-| `suggestionsRouter.ts` | 7 | Same pattern |
-| `squadRouter.ts` | 5 | Same pattern |
-| `skillsRouter.ts` | 5 | Same pattern |
-| `shellRouter.ts` | 6 | Same pattern |
-| `testsRouter.ts` | 2 | Same pattern |
-| `graphRouter.ts` | 3 | Same pattern |
-
-### Incomplete Features (Phase 63)
-
-- [ ] Replace remaining ~50 `@ts-ignore global.mcpServerInstance` with `getMcpServer()`
-- [ ] Fix `councilRouter` naming inconsistency (`council` vs `councilService`)
-- [ ] Cache tool→client mapping in `Router.callTool()` (O(N²))
-- [ ] Extract inline routers from `trpc.ts` into separate files
-- [ ] Healer page: Add streaming for active infections
-- [ ] `workflowRouter.list`: Expose `WorkflowEngine` registered workflows
-
----
-
-## 4. Key Patterns
-
-### `getMcpServer()` — Standard Pattern
-```typescript
-import { getMcpServer } from '../lib/mcpHelper.js';
-const mcp = getMcpServer();
-const result = (mcp as any).someService.someMethod();
-```
-
-### `lib/trpc-core.js` — Break Circular Dependencies
-All routers MUST import from `lib/trpc-core.js`, NOT from `../trpc.js`.
-
-### VERSION.md — Single Source of Truth
-CLI reads version from `VERSION.md`. All version references should point here.
-
----
-
-## 5. Priority Recommendations for Next Session
-
-### P0 — Critical
-1. Continue autonomous feature implementation from ROADMAP Phase 63-64
-
-### P1 — High Value
-2. Refactor remaining @ts-ignore routers (mechanical, ~1hr)
-3. Implement Healer streaming
-4. Extract inline routers from trpc.ts
-
-### P2 — Medium
-5. Research and document all submodules (200+ in references)
-6. Create SUBMODULE_DASHBOARD.md with versions/locations
-7. Update VISION.md with all remaining features
-
-### P3 — Polish
-8. Add integration tests for key routers
-9. Mobile-responsive dashboard improvements
-10. Performance profiling for MCPServer startup
-
----
-
-## 6. Files Modified This Session
-
-| File | Change Type |
-|------|------------|
-| `QUICKSTART.md` | **NEW** — Comprehensive setup guide |
-| `CHANGELOG.md` | Added v2.6.2 entry |
-| `VERSION` | Bumped to 2.6.2 |
-| `ROADMAP.md` | Marked 3 Phase 63 items complete |
-| `docs/UNIVERSAL_LLM_INSTRUCTIONS.md` | Version bumped to 2.6.2 |
-| `apps/web/src/app/dashboard/council/page.tsx` | Council Members tab implemented |
-| 18 component files | Build fixes (see CHANGELOG v2.6.2) |
-| 14 router files | @ts-ignore cleanup |
+## Next Steps (Priority Order)
+1. Rebuild and verify (`pnpm build`)
+2. Extract remaining inline routers from `trpc.ts`
+3. Wire MCP "Add Server" form to real mutationborder
+4. Complete Phase 4 roadmap items (council naming, cache tool mapping, submodule dashboard)
