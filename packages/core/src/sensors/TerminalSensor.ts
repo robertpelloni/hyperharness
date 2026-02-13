@@ -15,8 +15,7 @@ export class TerminalSensor {
         // Hook stderr to capture errors
         this.originalStderrWrite = process.stderr.write;
 
-        // @ts-ignore
-        process.stderr.write = (chunk: any, encoding?: any, callback?: any) => {
+        (process.stderr.write as any) = (chunk: any, encoding?: any, callback?: any) => {
             const str = chunk.toString();
 
             // Heuristic to detect ACTUAL errors vs warnings

@@ -38,12 +38,10 @@ export class SkillAssimilationService {
         } else {
             // General research
             // Use 'researchTopic' instead of create/execute plan
-            // @ts-ignore
-            const result = await this.deepResearch.researchTopic(request.topic, 2); // Depth 2
+            const result = await this.deepResearch.researchTopic(request.topic, 2) as { summary: string; sources?: Array<{ title: string; url: string }> };
 
             // Format findings based on research result structure
-            // @ts-ignore
-            researchContext = `SUMMARY:\n${result.summary}\n\nSOURCES:\n${result.sources ? result.sources.map((s: any) => `- ${s.title}: ${s.url}`).join('\n') : 'No sources'}`;
+            researchContext = `SUMMARY:\n${result.summary}\n\nSOURCES:\n${result.sources ? result.sources.map((s) => `- ${s.title}: ${s.url}`).join('\n') : 'No sources'}`;
         }
 
         log("Phase 2: Generating MCP Tool Code...");
