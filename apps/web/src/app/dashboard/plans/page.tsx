@@ -8,7 +8,7 @@ import { Badge } from '@borg/ui';
 import { ScrollArea } from '@borg/ui';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@borg/ui";
 import { GitBranch, GitCommit, Play, Rewind, CheckCircle, XCircle, AlertCircle, FileCode } from 'lucide-react';
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Alert, AlertDescription, AlertTitle } from "@borg/ui";
 
 export default function PlansDashboard() {
     const [activeTab, setActiveTab] = useState('diffs');
