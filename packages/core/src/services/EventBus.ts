@@ -35,9 +35,8 @@ export class EventBus extends EventEmitter {
             const regex = new RegExp(`^${pattern.replace(/\*/g, '.*')}$`);
             this.wildcardListeners.push({ pattern: regex, listener });
         } else {
-            // Standard exact match
-            // @ts-ignore
-            this.on(pattern, listener);
+            // Standard exact match — EventEmitter expects string|symbol
+            super.on(pattern, listener as (...args: any[]) => void);
         }
     }
 

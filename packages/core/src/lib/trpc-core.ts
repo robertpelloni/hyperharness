@@ -27,10 +27,10 @@ export const adminProcedure = t.procedure.use(isAdmin);
 
 /**
  * Typed accessor for the global MCPServer instance.
- * Eliminates @ts-ignore usage throughout trpc.ts routers.
+ * Uses the global declaration from MCPServer.ts.
  */
 export function getMcpServer(): any {
-    const server = (global as any).mcpServerInstance;
+    const server = global.mcpServerInstance;
     if (!server) throw new Error("MCPServer instance not found");
     return server;
 }

@@ -15,7 +15,6 @@ export class AutoTestReactor {
     public start() {
         console.log("[AutoTestReactor] Armed and listening for file changes...");
         // Listen for file changes
-        // @ts-ignore
         this.eventBus.subscribe('file:change', this.handleFileChange.bind(this));
     }
 

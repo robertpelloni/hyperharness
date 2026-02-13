@@ -16,7 +16,6 @@ export class HealerReactor {
 
     public start() {
         console.log("[HealerReactor] 🛡️ Immune System Active. Listening for pathogens...");
-        // @ts-ignore
         this.eventBus.subscribe('terminal:error', this.handleError.bind(this));
     }
 

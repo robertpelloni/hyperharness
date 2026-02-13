@@ -15,7 +15,6 @@ export class GeminiAdapter extends AgentAdapter {
 
     async start(): Promise<void> {
         if (!this.agent) {
-            // @ts-ignore
             const mcp = global.mcpServerInstance;
             if (mcp) {
                 // Initialize internal agent
