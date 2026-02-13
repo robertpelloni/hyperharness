@@ -4,7 +4,6 @@ import fs from 'fs/promises';
 import { existsSync } from 'fs';
 
 import { ContextPruner, PruningOptions } from './ContextPruner.js';
-// @ts-ignore
 import type { GraphMemory } from '@borg/memory';
 
 export class MemoryManager {
@@ -31,8 +30,7 @@ export class MemoryManager {
         const { VectorStore, GraphMemory } = await import('@borg/memory');
 
         // Adapt existing VectorStore to VectorProvider interface
-        // @ts-ignore - The types might not match perfectly yet, acting as an adapter
-        const store = new VectorStore(this.dbPath);
+        const store = new (VectorStore as any)(this.dbPath);
         this.graph = new GraphMemory();
         await this.graph.initialize();
 
@@ -70,7 +68,6 @@ export class MemoryManager {
             },
             delete: async (ids: string[]) => store.delete(ids),
             reset: async () => store.reset(),
-            // @ts-ignore - Extension
             list: async (where?: string, limit?: number) => {
                 const docs = await store.listDocuments(where, limit);
                 return docs.map((d: any) => ({
@@ -79,7 +76,7 @@ export class MemoryManager {
                     metadata: { ...d.metadata, path: d.path, hash: d.hash }
                 }));
             }
-        };
+        } as any;
 
         if (this.provider) {
             await this.provider.initialize();
@@ -146,10 +143,8 @@ export class MemoryManager {
         // OR we cast provider to any.
 
         // Let's update `initialize` to add `list` to the provider object, casting it to any for now.
-        // @ts-ignore
-        if (this.provider.list) {
-            // @ts-ignore
-            return await this.provider.list("hash = 'symbol'", 5000);
+        if ((this.provider as any).list) {
+            return await (this.provider as any).list("hash = 'symbol'", 5000);
         }
         return [];
     }
@@ -164,8 +159,7 @@ export class MemoryManager {
         console.log(`[MemoryManager] Indexing symbols at ${rootDir}...`);
 
         // Lazy load Indexer from @borg/memory
-        // @ts-ignore
-        const { Indexer, VectorStore } = await import('@borg/memory');
+        const { Indexer, VectorStore } = await import('@borg/memory') as any;
 
         const store = new VectorStore(this.dbPath);
         const indexer = new Indexer(store);
@@ -183,8 +177,7 @@ export class MemoryManager {
         console.log(`[MemoryManager] Indexing codebase at ${rootDir}...`);
 
         // Lazy load Indexer from @borg/memory
-        // @ts-ignore
-        const { Indexer, VectorStore } = await import('@borg/memory');
+        const { Indexer, VectorStore } = await import('@borg/memory') as any;
 
         // Re-instantiate internal VectorStore for Indexer (Indexer expects concrete VectorStore, not Provider)
         // TODO: Refactor Indexer to accept VectorProvider interface in future

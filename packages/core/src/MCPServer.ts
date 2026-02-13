@@ -404,8 +404,7 @@ export class MCPServer {
                 console.error("[MCPServer] 🚀 Bootstrapping Auto-Drive NOW... BEEP!");
                 import('fs').then(fs => fs.writeFileSync('.borg_boot_check', 'BOOTED ' + Date.now())).catch(() => { }); // FS Marker
                 try {
-                    // @ts-ignore
-                    const { exec } = await import('child_process');
+                    const { exec } = await import('child_process') as any;
                     exec('powershell -c [console]::beep(1000, 500)');
                 } catch (e) { }
                 this.director.startAutoDrive().catch(e => console.error("Auto-Drive Boot Failed:", e));
@@ -1195,8 +1194,7 @@ export class MCPServer {
                     console.log("[MCPServer] No Browser Extension. Falling back to Native Reader...");
                     const nativeReader = ReaderTools.find(t => t.name === "read_page");
                     if (nativeReader) {
-                        // @ts-ignore
-                        result = await nativeReader.handler(args);
+                        result = await (nativeReader as any).handler(args);
                     } else {
                         result = { content: [{ type: "text", text: "Error: No Native Reader available." }] };
                     }
@@ -1209,8 +1207,7 @@ export class MCPServer {
                             console.log("[MCPServer] Browser Timed Out. Falling back to Native Reader...");
                             const nativeReader = ReaderTools.find(t => t.name === "read_page");
                             if (nativeReader) {
-                                // @ts-ignore
-                                nativeReader.handler(args).then(resolve).catch((e: any) => resolve({ content: [{ type: "text", text: `Error: ${e.message}` }] }));
+                                (nativeReader as any).handler(args).then(resolve).catch((e: any) => resolve({ content: [{ type: "text", text: `Error: ${e.message}` }] }));
                             } else {
                                 resolve({ content: [{ type: "text", text: "Error: Browser timed out and no native reader." }] });
                             }
@@ -1773,8 +1770,7 @@ export class MCPServer {
                 const terminalTools = this.terminalService.getTools();
                 const standardTool = [...FileSystemTools, ...terminalTools, ...MemoryTools, ...TunnelTools, ...LogTools, ...ConfigTools, ...SearchTools, ...ReaderTools, ...WorktreeTools, ...MetaTools, WebSearchTool].find(t => t.name === name);
                 if (standardTool) {
-                    // @ts-ignore
-                    result = await standardTool.handler(args);
+                    result = await (standardTool as any).handler(args);
                 } else {
                     // 1. Try MCPAggregator (Downstream Servers)
                     try {
