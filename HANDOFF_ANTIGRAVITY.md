@@ -1,54 +1,51 @@
-# HANDOFF — Antigravity Session (Feb 12, 2026 — Evening)
+# HANDOFF — Antigravity Session (Feb 12, 2026 — Late Evening)
 
 ## Session Summary
-Continued from earlier session. Focused on **systematic quality sweep**: standardizing imports, cleaning dead code, and making the MCP Aggregator functional. Build verified clean (exit 0).
+Continued quality sweep. Extracted all inline tRPC routers from `trpc.ts`, reducing it from 570+ to 113 lines. Removed 10 `@ts-ignore` directives with proper type fixes. Created `Alert` UI component and fixed `@borg/ui` exports.
 
-## Commits This Session
+## Commits This Session (Phase 2)
 | Hash | Description |
 |------|-------------|
-| `93fbb07f` | Documentation overhaul (QUICKSTART, HANDOFF, ROADMAP, UNIVERSAL_LLM) |
-| `cb7d8bd1` | workflowRouter.list + Healer page stats & active infections |
-| `a4100938` | Firefox MV3 manifests + mcpRouter + MCP page tRPC wiring |
-| `f3c506e3` | Events page real-time polling + Skills page import fixes |
-| `522e53cb` | **Import standardization (12 pages), MCP aggregator wired, dead code cleanup** |
+| `522e53cb` | Import standardization (12 pages), MCP aggregator, dead code cleanup |
+| `aba9bd6b` | Extract healer/darwin routers from trpc.ts |
+| `8cf27b26` | Extract autonomy/director/directorConfig/git/audit routers |
+| `7f9a5785` | Remove unused imports, fix duplicate identifiers in trpc.ts |
+| `b49b0079` | Remove 7 @ts-ignore (mcpHelper, EventBus, GeminiAdapter, reactors) |
+| `cf43c0d5` | Remove 3 more @ts-ignore (TerminalSensor, SkillAssimilation) |
+| `831a7144` | Alert component, fix duplicate export, add 7 missing component exports |
 
-## Key Changes (This Evening)
+## Key Changes
 
-### Import Standardization (12 pages)
-All dashboard pages migrated from `@/components/ui/` → `@borg/ui`:
-council, director, supervisor, code, settings, submodules, evolution, research, security, memory, manual, plans.
+### trpc.ts Transformation
+- **Before:** 570+ lines with inline routers + dead code
+- **After:** 113 lines — clean import-only orchestration file
+- 7 routers extracted: healer, darwin, autonomy, director, directorConfig, git, audit
 
-### MCP Aggregator Now Functional
-- Added `addServer` / `removeServer` mutations to `mcpRouter.ts`
-- Rewrote MCP dashboard with working form, remove buttons, and Tools tab
-- MCPAggregator service already had full implementation (STDIO client management, tool discovery, config persistence)
+### @ts-ignore Reduction (44 → 34)
+- mcpHelper.ts: Use MCPServer.ts global declaration
+- trpc-core.ts: Replace `(global as any)` with typed global  
+- EventBus.ts: Use `super.on()` with proper cast
+- GeminiAdapter.ts, HealerReactor.ts, AutoTestReactor.ts: Use typed globals
+- TerminalSensor.ts: Cast stderr.write properly
+- SkillAssimilationService.ts: Type research result
 
-### Dead Code Cleanup
-Removed ~200 lines of commented-out routers from `trpc.ts` (remoteAccess, config, logs, autoTest, submodule, system, sandbox, roadmap, policy, vscode, search, inline mcp).
-
-### Dashboard Landing Page
-Created `/dashboard` route with organized links to all 31 sub-pages.
+### @borg/ui Improvements
+- Created `Alert` component (4 variants: default, destructive, warning, success)
+- Fixed duplicate `WorkflowVisualizer` export
+- Added 7 missing exports: Alert, GraphPanel, CodeIntelPage, ContextPanel, MemoryPage, IntegratedTerminal, SystemStatus
 
 ## Current Build State
 - `packages/core` — `tsc --noEmit` passes (exit 0)
-- `apps/web` — `next build` passes (exit 0)
+- All changes pushed to `main`
 
-## Full Dashboard Audit Results
-- **20 pages** wired directly to tRPC backends
-- **6 pages** delegate to `@borg/ui` components (chronicle, library, workshop, squads, brain, pulse)
-- **3 pages** delegate to local components (command, config, inspector)
-- **1 landing page** at `/dashboard`
-- **Only 1 remaining local UI import**: Alert in plans page (not in @borg/ui)
+## Dashboard Audit (31 pages)
+- **20** wired to tRPC backends
+- **6** delegate to `@borg/ui` components
+- **3** delegate to local components  
+- **1** landing page hub
 
 ## Remaining Items
-1. **Inline routers**: healer, autonomy, director, directorConfig, executeTool, git, audit still inline in `trpc.ts` — should be extracted.
-2. **`@ts-ignore` cleanup**: ~20 files in `packages/core/src` still have directives.
-3. **Plans Alert component**: Still uses local `@/components/ui/alert` since Alert isn't exported by `@borg/ui`.
-4. **Submodule actions disabled**: Knowledge page has disabled submodule sync/install/build actions (submodule router not registered).
-
-## Next Steps (Priority Order)
-1. Extract remaining inline routers from `trpc.ts` (healer → `healerRouter.ts` already exists!)
-2. Wire submodule actions on knowledge page
-3. Add Alert component to `@borg/ui` exports
-4. Continue building out features: improve architecture page, add audit log page
-5. `@ts-ignore` audit and reduction
+1. **@ts-ignore cleanup**: ~34 remaining, mostly in MCPServer.ts (4), MemoryManager.ts (7), SquadService.ts (4)
+2. **Plans page**: Can now use `Alert` from `@borg/ui` instead of local import
+3. **Submodule actions**: Knowledge page has disabled sync/install/build buttons
+4. **MemoryManager adapter**: 7 @ts-ignore from `@borg/memory` type mismatches — needs interface alignment
