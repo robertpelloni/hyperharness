@@ -122,8 +122,7 @@ export class HealerService extends EventEmitter {
         const response = await this.llm.generateText("openai", "gpt-4o", "You are a JSON-only debugging tool.", prompt, {});
 
         try {
-            // @ts-ignore
-            return JSON.parse(response.text || response.content || response);
+            return JSON.parse((response as any).text || (response as any).content || response);
         } catch (e) {
             console.error("Failed to parse Healer diagnosis", response);
             return {
@@ -170,8 +169,7 @@ export class HealerService extends EventEmitter {
         const response = await this.llm.generateText("openai", "gpt-4o", "You are a code repair agent. Return only JSON with 'explanation' and 'newContent'.", prompt, {});
 
         try {
-            // @ts-ignore
-            const result = JSON.parse(response.text || response.content || response);
+            const result = JSON.parse((response as any).text || (response as any).content || response);
             return {
                 id: Math.random().toString(36).substring(7),
                 diagnosis,

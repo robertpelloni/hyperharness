@@ -69,8 +69,7 @@ export class SpawnerService {
         if (agent && agent.status === AgentStatus.RUNNING) {
             // In a real implementation we'd need an abort controller
             // For now, we just mark as failed
-            // @ts-ignore - accessing protected method for management
-            agent.fail("Terminated by user");
+            (agent as any).fail("Terminated by user");
             return true;
         }
         return false;

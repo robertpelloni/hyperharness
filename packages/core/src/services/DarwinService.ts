@@ -52,8 +52,7 @@ export class DarwinService {
 
         let result;
         try {
-            // @ts-ignore
-            result = JSON.parse(response.text || response.content || response);
+            result = JSON.parse((response as any).text || (response as any).content || response);
         } catch (e) {
             throw new Error("Failed to parse mutation suggestion.");
         }
@@ -122,8 +121,7 @@ export class DarwinService {
 
         const judgeRes = await this.llm.generateText("openai", "gpt-4o", "", judgePrompt, {});
         try {
-            // @ts-ignore
-            const verdict = JSON.parse(judgeRes.text || judgeRes.content || judgeRes);
+            const verdict = JSON.parse((judgeRes as any).text || (judgeRes as any).content || judgeRes);
             experiment.winner = verdict.winner;
             experiment.judgeReasoning = verdict.reasoning;
         } catch (e) {
@@ -139,8 +137,7 @@ export class DarwinService {
         // Simulate an agent running a task with a specific system prompt
         // We just ask the LLM directly contextually
         const res = await this.llm.generateText("openai", "gpt-4o", sysPrompt, task, {});
-        // @ts-ignore
-        return res.text || res.content || res as string;
+        return (res as any).text || (res as any).content || String(res);
     }
 
     public getStatus() {

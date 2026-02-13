@@ -22,8 +22,7 @@ export class KnowledgeService {
     public async getGraph(query?: string, depth: number = 1): Promise<{ content: any[] }> {
         // If no query, return full graph
         if (!query && this.memory.graph) {
-            // @ts-ignore - getSnapshot was just added
-            const snapshot = this.memory.graph.getSnapshot();
+            const snapshot = (this.memory.graph as any).getSnapshot();
             return {
                 content: [{
                     type: "text",

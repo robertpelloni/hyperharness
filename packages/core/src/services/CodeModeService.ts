@@ -201,8 +201,7 @@ export class CodeExecutor {
                 'Boolean', 'RegExp', 'Map', 'Set', 'Promise'
             ];
             unsafeGlobals.forEach(g => {
-                // @ts-ignore
-                if (global[g]) context[g] = global[g];
+                if ((global as any)[g]) context[g] = (global as any)[g];
             });
         }
 

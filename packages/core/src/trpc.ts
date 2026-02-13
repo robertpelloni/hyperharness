@@ -97,10 +97,8 @@ export const appRouter = t.router({
         name: z.string(),
         args: z.any()
     })).mutation(async ({ input }) => {
-        const result = await getMcpServer().executeTool(input.name, input.args);
-        // @ts-ignore
+        const result = await getMcpServer().executeTool(input.name, input.args) as any;
         if (result.isError) throw new Error(result.content[0].text);
-        // @ts-ignore
         return result.content[0].text;
     }),
     git: gitRouter,
