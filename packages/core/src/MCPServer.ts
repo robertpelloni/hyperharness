@@ -32,6 +32,8 @@ import { Council, CouncilRole } from "@borg/agents";
 import { GeminiAgent } from "./agents/GeminiAgent.js";
 import { ClaudeAgent } from "./agents/ClaudeAgent.js";
 import { MetaArchitectAgent } from "./agents/MetaArchitectAgent.js";
+import { CoderAgent } from "./agents/CoderAgent.js";
+import { ResearcherAgent } from "./agents/ResearcherAgent.js";
 import { ConfigManager } from "./config/ConfigManager.js";
 import { AutoTestService } from "./services/AutoTestService.js";
 import { ShellService } from "./services/ShellService.js";
@@ -142,6 +144,15 @@ interface ToolRequest {
     };
 }
 
+interface ToolWithHandler {
+    name: string;
+    handler: (args: unknown) => Promise<unknown> | unknown;
+}
+
+interface TextContentEnvelope {
+    content?: Array<{ text?: string }>;
+}
+
 console.log("[MCPServer] All imports complete!");
 
 declare global {
@@ -225,6 +236,8 @@ export class MCPServer {
     public geminiAgent: GeminiAgent;
     public claudeAgent: ClaudeAgent;
     public metaArchitectAgent: MetaArchitectAgent;
+    public coderAgent: CoderAgent;
+    public researcherAgent: ResearcherAgent;
     public council: Council;
     public supervisor: Supervisor;
 
@@ -253,6 +266,34 @@ export class MCPServer {
 
     public get isMemoryInitialized() {
         return this.memoryInitialized;
+    }
+
+    /**
+     * Reason: tool definitions originate from mixed internal/external registries with loose typing.
+     * What: runtime guard for tool objects that expose an executable `handler(args)` function.
+     * Why: enables safe invocation without broad casts across tool arrays.
+     */
+    private isToolWithHandler(value: unknown): value is ToolWithHandler {
+        if (!value || typeof value !== 'object') {
+            return false;
+        }
+        const handler = Reflect.get(value as object, 'handler');
+        const name = Reflect.get(value as object, 'name');
+        return typeof name === 'string' && typeof handler === 'function';
+    }
+
+    /**
+     * Reason: multiple execution branches return heterogeneous payloads, but suggestion analysis needs text content.
+     * What: safely extracts first text block from MCP-style `{ content: [{ text }] }` envelopes.
+     * Why: preserves engagement trigger behavior while removing broad result casting.
+     */
+    private getFirstTextContent(result: unknown): string | null {
+        if (!result || typeof result !== 'object') {
+            return null;
+        }
+        const envelope = result as TextContentEnvelope;
+        const first = envelope.content?.[0];
+        return typeof first?.text === 'string' ? first.text : null;
     }
 
     constructor(options: { skipWebsocket?: boolean, skipAutoDrive?: boolean, skipMesh?: boolean, inputTools?: InputTools, systemStatusTool?: SystemStatusTool, processRegistry?: ProcessRegistry } = {}) {
@@ -340,6 +381,10 @@ export class MCPServer {
         this.claudeAgent = new ClaudeAgent(this.llmService, this.promptRegistry);
         this.metaArchitectAgent = new MetaArchitectAgent(this.llmService, this.promptRegistry);
 
+        // Initialize Specialized Agents
+        this.coderAgent = new CoderAgent(this.llmService);
+        this.researcherAgent = new ResearcherAgent(this.deepResearchService);
+
         // Initialize Council with Agents
         this.council = new Council(this.modelSelector);
         this.council.setServer(this);
@@ -404,7 +449,7 @@ export class MCPServer {
                 console.error("[MCPServer] 🚀 Bootstrapping Auto-Drive NOW... BEEP!");
                 import('fs').then(fs => fs.writeFileSync('.borg_boot_check', 'BOOTED ' + Date.now())).catch(() => { }); // FS Marker
                 try {
-                    const { exec } = await import('child_process') as any;
+                    const { exec } = await import('child_process');
                     exec('powershell -c [console]::beep(1000, 500)');
                 } catch (e) { }
                 this.director.startAutoDrive().catch(e => console.error("Auto-Drive Boot Failed:", e));
@@ -751,7 +796,7 @@ export class MCPServer {
             }
             else if (name === "vscode_execute_command") {
                 const command = args?.command as string;
-                const cmdArgs = args?.args as any[] || [];
+                const cmdArgs = Array.isArray(args?.args) ? args.args : [];
 
                 if (this.wssInstance) {
                     this.wssInstance.clients.forEach((client: any) => {
@@ -1193,8 +1238,8 @@ export class MCPServer {
                     // FALLBACK: Use Native Reader (ReaderTools)
                     console.log("[MCPServer] No Browser Extension. Falling back to Native Reader...");
                     const nativeReader = ReaderTools.find(t => t.name === "read_page");
-                    if (nativeReader) {
-                        result = await (nativeReader as any).handler(args);
+                    if (nativeReader && this.isToolWithHandler(nativeReader)) {
+                        result = await nativeReader.handler(args);
                     } else {
                         result = { content: [{ type: "text", text: "Error: No Native Reader available." }] };
                     }
@@ -1206,8 +1251,10 @@ export class MCPServer {
                             // TIMEOUT FALLBACK to Native Reader
                             console.log("[MCPServer] Browser Timed Out. Falling back to Native Reader...");
                             const nativeReader = ReaderTools.find(t => t.name === "read_page");
-                            if (nativeReader) {
-                                (nativeReader as any).handler(args).then(resolve).catch((e: any) => resolve({ content: [{ type: "text", text: `Error: ${e.message}` }] }));
+                            if (nativeReader && this.isToolWithHandler(nativeReader)) {
+                                Promise.resolve(nativeReader.handler(args))
+                                    .then(resolve)
+                                    .catch((e: Error) => resolve({ content: [{ type: "text", text: `Error: ${e.message}` }] }));
                             } else {
                                 resolve({ content: [{ type: "text", text: "Error: Browser timed out and no native reader." }] });
                             }
@@ -1515,9 +1562,17 @@ export class MCPServer {
                 };
             }
             else if (name === "assimilate_skill") {
-                const response = await this.skillAssimilationService.assimilate(args as any);
+                const assimilationRequest = {
+                    topic: String(args?.topic ?? args?.name ?? ''),
+                    docsUrl: typeof args?.docsUrl === 'string' ? args.docsUrl : undefined,
+                    autoInstall: typeof args?.autoInstall === 'boolean' ? args.autoInstall : undefined,
+                };
+                if (!assimilationRequest.topic) {
+                    throw new Error("Missing required assimilation topic/name.");
+                }
+                const response = await this.skillAssimilationService.assimilate(assimilationRequest);
                 result = {
-                    content: [{ type: "text", text: response }]
+                    content: [{ type: "text", text: JSON.stringify(response, null, 2) }]
                 };
             }
             else if (name === "get_status") {
@@ -1759,7 +1814,7 @@ export class MCPServer {
                 if (!this.meshService) {
                     result = { content: [{ type: "text", text: "Mesh Service not active." }] };
                 } else {
-                    const type = args.type as any || 'TASK_OFFER';
+                    const type = typeof args?.type === 'string' ? args.type : 'TASK_OFFER';
                     this.meshService.broadcast(type, args.payload || {});
                     result = {
                         content: [{ type: "text", text: `Broadcasted '${type}' to swarm.` }]
@@ -1769,8 +1824,8 @@ export class MCPServer {
                 // Check Standard Library
                 const terminalTools = this.terminalService.getTools();
                 const standardTool = [...FileSystemTools, ...terminalTools, ...MemoryTools, ...TunnelTools, ...LogTools, ...ConfigTools, ...SearchTools, ...ReaderTools, ...WorktreeTools, ...MetaTools, WebSearchTool].find(t => t.name === name);
-                if (standardTool) {
-                    result = await (standardTool as any).handler(args);
+                if (standardTool && this.isToolWithHandler(standardTool)) {
+                    result = await standardTool.handler(args);
                 } else {
                     // 1. Try MCPAggregator (Downstream Servers)
                     try {
@@ -1809,13 +1864,13 @@ export class MCPServer {
 
             // ENGAGEMENT MODULE: Suggestion Trigger
             if ((name === "read_file" || name === "view_file") && result) {
-                const resAny = result as any;
-                if (resAny.content && resAny.content[0] && resAny.content[0].text) {
+                const contentText = this.getFirstTextContent(result);
+                if (contentText) {
                     const filePath = args.path || args.AbsolutePath;
                     this.suggestionService.processContext({
                         type: 'file_read',
                         path: filePath,
-                        content: resAny.content[0].text
+                        content: contentText
                     }).catch(e => console.error("[SuggestionService] Trigger failed:", e));
                 }
             }

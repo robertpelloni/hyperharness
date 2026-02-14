@@ -2,6 +2,30 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { MCPServer } from '../src/MCPServer.js';
 import { EventEmitter } from 'events';
 
+interface MockWsClient {
+    readyState: number;
+    send: ReturnType<typeof vi.fn>;
+    on: ReturnType<typeof vi.fn>;
+}
+
+interface MockWsServer {
+    clients: Set<MockWsClient>;
+}
+
+interface PendingRequestMap {
+    get(key: string): ((payload: unknown) => void) | undefined;
+    has(key: string): boolean;
+}
+
+function setServerWssInstance(server: MCPServer, wss: MockWsServer): void {
+    Reflect.set(server as object, 'wssInstance', wss);
+}
+
+function getPendingRequests(server: MCPServer): PendingRequestMap {
+    const value = Reflect.get(server as object, 'pendingRequests');
+    return value as PendingRequestMap;
+}
+
 // Mock Dependencies to avoid full instantiation
 vi.mock('../src/services/MemoryManager', () => ({
     MemoryManager: class {
@@ -23,8 +47,8 @@ vi.mock('../src/skills/SkillRegistry', () => ({
 
 describe('Phase 24: Browser Integration (WebSocket Bridge)', () => {
     let server: MCPServer;
-    let mockWss: any;
-    let mockClient: any;
+    let mockWss: MockWsServer;
+    let mockClient: MockWsClient;
 
     beforeEach(() => {
         // Instantiate without real WebSocket
@@ -45,7 +69,7 @@ describe('Phase 24: Browser Integration (WebSocket Bridge)', () => {
         mockWss.clients.add(mockClient);
 
         // Inject Mock WSS
-        (server as any).wssInstance = mockWss;
+        setServerWssInstance(server, mockWss);
     });
 
     afterEach(() => {
@@ -62,16 +86,17 @@ describe('Phase 24: Browser Integration (WebSocket Bridge)', () => {
         expect(mockClient.send).toHaveBeenCalled();
 
         // Find the specific call for browser_screenshot (there might be TOOL_CALL_START messages)
-        const calls = mockClient.send.mock.calls.map((c: any) => JSON.parse(c[0]));
-        const msg = calls.find((c: any) => c.method === 'browser_screenshot');
+        const calls = mockClient.send.mock.calls.map((c) => JSON.parse(String(c[0])) as { method?: string; id?: string });
+        const msg = calls.find((c) => c.method === 'browser_screenshot');
 
         expect(msg).toBeDefined();
         expect(msg.method).toBe('browser_screenshot');
         expect(msg.id).toBeDefined();
 
         // Simulate response from browser extension
-        const requestId = msg.id;
-        const pendingMap = (server as any).pendingRequests;
+        const requestId = msg?.id;
+        expect(typeof requestId).toBe('string');
+        const pendingMap = getPendingRequests(server);
         expect(pendingMap.has(requestId)).toBe(true);
 
         const callback = pendingMap.get(requestId);

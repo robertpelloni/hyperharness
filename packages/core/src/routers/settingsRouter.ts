@@ -1,23 +1,26 @@
 import { z } from 'zod';
-import { t, publicProcedure, getMcpServer } from '../lib/trpc-core.js';
+import { t, publicProcedure, getMcpServer, getConfigManager } from '../lib/trpc-core.js';
+
+function getErrorMessage(error: unknown): string {
+    if (error instanceof Error) {
+        return error.message;
+    }
+    return typeof error === 'string' ? error : 'Unknown error';
+}
 
 export const settingsRouter = t.router({
     /** Get the full configuration object */
     get: publicProcedure.query(() => {
-        const mcp = getMcpServer();
-        if (mcp && (mcp as any).configManager) {
-            return (mcp as any).configManager.loadConfig() || {};
-        }
-        return {};
+        return getConfigManager()?.loadConfig() || {};
     }),
 
     /** Update configuration with a partial config object */
     update: publicProcedure.input(z.object({
-        config: z.any()
+        config: z.record(z.unknown())
     })).mutation(({ input }) => {
-        const mcp = getMcpServer();
-        if (mcp && mcp.configManager) {
-            mcp.configManager.saveConfig(input.config);
+        const configManager = getConfigManager();
+        if (configManager) {
+            configManager.saveConfig(input.config);
             return { success: true };
         }
         throw new Error("ConfigManager not ready");
@@ -67,11 +70,11 @@ export const settingsRouter = t.router({
                 response: result?.text?.slice(0, 50) ?? 'ok',
                 latencyMs: result?.latencyMs ?? 0,
             };
-        } catch (err: any) {
+        } catch (err: unknown) {
             return {
                 success: false,
                 provider: input.provider,
-                error: err.message,
+                error: getErrorMessage(err),
             };
         }
     }),
@@ -92,9 +95,9 @@ export const settingsRouter = t.router({
 
     /** Get list of configured MCP servers */
     getMcpServers: publicProcedure.query(() => {
-        const mcp = getMcpServer();
-        if (mcp && mcp.configManager) {
-            const config = mcp.configManager.loadConfig();
+        const configManager = getConfigManager();
+        if (configManager) {
+            const config = configManager.loadConfig();
             return config?.mcpServers ?? [];
         }
         return [];

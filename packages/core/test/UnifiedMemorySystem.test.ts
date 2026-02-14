@@ -2,6 +2,16 @@ import { describe, test, expect, mock } from 'bun:test';
 import { UnifiedMemorySystem } from '../src/memory/UnifiedMemorySystem.js';
 import { MemorySubsystemAdapter, MemorySearchResult } from '../src/memory/UnifiedMemorySystem.js';
 
+/**
+ * Reason: this test validates internal primary-adapter switching behavior.
+ * What: reads the private runtime field via reflection for assertion-only usage.
+ * Why: avoids permissive casts while preserving current verification depth.
+ */
+function getPrimaryAdapterId(ums: UnifiedMemorySystem): string | undefined {
+    const value = Reflect.get(ums as object, 'primaryAdapterId');
+    return typeof value === 'string' ? value : undefined;
+}
+
 class MockAdapter implements MemorySubsystemAdapter {
     id: string;
     name: string;
@@ -38,11 +48,11 @@ describe('UnifiedMemorySystem', () => {
         const a1 = new MockAdapter('a1');
         
         ums.registerAdapter(a1);
-        expect((ums as any).primaryAdapterId).toBe('a1');
+        expect(getPrimaryAdapterId(ums)).toBe('a1');
         
         const a2 = new MockAdapter('a2');
         ums.registerAdapter(a2, true);
-        expect((ums as any).primaryAdapterId).toBe('a2');
+        expect(getPrimaryAdapterId(ums)).toBe('a2');
     });
 
     test('scatter-gather search aggregates and sorts results', async () => {

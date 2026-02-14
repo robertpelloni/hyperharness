@@ -49,6 +49,9 @@ describe('RbacService', () => {
   });
 
   test('should throw error for invalid role assignment', () => {
-    expect(() => rbac.assignRole('user-1', 'invalid-role' as any)).toThrow(/invalid role/i);
+    // Reason: we intentionally pass an invalid runtime value to assert validation behavior.
+    // What: narrow through `unknown` to satisfy compile-time signature while preserving runtime input.
+    // Why: avoids permissive `any` cast in negative-path test coverage.
+    expect(() => rbac.assignRole('user-1', 'invalid-role' as unknown as UserRole)).toThrow(/invalid role/i);
   });
 });

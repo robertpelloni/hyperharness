@@ -1,6 +1,10 @@
 import { z } from 'zod';
 import { t, getMcpServer } from '../lib/trpc-core.js';
 
+interface SupervisorTaskRuntime {
+    status?: 'pending' | 'active' | 'completed' | 'failed' | string;
+}
+
 export const supervisorRouter = t.router({
     decompose: t.procedure.input(z.object({
         goal: z.string()
@@ -40,7 +44,7 @@ export const supervisorRouter = t.router({
         const allTasks = sup.listTasks?.() ?? [];
         const filtered = input?.status === 'all'
             ? allTasks
-            : allTasks.filter((t: any) => t.status === input?.status);
+            : allTasks.filter((t: unknown) => (t as SupervisorTaskRuntime).status === input?.status);
         return filtered.slice(0, input?.limit ?? 20);
     }),
 

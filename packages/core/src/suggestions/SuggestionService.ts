@@ -10,12 +10,36 @@ export interface Suggestion {
     description: string;
     type: 'ACTION' | 'INFO';
     source: string; // e.g., "Director", "Linter"
-    payload?: any; // Tool call data or other metadata
+    payload?: unknown; // Tool call data or other metadata
     timestamp: number;
     status: 'PENDING' | 'APPROVED' | 'REJECTED';
 }
 
 import { Director } from '@borg/agents';
+
+interface LlmTextResponse {
+    text?: string;
+}
+
+/**
+ * Reason: LLM provider responses can be either plain strings or object payloads.
+ * What: Normalizes supported response variants into a single text string.
+ * Why: Keeps suggestion parsing stable while removing broad response casts.
+ */
+function extractLlmText(response: unknown): string {
+    if (typeof response === 'string') {
+        return response;
+    }
+
+    if (response && typeof response === 'object') {
+        const typedResponse = response as LlmTextResponse;
+        if (typeof typedResponse.text === 'string') {
+            return typedResponse.text;
+        }
+    }
+
+    return '';
+}
 
 export class SuggestionService {
     private suggestions: Suggestion[] = [];
@@ -61,7 +85,7 @@ export class SuggestionService {
     /**
      * Creates a new suggestion and adds it to the queue.
      */
-    addSuggestion(title: string, description: string, source: string, payload?: any): Suggestion {
+    addSuggestion(title: string, description: string, source: string, payload?: unknown): Suggestion {
         const suggestion: Suggestion = {
             id: uuidv4(),
             title,
@@ -147,7 +171,7 @@ export class SuggestionService {
                 'You are an expert pair programmer analyzing code context.',
                 prompt
             );
-            const textContent = typeof response === 'string' ? response : ((response as any).text || "");
+            const textContent = extractLlmText(response);
             const jsonStart = textContent.indexOf('{');
             const jsonEnd = textContent.lastIndexOf('}');
             if (jsonStart !== -1 && jsonEnd !== -1) {

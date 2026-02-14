@@ -1,16 +1,40 @@
 import { z } from 'zod';
 import { t, publicProcedure } from '../lib/trpc-core.js';
 import { RepoGraphService } from '../services/RepoGraphService.js';
-import { getMcpServer } from '../lib/mcpHelper.js';
+import { getAutoTestService, getMemoryManager } from '../lib/trpc-core.js';
+
+export interface SymbolGraphNode {
+    id: string;
+    name: string;
+    val: number;
+    group: 'symbol';
+    kind?: string;
+    file?: string;
+}
+
+export interface SymbolGraphLink {
+    source: string;
+    target: string;
+    type: 'defines';
+}
+
+interface SymbolRecord {
+    id?: string;
+    metadata?: {
+        name?: string;
+        kind?: string;
+        file_path?: string;
+    };
+}
 
 // Lazy-initialized graph service (initialized on first call)
 let graphService: RepoGraphService | null = null;
 
 function getGraphService(): RepoGraphService {
     if (!graphService) {
-        const mcp = getMcpServer();
-        if ((mcp as any)?.autoTestService?.repoGraph) {
-            graphService = (mcp as any).autoTestService.repoGraph;
+        const repoGraph = getAutoTestService().repoGraph as RepoGraphService | undefined;
+        if (repoGraph) {
+            graphService = repoGraph;
         } else {
             // Fallback: create standalone instance
             graphService = new RepoGraphService(process.cwd());
@@ -26,7 +50,8 @@ export const graphRouter = t.router({
             return { nodes: [], links: [], dependencies: {} as Record<string, string[]> };
         }
         // Build graph if not initialized
-        if (!(service as any)['isInitialized']) {
+        const isInitialized = Reflect.get(service, 'isInitialized') as boolean | undefined;
+        if (!isInitialized) {
             await service.buildGraph();
         }
         return service.toJSON();
@@ -53,30 +78,33 @@ export const graphRouter = t.router({
         }),
 
     getSymbolsGraph: publicProcedure.query(async () => {
-        const mcp = getMcpServer();
-        if (!mcp || !(mcp as any).memoryManager) return { nodes: [], links: [] };
+        const symbols = await getMemoryManager().getAllSymbols?.() ?? [];
 
-        const symbols = await (mcp as any).memoryManager.getAllSymbols();
+        const nodes: SymbolGraphNode[] = [];
+        const links: SymbolGraphLink[] = [];
 
-        const nodes: any[] = [];
-        const links: any[] = [];
+        symbols.forEach((sym: unknown) => {
+            const symbol = sym as SymbolRecord;
+            if (!symbol.id) {
+                return;
+            }
+            const metadata = symbol.metadata ?? {};
 
-        symbols.forEach((sym: any) => {
             // Node for the symbol
             nodes.push({
-                id: sym.id,
-                name: sym.metadata.name,
+                id: symbol.id,
+                name: metadata.name ?? 'unknown-symbol',
                 val: 5, // Size
                 group: 'symbol',
-                kind: sym.metadata.kind, // function, class, etc.
-                file: sym.metadata.file_path
+                kind: metadata.kind, // function, class, etc.
+                file: metadata.file_path
             });
 
             // Link to the file
-            if (sym.metadata.file_path) {
+            if (metadata.file_path) {
                 links.push({
-                    source: sym.metadata.file_path,
-                    target: sym.id,
+                    source: metadata.file_path,
+                    target: symbol.id,
                     type: 'defines'
                 });
             }

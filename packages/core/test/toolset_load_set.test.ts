@@ -2,6 +2,21 @@ import { describe, test, expect } from 'bun:test';
 import { EventEmitter } from 'events';
 import { McpProxyManager } from '../src/managers/McpProxyManager.js';
 
+type ProxyCtorArgs = ConstructorParameters<typeof McpProxyManager>;
+
+interface PolicyServiceLike {
+  evaluate(ctx: unknown): { allowed: boolean; reason?: string };
+}
+
+interface SavedScriptServiceLike {
+  getAllScripts(): unknown[];
+}
+
+interface InternalToolShape {
+  name: string;
+  inputSchema: { type: string };
+}
+
 class MockMcpManager extends EventEmitter {
   getClient(_name: string) {
     return null;
@@ -12,7 +27,7 @@ class MockMcpManager extends EventEmitter {
 }
 
 class MockLogManager {
-  log(_entry: any) {}
+  log(_entry: unknown) {}
   calculateCost() {
     return 0;
   }
@@ -23,13 +38,17 @@ describe('load_tool_set', () => {
     process.env.MCP_PROGRESSIVE_MODE = 'true';
     process.env.MCP_DISABLE_METAMCP = 'true';
 
-    const proxy = new McpProxyManager(new MockMcpManager() as any, new MockLogManager() as any, {
-      policyService: { evaluate: () => ({ allowed: true }) } as any,
-      savedScriptService: { getAllScripts: () => [] } as any,
-    });
+    const policyService: PolicyServiceLike = { evaluate: () => ({ allowed: true }) };
+    const savedScriptService: SavedScriptServiceLike = { getAllScripts: () => [] };
 
-    proxy.registerInternalTool({ name: 'a', inputSchema: { type: 'object' } } as any, async () => ({ content: [{ type: 'text', text: 'a' }] }));
-    proxy.registerInternalTool({ name: 'b', inputSchema: { type: 'object' } } as any, async () => ({ content: [{ type: 'text', text: 'b' }] }));
+    const proxy = new McpProxyManager(
+      new MockMcpManager() as unknown as ProxyCtorArgs[0],
+      new MockLogManager() as unknown as ProxyCtorArgs[1],
+      { policyService, savedScriptService } as unknown as ProxyCtorArgs[2]
+    );
+
+    proxy.registerInternalTool({ name: 'a', inputSchema: { type: 'object' } } as unknown as InternalToolShape, async () => ({ content: [{ type: 'text', text: 'a' }] }));
+    proxy.registerInternalTool({ name: 'b', inputSchema: { type: 'object' } } as unknown as InternalToolShape, async () => ({ content: [{ type: 'text', text: 'b' }] }));
 
     await proxy.start();
 

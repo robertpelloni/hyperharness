@@ -10,11 +10,31 @@ import { Button, Input } from '@borg/ui';
 export default function ForgotPasswordPage() {
     const [email, setEmail] = useState('');
     const [sent, setSent] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [error, setError] = useState<string | null>(null);
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        setSent(true);
-        // TODO: Trigger password reset email
+        setError(null);
+        setIsSubmitting(true);
+
+        try {
+            const res = await fetch('/api/auth/forgot-password', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email }),
+            });
+            const data = await res.json();
+            if (!res.ok || !data?.ok) {
+                setError(data?.error ?? 'Unable to process reset request.');
+                return;
+            }
+            setSent(true);
+        } catch {
+            setError('Network error while requesting reset link.');
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     return (
@@ -48,8 +68,9 @@ export default function ForgotPasswordPage() {
                             className="bg-white dark:bg-zinc-950 border-zinc-200 dark:border-zinc-800 focus-visible:ring-blue-500/50"
                             required
                         />
+                        {error && <p className="text-sm text-red-500">{error}</p>}
                         <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-500 text-white shadow-lg shadow-blue-500/20">
-                            Send Reset Link
+                            {isSubmitting ? 'Sending...' : 'Send Reset Link'}
                         </Button>
                     </form>
                 ) : (

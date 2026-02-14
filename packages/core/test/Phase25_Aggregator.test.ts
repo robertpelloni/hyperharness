@@ -30,8 +30,10 @@ describe('MCPAggregator', () => {
     beforeEach(() => {
         vi.clearAllMocks();
         // Setup mock config
-        (fs.existsSync as any).mockReturnValue(true);
-        (fs.readFileSync as any).mockReturnValue(JSON.stringify({
+        const existsSyncMock = vi.mocked(fs.existsSync as unknown as (path: string) => boolean);
+        const readFileSyncMock = vi.mocked(fs.readFileSync as unknown as (path: string, encoding: BufferEncoding) => string);
+        existsSyncMock.mockReturnValue(true);
+        readFileSyncMock.mockReturnValue(JSON.stringify({
             "test-server": {
                 "command": "node",
                 "args": ["server.js"],

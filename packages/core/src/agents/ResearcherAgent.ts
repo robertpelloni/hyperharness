@@ -1,27 +1,34 @@
 import { SpecializedAgent } from '../mesh/SpecializedAgent.js';
+import { DeepResearchService } from '../services/DeepResearchService.js';
 
 export class ResearcherAgent extends SpecializedAgent {
-    constructor() {
+    private deepResearchService: DeepResearchService;
+
+    constructor(deepResearchService: DeepResearchService) {
         super('Researcher', ['research', 'search', 'summarization']);
+        this.deepResearchService = deepResearchService;
     }
 
-    protected async handleTask(offer: any): Promise<any> {
+    public async handleTask(offer: any): Promise<any> {
         console.log(`[ResearcherAgent] 🔍 Investigating query: ${offer.task}`);
 
-        // TODO: Initialize DeepResearchService here
-        // For Phase 61 Proof-of-Concept, we simulate work.
+        try {
+            // Perform real recursive research
+            // Default depth 2, breadth 3
+            const result = await this.deepResearchService.recursiveResearch(offer.task, 2, 3);
 
-        await new Promise(resolve => setTimeout(resolve, 3000)); // Simulate searching
+            console.log(`[ResearcherAgent] 📄 Report Ready: ${result.topic}`);
 
-        console.log(`[ResearcherAgent] 📄 Synthesizing report...`);
-
-        return {
-            status: 'completed',
-            findings: [
-                { source: 'Simulated Web Page', content: 'The answer is 42.' },
-                { source: 'Simulated Wikipedia', content: 'Deep thought confirmed it.' }
-            ],
-            summary: 'According to simulated research, the answer is 42.'
-        };
+            return {
+                status: 'completed',
+                findings: result.sources.map(s => ({ source: s.title, content: s.url })),
+                summary: result.summary,
+                fullReport: result
+            };
+        } catch (error: any) {
+            console.error(`[ResearcherAgent] 💥 Research failed:`, error);
+            throw error;
+        }
     }
 }
+

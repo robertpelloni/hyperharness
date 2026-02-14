@@ -1,10 +1,6 @@
 import { z } from 'zod';
 import { t, publicProcedure, adminProcedure } from '../lib/trpc-core.js';
-import { getMcpServer } from '../lib/mcpHelper.js';
-
-function getWorkflowEngine() {
-    return (getMcpServer() as any)?.workflowEngine ?? null;
-}
+import { getWorkflowEngine, getWorkflowDefinitions } from '../lib/trpc-core.js';
 
 export const workflowRouter = t.router({
     // --- Workflow Definitions ---
@@ -12,10 +8,7 @@ export const workflowRouter = t.router({
     list: publicProcedure.query(() => {
         const engine = getWorkflowEngine();
         if (!engine) return [];
-        // Access registered workflows from the engine's internal Map
-        const workflowsMap = (engine as any).workflows as Map<string, any> | undefined;
-        if (!workflowsMap) return [];
-        return Array.from(workflowsMap.values()).map((w: any) => ({
+        return getWorkflowDefinitions(engine).map((w) => ({
             id: w.id,
             name: w.name ?? w.id,
             description: w.description ?? '',
@@ -38,7 +31,7 @@ export const workflowRouter = t.router({
     start: adminProcedure
         .input(z.object({
             workflowId: z.string(),
-            initialState: z.record(z.any()).optional()
+            initialState: z.record(z.unknown()).optional()
         }))
         .mutation(async ({ input }) => {
             const engine = getWorkflowEngine();

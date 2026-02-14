@@ -1,10 +1,9 @@
 import { z } from 'zod';
-import { t } from '../lib/trpc-core.js';
-import { getMcpServer } from '../lib/mcpHelper.js';
+import { t, getDirectorRuntime } from '../lib/trpc-core.js';
 
 export const directorConfigRouter = t.router({
     get: t.procedure.query(async () => {
-        return getMcpServer().director.getConfig();
+        return getDirectorRuntime().getConfig?.() ?? null;
     }),
     update: t.procedure.input(z.object({
         defaultTopic: z.string().optional(),
@@ -16,7 +15,7 @@ export const directorConfigRouter = t.router({
         pollingIntervalMs: z.number().optional(),
         persona: z.enum(['default', 'homie', 'professional', 'chaos']).optional(),
         customInstructions: z.string().optional(),
-        council: z.any().optional(),
+        council: z.record(z.unknown()).optional(),
         autoSubmitChat: z.boolean().optional(),
         enableChatPaste: z.boolean().optional(),
         enableCouncil: z.boolean().optional(),
@@ -29,7 +28,7 @@ export const directorConfigRouter = t.router({
         nudgeThresholdMs: z.number().optional(),
         verboseLogging: z.boolean().optional()
     })).mutation(({ input }) => {
-        getMcpServer().director.updateConfig(input);
+        getDirectorRuntime().updateConfig?.(input as Record<string, unknown>);
         return { success: true };
     })
 });

@@ -2,6 +2,12 @@ import { describe, test, expect } from 'bun:test';
 import { EventEmitter } from 'events';
 import { McpProxyManager } from '../src/managers/McpProxyManager.js';
 
+type ProxyCtorArgs = ConstructorParameters<typeof McpProxyManager>;
+
+interface PolicyServiceLike {
+    evaluate(): { allowed: boolean; reason?: string };
+}
+
 class MockMcpManager extends EventEmitter {
     getClient(name: string) {
         return null;
@@ -12,7 +18,7 @@ class MockMcpManager extends EventEmitter {
 }
 
 class MockLogManager {
-    log(entry: any) {}
+    log(_entry: unknown) {}
     calculateCost() {
         return 0;
     }
@@ -22,15 +28,15 @@ describe('run_code', () => {
     test('executes code and can call internal tools', async () => {
         process.env.MCP_DISABLE_METAMCP = 'true';
 
-        const mcpManager = new MockMcpManager() as any;
-        const logManager = new MockLogManager() as any;
+        const mcpManager = new MockMcpManager() as unknown as ProxyCtorArgs[0];
+        const logManager = new MockLogManager() as unknown as ProxyCtorArgs[1];
         const proxy = new McpProxyManager(mcpManager, logManager);
 
         proxy.registerInternalTool({
             name: 'mock_echo',
             description: 'Echoes input',
             inputSchema: { type: 'object', properties: { message: { type: 'string' } } }
-        }, async (args: any) => ({ content: [{ type: 'text', text: args.message }] }));
+        }, async (args: Record<string, unknown>) => ({ content: [{ type: 'text', text: String(args.message ?? '') }] }));
 
         await proxy.start();
 
@@ -46,8 +52,8 @@ describe('run_code', () => {
     test('blocks recursive run_code calls', async () => {
         process.env.MCP_DISABLE_METAMCP = 'true';
 
-        const mcpManager = new MockMcpManager() as any;
-        const logManager = new MockLogManager() as any;
+        const mcpManager = new MockMcpManager() as unknown as ProxyCtorArgs[0];
+        const logManager = new MockLogManager() as unknown as ProxyCtorArgs[1];
         const proxy = new McpProxyManager(mcpManager, logManager);
 
         await proxy.start();
@@ -62,14 +68,16 @@ describe('run_code', () => {
     test('blocks run_code when policy denies execute', async () => {
         process.env.MCP_DISABLE_METAMCP = 'true';
 
-        const mcpManager = new MockMcpManager() as any;
-        const logManager = new MockLogManager() as any;
+        const mcpManager = new MockMcpManager() as unknown as ProxyCtorArgs[0];
+        const logManager = new MockLogManager() as unknown as ProxyCtorArgs[1];
 
-        const policyService = {
+        const policyService: PolicyServiceLike = {
             evaluate: () => ({ allowed: false, reason: 'blocked by test policy' })
-        } as any;
+        };
 
-        const proxy = new McpProxyManager(mcpManager, logManager, { policyService });
+        const proxy = new McpProxyManager(mcpManager, logManager, {
+            policyService: policyService as unknown as ProxyCtorArgs[2] extends undefined ? never : NonNullable<ProxyCtorArgs[2]> extends infer O ? O extends { policyService?: unknown } ? O['policyService'] : never : never
+        });
 
         await proxy.start();
 

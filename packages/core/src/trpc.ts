@@ -1,7 +1,5 @@
-import { z } from 'zod';
 export { t, publicProcedure, adminProcedure } from './lib/trpc-core.js';
-import { t, publicProcedure, adminProcedure } from './lib/trpc-core.js';
-import { getMcpServer } from './lib/mcpHelper.js';
+import { t } from './lib/trpc-core.js';
 import { suggestionsRouter } from './routers/suggestionsRouter.js';
 import { squadRouter } from './routers/squadRouter.js';
 import { councilRouter } from './routers/councilRouter.js';
@@ -37,6 +35,8 @@ import { directorConfigRouter } from './routers/directorConfigRouter.js';
 import { gitRouter } from './routers/gitRouter.js';
 import { auditRouter } from './routers/auditRouter.js';
 import { submoduleRouter } from './routers/submoduleRouter.js';
+import { expertRouter } from './routers/expertRouter.js';
+import { systemProcedures } from './routers/systemProcedures.js';
 
 
 // import { type AnyTRPCRouter } from '@trpc/server';
@@ -69,42 +69,14 @@ export const appRouter = t.router({
     mcp: mcpRouter,
     healer: healerRouter,
     darwin: darwinRouter,
-    health: publicProcedure.query(() => {
-        return { status: 'running', service: '@borg/core' };
-    }),
-    getTaskStatus: publicProcedure
-        .input(z.object({ taskId: z.string().optional() }))
-        .query(({ input }) => {
-            const mcp = getMcpServer();
-            if (!mcp || !mcp.projectTracker) return { taskId: 'offline', status: 'offline', progress: 0, currentTask: 'Offline' };
-
-            const status = mcp.projectTracker.getStatus();
-            return {
-                taskId: status.currentTask,
-                currentTask: status.currentTask,
-                status: status.status,
-                progress: status.progress
-            };
-        }),
-    indexingStatus: t.procedure.query(() => {
-        const mcp = getMcpServer();
-        if (!mcp || !mcp.lspService) return { status: 'offline', filesIndexed: 0, totalFiles: 0 };
-        return mcp.lspService.getStatus();
-    }),
+    ...systemProcedures,
     autonomy: autonomyRouter,
     director: directorRouter,
     directorConfig: directorConfigRouter,
-    executeTool: adminProcedure.input(z.object({
-        name: z.string(),
-        args: z.any()
-    })).mutation(async ({ input }) => {
-        const result = await getMcpServer().executeTool(input.name, input.args) as any;
-        if (result.isError) throw new Error(result.content[0].text);
-        return result.content[0].text;
-    }),
     git: gitRouter,
     audit: auditRouter,
     submodule: submoduleRouter,
+    expert: expertRouter,
 });
 
 export type AppRouter = typeof appRouter;

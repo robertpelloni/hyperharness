@@ -1,15 +1,31 @@
 import { describe, test, expect } from 'bun:test';
 
+interface EndpointConfig {
+  apiKeyId?: string;
+}
+
+interface ApiKeyRecord {
+  id: string;
+}
+
+interface FakeDb {
+  validateApiKey(key: string): ApiKeyRecord | null;
+}
+
+interface EndpointManager {
+  getEndpointByPath(path: string): EndpointConfig | undefined;
+}
+
 function makeServer() {
-  const endpoint = { apiKeyId: 'k1' };
+  const endpoint: EndpointConfig = { apiKeyId: 'k1' };
 
-  const fakeDb = {
+  const fakeDb: FakeDb = {
     validateApiKey: (k: string) => (k === 'good' ? { id: 'k1' } : null),
-  } as any;
+  };
 
-  const mcpManager = {
+  const mcpManager: EndpointManager = {
     getEndpointByPath: (_p: string) => endpoint,
-  } as any;
+  };
 
   const handler = async (headers: Record<string, string | undefined>, body: any) => {
     const endpointPath = typeof body?.params?.endpointPath === 'string' ? body.params.endpointPath : undefined;

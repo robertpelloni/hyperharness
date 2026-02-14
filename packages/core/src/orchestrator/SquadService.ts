@@ -2,6 +2,24 @@ import path from "path";
 import { Director } from "@borg/agents";
 import type { IMCPServer } from "@borg/adk";
 
+interface ServerWithCouncil {
+    council: unknown;
+}
+
+interface ServerWithMemoryManager {
+    memoryManager: unknown;
+}
+
+interface IndexerJobController {
+    start(): void;
+    stop(): void;
+    getStatus(): { running: boolean; indexing: boolean };
+}
+
+interface IndexerJobModule {
+    IndexerJob: new (memoryManager: unknown, rootPath: string) => IndexerJobController;
+}
+
 /**
  * Proxy that intercepts tool calls and injects CWD/Path context
  * to strictly bind an Agent to a Git Worktree.
@@ -9,11 +27,23 @@ import type { IMCPServer } from "@borg/adk";
 class WorktreeServerProxy implements IMCPServer {
     constructor(private server: IMCPServer, private worktreeRoot: string) { }
 
+    /**
+     * Reason: IMCPServer does not guarantee a `council` property, but some runtime servers expose it.
+     * What: Reflection-safe accessor that returns council when available.
+     * Why: Preserves compatibility with richer server runtimes without broad casts.
+     */
+    private getCouncilRuntime(): unknown {
+        if (!this.server || typeof this.server !== 'object') {
+            return undefined;
+        }
+        return Reflect.get(this.server as object, 'council');
+    }
+
     // Passthrough properties
     get modelSelector() { return this.server.modelSelector; }
     get permissionManager() { return this.server.permissionManager; }
     get directorConfig() { return this.server.directorConfig; }
-    get council() { return (this.server as any).council; }
+    get council() { return this.getCouncilRuntime(); }
 
     async executeTool(name: string, args: any): Promise<any> {
         // Intercept Path-based tools
@@ -155,14 +185,30 @@ export class SquadService {
 
     // --- Job Management (Indexer, etc) ---
 
-    private indexerJob: any | null = null; // Lazy load IndexerJob type to avoid cirular dep issues if possible, but importing class is fine
+    private indexerJob: IndexerJobController | null = null;
+
+    /**
+     * Reason: indexer wiring depends on optional runtime server capabilities not present in the base interface.
+     * What: Narrow server to memory-manager capable runtime via property existence check.
+     * Why: Avoids broad casts while keeping lazy indexer boot behavior unchanged.
+     */
+    private getMemoryManagerRuntime(): unknown {
+        if (!this.server || typeof this.server !== 'object') {
+            return undefined;
+        }
+        if (!Reflect.has(this.server as object, 'memoryManager')) {
+            return undefined;
+        }
+        return Reflect.get(this.server as object, 'memoryManager');
+    }
 
     public async toggleIndexer(enabled: boolean) {
         if (enabled) {
             if (!this.indexerJob) {
-                const { IndexerJob } = await import('../jobs/IndexerJob.js') as any;
-                if ((this.server as any).memoryManager) {
-                    this.indexerJob = new IndexerJob((this.server as any).memoryManager, process.cwd());
+                const { IndexerJob } = await import('../jobs/IndexerJob.js') as unknown as IndexerJobModule;
+                const memoryManager = this.getMemoryManagerRuntime();
+                if (memoryManager) {
+                    this.indexerJob = new IndexerJob(memoryManager, process.cwd());
                 }
             }
             if (this.indexerJob) {

@@ -1,7 +1,6 @@
 
 import { z } from 'zod';
-import { t, publicProcedure } from '../lib/trpc-core.js';
-import { getMcpServer } from '../lib/mcpHelper.js';
+import { t, publicProcedure, getMcpServer, getEventBus } from '../lib/trpc-core.js';
 
 export const pulseRouter = t.router({
     getLatestEvents: publicProcedure
@@ -10,10 +9,10 @@ export const pulseRouter = t.router({
             afterTimestamp: z.number().optional()
         }))
         .query(async ({ input }) => {
-            const mcp = getMcpServer();
-            if (!mcp || !mcp.eventBus) return [];
+            const eventBus = getEventBus();
+            if (!eventBus) return [];
 
-            const history = mcp.eventBus.getHistory(input.limit);
+            const history = eventBus.getHistory(input.limit);
 
             if (input.afterTimestamp) {
                 return history.filter(e => e.timestamp > input.afterTimestamp!);

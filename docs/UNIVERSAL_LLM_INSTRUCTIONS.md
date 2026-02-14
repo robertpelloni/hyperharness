@@ -209,6 +209,9 @@ These are standing instructions from the project owner:
 8. **Feature branch cleanup**: Merge all local feature branches into main.
 9. **No regressions**: Never lose features when merging or refactoring.
 10. **Extreme detail**: Every feature implemented to production quality, not MVP.
+11. **Process Safety**: Do NOT taskkill all nodes (prevents killing own session).
+12. **Input Documentation**: Always document input information in detail and ask for clarification if needed.
+13. **Submodule Integration**: Integrate relevant user-provided links as submodules or references where possible.
 
 ---
 

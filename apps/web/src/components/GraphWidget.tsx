@@ -29,8 +29,24 @@ export function GraphWidget() {
         };
     }, [data]);
 
-    // vscode router is currently disabled — file open is a no-op
-    const openFile = { mutate: (args: any) => console.log('vscode.open disabled:', args.path) };
+    const openFile = async (rawPath: string) => {
+        if (!rawPath) {
+            return;
+        }
+
+        const normalized = rawPath.startsWith('file://')
+            ? decodeURIComponent(rawPath.replace('file://', ''))
+            : rawPath;
+
+        const vscodeUrl = `vscode://file/${encodeURIComponent(normalized)}`;
+        window.open(vscodeUrl, '_blank');
+
+        try {
+            await navigator.clipboard.writeText(normalized);
+        } catch {
+            // Ignore clipboard failures in restricted browsers.
+        }
+    };
 
     const nodeCount = mappedData.nodes.length;
     const linkCount = mappedData.links.length;
@@ -86,7 +102,7 @@ export function GraphWidget() {
                             loading={isLoading}
                             onNodeClick={(node) => {
                                 if (node.type === 'document' || (node.id && node.id.includes('.'))) {
-                                    openFile.mutate({ path: node.id });
+                                    openFile(node.id);
                                 }
                             }}
                         />

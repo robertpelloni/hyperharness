@@ -9,8 +9,25 @@ export interface ContextBundle {
     depth: number;
 }
 
+interface SnapshotCapableGraph {
+    getSnapshot(): unknown;
+}
+
 export class KnowledgeService {
     private memory: MemoryManager;
+
+    /**
+     * Reason: GraphMemory's public type does not currently guarantee `getSnapshot`, but some runtimes expose it.
+     * What: Runtime guard that checks for snapshot capability without unsafe structural casts.
+     * Why: Allows optional snapshot fast-path while preserving type safety and compatibility.
+     */
+    private isSnapshotCapableGraph(graph: unknown): graph is SnapshotCapableGraph {
+        if (!graph || typeof graph !== 'object') {
+            return false;
+        }
+        const getSnapshot = Reflect.get(graph as object, 'getSnapshot');
+        return typeof getSnapshot === 'function';
+    }
 
     constructor(memory: MemoryManager) {
         this.memory = memory;
@@ -21,8 +38,8 @@ export class KnowledgeService {
      */
     public async getGraph(query?: string, depth: number = 1): Promise<{ content: any[] }> {
         // If no query, return full graph
-        if (!query && this.memory.graph) {
-            const snapshot = (this.memory.graph as any).getSnapshot();
+        if (!query && this.memory.graph && this.isSnapshotCapableGraph(this.memory.graph)) {
+            const snapshot = this.memory.graph.getSnapshot();
             return {
                 content: [{
                     type: "text",

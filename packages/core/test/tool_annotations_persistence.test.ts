@@ -5,6 +5,8 @@ import { mkdtempSync, rmSync } from 'fs';
 import { DatabaseManager } from '../src/db/DatabaseManager.js';
 import { ToolAnnotationManager } from '../src/managers/ToolAnnotationManager.js';
 
+type ToolAnnotationDatabaseArg = Parameters<ToolAnnotationManager['setDatabase']>[0];
+
 describe('ToolAnnotationManager persistence', () => {
   test('writes and reads from DB when available', () => {
     const dir = mkdtempSync(path.join(os.tmpdir(), 'aios-ann-db-'));
@@ -18,12 +20,15 @@ describe('ToolAnnotationManager persistence', () => {
     }
 
     const mgr = new ToolAnnotationManager();
-    mgr.setDatabase(db as any);
+    // Reason: this test uses the real DB manager while staying decoupled from strict manager internals.
+    // What: narrow DB instance at the call boundary via method parameter typing.
+    // Why: removes broad casts and keeps persistence behavior unchanged.
+    mgr.setDatabase(db as unknown as ToolAnnotationDatabaseArg);
 
     mgr.setAnnotation('srv', 'tool', { namespaceId: 'ns', displayName: 'x' });
 
     const mgr2 = new ToolAnnotationManager();
-    mgr2.setDatabase(db as any);
+    mgr2.setDatabase(db as unknown as ToolAnnotationDatabaseArg);
 
     const read = mgr2.getAnnotation('srv', 'tool', 'ns');
     expect(read?.displayName).toBe('x');

@@ -12,6 +12,62 @@
 
 import { WorkflowEngine, WorkflowDefinition, WorkflowState } from '../orchestrator/WorkflowEngine.js';
 
+interface CodeReviewInput {
+    code?: string;
+}
+
+interface CodeAnalysis {
+    lines?: number;
+    complexity?: number;
+}
+
+interface ResearchInput {
+    query?: string;
+    depth?: string;
+}
+
+interface SearchSource {
+    name: string;
+    results: number;
+    confidence: number;
+}
+
+interface SearchResultsShape {
+    sources?: SearchSource[];
+    totalResults?: number;
+    avgConfidence?: number;
+}
+
+interface SynthesisShape {
+    summary?: string;
+    confidence?: number;
+}
+
+interface FileProcessingInput {
+    path?: string;
+}
+
+/**
+ * Reason: workflow state payload fields are intentionally dynamic and can be absent.
+ * What: narrows unknown state slots into plain object maps for safe keyed access.
+ * Why: keeps examples type-safe without changing their demonstration behavior.
+ */
+function asRecord(value: unknown): Record<string, unknown> {
+    if (!value || typeof value !== 'object') {
+        return {};
+    }
+    return value as Record<string, unknown>;
+}
+
+/**
+ * Reason: examples repeatedly read `state.input` with loose shape assumptions.
+ * What: returns a typed input payload when the state input is an object.
+ * Why: removes broad casts while preserving concise example workflow logic.
+ */
+function getInput<T>(state: WorkflowState): T {
+    return asRecord(state.input) as unknown as T;
+}
+
 // ============================================================================
 // EXAMPLE 1: Code Review Pipeline
 // ============================================================================
@@ -30,7 +86,8 @@ export function createCodeReviewWorkflow(engine: WorkflowEngine): WorkflowDefini
     const graph = WorkflowEngine.createGraph();
 
     graph.addNode('analyze_code', async (state: WorkflowState) => {
-        const code = (state.input as any)?.code || '';
+        const input = getInput<CodeReviewInput>(state);
+        const code = input.code || '';
         const analysis = {
             lines: code.split('\n').length,
             hasAsync: /async\s+/.test(code),
@@ -41,7 +98,8 @@ export function createCodeReviewWorkflow(engine: WorkflowEngine): WorkflowDefini
     }, { name: 'Analyze Code' });
 
     graph.addNode('security_check', async (state: WorkflowState) => {
-        const code = (state.input as any)?.code || '';
+        const input = getInput<CodeReviewInput>(state);
+        const code = input.code || '';
         const securityIssues: string[] = [];
 
         if (/eval\s*\(/.test(code)) securityIssues.push('Avoid using eval()');
@@ -53,7 +111,8 @@ export function createCodeReviewWorkflow(engine: WorkflowEngine): WorkflowDefini
     }, { name: 'Security Check' });
 
     graph.addNode('style_check', async (state: WorkflowState) => {
-        const code = (state.input as any)?.code || '';
+        const input = getInput<CodeReviewInput>(state);
+        const code = input.code || '';
         const styleIssues: string[] = [];
 
         if (/\t/.test(code)) styleIssues.push('Use spaces instead of tabs');
@@ -64,7 +123,7 @@ export function createCodeReviewWorkflow(engine: WorkflowEngine): WorkflowDefini
     }, { name: 'Style Check' });
 
     graph.addNode('generate_report', async (state: WorkflowState) => {
-        const analysis = state.analysis as any || {};
+        const analysis = asRecord(state.analysis) as unknown as CodeAnalysis;
         const securityIssues = (state.securityIssues as string[]) || [];
         const styleIssues = (state.styleIssues as string[]) || [];
 
@@ -83,12 +142,13 @@ export function createCodeReviewWorkflow(engine: WorkflowEngine): WorkflowDefini
     }, { name: 'Generate Report' });
 
     graph.addNode('complete', async (state: WorkflowState) => {
-        const report = state.report as any || {};
+        const report = asRecord(state.report);
+        const needsHumanReview = report.needsHumanReview === true;
         return {
             ...state,
             completed: true,
             completedAt: new Date().toISOString(),
-            finalStatus: report.needsHumanReview ? 'reviewed' : 'auto-approved',
+            finalStatus: needsHumanReview ? 'reviewed' : 'auto-approved',
         };
     }, { name: 'Complete' });
 
@@ -128,7 +188,7 @@ export function createResearchWorkflow(engine: WorkflowEngine): WorkflowDefiniti
     const graph = WorkflowEngine.createGraph();
 
     graph.addNode('parse_query', async (state: WorkflowState) => {
-        const input = state.input as any || {};
+        const input = getInput<ResearchInput>(state);
         const query = input.query || '';
         const parsed = {
             topic: query.split(' ').slice(0, 5).join(' '),
@@ -155,7 +215,7 @@ export function createResearchWorkflow(engine: WorkflowEngine): WorkflowDefiniti
     }, { name: 'Search Sources' });
 
     graph.addNode('synthesize', async (state: WorkflowState) => {
-        const searchResults = state.searchResults as any || {};
+        const searchResults = asRecord(state.searchResults) as unknown as SearchResultsShape;
         const synthesis = {
             summary: `Found ${searchResults.totalResults ?? 0} results across ${searchResults.sources?.length ?? 0} sources`,
             confidence: searchResults.avgConfidence ?? 0,
@@ -164,14 +224,14 @@ export function createResearchWorkflow(engine: WorkflowEngine): WorkflowDefiniti
     }, { name: 'Synthesize' });
 
     graph.addNode('finalize', async (state: WorkflowState) => {
-        const synthesis = state.synthesis as any || {};
-        const searchResults = state.searchResults as any || {};
+        const synthesis = asRecord(state.synthesis) as unknown as SynthesisShape;
+        const searchResults = asRecord(state.searchResults) as unknown as SearchResultsShape;
         return {
             ...state,
             output: {
                 summary: synthesis.summary,
                 confidence: synthesis.confidence,
-                sources: searchResults.sources?.map((s: any) => s.name) || [],
+                sources: searchResults.sources?.map((s) => s.name) || [],
                 completedAt: new Date().toISOString(),
             },
             completed: true,
@@ -206,7 +266,7 @@ export function createFileProcessingWorkflow(engine: WorkflowEngine): WorkflowDe
     const graph = WorkflowEngine.createGraph();
 
     graph.addNode('detect_type', async (state: WorkflowState) => {
-        const input = state.input as any || {};
+        const input = getInput<FileProcessingInput>(state);
         const filePath = input.path || '';
         const ext = filePath.split('.').pop()?.toLowerCase() || '';
         const typeMap: Record<string, string> = {
@@ -239,7 +299,7 @@ export function createFileProcessingWorkflow(engine: WorkflowEngine): WorkflowDe
     }, { name: 'Process File' });
 
     graph.addNode('output', async (state: WorkflowState) => {
-        const input = state.input as any || {};
+        const input = getInput<FileProcessingInput>(state);
         return {
             ...state,
             completed: true,

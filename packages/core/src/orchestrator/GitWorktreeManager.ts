@@ -3,17 +3,23 @@ import { execAsync } from "../utils/exec.js";
 import path from "path";
 import fs from "fs";
 
+interface WorktreeInfo {
+    path: string;
+    head?: string;
+    branch?: string;
+}
+
 export class GitWorktreeManager {
     constructor(private rootDir: string) { }
 
-    async listWorktrees(): Promise<any[]> {
+    async listWorktrees(): Promise<WorktreeInfo[]> {
         const { stdout } = await execAsync("git worktree list --porcelain", { cwd: this.rootDir });
-        const worktrees: any[] = [];
-        let current: any = {};
+        const worktrees: WorktreeInfo[] = [];
+        let current: Partial<WorktreeInfo> = {};
 
         stdout.split('\n').forEach(line => {
             if (line.startsWith('worktree ')) {
-                if (current.path) worktrees.push(current);
+                if (current.path) worktrees.push(current as WorktreeInfo);
                 current = { path: line.substring(9).trim() };
             } else if (line.startsWith('HEAD ')) {
                 current.head = line.substring(5).trim();
@@ -21,7 +27,7 @@ export class GitWorktreeManager {
                 current.branch = line.substring(7).trim();
             }
         });
-        if (current.path) worktrees.push(current);
+        if (current.path) worktrees.push(current as WorktreeInfo);
         return worktrees;
     }
 
@@ -35,7 +41,7 @@ export class GitWorktreeManager {
         let command = `git worktree add ${fullPath} ${branch}`;
         try {
             await execAsync(`git show-ref --verify refs/heads/${branch}`, { cwd: this.rootDir });
-        } catch (e) {
+        } catch (e: unknown) {
             // Branch doesn't exist, create it
             command = `git worktree add -b ${branch} ${fullPath}`;
         }

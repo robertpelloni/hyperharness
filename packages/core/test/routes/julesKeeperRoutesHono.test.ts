@@ -2,12 +2,14 @@ import { describe, test, expect } from 'bun:test';
 import { JulesKeeperManager, type JulesClient } from '../../src/managers/JulesKeeperManager.js';
 import { createJulesKeeperRoutes } from '../../src/routes/julesKeeperRoutesHono.js';
 
+type KeeperStoreArg = Parameters<typeof createJulesKeeperRoutes>[1];
+
 class MemoryStore {
-  last: any;
+  last: Record<string, unknown> | null = null;
   load() {
     return {};
   }
-  save(config: any) {
+  save(config: Record<string, unknown>) {
     this.last = config;
   }
 }
@@ -28,7 +30,7 @@ describe('jules keeper routes', () => {
     keeper.setConfig({ enabled: true, nudgeEnabled: false, approvePlans: false });
 
     const store = new MemoryStore();
-    const app = createJulesKeeperRoutes(keeper, store as any);
+  const app = createJulesKeeperRoutes(keeper, store as unknown as KeeperStoreArg);
 
     const statusRes = await app.request('http://localhost/status');
     expect(statusRes.status).toBe(200);

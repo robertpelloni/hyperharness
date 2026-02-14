@@ -74,6 +74,37 @@ export interface MemoryServiceOptions {
 }
 
 /**
+ * Reason: Vector search metadata is flexible and can include unknown values.
+ * What: Narrows metadata into safe, optional `type`/`namespace` values for memory reconstruction.
+ * Why: Preserves behavior while removing broad untyped casts during search-result hydration.
+ */
+function parseMemoryMetadata(metadata: unknown): {
+    normalized: MemoryMetadata;
+    type?: MemoryType;
+    namespace?: MemoryNamespace;
+    createdAt?: number;
+} {
+    if (!metadata || typeof metadata !== 'object') {
+        return { normalized: {} };
+    }
+
+    const normalized = metadata as MemoryMetadata;
+    const typeValue = normalized.type;
+    const namespaceValue = normalized.namespace;
+    const createdAtValue = normalized.createdAt;
+
+    const type = typeValue === 'session' || typeValue === 'working' || typeValue === 'long_term'
+        ? typeValue
+        : undefined;
+    const namespace = namespaceValue === 'user' || namespaceValue === 'agent' || namespaceValue === 'project'
+        ? namespaceValue
+        : undefined;
+    const createdAt = typeof createdAtValue === 'number' ? createdAtValue : undefined;
+
+    return { normalized, type, namespace, createdAt };
+}
+
+/**
  * Simple in-memory vector similarity using TF-IDF-like approach
  * Production would use proper embeddings
  */
@@ -259,17 +290,20 @@ export class AgentMemoryService {
 
         // 1. Get results from Vector DB
         const vectorResults = await this.memoryManager.search(query, limit * 2);
-        const mappedResults: Memory[] = vectorResults.map(r => ({
-            id: r.id,
-            content: r.content,
-            type: (r.metadata as any)?.type || 'long_term',
-            namespace: (r.metadata as any)?.namespace || 'project',
-            metadata: r.metadata as any,
-            createdAt: new Date((r.metadata as any)?.createdAt || Date.now()),
-            accessedAt: new Date(),
-            accessCount: 0, // We could track this in metadata if needed
-            score: r.score
-        }));
+        const mappedResults: Memory[] = vectorResults.map(r => {
+            const parsed = parseMemoryMetadata(r.metadata);
+            return {
+                id: r.id,
+                content: r.content,
+                type: parsed.type ?? 'long_term',
+                namespace: parsed.namespace ?? 'project',
+                metadata: parsed.normalized,
+                createdAt: new Date(parsed.createdAt ?? Date.now()),
+                accessedAt: new Date(),
+                accessCount: 0, // We could track this in metadata if needed
+                score: r.score
+            };
+        });
 
         // 2. Add current session memories (which might not be indexed yet)
         const sessionMemories = Array.from(this.memories.values())

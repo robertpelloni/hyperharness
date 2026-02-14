@@ -20,10 +20,11 @@ describe('RemoteSupervisor', () => {
   test('should attempt to chat via fetch', async () => {
     // Mock global fetch
     const originalFetch = global.fetch;
-    global.fetch = mock(async () => ({
+    const fetchMock: typeof fetch = mock(async () => ({
       ok: true,
       json: async () => ({ response: 'Remote assessment' }),
-    })) as any;
+    })) as unknown as typeof fetch;
+    global.fetch = fetchMock;
 
     try {
       const response = await supervisor.chat([{ role: 'user', content: 'test' }]);

@@ -53,7 +53,7 @@ describe('McpmInstaller', () => {
                 return mockSpawn;
             })
         };
-        vi.mocked(spawn).mockReturnValue(mockSpawn as any);
+        vi.mocked(spawn).mockReturnValue(mockSpawn as unknown as never);
 
         // Mock access failing (dir doesn't exist yet)
         vi.mocked(fs.access).mockRejectedValue(new Error('ENOENT'));

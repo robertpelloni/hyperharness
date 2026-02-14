@@ -11,6 +11,7 @@
     "dev:web": "turbo run dev --filter @borg/web",
     "lint": "turbo run lint",
     "test": "turbo run test",
+    "check:placeholders": "node scripts/check-placeholder-regressions.mjs",
     "clean": "turbo run clean",
     "typecheck": "turbo run typecheck"
   },

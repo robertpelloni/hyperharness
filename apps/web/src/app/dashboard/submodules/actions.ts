@@ -2,6 +2,7 @@
 
 import { getSubmodules, SubmoduleInfo } from '@/lib/git';
 import path from 'path';
+import fs from 'fs/promises';
 
 // Hardcoded workspace root for now - ideally passed via env or config
 // Since this ends up running in the Next.js server, we need to know where the repo root is relative to CWD.
@@ -13,6 +14,43 @@ export async function fetchSubmodulesAction(): Promise<SubmoduleInfo[]> {
     // Safety check: ensure .gitmodules exists here
     console.log("Scanning submodules in:", root);
     return await getSubmodules(root);
+}
+
+export interface LinkCategory {
+    name: string;
+    links: string[];
+}
+
+export async function fetchUserLinksAction(): Promise<LinkCategory[]> {
+    const root = path.resolve(process.cwd(), '../../');
+    const linksPath = path.join(root, 'docs', 'USER_LINKS_ARCHIVE.md');
+
+    try {
+        const content = await fs.readFile(linksPath, 'utf-8');
+        const lines = content.split('\n');
+        const categories: LinkCategory[] = [];
+        let currentCategory: LinkCategory | null = null;
+
+        for (const line of lines) {
+            if (line.startsWith('## ')) {
+                if (currentCategory) {
+                    categories.push(currentCategory);
+                }
+                currentCategory = { name: line.substring(3).trim(), links: [] };
+            } else if (line.trim().startsWith('- http')) {
+                if (currentCategory) {
+                    currentCategory.links.push(line.trim().substring(2).trim());
+                }
+            }
+        }
+        if (currentCategory) {
+            categories.push(currentCategory);
+        }
+        return categories;
+    } catch (e) {
+        console.error("Failed to read user links:", e);
+        return [];
+    }
 }
 
 export async function healSubmodulesAction(): Promise<{ success: boolean, message: string }> {

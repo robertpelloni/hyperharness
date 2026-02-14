@@ -28,6 +28,34 @@ export interface HealRecord {
     success: boolean;
 }
 
+interface LlmTextResponse {
+    text?: string;
+    content?: string;
+}
+
+/**
+ * Reason: LLM providers in this codebase can return either `{ text }`, `{ content }`, or a raw string.
+ * What: Normalizes heterogeneous provider responses into a single string extraction path.
+ * Why: Avoids repeated unsafe casts and keeps JSON parsing behavior consistent across healer flows.
+ */
+function extractLlmText(response: unknown): string {
+    if (typeof response === 'string') {
+        return response;
+    }
+
+    if (response && typeof response === 'object') {
+        const maybeResponse = response as LlmTextResponse;
+        if (typeof maybeResponse.text === 'string') {
+            return maybeResponse.text;
+        }
+        if (typeof maybeResponse.content === 'string') {
+            return maybeResponse.content;
+        }
+    }
+
+    return String(response);
+}
+
 export class HealerService extends EventEmitter {
     private llm: LLMService;
     private server: MCPServer;
@@ -122,7 +150,7 @@ export class HealerService extends EventEmitter {
         const response = await this.llm.generateText("openai", "gpt-4o", "You are a JSON-only debugging tool.", prompt, {});
 
         try {
-            return JSON.parse((response as any).text || (response as any).content || response);
+            return JSON.parse(extractLlmText(response));
         } catch (e) {
             console.error("Failed to parse Healer diagnosis", response);
             return {
@@ -169,7 +197,7 @@ export class HealerService extends EventEmitter {
         const response = await this.llm.generateText("openai", "gpt-4o", "You are a code repair agent. Return only JSON with 'explanation' and 'newContent'.", prompt, {});
 
         try {
-            const result = JSON.parse((response as any).text || (response as any).content || response);
+            const result = JSON.parse(extractLlmText(response));
             return {
                 id: Math.random().toString(36).substring(7),
                 diagnosis,

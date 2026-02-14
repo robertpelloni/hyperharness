@@ -2,6 +2,13 @@
 import { McpProxyManager } from '../src/managers/McpProxyManager.js';
 import { EventEmitter } from 'events';
 
+type ProxyCtorArgs = ConstructorParameters<typeof McpProxyManager>;
+
+interface LogEntry {
+    type?: string;
+    tool?: string;
+}
+
 // Mock McpManager
 class MockMcpManager extends EventEmitter {
     getClient(name: string) {
@@ -14,7 +21,7 @@ class MockMcpManager extends EventEmitter {
 
 // Mock LogManager
 class MockLogManager {
-    log(entry: any) {
+    log(entry: LogEntry) {
         // console.log('[MockLog]', entry.type, entry.tool);
     }
     calculateCost() {
@@ -25,8 +32,11 @@ class MockLogManager {
 async function runTests() {
     console.log('Starting Chain Tests...');
 
-    const mcpManager = new MockMcpManager() as any;
-    const logManager = new MockLogManager() as any;
+    // Reason: test doubles only implement the subset needed by the proxy constructor.
+    // What: narrow mocks to constructor argument shapes through `unknown` instead of permissive casts.
+    // Why: keeps tests lightweight while reducing broad untyped assertions.
+    const mcpManager = new MockMcpManager() as unknown as ProxyCtorArgs[0];
+    const logManager = new MockLogManager() as unknown as ProxyCtorArgs[1];
     const proxy = new McpProxyManager(mcpManager, logManager);
 
     // Disable MetaMCP connection for tests
@@ -37,23 +47,24 @@ async function runTests() {
         name: "mock_echo",
         description: "Echoes input",
         inputSchema: { type: "object", properties: { message: { type: "string" } } }
-    }, async (args: any) => {
-        return { content: [{ type: "text", text: args.message }] };
+    }, async (args: Record<string, unknown>) => {
+        return { content: [{ type: "text", text: String(args.message ?? '') }] };
     });
 
     proxy.registerInternalTool({
         name: "mock_reverse",
         description: "Reverses input string",
         inputSchema: { type: "object", properties: { input: { type: "string" } } }
-    }, async (args: any) => {
-        return { content: [{ type: "text", text: args.input.split('').reverse().join('') }] };
+    }, async (args: Record<string, unknown>) => {
+        const input = String(args.input ?? '');
+        return { content: [{ type: "text", text: input.split('').reverse().join('') }] };
     });
 
     proxy.registerInternalTool({
         name: "mock_fail",
         description: "Always fails",
         inputSchema: { type: "object" }
-    }, async (args: any) => {
+    }, async (_args: Record<string, unknown>) => {
         return { isError: true, content: [{ type: "text", text: "Intentional failure" }] };
     });
 

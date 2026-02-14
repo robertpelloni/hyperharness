@@ -11,6 +11,8 @@ export interface SubmoduleInfo {
     status: 'clean' | 'dirty' | 'missing' | 'error';
     branch?: string;
     lastCommit?: string;
+    lastCommitDate?: string;
+    lastCommitMessage?: string;
 }
 
 export async function getSubmodules(workspaceRoot: string): Promise<SubmoduleInfo[]> {
@@ -78,10 +80,18 @@ async function checkSubmoduleStatus(fullPath: string, info: SubmoduleInfo): Prom
         // Get Head
         const { stdout: head } = await execAsync('git rev-parse --short HEAD', { cwd: fullPath });
 
+        // Get Date
+        const { stdout: date } = await execAsync('git log -1 --format=%cd --date=relative', { cwd: fullPath });
+
+        // Get Message
+        const { stdout: message } = await execAsync('git log -1 --format=%s', { cwd: fullPath });
+
         return {
             ...info,
             status: isDirty ? 'dirty' : 'clean',
-            lastCommit: head.trim()
+            lastCommit: head.trim(),
+            lastCommitDate: date.trim(),
+            lastCommitMessage: message.trim()
         };
 
     } catch (e) {

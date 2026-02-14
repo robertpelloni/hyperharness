@@ -2,7 +2,14 @@
 import { WorkflowEngine, WorkflowState } from './WorkflowEngine.js';
 
 export interface ToolRunner {
-    executeTool(name: string, args: any): Promise<any>;
+    executeTool(name: string, args: Record<string, unknown>): Promise<unknown>;
+}
+
+function getErrorMessage(error: unknown): string {
+    if (error instanceof Error) {
+        return error.message;
+    }
+    return typeof error === 'string' ? error : 'Unknown error';
 }
 
 /**
@@ -35,8 +42,8 @@ function registerCodeReviewWorkflow(engine: WorkflowEngine, runner: ToolRunner) 
                 });
 
                 return { ...state, diffSummary: diff, hasChanges: true };
-            } catch (e: any) {
-                return { ...state, error: `Diff failed: ${e.message}`, hasChanges: false };
+            } catch (e: unknown) {
+                return { ...state, error: `Diff failed: ${getErrorMessage(e)}`, hasChanges: false };
             }
         }, { name: 'Analyze Diff', description: 'Analyze git changes against target branch' })
 

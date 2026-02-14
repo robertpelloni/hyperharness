@@ -34,7 +34,7 @@ export class ContextPruner {
     /**
      * Estimates token count for a list of messages.
      */
-    public estimateTokens(messages: any[]): number {
+    public estimateTokens(messages: Message[]): number {
         let text = '';
         for (const m of messages) {
             if (typeof m.content === 'string') {
@@ -53,7 +53,7 @@ export class ContextPruner {
      * Prunes messages to fit within maxTokens.
      * Returns the pruned list of messages.
      */
-    public prune(messages: any[]): any[] {
+    public prune(messages: Message[]): Message[] {
         const totalTokens = this.estimateTokens(messages);
 
         if (totalTokens <= this.options.maxTokens) {
@@ -87,6 +87,9 @@ export class ContextPruner {
 
         while (middle.length > 0 && currentTokens > this.options.maxTokens) {
             const removed = middle.shift(); // Remove oldest
+            if (!removed) {
+                break;
+            }
             const removedTokens = this.estimateTokens([removed]);
             currentTokens -= removedTokens;
         }

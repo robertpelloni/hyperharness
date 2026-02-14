@@ -11,6 +11,9 @@ Borg is an all-in-one AI development platform that unifies every aspect of AI-as
 
 The core philosophy: **Why choose between competing tools when you can assimilate the best features from ALL of them?**
 
+### The Ultimate Goal
+To create a self-sustaining **Neural Operating System** where the "user" transitions from a coder to a Commander. Borg handles the "how" (coding, debugging, deployment via MCP tools) while you define the "what" (intent, vision, architecture). It aims for a future where a single developer can orchestrate the output of a 100-person engineering team through high-level intent directives, with Borg managing the swarm of specialized AI agents (Coder, Researcher, Tester, DevOps) to execute that vision autonomously.
+
 Borg achieves feature parity with — and ultimately surpasses — every major AI coding CLI (OpenCode, Claude Code, Codex, Gemini CLI, Goose, Copilot CLI, Crush, CodeBuff, Kilo Code, Qwen Code, Warp CLI, Trae CLI), every MCP management tool (MetaMCP, MCPHub, PluggedIn, MCP-Proxy), every memory system (mem0, Supermemory, Letta, Zep, MemoryOS, Cognee), and every agent framework (OpenHands, AutoGen, Magentic-UI, Claude Squad).
 
 ---

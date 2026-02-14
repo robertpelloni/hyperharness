@@ -10,6 +10,19 @@ export class SandboxService {
     }
 
     /**
+     * Reason: VM execution may return sync values or thenables from async wrappers.
+     * What: Detects promise-like results via runtime narrowing on a `then` function.
+     * Why: Allows async handling without unsafe structural casts.
+     */
+    private isPromiseLike(value: unknown): value is Promise<unknown> {
+        if (!value || (typeof value !== 'object' && typeof value !== 'function')) {
+            return false;
+        }
+        const thenCandidate = Reflect.get(value as object, 'then');
+        return typeof thenCandidate === 'function';
+    }
+
+    /**
      * Execute code in a sandboxed environment.
      * @param language 'node' | 'python'
      * @param code The code to execute
@@ -59,7 +72,7 @@ export class SandboxService {
             });
 
             // If the result is a Promise (async code), wait for it with timeout
-            if (result && typeof (result as any).then === 'function') {
+            if (this.isPromiseLike(result)) {
                 const resolved = await Promise.race([
                     result,
                     new Promise((_, reject) => setTimeout(() => reject(new Error("Execution timed out (Async)")), timeoutMs))

@@ -1,14 +1,13 @@
 import { z } from 'zod';
-import { t, publicProcedure, adminProcedure } from '../lib/trpc-core.js';
-import { getMcpServer } from '../lib/mcpHelper.js';
+import { t, publicProcedure, adminProcedure, getMcpAggregator } from '../lib/trpc-core.js';
 
 export const mcpRouter = t.router({
     /** List all registered downstream MCP servers */
     listServers: publicProcedure.query(async () => {
-        const mcp = getMcpServer();
+        const aggregator = getMcpAggregator();
         try {
-            const servers = await (mcp as any).mcpAggregator?.listServers?.() ?? [];
-            return servers.map((s: any) => ({
+            const servers = await aggregator?.listServers?.() ?? [];
+            return servers.map((s) => ({
                 name: s.name ?? 'unknown',
                 status: s.status ?? 'unknown',
                 toolCount: s.toolCount ?? s.tools?.length ?? 0,
@@ -25,10 +24,10 @@ export const mcpRouter = t.router({
 
     /** List all aggregated tools across servers */
     listTools: publicProcedure.query(async () => {
-        const mcp = getMcpServer();
+        const aggregator = getMcpAggregator();
         try {
-            const tools = await (mcp as any).mcpAggregator?.listAggregatedTools?.() ?? [];
-            return tools.map((tool: any) => ({
+            const tools = await aggregator?.listAggregatedTools?.() ?? [];
+            return tools.map((tool) => ({
                 name: tool.name,
                 description: tool.description ?? '',
                 server: tool.server ?? 'unknown',
@@ -41,8 +40,7 @@ export const mcpRouter = t.router({
 
     /** Get aggregator status and stats */
     getStatus: publicProcedure.query(async () => {
-        const mcp = getMcpServer();
-        const aggregator = (mcp as any).mcpAggregator;
+        const aggregator = getMcpAggregator();
         if (!aggregator) return { initialized: false, serverCount: 0, toolCount: 0, connectedCount: 0 };
 
         try {
@@ -52,7 +50,7 @@ export const mcpRouter = t.router({
                 initialized: true,
                 serverCount: servers.length,
                 toolCount: tools.length,
-                connectedCount: servers.filter((s: any) => s.status === 'connected').length,
+                connectedCount: servers.filter((s) => s.status === 'connected').length,
             };
         } catch {
             return { initialized: false, serverCount: 0, toolCount: 0, connectedCount: 0 };
@@ -66,9 +64,11 @@ export const mcpRouter = t.router({
         args: z.array(z.string()).optional().default([]),
         env: z.record(z.string()).optional().default({}),
     })).mutation(async ({ input }) => {
-        const mcp = getMcpServer();
-        const aggregator = (mcp as any).mcpAggregator;
+        const aggregator = getMcpAggregator();
         if (!aggregator) throw new Error('MCP Aggregator not initialized');
+        if (!aggregator.addServerConfig) {
+            throw new Error('MCP Aggregator addServerConfig unavailable');
+        }
 
         await aggregator.addServerConfig(input.name, {
             command: input.command,
@@ -83,21 +83,30 @@ export const mcpRouter = t.router({
     removeServer: adminProcedure.input(z.object({
         name: z.string(),
     })).mutation(async ({ input }) => {
-        const mcp = getMcpServer();
-        const aggregator = (mcp as any).mcpAggregator;
+        const aggregator = getMcpAggregator();
         if (!aggregator) throw new Error('MCP Aggregator not initialized');
 
         // Disconnect client if connected
-        const clients = (aggregator as any).clients as Map<string, any>;
+        const clients = aggregator.clients as Map<string, { close?: () => Promise<void> | void }> | undefined;
+        if (!clients) {
+            return { success: false, error: 'Aggregator client map unavailable' };
+        }
         const client = clients.get(input.name);
         if (client) {
-            try { await client.close(); } catch { /* ignore */ }
+            try {
+                if (client.close) await client.close();
+            } catch {
+                /* ignore */
+            }
             clients.delete(input.name);
         }
 
         // Remove from config file
         const fs = await import('fs');
-        const configPath = (aggregator as any).configPath;
+        const configPath = aggregator.configPath;
+        if (!configPath) {
+            return { success: false, error: 'Aggregator config path unavailable' };
+        }
         if (fs.existsSync(configPath)) {
             const config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
             delete config[input.name];

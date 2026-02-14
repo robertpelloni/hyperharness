@@ -1,6 +1,5 @@
 import { z } from 'zod';
-import { t, publicProcedure } from '../lib/trpc-core.js';
-import { getMcpServer } from '../lib/mcpHelper.js';
+import { t, publicProcedure, getAutoDevService } from '../lib/trpc-core.js';
 
 export const autoDevRouter = t.router({
     startLoop: publicProcedure.input(z.object({
@@ -9,9 +8,9 @@ export const autoDevRouter = t.router({
         target: z.string().optional(),
         command: z.string().optional()
     })).mutation(async ({ input }) => {
-        const mcp = getMcpServer();
-        if ((mcp as any)?.autoDevService) {
-            const id = await (mcp as any).autoDevService.startLoop(input);
+        const service = getAutoDevService();
+        if (service) {
+            const id = await service.startLoop(input);
             return { success: true, loopId: id };
         }
         throw new Error('AutoDevService not initialized');
@@ -20,37 +19,21 @@ export const autoDevRouter = t.router({
     cancelLoop: publicProcedure.input(z.object({
         loopId: z.string()
     })).mutation(({ input }) => {
-        const mcp = getMcpServer();
-        if ((mcp as any)?.autoDevService) {
-            return (mcp as any).autoDevService.cancelLoop(input.loopId);
-        }
-        return false;
+        return getAutoDevService()?.cancelLoop(input.loopId) ?? false;
     }),
 
     getLoops: publicProcedure.query(() => {
-        const mcp = getMcpServer();
-        if ((mcp as any)?.autoDevService) {
-            return (mcp as any).autoDevService.getLoops();
-        }
-        return [];
+        return getAutoDevService()?.getLoops() ?? [];
     }),
 
     getLoop: publicProcedure.input(z.object({
         loopId: z.string()
     })).query(({ input }) => {
-        const mcp = getMcpServer();
-        if ((mcp as any)?.autoDevService) {
-            return (mcp as any).autoDevService.getLoop(input.loopId);
-        }
-        return null;
+        return getAutoDevService()?.getLoop(input.loopId) ?? null;
     }),
 
     clearCompleted: publicProcedure.mutation(() => {
-        const mcp = getMcpServer();
-        if ((mcp as any)?.autoDevService) {
-            return (mcp as any).autoDevService.clearCompleted();
-        }
-        return 0;
+        return getAutoDevService()?.clearCompleted() ?? 0;
     }),
 });
 

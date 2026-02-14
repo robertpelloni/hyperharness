@@ -6,8 +6,8 @@ export interface AuditLogEntry {
     timestamp: number;
     agentId?: string;
     action: string;
-    params: any;
-    result?: any;
+    params: unknown;
+    result?: unknown;
     status: 'SUCCESS' | 'FAILURE' | 'DENIED';
     durationMs?: number;
 }

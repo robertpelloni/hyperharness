@@ -1,17 +1,34 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { MCPServer } from '../src/MCPServer.js';
 
+interface AuditServiceLike {
+    log: (...args: unknown[]) => void;
+}
+
+interface PermissionManagerLike {
+    checkPermission: (...args: unknown[]) => string;
+    autonomyLevel: string;
+}
+
+interface RouterLike {
+    callTool: (tool: string, args: unknown) => Promise<{ content: unknown[] }>;
+}
+
+interface TerminalServiceLike {
+    getTools: () => unknown[];
+}
+
 // Mock dependencies
 vi.mock('../src/security/PolicyService', () => ({
     PolicyService: class {
         constructor() { console.log("[MOCK] PolicyService (no-ext) instantiated"); }
-        check(tool: string, args: any) { return { allowed: true }; }
+        check(tool: string, args: unknown) { return { allowed: true }; }
     }
 }));
 vi.mock('../src/security/PolicyService.js', () => ({
     PolicyService: class {
         constructor() { console.log("[MOCK] PolicyService (.js) instantiated"); }
-        check(tool: string, args: any) { return { allowed: true }; }
+        check(tool: string, args: unknown) { return { allowed: true }; }
     }
 }));
 // Check path resolution
@@ -33,12 +50,12 @@ describe('Policy Enforcement', () => {
 
         // Mock internal services if needed
         // @ts-ignore
-        server.auditService = { log: vi.fn() } as any;
+        server.auditService = { log: vi.fn() } as unknown as AuditServiceLike;
         // @ts-ignore
         server.permissionManager = {
             checkPermission: vi.fn().mockReturnValue('GRANTED'),
             autonomyLevel: 'high'
-        } as any;
+        } as unknown as PermissionManagerLike;
     });
 
     it('should block tools when PolicyEngine denies access', async () => {
@@ -63,9 +80,9 @@ describe('Policy Enforcement', () => {
 
         // Mock actual tool handler to avoid real execution logic failure
         // @ts-ignore
-        server.router = { callTool: vi.fn().mockResolvedValue({ content: [] }) } as any;
+        server.router = { callTool: vi.fn().mockResolvedValue({ content: [] }) } as unknown as RouterLike;
         // @ts-ignore
-        server.terminalService = { getTools: () => [] } as any;
+        server.terminalService = { getTools: () => [] } as unknown as TerminalServiceLike;
 
         // If we call a tool that doesn't exist in standard set, it goes to router.callTool
         await server.executeTool('custom_tool', {});

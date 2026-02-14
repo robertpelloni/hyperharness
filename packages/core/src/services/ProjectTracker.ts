@@ -1,6 +1,7 @@
 
 import fs from 'fs';
 import path from 'path';
+import { z } from 'zod';
 
 export interface ProjectTask {
     id: string;
@@ -9,6 +10,17 @@ export interface ProjectTask {
     sourceFile: string;
     lineNumber: number;
 }
+
+const TaskStateSchema = z.enum([' ', 'x', '/']);
+
+const ParsedTaskLineSchema = z.object({
+    indent: z.number().int().nonnegative(),
+    state: TaskStateSchema,
+    text: z.string().min(1),
+    lineNumber: z.number().int().positive(),
+});
+
+type ParsedTaskLine = z.infer<typeof ParsedTaskLineSchema>;
 
 export class ProjectTracker {
     private rootDir: string;
@@ -75,17 +87,9 @@ export class ProjectTracker {
 
         // 1. Check for In Progress task: - [/]
         for (let i = 0; i < lines.length; i++) {
-            const match = lines[i].match(/^\s*-\s*\[\/\]\s*(.*)$/);
-            if (match) {
-                // Check if it has a sub-task that is NOT done
-                // Actually, if a parent is [/], we should look for its children.
-                // But specifically for the Director, we want the leaf node.
-
-                // Simple heuristic: If this line is [/], check if next lines are indented tasks.
-                // If yes, pick the first [ ] child.
-                // If no children, pick this one.
-
-                const subTask = this.findFirstSubTask(lines, i + 1);
+            const parsed = this.parseTaskLine(lines[i], i + 1);
+            if (parsed?.state === '/') {
+                const subTask = this.findFirstSubTask(lines, i + 1, parsed.indent);
                 if (subTask) {
                     return {
                         id: `task-${path.basename(filePath)}-${subTask.line}`,
@@ -98,7 +102,7 @@ export class ProjectTracker {
 
                 return {
                     id: `task-${path.basename(filePath)}-${i + 1}`,
-                    description: match[1].trim(),
+                    description: parsed.text,
                     status: 'IN_PROGRESS',
                     sourceFile: filePath,
                     lineNumber: i + 1
@@ -108,11 +112,11 @@ export class ProjectTracker {
 
         // 2. Check for Todo task: - [ ]
         for (let i = 0; i < lines.length; i++) {
-            const match = lines[i].match(/^\s*-\s*\[ \]\s*(.*)$/);
-            if (match) {
+            const parsed = this.parseTaskLine(lines[i], i + 1);
+            if (parsed?.state === ' ') {
                 return {
                     id: `task-${path.basename(filePath)}-${i + 1}`,
-                    description: match[1].trim(),
+                    description: parsed.text,
                     status: 'TODO',
                     sourceFile: filePath,
                     lineNumber: i + 1
@@ -123,32 +127,43 @@ export class ProjectTracker {
         return null;
     }
 
-    private findFirstSubTask(lines: string[], startIndex: number): { text: string, line: number } | null {
-        let parentIndent = -1;
+    private parseTaskLine(line: string, lineNumber: number): ParsedTaskLine | null {
+        const match = line.match(/^(\s*)-\s*\[([ x/])\]\s*(.+?)\s*$/);
+        if (!match) {
+            return null;
+        }
+
+        const parsed = ParsedTaskLineSchema.safeParse({
+            indent: match[1].length,
+            state: match[2],
+            text: match[3].trim(),
+            lineNumber,
+        });
+
+        return parsed.success ? parsed.data : null;
+    }
+
+    private findFirstSubTask(lines: string[], startIndex: number, parentIndent: number): { text: string, line: number } | null {
 
         for (let i = startIndex; i < lines.length; i++) {
             const line = lines[i];
             if (line.trim() === '') continue;
 
-            const match = line.match(/^(\s*)-\s*\[([ x/])\]\s*(.*)$/);
-            if (!match) {
-                // If we hit a non-list item that isn't empty, stop? 
-                // Or maybe header.
-                if (line.match(/^#/)) break;
+            const parsed = this.parseTaskLine(line, i + 1);
+            if (!parsed) {
+                if (line.match(/^\s*#/)) break;
                 continue;
-            };
+            }
 
-            const indent = match[1].length;
-            const state = match[2]; // ' ', 'x', '/'
-            const text = match[3];
+            if (parsed.indent <= parentIndent) {
+                break;
+            }
 
-            // If we encounter a new parent (less indent), stop
-            // Wait, we need to know the parent indent of the calls site.
-            // Simplified: Just take the first [ ] or [/] we find that looks like a task
-            if (state === ' ' || state === '/') {
-                return { text, line: i + 1 };
+            if (parsed.state === ' ' || parsed.state === '/') {
+                return { text: parsed.text, line: parsed.lineNumber };
             }
         }
+
         return null;
     }
 

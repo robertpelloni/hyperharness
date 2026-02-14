@@ -3,6 +3,27 @@ import { EventEmitter } from 'events';
 import { McpProxyManager } from '../src/managers/McpProxyManager.js';
 import { createLoggingMiddleware } from '../src/middleware/logging-middleware.js';
 
+type ProxyCtorArgs = ConstructorParameters<typeof McpProxyManager>;
+
+interface PolicyServiceLike {
+  evaluate(ctx: unknown): { allowed: boolean; reason?: string };
+}
+
+interface SavedScriptServiceLike {
+  getAllScripts(): unknown[];
+}
+
+interface RequestArgs {
+  traceId?: string;
+  depth?: number;
+}
+
+interface LogEntry {
+  type?: string;
+  tool?: string;
+  args: RequestArgs;
+}
+
 class MockMcpManager extends EventEmitter {
   getClient(_name: string) {
     return null;
@@ -13,8 +34,8 @@ class MockMcpManager extends EventEmitter {
 }
 
 class MockLogManager {
-  entries: any[] = [];
-  log(entry: any) {
+  entries: LogEntry[] = [];
+  log(entry: LogEntry) {
     this.entries.push(entry);
   }
   calculateCost() {
@@ -24,12 +45,16 @@ class MockLogManager {
 
 describe('nested trace logging', () => {
   test('nested tool calls share traceId and increment depth', async () => {
-    const logManager = new MockLogManager() as any;
+    const logManager = new MockLogManager();
 
-    const proxy = new McpProxyManager(new MockMcpManager() as any, logManager, {
-      policyService: { evaluate: () => ({ allowed: true }) } as any,
-      savedScriptService: { getAllScripts: () => [] } as any,
-    });
+    const policyService: PolicyServiceLike = { evaluate: () => ({ allowed: true }) };
+    const savedScriptService: SavedScriptServiceLike = { getAllScripts: () => [] };
+
+    const proxy = new McpProxyManager(
+      new MockMcpManager() as unknown as ProxyCtorArgs[0],
+      logManager as unknown as ProxyCtorArgs[1],
+      { policyService, savedScriptService } as unknown as ProxyCtorArgs[2]
+    );
 
     proxy.useCallToolMiddleware(createLoggingMiddleware({ enabled: true, logManager }));
 
@@ -52,7 +77,7 @@ describe('nested trace logging', () => {
 
     await proxy.callTool('outer', {}, 's');
 
-    const reqs = (logManager.entries as any[]).filter(e => e.type === 'request');
+    const reqs = logManager.entries.filter(e => e.type === 'request');
     const outer = reqs.find(e => e.tool === 'outer');
     const inner = reqs.find(e => e.tool === 'inner');
 

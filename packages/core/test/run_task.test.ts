@@ -2,6 +2,27 @@ import { describe, test, expect } from 'bun:test';
 import { EventEmitter } from 'events';
 import { McpProxyManager } from '../src/managers/McpProxyManager.js';
 
+type ProxyCtorArgs = ConstructorParameters<typeof McpProxyManager>;
+
+interface PolicyServiceLike {
+    evaluate(ctx: unknown): { allowed: boolean; reason?: string };
+}
+
+interface AgentDescriptor {
+    name: string;
+    model?: string;
+    description?: string;
+    instructions?: string;
+}
+
+interface AgentManagerLike {
+    getAgents(): AgentDescriptor[];
+}
+
+interface AgentExecutorLike {
+    run(agent: AgentDescriptor, task: string): Promise<string>;
+}
+
 class MockMcpManager extends EventEmitter {
     getClient(name: string) {
         return null;
@@ -12,7 +33,7 @@ class MockMcpManager extends EventEmitter {
 }
 
 class MockLogManager {
-    log(entry: any) {}
+    log(_entry: unknown) {}
     calculateCost() {
         return 0;
     }
@@ -22,25 +43,32 @@ describe('run_task', () => {
     test('runs tool then agent step sequence', async () => {
         process.env.MCP_DISABLE_METAMCP = 'true';
 
-        const proxy = new McpProxyManager(new MockMcpManager() as any, new MockLogManager() as any, {
-            policyService: { evaluate: () => ({ allowed: true }) } as any
-        });
+        const policyService: PolicyServiceLike = { evaluate: () => ({ allowed: true }) };
+
+        const proxy = new McpProxyManager(
+            new MockMcpManager() as unknown as ProxyCtorArgs[0],
+            new MockLogManager() as unknown as ProxyCtorArgs[1],
+            { policyService } as unknown as ProxyCtorArgs[2]
+        );
 
         proxy.registerInternalTool({
             name: 'mock_echo',
             description: 'Echo',
             inputSchema: { type: 'object', properties: { message: { type: 'string' } } }
-        }, async (args: any) => ({ content: [{ type: 'text', text: String(args.message) }] }));
+        }, async (args: Record<string, unknown>) => ({ content: [{ type: 'text', text: String(args.message) }] }));
 
-        const agentManager = {
+        const agentManager: AgentManagerLike = {
             getAgents: () => [{ name: 'coder', model: 'gpt-4o', description: '', instructions: '' }]
-        } as any;
+        };
 
-        const agentExecutor = {
-            run: async (_agent: any, task: string) => `agent:${task}`
-        } as any;
+        const agentExecutor: AgentExecutorLike = {
+            run: async (_agent: AgentDescriptor, task: string) => `agent:${task}`
+        };
 
-        proxy.setAgentDependencies(agentExecutor, agentManager);
+        proxy.setAgentDependencies(
+            agentExecutor as unknown as Parameters<McpProxyManager['setAgentDependencies']>[0],
+            agentManager as unknown as Parameters<McpProxyManager['setAgentDependencies']>[1]
+        );
 
         await proxy.start();
 
@@ -59,9 +87,13 @@ describe('run_task', () => {
     test('stops on error by default', async () => {
         process.env.MCP_DISABLE_METAMCP = 'true';
 
-        const proxy = new McpProxyManager(new MockMcpManager() as any, new MockLogManager() as any, {
-            policyService: { evaluate: () => ({ allowed: true }) } as any
-        });
+        const policyService: PolicyServiceLike = { evaluate: () => ({ allowed: true }) };
+
+        const proxy = new McpProxyManager(
+            new MockMcpManager() as unknown as ProxyCtorArgs[0],
+            new MockLogManager() as unknown as ProxyCtorArgs[1],
+            { policyService } as unknown as ProxyCtorArgs[2]
+        );
 
         await proxy.start();
 
@@ -78,15 +110,19 @@ describe('run_task', () => {
     test('continues on error when stopOnError=false', async () => {
         process.env.MCP_DISABLE_METAMCP = 'true';
 
-        const proxy = new McpProxyManager(new MockMcpManager() as any, new MockLogManager() as any, {
-            policyService: { evaluate: () => ({ allowed: true }) } as any
-        });
+        const policyService: PolicyServiceLike = { evaluate: () => ({ allowed: true }) };
+
+        const proxy = new McpProxyManager(
+            new MockMcpManager() as unknown as ProxyCtorArgs[0],
+            new MockLogManager() as unknown as ProxyCtorArgs[1],
+            { policyService } as unknown as ProxyCtorArgs[2]
+        );
 
         proxy.registerInternalTool({
             name: 'mock_echo',
             description: 'Echo',
             inputSchema: { type: 'object', properties: { message: { type: 'string' } } }
-        }, async (args: any) => ({ content: [{ type: 'text', text: String(args.message) }] }));
+        }, async (args: Record<string, unknown>) => ({ content: [{ type: 'text', text: String(args.message) }] }));
 
         await proxy.start();
 

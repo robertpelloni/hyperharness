@@ -5,7 +5,7 @@ import path from 'path';
 export interface AuditLogEntry {
     timestamp: number;
     action: string;
-    params: any;
+    params: unknown;
     level: string;
 }
 
@@ -27,7 +27,7 @@ export class AuditService {
         this.flushInterval = setInterval(() => this.flush(), 5000);
     }
 
-    public log(action: string, params: any, level: string = 'INFO') {
+    public log(action: string, params: unknown, level: string = 'INFO') {
         const entry: AuditLogEntry = {
             timestamp: Date.now(),
             action,

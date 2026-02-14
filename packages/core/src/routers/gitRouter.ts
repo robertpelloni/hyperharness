@@ -1,6 +1,5 @@
 import { z } from 'zod';
-import { t } from '../lib/trpc-core.js';
-import { getMcpServer } from '../lib/mcpHelper.js';
+import { t, getGitService } from '../lib/trpc-core.js';
 
 export const gitRouter = t.router({
     getModules: t.procedure.query(async () => {
@@ -31,12 +30,12 @@ export const gitRouter = t.router({
         }
     }),
     getLog: t.procedure.input(z.object({ limit: z.number().optional() })).query(async ({ input }) => {
-        return getMcpServer().gitService.getLog(input.limit);
+        return getGitService().getLog(input.limit);
     }),
     getStatus: t.procedure.query(async () => {
-        return getMcpServer().gitService.getStatus();
+        return getGitService().getStatus();
     }),
     revert: t.procedure.input(z.object({ hash: z.string() })).mutation(async ({ input }) => {
-        return getMcpServer().gitService.revert(input.hash);
+        return getGitService().revert(input.hash);
     })
 });

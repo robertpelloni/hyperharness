@@ -1,6 +1,22 @@
 import { z } from 'zod';
-import { t, publicProcedure } from '../lib/trpc-core.js';
-import { getMcpServer } from '../lib/mcpHelper.js';
+import { t, publicProcedure, getLLMService } from '../lib/trpc-core.js';
+
+interface BillingModelRuntime {
+    id: string;
+    provider: string;
+    name?: string;
+    inputPrice?: number | null;
+    outputPrice?: number | null;
+    contextWindow?: number | null;
+    tier?: string;
+    recommended?: boolean;
+}
+
+interface FallbackEntryRuntime {
+    provider: string;
+    model?: string;
+    reason?: string;
+}
 
 export const billingRouter = t.router({
     /** Get current billing status — keys, usage, and provider breakdown */
@@ -16,9 +32,9 @@ export const billingRouter = t.router({
             groq: !!process.env.GROQ_API_KEY,
         };
 
-        const mcp = getMcpServer();
-        const stats = mcp.llmService.getCostStats();
-        const quota = mcp.llmService.modelSelector.getQuotaService();
+        const llm = getLLMService();
+        const stats = llm.getCostStats();
+        const quota = llm.modelSelector.getQuotaService();
 
         let breakdown = quota.getUsageByModel();
         if (breakdown.length === 0) {
@@ -36,8 +52,8 @@ export const billingRouter = t.router({
 
     /** Get quota information per provider — limits, remaining, reset dates */
     getProviderQuotas: publicProcedure.query(async () => {
-        const mcp = getMcpServer();
-        const quota = mcp.llmService.modelSelector.getQuotaService();
+        const llm = getLLMService();
+        const quota = llm.modelSelector.getQuotaService();
 
         // Build quota info for each configured provider
         const providers = [
@@ -52,7 +68,7 @@ export const billingRouter = t.router({
         ];
 
         return providers.map(p => {
-            const quotaInfo = (quota as any).getQuota?.(p.id);
+            const quotaInfo = quota.getQuota?.(p.id);
             return {
                 provider: p.id,
                 name: p.name,
@@ -71,13 +87,13 @@ export const billingRouter = t.router({
     getCostHistory: publicProcedure.input(z.object({
         days: z.number().min(1).max(90).default(30),
     }).optional()).query(async ({ input }) => {
-        const mcp = getMcpServer();
-        const stats = mcp.llmService.getCostStats();
+        const llm = getLLMService();
+        const stats = llm.getCostStats();
 
         // Build daily breakdown from metrics if available
         const days = input?.days ?? 30;
         const history: { date: string; cost: number; requests: number }[] = [];
-        const statsAny = stats as any;
+        const statsAny = stats;
 
         // If there's a cost history, use it; otherwise generate from current stats
         if (statsAny.dailyHistory) {
@@ -97,13 +113,12 @@ export const billingRouter = t.router({
 
     /** Get model-level pricing and efficiency data */
     getModelPricing: publicProcedure.query(async () => {
-        const mcp = getMcpServer();
-        const selector = mcp.llmService.modelSelector as any;
+        const selector = getLLMService().modelSelector;
 
         // Get available models with their pricing info
-        const models = selector.getAvailableModels?.() ?? [];
+        const models = (selector.getAvailableModels?.() ?? []) as BillingModelRuntime[];
         return {
-            models: models.map((m: any) => ({
+            models: models.map((m) => ({
                 id: m.id,
                 provider: m.provider,
                 name: m.name ?? m.id,
@@ -118,11 +133,10 @@ export const billingRouter = t.router({
 
     /** Get current fallback chain configuration */
     getFallbackChain: publicProcedure.query(async () => {
-        const mcp = getMcpServer();
-        const selector = mcp.llmService.modelSelector as any;
-        const chain = selector.getFallbackChain?.() ?? [];
+        const selector = getLLMService().modelSelector;
+        const chain = (selector.getFallbackChain?.() ?? []) as FallbackEntryRuntime[];
         return {
-            chain: chain.map((entry: any, index: number) => ({
+            chain: chain.map((entry, index: number) => ({
                 priority: index + 1,
                 provider: entry.provider,
                 model: entry.model,

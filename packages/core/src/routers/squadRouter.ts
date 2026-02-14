@@ -1,13 +1,12 @@
 
 import { z } from 'zod';
-import { t, publicProcedure } from '../lib/trpc-core.js';
-import { getMcpServer } from '../lib/mcpHelper.js';
+import { t, publicProcedure, getSquadService } from '../lib/trpc-core.js';
 
 export const squadRouter = t.router({
     list: publicProcedure.query(async () => {
-        const server = getMcpServer();
-        if (!server) return [];
-        return server.squadService.listMembers();
+        const service = getSquadService();
+        if (!service) return [];
+        return service.listMembers();
     }),
 
     spawn: publicProcedure
@@ -16,9 +15,9 @@ export const squadRouter = t.router({
             goal: z.string()
         }))
         .mutation(async ({ input }) => {
-            const server = getMcpServer();
-            if (!server) throw new Error("Server not initialized");
-            return await server.squadService.spawnMember(input.branch, input.goal);
+            const service = getSquadService();
+            if (!service) throw new Error("SquadService not initialized");
+            return await service.spawnMember(input.branch, input.goal);
         }),
 
     kill: publicProcedure
@@ -26,9 +25,9 @@ export const squadRouter = t.router({
             branch: z.string()
         }))
         .mutation(async ({ input }) => {
-            const server = getMcpServer();
-            if (!server) throw new Error("Server not initialized");
-            return await server.squadService.killMember(input.branch);
+            const service = getSquadService();
+            if (!service) throw new Error("SquadService not initialized");
+            return await service.killMember(input.branch);
         }),
 
     chat: publicProcedure
@@ -37,9 +36,9 @@ export const squadRouter = t.router({
             message: z.string()
         }))
         .mutation(async ({ input }) => {
-            const server = getMcpServer();
-            if (!server) throw new Error("Server not initialized");
-            return await server.squadService.messageMember(input.branch, input.message);
+            const service = getSquadService();
+            if (!service) throw new Error("SquadService not initialized");
+            return await service.messageMember(input.branch, input.message);
         }),
 
     // --- Indexer ---
@@ -47,15 +46,15 @@ export const squadRouter = t.router({
     toggleIndexer: publicProcedure
         .input(z.object({ enabled: z.boolean() }))
         .mutation(async ({ input }) => {
-            const server = getMcpServer();
-            if (!server) return false;
-            return await server.squadService.toggleIndexer(input.enabled);
+            const service = getSquadService();
+            if (!service) return false;
+            return await service.toggleIndexer(input.enabled);
         }),
 
     getIndexerStatus: publicProcedure.query(() => {
-        const server = getMcpServer();
-        if (!server) return { running: false, indexing: false };
-        return server.squadService.getIndexerStatus();
+        const service = getSquadService();
+        if (!service) return { running: false, indexing: false };
+        return service.getIndexerStatus();
     })
 });
 

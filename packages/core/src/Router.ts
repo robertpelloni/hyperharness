@@ -8,6 +8,7 @@ export interface RouterConfig {
 
 export class Router {
     private clients: Map<string, Client> = new Map();
+    private toolCache: Map<string, string> = new Map(); // toolName -> clientName
 
     constructor(private config: RouterConfig = {}) {
         console.log("Router initialized");
@@ -42,12 +43,17 @@ export class Router {
 
     async listTools(): Promise<Tool[]> {
         const allTools: Tool[] = [];
+        this.toolCache.clear(); // Invalidate cache on refresh
+
         for (const [name, client] of this.clients.entries()) {
             try {
                 const result = await client.listTools();
                 // Simple namespacing: if tool is "read_file", keep it as is for now
                 // In future: prefix with `${name}__` if needed
-                allTools.push(...result.tools);
+                for (const tool of result.tools) {
+                    this.toolCache.set(tool.name, name);
+                    allTools.push(tool);
+                }
             } catch (e) {
                 console.error(`Failed to list tools from ${name}`, e);
             }
@@ -56,21 +62,23 @@ export class Router {
     }
 
     async callTool(name: string, args: any): Promise<CallToolResult> {
-        // Naive routing: broadcast to all clients or find owner (inefficent but simple for v1)
-        // Better: Maintain a tool->client map in listTools()
+        // 1. Try Cache
+        let clientName = this.toolCache.get(name);
 
-        // Strategy: Try to find which client has this tool
-        // Optimization: Cache this mapping later
-        for (const [clientName, client] of this.clients.entries()) {
-            try {
-                const tools = await client.listTools();
-                if (tools.tools.find(t => t.name === name)) {
-                    return (await client.callTool({ name, arguments: args })) as unknown as CallToolResult;
-                }
-            } catch (e) {
-                // Continue searching
+        // 2. If miss, refresh cache (lazy load)
+        if (!clientName) {
+            await this.listTools();
+            clientName = this.toolCache.get(name);
+        }
+
+        // 3. Execute
+        if (clientName) {
+            const client = this.clients.get(clientName);
+            if (client) {
+                return (await client.callTool({ name, arguments: args })) as unknown as CallToolResult;
             }
         }
+
         throw new Error(`Tool ${name} not found in any connected MCP server.`);
     }
 

@@ -3,7 +3,7 @@
         {
             "name": "Architect",
             "provider": "anthropic",
-            "modelId": "claude-3-5-sonnet-20241022",
+            "modelId": "claude-3-5-sonnet-latest",
             "systemPrompt": "You are the Lead Architect. Focus on system design, scalability, and structural integrity. Challenge messy solutions."
         },
         {

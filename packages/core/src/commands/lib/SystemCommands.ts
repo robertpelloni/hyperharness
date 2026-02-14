@@ -1,6 +1,34 @@
 import { ICommand, CommandResult, CommandRegistry } from "../CommandRegistry.js";
 import { Director } from "@borg/agents";
 
+interface DirectorStatusView {
+    active?: boolean;
+    status?: string;
+    goal?: string;
+    config?: {
+        acceptDetectionMode?: string;
+    };
+}
+
+/**
+ * Reason: Director runtime instances may expose an internal `getStatus()` method not present on the strict type.
+ * What: Runtime-safe extractor that reads status payload through reflection and narrows known fields.
+ * Why: Keeps `/director status` behavior while removing broad direct casts.
+ */
+function extractDirectorStatus(director: Director): DirectorStatusView {
+    const getStatus = Reflect.get(director as object, 'getStatus');
+    if (typeof getStatus !== 'function') {
+        return {};
+    }
+
+    const status = Reflect.apply(getStatus, director, []);
+    if (!status || typeof status !== 'object') {
+        return {};
+    }
+
+    return status as DirectorStatusView;
+}
+
 export class HelpCommand implements ICommand {
     name = "help";
     description = "List available slash commands.";
@@ -52,8 +80,11 @@ export class DirectorCommand implements ICommand {
             director.stopAutoDrive();
             return { handled: true, output: "🛑 Director Auto-Drive Stopped." };
         } else if (subcommand === 'status') {
-            const status = (director as any).getStatus();
-            return { handled: true, output: `📊 **Director Status**\nActive: ${status.active}\nState: ${status.status}\nGoal: ${status.goal || 'None'}\nApprove Mode: ${status.config.acceptDetectionMode}` };
+            const status = extractDirectorStatus(director);
+            return {
+                handled: true,
+                output: `📊 **Director Status**\nActive: ${status.active ?? false}\nState: ${status.status ?? 'unknown'}\nGoal: ${status.goal || 'None'}\nApprove Mode: ${status.config?.acceptDetectionMode ?? 'unknown'}`
+            };
         }
 
         return { handled: true, output: "Usage: /director <start|stop|status>" };

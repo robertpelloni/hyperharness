@@ -2,6 +2,16 @@ import { describe, test, expect } from 'bun:test';
 import { EventEmitter } from 'events';
 import { McpProxyManager } from '../src/managers/McpProxyManager.js';
 
+type ProxyCtorArgs = ConstructorParameters<typeof McpProxyManager>;
+
+interface PolicyContextShape {
+    toolName?: string;
+}
+
+interface PolicyServiceLike {
+    evaluate(ctx: PolicyContextShape): { allowed: boolean; reason?: string };
+}
+
 class MockMcpManager extends EventEmitter {
     getClient(name: string) {
         return null;
@@ -12,7 +22,7 @@ class MockMcpManager extends EventEmitter {
 }
 
 class MockLogManager {
-    log(entry: any) {}
+    log(_entry: unknown) {}
     calculateCost() {
         return 0;
     }
@@ -22,11 +32,15 @@ describe('saved scripts tools', () => {
     test('policy can deny script_create', async () => {
         process.env.MCP_DISABLE_METAMCP = 'true';
 
-        const proxy = new McpProxyManager(new MockMcpManager() as any, new MockLogManager() as any, {
-            policyService: {
-                evaluate: (ctx: any) => ({ allowed: ctx.toolName !== 'script_create', reason: 'denied' })
-            } as any
-        });
+        const policyService: PolicyServiceLike = {
+            evaluate: (ctx) => ({ allowed: ctx.toolName !== 'script_create', reason: 'denied' })
+        };
+
+        const proxy = new McpProxyManager(
+            new MockMcpManager() as unknown as ProxyCtorArgs[0],
+            new MockLogManager() as unknown as ProxyCtorArgs[1],
+            { policyService } as unknown as ProxyCtorArgs[2]
+        );
 
         await proxy.start();
 
@@ -38,9 +52,13 @@ describe('saved scripts tools', () => {
     test('scripts_list returns json array (even without DB)', async () => {
         process.env.MCP_DISABLE_METAMCP = 'true';
 
-        const proxy = new McpProxyManager(new MockMcpManager() as any, new MockLogManager() as any, {
-            policyService: { evaluate: () => ({ allowed: true }) } as any
-        });
+        const policyService: PolicyServiceLike = { evaluate: () => ({ allowed: true }) };
+
+        const proxy = new McpProxyManager(
+            new MockMcpManager() as unknown as ProxyCtorArgs[0],
+            new MockLogManager() as unknown as ProxyCtorArgs[1],
+            { policyService } as unknown as ProxyCtorArgs[2]
+        );
 
         await proxy.start();
 

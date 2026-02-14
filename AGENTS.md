@@ -30,9 +30,10 @@ This file serves as the entry point for all autonomous agents working on the Bor
 2. **Read** `ROADMAP.md` to understand current phase.
 3. **Verify** build state: `npx tsc --noEmit` in `packages/core`.
 4. **Execute** assigned task autonomously.
-5. **Document** — Update CHANGELOG, ROADMAP, VERSION as needed.
-6. **Ship** — `git commit && git push` after each feature.
-7. **Handoff** — Update `HANDOFF_ANTIGRAVITY.md` at session end.
+5. **Comment Everything**: Always comment the reason behind the code, what it does, and why it's there.
+6. **Document** — Update CHANGELOG, ROADMAP, VERSION as needed.
+7. **Ship** — `git commit && git push` after each feature.
+8. **Handoff** — Update `HANDOFF_ANTIGRAVITY.md` at session end.
 
 ## Core Protocols
 1. **Autonomy**: Solve problems independently. Don't ask unless architecturally ambiguous.

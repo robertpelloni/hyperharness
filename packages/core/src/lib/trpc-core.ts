@@ -1,22 +1,385 @@
 import { initTRPC } from '@trpc/server';
 import { z } from 'zod';
 
+export type MCPServerRuntime = {
+    directorConfig?: {
+        demo_mode?: boolean;
+    };
+    workflowEngine?: unknown;
+    [key: string]: any;
+};
+
+export type WorkflowEngineRuntime = {
+    getGraph: (workflowId: string) => { nodes: unknown[]; edges: unknown[] } | undefined;
+    start: (workflowId: string, initialState: Record<string, unknown>) => Promise<unknown>;
+    listExecutions: () => unknown[];
+    getExecution: (executionId: string) => unknown;
+    getHistory: (executionId: string) => unknown[];
+    resume: (executionId: string) => Promise<void>;
+    pause: (executionId: string) => void;
+    approve: (executionId: string) => Promise<void>;
+    reject: (executionId: string, reason?: string) => void;
+};
+
+export type WorkflowDefinitionRuntime = {
+    id: string;
+    name?: string;
+    description?: string;
+    entryPoint?: string;
+    nodes?: Map<string, unknown>;
+    edges?: unknown[];
+};
+
+export type AutoTestResultRuntime = {
+    status: string;
+    timestamp: number;
+    output?: string;
+};
+
+export type AutoTestServiceRuntime = {
+    isRunning: boolean;
+    testResults: Map<string, AutoTestResultRuntime>;
+    start: () => Promise<void>;
+    stop: () => void;
+    findTestFile?: (filePath: string) => string | undefined;
+    runTest?: (testFile: string) => void;
+    repoGraph?: unknown;
+};
+
+export type HealerServiceRuntime = {
+    analyzeError: (error: string, context: string) => unknown;
+    heal: (error: string, context: string) => Promise<boolean>;
+    getHistory: () => unknown;
+    on: (event: 'heal', listener: (data: unknown) => void) => void;
+    off: (event: 'heal', listener: (data: unknown) => void) => void;
+};
+
+export type GitServiceRuntime = {
+    getLog: (limit?: number) => unknown;
+    getStatus: () => unknown;
+    revert: (hash: string) => Promise<unknown>;
+};
+
+export type PermissionManagerRuntime = {
+    autonomyLevel: 'low' | 'medium' | 'high';
+    setAutonomyLevel: (level: 'low' | 'medium' | 'high') => void;
+};
+
+export type DirectorRuntime = {
+    getStatus?: () => unknown;
+    getConfig?: () => unknown;
+    updateConfig?: (config: Record<string, unknown>) => void;
+    stopAutoDrive?: () => void;
+    broadcast?: (message: string) => void;
+    executeTask?: (task: string) => Promise<unknown>;
+    startChatDaemon?: () => void;
+    startWatchdog?: (intervalMs?: number) => void;
+};
+
+export type AuditServiceRuntime = {
+    getLogs: (limit?: number) => unknown;
+    query: (input: Record<string, unknown>) => unknown;
+};
+
+export type DarwinExperimentRuntime = {
+    id: string;
+};
+
+export type DarwinServiceRuntime = {
+    proposeMutation: (prompt: string, goal: string) => unknown;
+    startExperiment: (mutationId: string, task: string) => Promise<DarwinExperimentRuntime>;
+    getStatus: () => unknown;
+};
+
+export type CouncilOrchestratorRuntime = {
+    runConsensusSession: (proposal: string) => Promise<unknown>;
+    lastResult: unknown;
+};
+
+export type CouncilServiceRuntime = {
+    listSessions: () => Promise<unknown[]>;
+    getSession: (id: string) => Promise<unknown>;
+};
+
+export type MemoryManagerRuntime = {
+    saveContext: (content: string, metadata?: Record<string, unknown>) => Promise<unknown>;
+    search?: (query: string, limit?: number) => Promise<unknown[]>;
+    listContexts: () => Promise<unknown[]>;
+    searchSymbols?: (query: string, limit?: number) => Promise<unknown[]>;
+    getContext?: (id: string) => Promise<unknown>;
+    deleteContext?: (id: string) => Promise<void>;
+    getAllSymbols?: () => Promise<unknown[]>;
+};
+
+export type AgentMemoryServiceRuntime = {
+    getStats: () => unknown;
+    search: (query: string, options?: Record<string, unknown>) => Promise<unknown[]>;
+    add: (content: string, type?: unknown, source?: string, metadata?: Record<string, unknown>) => Promise<void>;
+};
+
+export type SymbolPinServiceRuntime = {
+    list: () => unknown[];
+    pin: (input: Record<string, unknown>) => unknown;
+    unpin: (id: string) => unknown;
+    updatePriority: (id: string, priority: number) => unknown;
+    addNotes: (id: string, notes: string) => unknown;
+    clear: () => unknown;
+    forFile: (filePath: string) => unknown[];
+};
+
+export type ConfigManagerRuntime = {
+    loadConfig: () => Record<string, unknown>;
+    saveConfig: (config: Record<string, unknown>) => void;
+};
+
+export type CommandRegistryRuntime = {
+    execute: (input: string) => Promise<{ handled?: boolean; output?: string } | null | undefined>;
+    getCommands?: () => Array<{ name: string; description?: string }>;
+};
+
+export type ContextManagerRuntime = {
+    list: () => unknown[];
+    add: (filePath: string) => unknown;
+    remove: (filePath: string) => unknown;
+    clear: () => unknown;
+    getContextPrompt: () => string;
+};
+
+export type AutoDevServiceRuntime = {
+    startLoop: (input: Record<string, unknown>) => Promise<string>;
+    cancelLoop: (loopId: string) => boolean;
+    getLoops: () => unknown[];
+    getLoop: (loopId: string) => unknown;
+    clearCompleted: () => number;
+};
+
+export type ShellServiceRuntime = {
+    logCommand: (input: Record<string, unknown>) => Promise<string>;
+    queryHistory: (query: string, limit?: number) => Promise<unknown[]> | unknown[];
+    getSystemHistory: (limit?: number) => Promise<unknown[]> | unknown[];
+};
+
+export type EventBusRuntime = {
+    getHistory: (limit?: number) => Array<{ timestamp: number; [key: string]: unknown }>;
+};
+
+export type SuggestionRuntime = {
+    id: string;
+    title: string;
+    payload?: {
+        tool?: string;
+        args?: Record<string, unknown>;
+    };
+};
+
+export type SuggestionServiceRuntime = {
+    getPendingSuggestions: () => SuggestionRuntime[];
+    resolveSuggestion: (id: string, decision: 'APPROVED' | 'REJECTED') => SuggestionRuntime | null | undefined;
+    clearAll?: () => void;
+};
+
+export type SquadServiceRuntime = {
+    listMembers: () => Promise<unknown[]>;
+    spawnMember: (branch: string, goal: string) => Promise<unknown>;
+    killMember: (branch: string) => Promise<unknown>;
+    messageMember: (branch: string, message: string) => Promise<unknown>;
+    toggleIndexer: (enabled: boolean) => Promise<boolean>;
+    getIndexerStatus: () => { running: boolean; indexing: boolean };
+};
+
+export type SessionStateRuntime = {
+    isAutoDriveActive: boolean;
+    activeGoal: string | null;
+    lastObjective: string | null;
+    lastHeartbeat: number;
+};
+
+export type SessionManagerRuntime = {
+    getState: () => SessionStateRuntime;
+    updateState: (state: Partial<SessionStateRuntime>) => void;
+    save: () => void;
+    clearSession: () => void;
+    touch: () => void;
+};
+
+export type QuotaUsageRuntime = {
+    provider: string;
+    cost: number;
+    requests: number;
+};
+
+export type QuotaInfoRuntime = {
+    tier?: string;
+    limit?: number | null;
+    used?: number;
+    remaining?: number | null;
+    resetDate?: string | null;
+    rateLimitRpm?: number | null;
+};
+
+export type QuotaServiceRuntime = {
+    getUsageByModel: () => QuotaUsageRuntime[];
+    getQuota?: (provider: string) => QuotaInfoRuntime | undefined;
+};
+
+export type ModelInfoRuntime = {
+    id: string;
+    provider: string;
+    model?: string;
+    name?: string;
+    inputPrice?: number | null;
+    outputPrice?: number | null;
+    contextWindow?: number | null;
+    tier?: string;
+    recommended?: boolean;
+    reason?: string;
+};
+
+export type ModelSelectorRuntime = {
+    getQuotaService: () => QuotaServiceRuntime;
+    getAvailableModels?: () => ModelInfoRuntime[];
+    getFallbackChain?: () => ModelInfoRuntime[];
+};
+
+export type CostStatsRuntime = {
+    estimatedCostUSD: number;
+    totalRequests?: number;
+    dailyHistory?: Array<{ date: string; cost: number; requests: number }>;
+};
+
+export type LLMServiceRuntime = {
+    getCostStats: () => CostStatsRuntime;
+    modelSelector: ModelSelectorRuntime;
+    generate?: (prompt: string, options?: Record<string, unknown>) => Promise<{ text?: string; latencyMs?: number }>;
+};
+
+export type ResearchServiceRuntime = {
+    research: (topic: string, depth?: number) => Promise<unknown>;
+    ingest: (url: string) => Promise<unknown>;
+};
+
+export type KnowledgeGraphResponseRuntime = {
+    content: Array<{ text: string }>;
+};
+
+export type KnowledgeServiceRuntime = {
+    getGraph: (query?: string, depth?: number) => Promise<KnowledgeGraphResponseRuntime>;
+};
+
+export type DeepResearchServiceRuntime = {
+    ingest: (url: string) => Promise<string>;
+    recursiveResearch?: (topic: string, depth?: number, maxBreadth?: number) => Promise<unknown>;
+    generateQueries?: (topic: string) => Promise<string[]>;
+};
+
+export type ProjectTrackerRuntime = {
+    getStatus: () => {
+        taskId: string;
+        status: string;
+        progress: number;
+        currentTask: string;
+    };
+};
+
+export type LspServiceRuntime = {
+    getStatus: () => unknown;
+    findSymbol: (filePath: string, symbolName: string) => Promise<unknown> | unknown;
+    findReferences: (filePath: string, line: number, character: number) => Promise<unknown> | unknown;
+    getSymbols: (filePath: string) => Promise<unknown> | unknown;
+    searchSymbols: (query: string) => Promise<unknown> | unknown;
+    indexProject: () => Promise<void> | void;
+};
+
+export type MCPSimpleServerRuntime = {
+    name?: string;
+    status?: string;
+    toolCount?: number;
+    tools?: unknown[];
+    command?: string;
+    args?: string[];
+    config?: {
+        command?: string;
+        args?: string[];
+        env?: Record<string, string>;
+    };
+};
+
+export type MCPAggregatedToolRuntime = {
+    name: string;
+    description?: string;
+    server?: string;
+    inputSchema?: unknown;
+};
+
+export type MCPAggregatorRuntime = {
+    listServers?: () => Promise<MCPSimpleServerRuntime[]>;
+    listAggregatedTools?: () => Promise<MCPAggregatedToolRuntime[]>;
+    addServerConfig?: (name: string, config: { command: string; args: string[]; env?: Record<string, string>; enabled?: boolean }) => Promise<void>;
+    clients?: Map<string, { close?: () => Promise<void> | void }>;
+    configPath?: string;
+};
+
+export type SubmoduleServiceRuntime = {
+    listSubmodules: () => Promise<unknown[]>;
+    updateAll: () => Promise<{ success: boolean; output: string }>;
+    installDependencies: (submodulePath: string) => Promise<{ success: boolean; output: string }>;
+    buildSubmodule: (submodulePath: string) => Promise<{ success: boolean; output: string }>;
+    enableSubmodule: (submodulePath: string) => Promise<{ success: boolean; output: string }>;
+    detectCapabilities: (submodulePath: string) => { caps: string[]; startCommand?: string };
+};
+
+export type SkillRuntime = {
+    id: string;
+    name: string;
+    description: string;
+    content: string;
+    path: string;
+};
+
+export type SkillRegistryRuntime = {
+    getSkills: () => SkillRuntime[];
+    readSkill: (skillName: string) => Promise<unknown>;
+    createSkill: (id: string, name: string, description: string) => Promise<unknown>;
+    saveSkill: (id: string, content: string) => Promise<unknown>;
+};
+
+export type SkillAssimilationServiceRuntime = {
+    assimilate: (request: { topic: string; docsUrl?: string; autoInstall?: boolean }) => Promise<{ success: boolean; toolName?: string; logs: string[] }>;
+};
+
 export const t = initTRPC.create();
+
+/**
+ * Reason: strict catch variables are `unknown`, so direct `.message` access is unsafe.
+ * What: narrows unknown error values into a stable string message.
+ * Why: preserves existing authorization branching while removing broad catch typing.
+ */
+function getErrorMessage(error: unknown): string {
+    if (error instanceof Error) {
+        return error.message;
+    }
+
+    if (typeof error === 'string') {
+        return error;
+    }
+
+    return '';
+}
 
 // Mock RBAC Middleware
 const isAdmin = t.middleware(async ({ next, ctx }) => {
     // In a real app, check ctx.user.role via JWT/Session
-    // For local desktop app, we default to ADMIN unless config says 'demo_mode'
     // For local desktop app, we default to ADMIN unless config says 'demo_mode'
     try {
         const config = getMcpServer().directorConfig;
         if (config?.demo_mode) {
             throw new Error("UNAUTHORIZED: Demo Mode enabled. Action restricted.");
         }
-    } catch (e: any) {
+    } catch (error: unknown) {
         // If server not initialized, strict mode might block, or we allow.
         // Logic: If error is "UNAUTHORIZED", rethrow.
-        if (e.message && e.message.startsWith("UNAUTHORIZED")) throw e;
+        const message = getErrorMessage(error);
+        if (message.startsWith("UNAUTHORIZED")) throw error;
         // Else ignore (server missing)
     }
     return next();
@@ -29,8 +392,143 @@ export const adminProcedure = t.procedure.use(isAdmin);
  * Typed accessor for the global MCPServer instance.
  * Uses the global declaration from MCPServer.ts.
  */
-export function getMcpServer(): any {
+export function getMcpServer(): MCPServerRuntime {
     const server = global.mcpServerInstance;
     if (!server) throw new Error("MCPServer instance not found");
-    return server;
+    return server as unknown as MCPServerRuntime;
+}
+
+export function getWorkflowEngine(): WorkflowEngineRuntime | null {
+    const engine = getMcpServer().workflowEngine;
+    return (engine ?? null) as WorkflowEngineRuntime | null;
+}
+
+export function getWorkflowDefinitions(engine: WorkflowEngineRuntime): WorkflowDefinitionRuntime[] {
+    const maybeMap = (engine as unknown as { workflows?: Map<string, WorkflowDefinitionRuntime> }).workflows;
+    if (!maybeMap) return [];
+    return Array.from(maybeMap.values());
+}
+
+export function getAutoTestService(): AutoTestServiceRuntime {
+    return getMcpServer().autoTestService as AutoTestServiceRuntime;
+}
+
+export function getHealerService(): HealerServiceRuntime {
+    return getMcpServer().healerService as HealerServiceRuntime;
+}
+
+export function getGitService(): GitServiceRuntime {
+    return getMcpServer().gitService as GitServiceRuntime;
+}
+
+export function getPermissionManager(): PermissionManagerRuntime {
+    return getMcpServer().permissionManager as PermissionManagerRuntime;
+}
+
+export function getDirectorRuntime(): DirectorRuntime {
+    return getMcpServer().director as DirectorRuntime;
+}
+
+export function getAuditService(): AuditServiceRuntime {
+    return getMcpServer().auditService as AuditServiceRuntime;
+}
+
+export function getDarwinService(): DarwinServiceRuntime {
+    return getMcpServer().darwinService as DarwinServiceRuntime;
+}
+
+export function getCouncilOrchestrator(): CouncilOrchestratorRuntime {
+    return getMcpServer().council as unknown as CouncilOrchestratorRuntime;
+}
+
+export function getCouncilService(): CouncilServiceRuntime {
+    return getMcpServer().councilService as CouncilServiceRuntime;
+}
+
+export function getMemoryManager(): MemoryManagerRuntime {
+    return getMcpServer().memoryManager as MemoryManagerRuntime;
+}
+
+export function getAgentMemoryService(): AgentMemoryServiceRuntime | undefined {
+    return getMcpServer().agentMemoryService as AgentMemoryServiceRuntime | undefined;
+}
+
+export function getSymbolPinService(): SymbolPinServiceRuntime | undefined {
+    return getMcpServer().symbolPinService as SymbolPinServiceRuntime | undefined;
+}
+
+export function getConfigManager(): ConfigManagerRuntime | undefined {
+    return getMcpServer().configManager as ConfigManagerRuntime | undefined;
+}
+
+export function getCommandRegistry(): CommandRegistryRuntime {
+    return getMcpServer().commandRegistry as CommandRegistryRuntime;
+}
+
+export function getContextManager(): ContextManagerRuntime | undefined {
+    return getMcpServer().contextManager as ContextManagerRuntime | undefined;
+}
+
+export function getAutoDevService(): AutoDevServiceRuntime | undefined {
+    return getMcpServer().autoDevService as AutoDevServiceRuntime | undefined;
+}
+
+export function getShellService(): ShellServiceRuntime | undefined {
+    return getMcpServer().shellService as ShellServiceRuntime | undefined;
+}
+
+export function getEventBus(): EventBusRuntime | undefined {
+    return getMcpServer().eventBus as EventBusRuntime | undefined;
+}
+
+export function getSuggestionService(): SuggestionServiceRuntime {
+    return getMcpServer().suggestionService as SuggestionServiceRuntime;
+}
+
+export function getSquadService(): SquadServiceRuntime | undefined {
+    return getMcpServer().squadService as SquadServiceRuntime | undefined;
+}
+
+export function getSessionManager(): SessionManagerRuntime {
+    return getMcpServer().sessionManager as SessionManagerRuntime;
+}
+
+export function getLLMService(): LLMServiceRuntime {
+    return getMcpServer().llmService as LLMServiceRuntime;
+}
+
+export function getKnowledgeService(): KnowledgeServiceRuntime {
+    return getMcpServer().knowledgeService as KnowledgeServiceRuntime;
+}
+
+export function getDeepResearchService(): DeepResearchServiceRuntime {
+    return getMcpServer().deepResearchService as DeepResearchServiceRuntime;
+}
+
+export function getResearchService(): ResearchServiceRuntime | undefined {
+    return getMcpServer().researchService as ResearchServiceRuntime | undefined;
+}
+
+export function getProjectTracker(): ProjectTrackerRuntime | undefined {
+    return getMcpServer().projectTracker as ProjectTrackerRuntime | undefined;
+}
+
+export function getLspService(): LspServiceRuntime | undefined {
+    return getMcpServer().lspService as LspServiceRuntime | undefined;
+}
+
+export function getMcpAggregator(): MCPAggregatorRuntime | undefined {
+    return getMcpServer().mcpAggregator as MCPAggregatorRuntime | undefined;
+}
+
+export function getSubmoduleService(): SubmoduleServiceRuntime | undefined {
+    return getMcpServer().submoduleService as SubmoduleServiceRuntime | undefined;
+}
+
+export function getSkillRegistry(): SkillRegistryRuntime | undefined {
+    return getMcpServer().skillRegistry as SkillRegistryRuntime | undefined;
+}
+
+export function getSkillAssimilationService(): SkillAssimilationServiceRuntime | undefined {
+    return getMcpServer().skillAssimilationService as SkillAssimilationServiceRuntime | undefined;
 }

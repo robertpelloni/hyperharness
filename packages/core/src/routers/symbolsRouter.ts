@@ -1,25 +1,16 @@
 import { z } from 'zod';
-import { t, publicProcedure } from '../lib/trpc-core.js';
-import { getMcpServer } from '../lib/mcpHelper.js';
+import { t, publicProcedure, getSymbolPinService, getMemoryManager } from '../lib/trpc-core.js';
 
 export const symbolsRouter = t.router({
     list: publicProcedure.query(() => {
-        const mcp = getMcpServer();
-        if ((mcp as any)?.symbolPinService) {
-            return (mcp as any).symbolPinService.list();
-        }
-        return [];
+        return getSymbolPinService()?.list() ?? [];
     }),
 
     find: publicProcedure.input(z.object({
         query: z.string(),
         limit: z.number().default(10)
     })).query(async ({ input }) => {
-        const mcp = getMcpServer();
-        if (mcp && (mcp as any).memoryManager) {
-            return await (mcp as any).memoryManager.searchSymbols(input.query, input.limit);
-        }
-        return [];
+        return await getMemoryManager().searchSymbols?.(input.query, input.limit) ?? [];
     }),
 
     pin: publicProcedure.input(z.object({
@@ -30,20 +21,16 @@ export const symbolsRouter = t.router({
         lineEnd: z.number().optional(),
         notes: z.string().optional()
     })).mutation(({ input }) => {
-        const mcp = getMcpServer();
-        if ((mcp as any)?.symbolPinService) {
-            return (mcp as any).symbolPinService.pin(input);
-        }
+        const service = getSymbolPinService();
+        if (service) return service.pin(input);
         throw new Error('SymbolPinService not initialized');
     }),
 
     unpin: publicProcedure.input(z.object({
         id: z.string()
     })).mutation(({ input }) => {
-        const mcp = getMcpServer();
-        if ((mcp as any)?.symbolPinService) {
-            return (mcp as any).symbolPinService.unpin(input.id);
-        }
+        const service = getSymbolPinService();
+        if (service) return service.unpin(input.id);
         return false;
     }),
 
@@ -51,10 +38,8 @@ export const symbolsRouter = t.router({
         id: z.string(),
         priority: z.number()
     })).mutation(({ input }) => {
-        const mcp = getMcpServer();
-        if ((mcp as any)?.symbolPinService) {
-            return (mcp as any).symbolPinService.updatePriority(input.id, input.priority);
-        }
+        const service = getSymbolPinService();
+        if (service) return service.updatePriority(input.id, input.priority);
         return false;
     }),
 
@@ -62,29 +47,21 @@ export const symbolsRouter = t.router({
         id: z.string(),
         notes: z.string()
     })).mutation(({ input }) => {
-        const mcp = getMcpServer();
-        if ((mcp as any)?.symbolPinService) {
-            return (mcp as any).symbolPinService.addNotes(input.id, input.notes);
-        }
+        const service = getSymbolPinService();
+        if (service) return service.addNotes(input.id, input.notes);
         return false;
     }),
 
     clear: publicProcedure.mutation(() => {
-        const mcp = getMcpServer();
-        if ((mcp as any)?.symbolPinService) {
-            return (mcp as any).symbolPinService.clear();
-        }
+        const service = getSymbolPinService();
+        if (service) return service.clear();
         return 0;
     }),
 
     forFile: publicProcedure.input(z.object({
         filePath: z.string()
     })).query(({ input }) => {
-        const mcp = getMcpServer();
-        if ((mcp as any)?.symbolPinService) {
-            return (mcp as any).symbolPinService.forFile(input.filePath);
-        }
-        return [];
+        return getSymbolPinService()?.forFile(input.filePath) ?? [];
     }),
 });
 

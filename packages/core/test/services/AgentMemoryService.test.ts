@@ -5,6 +5,14 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
 
+interface SessionMediaMetadata {
+    media: Array<{
+        type: 'image' | 'audio' | 'video' | 'file';
+        url?: string;
+        description?: string;
+    }>;
+}
+
 // Mock MemoryManager
 class MockMemoryManager {
     public storage: Map<string, any> = new Map();
@@ -42,7 +50,7 @@ class MockMemoryManager {
 
 describe('AgentMemoryService', () => {
     let memoryService: AgentMemoryService;
-    let mockMemoryManager: any;
+    let mockMemoryManager: MockMemoryManager;
     let tempDir: string;
 
     beforeEach(() => {
@@ -105,7 +113,7 @@ describe('AgentMemoryService', () => {
                 url: 'http://example.com/img.png',
                 description: 'A test image'
             }]
-        } as any);
+        } as unknown as SessionMediaMetadata);
 
         const retrieved = memoryService.get(mem.id);
         expect(retrieved?.metadata.media).toBeDefined();

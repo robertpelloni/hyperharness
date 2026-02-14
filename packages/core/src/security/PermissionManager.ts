@@ -23,7 +23,7 @@ export class PermissionManager {
     /**
      * Determines if a tool call requires user approval.
      */
-    checkPermission(toolName: string, args: any): 'APPROVED' | 'DENIED' | 'NEEDS_CONSULTATION' {
+    checkPermission(toolName: string, args: unknown): 'APPROVED' | 'DENIED' | 'NEEDS_CONSULTATION' {
         // 1. Policy Check (Hard Guardrails)
         const policyResult = this.policyEngine.check(toolName, args);
         if (!policyResult.allowed) {
@@ -50,7 +50,7 @@ export class PermissionManager {
         return 'APPROVED';
     }
 
-    private assessRisk(toolName: string, args: any): 'low' | 'medium' | 'high' {
+    private assessRisk(toolName: string, args: unknown): 'low' | 'medium' | 'high' {
         // High Risk Tools (Modifying system, network, sensitive reads)
         if (toolName.includes('write_file') ||
             toolName.includes('execute_command') ||

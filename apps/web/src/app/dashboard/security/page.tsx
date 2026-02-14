@@ -8,17 +8,33 @@ import { Badge } from '@borg/ui';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@borg/ui';
 import { Button } from '@borg/ui';
 import { ScrollArea } from '@borg/ui';
-import { AlertTriangle, Shield, Activity, Lock } from 'lucide-react';
+import { Shield, Lock } from 'lucide-react';
 
 export default function SecurityPage() {
-    const [auditLimit, setAuditLimit] = useState(50);
+    const [auditLimit] = useState(50);
+    const utils = trpc.useUtils();
     const { data: auditLogs, isLoading: loadingLogs, refetch: refetchLogs } = trpc.audit.query.useQuery({ limit: auditLimit });
-    // Policy router is currently disabled — using static data
-    const policies: any[] = [];
-    const loadingPolicies = false;
     const { data: autonomyLevel } = trpc.autonomy.getLevel.useQuery();
+    const lockdownMutation = trpc.autonomy.setLevel.useMutation({
+        onSuccess: async () => {
+            await utils.autonomy.getLevel.invalidate();
+        }
+    });
 
-    const [lockdownPending, setLockdownPending] = useState(false);
+    const policies = [
+        {
+            toolName: 'Autonomy Guardrail',
+            description: autonomyLevel === 'high'
+                ? 'System currently in HIGH autonomy. Lockdown will reduce to LOW.'
+                : 'System is in LOW autonomy lockdown mode.',
+            state: autonomyLevel === 'high' ? 'Elevated' : 'Locked',
+        },
+        {
+            toolName: 'Audit Logging',
+            description: 'All tool executions and governance actions are persisted in audit logs.',
+            state: 'Active',
+        },
+    ];
 
 
     return (
@@ -35,11 +51,12 @@ export default function SecurityPage() {
                     {/* Lockdown Button */}
                     <Button
                         variant="destructive"
-                        disabled={true}
-                        title="Policy router not active"
+                        disabled={lockdownMutation.isPending || autonomyLevel === 'low'}
+                        onClick={() => lockdownMutation.mutate({ level: 'low' })}
+                        title={autonomyLevel === 'low' ? 'System already in lockdown mode' : 'Set autonomy to LOW immediately'}
                     >
                         <Lock className="w-4 h-4 mr-2" />
-                        SYSTEM LOCKDOWN
+                        {lockdownMutation.isPending ? 'Applying...' : autonomyLevel === 'low' ? 'LOCKDOWN ACTIVE' : 'SYSTEM LOCKDOWN'}
                     </Button>
                 </div>
             </header>
@@ -100,23 +117,20 @@ export default function SecurityPage() {
                             <CardDescription>Rules governing tool execution and resource access.</CardDescription>
                         </CardHeader>
                         <CardContent>
-                            {loadingPolicies ? <div>Loading policies...</div> : (
-                                <div className="grid gap-4">
-                                    {policies?.map((policy: any, i: number) => (
-                                        <div key={i} className="flex items-center justify-between p-4 border rounded-lg bg-card">
-                                            <div className="flex items-center gap-4">
-                                                <Shield className="w-5 h-5 text-primary" />
-                                                <div>
-                                                    <h3 className="font-medium">{policy.toolName}</h3>
-                                                    <p className="text-sm text-muted-foreground">{policy.description || "No description provided."}</p>
-                                                </div>
+                            <div className="grid gap-4">
+                                {policies.map((policy, i: number) => (
+                                    <div key={i} className="flex items-center justify-between p-4 border rounded-lg bg-card">
+                                        <div className="flex items-center gap-4">
+                                            <Shield className="w-5 h-5 text-primary" />
+                                            <div>
+                                                <h3 className="font-medium">{policy.toolName}</h3>
+                                                <p className="text-sm text-muted-foreground">{policy.description}</p>
                                             </div>
-                                            <Badge variant="outline">Active</Badge>
                                         </div>
-                                    ))}
-                                    {policies?.length === 0 && <div className="text-muted-foreground">No active policies found. Default Allow mode active.</div>}
-                                </div>
-                            )}
+                                        <Badge variant="outline">{policy.state}</Badge>
+                                    </div>
+                                ))}
+                            </div>
                         </CardContent>
                     </Card>
                 </TabsContent>

@@ -6,6 +6,12 @@ export interface ToolPolicy {
     description?: string;
 }
 
+interface PolicyRuleRecord {
+    resource?: string;
+    description?: string;
+    action?: string;
+}
+
 export class PolicyService {
     private policies: Map<string, ToolPolicy> = new Map();
     private blockedTools: Set<string> = new Set(['format_disk', 'rm_rf_root']);
@@ -15,7 +21,7 @@ export class PolicyService {
         this.policies.set('read_file', { toolName: 'read_file' });
     }
 
-    public check(toolName: string, args: any): { allowed: boolean; reason?: string } {
+    public check(toolName: string, args: unknown): { allowed: boolean; reason?: string } {
         if (this.blockedTools.has(toolName)) {
             return { allowed: false, reason: 'Tool is globally blocked.' };
         }
@@ -26,15 +32,15 @@ export class PolicyService {
 
         return { allowed: true };
     }
-    public getRules(): any[] {
-        const rules: any[] = [];
+    public getRules(): PolicyRuleRecord[] {
+        const rules: PolicyRuleRecord[] = [];
         this.policies.forEach((val, key) => {
             rules.push({ ...val, resource: key, action: 'execute' });
         });
         return rules;
     }
 
-    public updateRules(rules: any[]) {
+    public updateRules(rules: PolicyRuleRecord[]) {
         this.policies.clear();
         rules.forEach(r => {
             if (r.resource) {

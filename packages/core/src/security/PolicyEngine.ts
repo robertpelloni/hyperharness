@@ -46,7 +46,7 @@ export class PolicyEngine {
     /**
      * Check if a tool execution is allowed by policy.
      */
-    check(toolName: string, args: any): { allowed: boolean; reason?: string } {
+    check(toolName: string, args: unknown): { allowed: boolean; reason?: string } {
         // 1. Tool Blacklist
         if (this.policy.tools.deny.includes(toolName)) {
             return { allowed: false, reason: `Tool '${toolName}' is blacklisted by policy.` };
@@ -54,7 +54,7 @@ export class PolicyEngine {
 
         // 2. Filesystem Check (for fs tools)
         if (['write_to_file', 'read_file', 'list_dir', 'replace_file_content'].includes(toolName)) {
-            const targetPath = args.TargetFile || args.AbsolutePath || args.DirectoryPath || args.path;
+            const targetPath = this.extractTargetPath(args);
             if (targetPath) {
                 // Simple glob check (implementation simplified for demo)
                 // In prod, use micromatch or minimatch
@@ -67,5 +67,20 @@ export class PolicyEngine {
         }
 
         return { allowed: true };
+    }
+
+    /**
+     * Reason: policy checks consume heterogeneous tool payloads from many integrations.
+     * What: extracts the canonical target path from known argument key variants.
+     * Why: preserves current behavior while avoiding unsafe property access on unknown inputs.
+     */
+    private extractTargetPath(args: unknown): string | undefined {
+        if (!args || typeof args !== 'object') {
+            return undefined;
+        }
+
+        const record = args as Record<string, unknown>;
+        const candidate = record.TargetFile ?? record.AbsolutePath ?? record.DirectoryPath ?? record.path;
+        return typeof candidate === 'string' ? candidate : undefined;
     }
 }

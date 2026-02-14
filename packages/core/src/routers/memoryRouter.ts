@@ -1,6 +1,5 @@
 import { z } from 'zod';
-import { t, publicProcedure } from '../lib/trpc-core.js';
-import { getMcpServer } from '../lib/mcpHelper.js';
+import { t, publicProcedure, getMemoryManager, getAgentMemoryService } from '../lib/trpc-core.js';
 import path from 'path';
 
 export const memoryRouter = t.router({
@@ -9,14 +8,11 @@ export const memoryRouter = t.router({
         url: z.string(),
         title: z.string().optional(),
         content: z.string(),
-        metadata: z.record(z.any()).optional()
+        metadata: z.record(z.unknown()).optional()
     })).mutation(async ({ input }) => {
-        const mcp = getMcpServer();
-        if (!mcp || !(mcp as any).memoryManager) {
-            return { success: false, error: "MemoryManager not initialized" };
-        }
+        const memoryManager = getMemoryManager();
 
-        const id = await (mcp as any).memoryManager.saveContext(input.content, {
+        const id = await memoryManager.saveContext(input.content, {
             title: input.title,
             source: input.source,
             url: input.url,
@@ -30,40 +26,32 @@ export const memoryRouter = t.router({
         query: z.string(),
         limit: z.number().optional().default(5)
     })).query(async ({ input }) => {
-        const mcp = getMcpServer();
-        if (!mcp || !(mcp as any).memoryManager) return [];
-        return await (mcp as any).memoryManager.search(input.query, input.limit);
+        return await getMemoryManager().search?.(input.query, input.limit) ?? [];
     }),
 
     listContexts: publicProcedure.query(async () => {
-        const mcp = getMcpServer();
-        if (!mcp || !(mcp as any).memoryManager) return [];
-        return await (mcp as any).memoryManager.listContexts();
+        return await getMemoryManager().listContexts();
     }),
 
     getContext: publicProcedure.input(z.object({
         id: z.string()
     })).query(async ({ input }) => {
-        const mcp = getMcpServer();
-        if (!mcp || !(mcp as any).memoryManager) return null;
-        return await (mcp as any).memoryManager.getContext(input.id);
+        return await getMemoryManager().getContext?.(input.id) ?? null;
     }),
 
     deleteContext: publicProcedure.input(z.object({
         id: z.string()
     })).mutation(async ({ input }) => {
-        const mcp = getMcpServer();
-        if (!mcp || !(mcp as any).memoryManager) return { success: false };
-        await (mcp as any).memoryManager.deleteContext(input.id);
+        const memoryManager = getMemoryManager();
+        if (!memoryManager.deleteContext) return { success: false };
+        await memoryManager.deleteContext(input.id);
         return { success: true };
     }),
 
     // --- Agent Memory Service (Tiered) ---
 
     getAgentStats: publicProcedure.query(async () => {
-        const mcp = getMcpServer();
-        if (!mcp || !(mcp as any).agentMemoryService) return null;
-        return (mcp as any).agentMemoryService.getStats();
+        return getAgentMemoryService()?.getStats() ?? null;
     }),
 
     searchAgentMemory: publicProcedure.input(z.object({
@@ -71,10 +59,10 @@ export const memoryRouter = t.router({
         type: z.enum(['session', 'working', 'long_term']).optional(),
         limit: z.number().optional().default(10)
     })).query(async ({ input }) => {
-        const mcp = getMcpServer();
-        if (!mcp || !(mcp as any).agentMemoryService) return [];
-        return await (mcp as any).agentMemoryService.search(input.query, {
-            type: input.type as any,
+        const service = getAgentMemoryService();
+        if (!service) return [];
+        return await service.search(input.query, {
+            type: input.type,
             limit: input.limit
         });
     }),
@@ -83,9 +71,9 @@ export const memoryRouter = t.router({
         content: z.string(),
         type: z.enum(['working', 'long_term']).default('working')
     })).mutation(async ({ input }) => {
-        const mcp = getMcpServer();
-        if (!mcp || !(mcp as any).agentMemoryService) return { success: false };
-        await (mcp as any).agentMemoryService.add(input.content, input.type as any, 'user', { source: 'dashboard' });
+        const service = getAgentMemoryService();
+        if (!service) return { success: false };
+        await service.add(input.content, input.type, 'user', { source: 'dashboard' });
         return { success: true };
     })
 });

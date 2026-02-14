@@ -2,6 +2,27 @@ import { describe, test, expect } from 'bun:test';
 import { EventEmitter } from 'events';
 import { McpProxyManager } from '../src/managers/McpProxyManager.js';
 
+type ProxyCtorArgs = ConstructorParameters<typeof McpProxyManager>;
+
+interface PolicyServiceLike {
+    evaluate(ctx: unknown): { allowed: boolean; reason?: string };
+}
+
+interface AgentDescriptor {
+    name: string;
+    model?: string;
+    description?: string;
+    instructions?: string;
+}
+
+interface AgentManagerLike {
+    getAgents(): AgentDescriptor[];
+}
+
+interface AgentExecutorLike {
+    run(agent: AgentDescriptor, task: string): Promise<string>;
+}
+
 class MockMcpManager extends EventEmitter {
     getClient(name: string) {
         return null;
@@ -12,7 +33,7 @@ class MockMcpManager extends EventEmitter {
 }
 
 class MockLogManager {
-    log(entry: any) {}
+    log(_entry: unknown) {}
     calculateCost() {
         return 0;
     }
@@ -22,22 +43,27 @@ describe('run_agent', () => {
     test('runs agent via injected dependencies', async () => {
         process.env.MCP_DISABLE_METAMCP = 'true';
 
-        const mcpManager = new MockMcpManager() as any;
-        const logManager = new MockLogManager() as any;
+        const mcpManager = new MockMcpManager() as unknown as ProxyCtorArgs[0];
+        const logManager = new MockLogManager() as unknown as ProxyCtorArgs[1];
+
+        const policyService: PolicyServiceLike = { evaluate: () => ({ allowed: true }) };
 
         const proxy = new McpProxyManager(mcpManager, logManager, {
-            policyService: { evaluate: () => ({ allowed: true }) } as any
-        });
+            policyService
+        } as unknown as ProxyCtorArgs[2]);
 
-        const agentManager = {
+        const agentManager: AgentManagerLike = {
             getAgents: () => [{ name: 'coder', model: 'gpt-4o', description: '', instructions: '' }]
-        } as any;
+        };
 
-        const agentExecutor = {
-            run: async (_agent: any, task: string) => `ok:${task}`
-        } as any;
+        const agentExecutor: AgentExecutorLike = {
+            run: async (_agent: AgentDescriptor, task: string) => `ok:${task}`
+        };
 
-        proxy.setAgentDependencies(agentExecutor, agentManager);
+        proxy.setAgentDependencies(
+            agentExecutor as unknown as Parameters<McpProxyManager['setAgentDependencies']>[0],
+            agentManager as unknown as Parameters<McpProxyManager['setAgentDependencies']>[1]
+        );
 
         await proxy.start();
 
@@ -49,12 +75,14 @@ describe('run_agent', () => {
     test('blocks run_agent when policy denies', async () => {
         process.env.MCP_DISABLE_METAMCP = 'true';
 
-        const mcpManager = new MockMcpManager() as any;
-        const logManager = new MockLogManager() as any;
+        const mcpManager = new MockMcpManager() as unknown as ProxyCtorArgs[0];
+        const logManager = new MockLogManager() as unknown as ProxyCtorArgs[1];
+
+        const policyService: PolicyServiceLike = { evaluate: () => ({ allowed: false, reason: 'nope' }) };
 
         const proxy = new McpProxyManager(mcpManager, logManager, {
-            policyService: { evaluate: () => ({ allowed: false, reason: 'nope' }) } as any
-        });
+            policyService
+        } as unknown as ProxyCtorArgs[2]);
 
         await proxy.start();
 

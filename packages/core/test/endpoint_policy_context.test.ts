@@ -3,6 +3,26 @@ import { EventEmitter } from 'events';
 import { HubServer } from '../src/hub/HubServer.js';
 import { McpProxyManager } from '../src/managers/McpProxyManager.js';
 
+type ProxyCtorArgs = ConstructorParameters<typeof McpProxyManager>;
+type HubCtorArgs = ConstructorParameters<typeof HubServer>;
+
+interface PolicyContextShape {
+  toolName?: string;
+  endpointPath?: string;
+}
+
+interface PolicyServiceLike {
+  evaluate(ctx: PolicyContextShape): { allowed: boolean; reason?: string };
+}
+
+interface SavedScriptServiceLike {
+  getAllScripts(): unknown[];
+}
+
+interface EndpointLookup {
+  namespaceId?: string;
+}
+
 class MockMcpManager extends EventEmitter {
   getClient(_name: string) {
     return null;
@@ -17,7 +37,7 @@ class MockMcpManager extends EventEmitter {
 }
 
 class MockLogManager {
-  log(_entry: any) {}
+  log(_entry: unknown) {}
   calculateCost() {
     return 0;
   }
@@ -25,33 +45,40 @@ class MockLogManager {
 
 describe('endpointPath policy context propagation', () => {
   test('endpointPath is available during policy evaluation', async () => {
-    const mcpManager = new MockMcpManager() as any;
-    const logManager = new MockLogManager() as any;
+    const mcpManager = new MockMcpManager() as unknown as ProxyCtorArgs[0];
+    const logManager = new MockLogManager() as unknown as ProxyCtorArgs[1];
 
     let sawEndpointPath: string | undefined;
-    const policyService = {
-      evaluate: (ctx: any) => {
+    const policyService: PolicyServiceLike = {
+      evaluate: (ctx) => {
         if (ctx.toolName === 'run_code') {
           sawEndpointPath = ctx.endpointPath;
         }
         return { allowed: true };
       },
-    } as any;
+    };
+
+    const savedScriptService: SavedScriptServiceLike = { getAllScripts: () => [] };
 
     const proxy = new McpProxyManager(mcpManager, logManager, {
       policyService,
-      savedScriptService: { getAllScripts: () => [] } as any,
+      savedScriptService,
     });
 
     await proxy.start();
 
+    const endpointResolver = (endpointPath: string): string | undefined => {
+      const endpoint = (mcpManager as unknown as MockMcpManager).getEndpointByPath(endpointPath) as EndpointLookup | null;
+      return endpoint?.namespaceId;
+    };
+
     const hub = new HubServer(
-      proxy as any,
-      {} as any,
+      proxy as unknown as HubCtorArgs[0],
+      {} as unknown as HubCtorArgs[1],
       undefined,
       undefined,
       undefined,
-      (endpointPath: string) => mcpManager.getEndpointByPath(endpointPath)?.namespaceId,
+      endpointResolver,
     );
 
     await hub.handleMessage('s1', {

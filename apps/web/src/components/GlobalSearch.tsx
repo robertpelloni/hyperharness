@@ -1,25 +1,72 @@
 "use client";
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { trpc } from '@/utils/trpc';
 
-// Search and vscode routers are currently disabled — using local no-op implementations
+type SearchResult = {
+    file: string;
+    snippet: string;
+    line?: number;
+    character?: number;
+    uri?: string;
+};
+
 export const GlobalSearch: React.FC = () => {
     const [query, setQuery] = useState('');
-    const [results, setResults] = useState<any[]>([]);
+    const [results, setResults] = useState<SearchResult[]>([]);
     const [isOpen, setIsOpen] = useState(false);
     const [isSearching, setIsSearching] = useState(false);
+    const searchQuery = trpc.lsp.searchSymbols.useQuery(
+        { query },
+        { enabled: false, refetchOnWindowFocus: false }
+    );
 
-    const handleSearch = (e: React.FormEvent) => {
+    const handleSearch = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!query.trim()) return;
         setIsOpen(true);
-        // Search router disabled — show placeholder
-        setResults([{ file: 'Search unavailable', snippet: 'Enable the search router in trpc.ts for codebase search.' }]);
+        setIsSearching(true);
+
+        try {
+            const { data: symbols } = await searchQuery.refetch();
+            const mapped: SearchResult[] = (symbols || []).slice(0, 50).map((s: any) => {
+                const uri: string = String(s?.location?.uri ?? '');
+                const file = uri.startsWith('file://') ? decodeURIComponent(uri.replace('file://', '')) : uri;
+                const line = Number(s?.location?.range?.start?.line ?? 0);
+                const character = Number(s?.location?.range?.start?.character ?? 0);
+                return {
+                    file,
+                    line,
+                    character,
+                    uri,
+                    snippet: `${s?.name ?? 'symbol'} (${s?.containerName ?? 'global'})`,
+                };
+            });
+
+            setResults(mapped.length > 0 ? mapped : [{ file: 'No results', snippet: 'No matching symbols found in LSP index.' }]);
+        } catch (error: any) {
+            setResults([{ file: 'Search failed', snippet: error?.message ?? 'Unable to query symbol index.' }]);
+        } finally {
+            setIsSearching(false);
+        }
     };
 
-    const handleOpenFile = (path: string) => {
-        // vscode router disabled — no-op
-        console.log('vscode.open disabled:', path);
+    const handleOpenFile = async (res: SearchResult) => {
+        if (!res.file || res.file === 'No results' || res.file === 'Search failed') {
+            return;
+        }
+
+        const line = (res.line ?? 0) + 1;
+        const col = (res.character ?? 0) + 1;
+        const vscodeUrl = `vscode://file/${encodeURIComponent(res.file)}:${line}:${col}`;
+        window.open(vscodeUrl, '_blank');
+
+        try {
+            await navigator.clipboard.writeText(`${res.file}:${line}:${col}`);
+        } catch {
+            // Ignore clipboard failures in restricted browsers.
+        }
+
         setIsOpen(false);
         setQuery('');
     };
@@ -54,7 +101,7 @@ export const GlobalSearch: React.FC = () => {
                                 {results.map((res, i) => (
                                     <button
                                         key={i}
-                                        onClick={() => handleOpenFile(res.file)}
+                                        onClick={() => handleOpenFile(res)}
                                         className="w-full text-left p-3 hover:bg-zinc-100 dark:hover:bg-zinc-800 border-b border-zinc-100 dark:border-zinc-800 last:border-0 transition-colors"
                                     >
                                         <div className="text-xs font-bold text-blue-500 break-all">{res.file}</div>

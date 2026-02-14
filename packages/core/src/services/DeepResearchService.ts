@@ -73,43 +73,24 @@ export class DeepResearchService {
         const allUrls = new Set<string>();
         const sources: { title: string, url: string, content?: string }[] = [];
 
-        // Dynamic Import of WebSearchTool to avoid issues if not standard
-        let WebSearchToolClass: any;
         try {
-            // Try local path first as per MCPServer hint
-            const module = await import('../tools/WebSearchTool.js');
-            WebSearchToolClass = module.WebSearchTool;
-        } catch (e) {
-            console.warn("Could not load local WebSearchTool, trying @borg/tools");
-            try {
-                const tools = await import('@borg/tools');
-                WebSearchToolClass = tools.SearchTools ? tools.SearchTools[0] : undefined; // Fallback guess
-            } catch (e2) {
-                console.error("No WebSearchTool found.");
-            }
-        }
+            // Import WebSearchTool from local core tools
+            const { WebSearchTool } = await import('../tools/WebSearchTool.js');
 
-        if (WebSearchToolClass) {
-            const searchTool = new WebSearchToolClass();
             for (const q of queries.slice(0, 3)) {
                 try {
-                    // Interface guess: execute(query) or search(query)
-                    // Standard MCP tool usually has 'handler(args)'
-                    const result = await searchTool.handler({ query: q });
-                    // Result is { content: [{ type: 'text', text: 'JSON...' }] }
+                    const result = await WebSearchTool.handler({ query: q });
                     const text = result.content[0].text;
-                    let parsed;
-                    try { parsed = JSON.parse(text); } catch { parsed = []; } // Assume array
+
+                    let parsed: any[] = [];
+                    try {
+                        parsed = JSON.parse(text);
+                    } catch {
+                        parsed = [];
+                    }
 
                     if (Array.isArray(parsed)) {
                         parsed.slice(0, 3).forEach((r: any) => {
-                            if (r.url) {
-                                allUrls.add(r.url);
-                                sources.push({ title: r.title, url: r.url });
-                            }
-                        });
-                    } else if (parsed.results) { // Brave format
-                        parsed.results.slice(0, 3).forEach((r: any) => {
                             if (r.url) {
                                 allUrls.add(r.url);
                                 sources.push({ title: r.title, url: r.url });
@@ -120,6 +101,8 @@ export class DeepResearchService {
                     console.error("Search failed for", q, e);
                 }
             }
+        } catch (e) {
+            console.error("Failed to load WebSearchTool", e);
         }
 
         console.log(`[DeepResearch] found ${allUrls.size} unique sources.`);
@@ -129,11 +112,8 @@ export class DeepResearchService {
         let count = 0;
         for (const source of sources) {
             if (count >= 3) break;
-            // TODO: Use BrowserTool to actually scrape if needed
-            // For now, we rely on title/snippet or assume placeholder
-            // In a real recursive run, we might want to deeply scrape.
-            // Let's add a placeholder for now to save tokens/time during dev.
-            scrapedData.push(`Source: ${source.url}\n(Content scraping pending)`);
+            // Capture snippet if available (we assume title/url is good enough for now/summary)
+            scrapedData.push(`Source: ${source.title} (${source.url})\n(Content: [Pending scrape, utilizing snippet context])`);
             count++;
         }
 

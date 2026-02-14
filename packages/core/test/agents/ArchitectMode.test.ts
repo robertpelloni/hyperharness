@@ -3,7 +3,7 @@ import { ArchitectMode, type ArchitectSession, type EditPlan } from '../../src/a
 
 describe('ArchitectMode', () => {
   let architect: ArchitectMode;
-  let mockChatFn: any;
+  let mockChatFn: ReturnType<typeof mock>;
 
   beforeEach(() => {
     // Define mock implementation inside beforeEach to ensure it's fresh for every test
@@ -35,7 +35,10 @@ describe('ArchitectMode', () => {
       reasoningModel: 'o3-mini',
       editingModel: 'gpt-4o',
     });
-    architect.setChatFunction(mockChatFn as any);
+    // Reason: bun mock type is broader than ArchitectMode's expected chat callback signature.
+    // What: narrow once at the call boundary using the method parameter type.
+    // Why: avoids pervasive `any` in tests while keeping deterministic mock behavior.
+    architect.setChatFunction(mockChatFn as unknown as Parameters<ArchitectMode['setChatFunction']>[0]);
     // Silence error events to prevent unhandled rejections during intentional failures
     architect.on('error', () => {});
   });

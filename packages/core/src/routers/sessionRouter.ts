@@ -1,18 +1,9 @@
 import { z } from 'zod';
-import { t, publicProcedure, getMcpServer } from '../lib/trpc-core.js';
+import { t, publicProcedure, getSessionManager } from '../lib/trpc-core.js';
 
 export const sessionRouter = t.router({
     getState: publicProcedure.query(() => {
-        const mcp = getMcpServer();
-        if (mcp && mcp.sessionManager) {
-            return mcp.sessionManager.getState();
-        }
-        return {
-            isAutoDriveActive: false,
-            activeGoal: null,
-            lastObjective: null,
-            lastHeartbeat: 0
-        };
+        return getSessionManager().getState();
     }),
 
     updateState: publicProcedure.input(z.object({
@@ -20,30 +11,19 @@ export const sessionRouter = t.router({
         activeGoal: z.string().nullable().optional(),
         lastObjective: z.string().nullable().optional(),
     })).mutation(({ input }) => {
-        const mcp = getMcpServer();
-        if (mcp && mcp.sessionManager) {
-            mcp.sessionManager.updateState(input);
-            mcp.sessionManager.save();
-            return { success: true };
-        }
-        throw new Error("SessionManager not ready");
+        const manager = getSessionManager();
+        manager.updateState(input);
+        manager.save();
+        return { success: true };
     }),
 
     clear: publicProcedure.mutation(() => {
-        const mcp = getMcpServer();
-        if (mcp && mcp.sessionManager) {
-            mcp.sessionManager.clearSession();
-            return { success: true };
-        }
-        throw new Error("SessionManager not ready");
+        getSessionManager().clearSession();
+        return { success: true };
     }),
 
     heartbeat: publicProcedure.mutation(() => {
-        const mcp = getMcpServer();
-        if (mcp && mcp.sessionManager) {
-            mcp.sessionManager.touch();
-            return { alive: true, timestamp: Date.now() };
-        }
-        throw new Error("SessionManager not ready");
+        getSessionManager().touch();
+        return { alive: true, timestamp: Date.now() };
     })
 });

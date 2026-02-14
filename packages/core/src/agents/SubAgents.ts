@@ -1,5 +1,5 @@
 
-import { BaseAgent } from './BaseAgent.js';
+import { AgentStatus, BaseAgent } from './BaseAgent.js';
 import type { MCPServer } from '../MCPServer.js';
 
 export class ResearchAgent extends BaseAgent {
@@ -11,23 +11,21 @@ export class ResearchAgent extends BaseAgent {
     }
 
     async run(): Promise<void> {
-        this.status = import('./BaseAgent.js').then(m => m.AgentStatus.RUNNING) as any;
+        this.status = AgentStatus.RUNNING;
         this.log('Starting research task...');
 
         try {
-            // TODO: Connect to ModelSelector to actually execute the task using tools.
-            // For MVP, we will simulate a research process.
+            this.log('Dispatching to researcher agent...');
 
-            this.log('Analyzing requirements...');
-            await new Promise(resolve => setTimeout(resolve, 1000));
+            const agentResult = this.server.researcherAgent
+                ? await this.server.researcherAgent.handleTask({ task: this.task, options: { depth: 2, breadth: 3 } })
+                : await this.server.deepResearchService.recursiveResearch(this.task, 2, 3);
 
-            this.log('Searching knowledge base...');
-            await new Promise(resolve => setTimeout(resolve, 1500));
+            const output = typeof agentResult === 'string'
+                ? agentResult
+                : JSON.stringify(agentResult, null, 2);
 
-            this.log('Synthesizing findings...');
-            await new Promise(resolve => setTimeout(resolve, 1000));
-
-            this.complete(`Research complete for: ${this.task}\n\nFindings: [Simulated Findings]`);
+            this.complete(`Research complete for: ${this.task}\n\n${output}`);
         } catch (e: any) {
             this.fail(e.message);
         }
@@ -43,22 +41,21 @@ export class CodeAgent extends BaseAgent {
     }
 
     async run(): Promise<void> {
-        this.status = import('./BaseAgent.js').then(m => m.AgentStatus.RUNNING) as any;
+        this.status = AgentStatus.RUNNING;
         this.log('Starting coding task...');
 
         try {
-            // TODO: Connect to ModelSelector
+            this.log('Dispatching to coder agent...');
 
-            this.log('Reading codebase context...');
-            await new Promise(resolve => setTimeout(resolve, 1000));
+            if (!this.server.coderAgent) {
+                throw new Error('Coder agent is not initialized');
+            }
 
-            this.log('Generating implementation plan...');
-            await new Promise(resolve => setTimeout(resolve, 1500));
+            const result = await this.server.coderAgent.handleTask({ task: this.task });
+            const changed = Array.isArray(result?.filesChanged) ? result.filesChanged.join(', ') : 'none';
+            const reasoning = result?.reasoning ? `\nReasoning: ${result.reasoning}` : '';
 
-            this.log('Applying changes...');
-            await new Promise(resolve => setTimeout(resolve, 2000));
-
-            this.complete(`Coding task complete for: ${this.task}\n\nChanges applied to [Simulated Files]`);
+            this.complete(`Coding task complete for: ${this.task}\n\nFiles changed: ${changed}${reasoning}`);
         } catch (e: any) {
             this.fail(e.message);
         }

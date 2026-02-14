@@ -4,6 +4,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
+import { useRouter } from 'next/navigation';
 import { SocialAuthButtons } from '@/components/auth/SocialAuthButtons';
 
 export default function SignUpPage() {
@@ -57,13 +58,42 @@ export default function SignUpPage() {
 }
 
 function SignUpForm() {
+    const router = useRouter();
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+    const [success, setSuccess] = useState<string | null>(null);
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        // TODO: Register logic
+        setError(null);
+        setSuccess(null);
+        setIsSubmitting(true);
+
+        try {
+            const res = await fetch('/api/auth/signup', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name, email, password }),
+            });
+            const data = await res.json();
+
+            if (!res.ok || !data?.ok) {
+                setError(data?.error ?? 'Unable to create account.');
+                return;
+            }
+
+            setSuccess('Account created successfully. Redirecting to login...');
+            setTimeout(() => {
+                router.push('/login');
+            }, 800);
+        } catch {
+            setError('Network error while creating account.');
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     return (
@@ -90,8 +120,15 @@ function SignUpForm() {
                 className="w-full h-10 px-3 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all text-sm"
             />
 
-            <button type="submit" className="w-full h-10 bg-indigo-600 hover:bg-indigo-500 text-white font-medium rounded-lg transition-colors shadow-lg shadow-indigo-500/20">
-                Create Account
+            {error && <p className="text-sm text-red-500">{error}</p>}
+            {success && <p className="text-sm text-green-500">{success}</p>}
+
+            <button
+                type="submit"
+                disabled={isSubmitting}
+                className="w-full h-10 bg-indigo-600 hover:bg-indigo-500 text-white font-medium rounded-lg transition-colors shadow-lg shadow-indigo-500/20 disabled:opacity-60"
+            >
+                {isSubmitting ? 'Creating Account...' : 'Create Account'}
             </button>
         </form>
     )

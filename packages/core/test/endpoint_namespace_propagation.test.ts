@@ -2,6 +2,8 @@ import { describe, test, expect } from 'bun:test';
 import { EventEmitter } from 'events';
 import { HubServer } from '../src/hub/HubServer.js';
 
+type HubCtorArgs = ConstructorParameters<typeof HubServer>;
+
 class DummyRouter {
     private ns = new Map<string, string>();
 
@@ -21,8 +23,12 @@ class DummyRouter {
 
 describe('endpoint namespace propagation', () => {
     test('tools/list sets session namespace from endpointPath', async () => {
-        const router = new DummyRouter() as any;
-        const hub = new HubServer(router, {} as any, undefined, undefined, undefined, (path: string) => {
+        // Reason: test doubles only implement the subset used by this scenario.
+        // What: narrow local doubles to HubServer constructor parameter types via `unknown`.
+        // Why: keeps test intent intact without permissive casts.
+        const router = new DummyRouter() as unknown as HubCtorArgs[0];
+        const manager = {} as unknown as HubCtorArgs[1];
+        const hub = new HubServer(router, manager, undefined, undefined, undefined, (path: string) => {
             if (path === '/api/mcp/coding') return 'ns-coding';
             return undefined;
         });

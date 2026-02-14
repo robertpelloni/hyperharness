@@ -163,6 +163,16 @@ export class CodeExecutor {
     private options: Required<CodeModeOptions>;
     private sandboxHelper: SandboxService;
 
+    /**
+     * Reason: permissive sandbox mode selectively exposes safe global constructors/utilities.
+     * What: Reads a global value by key using `globalThis` and returns it as `unknown`.
+    * Why: Avoids broad untyped global casts while preserving controlled global pass-through behavior.
+     */
+    private getGlobalValue(key: string): unknown {
+        const globalObject = globalThis as Record<string, unknown>;
+        return globalObject[key];
+    }
+
     constructor(options: CodeModeOptions = {}) {
         this.options = {
             timeout: options.timeout ?? 30000,
@@ -201,7 +211,10 @@ export class CodeExecutor {
                 'Boolean', 'RegExp', 'Map', 'Set', 'Promise'
             ];
             unsafeGlobals.forEach(g => {
-                if ((global as any)[g]) context[g] = (global as any)[g];
+                const value = this.getGlobalValue(g);
+                if (value !== undefined) {
+                    context[g] = value;
+                }
             });
         }
 

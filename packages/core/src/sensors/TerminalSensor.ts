@@ -3,7 +3,7 @@ import { EventBus } from '../services/EventBus.js';
 
 export class TerminalSensor {
     private eventBus: EventBus;
-    private originalStderrWrite: any;
+    private originalStderrWrite: typeof process.stderr.write | null = null;
 
     constructor(eventBus: EventBus) {
         this.eventBus = eventBus;
@@ -13,9 +13,14 @@ export class TerminalSensor {
         console.log("[TerminalSensor] Hooking stderr...");
 
         // Hook stderr to capture errors
-        this.originalStderrWrite = process.stderr.write;
+        this.originalStderrWrite = process.stderr.write.bind(process.stderr);
 
-        (process.stderr.write as any) = (chunk: any, encoding?: any, callback?: any) => {
+        /**
+         * Reason: we need to observe terminal error output in real-time for event emission.
+         * What: wraps stderr writes, emits `terminal:error` on heuristic matches, then forwards bytes unchanged.
+         * Why: preserves normal stderr behavior while enabling lightweight telemetry without unsafe casts.
+         */
+        const patchedWrite: typeof process.stderr.write = (chunk, encoding?, callback?) => {
             const str = chunk.toString();
 
             // Heuristic to detect ACTUAL errors vs warnings
@@ -24,13 +29,19 @@ export class TerminalSensor {
             }
 
             // Pass through to original stderr
-            return this.originalStderrWrite.call(process.stderr, chunk, encoding, callback);
+            if (!this.originalStderrWrite) {
+                return false;
+            }
+            return this.originalStderrWrite(chunk, encoding as never, callback as never);
         };
+
+        process.stderr.write = patchedWrite;
     }
 
     public stop() {
         if (this.originalStderrWrite) {
             process.stderr.write = this.originalStderrWrite;
+            this.originalStderrWrite = null;
         }
     }
 }

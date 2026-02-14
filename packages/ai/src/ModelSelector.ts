@@ -22,10 +22,12 @@ interface ModelStatus {
 }
 
 // Default Fallback - Robust Chain
+// Defines the priority order for model selection based on task type.
+// The selector iterates through this list, checking for API keys and depletion status.
 const DEFAULT_CHAINS = {
     worker: [
         { provider: 'google', modelId: 'gemini-2.0-flash' },
-        { provider: 'anthropic', modelId: 'claude-3-5-sonnet-20241022' },
+        { provider: 'anthropic', modelId: 'claude-3-5-sonnet-latest' },
         { provider: 'openai', modelId: 'gpt-4o' },
         { provider: 'deepseek', modelId: 'deepseek-chat' },
         { provider: 'lmstudio', modelId: 'local' },
@@ -33,7 +35,7 @@ const DEFAULT_CHAINS = {
     ],
     supervisor: [
         { provider: 'openai', modelId: 'gpt-4o' },
-        { provider: 'anthropic', modelId: 'claude-3-5-sonnet-20241022' },
+        { provider: 'anthropic', modelId: 'claude-3-5-sonnet-latest' },
         { provider: 'google', modelId: 'gemini-1.5-pro' },
         { provider: 'lmstudio', modelId: 'local' }
     ]
@@ -41,6 +43,15 @@ const DEFAULT_CHAINS = {
 
 const COOL_DOWN_MS = 60 * 1000;
 
+/**
+ * ModelSelector Class
+ * Responsible for choosing the best LLM for a given task.
+ * Features:
+ * - Dynamic Chain Selection: Defaults to hardcoded robust chains but can load overrides from `council.json`.
+ * - Quota Management: Integrates with QuotaService to detect budget limits.
+ * - Failure Handling: Marks models as depleted upon failure and rotates to the next available provider.
+ * - Local Fallback: Gracefully degrades to local models (LM Studio/Ollama) if cloud quotas are hit.
+ */
 export class ModelSelector {
     private modelStates: Map<string, ModelStatus> = new Map();
     private configPath: string;

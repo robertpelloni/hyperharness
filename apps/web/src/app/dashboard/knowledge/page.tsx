@@ -8,7 +8,15 @@ import { motion } from "framer-motion";
 import { Loader2, RefreshCw, Download, Play, CheckCircle, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 
+type ExpertTrpc = {
+    expert: {
+        research: { useMutation: () => any };
+        code: { useMutation: () => any };
+    };
+};
+
 export default function KnowledgeDashboard() {
+    const trpcWithExpert = trpc as unknown as typeof trpc & ExpertTrpc;
     // Real submodule data
     const submodulesQuery = trpc.submodule.list.useQuery();
     const submodulesData = submodulesQuery.data || [];
@@ -18,6 +26,25 @@ export default function KnowledgeDashboard() {
     const [ingestUrl, setIngestUrl] = useState("");
     const [ingestLog, setIngestLog] = useState("");
     const ingestMutation = trpc.knowledge.ingest.useMutation();
+
+    // Research State
+    const [researchQuery, setResearchQuery] = useState("");
+    const [researchDepth, setResearchDepth] = useState(2);
+    const researchMutation = trpcWithExpert.expert.research.useMutation();
+
+    const handleResearch = () => {
+        if (!researchQuery) return;
+        researchMutation.mutate({ query: researchQuery, depth: researchDepth, breadth: 3 });
+    };
+
+    // Coder State
+    const [coderTask, setCoderTask] = useState("");
+    const coderMutation = trpcWithExpert.expert.code.useMutation();
+
+    const handleCode = () => {
+        if (!coderTask) return;
+        coderMutation.mutate({ task: coderTask });
+    };
 
     // Submodule Mutations
     const utils = trpc.useUtils();
@@ -188,42 +215,139 @@ export default function KnowledgeDashboard() {
                             ))
                         )}
                     </div>
+                    {/* Ingestion Section */}
+                    <section className="bg-gray-800 rounded-lg border border-gray-700 p-6 flex flex-col gap-4 h-fit">
+                        <h2 className="text-xl font-bold text-green-400 flex items-center">
+                            <span className="mr-2">🧠</span> Ingest Knowledge
+                        </h2>
+                        <div className="flex gap-2">
+                            <input
+                                type="text"
+                                className="flex-1 bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white focus:border-green-500 outline-none placeholder:text-gray-600"
+                                placeholder="Enter URL to ingest (e.g., https://example.com/docs)"
+                                value={ingestUrl}
+                                onChange={(e) => setIngestUrl(e.target.value)}
+                                onKeyDown={(e) => e.key === 'Enter' && handleIngest()}
+                            />
+                            <button
+                                onClick={handleIngest}
+                                disabled={ingestMutation.isPending}
+                                className="bg-green-600 hover:bg-green-500 text-white px-4 py-2 rounded font-bold disabled:opacity-50 flex items-center gap-2"
+                            >
+                                {ingestMutation.isPending && <Loader2 className="animate-spin h-4 w-4" />}
+                                INGEST
+                            </button>
+                        </div>
+                        {ingestLog && (
+                            <div className="bg-black p-3 rounded text-xs font-mono text-gray-300 break-all border border-gray-700 max-h-[200px] overflow-y-auto">
+                                {ingestLog}
+                            </div>
+                        )}
+                    </section>
+
                 </section>
 
-                {/* Ingestion Section */}
-                <section className="bg-gray-800 rounded-lg border border-gray-700 p-6 flex flex-col gap-4 h-fit">
-                    <h2 className="text-xl font-bold text-green-400 flex items-center">
-                        <span className="mr-2">🧠</span> Ingest Knowledge
+                {/* Deep Research Section */}
+                <section className="bg-gray-800 rounded-lg border border-gray-700 p-6 flex flex-col gap-4 lg:col-span-2">
+                    <h2 className="text-xl font-bold text-blue-400 flex items-center">
+                        <span className="mr-2">🕵️</span> Deep Research Agent
+                    </h2>
+                    <div className="flex flex-col gap-4">
+                        <div className="flex gap-2">
+                            <input
+                                type="text"
+                                className="flex-1 bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white focus:border-blue-500 outline-none placeholder:text-gray-600"
+                                placeholder="Research Topic (e.g., 'Latest advancements in solid state batteries')"
+                                value={researchQuery}
+                                onChange={(e) => setResearchQuery(e.target.value)}
+                                onKeyDown={(e) => e.key === 'Enter' && handleResearch()}
+                            />
+                            <div className="flex items-center gap-2 bg-gray-900 border border-gray-700 rounded px-3">
+                                <span className="text-xs text-gray-500">DEPTH</span>
+                                <input
+                                    type="number"
+                                    min="1" max="5"
+                                    aria-label="Research depth"
+                                    title="Research depth"
+                                    value={researchDepth}
+                                    onChange={(e) => setResearchDepth(parseInt(e.target.value))}
+                                    className="bg-transparent w-10 text-center outline-none text-white"
+                                />
+                            </div>
+                            <button
+                                onClick={handleResearch}
+                                disabled={researchMutation.isPending}
+                                className="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded font-bold disabled:opacity-50 flex items-center gap-2"
+                            >
+                                {researchMutation.isPending && <Loader2 className="animate-spin h-4 w-4" />}
+                                RESEARCH
+                            </button>
+                        </div>
+
+                        {researchMutation.data && (
+                            <div className="bg-gray-900 p-4 rounded border border-gray-700 mt-2">
+                                <h3 className="text-lg font-bold text-green-400 mb-2">Research Report</h3>
+                                <div className="prose prose-invert max-w-none text-sm text-gray-300">
+                                    <p className="whitespace-pre-wrap">{researchMutation.data.summary}</p>
+
+                                    <h4 className="font-bold text-gray-400 mt-4 mb-2">Sources:</h4>
+                                    <ul className="list-disc pl-5 space-y-1">
+                                        {researchMutation.data.findings?.map((f: any, i: number) => (
+                                            <li key={i}>
+                                                <a href={f.content} target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:underline">
+                                                    {f.source}
+                                                </a>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            </div>
+                        )}
+
+                        {researchMutation.error && (
+                            <div className="p-4 bg-red-900/20 border border-red-800 text-red-300 rounded">
+                                Error: {researchMutation.error.message}
+                            </div>
+                        )}
+                    </div>
+                </section>
+
+                {/* Coder Agent Section */}
+                <section className="bg-gray-800 rounded-lg border border-gray-700 p-6 flex flex-col gap-4 lg:col-span-2">
+                    <h2 className="text-xl font-bold text-purple-400 flex items-center">
+                        <span className="mr-2">👨‍💻</span> Coder Agent
                     </h2>
                     <div className="flex gap-2">
                         <input
                             type="text"
-                            className="flex-1 bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white focus:border-green-500 outline-none placeholder:text-gray-600"
-                            placeholder="Enter URL to ingest (e.g., https://example.com/docs)"
-                            value={ingestUrl}
-                            onChange={(e) => setIngestUrl(e.target.value)}
-                            onKeyDown={(e) => e.key === 'Enter' && handleIngest()}
+                            className="flex-1 bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white focus:border-purple-500 outline-none placeholder:text-gray-600"
+                            placeholder="Coding Task (e.g., 'Create a new utility file utils/math.ts')"
+                            value={coderTask}
+                            onChange={(e) => setCoderTask(e.target.value)}
+                            onKeyDown={(e) => e.key === 'Enter' && handleCode()}
                         />
                         <button
-                            onClick={handleIngest}
-                            disabled={ingestMutation.isPending}
-                            className="bg-green-600 hover:bg-green-500 text-white px-4 py-2 rounded font-bold disabled:opacity-50 flex items-center gap-2"
+                            onClick={handleCode}
+                            disabled={coderMutation.isPending}
+                            className="bg-purple-600 hover:bg-purple-500 text-white px-4 py-2 rounded font-bold disabled:opacity-50 flex items-center gap-2"
                         >
-                            {ingestMutation.isPending && <Loader2 className="animate-spin h-4 w-4" />}
-                            INGEST
+                            {coderMutation.isPending && <Loader2 className="animate-spin h-4 w-4" />}
+                            CODE
                         </button>
                     </div>
-                    {ingestLog && (
-                        <div className="bg-black p-3 rounded text-xs font-mono text-gray-300 break-all border border-gray-700 max-h-[200px] overflow-y-auto">
-                            {ingestLog}
+                    {coderMutation.data && (
+                        <div className="bg-gray-900 p-3 rounded text-sm border border-gray-700">
+                            <h4 className="text-green-400 font-bold mb-1">Success!</h4>
+                            <p className="text-gray-300">Files Changed: {coderMutation.data.filesChanged?.join(', ')}</p>
+                            <p className="text-gray-500 text-xs mt-1">{coderMutation.data.reasoning}</p>
+                        </div>
+                    )}
+                    {coderMutation.error && (
+                        <div className="p-3 bg-red-900/20 border border-red-800 text-red-300 rounded text-sm">
+                            Error: {coderMutation.error.message}
                         </div>
                     )}
                 </section>
-
-                {/* Resources Section - Categorized */}
-                {/* <section className="bg-gray-800 rounded-lg border border-gray-700 p-6 flex flex-col gap-6 lg:col-start-2"> */}
-                {/* Render resources if needed, typically confusing with submodules on same page unless distinct */}
-                {/* </section> */}
             </div>
         </div>
     );

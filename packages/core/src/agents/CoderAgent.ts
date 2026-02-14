@@ -3,15 +3,32 @@ import { LLMService } from '@borg/ai';
 import fs from 'fs/promises';
 import path from 'path';
 
+/**
+ * CoderAgent
+ * A specialized agent responsible for writing and modifying code.
+ * 
+ * Capabilities:
+ * - Integrates with `LLMService` to generate code based on tasks.
+ * - Parses structured JSON output from the LLM to determine filenames and content.
+ * - Writes directly to the filesystem (Phase 62 Ignition Level Capability).
+ */
 export class CoderAgent extends SpecializedAgent {
     private llm: LLMService;
 
-    constructor() {
+    constructor(llm: LLMService) {
         super('Coder', ['coding', 'refactoring', 'debugging']);
-        this.llm = new LLMService();
+        this.llm = llm;
     }
 
-    protected async handleTask(offer: any): Promise<any> {
+    /**
+     * Handles a coding task.
+     * 1. Constructs a prompt for the LLM.
+     * 2. Calls LLM via ModelSelector (High Complexity).
+     * 3. Parses the response for a file write plan.
+     * 4. Executes the file write operation.
+     * 5. Returns a structured result with file changes and reasoning.
+     */
+    public async handleTask(offer: any): Promise<any> {
         console.log(`[CoderAgent] 🧠 Analyzing task: "${offer.task}"`);
 
         // 1. Think / Generate Code
@@ -27,7 +44,8 @@ Return JSON with:
 Output ONLY valid JSON.`;
 
         try {
-            const completion = await this.llm.generateText('openai', 'gpt-4o', 'You are an expert software engineer.', prompt);
+            const model = await this.llm.modelSelector.selectModel({ taskComplexity: 'high' });
+            const completion = await this.llm.generateText(model.provider, model.modelId, 'You are an expert software engineer.', prompt);
             const response = completion.content;
 
             let plan;

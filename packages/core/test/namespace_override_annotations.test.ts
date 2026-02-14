@@ -2,6 +2,31 @@ import { describe, test, expect } from 'bun:test';
 import { EventEmitter } from 'events';
 import { McpProxyManager } from '../src/managers/McpProxyManager.js';
 
+type ProxyCtorArgs = ConstructorParameters<typeof McpProxyManager>;
+
+interface PolicyServiceLike {
+  evaluate(ctx: unknown): { allowed: boolean; reason?: string };
+}
+
+interface SavedScriptServiceLike {
+  getAllScripts(): unknown[];
+}
+
+interface ToolDefinitionShape {
+  name: string;
+  description: string;
+  inputSchema: { type: string };
+  annotations?: Record<string, unknown>;
+}
+
+function getToolRegistry(proxy: McpProxyManager): Map<string, string> {
+  return Reflect.get(proxy as object, 'toolRegistry') as Map<string, string>;
+}
+
+function getToolDefinitions(proxy: McpProxyManager): Map<string, ToolDefinitionShape> {
+  return Reflect.get(proxy as object, 'toolDefinitions') as Map<string, ToolDefinitionShape>;
+}
+
 class MockMcpManager extends EventEmitter {
   getClient(_name: string) {
     return null;
@@ -12,7 +37,7 @@ class MockMcpManager extends EventEmitter {
 }
 
 class MockLogManager {
-  log(_entry: any) {}
+  log(_entry: unknown) {}
   calculateCost() {
     return 0;
   }
@@ -23,13 +48,17 @@ describe('namespace override annotations', () => {
     process.env.MCP_DISABLE_METAMCP = 'true';
     process.env.MCP_PROGRESSIVE_MODE = 'false';
 
-    const proxy = new McpProxyManager(new MockMcpManager() as any, new MockLogManager() as any, {
-      policyService: { evaluate: () => ({ allowed: true }) } as any,
-      savedScriptService: { getAllScripts: () => [] } as any,
-    });
+    const policyService: PolicyServiceLike = { evaluate: () => ({ allowed: true }) };
+    const savedScriptService: SavedScriptServiceLike = { getAllScripts: () => [] };
 
-    (proxy as any).toolRegistry.set('x', 'internal');
-    (proxy as any).toolDefinitions.set('x', { name: 'x', description: 'desc', inputSchema: { type: 'object' }, annotations: { readOnlyHint: true } });
+    const proxy = new McpProxyManager(
+      new MockMcpManager() as unknown as ProxyCtorArgs[0],
+      new MockLogManager() as unknown as ProxyCtorArgs[1],
+      { policyService, savedScriptService } as unknown as ProxyCtorArgs[2]
+    );
+
+    getToolRegistry(proxy).set('x', 'internal');
+    getToolDefinitions(proxy).set('x', { name: 'x', description: 'desc', inputSchema: { type: 'object' }, annotations: { readOnlyHint: true } });
 
     await proxy.callTool('namespace_set', { namespaceId: 'ns1' }, 'sess');
     await proxy.callTool(
@@ -44,7 +73,7 @@ describe('namespace override annotations', () => {
     );
 
     const tools = await proxy.getAllTools('sess');
-    const tool = (tools as any[]).find((t) => t.name === 'x');
+    const tool = tools.find((t: { name?: string }) => t.name === 'x');
     expect(Boolean(tool)).toBe(true);
     expect(tool.annotations?.readOnlyHint).toBe(false);
     expect(tool.annotations?.custom).toBe('y');

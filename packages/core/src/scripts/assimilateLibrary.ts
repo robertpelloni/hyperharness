@@ -38,7 +38,7 @@ async function run() {
             generateText: async () => ({ content: "export const toolDefinition = { name: 'mock_tool', description: 'Mock Tool', schema: {}, execute: async () => 'Executed' };" }),
             generateJSON: async () => ({}),
             // Add other necessary methods if SkillAssimilationService calls them
-        } as any;
+        } as unknown as LLMService;
         const registry = new SkillRegistry([skillsRoot]);
 
         const memoryManager = new MemoryManager(root);

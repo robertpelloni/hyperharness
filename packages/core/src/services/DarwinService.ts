@@ -21,6 +21,34 @@ export interface Experiment {
     judgeReasoning?: string;
 }
 
+interface LlmTextResponse {
+    text?: string;
+    content?: string;
+}
+
+/**
+ * Reason: Darwin experiments consume outputs from multiple LLM calls that may vary in shape.
+ * What: Collapses known response forms (`text`, `content`, raw string) into a stable string.
+ * Why: Keeps mutation/judging logic deterministic while removing broad untyped cast usage.
+ */
+function extractLlmText(response: unknown): string {
+    if (typeof response === 'string') {
+        return response;
+    }
+
+    if (response && typeof response === 'object') {
+        const maybeResponse = response as LlmTextResponse;
+        if (typeof maybeResponse.text === 'string') {
+            return maybeResponse.text;
+        }
+        if (typeof maybeResponse.content === 'string') {
+            return maybeResponse.content;
+        }
+    }
+
+    return String(response);
+}
+
 export class DarwinService {
     private llm: LLMService;
     private server: MCPServer;
@@ -52,7 +80,7 @@ export class DarwinService {
 
         let result;
         try {
-            result = JSON.parse((response as any).text || (response as any).content || response);
+            result = JSON.parse(extractLlmText(response));
         } catch (e) {
             throw new Error("Failed to parse mutation suggestion.");
         }
@@ -121,7 +149,7 @@ export class DarwinService {
 
         const judgeRes = await this.llm.generateText("openai", "gpt-4o", "", judgePrompt, {});
         try {
-            const verdict = JSON.parse((judgeRes as any).text || (judgeRes as any).content || judgeRes);
+            const verdict = JSON.parse(extractLlmText(judgeRes));
             experiment.winner = verdict.winner;
             experiment.judgeReasoning = verdict.reasoning;
         } catch (e) {
@@ -137,7 +165,7 @@ export class DarwinService {
         // Simulate an agent running a task with a specific system prompt
         // We just ask the LLM directly contextually
         const res = await this.llm.generateText("openai", "gpt-4o", sysPrompt, task, {});
-        return (res as any).text || (res as any).content || String(res);
+        return extractLlmText(res);
     }
 
     public getStatus() {
