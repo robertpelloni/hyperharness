@@ -3,13 +3,12 @@
 import { useState } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from "@borg/ui";
 import { Button } from "@borg/ui";
-import { Loader2, Globe, Download, ExternalLink } from "lucide-react";
+import { Loader2, Globe, Download, ExternalLink, Database } from "lucide-react";
 import { trpc } from '@/utils/trpc';
 import { toast } from 'sonner';
 
-// Mock registry data for now, or fetch from a JSON file/remote source
-// In a real implementation this might fetch from 'registry.mcp.io' or similar
-const MOCK_REGISTRY = [
+// Fallback install templates if live registry has no install metadata
+const QUICK_INSTALL_TEMPLATES = [
     {
         name: "filesystem",
         description: "Standard filesystem operations (read/write/list)",
@@ -54,11 +53,40 @@ const MOCK_REGISTRY = [
     }
 ];
 
+type RegistryItem = {
+    id?: string;
+    name: string;
+    description: string;
+    author?: string;
+    command?: string;
+    args?: string[];
+    env?: Record<string, string>;
+    tags: string[];
+    url?: string;
+    category?: string;
+};
+
 export default function RegistryDashboard() {
     const [filter, setFilter] = useState('');
 
     // We can use this to check which are already installed
     const { data: installedServers } = trpc.mcpServers.list.useQuery();
+    const { data: registry, isLoading: loadingRegistry } = trpc.mcpServers.registrySnapshot.useQuery();
+
+    const liveRegistry: RegistryItem[] = (registry || []).map((item: any) => ({
+        id: item.id,
+        name: item.name,
+        description: item.description,
+        tags: Array.isArray(item.tags) ? item.tags : [],
+        url: item.url,
+        category: item.category,
+    }));
+
+    const source = liveRegistry.length > 0 ? liveRegistry : QUICK_INSTALL_TEMPLATES;
+    const filtered = source.filter((item) =>
+        item.name.toLowerCase().includes(filter.toLowerCase()) ||
+        item.description.toLowerCase().includes(filter.toLowerCase())
+    );
 
     return (
         <div className="p-8 space-y-8">
@@ -68,6 +96,10 @@ export default function RegistryDashboard() {
                     <p className="text-zinc-500">
                         Discover and install community MCP servers
                     </p>
+                </div>
+                <div className="text-xs text-zinc-500 flex items-center gap-2">
+                    <Database className="h-4 w-4" />
+                    {liveRegistry.length > 0 ? `Live index (${liveRegistry.length})` : 'Fallback templates'}
                 </div>
             </div>
 
@@ -81,12 +113,13 @@ export default function RegistryDashboard() {
             </div>
 
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                {MOCK_REGISTRY.filter(item =>
-                    item.name.includes(filter.toLowerCase()) ||
-                    item.description.toLowerCase().includes(filter.toLowerCase())
-                ).map((item) => (
+                {loadingRegistry ? (
+                    <div className="col-span-full flex items-center justify-center py-16 text-zinc-500">
+                        <Loader2 className="h-5 w-5 animate-spin mr-2" /> Loading live registry...
+                    </div>
+                ) : filtered.map((item) => (
                     <RegistryCard
-                        key={item.name}
+                        key={item.id || item.name}
                         item={item}
                         isInstalled={!!installedServers?.some((s: any) => s.name === item.name)}
                     />
@@ -96,7 +129,7 @@ export default function RegistryDashboard() {
     );
 }
 
-function RegistryCard({ item, isInstalled }: { item: any; isInstalled: boolean }) {
+function RegistryCard({ item, isInstalled }: { item: RegistryItem; isInstalled: boolean }) {
     const installMutation = trpc.mcpServers.create.useMutation({
         onSuccess: () => {
             toast.success(`Installed ${item.name}`);
@@ -107,6 +140,7 @@ function RegistryCard({ item, isInstalled }: { item: any; isInstalled: boolean }
     });
 
     const handleInstall = () => {
+        if (!item.command || !item.args) return;
         // Prepare config, prompting for ENV if needed (simplified here)
         installMutation.mutate({
             name: item.name,
@@ -138,6 +172,17 @@ function RegistryCard({ item, isInstalled }: { item: any; isInstalled: boolean }
                     {item.description}
                 </p>
 
+                {item.url ? (
+                    <a
+                        href={item.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-xs text-blue-400 hover:text-blue-300 inline-flex items-center gap-1"
+                    >
+                        <ExternalLink className="h-3 w-3" /> Open Source
+                    </a>
+                ) : null}
+
                 <div className="flex flex-wrap gap-1">
                     {item.tags.map((tag: string) => (
                         <span key={tag} className="px-1.5 py-0.5 bg-zinc-800 rounded text-[10px] text-zinc-500">
@@ -148,13 +193,15 @@ function RegistryCard({ item, isInstalled }: { item: any; isInstalled: boolean }
 
                 <Button
                     onClick={handleInstall}
-                    disabled={isInstalled || installMutation.isPending}
+                    disabled={isInstalled || installMutation.isPending || !item.command || !item.args}
                     className="w-full bg-blue-600 hover:bg-blue-500 disabled:bg-zinc-800 disabled:text-zinc-500"
                 >
                     {installMutation.isPending ? (
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     ) : isInstalled ? (
                         "Installed"
+                    ) : !item.command || !item.args ? (
+                        "Manual Setup"
                     ) : (
                         <>
                             <Download className="mr-2 h-4 w-4" /> Install Server

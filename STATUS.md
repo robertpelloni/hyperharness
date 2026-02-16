@@ -71,6 +71,7 @@ UX hardening update:
 - Hardened `/dashboard/super-assistant` with loading/degraded badges, partial-data warning, and refresh/retry controls.
 - Replaced static `/dashboard/mcp/docs` mock content with live workspace doc loading via `executeTool` + `read_file`.
 - Added server-side `tools.search` query and wired `/dashboard/mcp/search` to backend search results.
+- Replaced `/dashboard/mcp/registry` mock-only catalog with live index-backed registry snapshot (`mcpServers.registrySnapshot`) plus fallback install templates.
 
 Validation note:
 - Repository `pnpm typecheck` currently fails before execution due to missing Turbo task wiring (`Could not find task \`typecheck\` in project`); file-level diagnostics remain clean for changed files.
@@ -145,6 +146,7 @@ Borg is a monorepo AI Operating System with **47 registered tRPC routers**, **62
 | `agent` | `/dashboard/mcp/agent` | ✅ Agent chat interface |
 | `executeTool` (+ docs files) | `/dashboard/mcp/docs` | ✅ Live workspace docs explorer |
 | `tools.search` | `/dashboard/mcp/search` | ✅ Server-side MCP tool search |
+| `mcpServers.registrySnapshot` | `/dashboard/mcp/registry` | ✅ Live index-backed registry catalog |
 | `tools` + `mcpServers` + `skills` | `/dashboard/super-assistant` | ✅ Live capability overview |
 
 ### 2.2 Dashboard Pages WITHOUT Dedicated Router Wiring
@@ -158,7 +160,6 @@ Borg is a monorepo AI Operating System with **47 registered tRPC routers**, **62
 | `/dashboard/reader` | Unknown wiring | Verify → likely `expert.ingest` |
 | `/dashboard/security` | Unknown wiring | Verify → likely `autonomy`/`audit` |
 | `/dashboard/mcp/observability` | Unknown wiring | Verify → likely `metrics` |
-| `/dashboard/mcp/registry` | Unknown wiring | Verify → likely `mcpServers` |
 | `/dashboard/mcp/inspector` | Unknown wiring | Verify → likely `logs` |
 
 ### 2.3 Services NOT Fully Exposed via Router + UI
