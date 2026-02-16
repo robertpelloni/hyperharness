@@ -78,6 +78,13 @@ UX hardening update:
 - Expanded `/dashboard/security` controls with LOW/MEDIUM/HIGH autonomy actions, full autonomy activation, and audit-log filtering.
 - Hardened `PromptLibrary` with loading/error/retry states and client-side filtering for `/dashboard/library`.
 - Upgraded `/dashboard/manual` with live version detection (`VERSION.md`) and runtime snapshot cards (ingestion queue + autonomy).
+- Stabilized monorepo watch startup by preventing duplicate/meta package dev collisions and port-fatal crashes:
+	- `packages/opencode-autopilot` root `dev` now no-op in workspace orchestration (prevents duplicate server on `:3847`).
+	- `@opencode-autopilot/cli` `dev` now no-op in workspace watch; interactive mode moved to `dev:interactive`.
+	- `packages/MCP-SuperAssistant` root `dev`/`dev:firefox` now workspace-safe no-op scripts.
+	- `@extension/hmr` now treats `EADDRINUSE` on `:7081` as non-fatal (assumes existing HMR instance).
+	- MCP-SuperAssistant dev/build env setup switched away from bash-dependent startup path for Windows robustness.
+- Fixed `@borg/core` watch-mode TypeScript blocker in `policy.functional.ts` by removing invalid `Policy.name` access from denial path.
 
 Validation note:
 - Repository `pnpm typecheck` currently fails before execution due to missing Turbo task wiring (`Could not find task \`typecheck\` in project`); file-level diagnostics remain clean for changed files.

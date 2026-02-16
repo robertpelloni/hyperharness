@@ -27,7 +27,7 @@ export const createPolicyMiddleware = (
                 if (policy) {
                     const allowed = policyService.evaluateAccess(policy, name);
                     if (!allowed) {
-                        throw new Error(`Access denied to tool '${name}' by policy '${policy.name}'.`);
+                        throw new Error(`Access denied to tool '${name}' by policy '${policyId}'.`);
                     }
                 } else {
                     console.warn(`Policy ID ${policyId} provided but not found.`);
