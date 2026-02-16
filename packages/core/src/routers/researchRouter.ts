@@ -255,4 +255,48 @@ export const researchRouter = t.router({
                 message: `Moved ${failedUrls.length} failed URL(s) to pending queue.`
             };
         }),
+
+    /** Add a URL directly into pending ingestion queue */
+    enqueuePending: publicProcedure
+        .input(z.object({
+            url: z.string().url(),
+            source: z.string().default('dashboard-reader'),
+        }))
+        .mutation(async ({ input }) => {
+            const statusDoc = await readIngestionStatus();
+            const normalized = normalizeUrl(input.url);
+
+            if (statusDoc.processed.some((u) => normalizeUrl(u) === normalized)) {
+                return {
+                    success: false,
+                    queued: false,
+                    url: normalized,
+                    message: 'URL already processed.'
+                };
+            }
+
+            const wasPending = statusDoc.pending.some((u) => normalizeUrl(u) === normalized);
+            statusDoc.failed = statusDoc.failed.filter((item) => normalizeUrl(item.url) !== normalized);
+
+            if (!wasPending) {
+                statusDoc.pending.push(normalized);
+                await writeIngestionStatus(statusDoc);
+                return {
+                    success: true,
+                    queued: true,
+                    url: normalized,
+                    source: input.source,
+                    message: 'URL added to pending ingestion queue.'
+                };
+            }
+
+            await writeIngestionStatus(statusDoc);
+            return {
+                success: true,
+                queued: false,
+                url: normalized,
+                source: input.source,
+                message: 'URL already pending.'
+            };
+        }),
 });

@@ -2,10 +2,12 @@
 
 import { trpc } from "@/utils/trpc";
 import { useState } from "react";
+import { toast } from "sonner";
 
 export default function ReaderPage() {
     const [url, setUrl] = useState("");
     const executeTool = trpc.executeTool.useMutation();
+    const enqueueMutation = trpc.research.enqueuePending.useMutation();
     const [result, setResult] = useState<string | null>(null);
 
     const handleRead = async () => {
@@ -18,6 +20,24 @@ export default function ReaderPage() {
             setResult(typeof output === 'string' ? output : JSON.stringify(output, null, 2));
         } catch (e: any) {
             setResult(`Error: ${e.message}`);
+        }
+    };
+
+    const handleQueueForIngestion = async () => {
+        if (!url) return;
+        try {
+            const response = await enqueueMutation.mutateAsync({
+                url,
+                source: 'dashboard-reader',
+            });
+            if (response.success) {
+                toast.success(response.message);
+            } else {
+                toast.error(response.message);
+            }
+        } catch (error) {
+            const message = error instanceof Error ? error.message : 'Failed to queue URL.';
+            toast.error(message);
         }
     };
 
@@ -43,6 +63,13 @@ export default function ReaderPage() {
                     className="px-6 py-3 bg-blue-600 hover:bg-blue-500 disabled:bg-zinc-800 disabled:text-zinc-500 text-white rounded-lg font-medium transition-colors"
                 >
                     {executeTool.isPending ? "Reading..." : "Read Page"}
+                </button>
+                <button
+                    onClick={handleQueueForIngestion}
+                    disabled={enqueueMutation.isPending || !url}
+                    className="px-6 py-3 bg-emerald-700 hover:bg-emerald-600 disabled:bg-zinc-800 disabled:text-zinc-500 text-white rounded-lg font-medium transition-colors"
+                >
+                    {enqueueMutation.isPending ? "Queueing..." : "Queue for Ingestion"}
                 </button>
             </div>
 
