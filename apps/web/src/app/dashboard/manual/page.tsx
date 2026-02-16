@@ -1,11 +1,41 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@borg/ui';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@borg/ui";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@borg/ui";
+import { Badge } from '@borg/ui';
+import { trpc } from '@/utils/trpc';
 import { Book, Cpu, Shield, Activity, GraduationCap, GitBranch, Terminal } from 'lucide-react';
 
 export default function ManualPage() {
+    const [versionLabel, setVersionLabel] = useState('loading...');
+    const executeTool = trpc.executeTool.useMutation();
+    const queueQuery = trpc.research.ingestionQueue.useQuery(undefined, { refetchInterval: 10000 });
+    const autonomyQuery = trpc.autonomy.getLevel.useQuery(undefined, { refetchInterval: 10000 });
+
+    useEffect(() => {
+        const loadVersion = async () => {
+            try {
+                let output: unknown;
+                try {
+                    output = await executeTool.mutateAsync({ name: 'read_file', args: { filePath: 'VERSION.md' } });
+                } catch {
+                    output = await executeTool.mutateAsync({ name: 'read_file', args: { path: 'VERSION.md' } });
+                }
+
+                const text = typeof output === 'string' ? output : JSON.stringify(output);
+                const match = text.match(/\b\d+\.\d+\.\d+\b/);
+                setVersionLabel(match ? `v${match[0]}` : 'unknown');
+            } catch {
+                setVersionLabel('unknown');
+            }
+        };
+
+        void loadVersion();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
     return (
         <div className="container mx-auto p-6 space-y-6 max-w-5xl">
             <div className="flex flex-col gap-2">
@@ -14,9 +44,38 @@ export default function ManualPage() {
                     Borg User Manual
                 </h1>
                 <p className="text-xl text-muted-foreground">
-                    Comprehensive guide to the Neural Operating System v2.3.0.
+                    Comprehensive guide to the Neural Operating System {versionLabel}.
                 </p>
             </div>
+
+            <Card className="bg-zinc-950 border-zinc-800">
+                <CardHeader>
+                    <CardTitle className="text-base">Live System Snapshot</CardTitle>
+                    <CardDescription>Operational context pulled from active runtime endpoints.</CardDescription>
+                </CardHeader>
+                <CardContent className="grid grid-cols-1 md:grid-cols-4 gap-3">
+                    <div className="rounded-md border border-emerald-500/30 bg-emerald-950/20 px-3 py-2">
+                        <div className="text-xs uppercase tracking-wide text-emerald-300/80">Processed</div>
+                        <div className="text-xl font-semibold text-emerald-300">{queueQuery.data?.totals.processed ?? 0}</div>
+                    </div>
+                    <div className="rounded-md border border-amber-500/30 bg-amber-950/20 px-3 py-2">
+                        <div className="text-xs uppercase tracking-wide text-amber-300/80">Pending</div>
+                        <div className="text-xl font-semibold text-amber-300">{queueQuery.data?.totals.pending ?? 0}</div>
+                    </div>
+                    <div className="rounded-md border border-rose-500/30 bg-rose-950/20 px-3 py-2">
+                        <div className="text-xs uppercase tracking-wide text-rose-300/80">Failed</div>
+                        <div className="text-xl font-semibold text-rose-300">{queueQuery.data?.totals.failed ?? 0}</div>
+                    </div>
+                    <div className="rounded-md border border-blue-500/30 bg-blue-950/20 px-3 py-2">
+                        <div className="text-xs uppercase tracking-wide text-blue-300/80">Autonomy</div>
+                        <div className="mt-1">
+                            <Badge variant="outline" className="text-blue-300 border-blue-700/50">
+                                {(autonomyQuery.data || 'unknown').toUpperCase()}
+                            </Badge>
+                        </div>
+                    </div>
+                </CardContent>
+            </Card>
 
             <Tabs defaultValue="getting-started" className="space-y-6">
                 <TabsList className="grid w-full grid-cols-4 bg-zinc-900 border border-zinc-800 h-auto p-1">
