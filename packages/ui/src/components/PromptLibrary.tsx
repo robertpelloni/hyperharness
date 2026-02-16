@@ -17,15 +17,32 @@ export function PromptLibrary() {
     const [selected, setSelected] = useState<Prompt | null>(null);
     const [editMode, setEditMode] = useState(false);
     const [editedTemplate, setEditedTemplate] = useState("");
+    const [search, setSearch] = useState('');
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
         fetchPrompts();
     }, []);
 
     const fetchPrompts = async () => {
-        const res = await fetch('/api/prompts');
-        const data = await res.json();
-        if (data.prompts) setPrompts(data.prompts);
+        setLoading(true);
+        setError(null);
+        try {
+            const res = await fetch('/api/prompts');
+            if (!res.ok) {
+                throw new Error(`HTTP ${res.status}`);
+            }
+            const data = await res.json();
+            if (data.prompts) setPrompts(data.prompts);
+            else setPrompts([]);
+        } catch (e) {
+            const message = e instanceof Error ? e.message : 'Unable to fetch prompts';
+            setError(message);
+            setPrompts([]);
+        } finally {
+            setLoading(false);
+        }
     };
 
     const handleSave = async () => {
@@ -45,15 +62,37 @@ export function PromptLibrary() {
         setEditMode(false);
     };
 
+    const filteredPrompts = prompts.filter((p) => {
+        const q = search.trim().toLowerCase();
+        if (!q) return true;
+        return p.id.toLowerCase().includes(q) || p.description.toLowerCase().includes(q);
+    });
+
     return (
         <div className="flex h-[80vh] border border-white/10 rounded-xl overflow-hidden glass-panel">
             {/* Sidebar List */}
             <div className="w-1/3 border-r border-white/10 bg-black/20 overflow-y-auto">
                 <div className="p-4 border-b border-white/10">
                     <h2 className="text-xl font-bold bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">Prompts</h2>
+                    <div className="mt-3 space-y-2">
+                        <Input
+                            value={search}
+                            onChange={(e) => setSearch(e.target.value)}
+                            placeholder="Filter prompts..."
+                            className="bg-black/30 border-white/10"
+                        />
+                        {error ? (
+                            <div className="text-xs text-red-400 flex items-center justify-between">
+                                <span>Load failed: {error}</span>
+                                <Button size="sm" variant="ghost" onClick={fetchPrompts}>Retry</Button>
+                            </div>
+                        ) : null}
+                    </div>
                 </div>
                 <div>
-                    {prompts.map(p => (
+                    {loading ? (
+                        <div className="p-4 text-sm text-gray-400">Loading prompts...</div>
+                    ) : filteredPrompts.map(p => (
                         <div
                             key={p.id}
                             onClick={() => { setSelected(p); setEditedTemplate(p.template); setEditMode(false); }}
@@ -64,6 +103,9 @@ export function PromptLibrary() {
                             <div className="text-[10px] text-gray-600 mt-1">v{p.version} • {new Date(p.updatedAt).toLocaleDateString()}</div>
                         </div>
                     ))}
+                    {!loading && !error && filteredPrompts.length === 0 ? (
+                        <div className="p-4 text-xs text-gray-500">No prompts match current filter.</div>
+                    ) : null}
                 </div>
             </div>
 
