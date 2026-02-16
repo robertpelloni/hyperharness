@@ -2,21 +2,18 @@
 
 import { useState } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from "@borg/ui";
-import { Button } from "@borg/ui";
 import { Loader2, Search, ArrowRight, Zap, Code } from "lucide-react";
 import { trpc } from '@/utils/trpc';
 
 export default function SearchDashboard() {
     const [query, setQuery] = useState('');
-    const { data: tools, isLoading } = trpc.tools.list.useQuery(); // Basic tool search for now
+    const searchQuery = trpc.tools.search.useQuery(
+        { query, limit: 30 },
+        { enabled: query.trim().length > 0 }
+    );
 
-    // In a real implementation this would call a dedicated search router (e.g. embedding search)
-    // For now we filter client-side
-
-    const results = query ? (tools || []).filter((t: any) =>
-        t.name.toLowerCase().includes(query.toLowerCase()) ||
-        (t.description || '').toLowerCase().includes(query.toLowerCase())
-    ) : [];
+    const results = searchQuery.data || [];
+    const isLoading = searchQuery.isLoading;
 
     return (
         <div className="p-8 space-y-8 h-full flex flex-col">

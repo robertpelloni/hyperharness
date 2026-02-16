@@ -70,6 +70,7 @@ UX hardening update:
 - Added 5-second auto-dismiss for queue feedback banners and `Last queue action` timestamp in Queue Status.
 - Hardened `/dashboard/super-assistant` with loading/degraded badges, partial-data warning, and refresh/retry controls.
 - Replaced static `/dashboard/mcp/docs` mock content with live workspace doc loading via `executeTool` + `read_file`.
+- Added server-side `tools.search` query and wired `/dashboard/mcp/search` to backend search results.
 
 Validation note:
 - Repository `pnpm typecheck` currently fails before execution due to missing Turbo task wiring (`Could not find task \`typecheck\` in project`); file-level diagnostics remain clean for changed files.
@@ -143,6 +144,7 @@ Borg is a monorepo AI Operating System with **47 registered tRPC routers**, **62
 | `oauth` | `/dashboard/mcp/settings` | ✅ OAuth management |
 | `agent` | `/dashboard/mcp/agent` | ✅ Agent chat interface |
 | `executeTool` (+ docs files) | `/dashboard/mcp/docs` | ✅ Live workspace docs explorer |
+| `tools.search` | `/dashboard/mcp/search` | ✅ Server-side MCP tool search |
 | `tools` + `mcpServers` + `skills` | `/dashboard/super-assistant` | ✅ Live capability overview |
 
 ### 2.2 Dashboard Pages WITHOUT Dedicated Router Wiring
@@ -156,7 +158,6 @@ Borg is a monorepo AI Operating System with **47 registered tRPC routers**, **62
 | `/dashboard/reader` | Unknown wiring | Verify → likely `expert.ingest` |
 | `/dashboard/security` | Unknown wiring | Verify → likely `autonomy`/`audit` |
 | `/dashboard/mcp/observability` | Unknown wiring | Verify → likely `metrics` |
-| `/dashboard/mcp/search` | Unknown wiring | Verify → likely `tools.search` |
 | `/dashboard/mcp/registry` | Unknown wiring | Verify → likely `mcpServers` |
 | `/dashboard/mcp/inspector` | Unknown wiring | Verify → likely `logs` |
 
