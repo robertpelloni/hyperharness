@@ -160,12 +160,12 @@ Borg is a monorepo AI Operating System with **47 registered tRPC routers**, **62
 | `autonomy` + `audit` | `/dashboard/security` | ✅ Governance controls + filtered audit logs |
 | `skills.*` + `/api/prompts` | `/dashboard/library` | ✅ Skill/prompt library with resilient prompt loading |
 | `executeTool` + `research.ingestionQueue` + `autonomy.getLevel` | `/dashboard/manual` | ✅ Live runtime-aware manual view |
+| `git` + `audit` | `/dashboard/chronicle` | ✅ Unified commit/audit timeline and revert controls |
 
 ### 2.2 Dashboard Pages WITHOUT Dedicated Router Wiring
 
 | Page | Current State | Action Needed |
 |------|--------------|---------------|
-| `/dashboard/chronicle` | Unknown wiring | Verify router connection |
 | `/dashboard/events` | Unknown wiring | Verify → likely `pulse` router |
 
 ### 2.3 Services NOT Fully Exposed via Router + UI
