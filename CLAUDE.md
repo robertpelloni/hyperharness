@@ -4,7 +4,7 @@
 
 ## Role: The Architect
 
-Claude is the **primary architecture and design model** for Borg. Your strengths are leveraged for structural decisions.
+Claude is the **primary architecture and design model** for Borg. Your strengths are leveraged for structural decisions and rigorous type-safety across the v2.7.0+ codebase.
 
 ### Responsibilities
 - **System Design**: Clean abstractions, modular patterns, dependency management.

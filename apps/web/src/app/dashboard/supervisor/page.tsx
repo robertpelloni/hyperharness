@@ -16,6 +16,17 @@ export default function SupervisorPage() {
     const decomposeMutation = trpc.supervisor.decompose.useMutation();
     const superviseMutation = trpc.supervisor.supervise.useMutation();
 
+    const { data: autonomyLevel, refetch: refetchAutonomy } = trpc.autonomy.getLevel.useQuery();
+    const setAutonomyMutation = trpc.autonomy.setLevel.useMutation({
+        onSuccess: () => refetchAutonomy()
+    });
+    const activateFullMutation = trpc.autonomy.activateFullAutonomy.useMutation({
+        onSuccess: (msg) => {
+            setExecutionLog(prev => prev + `\n[System] ${msg}`);
+            refetchAutonomy();
+        }
+    });
+
     const handleDecompose = async () => {
         if (!goal) return;
         try {
@@ -42,11 +53,40 @@ export default function SupervisorPage() {
 
     return (
         <div className="p-6 space-y-6 h-full flex flex-col">
-            <div className="flex flex-col gap-2">
-                <h1 className="text-3xl font-bold tracking-tight">👮 Supervisor</h1>
-                <p className="text-muted-foreground">
-                    Hierarchical task delegation and sub-agent orchestration.
-                </p>
+            <div className="flex justify-between items-start">
+                <div className="flex flex-col gap-2">
+                    <h1 className="text-3xl font-bold tracking-tight">👮 Supervisor</h1>
+                    <p className="text-muted-foreground">
+                        Hierarchical task delegation and sub-agent orchestration.
+                    </p>
+                </div>
+
+                {/* Autonomy Controls */}
+                <div className="flex bg-zinc-900 border border-zinc-800 rounded-lg p-3 gap-4 items-center">
+                    <div className="flex flex-col">
+                        <span className="text-xs text-zinc-400 font-medium">Autonomy Level</span>
+                        <div className="text-sm font-bold text-white uppercase">{autonomyLevel || 'Loading...'}</div>
+                    </div>
+                    <div className="flex gap-2">
+                        <select
+                            value={autonomyLevel || 'low'}
+                            onChange={(e) => setAutonomyMutation.mutate({ level: e.target.value as any })}
+                            disabled={setAutonomyMutation.isPending}
+                            className="bg-zinc-950 border border-zinc-700 text-xs rounded px-2 py-1 text-zinc-300"
+                        >
+                            <option value="low">Low (Requires Approval)</option>
+                            <option value="medium">Medium (Auto-Executes Safe Tools)</option>
+                            <option value="high">High (Full Automation)</option>
+                        </select>
+                        <Button
+                            variant="destructive" size="sm" className="h-7 text-xs"
+                            onClick={() => activateFullMutation.mutate()}
+                            disabled={activateFullMutation.isPending || autonomyLevel === 'high'}
+                        >
+                            Activate Full
+                        </Button>
+                    </div>
+                </div>
             </div>
 
             <Card className="p-6 space-y-4">
