@@ -1,8 +1,8 @@
 export interface IVectorStore {
     initialize(): Promise<void>;
     createEmbeddings(text: string): Promise<number[]>;
-    addMemory(content: string, metadata: any): Promise<boolean>;
-    addDocuments(docs: any[]): Promise<boolean | void>;
+    addMemory(content: string, metadata: any): Promise<void>;
+    addDocuments(docs: any[]): Promise<void>;
     get(id: string): Promise<any | null>;
     delete(ids: string[]): Promise<void>;
     reset(): Promise<void>;

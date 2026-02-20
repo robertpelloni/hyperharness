@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { VectorStore } from '../src/VectorStore.js';
+import { LanceDBStore } from '../src/LanceDBStore.js';
 import { Indexer } from '../src/Indexer.js';
 import path from 'path';
 import fs from 'fs';
@@ -13,7 +13,7 @@ const rmDir = (dir: string) => {
 describe('Phase 23: Deep Data Search (Indexer)', () => {
     const TEST_DIR = path.join(process.cwd(), '.borg', 'test_indexer_' + Date.now());
     const DATA_DIR = path.join(TEST_DIR, 'mock_codebase');
-    let store: VectorStore;
+    let store: LanceDBStore;
     let indexer: Indexer;
 
     beforeEach(async () => {
@@ -30,7 +30,7 @@ describe('Phase 23: Deep Data Search (Indexer)', () => {
 
         fs.writeFileSync(path.join(DATA_DIR, 'readme.md'), '# Documentation\nThis is a test readme.');
 
-        store = new VectorStore(TEST_DIR);
+        store = new LanceDBStore(TEST_DIR);
         indexer = new Indexer(store);
     });
 

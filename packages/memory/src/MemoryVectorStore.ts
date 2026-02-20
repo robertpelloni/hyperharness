@@ -32,12 +32,11 @@ export class MemoryVectorStore implements IVectorStore {
             ...metadata,
             timestamp: Date.now()
         });
-        return true;
     }
 
     async addDocuments(docs: any[]) {
         if (!this.initialized) await this.initialize();
-        if (docs.length === 0) return true;
+        if (docs.length === 0) return;
 
         const processed = await Promise.all(docs.map(async d => {
             if (d.vector) return { ...d, timestamp: d.timestamp || Date.now() };
@@ -51,7 +50,6 @@ export class MemoryVectorStore implements IVectorStore {
         }));
 
         this.db.push(...processed);
-        return true;
     }
 
     async get(id: string) {

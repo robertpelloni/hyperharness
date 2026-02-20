@@ -52,7 +52,6 @@ export class LanceDBStore implements IVectorStore {
             // Schema is inferred from data
             table = await this.db.createTable('memories', data);
         }
-        return true;
     }
 
     async addDocuments(docs: any[]) {
@@ -77,7 +76,6 @@ export class LanceDBStore implements IVectorStore {
         } catch (e) {
             table = await this.db.createTable('memories', processed);
         }
-        return true;
     }
 
     async get(id: string) {

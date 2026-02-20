@@ -35,7 +35,8 @@ interface VectorStoreLike {
 }
 
 interface BorgMemoryModule {
-    VectorStore: new (dbPath: string) => VectorStoreLike;
+    LanceDBStore: new (dbPath: string) => VectorStoreLike;
+    MemoryVectorStore: new () => VectorStoreLike;
     GraphMemory: new () => GraphMemory;
 }
 
@@ -98,12 +99,22 @@ export class MemoryManager {
 
         console.log("[MemoryManager] Initializing Vector Backend...");
 
-        // Lazy load the default LanceDB provider from @borg/memory
-        // In the future, this could allow switching to Chroma/SQLite based on config
-        const { VectorStore, GraphMemory } = await import('@borg/memory') as unknown as BorgMemoryModule;
+        // Lazy load the providers from @borg/memory
+        // This allows switching to Chroma/SQLite/Memory based on config
+        const { LanceDBStore, MemoryVectorStore, GraphMemory } = await import('@borg/memory') as unknown as BorgMemoryModule;
 
-        // Adapt existing VectorStore to VectorProvider interface
-        const store = new VectorStore(this.dbPath);
+        // Select Backend
+        let store: VectorStoreLike;
+        const useMemoryStore = process.env.MEMORY_BACKEND === 'memory';
+
+        if (useMemoryStore) {
+            console.log("[MemoryManager] Using MemoryVectorStore fallback backend.");
+            store = new MemoryVectorStore();
+        } else {
+            console.log("[MemoryManager] Using LanceDBStore backend.");
+            store = new LanceDBStore(this.dbPath);
+        }
+
         this.graph = new GraphMemory();
         await this.graph.initialize();
 
@@ -372,6 +383,42 @@ export class MemoryManager {
         } catch (e) {
             console.error("Failed to update memory registry:", e);
         }
+    }
+
+    public async exportMemory(destPath: string): Promise<number> {
+        if (!this.initialized) await this.initialize();
+        if (!this.provider || !this.hasList(this.provider)) throw new Error("Export requires list capability from provider.");
+
+        console.log(`[MemoryManager] Exporting full memory snapshot to ${destPath}...`);
+        const allDocs = await this.provider.list(undefined, 50000);
+
+        const dir = path.dirname(destPath);
+        if (!existsSync(dir)) await fs.mkdir(dir, { recursive: true });
+
+        await fs.writeFile(destPath, JSON.stringify(allDocs, null, 2));
+        console.log(`[MemoryManager] Exported ${allDocs.length} vectors to ${destPath}`);
+        return allDocs.length;
+    }
+
+    public async importMemory(srcPath: string): Promise<number> {
+        if (!this.initialized) await this.initialize();
+        if (!this.provider) throw new Error("Provider not initialized");
+
+        if (!existsSync(srcPath)) {
+            console.warn(`[MemoryManager] Import file not found: ${srcPath}`);
+            return 0;
+        }
+
+        console.log(`[MemoryManager] Importing memory snapshot from ${srcPath}...`);
+        const data = await fs.readFile(srcPath, 'utf-8');
+        const docs = JSON.parse(data) as Document[];
+
+        if (Array.isArray(docs) && docs.length > 0) {
+            await this.provider.add(docs);
+            console.log(`[MemoryManager] Imported ${docs.length} vectors.`);
+            return docs.length;
+        }
+        return 0;
     }
 
 
