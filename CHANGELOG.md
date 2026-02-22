@@ -4,6 +4,25 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [2.7.3] - 2026-02-22
+
+### Added
+
+- **Readiness startup-race tolerance**:
+  - Extended `scripts/verify_dev_readiness.mjs` with retry/backoff controls:
+    - `READINESS_RETRIES` (default: `2`)
+    - `READINESS_RETRY_DELAY_MS` (default: `500`)
+  - JSON payload now includes retry metadata (`retries`, `retryDelayMs`).
+
+### Fixed
+
+- **MetaMCP backend JSON-only startup log noise**:
+  - Updated `external/MetaMCP/apps/backend/src/lib/mcp-config.service.ts` to skip DB import migration when DB is intentionally unconfigured.
+  - Replaced misleading startup error path with explicit informational JSON-only mode handling.
+
+- **Strict local readiness regression gate**:
+  - Verified strict readiness pass across Borg web, MetaMCP frontend/backend, and autopilot server once services are active.
+
 ## [2.7.2] - 2026-02-22
 
 ### Added

@@ -1,6 +1,6 @@
 # Borg — Master TODO List (Implementor Edition)
 
-> **Updated**: 2026-02-22 | **Version**: 2.7.2 | **Phase**: 64 (Release Readiness)
+> **Updated**: 2026-02-22 | **Version**: 2.7.3 | **Phase**: 64 (Release Readiness)
 > **Execution Order**: P0 (must close before release) → P1 (critical feature parity) → P2 (quality/polish) → P3 (future)
 
 ---

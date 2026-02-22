@@ -41,6 +41,8 @@ const SERVICE_CHECKS = [
 ];
 
 const REQUEST_TIMEOUT_MS = Number(process.env.READINESS_TIMEOUT_MS || 2500);
+const REQUEST_RETRIES = Number(process.env.READINESS_RETRIES || 2);
+const RETRY_DELAY_MS = Number(process.env.READINESS_RETRY_DELAY_MS || 500);
 const softMode = process.argv.includes("--soft");
 const jsonMode = process.argv.includes("--json");
 
@@ -74,15 +76,21 @@ async function fetchWithTimeout(url, timeoutMs) {
 async function detectRunningEndpoint(service) {
   for (const port of service.ports) {
     const url = `http://127.0.0.1:${port}${service.path}`;
-    const result = await fetchWithTimeout(url, REQUEST_TIMEOUT_MS);
+    for (let attempt = 0; attempt <= REQUEST_RETRIES; attempt += 1) {
+      const result = await fetchWithTimeout(url, REQUEST_TIMEOUT_MS);
 
-    if (result.ok) {
-      return {
-        status: "up",
-        port,
-        url,
-        statusCode: result.status,
-      };
+      if (result.ok) {
+        return {
+          status: "up",
+          port,
+          url,
+          statusCode: result.status,
+        };
+      }
+
+      if (attempt < REQUEST_RETRIES) {
+        await sleep(RETRY_DELAY_MS);
+      }
     }
 
     // Slight delay to reduce connection burst noise on Windows.
@@ -130,6 +138,8 @@ async function main() {
     tool: "verify_dev_readiness",
     mode: softMode ? "soft" : "strict",
     timeoutMs: REQUEST_TIMEOUT_MS,
+    retries: REQUEST_RETRIES,
+    retryDelayMs: RETRY_DELAY_MS,
     passed: failedCritical.length === 0,
     checkedAt: new Date().toISOString(),
     services: results.map(({ service, result }) => ({

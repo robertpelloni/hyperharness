@@ -1,7 +1,7 @@
 # Borg Project Roadmap
 
 > **Status**: Phase 64 (Release Readiness) - **IN PROGRESS**
-> **Version**: 2.7.2 (canonical from `VERSION.md`)
+> **Version**: 2.7.3 (canonical from `VERSION.md`)
 > **Codename**: AIOS (AI Operating System)
 
 ---
