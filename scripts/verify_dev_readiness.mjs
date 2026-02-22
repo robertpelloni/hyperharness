@@ -43,8 +43,10 @@ const SERVICE_CHECKS = [
 const REQUEST_TIMEOUT_MS = Number(process.env.READINESS_TIMEOUT_MS || 2500);
 const REQUEST_RETRIES = Number(process.env.READINESS_RETRIES || 2);
 const RETRY_DELAY_MS = Number(process.env.READINESS_RETRY_DELAY_MS || 500);
+const strictJsonMode = process.argv.includes("--strict-json");
 const softMode = process.argv.includes("--soft");
-const jsonMode = process.argv.includes("--json");
+const jsonMode = process.argv.includes("--json") || strictJsonMode;
+const compactJsonMode = strictJsonMode || process.argv.includes("--json-compact");
 
 function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -156,7 +158,7 @@ async function main() {
   };
 
   if (jsonMode) {
-    console.log(JSON.stringify(payload, null, 2));
+    console.log(JSON.stringify(payload, null, compactJsonMode ? 0 : 2));
   }
 
   if (failedCritical.length > 0) {

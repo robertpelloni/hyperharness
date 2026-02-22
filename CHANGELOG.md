@@ -4,6 +4,24 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [2.7.4] - 2026-02-22
+
+### Added
+
+- **Strict release gate command**:
+  - Added `scripts/check_release_gate.mjs` for deterministic pre-release validation.
+  - Added root script `check:release-gate` in `package.json`.
+  - Gate now enforces three checks in sequence:
+    1. Strict machine-readable readiness (`scripts/verify_dev_readiness.mjs --strict-json`)
+    2. Placeholder regression scan (`check:placeholders`)
+    3. Core TypeScript validation (`pnpm -C packages/core exec tsc --noEmit`)
+
+### Changed
+
+- **Readiness JSON modes**:
+  - Extended `scripts/verify_dev_readiness.mjs` with `--strict-json` mode.
+  - `--strict-json` guarantees JSON output shape and strict exit semantics for automation consumers.
+
 ## [2.7.3] - 2026-02-22
 
 ### Added
