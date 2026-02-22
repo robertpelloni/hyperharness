@@ -11,8 +11,8 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  release_gate:
-    name: Release Gate
+  release-gate:
+    name: Release Gate (CI)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -100,7 +100,7 @@ jobs:
   build:
     name: Build
     runs-on: ubuntu-latest
-    needs: [release_gate, lint, typecheck, test]
+    needs: [release-gate, lint, typecheck, test]
     steps:
       - uses: actions/checkout@v4
       

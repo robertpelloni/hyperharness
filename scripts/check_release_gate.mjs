@@ -12,8 +12,8 @@ import { spawnSync } from "node:child_process";
 
 const usePnpm = process.platform === "win32" ? "pnpm.cmd" : "pnpm";
 const useNode = process.execPath;
-const ciMode = process.argv.includes("--ci");
-const requireReadinessInCi = process.env.RELEASE_GATE_REQUIRE_READINESS === "1";
+const args = new Set(process.argv.slice(2));
+const skipReadiness = args.has("--skip-readiness");
 
 function run(name, command, args, options = {}) {
   const result = spawnSync(command, args, {
@@ -65,7 +65,7 @@ function printStep(message) {
 }
 
 async function main() {
-  if (!ciMode || requireReadinessInCi) {
+  if (!skipReadiness) {
     printStep("Running strict readiness probe (machine-readable JSON)...");
 
     const readiness = run(
@@ -99,7 +99,7 @@ async function main() {
 
     console.log("[release-gate] Readiness OK");
   } else {
-    printStep("CI mode: skipping local readiness probe (requires running dev services).");
+    printStep("Skipping readiness probe (--skip-readiness).");
   }
 
   printStep("Running placeholder regression check...");

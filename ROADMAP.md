@@ -98,7 +98,6 @@
     - [x] Docker & Deployment Verification
     - [x] Cross-service local readiness checker (`scripts/verify_dev_readiness.mjs`)
     - [x] Strict machine-readable release gate (`check:release-gate`)
-    - [x] CI integration for release gate (`.github/workflows/ci.yml`)
     - [ ] Documentation Freeze
     - [ ] Final E2E Regression
 

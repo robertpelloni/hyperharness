@@ -9,16 +9,14 @@ All notable changes to this project will be documented in this file.
 ### Added
 
 - **CI-integrated release gate**:
-  - Added root script alias `check:release-gate:ci`.
-  - Integrated a blocking `release_gate` job in `.github/workflows/ci.yml` for `push`/`pull_request` runs.
-  - CI now enforces release-gate checks before `build` (`needs: [release_gate, lint, typecheck, test]`).
+  - Wired `pnpm run check:release-gate:ci` into `.github/workflows/ci.yml` as a dedicated required job (`Release Gate (CI)`).
+  - Wired `pnpm run check:release-gate:ci` into `.github/workflows/release.yml` before test/build steps.
 
 ### Changed
 
-- **Release gate CI behavior**:
-  - Extended `scripts/check_release_gate.mjs` with `--ci` mode.
-  - In CI mode, readiness probing is skipped by default (local service dependency), while placeholder and core typecheck validation remain enforced.
-  - Optional strict CI readiness can be enabled via `RELEASE_GATE_REQUIRE_READINESS=1`.
+- **Release gate CI mode support**:
+  - Extended `scripts/check_release_gate.mjs` with `--skip-readiness` for environments without live local services.
+  - Added root script alias `check:release-gate:ci` in `package.json`.
 
 ## [2.7.4] - 2026-02-22
 
