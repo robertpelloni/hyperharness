@@ -4,6 +4,19 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [2.7.7] - 2026-02-22
+
+### Fixed
+
+- **Turbo task coverage for root commands**:
+  - Updated `turbo.json` to define missing `typecheck`, `test`, and `clean` tasks.
+  - Restored root command resolution for `pnpm run typecheck` (previously failed with "Could not find task `typecheck` in project").
+
+### Validation
+
+- `pnpm -s turbo run typecheck --dry=json` ✅ (task graph resolves)
+- `pnpm run typecheck` ✅ (successful run)
+
 ## [2.7.6] - 2026-02-22
 
 ### Changed
