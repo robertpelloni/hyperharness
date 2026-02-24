@@ -4,6 +4,19 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [2.7.15] - 2026-02-23
+
+### Changed
+
+- **Turbo lint scope expansion**:
+  - Re-enabled `@borg/web` in root `lint:turbo` by removing the `--filter=!@borg/web` exclusion.
+  - Kept reduced-noise logging (`--output-logs=errors-only`) and existing `@extension/shared` temporary exclusion.
+
+### Validation
+
+- `pnpm run lint:turbo` ✅
+- `pnpm run check:release-gate:ci` ✅
+
 ## [2.7.14] - 2026-02-23
 
 ### Changed

@@ -1,5 +1,21 @@
 # Handoff: Antigravity Session — 2026-02-15 (Deep Analysis)
 
+## Continuation Note — 2026-02-23 (Release Readiness Increment 2.7.15)
+
+### What was completed
+- Re-enabled `@borg/web` in root scoped Turbo lint (`lint:turbo`) by removing the package exclusion.
+- Preserved reduced-noise lint output (`--output-logs=errors-only`) and retained temporary exclusion for `@extension/shared` pending strict-lint debt cleanup.
+
+### Validation snapshot
+- `pnpm run lint:turbo` passed (all scoped tasks successful).
+- `pnpm run check:release-gate:ci` passed with explicit success marker (`RELEASE_GATE_OK`).
+
+### Canonical sync
+- Version advanced to `2.7.15` in `VERSION`, `VERSION.md`, and root `package.json`.
+- `CHANGELOG.md`, `ROADMAP.md`, and `HANDOFF.md` updated for this release-readiness increment.
+
+---
+
 > **Model**: Antigravity (Claude Sonnet 4)
 > **Session Type**: Comprehensive Deep Analysis + Feature Implementation
 > **Duration**: ~45 minutes
