@@ -709,15 +709,9 @@
 [submodule "superai-cli/tools/Lynkr"]
 	path = superai-cli/tools/Lynkr
 	url = https://github.com/vishalveerareddy123/Lynkr
-[submodule "superai-cli/tools/cc-switch"]
-	path = superai-cli/tools/cc-switch
-	url = https://github.com/farion1231/cc-switch
 [submodule "superai-cli/tools/code-assistant-manager"]
 	path = superai-cli/tools/code-assistant-manager
 	url = https://github.com/Chat2AnyLLM/code-assistant-manager
-[submodule "superai-cli/proxies/openai-gemini"]
-	path = superai-cli/proxies/openai-gemini
-	url = https://github.com/PublicAffairs/openai-gemini
 [submodule "superai-cli/clis/CodeNomad"]
 	path = superai-cli/clis/CodeNomad
 	url = https://github.com/NeuralNomadsAI/CodeNomad
@@ -1081,9 +1075,6 @@
 [submodule "superai-cli/clis/codebuff"]
 	path = superai-cli/clis/codebuff
 	url = https://github.com/CodebuffAI/codebuff
-[submodule "superai-cli/clis/kimi-cli"]
-	path = superai-cli/clis/kimi-cli
-	url = https://github.com/MoonshotAI/kimi-cli
 [submodule "superai-cli/clis/codex-kaioken"]
 	path = superai-cli/clis/codex-kaioken
 	url = https://github.com/jayasuryajsk/codex-kaioken
@@ -2611,30 +2602,18 @@
 [submodule "cli-harnesses/claude-code-madapp"]
 	path = cli-harnesses/claude-code-madapp
 	url = https://github.com/MadAppGang/claude-code
-[submodule "superai-cli/proxies/openai-gemini-2"]
-	path = superai-cli/proxies/openai-gemini-2
-	url = https://github.com/PublicAffairs/openai-gemini
-[submodule "external/orchestration/a2a-main"]
-	path = external/orchestration/a2a-main
-	url = https://github.com/a2aproject/A2A
 [submodule "cli-harnesses/devin.cursorrules"]
 	path = cli-harnesses/devin.cursorrules
 	url = https://github.com/grapeot/devin.cursorrules
 [submodule "cli-harnesses/ccs"]
 	path = cli-harnesses/ccs
 	url = https://github.com/kaitranntt/ccs
-[submodule "cli-harnesses/cc-switch"]
-	path = cli-harnesses/cc-switch
-	url = https://github.com/farion1231/cc-switch
 [submodule "cli-harnesses/Lynkr"]
 	path = cli-harnesses/Lynkr
 	url = https://github.com/vishalveerareddy123/Lynkr
 [submodule "cli-harnesses/emdash"]
 	path = cli-harnesses/emdash
 	url = https://github.com/generalaction/emdash
-[submodule "cli-harnesses/kimi-cli"]
-	path = cli-harnesses/kimi-cli
-	url = https://github.com/MoonshotAI/kimi-cli
 [submodule "mcp-routers/agent-mcp-gateway"]
 	path = mcp-routers/agent-mcp-gateway
 	url = https://github.com/roddutra/agent-mcp-gateway
@@ -2785,12 +2764,6 @@
 [submodule "skills/anthropics-skills"]
 	path = skills/anthropics-skills
 	url = https://github.com/anthropics/skills
-[submodule "skills/gemini-claude-skills"]
-	path = skills/gemini-claude-skills
-	url = https://github.com/stared/gemini-claude-skills
-[submodule "skills/ykdojo-claude-code-tips"]
-	path = skills/ykdojo-claude-code-tips
-	url = https://github.com/ykdojo/claude-code-tips
 [submodule "external/TheNoeTrevino-dotfiles"]
 	path = external/TheNoeTrevino-dotfiles
 	url = https://github.com/TheNoeTrevino/dotfiles
@@ -2806,9 +2779,6 @@
 [submodule "multi-agent/agentic-ray"]
 	path = multi-agent/agentic-ray
 	url = https://github.com/rayai-labs/agentic-ray
-[submodule "multi-agent/A2A"]
-	path = multi-agent/A2A
-	url = https://github.com/a2aproject/A2A
 [submodule "cli-harnesses/claude-code-madappgang"]
 	path = cli-harnesses/claude-code-madappgang
 	url = https://github.com/MadAppGang/claude-code
@@ -2836,12 +2806,6 @@
 [submodule "skills/skills-bkircher"]
 	path = skills/skills-bkircher
 	url = https://github.com/bkircher/skills
-[submodule "skills/claude-code-tips"]
-	path = skills/claude-code-tips
-	url = https://github.com/ykdojo/claude-code-tips
-[submodule "multi-agent/A2A-a2aproject"]
-	path = multi-agent/A2A-a2aproject
-	url = https://github.com/a2aproject/A2A
 [submodule "multi-agent/codev"]
 	path = multi-agent/codev
 	url = https://github.com/cluesmith/codev
@@ -2881,9 +2845,6 @@
 [submodule "cli-harnesses/ccs-kaitranntt"]
 	path = cli-harnesses/ccs-kaitranntt
 	url = https://github.com/kaitranntt/ccs
-[submodule "cli-harnesses/cc-switch-farion1231"]
-	path = cli-harnesses/cc-switch-farion1231
-	url = https://github.com/farion1231/cc-switch
 [submodule "cli-harnesses/emdash-generalaction"]
 	path = cli-harnesses/emdash-generalaction
 	url = https://github.com/generalaction/emdash
@@ -2893,9 +2854,6 @@
 [submodule "cli-harnesses/CodeNomad-NeuralNomadsAI"]
 	path = cli-harnesses/CodeNomad-NeuralNomadsAI
 	url = https://github.com/NeuralNomadsAI/CodeNomad
-[submodule "cli-harnesses/openai-gemini"]
-	path = cli-harnesses/openai-gemini
-	url = https://github.com/PublicAffairs/openai-gemini
 [submodule "cli-harnesses/gemini-openai-proxy"]
 	path = cli-harnesses/gemini-openai-proxy
 	url = https://github.com/zhu327/gemini-openai-proxy
@@ -3004,9 +2962,6 @@
 [submodule "cli-harnesses/codex"]
 	path = cli-harnesses/codex
 	url = https://github.com/openai/codex
-[submodule "cli-harnesses/kimi-cli-MoonshotAI"]
-	path = cli-harnesses/kimi-cli-MoonshotAI
-	url = https://github.com/MoonshotAI/kimi-cli
 [submodule "agents/refs/smolagents"]
 	path = agents/refs/smolagents
 	url = https://github.com/huggingface/smolagents
@@ -3034,15 +2989,9 @@
 [submodule "external/awesome-mcp-servers-wong2"]
 	path = external/awesome-mcp-servers-wong2
 	url = https://github.com/wong2/awesome-mcp-servers
-[submodule "external/skills_repos/gemini-claude-skills"]
-	path = external/skills_repos/gemini-claude-skills
-	url = https://github.com/stared/gemini-claude-skills
 [submodule "vibeship-spawner-skills"]
 	path = vibeship-spawner-skills
 	url = https://github.com/vibeforge1111/vibeship-spawner-skills
-[submodule "external/skills/ykdojo-claude-code-tips"]
-	path = external/skills/ykdojo-claude-code-tips
-	url = https://github.com/ykdojo/claude-code-tips
 [submodule "external/skills/joel-jeremy-emissary"]
 	path = external/skills/joel-jeremy-emissary
 	url = https://github.com/joel-jeremy/emissary
@@ -3118,9 +3067,6 @@
 [submodule "reference/mcp/mcp-tool-chainer"]
 	path = reference/mcp/mcp-tool-chainer
 	url = https://github.com/thirdstrandstudio/mcp-tool-chainer.git
-[submodule "reference/protocols/a2a"]
-	path = reference/protocols/a2a
-	url = https://github.com/a2aproject/A2A.git
 [submodule "reference/cli/codebuff"]
 	path = reference/cli/codebuff
 	url = https://github.com/CodebuffAI/codebuff.git
@@ -3205,12 +3151,6 @@
 [submodule "packages/skills/skills"]
 	path = packages/skills/skills
 	url = https://github.com/TheNoeTrevino/dotfiles
-[submodule "packages/skills/gemini-claude-skills"]
-	path = packages/skills/gemini-claude-skills
-	url = https://github.com/stared/gemini-claude-skills
-[submodule "packages/skills/claude-code-tips"]
-	path = packages/skills/claude-code-tips
-	url = https://github.com/ykdojo/claude-code-tips
 [submodule "packages/mcp-directory/orchestration/blog.md"]
 	path = packages/mcp-directory/orchestration/blog.md
 	url = https://github.com/The-Pocket/PocketFlow-Tutorial-Cursor
