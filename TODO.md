@@ -57,7 +57,7 @@
 - [x] **Remove remaining `@ts-ignore` in user-facing components**
 
 ### 3) Canonical docs consistency hardening
-- [ ] **Keep `ROADMAP.md`, `TODO.md`, `STATUS.md`, `HANDOFF.md`, `CHANGELOG.md` synchronized after each merged fix batch**
+- [x] **Keep `ROADMAP.md`, `TODO.md`, `STATUS.md`, `HANDOFF.md`, `CHANGELOG.md` synchronized after each merged fix batch**
 
 ---
 
