@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Card, CardHeader, CardTitle, CardContent, Button, Badge, ScrollArea } from "@borg/ui";
-import { Loader2, Brain, Search, Trash2, Database, History, Zap, Filter, Plus, Save } from "lucide-react";
+import { Loader2, Brain, Search, Trash2, Database, History, Zap, Filter, Plus, Save, Download, Upload } from "lucide-react";
 import { trpc } from '@/utils/trpc';
 import { toast } from 'sonner';
 
@@ -10,6 +10,8 @@ export default function MemoryDashboard() {
     const [searchQuery, setSearchQuery] = useState('');
     const [memoryType, setMemoryType] = useState<'session' | 'working' | 'long_term'>('working');
     const [newFact, setNewFact] = useState('');
+    const [exportFormat, setExportFormat] = useState<'json' | 'csv' | 'jsonl'>('json');
+    const [importing, setImporting] = useState(false);
 
     const { data: stats } = trpc.memory.getAgentStats.useQuery(undefined, { refetchInterval: 10000 });
     const { data: results, isLoading, refetch } = trpc.memory.searchAgentMemory.useQuery({
@@ -91,16 +93,99 @@ export default function MemoryDashboard() {
                                     className="w-full bg-zinc-950 border border-zinc-800 rounded-md p-2 text-xs text-white h-20 focus:ring-1 focus:ring-pink-500 outline-none resize-none"
                                     placeholder="Manually add a fact to current tier..."
                                 />
-                                <Button 
-                                    type="submit" 
-                                    size="sm" 
-                                    disabled={addFactMutation.isPending || !newFact.trim()} 
+                                <Button
+                                    type="submit"
+                                    size="sm"
+                                    disabled={addFactMutation.isPending || !newFact.trim()}
                                     className="w-full bg-pink-600 hover:bg-pink-500 text-white text-xs"
                                 >
                                     {addFactMutation.isPending ? <Loader2 className="h-3 w-3 animate-spin" /> : <Save className="h-3 w-3 mr-2" />}
                                     Store Fact
                                 </Button>
                             </form>
+                        </CardContent>
+                    </Card>
+
+                    {/* Export / Import Controls (Phase 70) */}
+                    <Card className="bg-zinc-900 border-zinc-800 border-l-4 border-l-cyan-600">
+                        <CardHeader className="pb-3">
+                            <CardTitle className="text-sm font-bold text-zinc-400 uppercase tracking-widest flex items-center gap-2">
+                                <Download className="h-4 w-4" />
+                                Export / Import
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-3">
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-bold text-zinc-600 uppercase">Format</label>
+                                <select
+                                    value={exportFormat}
+                                    onChange={e => setExportFormat(e.target.value as 'json' | 'csv' | 'jsonl')}
+                                    className="w-full bg-zinc-950 border border-zinc-800 rounded-md p-2 text-xs text-white focus:ring-1 focus:ring-cyan-500 outline-none"
+                                >
+                                    <option value="json">JSON</option>
+                                    <option value="csv">CSV</option>
+                                    <option value="jsonl">JSONL</option>
+                                </select>
+                            </div>
+                            <Button
+                                size="sm"
+                                className="w-full bg-cyan-700 hover:bg-cyan-600 text-white text-xs"
+                                onClick={async () => {
+                                    try {
+                                        const res = await fetch(`/api/trpc/memory.exportMemories?input=${encodeURIComponent(JSON.stringify({ userId: 'default', format: exportFormat }))}`);
+                                        const json = await res.json();
+                                        const content = json?.result?.data?.data || '';
+                                        const blob = new Blob([content], { type: 'text/plain' });
+                                        const url = URL.createObjectURL(blob);
+                                        const a = document.createElement('a');
+                                        a.href = url;
+                                        a.download = `borg-memories.${exportFormat}`;
+                                        a.click();
+                                        URL.revokeObjectURL(url);
+                                        toast.success(`Exported as ${exportFormat.toUpperCase()}`);
+                                    } catch (err: any) {
+                                        toast.error(`Export failed: ${err.message}`);
+                                    }
+                                }}
+                            >
+                                <Download className="h-3 w-3 mr-2" />
+                                Download Export
+                            </Button>
+                            <div className="border-t border-zinc-800 pt-3">
+                                <label className="text-[10px] font-bold text-zinc-600 uppercase block mb-2">Import File</label>
+                                <input
+                                    type="file"
+                                    accept=".json,.csv,.jsonl"
+                                    className="w-full text-[10px] text-zinc-400 file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-[10px] file:bg-zinc-800 file:text-zinc-300 hover:file:bg-zinc-700"
+                                    onChange={async (e) => {
+                                        const file = e.target.files?.[0];
+                                        if (!file) return;
+                                        setImporting(true);
+                                        try {
+                                            const text = await file.text();
+                                            const ext = file.name.split('.').pop() as 'json' | 'csv' | 'jsonl';
+                                            const res = await fetch('/api/trpc/memory.importMemories', {
+                                                method: 'POST',
+                                                headers: { 'Content-Type': 'application/json' },
+                                                body: JSON.stringify({ userId: 'default', format: ext, data: text })
+                                            });
+                                            const result = await res.json();
+                                            toast.success(`Imported ${result?.result?.data?.imported || 0} memories`);
+                                            refetch();
+                                        } catch (err: any) {
+                                            toast.error(`Import failed: ${err.message}`);
+                                        } finally {
+                                            setImporting(false);
+                                        }
+                                    }}
+                                />
+                                {importing && (
+                                    <div className="flex items-center gap-2 mt-2 text-xs text-cyan-400">
+                                        <Loader2 className="h-3 w-3 animate-spin" />
+                                        Importing...
+                                    </div>
+                                )}
+                            </div>
                         </CardContent>
                     </Card>
                 </div>
@@ -185,11 +270,10 @@ function TierButton({ active, onClick, label, description }: { active: boolean, 
     return (
         <button
             onClick={onClick}
-            className={`w-full text-left p-3 rounded-lg border transition-all ${
-                active 
-                ? 'bg-pink-500/10 border-pink-500/50 text-pink-400 shadow-[0_0_15px_rgba(236,72,153,0.05)]' 
-                : 'bg-transparent border-transparent text-zinc-500 hover:bg-white/5'
-            }`}
+            className={`w-full text-left p-3 rounded-lg border transition-all ${active
+                    ? 'bg-pink-500/10 border-pink-500/50 text-pink-400 shadow-[0_0_15px_rgba(236,72,153,0.05)]'
+                    : 'bg-transparent border-transparent text-zinc-500 hover:bg-white/5'
+                }`}
         >
             <div className="text-sm font-bold">{label}</div>
             <div className={`text-[10px] mt-0.5 ${active ? 'text-pink-400/60' : 'text-zinc-600'}`}>{description}</div>

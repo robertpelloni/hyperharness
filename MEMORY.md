@@ -50,6 +50,11 @@ The following advanced memory backends have been assimilated as submodules and a
 - **Features**: MongoDB + Qdrant + Neo4j stack, Predictive retrieval, custom ontologies.
 - **Integration**: Slated for container-based deployment in Phase 69.
 
+### 3.3 claude-mem (`packages/claude-mem`)
+- **Type**: Context & Memory Management
+- **Features**: Claude-specific structural memory implementation.
+- **Integration**: Phase 69 Core Integration into Borg's `MemoryProviders` as a unified backend alongside native json/vector context.
+
 ## 4. Current Implementation (v2.7.20)
 
 - **Vector Store**: Uses `vectordb` (LanceDB) locally for embedding search.

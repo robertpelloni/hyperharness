@@ -215,6 +215,12 @@ async function filterOutOverrideTools(
     return filteredTools;
 }
 
+/**
+ * Allows executing a tool programmatically through the full MetaMCP proxy stack.
+ * Set during attachTo initialization.
+ */
+export let executeProxiedTool: ((name: string, args: any) => Promise<CallToolResult>) | null = null;
+
 export const attachTo = async (
     server: Server,
     namespaceUuid: string,
@@ -1051,6 +1057,14 @@ export const attachTo = async (
     server.setRequestHandler(ListToolsRequestSchema, async (request) => {
         return await listToolsWithMiddleware(request, handlerContext);
     });
+
+    executeProxiedTool = async (name: string, args: any) => {
+        if (!recursiveCallToolHandlerRef) throw new Error("Proxy Handler not initialized");
+        return await recursiveCallToolHandlerRef({
+            method: "tools/call",
+            params: { name, arguments: args || {}, _meta: {} }
+        } as any, handlerContext);
+    };
 
     server.setRequestHandler(CallToolRequestSchema, async (request) => {
         if (!recursiveCallToolHandlerRef) throw new Error("Handler not initialized");

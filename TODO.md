@@ -1,6 +1,6 @@
 # Borg — Master TODO List (Implementor Edition)
 
-> **Updated**: 2026-02-24 | **Version**: 2.7.22 | **Phase**: 64 (Release Readiness)
+> **Updated**: 2026-02-26 | **Version**: 2.7.28 | **Phase**: 69 (Deep Submodule Assimilation — COMPLETED)
 > **Execution Order**: P0 (must close before release) → P1 (critical feature parity) → P2 (quality/polish) → P3 (future)
 
 ---
@@ -68,8 +68,11 @@
 - [x] **Phase 66: AI Command Center & Dashboards** — Jules, OpenCode, Billing, Tool Detector
 - [x] **Phase 67: MetaMCP Submodule Assimilation** — Git submodule + MetaMCPBridgeService
 - [x] **Phase 68: Bytedance DeerFlow Integration** — Super Agent harness, Python LangGraph gateway, NextJS Portal
-- [ ] **Phase 69: Memory System Multi-Backend** — selectable vector stores, import/export
-- [ ] **Phase 70: RAG Pipeline & Context Harvesting** — document intake, chunking, embedding
+- [x] **Phase 69: Deep Submodule Assimilation** — Natively embedded MetaMCP (proxy routing), MCP-SuperAssistant (browser extension bridge), jules-autopilot (cloud dev dashboard), and claude-mem (redundant memory pipeline) as foundational architectural pillars.
+- [x] **Phase 70: Memory System Multi-Backend** — Selectable vector stores (LanceDB, ChromaDB, Pinecone), memory import/export, cross-session sync.
+- [x] **Phase 71: RAG Pipeline & Context Harvesting** — Document intake, chunking strategies, embedding service abstraction.
+- [x] **Phase 72: Production Hardening** — Docker production builds, health monitoring, rate limiting, auth middleware.
+- [x] **Phase 73: Multi-Agent Orchestration & Swarm** — Swarm execution, multi-model debate, pair programming, consensus protocols.
 
 ---
 

@@ -54,6 +54,8 @@ import { browserRouter } from './routers/browserRouter.js';
 // import { meshRouter } from './routers/meshRouter.js';
 import { marketplaceRouter } from './routers/marketplaceRouter.js';
 import { deerFlowRouter } from './routers/deerFlowRouter.js';
+import { cloudDevRouter } from './routers/cloudDevRouter.js';
+import { swarmRouter } from './routers/swarmRouter.js';
 
 // import { type AnyTRPCRouter } from '@trpc/server';
 
@@ -110,6 +112,8 @@ export const appRouter = t.router({
     // mesh: meshRouter,
     marketplace: marketplaceRouter,
     deerFlow: deerFlowRouter,
+    cloudDev: cloudDevRouter,
+    swarm: swarmRouter,
 });
 
 export type AppRouter = typeof appRouter;

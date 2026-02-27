@@ -140,6 +140,7 @@ import { AgentAdapter } from "./orchestrator/AgentAdapter.js";
 import { ClaudeAdapter } from "./orchestrator/adapters/ClaudeAdapter.js";
 import { GeminiAdapter } from "./orchestrator/adapters/GeminiAdapter.js";
 import { MetaMCPController } from "./services/MetaMCPController.js";
+import { executeProxiedTool } from "./services/metamcp-proxy.service.js";
 import { Tool, CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 
 interface ToolRequest {
@@ -1852,19 +1853,36 @@ export class MCPServer {
                 if (standardTool && this.isToolWithHandler(standardTool)) {
                     result = await standardTool.handler(args);
                 } else {
-                    // 1. Try MCPAggregator (Downstream Servers)
-                    try {
-                        result = await this.mcpAggregator.executeTool(name, args);
-                    } catch (aggErr: any) {
-                        // 2. Fallback to Router (Legacy Delegation)
-                        if (aggErr.message.includes('No provider found')) {
-                            try {
-                                result = await this.router.callTool(name, args);
-                            } catch (e: any) {
-                                throw new Error(`Tool execution failed: ${e.message}`);
+                    // Try MetaMCP Proxy First (True Proxy Architecture path)
+                    if (executeProxiedTool) {
+                        try {
+                            result = await executeProxiedTool(name, args);
+                        } catch (proxyErr: any) {
+                            if (proxyErr.message.includes('Unknown tool')) {
+                                // 2. Fallback to Legacy Router if tool isn't in proxy (Safety net)
+                                try {
+                                    result = await this.router.callTool(name, args);
+                                } catch (e: any) {
+                                    throw new Error(`MetaMCP Proxy tool '${name}' not found, and fallback router failed: ${e.message}`);
+                                }
+                            } else {
+                                throw new Error(`MetaMCP Proxy execution failed: ${proxyErr.message}`);
                             }
-                        } else {
-                            throw aggErr; // Re-throw actual execution errors from aggregator
+                        }
+                    } else {
+                        // Boot-time fallback if proxy isn't attached yet
+                        try {
+                            result = await this.mcpAggregator.executeTool(name, args);
+                        } catch (aggErr: any) {
+                            if (aggErr.message.includes('No provider found')) {
+                                try {
+                                    result = await this.router.callTool(name, args);
+                                } catch (e: any) {
+                                    throw new Error(`Tool execution failed: ${e.message}`);
+                                }
+                            } else {
+                                throw aggErr; 
+                            }
                         }
                     }
                 }

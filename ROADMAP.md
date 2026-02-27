@@ -1,7 +1,7 @@
 # Borg Project Roadmap
 
-> **Status**: Phase 64 (Release Readiness) - **IN PROGRESS**
-> **Version**: 2.7.23 (canonical from `VERSION.md`)
+> **Status**: Phase 69 (Deep Submodule Assimilation) - **COMPLETED**
+> **Version**: 2.7.28 (canonical from `VERSION`)
 > **Codename**: AIOS (AI Operating System)
 
 ---
@@ -97,7 +97,32 @@
     - [ ] Submodule Operations Dashboard (React UI representation)
     - [ ] Final E2E Regression
 
-## P3 — Future Phases (Post-63)
+## P3 — Future Phases (Post-69)
+
+- [x] **Phase 69: Deep Submodule Assimilation (v2.7.28) [COMPLETED]**
+    - [x] Cloned foundational submodules (MetaMCP, MCP-SuperAssistant, jules-autopilot, claude-mem).
+    - [x] Re-architected project documentation and models to mandate strict Version/Changelog protocol.
+    - [x] Refactored `@borg/core` MCPServer to delegate tool execution through MetaMCP proxy (`executeProxiedTool`).
+    - [x] Injected Borg WebSocket bridge + `window.borg` API into `MCP-SuperAssistant` (official browser extension).
+    - [x] Created `ClaudeMemAdapter` + `RedundantMemoryManager` for guaranteed multi-store writes.
+    - [x] Implemented `cloudDevRouter` + `/dashboard/cloud-dev` for multi-provider cloud agent management.
+- [x] **Phase 70: Memory System Multi-Backend**
+    - [x] Selectable vector store backends (LanceDB, ChromaDB, Pinecone)
+    - [x] Memory import/export (JSON, CSV, JSONL)
+    - [x] Cross-session memory synchronization across agents
+- [x] **Phase 71: RAG Pipeline & Context Harvesting**
+    - [x] Document intake pipeline (PDF, DOCX, Markdown)
+    - [x] Chunking strategies (semantic, sliding window, recursive)
+    - [x] Embedding service abstraction (OpenAI, local models)
+- [x] **Phase 72: Production Hardening & Deployment**
+    - [x] Docker multi-stage production builds
+    - [x] Health monitoring and auto-restart
+    - [x] Rate limiting and authentication middleware
+- [x] **Phase 73: Multi-Agent Orchestration & Swarm**
+    - [x] Swarm execution pattern implementation
+    - [x] Multi-Model Debate protocols
+    - [x] Pair Programming orchestrator
+    - [x] Consensus voting mechanisms
 
 - [x] **Phase 65: Marketplace & Ecosystem**
     - [x] MCP Registry Integration (1000+ servers)

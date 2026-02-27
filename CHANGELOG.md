@@ -4,6 +4,51 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [2.7.31] - 2026-02-26
+
+### Fixed
+- **Release Verification Gate**: Passed full `tsc --noEmit` strict typechecking across `packages/core` with zero errors. Rebuilt corrupted `node_modules` via `pnpm install --force`. Fixed `swarmRouter.ts` import to use `t.router()` instead of non-existent `router()` export. Added ambient `pdf-parse.d.ts` type declaration. Placeholder regression check passed clean.
+
+## [2.7.30] - 2026-02-26
+
+### Added
+- **Phase 73: Multi-Agent Orchestration & Swarm**: Engineered horizontal adversarial and delegation testing protocols. Built `SwarmOrchestrator.ts` to chunk complex workflows to parallel worker agents. Created `DebateProtocol.ts` to allow LLMs to argue opposing architectural paradigms for a 'Judge'. Implemented `ConsensusEngine.ts` to systematically reduce hallucinations by enforcing mathematical quorum overlap between distinct models.
+- **Swarm Control Panel**: Built real-time UI under `/dashboard/swarm` interlinking directly into Master Control Navigation (`nav-config.ts`), exposing Swarm, Debate, and Consensus flows via `swarmRouter.ts`.
+
+### Changed
+- **Version Bump**: Incremented version to 2.7.30 to represent the completion of the Multi-Agent expansion phase.
+
+## [2.7.29] - 2026-02-26
+
+### Added
+- **Phase 70: Memory System Multi-Backend**: Added `MemoryExportImportService.ts` supporting full-fidelity JSON, CSV, and JSONL formats for exporting and importing agent memories natively.
+- **Phase 71: RAG Pipeline & Context Harvesting**: Engineered `DocumentIntakeService.ts` (PDF/DOCX/TXT), configurable `ChunkingUtility.ts` (Semantic/Recursive/Sliding Window), and a dual abstraction `EmbeddingService.ts` (OpenAI & local Xenova Transformers).
+- **Phase 72: Production Hardening & Deployment**: Engineered `Dockerfile.prod` utilizing Turborepo pruning and Next.js standalone outputs. Added `HealthMonitorService.ts` (OOM mitigation), `RateLimiterMiddleware.ts` (tRPC DDoS protection), and `AuthMiddleware.ts` (Crypto timing-safe API key validation).
+
+### Changed
+- **Version Bump**: Incremented version to 2.7.29 to mark the completion of the advanced intelligence/production pipeline sprint.
+
+## [2.7.28] - 2026-02-26
+
+### Added
+- **Phase 69: Deep Submodule Assimilation Sprint** — Completed full integration of all four core submodules.
+- **MetaMCP True Proxy Architecture**: `MCPServer.executeTool` now delegates to `executeProxiedTool` from the MetaMCP proxy service, with legacy fallbacks retained for backward compatibility.
+- **MCP-SuperAssistant Borg Bridge**: Injected Borg Hub WebSocket bridge (`connectBorgHub`) into SuperAssistant's background script and `window.borg.callTool()` API + console interceptor into the content script.
+- **claude-mem Redundant Memory Pipeline**: Created `ClaudeMemAdapter.ts` (section-based storage) and `RedundantMemoryManager.ts` (fan-out writes to all providers). Default `MemoryManager` provider changed from `json` to `redundant`.
+- **Cloud Dev Management Dashboard**: Created `cloudDevRouter.ts` tRPC router for multi-provider cloud dev session management (Jules, Codex, Copilot Workspace, Devin) and `/dashboard/cloud-dev/page.tsx` with full CRUD UI.
+
+### Changed
+- **Version Bump**: Incremented version to 2.7.28.
+
+## [2.7.27] - 2026-02-26
+
+### Added
+- **Global Agents Directive Override**: Established a single source of truth for all Universal LLM Instructions to mandate strict version tracking and changelog maintenance. Rewrote `AGENTS.md`, `CLAUDE.md`, `GEMINI.md`, `GPT.md`, `CODEX.md`, `GROK.md`, and `copilot-instructions.md` to cleanly inherit from `UNIVERSAL_LLM_INSTRUCTIONS.md`.
+
+### Changed
+- **Submodule Assimilation Sprint**: Formally initialized the four core foundational submodules (`MetaMCP`, `MCP-SuperAssistant`, `jules-autopilot`, and `claude-mem`) into the project infrastructure. Updated `VISION.md`, `MEMORY.md`, and `DEPLOY.md` to reflect the newly integrated Deep Submodule assimilation plan.
+- **Version Bump**: Incremented version to 2.7.27.
+
 ## [2.7.26] - 2026-02-26
 
 ### Fixed

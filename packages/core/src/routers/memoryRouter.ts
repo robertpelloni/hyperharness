@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { t, publicProcedure, getMemoryManager, getAgentMemoryService } from '../lib/trpc-core.js';
 import path from 'path';
+import { MemoryExportImportService } from '../services/memory/MemoryExportImportService.js';
 
 export const memoryRouter = t.router({
     saveContext: publicProcedure.input(z.object({
@@ -75,6 +76,30 @@ export const memoryRouter = t.router({
         if (!service) return { success: false };
         await service.add(input.content, input.type, 'user', { source: 'dashboard' });
         return { success: true };
-    })
+    }),
+
+    // --- Export / Import (Phase 70: Memory Multi-Backend) ---
+
+    exportMemories: publicProcedure.input(z.object({
+        userId: z.string().default('default'),
+        format: z.enum(['json', 'csv', 'jsonl']).default('json'),
+    })).query(async ({ input }) => {
+        const manager = getMemoryManager();
+        // The manager exposes the IMemoryProvider interface directly
+        const exportService = new MemoryExportImportService(manager);
+        const data = await exportService.exportAll(input.userId, input.format);
+        return { data, format: input.format, exportedAt: new Date().toISOString() };
+    }),
+
+    importMemories: publicProcedure.input(z.object({
+        userId: z.string().default('default'),
+        format: z.enum(['json', 'csv', 'jsonl']).default('json'),
+        data: z.string(),
+    })).mutation(async ({ input }) => {
+        const manager = getMemoryManager();
+        const exportService = new MemoryExportImportService(manager);
+        const result = await exportService.importBulk(input.data, input.format, input.userId);
+        return { ...result, importedAt: new Date().toISOString() };
+    }),
 });
 

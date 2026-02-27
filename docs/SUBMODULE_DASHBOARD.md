@@ -1,6 +1,6 @@
 # Submodule Dashboard — Governance View
 
-> **Version Context**: 2.7.0  
+> **Version Context**: 2.7.28  
 > **Canonical Inventory Source**: `SUBMODULES.md` (auto-generated)  
 > **Purpose**: Operator-facing map for triage, ownership, and synchronization policy.
 
@@ -16,7 +16,7 @@
 
 Based on the latest generated inventory:
 
-- **Total tracked modules**: 786
+- **Total tracked modules**: 786+
 - **Coverage includes**: MCP servers, memory systems, CLI harnesses, orchestration frameworks, search/indexing stacks, financial tools, and unsorted ecosystem references.
 - **Primary ingestion zones**:
 	- `mcp-servers/`
@@ -24,6 +24,16 @@ Based on the latest generated inventory:
 	- `external/`
 	- `cli-harnesses/`
 	- `multi-agent/`
+
+### Tier A — Runtime-Critical Submodules (Phase 69)
+
+| Submodule | Path | Integration | Status |
+|-----------|------|-------------|--------|
+| MetaMCP | `external/MetaMCP` | Proxy routing via `executeProxiedTool` in `MCPServer.ts` | ✅ Active |
+| MCP-SuperAssistant | `packages/MCP-SuperAssistant` | Official browser extension with Borg WebSocket bridge | ✅ Active |
+| claude-mem | `packages/claude-mem` | `ClaudeMemAdapter` + `RedundantMemoryManager` | ✅ Active |
+| jules-autopilot | `external/jules-autopilot` | `cloudDevRouter` + `/dashboard/cloud-dev` | ✅ Active |
+| deer-flow | `external/deer-flow` | `DeerFlowBridgeService` + `/dashboard/deer-flow` | ✅ Active |
 
 ## 3) Governance tiers
 

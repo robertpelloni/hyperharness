@@ -1,13 +1,21 @@
 import { IMemoryProvider, Memory } from '../../interfaces/IMemoryProvider.js';
 import { JsonMemoryProvider } from './JsonMemoryProvider.js';
+import { RedundantMemoryManager } from './RedundantMemoryManager.js';
 
 export class MemoryManager implements IMemoryProvider {
     private provider: IMemoryProvider;
 
-    constructor(workspaceRoot: string, providerType: 'json' | 'postgres' = 'json') {
-        // TODO: Switch based on providerType or config
-        // For now, default to JSON
-        this.provider = new JsonMemoryProvider(workspaceRoot);
+    constructor(workspaceRoot: string, providerType: 'json' | 'postgres' | 'redundant' = 'redundant') {
+        // Provider selection:
+        // - 'redundant' (default): Fan-out to ALL providers (JSON + claude-mem + future vector).
+        //   This ensures maximum data durability and search recall.
+        // - 'json': Legacy single-provider mode using flat-file JSON.
+        // - 'postgres': Placeholder for future DB-backed provider.
+        if (providerType === 'redundant') {
+            this.provider = new RedundantMemoryManager(workspaceRoot);
+        } else {
+            this.provider = new JsonMemoryProvider(workspaceRoot);
+        }
     }
 
     async init(): Promise<void> {

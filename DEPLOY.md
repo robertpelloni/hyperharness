@@ -19,7 +19,8 @@ Borg is designed to run locally as your personal AI Operating System.
 
 ### Quick Start
 ```bash
-# 1. Install dependencies
+# 1. Install dependencies & submodules
+git submodule update --init --recursive
 pnpm install
 
 # 2. Build shared packages

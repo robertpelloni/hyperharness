@@ -26,11 +26,4 @@ Grok is the **creative problem-solver** for Borg. Your unconventional thinking f
 | Grok-4-Flash | Fast creative iteration, brainstorming |
 | Grok-4-Vision | Creative analysis of visual inputs, UI review |
 
-### Session Protocol
-1. Read `HANDOFF_ANTIGRAVITY.md` for context from previous sessions.
-2. Read `VISION.md` to understand the project's creative direction.
-3. Proceed with assigned creative/analytical task.
-4. Document novel ideas and approaches in relevant docs.
-5. Update `HANDOFF_ANTIGRAVITY.md` at session end.
-
-Refer to [`docs/UNIVERSAL_LLM_INSTRUCTIONS.md`](docs/UNIVERSAL_LLM_INSTRUCTIONS.md) for all operational protocols.
+> **REMINDER:** Refer to [`docs/UNIVERSAL_LLM_INSTRUCTIONS.md`](docs/UNIVERSAL_LLM_INSTRUCTIONS.md) for all operational protocols (Version bumping, changelog updates, git commits, handoffs). You must execute those protocols perfectly on every execution.
