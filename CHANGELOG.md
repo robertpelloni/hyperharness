@@ -4,6 +4,16 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [2.7.32] - 2026-02-26
+
+### Added
+- **Phase 74: Frontend Type Closure**: Created `PageHeader.tsx` reusable component, `types/nav.ts` navigation interfaces, and `types/heroicons.d.ts` ambient icon declarations for `apps/web`.
+
+### Fixed
+- **tRPC v11 Migration**: Replaced deprecated `isLoading` with `isPending` across `swarm/page.tsx` (React Query v5 API).
+- **Stale Dist Types**: Rebuilt `@borg/core` dist declarations to propagate `swarmRouter` into `AppRouter` type for frontend consumption.
+- **Implicit Any Parameters**: Added explicit type annotations to `.map()` callbacks in debate transcript and consensus candidate rendering.
+
 ## [2.7.31] - 2026-02-26
 
 ### Fixed

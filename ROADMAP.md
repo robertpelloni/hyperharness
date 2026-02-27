@@ -123,6 +123,11 @@
     - [x] Multi-Model Debate protocols
     - [x] Pair Programming orchestrator
     - [x] Consensus voting mechanisms
+- [x] **Phase 74: Frontend Type Closure & Dev Readiness**
+    - [x] Clean `tsc --noEmit` on both `packages/core` and `apps/web`
+    - [x] Created missing `PageHeader`, `types/nav`, `heroicons.d.ts` stubs
+    - [x] Migrated tRPC v11 `isLoading` → `isPending`
+    - [x] Rebuilt `@borg/core` dist types for swarm router propagation
 
 - [x] **Phase 65: Marketplace & Ecosystem**
     - [x] MCP Registry Integration (1000+ servers)

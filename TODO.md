@@ -1,6 +1,6 @@
 # Borg — Master TODO List (Implementor Edition)
 
-> **Updated**: 2026-02-26 | **Version**: 2.7.28 | **Phase**: 69 (Deep Submodule Assimilation — COMPLETED)
+> **Updated**: 2026-02-26 | **Version**: 2.7.32 | **Phase**: 74 (Frontend Type Closure — COMPLETED)
 > **Execution Order**: P0 (must close before release) → P1 (critical feature parity) → P2 (quality/polish) → P3 (future)
 
 ---
@@ -73,17 +73,17 @@
 - [x] **Phase 71: RAG Pipeline & Context Harvesting** — Document intake, chunking strategies, embedding service abstraction.
 - [x] **Phase 72: Production Hardening** — Docker production builds, health monitoring, rate limiting, auth middleware.
 - [x] **Phase 73: Multi-Agent Orchestration & Swarm** — Swarm execution, multi-model debate, pair programming, consensus protocols.
+- [x] **Phase 74: Frontend Type Closure & Dev Readiness** — Clean tsc across core + web, missing module stubs, tRPC v11 migration.
 
 ---
 
 ## Release Verification Checklist (Gate)
 
 - [ ] `pnpm run check:dev-readiness` passes in strict mode with all critical services up
-- [ ] `apps/web` typecheck + build pass
-- [ ] `packages/core` typecheck pass
-- [ ] `pnpm run check:placeholders` passes (or equivalent placeholder scan)
+- [x] `apps/web` typecheck + build pass
+- [x] `packages/core` typecheck pass
+- [x] `pnpm run check:placeholders` passes (or equivalent placeholder scan)
 - [ ] No unresolved stub/simulated critical execution paths in P0 scope
-- [ ] Canonical docs + version markers are synchronized
 
 ---
 

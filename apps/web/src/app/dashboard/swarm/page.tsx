@@ -107,9 +107,9 @@ export default function SwarmDashboard() {
                                 <Button
                                     className="w-full bg-indigo-600 hover:bg-indigo-700"
                                     onClick={handleStartSwarm}
-                                    disabled={startSwarmMutation.isLoading}
+                                    disabled={startSwarmMutation.isPending}
                                 >
-                                    {startSwarmMutation.isLoading ? 'Decomposing...' : (
+                                    {startSwarmMutation.isPending ? 'Decomposing...' : (
                                         <><PlayIcon className="w-4 h-4 mr-2" /> Execute Swarm</>
                                     )}
                                 </Button>
@@ -160,9 +160,9 @@ export default function SwarmDashboard() {
                                 <Button
                                     className="w-full bg-rose-600 hover:bg-rose-700"
                                     onClick={handleStartDebate}
-                                    disabled={executeDebateMutation.isLoading}
+                                    disabled={executeDebateMutation.isPending}
                                 >
-                                    {executeDebateMutation.isLoading ? 'Debating...' : (
+                                    {executeDebateMutation.isPending ? 'Debating...' : (
                                         <><PlayIcon className="w-4 h-4 mr-2" /> Initiate Debate</>
                                     )}
                                 </Button>
@@ -174,7 +174,7 @@ export default function SwarmDashboard() {
                                 <CardTitle>Tribunal Transcript</CardTitle>
                             </CardHeader>
                             <CardContent className="space-y-4">
-                                {executeDebateMutation.isLoading && (
+                                {executeDebateMutation.isPending && (
                                     <div className="animate-pulse text-rose-400/50">Models are generating opposing arguments...</div>
                                 )}
 
@@ -187,7 +187,7 @@ export default function SwarmDashboard() {
 
                                         <div className="space-y-3 mt-4">
                                             <h4 className="font-semibold text-slate-400 text-sm uppercase tracking-wider">Raw Transcript</h4>
-                                            {executeDebateMutation.data.history.map((turn, idx) => (
+                                            {executeDebateMutation.data.history.map((turn: { round: number; persona: string; model: string; argument: string }, idx: number) => (
                                                 <div key={idx} className={`p-3 rounded border text-sm ${turn.persona === 'Proponent' ? 'bg-indigo-900/20 border-indigo-500/30 ml-8' : 'bg-rose-900/20 border-rose-500/30 mr-8'}`}>
                                                     <div className="flex justify-between items-center mb-1">
                                                         <span className="font-bold text-slate-300">Round {turn.round} - {turn.persona}</span>
@@ -231,9 +231,9 @@ export default function SwarmDashboard() {
                                 <Button
                                     className="w-full bg-emerald-600 hover:bg-emerald-700"
                                     onClick={handleSeekConsensus}
-                                    disabled={seekConsensusMutation.isLoading}
+                                    disabled={seekConsensusMutation.isPending}
                                 >
-                                    {seekConsensusMutation.isLoading ? 'Polling Models...' : (
+                                    {seekConsensusMutation.isPending ? 'Polling Models...' : (
                                         <><PlayIcon className="w-4 h-4 mr-2" /> Seek Consensus</>
                                     )}
                                 </Button>
@@ -248,8 +248,8 @@ export default function SwarmDashboard() {
                                 {seekConsensusMutation.data ? (
                                     <>
                                         <div className={`p-4 border rounded-md ${seekConsensusMutation.data.isConsensusReached
-                                                ? 'bg-emerald-900/30 border-emerald-500/50 text-emerald-100'
-                                                : 'bg-red-900/30 border-red-500/50 text-red-100'
+                                            ? 'bg-emerald-900/30 border-emerald-500/50 text-emerald-100'
+                                            : 'bg-red-900/30 border-red-500/50 text-red-100'
                                             }`}>
                                             <h4 className={`font-bold mb-2 ${seekConsensusMutation.data.isConsensusReached ? 'text-emerald-400' : 'text-red-400'
                                                 }`}>
@@ -259,7 +259,7 @@ export default function SwarmDashboard() {
                                         </div>
 
                                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
-                                            {seekConsensusMutation.data.candidates.map((candidate, idx) => (
+                                            {seekConsensusMutation.data.candidates.map((candidate: { model: string; result: string; score: number }, idx: number) => (
                                                 <div key={idx} className="bg-slate-900 border border-slate-700 p-3 rounded-md">
                                                     <div className="text-xs text-slate-400 uppercase tracking-wider mb-2 font-semibold">
                                                         {candidate.model}
