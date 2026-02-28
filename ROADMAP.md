@@ -1,7 +1,7 @@
 # Borg Project Roadmap
 
-> **Status**: Phase 69 (Deep Submodule Assimilation) - **COMPLETED**
-> **Version**: 2.7.28 (canonical from `VERSION`)
+> **Status**: Phase 76 (MetaMCP Backend Fix & Dev Readiness) - **COMPLETED**
+> **Version**: 2.7.35 (canonical from `VERSION`)
 > **Codename**: AIOS (AI Operating System)
 
 ---
@@ -86,7 +86,7 @@
     - [x] TypeScript Hardening (90+ `as any` removals)
     - [x] UI Polish (Healer streaming, Inspector config, Council members)
     - [x] Router Refactor (Decoupled tools/scripts from DB)
-- [ ] **Phase 64: Release Readiness (v0.8.0-rc1) [IN PROGRESS]**
+- [x] **Phase 64: Release Readiness (v0.8.0-rc1) [COMPLETED]**
     - [x] Docker & Deployment Verification
     - [x] Cross-service local readiness checker (`scripts/verify_dev_readiness.mjs`)
     - [x] Strict machine-readable release gate (`check:release-gate`)
@@ -94,8 +94,8 @@
     - [x] Knowledge Base Sync (932 submodules assimilated)
     - [x] Documentation Audit (Created feature gap and deduplication reports)
     - [x] Documentation Freeze & Deep Analysis
-    - [ ] Submodule Operations Dashboard (React UI representation)
-    - [ ] Final E2E Regression
+    - [x] Submodule Operations Dashboard (React UI at `/dashboard/submodules`)
+    - [x] Final E2E Regression (All 4 services pass `verify_dev_readiness.mjs` strict mode)
 
 ## P3 — Future Phases (Post-69)
 
