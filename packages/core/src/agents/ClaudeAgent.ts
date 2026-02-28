@@ -13,9 +13,8 @@ export class ClaudeAgent extends EventEmitter implements IAgent {
     private llmService: LLMService;
     private promptRegistry: PromptRegistry;
     private state: AgentState;
-    // Note: LLMService provider for anthropic might need mapping. 
-    // Assuming 'anthropic' provider and model ID.
-    private model: string = 'claude-3-5-sonnet-20240620';
+    // Anthropic provider — using the latest Claude 3.5 Sonnet model
+    private model: string = 'claude-3-5-sonnet-20241022';
 
     constructor(llmService: LLMService, promptRegistry: PromptRegistry) {
         super();
@@ -48,15 +47,17 @@ export class ClaudeAgent extends EventEmitter implements IAgent {
             // 2. Add to history
             this.state.history.push({ role: 'user', parts: [{ text: message }] });
 
-            // 3. Generate
-            // Using 'anthropic' provider.
+            // 3. Generate via Anthropic provider with conversation history
             const response = await this.llmService.generateText(
                 'anthropic',
                 this.model,
                 systemPrompt,
                 message,
                 {
-                    // history: this.state.history 
+                    history: this.state.history.map(h => ({
+                        role: h.role === 'model' ? 'assistant' : h.role,
+                        content: h.parts.map((p: any) => p.text).join('\n')
+                    }))
                 }
             );
 

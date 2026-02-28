@@ -55,7 +55,7 @@ export class LLMService {
         this.totalUsage.estimatedCostUSD = this.modelSelector.getQuotaService().getSessionTotal();
     }
 
-    async generateText(initialProvider: string, initialModelId: string, systemPrompt: string, userPrompt: string, options?: { timeout?: number, taskComplexity?: 'low' | 'medium' | 'high', images?: { base64: string, mimeType: string }[] }): Promise<LLMResponse> {
+    async generateText(initialProvider: string, initialModelId: string, systemPrompt: string, userPrompt: string, options?: { timeout?: number, taskComplexity?: 'low' | 'medium' | 'high', images?: { base64: string, mimeType: string }[], history?: { role: string, content: string }[] }): Promise<LLMResponse> {
         let provider = initialProvider;
         let modelId = initialModelId;
 
@@ -73,6 +73,8 @@ export class LLMService {
 
                     const messages: any[] = [
                         { role: "system", content: systemPrompt },
+                        // Inject conversation history before the current user message
+                        ...(options?.history || []).map(h => ({ role: h.role, content: h.content })),
                         { role: "user", content: userPrompt }
                     ];
 
@@ -120,8 +122,16 @@ export class LLMService {
                         });
                     }
 
+                    // Build contents array with conversation history for multi-turn
+                    const contents: any[] = [
+                        ...(options?.history || []).map(h => ({
+                            role: h.role === 'assistant' ? 'model' : h.role,
+                            parts: [{ text: h.content }]
+                        })),
+                        { role: 'user', parts: parts }
+                    ];
                     const result = await model.generateContent({
-                        contents: [{ role: 'user', parts: parts }],
+                        contents,
                         systemInstruction: systemPrompt
                     });
                     const text = result.response.text();
@@ -151,11 +161,16 @@ export class LLMService {
                         });
                     }
 
+                    // Build messages array with conversation history for multi-turn
+                    const historyMessages: any[] = (options?.history || []).map(h => ({
+                        role: h.role === 'model' ? 'assistant' : h.role,
+                        content: h.content
+                    }));
                     const msg = await this.anthropicClient.messages.create({
                         model: modelId,
-                        max_tokens: 4096, // Increased from 1024
+                        max_tokens: 4096,
                         system: systemPrompt,
-                        messages: [{ role: "user", content: content }]
+                        messages: [...historyMessages, { role: "user", content: content }]
                     });
                     response = {
                         content: (msg.content[0] as any).text,
@@ -171,6 +186,7 @@ export class LLMService {
                     const completion = await this.openaiClient.chat.completions.create({
                         messages: [
                             { role: "system", content: systemPrompt },
+                            ...(options?.history || []).map(h => ({ role: h.role as any, content: h.content })),
                             { role: "user", content: userPrompt }
                         ],
                         model: modelId,
@@ -193,6 +209,7 @@ export class LLMService {
                     const completion = await dsClient.chat.completions.create({
                         messages: [
                             { role: "system", content: systemPrompt },
+                            ...(options?.history || []).map(h => ({ role: h.role as any, content: h.content })),
                             { role: "user", content: userPrompt }
                         ],
                         model: modelId,
@@ -216,6 +233,7 @@ export class LLMService {
                             model: modelId || 'gemma',
                             messages: [
                                 { role: 'system', content: systemPrompt },
+                                ...(options?.history || []).map(h => ({ role: h.role, content: h.content })),
                                 { role: 'user', content: userPrompt }
                             ],
                             stream: false,
@@ -249,6 +267,7 @@ export class LLMService {
                     const completion = await lmClient.chat.completions.create({
                         messages: [
                             { role: "system", content: systemPrompt },
+                            ...(options?.history || []).map(h => ({ role: h.role as any, content: h.content })),
                             { role: "user", content: userPrompt }
                         ],
                         model: modelId || 'local-model',

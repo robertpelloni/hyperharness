@@ -13,7 +13,7 @@ export class GeminiAgent extends EventEmitter implements IAgent {
     private llmService: LLMService;
     private promptRegistry: PromptRegistry;
     private state: AgentState;
-    private model: string = 'gemini-1.5-pro';
+    private model: string = 'gemini-2.5-pro';
 
     constructor(llmService: LLMService, promptRegistry: PromptRegistry) {
         super();
@@ -47,18 +47,17 @@ export class GeminiAgent extends EventEmitter implements IAgent {
             // 2. Add to history
             this.state.history.push({ role: 'user', parts: [{ text: message }] });
 
-            // 3. Generate (Simulated Chat Loop, LLMService handles the actual API)
-            // Note: LLMService currently is stateless REST-like. 
-            // Better to use a dedicated chat session if LLMService supports it, or pass full history.
-            // For Phase 1 of this agent, we'll pass the message as a fresh prompt but contextualized.
-
+            // 3. Generate via Google Gemini API with conversation history
             const response = await this.llmService.generateText(
                 'google',
                 this.model,
                 systemPrompt,
                 message,
                 {
-                    // history: this.state.history // If LLMService supported history
+                    history: this.state.history.map(h => ({
+                        role: h.role === 'model' ? 'assistant' : h.role,
+                        content: h.parts.map((p: any) => p.text).join('\n')
+                    }))
                 }
             );
 
