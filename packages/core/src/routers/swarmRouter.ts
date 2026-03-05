@@ -31,7 +31,11 @@ export const swarmRouter = t.router({
             const healerService = global.mcpServerInstance?.healerService;
 
             const orchestrator = new SwarmOrchestrator(
-                { defaultModel: input.model || 'gpt-4o-mini', maxConcurrency: input.maxConcurrency || 5 },
+                {
+                    defaultModel: input.model || 'gpt-4o-mini',
+                    maxConcurrency: input.maxConcurrency || 5,
+                    gitWorktreeManager: global.mcpServerInstance?.gitWorktreeManager // Phase 95
+                },
                 missionService,
                 healerService
             );
@@ -66,7 +70,11 @@ export const swarmRouter = t.router({
             const healerService = (global as any).mcpServerInstance?.healerService;
             if (!missionService) throw new Error('MissionService unavailable');
 
-            const orchestrator = new SwarmOrchestrator({}, missionService, healerService);
+            const orchestrator = new SwarmOrchestrator(
+                { gitWorktreeManager: global.mcpServerInstance?.gitWorktreeManager },
+                missionService,
+                healerService
+            );
             activeOrchestrators.set(input.missionId, orchestrator);
 
             orchestrator.on('swarm:completed', () => activeOrchestrators.delete(input.missionId));

@@ -17,6 +17,7 @@ import { EventEmitter } from 'events';
 import { MeshService, SwarmMessageType, SwarmMessage } from '../../mesh/MeshService.js';
 import { MissionService, SwarmMission } from '../../services/MissionService.js';
 import { RateLimiter } from './RateLimiter.js';
+import { GitWorktreeManager } from '../../orchestrator/GitWorktreeManager.js';
 
 export interface SwarmTask {
     id: string;
@@ -45,6 +46,9 @@ export interface SwarmTask {
 
     // Phase 94: Sub-Agent Task Routing
     requirements?: string[];
+
+    // Phase 95: Git Worktree Isolation
+    worktreePath?: string;
 }
 
 export interface SwarmConfig {
@@ -60,6 +64,8 @@ export interface SwarmConfig {
     /** Phase 86: Adaptive Rate Limiting */
     rpmLimit?: number;
     tpmLimit?: number;
+    /** Phase 95: Optional GitWorktreeManager for context isolation */
+    gitWorktreeManager?: GitWorktreeManager;
 }
 
 export class SwarmOrchestrator extends EventEmitter {
@@ -71,6 +77,7 @@ export class SwarmOrchestrator extends EventEmitter {
     private missionService?: MissionService;
     private healerService?: any; // Phase 83
     private currentMissionId?: string;
+    private gitWorktreeManager?: GitWorktreeManager; // Phase 95
 
     // Track tasks waiting for manual approval
     private approvalResolvers: Map<string, (approved: boolean) => void> = new Map();
@@ -92,6 +99,7 @@ export class SwarmOrchestrator extends EventEmitter {
         this.mesh = new MeshService();
         this.missionService = missionService;
         this.healerService = healerService;
+        this.gitWorktreeManager = config.gitWorktreeManager; // Phase 95
     }
 
     /**
@@ -383,6 +391,19 @@ export class SwarmOrchestrator extends EventEmitter {
         this.emit('task:started', task);
 
         try {
+            // Phase 95: Git Worktree Isolation for coding tasks
+            // Spin up an isolated worktree so parallel agents don't conflict on files
+            const isCodingTask = (task.requirements || []).includes('coder');
+            if (isCodingTask && this.gitWorktreeManager) {
+                try {
+                    const wtPath = await this.gitWorktreeManager.createTaskEnvironment(task.id);
+                    task.worktreePath = wtPath;
+                    console.log(`[SwarmOrchestrator] 🌳 Worktree created for task ${task.id.slice(0, 8)} at ${wtPath}`);
+                } catch (wtErr: any) {
+                    console.warn(`[SwarmOrchestrator] Worktree creation failed (${wtErr.message}), proceeding without isolation.`);
+                }
+            }
+
             // Phase 90: Read global mission context
             let globalContext = {};
             if (this.missionService && this.currentMissionId) {
@@ -398,7 +419,8 @@ export class SwarmOrchestrator extends EventEmitter {
                 tools: task.tools, // Phase 91/92: Add tools array to payload
                 missionId: this.currentMissionId,
                 originalTaskId: task.id,
-                context: Object.keys(globalContext).length > 0 ? globalContext : undefined // Phase 90
+                context: Object.keys(globalContext).length > 0 ? globalContext : undefined, // Phase 90
+                worktreePath: task.worktreePath // Phase 95: Pass isolated worktree path to agent
             };
 
             console.log(`[SwarmOrchestrator] 🌐 Broadcasting TASK_OFFER to Mesh Network (Attempt ${task.retryCount || 1}/${this.config.maxRetries}): "${task.description.slice(0, 30)}..."`);
@@ -603,6 +625,16 @@ export class SwarmOrchestrator extends EventEmitter {
             console.log(`[Worker - local] Completing with failure after exhausted retries: ${task.description}`);
             task.result = `[Failure] Task "${task.description}" failed after ${this.config.maxRetries} retries. Error: ${err.message}`;
             task.status = 'failed';
+        }
+
+        // Phase 95: Cleanup worktree after task execution (success or failure)
+        if (task.worktreePath && this.gitWorktreeManager) {
+            try {
+                await this.gitWorktreeManager.cleanupTaskEnvironment(task.id);
+                console.log(`[SwarmOrchestrator] 🧹 Worktree cleaned up for task ${task.id.slice(0, 8)}`);
+            } catch (cleanupErr: any) {
+                console.warn(`[SwarmOrchestrator] Worktree cleanup failed for task ${task.id}: ${cleanupErr.message}`);
+            }
         }
 
         // Final persistence update

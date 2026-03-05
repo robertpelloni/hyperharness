@@ -60,3 +60,6 @@
     - [x] Allow downstream mesh nodes to share files by broadcasting `read_file` results directly through the mesh bus.
 - [x] **Phase 94: Sub-Agent Task Routing**
     - [x] Deploy specialized agents to execute sub-tasks without full node delegation.
+- [x] **Phase 95: Swarm Git Worktree Isolation**
+    - [x] Each coding task gets an isolated git worktree so parallel agents don't conflict on files.
+    - [x] Worktrees are automatically cleaned up after task completion.

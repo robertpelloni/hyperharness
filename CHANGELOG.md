@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [2.7.55] - 2026-03-04
+### Added
+- **Phase 95: Swarm Git Worktree Isolation**
+  - Integrated `GitWorktreeManager` into `SwarmOrchestrator`. Coding tasks tagged with `requirements: ['coder']` now automatically receive an isolated git worktree via `createTaskEnvironment(taskId)` before dispatch.
+  - The worktree path is propagated to the `TASK_OFFER` mesh payload so downstream agents operate in the isolated directory.
+  - Worktrees are cleaned up via `cleanupTaskEnvironment(taskId)` after task completion (success or failure).
+  - Both `swarmRouter.ts` construction sites now pass `gitWorktreeManager` from `MCPServer`.
+
 ## [2.7.54] - 2026-03-03
 ### Added
 - **Phase 94: Sub-Agent Task Routing**
