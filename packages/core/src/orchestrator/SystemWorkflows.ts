@@ -76,12 +76,12 @@ function registerCodeReviewWorkflow(engine: WorkflowEngine, runner: ToolRunner) 
                     return { ...state, critique: 'Skipped critique: No diff to review.' };
                 }
 
-                const response = await runner.executeTool('ask_agent', {
-                    AgentName: 'Engineer',
-                    Message: `Provide a highly concise code review of this unified diff. Look for obvious anti-patterns:\\n\\n${diffContent}`
+                const response = await runner.executeTool('use_agent', {
+                    name: 'claude', // Use a real agent adapter registered in MCPServer
+                    prompt: `Provide a highly concise code review of this unified diff. Look for obvious anti-patterns:\n\n${diffContent}`
                 });
 
-                return { ...state, critique: typeof response === 'string' ? response : JSON.stringify(response) };
+                return { ...state, critique: typeof response === 'object' && response !== null && 'content' in response ? (response as any).content[0]?.text || '' : String(response) };
             } catch (err: unknown) {
                 return { ...state, critique: `Automated critique failed: ${getErrorMessage(err)}` };
             }

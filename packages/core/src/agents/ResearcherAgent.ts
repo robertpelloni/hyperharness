@@ -52,7 +52,9 @@ export class ResearcherAgent extends SpecializedAgent {
                 // Flatten sources into a simple { source, content } array for mesh consumers
                 findings: result.sources.map(s => ({ source: s.title, content: s.url })),
                 summary: result.summary,
-                fullReport: result
+                fullReport: result,
+                // Phase 96: Execution Telemetry
+                modelMetadata: result.modelMetadata
             };
         } catch (error: any) {
             console.error(`[ResearcherAgent] 💥 Research failed:`, error);

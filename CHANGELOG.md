@@ -4,6 +4,28 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [2.7.56] - 2026-03-05
+### Added
+- **Phase 96: Agentic Execution Telemetry**
+  - Replaced the simulated `ask_agent` workflow tool in `SystemWorkflows.ts` with the fully operational `use_agent` MCP capability.
+  - Plumbed `modelMetadata` (provider, modelId) through `DeepResearchService`'s recursive research outputs.
+  - Added telemetry payload to `CoderAgent`'s execution outputs.
+  - Updated backward-compatible `SubAgents` surface to capture and concatenate `modelMetadata` execution traces into final summaries, satisfying DETAILED_BACKLOG item 6.1.
+
+## [2.7.82] - 2026-03-05
+### Added
+- **Phase 121: Filter-Scoped Health Confidence Guidance Signal**
+  - Extended `swarm.getMissionRiskFacets.health.confidence` with `advice` to provide confidence-focused operator guidance.
+  - Added Missions facets confidence-advice rendering for immediate next-step interpretation.
+  - Preserved filter-scoped behavior so guidance reflects the active governance filter scope.
+
+## [2.7.81] - 2026-03-05
+### Added
+- **Phase 120: Filter-Scoped Health Confidence Stability Signal**
+  - Extended `swarm.getMissionRiskFacets.health.confidence` with `stability` (`stable`, `watch`, `volatile`) derived from uncertainty and trend pressure.
+  - Added Missions facets stability badge rendering for fast confidence-state interpretation.
+  - Preserved filter-scoped semantics so confidence stability reflects the active governance filter set.
+
 ## [2.7.80] - 2026-03-05
 ### Added
 - **Phase 119: Filter-Scoped Health Confidence Uncertainty Signals**

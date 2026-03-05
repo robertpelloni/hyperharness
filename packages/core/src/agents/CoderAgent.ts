@@ -74,7 +74,12 @@ Output ONLY valid JSON.`;
             return {
                 status: 'completed',
                 filesChanged: [plan.filename],
-                reasoning: plan.reasoning
+                reasoning: plan.reasoning,
+                // Phase 96: Execution Telemetry
+                modelMetadata: {
+                    provider: model.provider,
+                    modelId: model.modelId
+                }
             };
 
         } catch (error: any) {

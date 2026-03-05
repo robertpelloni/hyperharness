@@ -2,13 +2,13 @@
 
 ## Current State
 - **Project**: Borg - Neural Operating System
-- **Current Phase**: Phase 119: Filter-Scoped Health Confidence Uncertainty Signals (COMPLETED)
-- **Version**: 2.7.80
+- **Current Phase**: Phase 96: Agentic Execution Telemetry (COMPLETED)
+- **Version**: 2.7.56
 
 ## Recent Accomplishments
-- **Phase 93**: P2P Artifact Federation. Mesh nodes share files by broadcasting `read_file` results.
 - **Phase 94**: Sub-Agent Task Routing. `MeshCoderAgent` and `MeshResearcherAgent` bid on classified tasks.
 - **Phase 95**: Swarm Git Worktree Isolation. Coding tasks auto-receive isolated git worktrees via `GitWorktreeManager`, preventing file contention during parallel execution.
+- **Phase 96**: Agentic Execution Telemetry. Plumbed LLM execution traces (provider/model) from `CoderAgent` and `DeepResearchService` into the `SubAgents` orchestration surface. Replaced simulated stubs in `SystemWorkflows.ts` with real `use_agent` MCP tool invocations.
 - **Phase 95.1 (Docs/Ops Sync)**: Canonical docs and metadata synchronized at `v2.7.56` across roadmap/todo/status/changelog/version and governance dashboard references.
 - **Phase 96**: Swarm Tool Permission Boundaries. Mission-level allow/deny policy now flows through swarm routing and worker execution, with denied-tool rationale persisted in task history and emitted in telemetry.
 - **Phase 97**: Swarm Tool Policy Normalization & Contract Feedback. Policies are normalized with deterministic deny precedence, and mission start responses now include effective policy + warning metadata.
@@ -34,9 +34,11 @@
 - **Phase 117**: Filter-Scoped Health Confidence Components. Added explicit confidence penalty components (`sampleSizePenalty`, `freshnessPenalty`, `signalCongestionPenalty`, `totalPenalty`) and rendered them in Missions facets for confidence-score auditability.
 - **Phase 118**: Filter-Scoped Health Confidence Inputs. Added confidence scoring provenance fields (`missionCount`, `healthReasonCount`, `freshnessBucket`, `evaluatedAt`) and rendered them in Missions facets for confidence context traceability.
 - **Phase 119**: Filter-Scoped Health Confidence Uncertainty Signals. Added confidence precision outputs (`uncertaintyMargin`, `scoreRange`) and rendered them in Missions facets for bounded confidence interpretation.
+- **Phase 120**: Filter-Scoped Health Confidence Stability Signal. Added confidence stability output (`stable|watch|volatile`) and rendered it in Missions facets for rapid confidence-state triage.
+- **Phase 121**: Filter-Scoped Health Confidence Guidance Signal. Added confidence advice output and rendered it in Missions facets for direct confidence-improvement guidance.
 
 ## Next Steps
-- Continue with roadmap implementation for Borg, prioritizing **Phase 120** and ongoing UI/documentation parity closure.
+- Continue with roadmap implementation for Borg, prioritizing **Phase 122** and ongoing UI/documentation parity closure.
 
 ## Technical Notes
 - **Verification**: The P2P Mesh architecture is fully operational inside a single process via `globalMeshBus` fallback, but is designed for multi-node distribution via `redis`. Tests should use this architecture.

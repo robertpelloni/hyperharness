@@ -25,7 +25,15 @@ export class ResearchAgent extends BaseAgent {
                 ? agentResult
                 : JSON.stringify(agentResult, null, 2);
 
-            this.complete(`Research complete for: ${this.task}\n\n${output}`);
+            let telemetry = '';
+            if (typeof agentResult === 'object' && agentResult !== null && 'modelMetadata' in agentResult) {
+                const meta = (agentResult as any).modelMetadata;
+                if (meta?.provider && meta?.modelId) {
+                    telemetry = `\n[Telemetry: Executed via ${meta.provider}/${meta.modelId}]`;
+                }
+            }
+
+            this.complete(`Research complete for: ${this.task}\n\n${output}${telemetry}`);
         } catch (e: any) {
             this.fail(e.message);
         }
@@ -55,7 +63,12 @@ export class CodeAgent extends BaseAgent {
             const changed = Array.isArray(result?.filesChanged) ? result.filesChanged.join(', ') : 'none';
             const reasoning = result?.reasoning ? `\nReasoning: ${result.reasoning}` : '';
 
-            this.complete(`Coding task complete for: ${this.task}\n\nFiles changed: ${changed}${reasoning}`);
+            let telemetry = '';
+            if (result?.modelMetadata?.provider && result?.modelMetadata?.modelId) {
+                telemetry = `\n[Telemetry: Executed via ${result.modelMetadata.provider}/${result.modelMetadata.modelId}]`;
+            }
+
+            this.complete(`Coding task complete for: ${this.task}\n\nFiles changed: ${changed}${reasoning}${telemetry}`);
         } catch (e: any) {
             this.fail(e.message);
         }

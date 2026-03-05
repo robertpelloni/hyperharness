@@ -31,6 +31,11 @@ export interface ResearchResult {
     summary: string;
     sources: { title: string, url: string, keyPoints: string[] }[];
     relatedTopics: string[];
+    // Phase 96: Execution Telemetry
+    modelMetadata?: {
+        provider: string;
+        modelId: string;
+    };
 }
 
 /**
@@ -228,6 +233,12 @@ export class DeepResearchService {
 
             // Ensure relatedTopics is present
             if (!result.relatedTopics) result.relatedTopics = [];
+
+            // Phase 96: Execution Telemetry
+            result.modelMetadata = {
+                provider: model.provider,
+                modelId: model.modelId
+            };
 
             return result;
         } catch (e) {

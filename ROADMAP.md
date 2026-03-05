@@ -1,12 +1,12 @@
 # Borg Project Roadmap
 
-**Current Version**: 2.7.80
-**Last Stable Phase**: 119
+**Current Version**: 2.7.82
+**Last Stable Phase**: 121
 **Codename**: AIOS (AI Operating System)
 
 ---
 
-# MASTER TODO - Borg (v2.7.80)
+# MASTER TODO - Borg (v2.7.82)
 > Final Completion Checklist (Phase 91: Swarm Agent Tool Execution)
 
 ## Phase 1-59: Foundations & Core OS (Completed)
@@ -63,6 +63,9 @@
 - [x] **Phase 95: Swarm Git Worktree Isolation**
     - [x] Each coding task gets an isolated git worktree so parallel agents don't conflict on files.
     - [x] Worktrees are automatically cleaned up after task completion.
+- [x] **Phase 96: Agentic Execution Telemetry**
+    - [x] Replace simulated sub-agent tools with real `use_agent` MCP endpoints in SystemWorkflows.
+    - [x] Plumb LLM model/provider telemetry traces through DeepResearchService, CoderAgent, and SubAgents.
 - [x] **Phase 96: Swarm Tool Permission Boundaries**
     - [x] Enforce mission-level allow/deny tool policies per delegated task.
     - [x] Expose denied-tool rationale in swarm telemetry and mission audit trail.
@@ -135,3 +138,9 @@
 - [x] **Phase 119: Filter-Scoped Health Confidence Uncertainty Signals**
     - [x] Add confidence uncertainty margin and score-range outputs to facets health API contract.
     - [x] Render confidence uncertainty indicators in Missions filtered facets health panel.
+- [x] **Phase 120: Filter-Scoped Health Confidence Stability Signal**
+    - [x] Add confidence stability output to facets health API contract.
+    - [x] Render confidence stability indicator in Missions filtered facets health panel.
+- [x] **Phase 121: Filter-Scoped Health Confidence Guidance Signal**
+    - [x] Add confidence guidance output to facets health API contract.
+    - [x] Render confidence guidance in Missions filtered facets health panel.
