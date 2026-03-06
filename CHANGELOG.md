@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [2.7.65] - 2026-03-06
+### Fixed
+- **Phase 106: Remove @ts-ignore in swarmRouter**
+  - Imported `SwarmMessageType` from `mesh/MeshService.js` and replaced `@ts-ignore` + `as any` cast with proper enum usage.
+  - Eliminates a critical placeholder marker from the regression scanner.
+
 ## [2.7.64] - 2026-03-06
 ### Fixed
 - **Phase 104: Browser Extension Env-Safe URLs**

@@ -10,6 +10,7 @@ import { SwarmOrchestrator, normalizeSwarmToolPolicy } from '../agents/swarm/Swa
 import { DebateProtocol } from '../agents/swarm/DebateProtocol.js';
 import { ConsensusEngine } from '../agents/swarm/ConsensusEngine.js';
 import { MissionService } from '../services/MissionService.js';
+import { SwarmMessageType } from '../mesh/MeshService.js';
 
 // Global registry of active swarm orchestrators for approvals
 const activeOrchestrators = new Map<string, SwarmOrchestrator>();
@@ -504,10 +505,10 @@ export const swarmRouter = t.router({
                 Math.min(
                     100,
                     100
-                        - (healthSeverity === 'critical' ? 55 : healthSeverity === 'warn' ? 30 : 0)
-                        - Math.round(statusPercentages.failed * 0.5)
-                        - Math.round(Math.max(0, deniedDeltaPct) * 0.2)
-                        - (freshnessBucket === 'stale' ? 20 : freshnessBucket === 'recent' ? 8 : freshnessBucket === 'unknown' ? 25 : 0)
+                    - (healthSeverity === 'critical' ? 55 : healthSeverity === 'warn' ? 30 : 0)
+                    - Math.round(statusPercentages.failed * 0.5)
+                    - Math.round(Math.max(0, deniedDeltaPct) * 0.2)
+                    - (freshnessBucket === 'stale' ? 20 : freshnessBucket === 'recent' ? 8 : freshnessBucket === 'unknown' ? 25 : 0)
                 )
             );
 
@@ -528,14 +529,24 @@ export const swarmRouter = t.router({
             const uncertaintyMargin = Math.min(
                 35,
                 5
-                    + Math.round(sampleSizePenalty * 0.35)
-                    + Math.round(freshnessPenalty * 0.25)
-                    + Math.round(signalCongestionPenalty * 0.2)
+                + Math.round(sampleSizePenalty * 0.35)
+                + Math.round(freshnessPenalty * 0.25)
+                + Math.round(signalCongestionPenalty * 0.2)
             );
             const scoreRange = {
                 min: Math.max(0, confidenceScore - uncertaintyMargin),
                 max: Math.min(100, confidenceScore + uncertaintyMargin)
             };
+            const confidenceStability: 'stable' | 'watch' | 'volatile' = uncertaintyMargin >= 22
+                ? 'volatile'
+                : uncertaintyMargin >= 12 || deniedTrend === 'up'
+                    ? 'watch'
+                    : 'stable';
+            const confidenceAdvice = confidenceStability === 'volatile'
+                ? 'Pause high-risk expansion, refresh telemetry, and wait for signal convergence before major decisions.'
+                : confidenceStability === 'watch'
+                    ? 'Monitor another cycle and re-evaluate after fresh mission updates or reduced denial volatility.'
+                    : 'Confidence is stable; proceed while continuing standard monitoring cadence.';
             const confidenceDrivers: string[] = [];
             if (missionCount < 5) {
                 confidenceDrivers.push('Low sample size (<5 missions) limits confidence');
@@ -567,6 +578,26 @@ export const swarmRouter = t.router({
                 confidenceDrivers.push('Wide uncertainty margin indicates lower precision in confidence estimate');
             }
             const confidenceLevel: 'high' | 'medium' | 'low' = confidenceScore >= 75 ? 'high' : confidenceScore >= 45 ? 'medium' : 'low';
+            const confidenceAlerts: string[] = [];
+            if (confidenceLevel === 'low') {
+                confidenceAlerts.push('Low confidence level: avoid irreversible governance actions until confidence improves');
+            }
+            if (confidenceStability === 'volatile') {
+                confidenceAlerts.push('Volatile confidence: confidence state may shift quickly between evaluation cycles');
+            }
+            if (freshnessBucket === 'stale' || freshnessBucket === 'unknown') {
+                confidenceAlerts.push('Telemetry freshness is insufficient for high-assurance confidence interpretation');
+            }
+            if (missionCount < 5) {
+                confidenceAlerts.push('Sample size is low; confidence interpretation may be noisy');
+            }
+            const confidenceAlertLevel: 'none' | 'warn' | 'critical' = confidenceLevel === 'low' || confidenceStability === 'volatile'
+                ? 'critical'
+                : confidenceAlerts.length > 0
+                    ? 'warn'
+                    : 'none';
+            const confidenceAlertCount = confidenceAlerts.length;
+            const hasCriticalAlert = confidenceAlertLevel === 'critical';
 
             let recommendedAction = 'Continue monitoring current mission mix';
             if (healthSeverity === 'critical') {
@@ -616,6 +647,12 @@ export const swarmRouter = t.router({
                             signalCongestionPenalty,
                             totalPenalty: sampleSizePenalty + freshnessPenalty + signalCongestionPenalty
                         },
+                        stability: confidenceStability,
+                        advice: confidenceAdvice,
+                        alertLevel: confidenceAlertLevel,
+                        alertCount: confidenceAlertCount,
+                        hasCriticalAlert,
+                        alerts: confidenceAlerts.slice(0, 4),
                         uncertaintyMargin,
                         scoreRange
                     }
@@ -663,8 +700,7 @@ export const swarmRouter = t.router({
         .mutation(async ({ input }) => {
             const mesh = global.mcpServerInstance?.meshService;
             if (!mesh) throw new Error("MeshService not available");
-            // @ts-ignore - SwarmMessageType isn't exported in the trpc context smoothly without absolute imports, use string cast
-            mesh.sendDirect(input.targetNodeId, 'DIRECT_MESSAGE' as any, input.payload);
+            mesh.sendDirect(input.targetNodeId, SwarmMessageType.DIRECT_MESSAGE, input.payload);
             return { success: true };
         }),
 });
