@@ -61,9 +61,9 @@
 - **Current issue:** `@ts-ignore` for `trpc.expert.*`; duplicated coder state block in component body.
 - **Deliverable:** Typed endpoint usage, deduplicated state logic, and stable compile-time contracts.
 - **Acceptance criteria:**
-    - [ ] No `@ts-ignore` around `trpc.expert` interactions.
-    - [ ] Coder state defined once with a single source of truth.
-    - [ ] Page builds without hidden type bypasses.
+    - [x] No `@ts-ignore` around `trpc.expert` interactions.
+    - [x] Coder state defined once with a single source of truth.
+    - [x] Page builds without hidden type bypasses.
 
 ---
 

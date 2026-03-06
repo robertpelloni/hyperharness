@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [2.7.59] - 2026-03-06
+### Fixed
+- **Phase 99: Knowledge Dashboard Type Integrity**
+  - Removed `ExpertTrpc` type hack and `as unknown as` cast from `knowledge/page.tsx`.
+  - `trpc.expert.research` and `trpc.expert.code` now accessed directly through the properly typed AppRouter.
+  - Fixed implicit `any` on error callback parameter.
+
 ## [2.7.58] - 2026-03-06
 ### Fixed
 - **Phase 98: Environment-Safe Endpoint Strategy**

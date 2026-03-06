@@ -8,15 +8,7 @@ import { motion } from "framer-motion";
 import { Loader2, RefreshCw, Download, Play, CheckCircle, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 
-type ExpertTrpc = {
-    expert: {
-        research: { useMutation: () => any };
-        code: { useMutation: () => any };
-    };
-};
-
 export default function KnowledgeDashboard() {
-    const trpcWithExpert = trpc as unknown as typeof trpc & ExpertTrpc;
     // Real submodule data
     const submodulesQuery = trpc.submodule.list.useQuery();
     const submodulesData = submodulesQuery.data || [];
@@ -30,7 +22,7 @@ export default function KnowledgeDashboard() {
     // Research State
     const [researchQuery, setResearchQuery] = useState("");
     const [researchDepth, setResearchDepth] = useState(2);
-    const researchMutation = trpcWithExpert.expert.research.useMutation();
+    const researchMutation = (trpc.expert as any).research.useMutation();
 
     const handleResearch = () => {
         if (!researchQuery) return;
@@ -40,12 +32,12 @@ export default function KnowledgeDashboard() {
 
     // Coder State
     const [coderTask, setCoderTask] = useState("");
-    const coderMutation = trpcWithExpert.expert.code.useMutation({
+    const coderMutation = (trpc.expert as any).code.useMutation({
         onSuccess: () => {
             toast.success("Coder task started");
             setCoderTask("");
         },
-        onError: (err) => toast.error("Coder task failed: " + err.message)
+        onError: (err: { message: string }) => toast.error("Coder task failed: " + err.message)
     });
 
     const handleCode = () => {
