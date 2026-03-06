@@ -192,8 +192,8 @@
 - **Current issue:** Version/status drift across parallel docs.
 - **Deliverable:** Canon + archival labeling for non-canonical files.
 - **Acceptance criteria:**
-    - [ ] All active docs agree on current version and phase.
-    - [ ] Legacy docs explicitly labeled archival with references to canonical files.
+    - [x] All active docs agree on current version and phase.
+    - [x] Legacy docs explicitly labeled archival with references to canonical files.
 
 ### 11) Add placeholder regression checks
 

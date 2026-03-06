@@ -1,3 +1,5 @@
+> ⚠️ **ARCHIVAL** — This file is retained for historical context (v1.3.0–v2.7.16). The canonical handoff document is `HANDOFF_ANTIGRAVITY.md`.
+
 # Handoff Log - Session 2026-01-24
 
 ## 🚀 Mission Accomplished: Core Robustness & Advanced Features (v1.3.0)

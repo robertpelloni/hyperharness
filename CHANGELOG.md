@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [2.7.61] - 2026-03-06
+### Fixed
+- **Phase 101: Documentation Governance**
+  - Synced `STATUS.md` to v2.7.60/Phase 100 (was stale at v2.7.56/Phase 95).
+  - Added archival header to `HANDOFF_LOG.md` pointing to canonical `HANDOFF_ANTIGRAVITY.md`.
+  - Verified `docs/HANDOFF.md` and `docs/PROJECT_STATUS.md` already labeled archival.
+  - Checked off backlog Item 10 (single-source operational documentation).
+
 ## [2.7.60] - 2026-03-06
 ### Added
 - **Phase 100: Service Exposure Audit**

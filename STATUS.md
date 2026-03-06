@@ -1,8 +1,8 @@
 # Borg Project — Comprehensive Status Report
 
-> **Updated**: 2026-03-04 (Post-Phase 95 Documentation Sync)
-> **Version**: 2.7.56 (canonical from `VERSION`/`VERSION.md`)
-> **Primary Phase**: 95 — Swarm Git Worktree Isolation (Completed)
+> **Updated**: 2026-03-06 (Post-Phase 100 Documentation Sync)
+> **Version**: 2.7.60 (canonical from `VERSION`/`VERSION.md`)
+> **Primary Phase**: 100 — Service Exposure Audit (Completed)
 
 ---
 
@@ -10,8 +10,8 @@
 
 Borg has reached a **high level of operational density** with Swarm phases through **95 completed**, and now requires continued consolidation and parity work for long-tail modules and dashboards.
 
-- **Integrity**: Version and handoff artifacts are synchronized at `2.7.56`.
-- **Delivery**: Swarm phases 91–95 are documented as completed (`MCP tools`, `P2P dispatch`, `artifact federation`, `sub-agent routing`, `git worktree isolation`).
+- **Integrity**: Version and handoff artifacts are synchronized at `2.7.60`.
+- **Delivery**: Phases 91–100 completed: MCP tools, P2P dispatch, artifact federation, sub-agent routing, git worktree isolation, agentic execution telemetry, ingestion telemetry, env-safe endpoints, knowledge type integrity, and service exposure audit.
 - **Remaining Focus**: Continue feature parity closure and governance automation for the large submodule ecosystem.
 
 **Overall Health**: 🟢 Git Index Healthy, 🟡 UI Coverage Gaps, 🔴 Submodule Bloat
@@ -21,7 +21,7 @@ Borg has reached a **high level of operational density** with Swarm phases throu
 | Total Submodules | 786+ (See `SUBMODULES.md` canonical dashboard) |
 | Redundancy Rate | High (up to 6 paths per repo) |
 | Registered tRPC Routers | Broadly mapped (see `packages/core/src/trpc/routers`) |
-| Swarm Phase Completion | 95/100 planned phases entered (95 complete, 96+ pending) |
+| Swarm Phase Completion | 100/100 planned phases entered (100 complete) |
 | Master Index Health | Active (tracked in `BORG_MASTER_INDEX.jsonc`) |
 
 ---

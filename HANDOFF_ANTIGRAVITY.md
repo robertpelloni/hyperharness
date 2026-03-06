@@ -2,8 +2,8 @@
 
 ## Current State
 - **Project**: Borg - Neural Operating System
-- **Current Phase**: Phase 97: External Link Ingestion Telemetry (COMPLETED)
-- **Version**: 2.7.57
+- **Current Phase**: Phase 100: Service Exposure Audit (COMPLETED)
+- **Version**: 2.7.60
 
 ## Recent Accomplishments
 - **Phase 94**: Sub-Agent Task Routing. `MeshCoderAgent` and `MeshResearcherAgent` bid on classified tasks.
@@ -37,9 +37,11 @@
 - **Phase 119**: Filter-Scoped Health Confidence Uncertainty Signals. Added confidence precision outputs (`uncertaintyMargin`, `scoreRange`) and rendered them in Missions facets for bounded confidence interpretation.
 - **Phase 120**: Filter-Scoped Health Confidence Stability Signal. Added confidence stability output (`stable|watch|volatile`) and rendered it in Missions facets for rapid confidence-state triage.
 - **Phase 121**: Filter-Scoped Health Confidence Guidance Signal. Added confidence advice output and rendered it in Missions facets for direct confidence-improvement guidance.
+- **Phase 122**: Filter-Scoped Health Confidence Alert Signals. Added confidence alert outputs and rendered confidence alerts in Missions facets for explicit confidence risk warnings.
+- **Phase 123**: Filter-Scoped Health Confidence Alert Level Signal. Added confidence alert-level output (`none|warn|critical`) and rendered alert-level badge in Missions facets for rapid confidence-alert severity triage.
 
 ## Next Steps
-- Continue with roadmap implementation for Borg, prioritizing **Phase 122** and ongoing UI/documentation parity closure.
+- Continue with roadmap implementation for Borg, prioritizing **Phase 124** and ongoing UI/documentation parity closure.
 
 ## Technical Notes
 - **Verification**: The P2P Mesh architecture is fully operational inside a single process via `globalMeshBus` fallback, but is designed for multi-node distribution via `redis`. Tests should use this architecture.
