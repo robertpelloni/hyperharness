@@ -5,7 +5,7 @@
   "packageManager": "pnpm@10.28.0",
   "scripts": {
     "start": "node packages/cli/dist/index.js start",
-    "build": "turbo run build --filter=!mcp-superassistant --filter=!claude-mem --filter=!borg-vscode-extension",
+    "build": "turbo run build --filter=!mcp-superassistant --filter=!deer-flow-frontend",
     "dev": "set CI=true&& turbo run dev --concurrency 30 --filter=!mcp-superassistant --filter=!@extension/hmr --filter=!@opencode-autopilot/cli --filter=!deer-flow-frontend",
     "dev:server": "turbo run dev:server --parallel",
     "dev:web": "turbo run dev --filter @borg/web",
