@@ -16,6 +16,7 @@ import Database from "better-sqlite3";
 import * as schema from "./metamcp-schema.js";
 import * as dotenv from "dotenv";
 import path from "path";
+import fs from "fs";
 
 dotenv.config();
 
@@ -26,6 +27,12 @@ const dbPath = process.env.DATABASE_URL || "metamcp.db";
 const resolvedDbPath = dbPath.startsWith("file:")
     ? dbPath.slice(5)
     : path.resolve(process.cwd(), dbPath);
+
+// Ensure the parent directory exists before opening the database
+const dbDir = path.dirname(resolvedDbPath);
+if (!fs.existsSync(dbDir)) {
+    fs.mkdirSync(dbDir, { recursive: true });
+}
 
 const sqlite = new Database(resolvedDbPath);
 export const db = drizzle(sqlite, { schema });

@@ -14,7 +14,9 @@
         "https://chatgpt.com/*",
         "https://claude.ai/*",
         "https://gemini.google.com/*",
-        "http://localhost:3000/*"
+        "http://localhost:3000/*",
+        "http://localhost:3001/*",
+        "http://127.0.0.1:3001/*"
     ],
     "background": {
         "service_worker": "dist/background.js",
@@ -37,6 +39,10 @@
     ],
     "action": {
         "default_popup": "popup.html"
+    },
+    "options_ui": {
+        "page": "options.html",
+        "open_in_tab": true
     },
     "icons": {
         "16": "icons/icon16.png",

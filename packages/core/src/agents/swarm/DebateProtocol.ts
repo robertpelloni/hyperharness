@@ -10,10 +10,25 @@
 
 import { EventEmitter } from 'events';
 
+export type DebateMode = 'standard' | 'adversarial';
+export type DebateTopicType = 'general' | 'mission-plan';
+export type DebateTurnStance = 'support' | 'critique' | 'judge';
+
+export interface DebatePersonaProfile {
+    key: 'proponent' | 'opponent' | 'judge';
+    label: string;
+    stance: DebateTurnStance;
+    isAdversarial: boolean;
+    objective: string;
+}
+
 export interface DebateTurn {
     round: number;
     persona: string;
+    label: string;
     model: string;
+    stance: DebateTurnStance;
+    isAdversarial: boolean;
     argument: string;
     timestamp: number;
 }
@@ -24,18 +39,33 @@ export interface DebateConfig {
     opponentModel: string;
     judgeModel: string;
     maxRounds: number;
+    mode?: DebateMode;
+    topicType?: DebateTopicType;
     /** Base URL for the autopilot council server */
     councilUrl?: string;
 }
 
+export interface DebateResult {
+    winner: string;
+    summary: string;
+    history: DebateTurn[];
+    mode: DebateMode;
+    topicType: DebateTopicType;
+    personas: DebatePersonaProfile[];
+}
+
 export class DebateProtocol extends EventEmitter {
     private history: DebateTurn[] = [];
-    private config: DebateConfig;
+    private config: DebateConfig & { mode: DebateMode; topicType: DebateTopicType };
     private councilUrl: string;
 
     constructor(config: DebateConfig) {
         super();
-        this.config = config;
+        this.config = {
+            ...config,
+            mode: config.mode || 'standard',
+            topicType: config.topicType || 'general'
+        };
         this.councilUrl = config.councilUrl || 'http://localhost:3847';
     }
 
@@ -44,7 +74,7 @@ export class DebateProtocol extends EventEmitter {
      * Each turn is a real LLM call routed through the Autopilot Council's
      * per-supervisor endpoints.
      */
-    public async conductDebate(): Promise<{ winner: string; summary: string; history: DebateTurn[] }> {
+    public async conductDebate(): Promise<DebateResult> {
         this.emit('debate:started', this.config);
 
         let currentArgument = this.config.topic;
@@ -76,17 +106,17 @@ export class DebateProtocol extends EventEmitter {
      * the model string (e.g., 'claude-3-5-sonnet' → 'Claude' supervisor).
      */
     private async generateTurn(round: number, persona: string, model: string, context: string): Promise<DebateTurn> {
+        const profile = this.getPersonaProfile(persona);
+
         try {
             const supervisorName = this.modelToSupervisor(model);
-            const systemPrompt = persona === 'Proponent'
-                ? `You are the PROPONENT in this debate. Argue strongly IN FAVOR of the position. Be specific, cite technical reasoning, and address counterarguments. Keep your response under 300 words.`
-                : `You are the OPPONENT in this debate. Argue strongly AGAINST the position. Find weaknesses, propose alternatives, and challenge assumptions. Keep your response under 300 words.`;
+            const systemPrompt = this.buildSystemPrompt(profile);
 
             const res = await fetch(`${this.councilUrl}/api/supervisors/${supervisorName}/chat`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    message: `[Round ${round}] ${persona} — Respond to: "${context}"`,
+                    message: `[Round ${round}] ${profile.label} — Respond to: "${context}"`,
                     systemPrompt,
                     context: this.history.map(t => `[R${t.round} ${t.persona}] ${t.argument}`).join('\n')
                 }),
@@ -97,7 +127,16 @@ export class DebateProtocol extends EventEmitter {
                 const data = await res.json();
                 const argument = data.response || data.message || data.text || '';
                 if (argument) {
-                    return { round, persona, model, argument, timestamp: Date.now() };
+                    return {
+                        round,
+                        persona,
+                        label: profile.label,
+                        model,
+                        stance: profile.stance,
+                        isAdversarial: profile.isAdversarial,
+                        argument,
+                        timestamp: Date.now()
+                    };
                 }
             }
         } catch (err: any) {
@@ -108,8 +147,11 @@ export class DebateProtocol extends EventEmitter {
         return {
             round,
             persona,
+            label: profile.label,
             model,
-            argument: `[Fallback] ${persona} using ${model} — council unavailable. Original context: "${context.substring(0, 100)}..."`,
+            stance: profile.stance,
+            isAdversarial: profile.isAdversarial,
+            argument: `[Fallback] ${profile.label} using ${model} — council unavailable. Original context: "${context.substring(0, 100)}..."`,
             timestamp: Date.now()
         };
     }
@@ -118,10 +160,13 @@ export class DebateProtocol extends EventEmitter {
      * Passes the full debate transcript to the Judge model for final evaluation.
      * Uses the council debate endpoint for a holistic multi-model judgement.
      */
-    private async evaluateDebate(): Promise<{ winner: string; summary: string; history: DebateTurn[] }> {
+    private async evaluateDebate(): Promise<DebateResult> {
         const transcript = this.history
-            .map(t => `[Round ${t.round} — ${t.persona} (${t.model})]\n${t.argument}`)
+            .map(t => `[Round ${t.round} — ${t.label} (${t.model})]\n${t.argument}`)
             .join('\n\n---\n\n');
+        const opponentProfile = this.getPersonaProfile('Opponent');
+        const proponentProfile = this.getPersonaProfile('Proponent');
+        const personas = this.getPersonaProfiles();
 
         try {
             const judgeSupervisor = this.modelToSupervisor(this.config.judgeModel);
@@ -129,8 +174,8 @@ export class DebateProtocol extends EventEmitter {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    message: `You are the JUDGE. Evaluate this ${this.config.maxRounds}-round debate on: "${this.config.topic}". Declare a winner (Proponent or Opponent) and explain your reasoning in 2-3 sentences.\n\nTranscript:\n${transcript}`,
-                    systemPrompt: 'You are an impartial judge evaluating a structured debate between two AI models. Respond with JSON: {"winner": "Proponent"|"Opponent", "summary": "your reasoning"}'
+                    message: `You are the JUDGE. Evaluate this ${this.config.maxRounds}-round ${this.config.mode} debate on: "${this.config.topic}". Declare a winner (${proponentProfile.label} or ${opponentProfile.label}) and explain your reasoning in 2-3 sentences. Prioritize concrete operational rigor over rhetorical confidence.\n\nTranscript:\n${transcript}`,
+                    systemPrompt: `You are an impartial judge evaluating a structured debate between two AI models. The debate mode is ${this.config.mode} and the topic type is ${this.config.topicType}. In adversarial mode, reward concrete red-team findings when they expose missing safeguards, brittle assumptions, or hidden dependencies. Respond with JSON: {"winner": "${proponentProfile.label}"|"${opponentProfile.label}", "summary": "your reasoning"}`
                 }),
                 signal: AbortSignal.timeout(30000)
             });
@@ -145,17 +190,23 @@ export class DebateProtocol extends EventEmitter {
                     if (jsonMatch) {
                         const parsed = JSON.parse(jsonMatch[0]);
                         return {
-                            winner: parsed.winner || 'Proponent',
+                            winner: parsed.winner || proponentProfile.label,
                             summary: parsed.summary || judgeText,
-                            history: this.history
+                            history: this.history,
+                            mode: this.config.mode,
+                            topicType: this.config.topicType,
+                            personas
                         };
                     }
                 } catch { /* JSON parse failed — use raw text */ }
 
                 return {
-                    winner: judgeText.toLowerCase().includes('opponent') ? 'Opponent' : 'Proponent',
+                    winner: judgeText.toLowerCase().includes(opponentProfile.label.toLowerCase()) ? opponentProfile.label : proponentProfile.label,
                     summary: judgeText || `Judge (${this.config.judgeModel}) evaluated ${this.config.maxRounds} rounds.`,
-                    history: this.history
+                    history: this.history,
+                    mode: this.config.mode,
+                    topicType: this.config.topicType,
+                    personas
                 };
             }
         } catch (err: any) {
@@ -164,10 +215,73 @@ export class DebateProtocol extends EventEmitter {
 
         // Fallback judgement
         return {
-            winner: 'Proponent',
-            summary: `[Fallback] Judge (${this.config.judgeModel}) was unavailable. Defaulting to Proponent based on argument volume.`,
-            history: this.history
+            winner: this.config.mode === 'adversarial' ? opponentProfile.label : proponentProfile.label,
+            summary: `[Fallback] Judge (${this.config.judgeModel}) was unavailable. Defaulting to ${this.config.mode === 'adversarial' ? 'the adversarial critique' : 'the proponent'} to bias toward safer follow-up review.`,
+            history: this.history,
+            mode: this.config.mode,
+            topicType: this.config.topicType,
+            personas
         };
+    }
+
+    private getPersonaProfiles(): DebatePersonaProfile[] {
+        return [
+            this.getPersonaProfile('Proponent'),
+            this.getPersonaProfile('Opponent'),
+            this.getPersonaProfile('Judge')
+        ];
+    }
+
+    private getPersonaProfile(persona: string): DebatePersonaProfile {
+        if (persona === 'Proponent') {
+            return {
+                key: 'proponent',
+                label: this.config.topicType === 'mission-plan' ? 'Plan Advocate' : 'Proponent',
+                stance: 'support',
+                isAdversarial: false,
+                objective: this.config.topicType === 'mission-plan'
+                    ? 'Defend the mission plan and justify why its sequencing, decomposition, and safeguards are sufficient.'
+                    : 'Argue in favor of the position with concrete technical support.'
+            };
+        }
+
+        if (persona === 'Judge') {
+            return {
+                key: 'judge',
+                label: 'Judge',
+                stance: 'judge',
+                isAdversarial: false,
+                objective: 'Evaluate both sides, prefer rigor over confidence, and explain the decision clearly.'
+            };
+        }
+
+        return {
+            key: 'opponent',
+            label: this.config.mode === 'adversarial'
+                ? (this.config.topicType === 'mission-plan' ? 'Red Team Critic' : 'Adversarial Opponent')
+                : 'Opponent',
+            stance: 'critique',
+            isAdversarial: this.config.mode === 'adversarial',
+            objective: this.config.mode === 'adversarial'
+                ? 'Break the plan by finding edge cases, unsafe assumptions, hidden dependencies, and missing rollback or observability paths.'
+                : 'Argue against the position and challenge the main assumptions.'
+        };
+    }
+
+    private buildSystemPrompt(profile: DebatePersonaProfile): string {
+        if (profile.key === 'proponent') {
+            return this.config.topicType === 'mission-plan'
+                ? 'You are the PLAN ADVOCATE in a structured debate about a proposed mission plan. Defend the plan, explain why the decomposition is sound, justify priorities, and note any existing safeguards. Address critiques directly. Keep your response under 300 words.'
+                : 'You are the PROPONENT in this debate. Argue strongly IN FAVOR of the position. Be specific, cite technical reasoning, and address counterarguments. Keep your response under 300 words.';
+        }
+
+        if (this.config.mode === 'adversarial') {
+            return this.config.topicType === 'mission-plan'
+                ? 'You are the RED TEAM CRITIC in an adversarial review of a mission plan. Your job is to intentionally stress-test the plan, identify hidden dependencies, missing prerequisites, failure modes, unsafe assumptions, security issues, observability gaps, and rollback weaknesses. Prefer concrete breakpoints over generic disagreement. Keep your response under 300 words.'
+                : 'You are the ADVERSARIAL OPPONENT in this debate. Attack the proposal by finding brittle assumptions, edge cases, security risks, missing evidence, and practical failure modes. Keep your response under 300 words.';
+        }
+
+        return 'You are the OPPONENT in this debate. Argue strongly AGAINST the position. Find weaknesses, propose alternatives, and challenge assumptions. Keep your response under 300 words.';
     }
 
     /**

@@ -38,6 +38,32 @@ export const mcpRouter = t.router({
         }
     }),
 
+    traffic: publicProcedure.query(async () => {
+        const aggregator = getMcpAggregator();
+        try {
+            return await aggregator?.getTrafficEvents?.() ?? [];
+        } catch {
+            return [];
+        }
+    }),
+
+    searchTools: publicProcedure.input(z.object({
+        query: z.string().default(''),
+    })).query(async ({ input }) => {
+        const aggregator = getMcpAggregator();
+        try {
+            const tools = await aggregator?.searchTools?.(input.query) ?? [];
+            return tools.map((tool) => ({
+                name: tool.name,
+                description: tool.description ?? '',
+                server: tool.server ?? 'unknown',
+                inputSchema: tool.inputSchema ?? null,
+            }));
+        } catch {
+            return [];
+        }
+    }),
+
     /** Get aggregator status and stats */
     getStatus: publicProcedure.query(async () => {
         const aggregator = getMcpAggregator();
@@ -86,32 +112,11 @@ export const mcpRouter = t.router({
         const aggregator = getMcpAggregator();
         if (!aggregator) throw new Error('MCP Aggregator not initialized');
 
-        // Disconnect client if connected
-        const clients = aggregator.clients as Map<string, { close?: () => Promise<void> | void }> | undefined;
-        if (!clients) {
-            return { success: false, error: 'Aggregator client map unavailable' };
-        }
-        const client = clients.get(input.name);
-        if (client) {
-            try {
-                if (client.close) await client.close();
-            } catch {
-                /* ignore */
-            }
-            clients.delete(input.name);
+        if (!aggregator.removeServerConfig) {
+            throw new Error('MCP Aggregator removeServerConfig unavailable');
         }
 
-        // Remove from config file
-        const fs = await import('fs');
-        const configPath = aggregator.configPath;
-        if (!configPath) {
-            return { success: false, error: 'Aggregator config path unavailable' };
-        }
-        if (fs.existsSync(configPath)) {
-            const config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
-            delete config[input.name];
-            fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
-        }
+        await aggregator.removeServerConfig(input.name);
 
         return { success: true };
     }),

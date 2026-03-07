@@ -45,6 +45,8 @@ reader_error.txt
 packages/core/core.log
 packages/ui/ui.log
 .next/
+.next-dev/
+**/.next-dev/
 .turbo/
 .borg_boot_check
 .borg_startup_marker

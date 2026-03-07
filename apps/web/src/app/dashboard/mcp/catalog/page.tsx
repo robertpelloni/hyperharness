@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from "@borg/ui";
-import { Loader2, Wrench, Search, ArrowUpRight } from "lucide-react";
+import { Loader2, Wrench, Search, ArrowUpRight, TimerReset, FileJson } from "lucide-react";
 import { trpc } from '@/utils/trpc';
 
 export default function CatalogDashboard() {
@@ -62,9 +62,23 @@ export default function CatalogDashboard() {
                                 <p className="text-sm text-zinc-400 line-clamp-3 min-h-[60px]">
                                     {tool.description || "No description provided."}
                                 </p>
+                                <div className="mt-3 flex flex-wrap gap-2">
+                                    {tool.isDeferred && (
+                                        <span className="inline-flex items-center gap-1 rounded-full border border-amber-500/30 bg-amber-500/10 px-2 py-1 text-[10px] font-medium uppercase tracking-widest text-amber-300">
+                                            <TimerReset className="h-3 w-3" />
+                                            Deferred Schema
+                                        </span>
+                                    )}
+                                    <span className="inline-flex items-center gap-1 rounded-full border border-zinc-700 bg-zinc-950 px-2 py-1 text-[10px] font-medium uppercase tracking-widest text-zinc-400">
+                                        <FileJson className="h-3 w-3" />
+                                        {tool.schemaParamCount ?? 0} params
+                                    </span>
+                                </div>
                                 <div className="mt-4 pt-4 border-t border-zinc-800 flex justify-between items-center text-xs text-zinc-500">
                                     <span>
-                                        Schemas: {tool.inputSchema ? Object.keys(tool.inputSchema.properties || {}).length : 0} params
+                                        {tool.isDeferred
+                                            ? 'Full schema loads on explicit request'
+                                            : `Schema ready: ${tool.schemaParamCount ?? 0} params`}
                                     </span>
                                     <ArrowUpRight className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity" />
                                 </div>

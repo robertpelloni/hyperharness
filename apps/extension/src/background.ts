@@ -6,12 +6,39 @@
 let CORE_URL = 'http://localhost:3001';
 let WS_URL = 'ws://localhost:3001';
 
-// Load configured URLs from chrome.storage (set via options page or popup)
-chrome.storage.sync.get(['borgCoreUrl', 'borgWsUrl'], (result) => {
+function applyStoredUrls(result: { borgCoreUrl?: string; borgWsUrl?: string }) {
     if (result.borgCoreUrl) CORE_URL = result.borgCoreUrl;
     if (result.borgWsUrl) WS_URL = result.borgWsUrl;
+}
+
+// Load configured URLs from chrome.storage (set via options page or popup)
+chrome.storage.sync.get(['borgCoreUrl', 'borgWsUrl'], (result) => {
+    applyStoredUrls(result);
     // Reconnect WebSocket with potentially new URL
     if (ws) { ws.close(); } else { connectWebSocket(); }
+});
+
+chrome.storage.onChanged.addListener((changes, areaName) => {
+    if (areaName !== 'sync') return;
+
+    let changed = false;
+    if (changes.borgCoreUrl?.newValue) {
+        CORE_URL = changes.borgCoreUrl.newValue;
+        changed = true;
+    }
+    if (changes.borgWsUrl?.newValue) {
+        WS_URL = changes.borgWsUrl.newValue;
+        changed = true;
+    }
+
+    if (changed) {
+        console.log('[Borg Ext] Updated endpoint configuration from storage');
+        if (ws) {
+            ws.close();
+        } else {
+            connectWebSocket();
+        }
+    }
 });
 
 // Keep-alive setup for Service Worker
@@ -24,6 +51,12 @@ let consoleLogBuffer: Array<{ level: string; message: string; timestamp: number;
 const MAX_CONSOLE_BUFFER = 100;
 let mirrorIntervalId: any = null;
 
+function emitCoreEvent(payload: Record<string, unknown>) {
+    if (ws && ws.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify(payload));
+    }
+}
+
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (message.type === 'EXECUTE_TOOL') {
         handleToolExecution(message.tool, message.args)
@@ -35,16 +68,25 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (message.type === 'CHECK_CONNECTION') {
         fetch(`${CORE_URL}/health`)
             .then(res => res.json())
-            .then(data => sendResponse({ connected: data?.result?.data?.status === 'running' }))
-            .catch(() => sendResponse({ connected: false }));
+            .then(data => {
+                const status = data?.status || data?.result?.data?.status || 'unknown';
+                const connected = status === 'online' || status === 'running';
+                sendResponse({ connected, status, coreUrl: CORE_URL, wsUrl: WS_URL });
+            })
+            .catch((error) => sendResponse({ connected: false, status: 'offline', coreUrl: CORE_URL, wsUrl: WS_URL, error: error.message }));
         return true;
     }
 
     if (message.type === 'SAVE_CONTEXT') {
-        fetch(`${CORE_URL}/director.memorize`, {
+        fetch(`${CORE_URL}/knowledge.capture`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ content: message.content, source: message.url, title: message.title })
+            body: JSON.stringify({
+                content: message.content,
+                source: 'browser_extension',
+                url: message.url,
+                title: message.title
+            })
         })
             .then(res => res.json())
             .then(data => sendResponse({ success: true, data }))
@@ -52,24 +94,95 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         return true;
     }
 
+    if (message.type === 'INGEST_RAG_TEXT') {
+        fetch(`${CORE_URL}/rag.ingest-text`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                text: message.text,
+                sourceName: message.sourceName,
+                userId: 'default',
+                chunkSize: 1000,
+                chunkOverlap: 200,
+                strategy: 'recursive'
+            })
+        })
+            .then(async (res) => {
+                const data = await res.json();
+                if (!res.ok || data?.success === false) {
+                    throw new Error(data?.error || `HTTP ${res.status}`);
+                }
+                sendResponse({ success: true, data });
+            })
+            .catch(err => sendResponse({ success: false, error: err.message }));
+        return true;
+    }
+
+    if (message.type === 'INGEST_URL') {
+        fetch(`${CORE_URL}/knowledge.ingest-url`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                url: message.url,
+                source: 'browser_extension'
+            })
+        })
+            .then(async (res) => {
+                const data = await res.json();
+                if (!res.ok || data?.success === false) {
+                    throw new Error(data?.error || `HTTP ${res.status}`);
+                }
+                sendResponse({ success: true, data });
+            })
+            .catch(err => sendResponse({ success: false, error: err.message }));
+        return true;
+    }
+
     // Console Log Capture from content scripts
     if (message.type === 'CONSOLE_LOG') {
+        const url = sender.tab?.url || 'unknown';
+        const timestamp = Date.now();
         consoleLogBuffer.push({
             level: message.level,
             message: message.message,
-            timestamp: Date.now(),
-            url: sender.tab?.url || 'unknown'
+            timestamp,
+            url
         });
         // Trim buffer to max size
         if (consoleLogBuffer.length > MAX_CONSOLE_BUFFER) {
             consoleLogBuffer = consoleLogBuffer.slice(-MAX_CONSOLE_BUFFER);
         }
+        emitCoreEvent({
+            type: 'BROWSER_LOG',
+            level: message.level,
+            content: message.message,
+            message: message.message,
+            timestamp,
+            url,
+            source: 'browser_extension'
+        });
         sendResponse({ success: true });
         return true;
     }
 
     if (message.type === 'GET_CONSOLE_LOGS') {
         sendResponse({ success: true, logs: [...consoleLogBuffer] });
+        return true;
+    }
+
+    if (message.type === 'USER_ACTIVITY') {
+        emitCoreEvent({
+            type: 'USER_ACTIVITY',
+            lastActivityTime: Number(message.lastActivityTime) || Date.now(),
+            trigger: String(message.trigger || 'browser'),
+            activePage: message.activePage || {
+                url: sender.tab?.url || 'unknown',
+                title: sender.tab?.title || 'Unknown Tab',
+                host: sender.tab?.url ? new URL(sender.tab.url).host : 'unknown',
+            },
+            source: 'browser_extension',
+        });
+        sendResponse({ success: true });
         return true;
     }
 });

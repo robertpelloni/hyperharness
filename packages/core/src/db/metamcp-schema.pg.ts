@@ -129,6 +129,7 @@ export const toolsTable = pgTable(
                 required?: string[];
             }>()
             .notNull(),
+        is_deferred: boolean("is_deferred").notNull().default(false),
         created_at: timestamp("created_at", { withTimezone: true })
             .notNull()
             .defaultNow(),

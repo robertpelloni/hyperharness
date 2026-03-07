@@ -32,6 +32,7 @@ import { toolRegistry } from "./ToolRegistry.js";
 import { SavedScriptConfig } from "../interfaces/IConfigProvider.js";
 
 import { codeExecutorService } from "./CodeExecutorService.js";
+import { deferredLoadingService } from "./deferred-loading.service.js";
 // DB Repositories removed
 
 // Ported Services
@@ -238,7 +239,10 @@ export const attachTo = async (
     // Key: toolName, Value: true
     // Limited to 200 items to prevent unbounded growth in long sessions
     const loadedTools = new Set<string>();
+    const hydratedToolSchemas = new Set<string>();
     const MAX_LOADED_TOOLS = 200;
+    const deferredSchemaMode = process.env.MCP_DEFER_TOOL_SCHEMAS === 'true'
+        || process.env.MCP_PROGRESSIVE_MODE === 'true';
 
     const addToLoadedTools = (name: string) => {
         if (loadedTools.size >= MAX_LOADED_TOOLS && !loadedTools.has(name)) {
@@ -247,6 +251,14 @@ export const attachTo = async (
             if (first) loadedTools.delete(first);
         }
         loadedTools.add(name);
+    };
+
+    const addToHydratedSchemas = (name: string) => {
+        if (hydratedToolSchemas.size >= MAX_LOADED_TOOLS && !hydratedToolSchemas.has(name)) {
+            const first = hydratedToolSchemas.values().next().value;
+            if (first) hydratedToolSchemas.delete(first);
+        }
+        hydratedToolSchemas.add(name);
     };
 
     // Helper function to detect if a server is the same instance
@@ -303,13 +315,27 @@ export const attachTo = async (
             },
             {
                 name: "load_tool",
-                description: "Load a specific tool by name into your context so you can use it. Use the names found via search_tools.",
+                description: "Load a specific tool by name into your context so you can use it. In progressive mode this loads lightweight metadata first; use get_tool_schema to hydrate the full parameter schema when needed.",
                 inputSchema: {
                     type: "object",
                     properties: {
                         name: {
                             type: "string",
                             description: "The full name of the tool to load (e.g., 'github__create_issue')",
+                        },
+                    },
+                    required: ["name"],
+                },
+            },
+            {
+                name: "get_tool_schema",
+                description: "Explicitly fetch and hydrate the full JSON schema for a deferred tool after search/load, reducing default token overhead for sub-agents.",
+                inputSchema: {
+                    type: "object",
+                    properties: {
+                        name: {
+                            type: "string",
+                            description: "The full name of the tool to hydrate (e.g. 'github__create_issue').",
                         },
                     },
                     required: ["name"],
@@ -567,11 +593,23 @@ export const attachTo = async (
                                     ...t,
                                     name: `${sanitizeName(serverName)}__${t.name}`
                                 }));
-                                toolRegistry.registerTools(
-                                    namespacedTools,
-                                    mcpServerUuid,
-                                    serverName
-                                );
+                                if (deferredSchemaMode) {
+                                    namespacedTools.forEach((tool) => {
+                                        deferredLoadingService.cacheToolSchema(tool.name, tool);
+                                        const deferred = deferredLoadingService.createDeferredTool(tool, mcpServerUuid);
+                                        const minimalTool = deferredLoadingService.createMinimalTool(deferred);
+                                        toolRegistry.registerTool(minimalTool, mcpServerUuid, serverName, {
+                                            isDeferred: true,
+                                            fullTool: tool,
+                                        });
+                                    });
+                                } else {
+                                    toolRegistry.registerTools(
+                                        namespacedTools,
+                                        mcpServerUuid,
+                                        serverName
+                                    );
+                                }
                             }
                         } catch (e) {
                             console.error("DB Save Error", e);
@@ -582,9 +620,21 @@ export const attachTo = async (
                         const toolName = `${sanitizeName(serverName)}__${tool.name}`;
                         toolToClient[toolName] = session;
                         toolToServerUuid[toolName] = mcpServerUuid;
-                        allAvailableTools.push({
+                        const namespacedTool = {
                             ...tool,
                             name: toolName
+                        };
+
+                        if (deferredSchemaMode) {
+                            deferredLoadingService.cacheToolSchema(toolName, namespacedTool);
+                        }
+
+                        allAvailableTools.push({
+                            ...(deferredSchemaMode
+                                ? deferredLoadingService.createMinimalTool(
+                                    deferredLoadingService.createDeferredTool(namespacedTool, mcpServerUuid)
+                                )
+                                : namespacedTool)
                         });
                     });
 
@@ -598,6 +648,12 @@ export const attachTo = async (
 
         allAvailableTools.forEach(tool => {
             if (loadedTools.has(tool.name)) {
+                if (deferredSchemaMode && hydratedToolSchemas.has(tool.name)) {
+                    const cachedSchema = deferredLoadingService.getCachedSchema(tool.name);
+                    resultTools.push(cachedSchema ?? tool);
+                    return;
+                }
+
                 resultTools.push(tool);
             }
         });
@@ -699,6 +755,43 @@ export const attachTo = async (
                     isError: true,
                 };
             }
+        }
+
+        if (name === "get_tool_schema") {
+            const { name: toolName } = args as { name: string };
+            const cachedSchema = deferredLoadingService.getCachedSchema(toolName);
+
+            if (!cachedSchema) {
+                return {
+                    content: [
+                        {
+                            type: "text",
+                            text: `Schema for '${toolName}' is not available in cache. Load or rediscover the tool first.`,
+                        },
+                    ],
+                    isError: true,
+                };
+            }
+
+            addToLoadedTools(toolName);
+            addToHydratedSchemas(toolName);
+
+            const registeredTool = toolRegistry.getTool(toolName);
+            if (registeredTool) {
+                toolRegistry.registerTool(cachedSchema, registeredTool.mcpServerUuid, registeredTool.serverName, {
+                    isDeferred: false,
+                    fullTool: cachedSchema,
+                });
+            }
+
+            return formatResult({
+                content: [
+                    {
+                        type: "text",
+                        text: JSON.stringify(cachedSchema.inputSchema ?? { type: "object", properties: {} }, null, 2),
+                    },
+                ],
+            });
         }
 
         if (name === "save_script") {

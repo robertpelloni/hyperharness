@@ -122,6 +122,8 @@ import { KnowledgeService } from './services/KnowledgeService.js';
 import { EventBus } from './services/EventBus.js';
 import { DeepResearchService } from './services/DeepResearchService.js';
 import { McpConfigService } from './services/McpConfigService.js';
+import { DocumentIntakeService } from './services/rag/DocumentIntakeService.js';
+import { EmbeddingService } from './services/rag/EmbeddingService.js';
 
 
 
@@ -2875,6 +2877,162 @@ export class MCPServer {
                                 // Direct chat interface
                                 const result = await this.director.executeTask(data.message);
                                 res.end(JSON.stringify({ result: { data: result } }));
+                            } else if (req.url === '/expert.dispatch') {
+                                const kind = String(data.kind ?? '').toLowerCase();
+
+                                if (kind === 'research') {
+                                    if (!this.researcherAgent) {
+                                        res.writeHead(503, {
+                                            'Content-Type': 'application/json',
+                                            'Access-Control-Allow-Origin': '*'
+                                        });
+                                        res.end(JSON.stringify({ success: false, error: 'Researcher Agent not initialized' }));
+                                        return;
+                                    }
+
+                                    const query = String(data.query ?? '').trim();
+                                    if (!query) {
+                                        res.writeHead(400, {
+                                            'Content-Type': 'application/json',
+                                            'Access-Control-Allow-Origin': '*'
+                                        });
+                                        res.end(JSON.stringify({ success: false, error: 'query is required' }));
+                                        return;
+                                    }
+
+                                    const result = await this.researcherAgent.handleTask({
+                                        task: query,
+                                        options: {
+                                            depth: Number(data.depth ?? 2),
+                                            breadth: Number(data.breadth ?? 3),
+                                        }
+                                    });
+
+                                    res.end(JSON.stringify({ success: true, kind: 'research', result }));
+                                } else if (kind === 'code') {
+                                    if (!this.coderAgent) {
+                                        res.writeHead(503, {
+                                            'Content-Type': 'application/json',
+                                            'Access-Control-Allow-Origin': '*'
+                                        });
+                                        res.end(JSON.stringify({ success: false, error: 'Coder Agent not initialized' }));
+                                        return;
+                                    }
+
+                                    const task = String(data.task ?? '').trim();
+                                    if (!task) {
+                                        res.writeHead(400, {
+                                            'Content-Type': 'application/json',
+                                            'Access-Control-Allow-Origin': '*'
+                                        });
+                                        res.end(JSON.stringify({ success: false, error: 'task is required' }));
+                                        return;
+                                    }
+
+                                    const result = await this.coderAgent.handleTask({ task });
+                                    res.end(JSON.stringify({ success: true, kind: 'code', result }));
+                                } else {
+                                    res.writeHead(400, {
+                                        'Content-Type': 'application/json',
+                                        'Access-Control-Allow-Origin': '*'
+                                    });
+                                    res.end(JSON.stringify({ success: false, error: 'Unsupported expert dispatch kind' }));
+                                }
+                            } else if (req.url === '/expert.status') {
+                                res.end(JSON.stringify({
+                                    success: true,
+                                    researcher: this.researcherAgent ? 'active' : 'offline',
+                                    coder: this.coderAgent ? 'active' : 'offline',
+                                }));
+                            } else if (req.url === '/knowledge.capture') {
+                                const content = String(data.content ?? '').trim();
+                                const title = String(data.title ?? 'Captured Page');
+                                const url = String(data.url ?? data.source ?? 'browser://captured');
+                                const source = String(data.source ?? 'browser_extension');
+
+                                if (!content) {
+                                    res.writeHead(400, {
+                                        'Content-Type': 'application/json',
+                                        'Access-Control-Allow-Origin': '*'
+                                    });
+                                    res.end(JSON.stringify({ success: false, error: 'content is required' }));
+                                    return;
+                                }
+
+                                const ctxId = await this.memoryManager.saveContext(
+                                    `URL: ${url}\n\n${content}`,
+                                    {
+                                        title,
+                                        source: url,
+                                        type: 'research',
+                                        origin: source,
+                                    }
+                                );
+
+                                this.broadcastWebSocketMessage({
+                                    type: 'KNOWLEDGE_CAPTURED',
+                                    payload: {
+                                        id: ctxId,
+                                        title,
+                                        url,
+                                        source,
+                                        timestamp: Date.now(),
+                                        preview: content.slice(0, 240),
+                                    }
+                                });
+
+                                res.end(JSON.stringify({ success: true, id: ctxId }));
+                            } else if (req.url === '/knowledge.ingest-url') {
+                                const url = String(data.url ?? '').trim();
+                                if (!url) {
+                                    res.writeHead(400, {
+                                        'Content-Type': 'application/json',
+                                        'Access-Control-Allow-Origin': '*'
+                                    });
+                                    res.end(JSON.stringify({ success: false, error: 'url is required' }));
+                                    return;
+                                }
+
+                                const result = await this.deepResearchService.ingest(url);
+                                res.end(JSON.stringify({ success: true, result }));
+                            } else if (req.url === '/rag.ingest-text') {
+                                const text = String(data.text ?? '').trim();
+                                const sourceName = String(data.sourceName ?? data.title ?? data.url ?? 'browser-extension-page');
+                                const userId = String(data.userId ?? 'default');
+                                const chunkSize = Number(data.chunkSize ?? 1000);
+                                const chunkOverlap = Number(data.chunkOverlap ?? 200);
+                                const strategy = data.strategy === 'sliding_window' || data.strategy === 'semantic'
+                                    ? data.strategy
+                                    : 'recursive';
+
+                                if (!text) {
+                                    res.writeHead(400, {
+                                        'Content-Type': 'application/json',
+                                        'Access-Control-Allow-Origin': '*'
+                                    });
+                                    res.end(JSON.stringify({ success: false, error: 'text is required' }));
+                                    return;
+                                }
+
+                                const intakeService = new DocumentIntakeService(this.memoryManager as any, new EmbeddingService('local'));
+                                const result = await intakeService.ingestText(text, sourceName, userId, {
+                                    chunkSize,
+                                    chunkOverlap,
+                                    strategy,
+                                });
+
+                                this.broadcastWebSocketMessage({
+                                    type: 'RAG_INGESTED',
+                                    payload: {
+                                        sourceName,
+                                        chunksIngested: result.chunks,
+                                        success: result.success,
+                                        timestamp: Date.now(),
+                                        source: 'browser_extension',
+                                    }
+                                });
+
+                                res.end(JSON.stringify({ success: result.success, chunksIngested: result.chunks }));
                             } else if (req.url === '/tool/execute') {
                                 // Generic tool execution
                                 const result = await this.executeTool(data.name, data.args);
@@ -2908,7 +3066,7 @@ export class MCPServer {
 
             // 2.5 Setup WS Message Handling mechanism
             wss.on('connection', (ws: any) => {
-                ws.on('message', (data: any) => {
+                ws.on('message', async (data: any) => {
                     try {
                         const msg = JSON.parse(data.toString());
                         // Robust Response Handling: Any message with a requestId should resolve a pending promise
@@ -2928,12 +3086,7 @@ export class MCPServer {
 
                         // Special handling for legacy/specific types if needed (though the above handles most)
                         if (msg.type === 'BROWSER_MIRROR_UPDATE') {
-                            // Relay to all other clients (Web UI)
-                            wss.clients.forEach((client: any) => {
-                                if (client !== ws && client.readyState === 1) {
-                                    client.send(data.toString());
-                                }
-                            });
+                            this.broadcastWebSocketMessage(msg, ws);
                         }
 
                         if (msg.type === 'USER_ACTIVITY') {
@@ -2948,13 +3101,97 @@ export class MCPServer {
                         }
 
                         if (msg.type === 'BROWSER_LOG') {
-                            const icon = msg.level === 'error' ? '🔴' : msg.level === 'warn' ? '🟡' : '🔵';
-                            console.log(`[Browser] ${icon} ${msg.content} (${msg.url})`);
-                            if (msg.level === 'error') {
-                                this.auditService.log('BROWSER_ERROR', { url: msg.url, error: msg.content }, 'ERROR');
+                            const level = String(msg.level ?? 'log');
+                            const content = String(msg.content ?? msg.message ?? '');
+                            const url = String(msg.url ?? 'unknown');
+                            const timestamp = Number(msg.timestamp) || Date.now();
+                            const source = String(msg.source ?? 'browser_extension');
+                            const icon = level === 'error' ? '🔴' : level === 'warn' ? '🟡' : '🔵';
+
+                            console.log(`[Browser] ${icon} ${content} (${url})`);
+                            this.broadcastWebSocketMessage({
+                                type: 'BROWSER_LOG',
+                                payload: {
+                                    level,
+                                    content,
+                                    url,
+                                    timestamp,
+                                    source,
+                                }
+                            }, ws);
+
+                            if (level === 'error') {
+                                this.auditService.log('BROWSER_ERROR', { url, error: content }, 'ERROR');
                                 // TRIGGER HEALER
-                                this.healerService.heal(msg.content, `URL: ${msg.url}, Timestamp: ${msg.timestamp}`)
+                                this.healerService.heal(content, `URL: ${url}, Timestamp: ${timestamp}`)
                                     .catch(e => console.error("Healer Error:", e));
+                            }
+                        }
+
+                        if (msg.type === 'BROWSER_DEBUG_EVENT') {
+                            const timestamp = Number(msg.timestamp) || Date.now();
+                            const tabId = typeof msg.tabId === 'number' ? msg.tabId : null;
+                            const method = String(msg.method ?? 'unknown');
+                            const params = typeof msg.params === 'object' && msg.params !== null ? msg.params : {};
+
+                            this.broadcastWebSocketMessage({
+                                type: 'BROWSER_DEBUG_EVENT',
+                                payload: {
+                                    timestamp,
+                                    tabId,
+                                    method,
+                                    params,
+                                    source: 'browser_extension',
+                                }
+                            }, ws);
+                        }
+
+                        if (msg.type === 'KNOWLEDGE_CAPTURE') {
+                            const content = String(msg.content ?? '').trim();
+                            const title = String(msg.title ?? 'Captured Page');
+                            const url = String(msg.url ?? 'browser://captured');
+                            const source = String(msg.source ?? 'browser_extension');
+                            const timestamp = Number(msg.timestamp) || Date.now();
+
+                            if (!content) {
+                                if (msg.requestId && ws.readyState === 1) {
+                                    ws.send(JSON.stringify({
+                                        type: 'STATUS_UPDATE',
+                                        requestId: msg.requestId,
+                                        status: { success: false, error: 'No content provided for knowledge capture.' }
+                                    }));
+                                }
+                                return;
+                            }
+
+                            const ctxId = await this.memoryManager.saveContext(
+                                `URL: ${url}\n\n${content}`,
+                                {
+                                    title,
+                                    source: url,
+                                    type: 'research',
+                                    origin: source,
+                                }
+                            );
+
+                            this.broadcastWebSocketMessage({
+                                type: 'KNOWLEDGE_CAPTURED',
+                                payload: {
+                                    id: ctxId,
+                                    title,
+                                    url,
+                                    source,
+                                    timestamp,
+                                    preview: content.slice(0, 240),
+                                }
+                            }, ws);
+
+                            if (msg.requestId && ws.readyState === 1) {
+                                ws.send(JSON.stringify({
+                                    type: 'STATUS_UPDATE',
+                                    requestId: msg.requestId,
+                                    status: { success: true, id: ctxId, title, url }
+                                }));
                             }
                         }
                     } catch (e) {
@@ -3012,6 +3249,19 @@ export class MCPServer {
             current = path.dirname(current);
         }
         return null;
+    }
+
+    private broadcastWebSocketMessage(message: Record<string, unknown>, excludeClient?: any) {
+        if (!this.wssInstance?.clients) {
+            return;
+        }
+
+        const serializedMessage = JSON.stringify(message);
+        this.wssInstance.clients.forEach((client: any) => {
+            if (client !== excludeClient && client.readyState === 1) {
+                client.send(serializedMessage);
+            }
+        });
     }
 }
 

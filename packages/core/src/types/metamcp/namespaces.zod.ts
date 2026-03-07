@@ -337,6 +337,7 @@ export const DatabaseNamespaceToolSchema = z.object({
         type: z.literal("object"),
         properties: z.record(z.any()).optional(),
     }),
+    is_deferred: z.boolean().default(false),
     created_at: z.date(),
     updated_at: z.date(),
     mcp_server_uuid: z.string(),

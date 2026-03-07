@@ -8,6 +8,7 @@ import {
     McpServerUpdateInputSchema
 } from '../types/metamcp/index.js';
 import { metaMCPBridge } from '../services/MetaMCPBridgeService.js';
+import { clientConfigSyncService, SUPPORTED_MCP_CLIENTS } from '../mcp/clientConfigSync.js';
 
 const MASTER_INDEX_PATH = path.join(process.cwd(), 'BORG_MASTER_INDEX.jsonc');
 
@@ -70,6 +71,28 @@ export const mcpServersRouter = t.router({
         .input(z.array(McpServerCreateInputSchema))
         .mutation(async ({ input }) => {
             return await mcpServersRepository.bulkCreate(input);
+        }),
+
+    syncTargets: publicProcedure.query(async () => {
+        return await clientConfigSyncService.listTargets();
+    }),
+
+    exportClientConfig: publicProcedure
+        .input(z.object({
+            client: z.enum(SUPPORTED_MCP_CLIENTS),
+            path: z.string().optional(),
+        }))
+        .query(async ({ input }) => {
+            return await clientConfigSyncService.previewSync(input.client, input.path);
+        }),
+
+    syncClientConfig: adminProcedure
+        .input(z.object({
+            client: z.enum(SUPPORTED_MCP_CLIENTS),
+            path: z.string().optional(),
+        }))
+        .mutation(async ({ input }) => {
+            return await clientConfigSyncService.syncClientConfig(input.client, input.path);
         }),
 
     registrySnapshot: publicProcedure.query(async () => {

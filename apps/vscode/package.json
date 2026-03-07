@@ -48,6 +48,14 @@
                 "title": "AIOS: Search Memory"
             },
             {
+                "command": "aios.ingestUrl",
+                "title": "AIOS: Ingest URL to Knowledge"
+            },
+            {
+                "command": "aios.ingestSelectionToRag",
+                "title": "AIOS: Ingest Selection to RAG"
+            },
+            {
                 "command": "aios.rememberSelection",
                 "title": "AIOS: Remember Selection"
             },
@@ -84,6 +92,24 @@
                 "title": "AIOS: Architect Mode (Two-Model)"
             }
         ],
+        "viewsContainers": {
+            "activitybar": [
+                {
+                    "id": "aiosSidebar",
+                    "title": "AIOS",
+                    "icon": "resources/aios.svg"
+                }
+            ]
+        },
+        "views": {
+            "aiosSidebar": [
+                {
+                    "type": "webview",
+                    "id": "aios.dispatchView",
+                    "name": "Mini Dashboard"
+                }
+            ]
+        },
         "configuration": {
             "title": "Borg",
             "properties": {
@@ -97,6 +123,11 @@
                     "default": "",
                     "description": "API key for authenticated Core access"
                 },
+                "borg.dashboardUrl": {
+                    "type": "string",
+                    "default": "http://localhost:3000",
+                    "description": "Base URL of the Borg web dashboard used for deep links from the VS Code extension"
+                },
                 "borg.autoConnect": {
                     "type": "boolean",
                     "default": true,
@@ -107,9 +138,14 @@
         "menus": {
             "editor/context": [
                 {
+                    "command": "aios.ingestSelectionToRag",
+                    "when": "editorHasSelection",
+                    "group": "aios@1"
+                },
+                {
                     "command": "aios.rememberSelection",
                     "when": "editorHasSelection",
-                    "group": "aios"
+                    "group": "aios@2"
                 }
             ]
         }

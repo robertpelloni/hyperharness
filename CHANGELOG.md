@@ -4,6 +4,286 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Changed
+- Archived the legacy phase-based roadmap to `docs/archive/ROADMAP_LEGACY.md` and replaced `ROADMAP.md` with the Borg 1.0/1.5/2.0 milestone plan.
+- Seeded the task-file workflow under `tasks/` with initial clean-install, MCP router, provider fallback, session supervisor, and dashboard task briefs.
+- Rewrote `README.md` around the focused Borg control-plane scope and updated the quick-start guidance to match the current install/start path.
+- Reorganized `packages/core/src/mcp` around explicit aggregator types, config storage, namespace helpers, and traffic-inspector support so the router no longer depends on aggregator internals.
+- Wired the MCP dashboard search and inspector surfaces to the MCP router-backed tool inventory and embedded the shared traffic inspector directly in the inspector view.
+- Switched the MCP dashboard search page to the dedicated `mcp.searchTools` contract and embedded the live `TrafficInspector` into the MCP inspector page so the new router traffic/search APIs are operator-visible.
+- Added reusable MCP client-config sync support for Claude Desktop, Cursor, and VS Code, including resolved target discovery, previewable exported configs, and router-backed write operations.
+
+### Fixed
+- Made root `pnpm install` succeed on Windows by replacing the `packages/MCP-SuperAssistant` bash-based `copy_env` postinstall step with a cross-platform Node-based copy.
+- Excluded the duplicate `apps/vscode` workspace from `pnpm-workspace.yaml` so it no longer collides with the canonical `packages/vscode` extension package during dependency installation.
+- Removed the obsolete Compose `version` field from `docker-compose.yml` to eliminate a startup warning under modern Docker Compose.
+- Ignored Next.js `.next-dev/` output in `.gitignore` so local dashboard runs no longer dirty the repository with generated artifacts.
+- Corrected the web runtime stage in `Dockerfile` to expose Next.js' actual internal port (`3000`) instead of the host-mapped dashboard port.
+- Declared `date-fns` in `apps/web/package.json` so the Dockerized dashboard build resolves the `LogEntry` timestamp formatter the same way the local workspace build does.
+
+### Validated
+- Verified `pnpm install` completes successfully from the repository root on Windows after the setup fixes.
+- Verified `docker-compose config` parses the current Compose stack successfully.
+- Added focused MCP router tests for aggregation, namespace isolation, lifecycle, crash isolation, traffic inspection, and tool search under `packages/core/mcp/__tests__/`.
+- Added focused MCP client-config sync tests covering target resolution, Claude-format export, and safe VS Code settings merging.
+
+## [2.7.110] - 2026-03-07
+### Changed
+- Hardened provider fallback in `packages/ai` so model selection tracks cooldowns per `provider:model`, honors provider preference ordering, excludes already-failed candidates during retries, and forces local fallback when quota budgets are exceeded.
+- Improved `LLMService` recoverable error detection for quota, rate-limit, timeout, and transient connectivity failures, then retried against the next eligible provider/model instead of reusing the same failed candidate.
+- Synchronized source-side JavaScript runtime files for `LLMService`, `ModelSelector`, and `ForgeService` with the updated TypeScript logic so NodeNext tests and runtime imports resolve consistently.
+
+### Added
+- Added `packages/ai/src/ModelSelector.test.ts` coverage for provider preference, provider-specific cooldown handling, and budget-triggered local fallback.
+- Added `packages/ai/src/LLMService.test.ts` coverage for recoverable provider failure fallback and fatal unsupported-provider behavior.
+
+### Validated
+- Verified `pnpm exec vitest run packages/ai/src/ModelSelector.test.ts packages/ai/src/LLMService.test.ts` passes.
+- Verified `pnpm -C packages/ai exec tsc --noEmit` passes.
+
+## [2.7.109] - 2026-03-06
+### Changed
+- Replaced the old assimilation-oriented `AGENTS.md` with a focused Borg v1.0 stabilization directive centered on the control-plane kernel: MCP routing, provider fallback, session supervision, dashboard workflows, and capability contracts.
+- Added explicit stop conditions, scope restrictions, test expectations, and documentation-truth rules for future development agents.
+
+### Documentation
+- Standardized the root instruction set to reference a root-level `ARCHITECTURE.md` as the canonical Borg architecture overview.
+
+## [2.7.108] - 2026-03-06
+### Added
+- **Phase 146: Browser Knowledge Activity Dashboard Surface**
+  - Added a dedicated Browser dashboard knowledge-activity card that combines live browser-originated `KNOWLEDGE_CAPTURED` and `RAG_INGESTED` websocket events with the canonical research ingestion queue summary.
+  - Added queue visibility for pending, failed, and recently processed URL ingests directly on the browser page so browser operators can see what the extension already pushed into Borg knowledge without detouring into separate dashboards.
+  - Updated the extension parity matrix to reflect browser-dashboard visibility for recent knowledge and RAG activity.
+### Validated
+- Verified `pnpm -C apps/web build --webpack` passes.
+
+## [2.7.107] - 2026-03-06
+### Added
+- **Phase 145: Filterable Traffic Inspector**
+  - Added event-type filtering, source filtering, and free-text search to the dashboard `TrafficInspector` so operators can quickly isolate browser logs, CDP events, knowledge captures, and tool traffic.
+  - Added visible per-type counters and filtered-result counts to make the inspector usable as event volume grows across browser and VS Code surfaces.
+### Validated
+- Verified `pnpm -C apps/web build --webpack` passes with the new inspector filtering controls.
+
+## [2.7.106] - 2026-03-06
+### Added
+- **Phase 144: Browser Scrape & Screenshot Dashboard Surface**
+  - Added `browser.scrapePage` and `browser.screenshot` procedures to the Core browser router, backed by the existing `browser_scrape` and `browser_screenshot` bridge tools.
+  - Added a dedicated Browser dashboard page-scrape panel that previews the active page title, URL, and extracted Readability content.
+  - Added a dedicated Browser dashboard screenshot panel with one-click active-tab capture and inline image preview.
+  - Updated the extension parity matrix to mark browser page scraping and screenshot capture as explicitly surfaced dashboard/browser capabilities instead of extension-only hidden bridge features.
+### Validated
+- Verified `pnpm -C packages/core exec tsc --noEmit` passes.
+- Verified `pnpm -C packages/core build` passes.
+- Verified `pnpm -C apps/web build --webpack` passes.
+
+## [2.7.105] - 2026-03-06
+### Added
+- **Phase 143: Browser CDP Event Inspector Stream**
+  - Rebroadcast browser extension `BROWSER_DEBUG_EVENT` packets through Borg Core so Chrome DevTools Protocol events become part of the shared live traffic stream.
+  - Extended the dashboard `TrafficInspector` to render live CDP event rows with method, tab id, source, and structured params output.
+  - Hardened the browser dashboard proxy-fetch response rendering so loosely typed bridge payloads display safely under strict React/Next.js typing.
+### Validated
+- Verified `pnpm -C packages/core exec tsc --noEmit` passes.
+- Verified `pnpm -C packages/core build` passes.
+- Verified `pnpm -C apps/web build --webpack` passes after the proxy-fetch render type fix.
+
+## [2.7.104] - 2026-03-06
+### Added
+- **Phase 142: Browser Debug & Proxy Fetch Dashboard Surface**
+  - Added `browser.debug` and `browser.proxyFetch` procedures to the Core browser router, backed by the existing `browser_debug` and `browser_proxy_fetch` bridge methods in Borg Core and the browser extension.
+  - Added a dedicated Browser dashboard proxy-fetch panel with URL, method, headers, request body, and live response rendering so browser-routed fetches are now directly usable from the UI.
+  - Added a dedicated Browser dashboard CDP panel with attach/detach controls plus raw command execution for active-tab Chrome DevTools Protocol diagnostics.
+  - Updated the extension parity matrix to mark CDP debug proxy and proxy fetch as shipped dashboard/browser capabilities instead of browser-extension-only hidden bridge features.
+### Validated
+- Verified `pnpm -C packages/core exec tsc --noEmit` passes.
+- Verified `pnpm -C packages/core build` passes.
+- Verified `pnpm -C apps/web build --webpack` passes.
+
+## [2.7.103] - 2026-03-06
+### Added
+- **Phase 141: Browser History Search Dashboard Surface**
+  - Added `browser.searchHistory` to the Core browser router, backed by the existing live `browser_get_history` bridge to the browser extension.
+  - Added a dedicated Browser dashboard history search panel with query input, result limit control, and clickable result rows.
+  - Updated the parity matrix to mark browser history search as a shipped dashboard/browser capability instead of a hidden browser-only bridge feature.
+### Validated
+- Verified Core typecheck and web build pass after adding the browser history search panel.
+
+## [2.7.102] - 2026-03-06
+### Added
+- **Phase 140: Extension URL Ingestion Parity**
+  - Added a new Core compatibility endpoint `POST /knowledge.ingest-url` backed by the existing deep-research URL ingestion service.
+  - Added browser-extension popup support for ingesting the active tab URL or an operator-edited URL directly into Borg Knowledge.
+  - Added `AIOS: Ingest URL to Knowledge` plus a matching VS Code mini-dashboard action so URL ingestion is now available from both extension surfaces.
+  - Updated the parity matrix to mark URL ingestion as shipped across dashboard, browser extension, and VS Code extension.
+### Validated
+- Verified Core typecheck plus browser and VS Code extension builds pass after the new URL ingestion flow was added.
+
+## [2.7.101] - 2026-03-06
+### Added
+- **Phase 139: VS Code Chat History Bridge Hardening**
+  - Replaced the placeholder `GET_CHAT_HISTORY` response in the VS Code extension with a real interaction-backed history buffer covering research dispatches, coder dispatches, injected chat prompts, chat submissions, and hub/status events.
+  - Added best-effort visible editor snapshot support so likely chat documents can contribute transcript context when VS Code exposes them as regular text editors.
+  - Updated the protocol spec and parity matrix to reflect the improved, still-partial VS Code chat history bridge instead of the old heuristic placeholder.
+### Validated
+- Verified the VS Code extension builds cleanly after the chat history bridge upgrade.
+
+## [2.7.100] - 2026-03-06
+### Added
+- **Phase 138: Browser User Activity Tracking Parity**
+  - Added throttled browser-side user activity reporting in `apps/extension/src/content.ts` covering focus, click, keydown, scroll, and visibility-return events.
+  - Forwarded those activity heartbeats through `apps/extension/src/background.ts` into the shared Core WebSocket bridge as `USER_ACTIVITY` packets with page metadata.
+  - Updated the WebSocket protocol spec and extension parity matrix to reflect the now-shipped browser activity bridge.
+### Validated
+- Verified the browser extension sources remain diagnostics-clean after the activity bridge update.
+
+## [2.7.99] - 2026-03-06
+### Added
+- **Phase 137: Browser Dashboard Mirror Surface**
+  - Promoted the existing `MirrorView` into `apps/web/src/app/dashboard/browser/page.tsx` so live tab mirroring is available directly from the dedicated browser dashboard instead of only through the generic draggable widget layout.
+  - Added clear browser-page copy explaining the mirror's purpose and control flow for operators.
+  - Updated the extension parity matrix to mark dashboard/browser tab mirroring as a shipped, explicitly surfaced capability.
+### Validated
+- Verified the browser dashboard compiles cleanly with the dedicated mirror panel.
+
+## [2.7.98] - 2026-03-06
+### Added
+- **Phase 136: VS Code Live Log Streaming Parity**
+  - Mirrored VS Code extension activity/output logs into the shared Core WebSocket traffic stream so the dashboard inspector now receives live `vscode_extension` events alongside browser logs.
+  - Updated the dashboard `TrafficInspector` to render each log packet's source explicitly, making cross-surface monitoring easier to scan.
+  - Marked VS Code console/log streaming parity as shipped in `docs/EXTENSION_PARITY_MATRIX.md`.
+### Validated
+- Verified the VS Code extension and touched dashboard files remain diagnostics-clean after the live log streaming update.
+
+## [2.7.97] - 2026-03-06
+### Added
+- **Phase 135: VS Code RAG Ingestion Parity**
+  - Added `AIOS: Ingest Selection to RAG` to the VS Code extension so the active selection or full file can be sent directly to Borg's `/rag.ingest-text` compatibility endpoint.
+  - Added a matching **Ingest to RAG** quick action to the VS Code mini-dashboard so RAG ingestion is available from both the command palette and the sidebar UI.
+  - Added an editor context-menu entry for direct selection ingestion and updated the parity matrix to mark VS Code RAG ingestion as shipped.
+### Validated
+- Verified the VS Code extension builds cleanly after the new RAG ingestion wiring.
+
+## [2.7.96] - 2026-03-06
+### Added
+- **Phase 134: Unified Extension WebSocket Protocol Specification**
+  - Added `docs/WEBSOCKET_PROTOCOL_SPEC.md` as the single implementation-aligned reference for the Borg Core, browser extension, and VS Code extension WebSocket bridge.
+  - Documented the currently implemented command, response, telemetry, and rebroadcast packet shapes, including `STATUS_UPDATE`/`RESPONSE` compatibility behavior and browser method-based RPC packets.
+  - Captured the current protocol normalization debt and a recommended future envelope strategy so all extension surfaces can converge on one transport contract.
+### Validated
+- Verified the parity matrix now marks the final WebSocket protocol documentation milestone complete.
+
+## [2.7.95] - 2026-03-06
+### Added
+- **Phase 133: VS Code Mini Dashboard Parity**
+  - Recreated `packages/vscode/src/extension.ts` with a richer AIOS sidebar that now functions as a real mini-dashboard instead of a thin dispatch-only surface.
+  - Added live sidebar snapshot state for Core connection health, active researcher/coder availability, active editor, active terminal, and a recent activity feed.
+  - Added quick actions for dashboard deep links, memory, tools, logs, analytics, council/debate flows, architect mode, and direct tool invocation through the Core compatibility endpoint.
+  - Added `borg.dashboardUrl` configuration and updated the VS Code activity-bar view label from `Dispatch` to `Mini Dashboard` to reflect the expanded surface.
+### Validated
+- Verified `pnpm -C packages/vscode build` passes.
+- Verified VS Code diagnostics are clean for `packages/vscode/src/extension.ts` and `packages/vscode/package.json`.
+
+## [2.7.94] - 2026-03-06
+### Added
+- **Phase 132: Browser Extension Hardening & Options UX**
+  - Added a real browser-extension settings surface via `apps/extension/options.html` and `apps/extension/src/options.ts` for editing the Core HTTP and WebSocket endpoints stored in `chrome.storage.sync`.
+  - Hardened the popup UX with richer online/offline messaging, endpoint visibility, a direct settings action, and disabled action buttons when Borg Core is unreachable.
+  - Extended the background bridge to react to storage updates live, refresh connection URLs without restart, and return structured connection diagnostics to the popup.
+  - Added extension manifest/build support for the new options page and widened localhost host permissions to include the active Borg Core port (`3001`).
+### Validated
+- Verified `pnpm -C apps/extension build` passes.
+- Verified extension TypeScript diagnostics are clean for `src/background.ts`, `src/popup.ts`, and `src/options.ts`.
+### Notes
+- `pnpm -C apps/web build --webpack` is currently blocked by an unrelated pre-existing type error in `apps/web/src/app/dashboard/swarm/page.tsx` (`mode` missing from the typed debate input contract).
+
+## [2.7.93] - 2026-03-06
+### Added
+- **Phase 131: VS Code Sidebar Dispatch UI**
+  - Added an `AIOS` activity-bar container and a `Dispatch` webview view to the VS Code extension.
+  - Added a sidebar UI for hub status, research dispatch, coder dispatch, and quick memory capture from the active selection.
+  - Connected the sidebar UI to the already-shipped Core expert endpoints and refreshed sidebar status on Core connect/disconnect events.
+### Validated
+- Verified `pnpm -C packages/vscode compile` passes.
+- Verified `pnpm -C apps/web build --webpack` passes.
+
+## [2.7.92] - 2026-03-06
+### Added
+- **Phase 130: VS Code Expert Dispatch Commands**
+  - Added `/expert.dispatch` and `/expert.status` Core compatibility endpoints so non-dashboard clients can invoke the existing researcher/coder agents and query their availability.
+  - Implemented `AIOS: Run Agent` in the VS Code extension with command-palette-driven dispatch to either the Research Agent or Coder Agent.
+  - Implemented `AIOS: Show Hub Status` in the VS Code extension to display Core connection state plus researcher/coder availability.
+### Validated
+- Verified `pnpm -C packages/core exec tsc --noEmit` passes.
+- Verified `pnpm -C packages/vscode compile` passes.
+- Verified `pnpm -C apps/web build --webpack` passes.
+
+## [2.7.91] - 2026-03-06
+### Added
+- **Phase 129: Browser Extension RAG Ingestion**
+  - Added a lightweight `/rag.ingest-text` Core compatibility endpoint backed by `DocumentIntakeService` so extension-captured page content can be chunked and embedded directly into Borg RAG memory.
+  - Added a dedicated **Ingest Page to RAG** action in the browser extension popup alongside the existing markdown memory capture flow.
+  - Added extension background support for `INGEST_RAG_TEXT` so the popup can send page content into the new RAG ingestion endpoint without bespoke client-side chunking.
+### Validated
+- Verified `pnpm -C packages/core exec tsc --noEmit` passes.
+- Verified `pnpm -C apps/extension build` passes.
+- Verified `pnpm -C apps/web build --webpack` passes.
+
+## [2.7.90] - 2026-03-06
+### Added
+- **Phase 128: VS Code Terminal Content Reading**
+  - Added a rolling terminal output buffer to the VS Code extension using the proposed terminal data write event when available.
+  - Upgraded `GET_TERMINAL` responses from name-only status to include recent captured terminal output, terminal name, and a stable extension-side terminal identifier.
+### Validated
+- Verified `pnpm -C packages/vscode compile` passes.
+- Verified `pnpm -C apps/web build --webpack` passes.
+
+## [2.7.89] - 2026-03-06
+### Added
+- **Phase 127 Completion: VS Code Knowledge Capture Bridge**
+  - Registered the existing `AIOS: Remember Selection` command in the VS Code extension and wired it to emit `KNOWLEDGE_CAPTURE` events to Borg Core.
+  - Extended Phase 127 cross-surface knowledge capture so both the browser extension and VS Code can push context directly into Borg memory through the shared Core bridge.
+### Validated
+- Verified `pnpm -C packages/vscode compile` passes.
+- Verified `pnpm -C apps/web build --webpack` passes.
+
+## [2.7.88] - 2026-03-06
+### Added
+- **Phase 127: Extension Surface Cross-Intelligence**
+  - Added a lightweight `/knowledge.capture` core endpoint so the browser extension can persist captured page context directly into Borg memory without round-tripping through legacy memorize paths.
+  - Rebroadcast browser extension console events and captured-page events over the shared Borg Core WebSocket as `BROWSER_LOG` and `KNOWLEDGE_CAPTURED` packets.
+  - Extended the dashboard `TrafficInspector` to render browser console traffic and knowledge-capture activity in real time.
+### Validated
+- Verified `pnpm -C packages/core exec tsc --noEmit` passes after the cross-surface bridge updates.
+- Verified `pnpm -C apps/extension build` passes.
+- Verified `pnpm -C apps/web build --webpack` passes.
+
+## [2.7.87] - 2026-03-06
+### Added
+- **Phase 126: Deferred Tool Loading Pipeline**
+  - Activated deferred MCP tool schema handling in the live MetaMCP proxy so progressive mode now advertises lightweight placeholder tools and caches full JSON schemas for explicit hydration.
+  - Added `get_tool_schema` as an explicit schema-resolution tool for sub-agents, allowing heavyweight tool contracts to load only on demand.
+  - Extended the core tool registry and tRPC tools API with deferred metadata (`isDeferred`, `schemaParamCount`, full-schema detail behavior).
+  - Updated the MCP catalog dashboard to badge deferred tools and explain when full schemas are intentionally withheld until requested.
+### Validated
+- Rebuilt `@borg/core` to refresh exported declarations for the new deferred-tool contract.
+- Verified `pnpm -C apps/web build --webpack` passes with the updated core and dashboard UI.
+
+## [2.7.86] - 2026-03-06
+### Added
+- **Phase 125: Adversarial Debate Contract & UI Representation**
+  - Promoted Swarm debate execution to accept first-class `mode` (`standard`, `adversarial`) and `topicType` (`general`, `mission-plan`) inputs through the typed tRPC contract.
+  - Extended `DebateProtocol` results with persona metadata, adversarial stance labels, and mode/topic annotations so red-team critiques are explicit in backend outputs.
+  - Added Debate dashboard controls for red-team mode and mission-plan topic shape, plus adversarial transcript/persona styling for operator-visible critique context.
+
+## [2.7.85] - 2026-03-06
+### Added
+- **Phase 124: Filter-Scoped Health Confidence Alert Aggregation**
+  - Extended `swarm.getMissionRiskFacets.health.confidence` with `alertCount` and `hasCriticalAlert` for compact alert aggregation.
+  - Added Missions facets confidence alert aggregation rendering for immediate alert-volume and criticality scanning.
+  - Preserved filter-scoped semantics so alert aggregates reflect the active governance filter scope.
+
 ## [2.7.66] - 2026-03-06
 ### Added
 - **Phase 124: Adversarial "Red Team" Debate Agent**

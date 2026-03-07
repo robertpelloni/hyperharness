@@ -6,28 +6,45 @@ import {
     ToolUpsertInputSchema
 } from '../types/metamcp/tools.zod.js';
 
+function getVisibleInputSchema(rt: RegisteredTool) {
+    if (rt.isDeferred) {
+        return undefined;
+    }
+
+    return rt.tool.inputSchema;
+}
+
+function getFullInputSchema(rt: RegisteredTool) {
+    return rt.fullTool?.inputSchema ?? rt.tool.inputSchema;
+}
+
+function getSchemaParamCount(rt: RegisteredTool) {
+    const schema = getFullInputSchema(rt);
+    return Object.keys(schema?.properties || {}).length;
+}
+
+function serializeTool(rt: RegisteredTool, includeFullSchema = false) {
+    return {
+        ...rt,
+        uuid: rt.tool.name,
+        server: rt.serverName,
+        description: rt.fullTool?.description ?? rt.tool.description,
+        inputSchema: includeFullSchema ? getFullInputSchema(rt) : getVisibleInputSchema(rt),
+        isDeferred: rt.isDeferred ?? false,
+        schemaParamCount: getSchemaParamCount(rt),
+    };
+}
+
 export const toolsRouter = t.router({
     list: publicProcedure.query(async () => {
-        return toolRegistry.getAllTools().map(rt => ({
-            ...rt,
-            uuid: rt.tool.name, // Name is now already namespaced
-            server: rt.serverName,
-            description: rt.tool.description,
-            inputSchema: rt.tool.inputSchema
-        }));
+        return toolRegistry.getAllTools().map(rt => serializeTool(rt));
     }),
 
     listByServer: publicProcedure
         .input(z.object({ mcpServerUuid: z.string() }))
         .query(async ({ input }) => {
             const tools = toolRegistry.getAllTools().filter(t => t.mcpServerUuid === input.mcpServerUuid || t.serverName === input.mcpServerUuid);
-            return tools.map(rt => ({
-                ...rt,
-                uuid: rt.tool.name,
-                server: rt.serverName,
-                description: rt.tool.description,
-                inputSchema: rt.tool.inputSchema
-            }));
+            return tools.map(rt => serializeTool(rt));
         }),
 
     search: publicProcedure
@@ -45,14 +62,7 @@ export const toolsRouter = t.router({
                 const server = String(rt.serverName ?? '').toLowerCase();
                 return name.includes(q) || description.includes(q) || server.includes(q);
             });
-
-            return filtered.slice(0, input.limit).map(rt => ({
-                ...rt,
-                uuid: rt.tool.name,
-                server: rt.serverName,
-                description: rt.tool.description,
-                inputSchema: rt.tool.inputSchema
-            }));
+            return filtered.slice(0, input.limit).map(rt => serializeTool(rt));
         }),
 
     get: publicProcedure
@@ -61,13 +71,7 @@ export const toolsRouter = t.router({
             // Treat input.uuid as tool name
             const rt = toolRegistry.getTool(input.uuid);
             if (!rt) return null;
-            return {
-                ...rt,
-                uuid: rt.tool.name,
-                description: rt.tool.description,
-                inputSchema: rt.tool.inputSchema,
-                server: rt.serverName
-            };
+            return serializeTool(rt, true);
         }),
 
     create: adminProcedure
@@ -78,7 +82,7 @@ export const toolsRouter = t.router({
                 name: input.name,
                 description: input.description ?? undefined, // Handle null -> undefined
                 inputSchema: input.toolSchema as any // Map toolSchema -> inputSchema
-            }, input.mcp_server_uuid, "manual");
+            }, input.mcp_server_uuid, "manual", { isDeferred: input.is_deferred ?? false });
             return { success: true };
         }),
 

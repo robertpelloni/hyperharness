@@ -4,17 +4,40 @@ export interface RegisteredTool {
     tool: Tool;
     mcpServerUuid: string;
     serverName: string;
+    isDeferred?: boolean;
+    fullTool?: Tool;
+}
+
+interface RegisterToolOptions {
+    isDeferred?: boolean;
+    fullTool?: Tool;
 }
 
 class ToolRegistry {
     private tools: Map<string, RegisteredTool> = new Map();
 
-    registerTool(tool: Tool, mcpServerUuid: string, serverName: string) {
-        this.tools.set(tool.name, { tool, mcpServerUuid, serverName });
+    registerTool(
+        tool: Tool,
+        mcpServerUuid: string,
+        serverName: string,
+        options?: RegisterToolOptions,
+    ) {
+        this.tools.set(tool.name, {
+            tool,
+            mcpServerUuid,
+            serverName,
+            isDeferred: options?.isDeferred ?? false,
+            fullTool: options?.fullTool,
+        });
     }
 
-    registerTools(tools: Tool[], mcpServerUuid: string, serverName: string) {
-        tools.forEach(tool => this.registerTool(tool, mcpServerUuid, serverName));
+    registerTools(
+        tools: Tool[],
+        mcpServerUuid: string,
+        serverName: string,
+        options?: RegisterToolOptions,
+    ) {
+        tools.forEach(tool => this.registerTool(tool, mcpServerUuid, serverName, options));
     }
 
     getAllTools(): RegisteredTool[] {

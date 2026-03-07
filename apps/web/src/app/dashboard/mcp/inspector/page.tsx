@@ -4,11 +4,12 @@ import { useState } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from "@borg/ui";
 import { Button } from "@borg/ui";
 import { Loader2, Play, Wrench, Search, ChevronRight } from "lucide-react";
+import { TrafficInspector } from '@/components/TrafficInspector';
 import { trpc } from '@/utils/trpc';
 import { toast } from 'sonner';
 
 export default function InspectorDashboard() {
-    const { data: tools, isLoading: isLoadingTools } = trpc.tools.list.useQuery();
+    const { data: tools, isLoading: isLoadingTools } = trpc.mcp.listTools.useQuery();
     const [toolFilter, setToolFilter] = useState('');
     const [selectedTool, setSelectedTool] = useState<any | null>(null);
     const [argsJson, setArgsJson] = useState('{}');
@@ -62,12 +63,12 @@ export default function InspectorDashboard() {
                 <div>
                     <h1 className="text-3xl font-bold tracking-tight text-white">Inspector</h1>
                     <p className="text-zinc-500">
-                        Manually inspect and execute MCP tools
+                        Manually inspect MCP tools and watch live router traffic
                     </p>
                 </div>
             </div>
 
-            <div className="grid grid-cols-12 gap-6 flex-1 min-h-0">
+            <div className="grid grid-cols-12 gap-6 min-h-0">
                 {/* Tool Selection Sidebar */}
                 <Card className="col-span-3 bg-zinc-900 border-zinc-800 flex flex-col overflow-hidden">
                     <CardHeader className="pb-3 border-b border-zinc-800">
@@ -92,21 +93,21 @@ export default function InspectorDashboard() {
                             <div className="divide-y divide-zinc-800/50">
                                 {filteredTools.map((tool: any) => (
                                     <button
-                                        key={tool.uuid}
+                                        key={tool.name}
                                         onClick={() => {
                                             setSelectedTool(tool);
                                             setResult(null);
                                             // Pre-fill args with schema example if possible, else empty object
                                             setArgsJson('{}');
                                         }}
-                                        className={`w-full text-left p-3 text-sm hover:bg-zinc-800 transition-colors flex items-center justify-between group ${selectedTool?.uuid === tool.uuid ? 'bg-blue-900/20 text-blue-400 border-l-2 border-l-blue-500' : 'text-zinc-300'
+                                        className={`w-full text-left p-3 text-sm hover:bg-zinc-800 transition-colors flex items-center justify-between group ${selectedTool?.name === tool.name ? 'bg-blue-900/20 text-blue-400 border-l-2 border-l-blue-500' : 'text-zinc-300'
                                             }`}
                                     >
                                         <div className="truncate pr-2">
                                             <div className="font-mono">{tool.name}</div>
-                                            <div className="text-xs text-zinc-500 truncate">{tool.server}</div>
+                                            <div className="text-xs text-zinc-500 truncate">{tool.server ?? 'unknown'}</div>
                                         </div>
-                                        <ChevronRight className={`h-4 w-4 text-zinc-600 group-hover:text-zinc-400 ${selectedTool?.uuid === tool.uuid ? 'text-blue-500' : ''
+                                        <ChevronRight className={`h-4 w-4 text-zinc-600 group-hover:text-zinc-400 ${selectedTool?.name === tool.name ? 'text-blue-500' : ''
                                             }`} />
                                     </button>
                                 ))}
@@ -187,6 +188,10 @@ export default function InspectorDashboard() {
                         </div>
                     )}
                 </Card>
+            </div>
+
+            <div className="min-h-[600px]">
+                <TrafficInspector />
             </div>
         </div>
     );

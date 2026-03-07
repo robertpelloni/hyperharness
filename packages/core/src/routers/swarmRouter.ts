@@ -7,7 +7,7 @@
 import { z } from 'zod';
 import { t, publicProcedure } from '../trpc.js';
 import { SwarmOrchestrator, normalizeSwarmToolPolicy } from '../agents/swarm/SwarmOrchestrator.js';
-import { DebateProtocol } from '../agents/swarm/DebateProtocol.js';
+import { DebateProtocol, DebateMode, DebateTopicType } from '../agents/swarm/DebateProtocol.js';
 import { ConsensusEngine } from '../agents/swarm/ConsensusEngine.js';
 import { MissionService } from '../services/MissionService.js';
 import { SwarmMessageType } from '../mesh/MeshService.js';
@@ -153,16 +153,20 @@ export const swarmRouter = t.router({
                 proponentModel: z.string(),
                 opponentModel: z.string(),
                 judgeModel: z.string(),
-                rounds: z.number().optional()
+                rounds: z.number().optional(),
+                mode: z.enum(['standard', 'adversarial']).optional(),
+                topicType: z.enum(['general', 'mission-plan']).optional()
             })
         )
-        .mutation(async ({ input }: { input: { topic: string; proponentModel: string; opponentModel: string; judgeModel: string; rounds?: number } }) => {
+        .mutation(async ({ input }: { input: { topic: string; proponentModel: string; opponentModel: string; judgeModel: string; rounds?: number; mode?: DebateMode; topicType?: DebateTopicType } }) => {
             const debate = new DebateProtocol({
                 topic: input.topic,
                 proponentModel: input.proponentModel,
                 opponentModel: input.opponentModel,
                 judgeModel: input.judgeModel,
-                maxRounds: input.rounds || 3
+                maxRounds: input.rounds || 3,
+                mode: input.mode,
+                topicType: input.topicType
             });
 
             // Synchronous wait for simulation, standard TRPC streaming is better for prod

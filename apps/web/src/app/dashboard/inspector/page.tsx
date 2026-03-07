@@ -16,7 +16,7 @@ export default function InspectorPage() {
             <div className="flex items-center justify-between">
                 <div>
                     <h1 className="text-2xl font-bold text-white">Traffic Inspector</h1>
-                    <p className="text-zinc-500">Real-time packet capture of MCP tool events</p>
+                    <p className="text-zinc-500">Real-time packet capture of MCP, browser, and extension events with live filtering</p>
                 </div>
                 <Link
                     href="/dashboard"
@@ -32,8 +32,9 @@ export default function InspectorPage() {
                 <h3 className="text-sm font-bold text-zinc-400 mb-2">Protocol Info</h3>
                 <p className="text-xs text-zinc-600 font-mono">
                     BRIDGE: {bridgeUrl}<br />
-                    EVENTS: TOOL_CALL_START, TOOL_CALL_END<br />
-                    CLIENT: Generic WebSocket (Browser)
+                    EVENTS: TOOL_CALL_START, TOOL_CALL_END, BROWSER_LOG, BROWSER_DEBUG_EVENT, KNOWLEDGE_CAPTURED<br />
+                    CLIENT: Generic WebSocket (Browser)<br />
+                    FILTERS: type, source, search
                 </p>
             </div>
         </div>

@@ -128,6 +128,9 @@ export const toolsTable = sqliteTable(
                 required?: string[];
             }>()
             .notNull(),
+        is_deferred: integer("is_deferred", { mode: "boolean" })
+            .notNull()
+            .default(false),
         created_at: integer("created_at", { mode: "timestamp" })
             .notNull()
             .default(sql`(strftime('%s', 'now'))`),

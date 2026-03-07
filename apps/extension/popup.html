@@ -3,17 +3,33 @@
   <head>
     <title>borg Bridge</title>
     <style>
-      body { width: 300px; padding: 10px; font-family: sans-serif; }
-      .status { font-weight: bold; }
-      .online { color: green; }
-      .offline { color: red; }
+      body { width: 320px; padding: 12px; font-family: Inter, Arial, sans-serif; background: #111827; color: #e5e7eb; }
+      h3 { margin: 0 0 8px; }
+      .status { font-weight: 700; }
+      .card { background: #1f2937; border: 1px solid #374151; border-radius: 10px; padding: 12px; }
+      .muted { color: #9ca3af; font-size: 12px; }
+      .input { width: 100%; box-sizing: border-box; padding: 9px 10px; margin-top: 8px; border-radius: 6px; border: 1px solid #4b5563; background: #111827; color: #e5e7eb; }
+      .btn { width: 100%; padding: 9px; cursor: pointer; color: white; border: none; border-radius: 6px; margin-top: 8px; }
+      .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+      .secondary { background: #374151; }
+      .primary { background: #2563eb; }
+      .success { background: #059669; }
+      .ghost { background: #4b5563; }
     </style>
   </head>
   <body>
-    <h3>borg Bridge</h3>
-    <p>Status: <span id="status" class="status offline">Connecting...</span></p>
-    <button id="saveBtn" style="width: 100%; padding: 8px; cursor: pointer; background: #444; color: white; border: none; border-radius: 4px;">Absorb Page (Markdown)</button>
-    <p id="msg" style="font-size: 12px; color: #666; margin-top: 8px;"></p>
+    <div class="card">
+      <h3>borg Bridge</h3>
+      <p>Status: <span id="status" class="status">Connecting...</span></p>
+      <p id="detail" class="muted">Checking local Borg Core…</p>
+      <p id="endpoints" class="muted">HTTP http://localhost:3001 • WS ws://localhost:3001</p>
+      <input id="urlInput" class="input" type="url" placeholder="https://example.com/docs" />
+      <button id="ingestUrlBtn" class="btn success">Ingest URL to Knowledge</button>
+      <button id="saveBtn" class="btn ghost">Absorb Page (Markdown)</button>
+      <button id="ragBtn" class="btn primary">Ingest Page to RAG</button>
+      <button id="settingsBtn" class="btn secondary">Open Settings</button>
+      <p id="msg" class="muted" style="margin-top: 10px;"></p>
+    </div>
     <script src="dist/popup.js"></script>
   </body>
 </html>

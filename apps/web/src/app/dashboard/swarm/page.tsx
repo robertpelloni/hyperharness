@@ -194,6 +194,9 @@ interface MissionRiskFacets {
     };
 }
 
+type DebateMode = 'standard' | 'adversarial';
+type DebateTopicType = 'general' | 'mission-plan';
+
 export default function SwarmDashboard() {
     const [activeTab, setActiveTab] = useState<'swarm' | 'debate' | 'consensus' | 'telemetry' | 'missions'>('swarm');
 
@@ -296,6 +299,8 @@ export default function SwarmDashboard() {
 
     // Debate State
     const [debateTopic, setDebateTopic] = useState('Monorepo vs Polyrepo for enterprise scalability');
+    const [debateMode, setDebateMode] = useState<DebateMode>('adversarial');
+    const [debateTopicType, setDebateTopicType] = useState<DebateTopicType>('mission-plan');
     const executeDebateMutation = trpc.swarm.executeDebate.useMutation();
 
     // Consensus State
@@ -312,7 +317,9 @@ export default function SwarmDashboard() {
             proponentModel: 'claude-3-5-sonnet-20241022',
             opponentModel: 'gpt-4o',
             judgeModel: 'gemini-2.5-pro',
-            rounds: 2
+            rounds: 2,
+            mode: debateMode,
+            topicType: debateTopicType
         });
     };
 
@@ -1047,7 +1054,10 @@ export default function SwarmDashboard() {
 
                                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2">
                                                         {visibleTasks.map((task: SwarmTask) => (
-                                                            <div key={task.id} className="p-2 bg-slate-950 border border-slate-800 rounded text-[10px]">
+                                                            <div key={task.id} className={`p-2 rounded text-[10px] ${task.isRedTeam
+                                                                ? 'bg-rose-950/20 border border-rose-500/30 shadow-[0_0_0_1px_rgba(244,63,94,0.08)]'
+                                                                : 'bg-slate-950 border border-slate-800'
+                                                                }`}>
                                                                 <div className="flex justify-between items-center mb-1">
                                                                     <div className="flex items-center gap-1 truncate mr-2">
                                                                         <span className={`text-[8px] px-1 rounded border shrink-0 ${task.priority >= 4 ? 'bg-rose-500/10 text-rose-400 border-rose-500/30' :
@@ -1055,7 +1065,7 @@ export default function SwarmDashboard() {
                                                                             }`}>
                                                                             P{task.priority || 3}
                                                                         </span>
-                                                                        <span className="font-bold text-slate-500 truncate">{task.description}</span>
+                                                                        <span className={`font-bold truncate ${task.isRedTeam ? 'text-rose-200' : 'text-slate-500'}`}>{task.description}</span>
                                                                     </div>
                                                                     <span className={`px-1.5 py-0.5 rounded uppercase shrink-0 ${task.status === 'completed' ? 'bg-emerald-500/20 text-emerald-400' :
                                                                         task.status === 'failed' ? 'bg-rose-500/20 text-rose-400' :
@@ -1149,7 +1159,13 @@ export default function SwarmDashboard() {
                                                                 }
                                                                 {
                                                                     task.result && task.status !== 'pending_approval' && (
-                                                                        <div className="text-slate-600 italic truncate">{task.result}</div>
+                                                                        <div className={`${task.isRedTeam
+                                                                            ? 'text-rose-100 bg-rose-950/30 border border-rose-500/20 rounded px-2 py-1 mt-2'
+                                                                            : 'text-slate-600 italic truncate'
+                                                                            }`}>
+                                                                            {task.isRedTeam && <div className="text-[8px] uppercase tracking-widest text-rose-400 font-bold mb-1">Adversarial critique</div>}
+                                                                            {task.result}
+                                                                        </div>
                                                                     )
                                                                 }
                                                                 {Array.isArray(task.deniedToolEvents) && task.deniedToolEvents.length > 0 && (
@@ -1191,7 +1207,52 @@ export default function SwarmDashboard() {
                             <Card className="col-span-1 border-slate-800 bg-slate-900">
                                 <CardHeader><CardTitle className="text-rose-400 font-bold uppercase tracking-tighter text-lg">Debate Config</CardTitle></CardHeader>
                                 <CardContent className="space-y-4">
+                                    <div className="space-y-2">
+                                        <div className="text-[10px] uppercase tracking-widest text-slate-500 font-bold">Debate Mode</div>
+                                        <div className="flex gap-2">
+                                            <Button size="sm" variant={debateMode === 'standard' ? 'default' : 'ghost'} className={debateMode === 'standard' ? 'bg-slate-700' : 'text-slate-400'} onClick={() => setDebateMode('standard')}>
+                                                Standard
+                                            </Button>
+                                            <Button size="sm" variant={debateMode === 'adversarial' ? 'default' : 'ghost'} className={debateMode === 'adversarial' ? 'bg-rose-600 hover:bg-rose-700' : 'text-slate-400'} onClick={() => setDebateMode('adversarial')}>
+                                                Red Team
+                                            </Button>
+                                        </div>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <div className="text-[10px] uppercase tracking-widest text-slate-500 font-bold">Topic Shape</div>
+                                        <div className="flex gap-2">
+                                            <Button
+                                                size="sm"
+                                                variant={debateTopicType === 'mission-plan' ? 'default' : 'ghost'}
+                                                className={debateTopicType === 'mission-plan' ? 'bg-amber-600 hover:bg-amber-500 text-black' : 'text-slate-400'}
+                                                onClick={() => {
+                                                    setDebateTopicType('mission-plan');
+                                                    if (debateTopic.includes('Monorepo vs Polyrepo')) {
+                                                        setDebateTopic('Plan a swarm mission to audit MCP tool-policy denials, validate the fixes, and safely roll out the dashboard changes.');
+                                                    }
+                                                }}
+                                            >
+                                                Mission Plan
+                                            </Button>
+                                            <Button
+                                                size="sm"
+                                                variant={debateTopicType === 'general' ? 'default' : 'ghost'}
+                                                className={debateTopicType === 'general' ? 'bg-cyan-700 hover:bg-cyan-600' : 'text-slate-400'}
+                                                onClick={() => setDebateTopicType('general')}
+                                            >
+                                                General Topic
+                                            </Button>
+                                        </div>
+                                    </div>
                                     <Textarea value={debateTopic} onChange={e => setDebateTopic(e.target.value)} className="bg-slate-950 border-slate-800" />
+                                    <div className={`text-[10px] rounded border px-2 py-2 ${debateMode === 'adversarial'
+                                        ? 'text-rose-200 bg-rose-950/20 border-rose-500/30'
+                                        : 'text-slate-300 bg-slate-950 border-slate-800'
+                                        }`}>
+                                        {debateMode === 'adversarial'
+                                            ? 'Red Team mode biases the opposing model toward concrete breakpoints, hidden dependencies, rollback gaps, and security flaws.'
+                                            : 'Standard mode keeps the debate balanced without intentionally hostile critique prompts.'}
+                                    </div>
                                     <Button className="w-full bg-rose-600 hover:bg-rose-700" onClick={handleStartDebate} disabled={executeDebateMutation.isPending}>
                                         {executeDebateMutation.isPending ? 'Debating...' : 'Initiate Dispute'}
                                     </Button>
@@ -1202,10 +1263,47 @@ export default function SwarmDashboard() {
                                 <CardContent>
                                     {executeDebateMutation.data ? (
                                         <div className="space-y-4">
+                                            <div className="flex flex-wrap gap-2 text-[10px] font-mono">
+                                                <span className={`rounded border px-2 py-1 ${executeDebateMutation.data.mode === 'adversarial' ? 'border-rose-500/30 bg-rose-950/20 text-rose-200' : 'border-slate-700 bg-slate-950 text-slate-300'}`}>
+                                                    mode: {executeDebateMutation.data.mode}
+                                                </span>
+                                                <span className="rounded border border-amber-500/30 bg-amber-950/20 px-2 py-1 text-amber-200">
+                                                    topic: {executeDebateMutation.data.topicType}
+                                                </span>
+                                                <span className="rounded border border-emerald-500/30 bg-emerald-950/20 px-2 py-1 text-emerald-200">
+                                                    winner: {executeDebateMutation.data.winner}
+                                                </span>
+                                            </div>
                                             <div className="p-3 bg-emerald-900/20 border border-emerald-500/30 rounded text-emerald-100 text-xs">{executeDebateMutation.data.summary}</div>
+                                            <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+                                                {executeDebateMutation.data.personas?.map((persona: any) => (
+                                                    <div key={persona.key} className={`rounded border px-2 py-2 text-[10px] ${persona.isAdversarial
+                                                        ? 'border-rose-500/30 bg-rose-950/20 text-rose-100'
+                                                        : persona.stance === 'judge'
+                                                            ? 'border-emerald-500/30 bg-emerald-950/20 text-emerald-100'
+                                                            : 'border-slate-700 bg-slate-950 text-slate-300'
+                                                        }`}>
+                                                        <div className="font-bold uppercase tracking-widest text-[9px]">{persona.label}</div>
+                                                        <div className="mt-1 opacity-80">{persona.objective}</div>
+                                                    </div>
+                                                ))}
+                                            </div>
                                             {executeDebateMutation.data.history.map((turn: any, i: number) => (
-                                                <div key={i} className="p-2 bg-slate-950 border border-slate-800 rounded text-[11px] text-slate-400">
-                                                    <span className="font-bold text-slate-300">{turn.persona}:</span> {turn.argument}
+                                                <div key={i} className={`p-3 rounded text-[11px] ${turn.stance === 'judge'
+                                                    ? 'bg-emerald-950/20 border border-emerald-500/30 text-emerald-100'
+                                                    : turn.isAdversarial
+                                                        ? 'bg-rose-950/20 border border-rose-500/30 text-rose-100'
+                                                        : 'bg-slate-950 border border-slate-800 text-slate-300'
+                                                    }`}>
+                                                    <div className="flex items-center justify-between gap-2 mb-2">
+                                                        <span className={`font-bold ${turn.isAdversarial ? 'text-rose-200' : turn.stance === 'judge' ? 'text-emerald-200' : 'text-slate-100'}`}>
+                                                            {turn.label || turn.persona}
+                                                        </span>
+                                                        <span className="text-[9px] uppercase tracking-widest opacity-70">
+                                                            round {turn.round} · {turn.model}
+                                                        </span>
+                                                    </div>
+                                                    <div>{turn.argument}</div>
                                                 </div>
                                             ))}
                                         </div>

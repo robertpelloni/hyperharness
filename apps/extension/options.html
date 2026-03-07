@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>borg Bridge Settings</title>
+    <style>
+      body { font-family: Inter, Arial, sans-serif; background: #111827; color: #e5e7eb; margin: 0; padding: 24px; }
+      .card { max-width: 720px; margin: 0 auto; background: #1f2937; border: 1px solid #374151; border-radius: 12px; padding: 20px; }
+      h1 { margin-top: 0; }
+      label { display: block; margin-top: 14px; font-weight: 600; }
+      input { width: 100%; box-sizing: border-box; margin-top: 6px; padding: 10px; border-radius: 8px; border: 1px solid #4b5563; background: #111827; color: #f9fafb; }
+      .muted { color: #9ca3af; font-size: 13px; }
+      .row { display: flex; gap: 10px; margin-top: 18px; }
+      button { padding: 10px 14px; border: none; border-radius: 8px; cursor: pointer; color: white; }
+      .primary { background: #2563eb; }
+      .secondary { background: #4b5563; }
+      #status { margin-top: 14px; font-size: 13px; color: #93c5fd; }
+      code { background: #111827; padding: 2px 6px; border-radius: 6px; }
+    </style>
+  </head>
+  <body>
+    <div class="card">
+      <h1>borg Bridge Settings</h1>
+      <p class="muted">Configure how the browser extension reaches your local Borg Core instance.</p>
+
+      <label for="coreUrl">Core HTTP URL</label>
+      <input id="coreUrl" type="url" placeholder="http://localhost:3001" />
+      <p class="muted">Used for health checks, memory capture, and RAG ingestion.</p>
+
+      <label for="wsUrl">Core WebSocket URL</label>
+      <input id="wsUrl" type="url" placeholder="ws://localhost:3001" />
+      <p class="muted">Used for live traffic, browser logs, and chat/control events.</p>
+
+      <div class="row">
+        <button id="saveBtn" class="primary">Save Settings</button>
+        <button id="resetBtn" class="secondary">Reset Defaults</button>
+      </div>
+
+      <p id="status">Loading current settings…</p>
+      <p class="muted">Tip: if Borg Core is running on another host, update both values and reopen the popup to re-check status.</p>
+    </div>
+    <script src="dist/options.js"></script>
+  </body>
+</html>

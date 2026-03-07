@@ -1,166 +1,297 @@
-import { Client } from "@modelcontextprotocol/sdk/client/index.js";
-import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js";
-import path from "path";
-import fs from "fs";
+import path from 'path';
 
-interface MCPServerConfig {
-    command: string;
-    args: string[];
-    enabled: boolean;
-    env?: Record<string, string>;
-}
+import { MCPConfigStore } from './configStore.js';
+import { namespaceToolName, parseNamespacedToolName } from './namespaces.js';
+import { StdioClient } from './StdioClient.js';
+import { MCPTrafficInspector, summarizeParams } from './trafficInspector.js';
+import type {
+    MCPAggregatedTool,
+    MCPAggregatorOptions,
+    MCPClientLike,
+    MCPServerConfig,
+    MCPServerState,
+    MCPToolDefinition,
+} from './types.js';
 
 export class MCPAggregator {
-    private clients: Map<string, Client> = new Map();
-    private configPath: string;
+    public readonly clients: Map<string, MCPClientLike> = new Map();
+    public readonly configPath: string;
 
-    constructor(configPath?: string) {
-        this.configPath = configPath || path.join(process.cwd(), 'config', 'mcp_servers.json');
+    private readonly configStore: MCPConfigStore;
+    private readonly createClient: (name: string, config: MCPServerConfig) => MCPClientLike;
+    private readonly restartDelayMs: number;
+    private readonly now: () => number;
+    private readonly serverStates: Map<string, MCPServerState> = new Map();
+    private readonly trafficInspector: MCPTrafficInspector;
+
+    constructor(options?: string | MCPAggregatorOptions) {
+        const normalizedOptions = typeof options === 'string'
+            ? { configPath: options }
+            : (options ?? {});
+
+        this.configPath = normalizedOptions.configPath || path.join(process.cwd(), 'config', 'mcp_servers.json');
+        this.configStore = new MCPConfigStore(this.configPath);
+        this.createClient = normalizedOptions.createClient ?? ((name: string, config: MCPServerConfig) => new StdioClient(name, {
+            ...config,
+            env: config.env ?? {},
+        }));
+        this.restartDelayMs = normalizedOptions.restartDelayMs ?? 5_000;
+        this.now = normalizedOptions.now ?? (() => Date.now());
+        this.trafficInspector = new MCPTrafficInspector(normalizedOptions.maxTrafficEvents ?? 200);
     }
 
-    public async initialize() {
-        if (!fs.existsSync(this.configPath)) return;
-
-        const configStr = fs.readFileSync(this.configPath, 'utf8');
+    public async initialize(): Promise<void> {
         try {
-            const config = JSON.parse(configStr) as Record<string, MCPServerConfig>;
+            const config = this.configStore.readAll();
             for (const [name, serverCfg] of Object.entries(config)) {
+                this.serverStates.set(name, {
+                    name,
+                    config: serverCfg,
+                    status: serverCfg.enabled ? 'stopped' : 'stopped',
+                    toolCount: 0,
+                    restartCount: 0,
+                });
+
                 if (serverCfg.enabled) {
                     await this.connectToServer(name, serverCfg);
                 }
             }
-        } catch (e) {
-            console.error("[MCPAggregator] Failed to load config:", e);
+        } catch (error) {
+            console.error('[MCPAggregator] Failed to load config:', error);
         }
     }
 
-    public async connectToServer(name: string, config: MCPServerConfig) {
+    public async connectToServer(name: string, config: MCPServerConfig): Promise<void> {
+        const state = this.upsertState(name, config);
+        state.status = 'connecting';
+
         console.log(`[MCPAggregator] Connecting to downstream server: ${name}...`);
         try {
-            const transport = new StdioClientTransport({
-                command: config.command,
-                args: config.args,
-                env: { ...process.env, ...config.env } as Record<string, string>
-            });
+            const previousClient = this.clients.get(name);
+            if (previousClient) {
+                await previousClient.close();
+            }
 
-            const client = new Client(
-                { name: "borg-aggregator", version: "1.0.0" },
-                { capabilities: {} }
-            );
-
-            await client.connect(transport);
+            const client = this.createClient(name, config);
+            await client.connect();
             this.clients.set(name, client);
+            state.status = 'connected';
+            state.lastError = undefined;
+            state.toolCount = (await this.listToolsForServer(name, client)).length;
             console.log(`[MCPAggregator] ✓ Connected to ${name}`);
-        } catch (e) {
-            console.error(`[MCPAggregator] ❌ Failed to connect to ${name}:`, e);
+        } catch (error) {
+            state.status = 'error';
+            state.lastError = error instanceof Error ? error.message : String(error);
+            console.error(`[MCPAggregator] ❌ Failed to connect to ${name}:`, error);
         }
     }
 
-    public async executeTool(name: string, args: any): Promise<any> {
-        // Namespaced tool call? e.g. "github__create_issue"
-        const separatorIndex = name.indexOf("__");
-        if (separatorIndex !== -1) {
-            const serverName = name.substring(0, separatorIndex);
-            const toolName = name.substring(separatorIndex + 2);
-
-            const client = this.clients.get(serverName);
-            if (client) {
-                return await client.callTool({ name: toolName, arguments: args });
+    public async executeTool(name: string, args: unknown): Promise<unknown> {
+        const namespacedTool = parseNamespacedToolName(name);
+        if (namespacedTool) {
+            const client = this.clients.get(namespacedTool.serverName);
+            if (!client) {
+                throw new Error(`Tool '${name}' not found in any connected MCP server.`);
             }
+
+            return this.callToolOnServer(namespacedTool.serverName, namespacedTool.toolName, args, client);
         }
 
-        // Fallback: Broadcast / Search
         for (const [serverName, client] of this.clients.entries()) {
-            try {
-                const tools = await client.listTools();
-                if (tools.tools.find(t => t.name === name)) {
-                    return await client.callTool({ name, arguments: args });
-                }
-            } catch (e) {
-                // Ignore lookup errors
+            const tools = await this.listToolsForServer(serverName, client);
+            if (tools.find((tool) => tool.name === name)) {
+                return this.callToolOnServer(serverName, name, args, client);
             }
         }
 
         throw new Error(`Tool '${name}' not found in any connected MCP server.`);
     }
 
-    public async listAggregatedTools(): Promise<any[]> {
-        const allTools: any[] = [];
+    public async listAggregatedTools(): Promise<MCPAggregatedTool[]> {
+        const allTools: MCPAggregatedTool[] = [];
+
         for (const [serverName, client] of this.clients.entries()) {
-            try {
-                const result = await client.listTools();
-                const namespaced = result.tools.map(t => ({
-                    ...t,
-                    name: `${serverName}__${t.name}`, // Namespacing
-                    _originalName: t.name,
-                    description: `[${serverName}] ${t.description}`
-                }));
-                allTools.push(...namespaced);
-            } catch (e) {
-                console.error(`[MCPAggregator] Error listing tools from ${serverName}:`, e);
-            }
+            const tools = await this.listToolsForServer(serverName, client);
+            const namespaced = tools.map((tool) => this.namespaceTool(serverName, tool));
+            allTools.push(...namespaced);
         }
+
         return allTools;
     }
 
-    public async addServerConfig(name: string, config: MCPServerConfig) {
-        // 1. Update runtime
+    public async addServerConfig(name: string, config: MCPServerConfig): Promise<void> {
+        this.configStore.upsert(name, config);
+        this.upsertState(name, config);
         await this.connectToServer(name, config);
-
-        // 2. Persist to disk
-        try {
-            let currentConfig: Record<string, MCPServerConfig> = {};
-            if (fs.existsSync(this.configPath)) {
-                currentConfig = JSON.parse(fs.readFileSync(this.configPath, 'utf8'));
-            }
-            currentConfig[name] = config;
-
-            // Ensure dir exists
-            const dir = path.dirname(this.configPath);
-            if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-
-            fs.writeFileSync(this.configPath, JSON.stringify(currentConfig, null, 2));
-            console.log(`[MCPAggregator] Saved config for ${name}`);
-        } catch (e) {
-            console.error(`[MCPAggregator] Failed to save config:`, e);
-            throw new Error("Failed to persist server config");
-        }
+        console.log(`[MCPAggregator] Saved config for ${name}`);
     }
 
-    public async listServers() {
-        const config = fs.existsSync(this.configPath)
-            ? JSON.parse(fs.readFileSync(this.configPath, 'utf8'))
-            : {};
-
-        const servers = [];
-        for (const [name, cfg] of Object.entries(config)) {
-            const client = this.clients.get(name);
-            let status = 'stopped';
-            let toolCount = 0;
-
-            if (client) {
-                status = 'connected';
-                try {
-                    const tools = await client.listTools();
-                    toolCount = tools.tools.length;
-                } catch (e) {
-                    status = 'error';
-                }
-            }
-
-            servers.push({
-                name,
-                config: cfg,
-                status,
-                toolCount
-            });
+    public async removeServerConfig(name: string): Promise<void> {
+        const client = this.clients.get(name);
+        if (client) {
+            await client.close();
+            this.clients.delete(name);
         }
-        return servers;
+
+        this.configStore.remove(name);
+        this.serverStates.delete(name);
     }
 
-    public async shutdown() {
+    public async notifyServerExit(name: string, error?: Error): Promise<void> {
+        const state = this.serverStates.get(name);
+        if (!state) {
+            return;
+        }
+
+        this.clients.delete(name);
+        state.status = 'restarting';
+        state.restartCount += 1;
+        state.lastError = error?.message;
+
+        if (this.restartDelayMs > 0) {
+            await new Promise((resolve) => setTimeout(resolve, this.restartDelayMs));
+        }
+
+        await this.connectToServer(name, state.config);
+    }
+
+    public async listServers(): Promise<MCPServerState[]> {
+        const config = this.configStore.readAll();
+        for (const [name, serverConfig] of Object.entries(config)) {
+            this.upsertState(name, serverConfig);
+        }
+
+        return Array.from(this.serverStates.values()).map((state) => ({ ...state }));
+    }
+
+    public async searchTools(query: string): Promise<MCPAggregatedTool[]> {
+        const normalizedQuery = query.trim().toLowerCase();
+        const tools = await this.listAggregatedTools();
+
+        if (!normalizedQuery) {
+            return tools;
+        }
+
+        return tools.filter((tool) => {
+            const haystack = `${tool.name} ${tool._originalName} ${tool.description ?? ''} ${tool.server}`.toLowerCase();
+            return haystack.includes(normalizedQuery);
+        });
+    }
+
+    public getTrafficEvents() {
+        return this.trafficInspector.getEvents();
+    }
+
+    public async shutdown(): Promise<void> {
         for (const client of this.clients.values()) {
             await client.close();
+        }
+        this.clients.clear();
+    }
+
+    private upsertState(name: string, config: MCPServerConfig): MCPServerState {
+        const existing = this.serverStates.get(name);
+        const nextState: MCPServerState = existing
+            ? { ...existing, config }
+            : {
+                name,
+                config,
+                status: config.enabled ? 'stopped' : 'stopped',
+                toolCount: 0,
+                restartCount: 0,
+            };
+
+        this.serverStates.set(name, nextState);
+        return nextState;
+    }
+
+    private namespaceTool(serverName: string, tool: MCPToolDefinition): MCPAggregatedTool {
+        return {
+            ...tool,
+            server: serverName,
+            name: namespaceToolName(serverName, tool.name),
+            _originalName: tool.name,
+            description: `[${serverName}] ${tool.description ?? ''}`.trim(),
+        };
+    }
+
+    private async listToolsForServer(serverName: string, client: MCPClientLike): Promise<MCPToolDefinition[]> {
+        const start = this.now();
+
+        try {
+            const tools = await client.listTools();
+            const state = this.serverStates.get(serverName);
+            if (state) {
+                state.toolCount = tools.length;
+                state.status = 'connected';
+            }
+
+            this.trafficInspector.record({
+                server: serverName,
+                method: 'tools/list',
+                paramsSummary: '',
+                latencyMs: this.now() - start,
+                success: true,
+                timestamp: this.now(),
+            });
+
+            return tools;
+        } catch (error) {
+            const state = this.serverStates.get(serverName);
+            if (state) {
+                state.status = 'error';
+                state.lastError = error instanceof Error ? error.message : String(error);
+            }
+
+            this.trafficInspector.record({
+                server: serverName,
+                method: 'tools/list',
+                paramsSummary: '',
+                latencyMs: this.now() - start,
+                success: false,
+                timestamp: this.now(),
+                error: error instanceof Error ? error.message : String(error),
+            });
+
+            console.error(`[MCPAggregator] Error listing tools from ${serverName}:`, error);
+            return [];
+        }
+    }
+
+    private async callToolOnServer(serverName: string, toolName: string, args: unknown, client: MCPClientLike): Promise<unknown> {
+        const start = this.now();
+
+        try {
+            const result = await client.callTool(toolName, args);
+            this.trafficInspector.record({
+                server: serverName,
+                method: 'tools/call',
+                paramsSummary: summarizeParams(args),
+                latencyMs: this.now() - start,
+                success: true,
+                timestamp: this.now(),
+                toolName,
+            });
+            return result;
+        } catch (error) {
+            const state = this.serverStates.get(serverName);
+            if (state) {
+                state.status = 'error';
+                state.lastError = error instanceof Error ? error.message : String(error);
+            }
+
+            this.trafficInspector.record({
+                server: serverName,
+                method: 'tools/call',
+                paramsSummary: summarizeParams(args),
+                latencyMs: this.now() - start,
+                success: false,
+                timestamp: this.now(),
+                toolName,
+                error: error instanceof Error ? error.message : String(error),
+            });
+
+            throw error;
         }
     }
 }

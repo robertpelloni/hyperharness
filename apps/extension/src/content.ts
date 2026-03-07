@@ -78,6 +78,39 @@ const injectConsoleInterceptor = () => {
 };
 injectConsoleInterceptor();
 
+let lastActivitySentAt = 0;
+const ACTIVITY_THROTTLE_MS = 1500;
+
+function emitUserActivity(trigger: string) {
+    const now = Date.now();
+    if ((now - lastActivitySentAt) < ACTIVITY_THROTTLE_MS) {
+        return;
+    }
+
+    lastActivitySentAt = now;
+    chrome.runtime.sendMessage({
+        type: 'USER_ACTIVITY',
+        lastActivityTime: now,
+        trigger,
+        activePage: {
+            url: window.location.href,
+            title: document.title,
+            host: window.location.host,
+        },
+    });
+}
+
+window.addEventListener('focus', () => emitUserActivity('focus'));
+window.addEventListener('click', () => emitUserActivity('click'), true);
+window.addEventListener('keydown', () => emitUserActivity('keydown'), true);
+window.addEventListener('scroll', () => emitUserActivity('scroll'), { passive: true });
+document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') {
+        emitUserActivity('visible');
+    }
+});
+emitUserActivity('content_script_loaded');
+
 // Listen for console logs from page context
 window.addEventListener('message', (event) => {
     if (event.source !== window) return;

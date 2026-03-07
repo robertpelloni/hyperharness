@@ -1,19 +1,23 @@
 "use client";
 
 import { useState } from 'react';
-import { Card, CardHeader, CardTitle, CardContent } from "@borg/ui";
+import { Card, CardContent } from "@borg/ui";
 import { Loader2, Search, ArrowRight, Zap, Code } from "lucide-react";
 import { trpc } from '@/utils/trpc';
 
 export default function SearchDashboard() {
     const [query, setQuery] = useState('');
-    const searchQuery = trpc.tools.search.useQuery(
-        { query, limit: 30 },
-        { enabled: query.trim().length > 0 }
-    );
+    const toolsQuery = trpc.mcp.listTools.useQuery();
 
-    const results = searchQuery.data || [];
-    const isLoading = searchQuery.isLoading;
+    const results = (toolsQuery.data || []).filter((tool: any) => {
+        if (!query.trim()) {
+            return false;
+        }
+
+        const haystack = `${tool.name ?? ''} ${tool.description ?? ''} ${tool.server ?? ''}`.toLowerCase();
+        return haystack.includes(query.trim().toLowerCase());
+    });
+    const isLoading = toolsQuery.isLoading;
 
     return (
         <div className="p-8 space-y-8 h-full flex flex-col">
@@ -45,17 +49,22 @@ export default function SearchDashboard() {
                         </div>
                     ) : results.length > 0 ? (
                         results.map((tool: any) => (
-                            <Card key={tool.uuid} className="bg-zinc-900/50 border-zinc-800 hover:bg-zinc-900 transition-colors group cursor-pointer">
+                            <Card key={`${tool.server ?? 'unknown'}-${tool.name}`} className="bg-zinc-900/50 border-zinc-800 hover:bg-zinc-900 transition-colors group cursor-pointer">
                                 <CardContent className="p-6">
                                     <div className="flex justify-between items-start">
                                         <div>
                                             <h3 className="font-mono text-blue-400 font-medium text-lg mb-1 flex items-center gap-2">
                                                 {tool.name}
                                                 <span className="text-[10px] bg-zinc-800 px-2 py-0.5 rounded text-zinc-500">
-                                                    {tool.server}
+                                                    {tool.server ?? 'unknown'}
                                                 </span>
                                             </h3>
-                                            <p className="text-zinc-400">{tool.description}</p>
+                                            <p className="text-zinc-400">{tool.description || 'No description available.'}</p>
+                                            {tool.inputSchema ? (
+                                                <p className="text-xs text-zinc-500 mt-2 font-mono">
+                                                    schema: {JSON.stringify(tool.inputSchema).slice(0, 160)}
+                                                </p>
+                                            ) : null}
                                         </div>
                                         <ArrowRight className="h-5 w-5 text-zinc-600 group-hover:text-blue-500 transition-colors opacity-0 group-hover:opacity-100" />
                                     </div>
@@ -71,10 +80,10 @@ export default function SearchDashboard() {
                     {!query && (
                         <div className="grid grid-cols-2 gap-4 opacity-50">
                             <div className="p-4 rounded border border-dashed border-zinc-800 text-sm text-zinc-500 flex items-center gap-3">
-                                <Zap className="h-4 w-4" /> "Generate verify.sh scripts"
+                                <Zap className="h-4 w-4" /> "memory store tools"
                             </div>
                             <div className="p-4 rounded border border-dashed border-zinc-800 text-sm text-zinc-500 flex items-center gap-3">
-                                <Code className="h-4 w-4" /> "Refactor React components"
+                                <Code className="h-4 w-4" /> "github issue search"
                             </div>
                         </div>
                     )}

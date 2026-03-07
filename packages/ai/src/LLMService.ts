@@ -46,6 +46,60 @@ export class LLMService {
         return this.totalUsage;
     }
 
+    private getErrorMessage(error: unknown): string {
+        if (error instanceof Error) {
+            return error.message;
+        }
+
+        if (typeof error === 'string') {
+            return error;
+        }
+
+        if (error && typeof error === 'object') {
+            const maybeMessage = (error as { message?: unknown }).message;
+            if (typeof maybeMessage === 'string') {
+                return maybeMessage;
+            }
+        }
+
+        return '';
+    }
+
+    private isRecoverableError(error: unknown): boolean {
+        const rawMessage = this.getErrorMessage(error);
+        const message = rawMessage.toLowerCase();
+        const structured = error as {
+            status?: number;
+            code?: string | number;
+            cause?: { code?: string | number; status?: number; message?: string };
+            error?: { code?: string | number; status?: number; message?: string };
+        };
+
+        const status = structured?.status ?? structured?.cause?.status ?? structured?.error?.status;
+        const code = `${structured?.code ?? structured?.cause?.code ?? structured?.error?.code ?? ''}`.toLowerCase();
+
+        if (status === 429 || status === 502 || status === 503 || status === 504) {
+            return true;
+        }
+
+        if (code === 'econnrefused' || code === 'econnreset' || code === 'etimedout' || code === 'enotfound') {
+            return true;
+        }
+
+        return (
+            message.includes('429') ||
+            message.includes('quota') ||
+            message.includes('insufficient_quota') ||
+            message.includes('rate limit') ||
+            message.includes('resource_exhausted') ||
+            message.includes('overloaded') ||
+            message.includes('temporarily unavailable') ||
+            message.includes('timeout') ||
+            message.includes('timed out') ||
+            message.includes('fetch failed')
+        );
+    }
+
     private trackUsage(provider: string, model: string, usage?: { inputTokens: number, outputTokens: number }) {
         if (!usage) return;
         this.totalUsage.inputTokens += usage.inputTokens;
@@ -291,26 +345,25 @@ export class LLMService {
 
             } catch (error: any) {
                 lastError = error;
-                const isRecoverable =
-                    error.message.includes('429') ||
-                    error.message.includes('Quota') ||
-                    error.message.includes('Overloaded') ||
-                    error.message.includes('Rate limit') ||
-                    error.cause?.code === 'ECONNREFUSED' ||
-                    error.message.includes('fetch failed');
+                const isRecoverable = this.isRecoverableError(error);
 
                 if (this.modelSelector && isRecoverable && attempt < maxAttempts) {
                     console.warn(`[LLMService] ⚠️ Provider ${provider} failed (${error.message}). Switching models...`);
 
                     // 1. Report Failure
-                    this.modelSelector.reportFailure(modelId);
+                    this.modelSelector.reportFailure(provider, modelId);
 
                     // 2. Select Next Model
                     // Use options.taskComplexity if available, else 'medium'
                     const next = await this.modelSelector.selectModel({
                         taskComplexity: options?.taskComplexity || 'medium',
-                        provider: undefined // Clear preference, force automatic selection
+                        provider: undefined, // Clear preference, force automatic selection
+                        exclude: [`${provider}:${modelId}`]
                     });
+
+                    if (next.provider === provider && next.modelId === modelId) {
+                        throw error;
+                    }
 
                     console.log(`[LLMService] 🔄 Switched to: ${next.provider}/${next.modelId}`);
                     provider = next.provider;

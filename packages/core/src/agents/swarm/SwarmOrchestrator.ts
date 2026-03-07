@@ -102,7 +102,7 @@ export interface SwarmTask {
     // Phase 95: Git Worktree Isolation
     worktreePath?: string;
 
-    // Phase 124: Red Team Debate Agent
+    // Phase 125: Red Team Debate Agent
     isRedTeam?: boolean;
 }
 
@@ -277,7 +277,7 @@ export class SwarmOrchestrator extends EventEmitter {
             console.log(`[Swarm] Using fallback decomposition (${subTasks.length} tasks)`);
         }
 
-        // Phase 124: Red Team Debate Agent
+        // Phase 125: Red Team Debate Agent
         // Inject a high-priority adversarial critique task to stress-test the generated plan
         if (subTasks.length > 0) {
             const planSummary = subTasks.map((t, i) => `${i + 1}. ${t.description}`).join('\n');

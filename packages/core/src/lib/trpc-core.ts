@@ -349,7 +349,10 @@ export type MCPAggregatedToolRuntime = {
 export type MCPAggregatorRuntime = {
     listServers?: () => Promise<MCPSimpleServerRuntime[]>;
     listAggregatedTools?: () => Promise<MCPAggregatedToolRuntime[]>;
+    searchTools?: (query: string) => Promise<MCPAggregatedToolRuntime[]>;
+    getTrafficEvents?: () => unknown[];
     addServerConfig?: (name: string, config: { command: string; args: string[]; env?: Record<string, string>; enabled?: boolean }) => Promise<void>;
+    removeServerConfig?: (name: string) => Promise<void>;
     clients?: Map<string, { close?: () => Promise<void> | void }>;
     configPath?: string;
 };
