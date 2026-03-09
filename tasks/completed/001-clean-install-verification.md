@@ -14,12 +14,12 @@ Borg 1.0 is blocked if a stranger cannot clone, install, and boot the dashboard 
 4. Failures are fixed at the source instead of documented away.
 
 ## Acceptance Criteria
-- [ ] Fresh install path is validated end to end on the current repo state
-- [ ] Documented startup path matches observed behavior
-- [ ] Any blocking setup defects are fixed in code/config, not just noted
-- [ ] Test file exists and passes, if setup logic is changed in a testable module
-- [ ] No `@ts-ignore` added
-- [ ] `CHANGELOG.md` updated
+- [x] Fresh install path is validated end to end on the current repo state
+- [x] Documented startup path matches observed behavior
+- [x] Any blocking setup defects are fixed in code/config, not just noted
+- [x] Test file exists and passes, if setup logic is changed in a testable module
+- [x] No `@ts-ignore` added
+- [x] `CHANGELOG.md` updated
 
 ## Out of Scope
 - Shipping new product features unrelated to install/start
