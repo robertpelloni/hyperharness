@@ -13,6 +13,3 @@
 [submodule "submodules/litellm"]
 	path = submodules/litellm
 	url = https://github.com/BerriAI/litellm
-[submodule "submodules/mcpproxy"]
-	path = submodules/mcpproxy
-	url = https://github.com/Dumbris/mcpproxy
