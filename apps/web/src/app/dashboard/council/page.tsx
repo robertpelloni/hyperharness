@@ -106,10 +106,13 @@ export default function CouncilPage() {
                         <Gavel className="h-6 w-6 text-indigo-400" />
                     </div>
                     <div>
-                        <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent">
-                            The Council
-                        </h1>
-                        <p className="text-muted-foreground text-sm">Multi-Agent Consensus & Debate System</p>
+                        <div className="flex items-center gap-3">
+                            <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent">
+                                The Council
+                            </h1>
+                            <Badge variant="outline" className="border-purple-500/30 text-purple-400 bg-purple-500/10">Labs</Badge>
+                        </div>
+                        <p className="text-muted-foreground text-sm mt-1">Multi-Agent Consensus & Debate System (Experimental)</p>
                     </div>
                 </div>
                 <div className="flex gap-2">

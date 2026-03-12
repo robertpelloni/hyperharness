@@ -115,10 +115,13 @@ export default function SuperAssistantDashboardPage() {
         <div className="w-full h-full flex flex-col">
             <div className="p-4 border-b border-gray-800 flex justify-between items-center bg-gray-900">
                 <div>
-                    <h1 className="text-xl font-bold text-white flex items-center gap-2">
-                        <Bot className="w-5 h-5 text-purple-400" /> MCP SuperAssistant
-                    </h1>
-                    <p className="text-gray-400 text-sm">
+                    <div className="flex items-center gap-3">
+                        <h1 className="text-xl font-bold text-white flex items-center gap-2">
+                            <Bot className="w-5 h-5 text-purple-400" /> MCP SuperAssistant
+                        </h1>
+                        <Badge variant="outline" className="border-purple-500/30 text-purple-400 bg-purple-500/10 text-xs">Beta</Badge>
+                    </div>
+                    <p className="text-gray-400 text-sm mt-1">
                         Borg browser-extension assimilation surface — shared platform footprint first, per-site adapter parity next.
                     </p>
                 </div>

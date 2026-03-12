@@ -239,25 +239,29 @@ export const INTEGRATIONS_NAV: NavItem[] = [
     },
 ];
 
-export const MAIN_DASHBOARD_NAV: NavItem[] = [
+export const CORE_DASHBOARD_NAV: NavItem[] = [
     { title: "Mission Control", href: "/", icon: LayoutDashboard, variant: "ghost" },
+    { title: "Supervisor", href: "/dashboard/supervisor", icon: Eye, variant: "ghost" },
+    { title: "Providers", href: "/dashboard/billing", icon: Key, variant: "ghost" },
     { title: "Documentation", href: "/docs", icon: BookOpen, variant: "ghost" },
-    { title: "Dashboard Home", href: "/dashboard", icon: LayoutDashboard, variant: "ghost" },
+    { title: "Settings", href: "/dashboard/settings", icon: Settings2, variant: "ghost" },
+];
+
+export const LABS_DASHBOARD_NAV: NavItem[] = [
     { title: "Director", href: "/dashboard/director", icon: Bot, variant: "ghost" },
     { title: "Council", href: "/dashboard/council", icon: Users, variant: "ghost" },
     { title: "Expert Squad", href: "/dashboard/experts", icon: Bot, variant: "ghost" },
-    { title: "Supervisor", href: "/dashboard/supervisor", icon: Eye, variant: "ghost" },
+    { title: "Squads", href: "/dashboard/squads", icon: Users, variant: "ghost" },
     { title: "Brain", href: "/dashboard/brain", icon: Brain, variant: "ghost" },
-    { title: "Research", href: "/dashboard/research", icon: FlaskConical, variant: "ghost" },
     { title: "Memory", href: "/dashboard/memory", icon: Brain, variant: "ghost" },
     { title: "Knowledge", href: "/dashboard/knowledge", icon: Network, variant: "ghost" },
     { title: "Ingestion", href: "/dashboard/ingestion", icon: Database, variant: "ghost" },
+    { title: "Research", href: "/dashboard/research", icon: FlaskConical, variant: "ghost" },
     { title: "Browser", href: "/dashboard/browser", icon: Globe, variant: "ghost" },
     { title: "Symbols", href: "/dashboard/symbols", icon: Code2, variant: "ghost" },
     { title: "Code", href: "/dashboard/code", icon: FileCode2, variant: "ghost" },
     { title: "Command", href: "/dashboard/command", icon: Terminal, variant: "ghost" },
-    { title: "Inspector", href: "/dashboard/inspector", icon: FileSearch, variant: "ghost" },
-    { title: "Settings", href: "/dashboard/settings", icon: Settings2, variant: "ghost" },
+    { title: "Traffic Inspector", href: "/dashboard/inspector", icon: FileSearch, variant: "ghost" },
     { title: "Workflows", href: "/dashboard/workflows", icon: Workflow, variant: "ghost" },
     { title: "Library", href: "/dashboard/library", icon: Library, variant: "ghost" },
     { title: "Manual", href: "/dashboard/manual", icon: BookOpenText, variant: "ghost" },
@@ -265,7 +269,6 @@ export const MAIN_DASHBOARD_NAV: NavItem[] = [
     { title: "Metrics", href: "/dashboard/metrics", icon: BarChart3, variant: "ghost" },
     { title: "Marketplace", href: "/dashboard/marketplace", icon: ShoppingBag, variant: "ghost" },
     { title: "Skills", href: "/dashboard/skills", icon: Hammer, variant: "ghost" },
-    { title: "Squads", href: "/dashboard/squads", icon: Users, variant: "ghost" },
     { title: "Healer", href: "/dashboard/healer", icon: Heart, variant: "ghost" },
     { title: "Security", href: "/dashboard/security", icon: Shield, variant: "ghost" },
     { title: "Events", href: "/dashboard/events", icon: Activity, variant: "ghost" },
@@ -274,13 +277,11 @@ export const MAIN_DASHBOARD_NAV: NavItem[] = [
     { title: "Architecture", href: "/dashboard/architecture", icon: Building2, variant: "ghost" },
     { title: "Infrastructure", href: "/dashboard/infrastructure", icon: Server, variant: "ghost" },
     { title: "Evolution", href: "/dashboard/evolution", icon: Sparkles, variant: "ghost" },
-    { title: "Config", href: "/dashboard/config", icon: Cog, variant: "ghost" },
     { title: "Chronicle", href: "/dashboard/chronicle", icon: ScrollText, variant: "ghost" },
     { title: "Submodules", href: "/dashboard/submodules", icon: FileCode, variant: "ghost" },
     { title: "Workshop", href: "/dashboard/workshop", icon: Wrench, variant: "ghost" },
     { title: "Auto-Dev", href: "/dashboard/workshop/auto-dev", icon: Bot, variant: "ghost" },
     { title: "Super Assistant", href: "/dashboard/super-assistant", icon: Bot, variant: "ghost" },
-    { title: "Billing", href: "/dashboard/billing", icon: Key, variant: "ghost" },
 ];
 
 export const SIDEBAR_SECTIONS: NavSection[] = [
@@ -297,7 +298,11 @@ export const SIDEBAR_SECTIONS: NavSection[] = [
         items: INTEGRATIONS_NAV,
     },
     {
-        title: "Main Dashboard + Subpages",
-        items: MAIN_DASHBOARD_NAV,
+        title: "Borg 1.0 Core",
+        items: CORE_DASHBOARD_NAV,
+    },
+    {
+        title: "Labs & Experimental",
+        items: LABS_DASHBOARD_NAV,
     },
 ];
