@@ -275,13 +275,12 @@ export async function executeCompatibleImportConfig(
             content: [{ type: 'text', text: unavailableMessage }],
         };
     }
-
     const configJson = typeof args.configJson === 'string' ? args.configJson : '';
     try {
         const result = await configImportService.importClaudeConfig(configJson);
         return {
             isError: false,
-            content: [{ type: 'text', text: `Imported ${result.imported} servers. Skipped: ${JSON.stringify(result.skipped)}` }],
+            content: [{ type: 'text', text: `Import completed.\nSuccessful: ${result.imported}\nSkipped: ${result.skipped.join(', ')}` }],
         };
     } catch (error) {
         return {
@@ -315,6 +314,86 @@ export async function executeCompatibleRunPython(
         return {
             isError: true,
             content: [{ type: 'text', text: `Execution failed: ${error instanceof Error ? error.message : String(error)}` }],
+        };
+    }
+}
+
+export type ToolSearchFunction = (query: string, limit: number) => Array<{ name: string; description: string; inputSchema?: unknown }>;
+
+export async function executeSemanticAutoCall(
+    args: Record<string, unknown>,
+    llm: CompatibleLlmServiceLike | undefined,
+    toolSearchFn: ToolSearchFunction,
+    delegatedToolCaller: CompatibilityToolDelegate | undefined
+): Promise<CallToolResult> {
+    if (!llm || !delegatedToolCaller) {
+        return {
+            isError: true,
+            content: [{ type: 'text', text: 'LLM or Tool Caller not available for auto-execution.' }],
+        };
+    }
+
+    const objective = typeof args.objective === 'string' ? args.objective : '';
+    const context = typeof args.context === 'string' ? args.context : '';
+
+    if (!objective) {
+        return { isError: true, content: [{ type: 'text', text: 'Objective is required for auto_call_tool.' }] };
+    }
+
+    // 1. Semantic Search for Candidates
+    const candidates = toolSearchFn(objective, 15);
+    
+    if (candidates.length === 0) {
+        return { isError: true, content: [{ type: 'text', text: 'No tools found matching the objective.' }] };
+    }
+
+    // 2. Format LLM Prompt to select tool and map arguments
+    const systemPrompt = `You are an expert Tool Selection Agent.
+Given an objective and a list of available tools, you must return JSON containing the EXACT perfect tool name to accomplish the objective, and map the arguments precisely to its schema.
+Do NOT hallucinate tools. You MUST pick from the provided list.
+
+Output ONLY valid JSON like:
+{
+  "toolName": "selected_tool_name",
+  "arguments": { "key": "value" },
+  "reasoning": "why this tool and args were chosen"
+}`;
+
+    const toolsListStr = candidates.map(t => `- Name: ${t.name}\n  Desc: ${t.description}\n  Schema: ${JSON.stringify(t.inputSchema || 'unknown')}`).join('\n\n');
+
+    const prompt = `Objective:\n${objective}\n\nContext/Variables:\n${context}\n\nCandidate Tools:\n${toolsListStr}`;
+
+    try {
+        const model = await llm.modelSelector.selectModel({ taskComplexity: 'medium' });
+        const response = await llm.generateText(model.provider, model.modelId, systemPrompt, prompt);
+        
+        let parsed: { toolName?: string; arguments?: Record<string, unknown>; reasoning?: string };
+        const raw = response.content?.trim() ?? '{}';
+        
+        try {
+            parsed = JSON.parse(raw);
+        } catch {
+            const fenced = raw.match(/```(?:json)?\s*([\s\S]*?)```/i)?.[1];
+            parsed = fenced ? JSON.parse(fenced) : {};
+        }
+
+        if (!parsed.toolName) {
+            return { isError: true, content: [{ type: 'text', text: `LLM failed to select a tool.\nRaw output: ${raw}` }] };
+        }
+
+        const argsToPass = normalizeToolArgs(parsed.arguments);
+        const result = await delegatedToolCaller(parsed.toolName, argsToPass, { source: 'auto_call_tool' });
+
+        return {
+            isError: false,
+            content: [
+                { type: 'text', text: `[Auto-Execution Logic: Chose ${parsed.toolName}]\n[Reasoning: ${parsed.reasoning}]\n\n--- Result ---\n${typeof result === 'string' ? result : JSON.stringify(result, null, 2)}` }
+            ]
+        };
+    } catch (e) {
+        return {
+            isError: true,
+            content: [{ type: 'text', text: `Semantic Execution Failed: ${e instanceof Error ? e.message : String(e)}` }]
         };
     }
 }

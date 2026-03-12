@@ -21,7 +21,7 @@ export const metadata: Metadata = {
 };
 
 import { TRPCProvider } from "../utils/TRPCProvider";
-import { ToastProvider } from "../components/ui/Toast";
+import { Toaster } from "@borg/ui";
 import { Navigation } from "../components/Navigation";
 
 export default function RootLayout({
@@ -35,14 +35,13 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <TRPCProvider>
-          <ToastProvider>
-            <div className="flex flex-col min-h-screen">
-              <Navigation />
-              <div className="flex-1 overflow-auto min-w-0">
-                {children}
-              </div>
+          <div className="flex flex-col min-h-screen">
+            <Navigation />
+            <div className="flex-1 overflow-auto min-w-0">
+              {children}
             </div>
-          </ToastProvider>
+          </div>
+          <Toaster />
         </TRPCProvider>
       </body>
     </html>

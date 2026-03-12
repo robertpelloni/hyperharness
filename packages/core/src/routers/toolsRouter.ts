@@ -3,50 +3,57 @@ import { t, publicProcedure, adminProcedure } from '../lib/trpc-core.js';
 import { toolRegistry, RegisteredTool } from '../services/ToolRegistry.js';
 import { detectCliHarnesses } from '../services/cli-harness-detection.js';
 import { detectInstallSurfaceArtifacts } from '../services/install-surface-detection.js';
+import { toolsRepository, mcpServersRepository } from '../db/repositories/index.js';
 import {
     ToolCreateInputSchema,
     ToolUpsertInputSchema
 } from '../types/metamcp/tools.zod.js';
 
-function getVisibleInputSchema(rt: RegisteredTool) {
-    if (rt.isDeferred) {
-        return undefined;
-    }
-
-    return rt.tool.inputSchema;
-}
-
-function getFullInputSchema(rt: RegisteredTool) {
-    return rt.fullTool?.inputSchema ?? rt.tool.inputSchema;
-}
-
-function getSchemaParamCount(rt: RegisteredTool) {
-    const schema = getFullInputSchema(rt);
-    return Object.keys(schema?.properties || {}).length;
-}
-
-function serializeTool(rt: RegisteredTool, includeFullSchema = false) {
-    return {
-        ...rt,
-        uuid: rt.tool.name,
-        server: rt.serverName,
-        description: rt.fullTool?.description ?? rt.tool.description,
-        inputSchema: includeFullSchema ? getFullInputSchema(rt) : getVisibleInputSchema(rt),
-        isDeferred: rt.isDeferred ?? false,
-        schemaParamCount: getSchemaParamCount(rt),
-    };
-}
-
 export const toolsRouter = t.router({
     list: publicProcedure.query(async () => {
-        return toolRegistry.getAllTools().map(rt => serializeTool(rt));
+        const [tools, servers] = await Promise.all([
+            toolsRepository.findAll(),
+            mcpServersRepository.findAll()
+        ]);
+        const serverMap = new Map(servers.map(s => [s.uuid, s.name]));
+        
+        return tools.map(t => ({
+            uuid: t.name,
+            name: t.name,
+            description: t.description,
+            server: serverMap.get(t.mcp_server_uuid) || 'unknown',
+            inputSchema: t.toolSchema,
+            isDeferred: false,
+            schemaParamCount: Object.keys((t.toolSchema as any)?.properties || {}).length,
+            mcpServerUuid: t.mcp_server_uuid,
+            always_on: t.always_on,
+        }));
     }),
 
     listByServer: publicProcedure
         .input(z.object({ mcpServerUuid: z.string() }))
         .query(async ({ input }) => {
-            const tools = toolRegistry.getAllTools().filter(t => t.mcpServerUuid === input.mcpServerUuid || t.serverName === input.mcpServerUuid);
-            return tools.map(rt => serializeTool(rt));
+            // Need to resolve if it's the name or UUID. For safety, get the server first.
+            let serverUuid = input.mcpServerUuid;
+            const allServers = await mcpServersRepository.findAll();
+            const server = allServers.find(s => s.uuid === input.mcpServerUuid || s.name === input.mcpServerUuid);
+            if (server) {
+                serverUuid = server.uuid;
+            }
+
+            const tools = await toolsRepository.findByMcpServerUuid(serverUuid);
+            
+            return tools.map(t => ({
+                uuid: t.name,
+                name: t.name,
+                description: t.description,
+                server: server?.name || 'unknown',
+                inputSchema: t.toolSchema,
+                isDeferred: false,
+                schemaParamCount: Object.keys((t.toolSchema as any)?.properties || {}).length,
+                mcpServerUuid: t.mcp_server_uuid,
+                always_on: t.always_on,
+            }));
         }),
 
     search: publicProcedure
@@ -55,16 +62,32 @@ export const toolsRouter = t.router({
             limit: z.number().min(1).max(100).default(30),
         }))
         .query(async ({ input }) => {
-            const all = toolRegistry.getAllTools();
+            const [allTools, servers] = await Promise.all([
+                toolsRepository.findAll(),
+                mcpServersRepository.findAll()
+            ]);
+            
+            const serverMap = new Map(servers.map(s => [s.uuid, s.name]));
             const q = input.query.toLowerCase();
 
-            const filtered = all.filter((rt: RegisteredTool) => {
-                const name = String(rt.tool.name ?? '').toLowerCase();
-                const description = String(rt.tool.description ?? '').toLowerCase();
-                const server = String(rt.serverName ?? '').toLowerCase();
-                return name.includes(q) || description.includes(q) || server.includes(q);
+            const filtered = allTools.filter(t => {
+                const name = String(t.name ?? '').toLowerCase();
+                const description = String(t.description ?? '').toLowerCase();
+                const serverName = String(serverMap.get(t.mcp_server_uuid) ?? '').toLowerCase();
+                return name.includes(q) || description.includes(q) || serverName.includes(q);
             });
-            return filtered.slice(0, input.limit).map(rt => serializeTool(rt));
+            
+            return filtered.slice(0, input.limit).map(t => ({
+                uuid: t.name,
+                name: t.name,
+                description: t.description,
+                server: serverMap.get(t.mcp_server_uuid) || 'unknown',
+                inputSchema: t.toolSchema,
+                isDeferred: false,
+                schemaParamCount: Object.keys((t.toolSchema as any)?.properties || {}).length,
+                mcpServerUuid: t.mcp_server_uuid,
+                always_on: t.always_on,
+            }));
         }),
 
     detectCliHarnesses: publicProcedure.query(async () => {
@@ -79,37 +102,36 @@ export const toolsRouter = t.router({
         .input(z.object({ uuid: z.string() }))
         .query(async ({ input }) => {
             // Treat input.uuid as tool name
-            const rt = toolRegistry.getTool(input.uuid);
-            if (!rt) return null;
-            return serializeTool(rt, true);
+            const allTools = await toolsRepository.findAll();
+            const tool = allTools.find(t => t.name === input.uuid);
+            if (!tool) return null;
+            
+            const server = await mcpServersRepository.findByUuid(tool.mcp_server_uuid);
+            
+            return {
+                uuid: tool.name,
+                name: tool.name,
+                description: tool.description,
+                server: server?.name || 'unknown',
+                inputSchema: tool.toolSchema,
+                isDeferred: false,
+                schemaParamCount: Object.keys((tool.toolSchema as any)?.properties || {}).length,
+                mcpServerUuid: tool.mcp_server_uuid,
+                always_on: tool.always_on,
+            };
         }),
 
     create: adminProcedure
         .input(ToolCreateInputSchema)
         .mutation(async ({ input }) => {
-            // Map DB-style validation schema to ToolRegistry expectations
-            toolRegistry.registerTool({
-                name: input.name,
-                description: input.description ?? undefined, // Handle null -> undefined
-                inputSchema: input.toolSchema as any // Map toolSchema -> inputSchema
-            }, input.mcp_server_uuid, "manual", { isDeferred: input.is_deferred ?? false });
+            await toolsRepository.create(input);
             return { success: true };
         }),
 
     upsertBatch: adminProcedure
         .input(ToolUpsertInputSchema)
         .mutation(async ({ input }) => {
-            // Schema is { tools: [...], mcpServerUuid: ... }
-            const { tools, mcpServerUuid } = input;
-
-            tools.forEach(t => {
-                if (!t.inputSchema) return; // Skip if no schema?
-                toolRegistry.registerTool({
-                    name: t.name,
-                    description: t.description ?? undefined,
-                    inputSchema: t.inputSchema as any
-                }, mcpServerUuid, "batch");
-            });
+            await toolsRepository.bulkUpsert(input);
             return { success: true };
         }),
 
@@ -118,5 +140,15 @@ export const toolsRouter = t.router({
         .mutation(async ({ input }) => {
             toolRegistry.deleteTool(input.uuid);
             return { success: true };
+        }),
+
+    setAlwaysOn: adminProcedure
+        .input(z.object({ uuid: z.string(), alwaysOn: z.boolean() }))
+        .mutation(async ({ input }) => {
+            const tool = await toolsRepository.setAlwaysOn(input.uuid, input.alwaysOn);
+            if (!tool) {
+                throw new Error(`Tool with UUID ${input.uuid} not found.`);
+            }
+            return { success: true, tool };
         }),
 });

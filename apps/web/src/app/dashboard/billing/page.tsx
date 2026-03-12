@@ -11,18 +11,31 @@ import {
     formatTaskRoutingLabel,
     getPortalBadgeClasses,
     getProviderPortalCards,
+import {
+    formatRoutingStrategyLabel,
+    formatTaskRoutingLabel,
+    getPortalBadgeClasses,
+    getProviderPortalCards,
     getRoutingStrategyBadgeClasses,
     ROUTING_STRATEGY_OPTIONS,
     type BillingRoutingStrategy,
     type BillingTaskRoutingRuleSummary,
     type BillingProviderQuotaSummary,
 } from './billing-portal-data';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@borg/ui';
+import { Input } from '@borg/ui';
 
 const FALLBACK_TASK_OPTIONS: BillingTaskRoutingRuleSummary['taskType'][] = ['general', 'coding', 'planning', 'research', 'worker', 'supervisor'];
 
 export default function ProviderAuthBillingMatrix() {
     const [historyDays, setHistoryDays] = useState(30);
     const [fallbackTaskType, setFallbackTaskType] = useState<BillingTaskRoutingRuleSummary['taskType']>('general');
+    
+    // Key update dialog state
+    const [activePortalId, setActivePortalId] = useState<string | null>(null);
+    const [activePortalName, setActivePortalName] = useState<string>('');
+    const [newKeyValue, setNewKeyValue] = useState<string>('');
+    
     const utils = trpc.useUtils();
 
     const { data: status, isLoading: isStatusLoading } = trpc.billing.getStatus.useQuery();
@@ -51,6 +64,35 @@ export default function ProviderAuthBillingMatrix() {
             toast.error(`Task routing update failed: ${error.message}`);
         },
     });
+
+    const updateKeyMutation = trpc.settings.updateProviderKey.useMutation({
+        onSuccess: async (result) => {
+            toast.success(`Key updated securely to ${result.updatedKey}`);
+            // Also attempt to immediately test the connection
+            if (activePortalId) {
+                testConnectionMutation.mutate({ provider: activePortalId });
+            }
+            await utils.billing.getProviderQuotas.invalidate();
+            setActivePortalId(null);
+            setNewKeyValue('');
+        },
+        onError: (error) => {
+            toast.error(`Failed to update key: ${error.message}`);
+        }
+    });
+
+    const testConnectionMutation = trpc.settings.testConnection.useMutation({
+        onSuccess: async (result) => {
+            if (result.success) {
+                toast.success(`Connection test successful! (${result.latencyMs}ms)`);
+            } else {
+                toast.error(`Connection failed: ${result.error}`);
+            }
+            // invalidate quotas to refresh connected status badge
+            await utils.billing.getProviderQuotas.invalidate();
+        }
+    });
+
     const providerPortalCards = getProviderPortalCards(quotas as BillingProviderQuotaSummary[] | undefined);
     const routingRules = (taskRouting?.rules ?? []) as BillingTaskRoutingRuleSummary[];
     const activeRoutingMutationTask = setTaskRoutingRuleMutation.variables && 'taskType' in setTaskRoutingRuleMutation.variables
@@ -67,6 +109,11 @@ export default function ProviderAuthBillingMatrix() {
             taskType,
             strategy: nextValue === 'default' ? null : nextValue,
         });
+    };
+
+    const handleSaveKey = () => {
+        if (!activePortalId || !newKeyValue.trim()) return;
+        updateKeyMutation.mutate({ provider: activePortalId, key: newKeyValue });
     };
 
     const renderCostChart = () => {
@@ -443,6 +490,19 @@ export default function ProviderAuthBillingMatrix() {
                                         </div>
 
                                         <div className="mt-4 flex flex-wrap gap-2">
+                                            <Button 
+                                                variant="outline"
+                                                size="sm"
+                                                className="h-7 text-[10px] bg-zinc-800/80 text-zinc-300 border-zinc-700 hover:bg-zinc-700"
+                                                onClick={() => {
+                                                    setActivePortalId(portal.id);
+                                                    setActivePortalName(portal.label);
+                                                    setNewKeyValue('');
+                                                }}
+                                            >
+                                                <Key className="h-3 w-3 mr-1.5" />
+                                                Update Key
+                                            </Button>
                                             {portal.actions.map((action) => (
                                                 <a
                                                     key={`${portal.id}-${action.label}`}
@@ -530,6 +590,46 @@ export default function ProviderAuthBillingMatrix() {
                     </Card>
                 </div>
             </div>
+
+            <Dialog open={!!activePortalId} onOpenChange={(open) => !open && setActivePortalId(null)}>
+                <DialogContent className="sm:max-w-md bg-zinc-950 border-zinc-800 text-zinc-200">
+                    <DialogHeader>
+                        <DialogTitle>Update {activePortalName} Credentials</DialogTitle>
+                        <DialogDescription className="text-zinc-400">
+                            Enter your new API key, Personal Access Token (PAT), or OAuth token.
+                            This will be written to `.env` immediately.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="py-4">
+                        <Input
+                            autoFocus
+                            placeholder="Enter credential string..."
+                            type="password"
+                            value={newKeyValue}
+                            onChange={(e) => setNewKeyValue(e.target.value)}
+                            className="bg-black/50 border-zinc-800 focus-visible:ring-cyan-500/50"
+                        />
+                    </div>
+                    <DialogFooter>
+                        <Button 
+                            variant="outline" 
+                            onClick={() => setActivePortalId(null)}
+                            className="bg-zinc-900 border-zinc-800 hover:bg-zinc-800 text-zinc-300"
+                        >
+                            Cancel
+                        </Button>
+                        <Button
+                            onClick={handleSaveKey}
+                            disabled={!newKeyValue.trim() || updateKeyMutation.isPending}
+                            className="bg-cyan-600 hover:bg-cyan-500 text-white border-transparent"
+                        >
+                            {updateKeyMutation.isPending ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Key className="w-4 h-4 mr-2" />}
+                            Save & Test Connection
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
         </div>
     );
 }

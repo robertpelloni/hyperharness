@@ -71,14 +71,18 @@ export function getHealthTone(status?: string): string {
     }
 }
 
-function quoteForPowerShell(value: string): string {
-    return `'${value.replace(/'/g, "''")}'`;
-}
-
 export function buildAttachCommand(cwd: string, command: string, args: string[]): string {
-    const quotedArgs = args.map((arg) => quoteForPowerShell(arg)).join(' ');
-    const commandPart = `& ${quoteForPowerShell(command)}`;
-    const argsPart = quotedArgs ? ` ${quotedArgs}` : '';
+    const isWindows = typeof process !== 'undefined' && process.platform === 'win32';
+    
+    if (isWindows) {
+        const quotedArgs = args.map((arg) => `'${arg.replace(/'/g, "''")}'`).join(' ');
+        const commandPart = `& '${command.replace(/'/g, "''")}'`;
+        const argsPart = quotedArgs ? ` ${quotedArgs}` : '';
+        return `Set-Location -LiteralPath '${cwd.replace(/'/g, "''")}'; ${commandPart}${argsPart}`;
+    }
 
-    return `Set-Location -LiteralPath ${quoteForPowerShell(cwd)}; ${commandPart}${argsPart}`;
+    const quotedArgs = args.map((arg) => `"${arg.replace(/"/g, '\\"')}"`).join(' ');
+    // Handle spaces in cwd
+    const quotedCwd = `"${cwd.replace(/"/g, '\\"')}"`;
+    return `cd ${quotedCwd} && ${command}${args.length > 0 ? ' ' + quotedArgs : ''}`;
 }

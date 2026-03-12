@@ -44,6 +44,7 @@ export * from "./components/ui/progress";
 export * from "./components/ui/command";
 export * from "./components/ui/separator";
 export * from "./components/ui/use-toast";
+export * from "./components/ui/toaster";
 export * from "./components/ui/accordion";
 export * from "./components/WorkflowVisualizer";
 export * from "./utils/trpc";

@@ -376,14 +376,7 @@ export class SessionSupervisor {
     }
 
     private async shouldUseWorktree(workingDirectory: string, requestedIsolation: boolean): Promise<boolean> {
-        if (!requestedIsolation || !this.worktreeManager) {
-            return false;
-        }
-
-        return [...this.sessions.values()].some((session) => (
-            session.requestedWorkingDirectory === workingDirectory
-            && ACTIVE_SESSION_STATUSES.has(session.status)
-        ));
+        return !!(requestedIsolation && this.worktreeManager);
     }
 
     private async createWorktree(sessionId: string): Promise<string> {

@@ -22,7 +22,7 @@ import { SavedScriptConfig } from "../interfaces/IConfigProvider.js";
 
 import { codeExecutorService } from "./CodeExecutorService.js";
 import { deferredLoadingService } from "./deferred-loading.service.js";
-// DB Repositories removed
+import { toolsRepository, mcpServersRepository } from "../db/repositories/index.js";
 
 // Ported Services
 import { configImportService } from "./config-import.service.js";
@@ -54,6 +54,7 @@ import {
     executeCompatibleSearchMemory,
     executeCompatibleSaveMemory,
     executeCompatibleSaveScript,
+    executeSemanticAutoCall,
 } from "../mcp/compatibilityToolRuntime.js";
 import {
     executeGetToolSchemaCompatibility,
@@ -244,7 +245,23 @@ export const attachTo = async (
     const registerDiscoveryHandlers = options.registerDiscoveryHandlers ?? true;
     const getAlwaysVisibleTools = async (): Promise<string[]> => {
         try {
-            return await jsonConfigProvider.loadAlwaysVisibleTools();
+            const configTools = await jsonConfigProvider.loadAlwaysVisibleTools();
+            const dbTools = await toolsRepository.findAll();
+            const dbServers = await mcpServersRepository.findAll();
+            
+            const alwaysOnServers = new Set(
+                dbServers.filter(s => s.always_on).map(s => s.uuid)
+            );
+            
+            const alwaysOnToolNames = dbTools
+                .filter(t => t.always_on || alwaysOnServers.has(t.mcp_server_uuid))
+                .map(t => {
+                    const server = dbServers.find(s => s.uuid === t.mcp_server_uuid);
+                    const serverName = server?.name || 'unknown';
+                    return `${sanitizeName(serverName)}__${t.name}`;
+                });
+                
+            return [...new Set([...configTools, ...alwaysOnToolNames])];
         } catch (error) {
             console.error("Error loading always-visible tools", error);
             return [];
@@ -697,6 +714,26 @@ export const attachTo = async (
                     }
                 }, handlerContext),
                 'Agent runner not available in MetaMCP proxy mode.',
+            ));
+        }
+
+        if (name === "auto_call_tool") {
+            const mcp = getMcpServer();
+            return formatResult(await executeSemanticAutoCall(
+                args,
+                mcp.llmService,
+                (query, limit) => searchRegisteredTools(query, limit, {
+                    isLoaded: (toolName) => toolWorkingSet.isLoaded(toolName),
+                    isHydrated: (toolName) => toolWorkingSet.isHydrated(toolName),
+                }),
+                async (toolName, toolArgs, meta) => await delegateHandler({
+                    method: "tools/call",
+                    params: {
+                        name: toolName,
+                        arguments: toolArgs,
+                        _meta: meta,
+                    }
+                }, handlerContext)
             ));
         }
 

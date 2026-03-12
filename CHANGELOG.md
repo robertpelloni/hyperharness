@@ -17,6 +17,7 @@ All notable changes to this project will be documented in this file.
 - **Experimental Guardrails**: Added explicit "Labs" and "Beta" UI badges to developmental surfaces including the Director, Council, and Super Assistant dashboards.
 
 ### 🐛 Fixes & Polish
+- **Session Supervisor Operator Loop**: Added clear UI badges for "Manual Restart" and "Crashed" session states, surfaced underlying crash errors on session cards, enforced reliable worktree isolation when configured, and improved cross-platform terminal attach commands.
 - **System Status Truthfulness**: The System Status page now renders live tRPC data for Database (SQLite), Event Bus, Version (v0.9.0-beta), and real-time Uptime, removing previously hardcoded placeholders.
 - **MCP Discovery Timeout**: Added a 30-second timeout to MCP server discovery handshakes to prevent infinite hanging when an upstream server stalls.
 - docs: replaced the root `ROADMAP.md` milestone stub with a reality-based roadmap that reflects the current shipped, partial, and blocked Borg surfaces.

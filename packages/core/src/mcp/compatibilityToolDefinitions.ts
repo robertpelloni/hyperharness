@@ -10,7 +10,8 @@ type CompatibilityToolName =
     | 'save_tool_set'
     | 'load_tool_set'
     | 'toolset_list'
-    | 'import_mcp_config';
+    | 'import_mcp_config'
+    | 'auto_call_tool';
 
 interface CompatibilityToolDefinitionOverrides {
     descriptions?: Partial<Record<CompatibilityToolName, string>>;
@@ -178,6 +179,24 @@ const baseDefinitions: Record<CompatibilityToolName, Tool> = {
             required: ['configJson'],
         },
     },
+    auto_call_tool: {
+        name: 'auto_call_tool',
+        description: 'Automatically searches for the best tool to accomplish an objective, maps the parameters using an LLM, and executes it. Use this when you know what you want to do but don\'t have the exact tool schema loaded.',
+        inputSchema: {
+            type: 'object',
+            properties: {
+                objective: {
+                    type: 'string',
+                    description: 'The objective or task you want to accomplish using a tool.',
+                },
+                context: {
+                    type: 'string',
+                    description: 'Any necessary variables, file paths, or text snippets required to fill the tool arguments.',
+                },
+            },
+            required: ['objective', 'context'],
+        },
+    },
 };
 
 const compatibilityToolOrder: CompatibilityToolName[] = [
@@ -191,6 +210,7 @@ const compatibilityToolOrder: CompatibilityToolName[] = [
     'load_tool_set',
     'toolset_list',
     'import_mcp_config',
+    'auto_call_tool',
 ];
 
 export function getCompatibilityToolDefinitions(

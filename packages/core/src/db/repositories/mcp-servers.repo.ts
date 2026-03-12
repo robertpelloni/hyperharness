@@ -117,6 +117,7 @@ export class McpServersRepository {
                 url: input.url ?? null,
                 bearerToken: input.bearerToken ?? null,
                 headers: input.headers ?? {},
+                always_on: input.always_on ?? false,
                 user_id: input.user_id ?? "system",
             };
 

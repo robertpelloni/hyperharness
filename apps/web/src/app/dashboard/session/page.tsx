@@ -270,16 +270,17 @@ export default function SessionDashboard() {
                                                 <h3 className="text-base font-semibold text-white">{session.name}</h3>
                                                 <Badge className={getSessionTone(session.status)}>{session.status}</Badge>
                                                 <Badge variant="outline" className="border-zinc-700 text-zinc-300">{session.cliType}</Badge>
+                                                {session.autoRestart === false && (
+                                                    <Badge variant="outline" className="border-amber-700/50 text-amber-500 bg-amber-950/20">Manual Restart</Badge>
+                                                )}
+                                                {session.status === 'error' && (
+                                                    <Badge className="bg-red-950 text-red-400 border border-red-800">Crashed</Badge>
+                                                )}
                                             </div>
                                             <p className="break-all font-mono text-xs text-zinc-500">{session.worktreePath ?? session.workingDirectory}</p>
                                             <p className="text-xs text-zinc-500">
                                                 Last activity {formatRelativeTimestamp(session.lastActivityAt, currentTimestamp)} · Restarts {session.restartCount}/{session.maxRestartAttempts}
                                             </p>
-                                            {session.autoRestart === false ? (
-                                                <p className="text-xs text-amber-300">
-                                                    Manual restart only · Auto-restart is disabled for this session.
-                                                </p>
-                                            ) : null}
                                             {session.status === 'restarting' && session.scheduledRestartAt ? (
                                                 <p className="text-xs text-amber-300">
                                                     Restart queued {formatRestartCountdown(session.scheduledRestartAt, currentTimestamp)}
@@ -295,7 +296,10 @@ export default function SessionDashboard() {
                                                 </div>
                                             ) : null}
                                             {session.lastError ? (
-                                                <p className="text-sm text-red-300">{session.lastError}</p>
+                                                <div className="rounded-md border border-red-900/50 bg-red-950/30 p-3 mt-2">
+                                                    <p className="text-sm font-semibold text-red-400 mb-1">Session Crashed</p>
+                                                    <p className="text-xs text-red-300/80 break-words">{session.lastError}</p>
+                                                </div>
                                             ) : null}
                                         </div>
 

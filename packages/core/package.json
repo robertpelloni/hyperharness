@@ -36,6 +36,7 @@
     "@borg/memory": "workspace:*",
     "@borg/search": "workspace:*",
     "@borg/tools": "workspace:*",
+    "@borg/types": "workspace:*",
     "@hyperswarm/secret-stream": "^6.9.1",
     "@lancedb/lancedb": "^0.23.0",
     "@modelcontextprotocol/sdk": "^1.0.0",
