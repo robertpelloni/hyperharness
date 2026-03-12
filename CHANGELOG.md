@@ -4,6 +4,9 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+- changed(startup): split Borg startup readiness into cached MCP inventory vs live MCP runtime semantics, including advertised cached server/tool counts and always-on tool counts so operators can see what is available immediately while live connections continue warming.
+- changed(dashboard): updated the home dashboard, MCP system status helpers, and launcher waiting labels to explain cached-vs-live MCP posture, memory/context readiness, and non-blocking warmup behavior more truthfully.
+- test(startup): added focused regression coverage for always-on cached tool advertisement, cached-vs-live startup checklist copy, system status rows, and launcher wait-label semantics.
 - fix(mcp): `discoverServerTools` now supports SSE and STREAMABLE_HTTP transports alongside STDIO, with a 30-second timeout to prevent hanging discoveries.
 - fix(config): `mcp.json` and `mcp.jsonc` now default to `~/.borg/` instead of the workspace root via new `getBorgConfigDir()` helper; `JsonConfigProvider` updated to match.
 ## [0.9.0-beta] - 2026-03-11

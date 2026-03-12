@@ -125,6 +125,80 @@ describe('SessionSupervisor', () => {
         }));
     });
 
+    it('captures execution shell policy and exports it into the supervised environment', async () => {
+        const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'borg-session-supervisor-'));
+        tempDirs.push(tempDir);
+
+        const supervisor = new SessionSupervisor({
+            rootDir: tempDir,
+            persistencePath: path.join(tempDir, 'session-supervisor.json'),
+            spawnProcess: () => new FakeProcess(),
+            detectExecutionEnvironment: async () => ({
+                os: 'win32',
+                summary: {
+                    ready: true,
+                    preferredShellId: 'pwsh',
+                    preferredShellLabel: 'PowerShell 7',
+                    shellCount: 2,
+                    verifiedShellCount: 2,
+                    toolCount: 0,
+                    verifiedToolCount: 0,
+                    harnessCount: 0,
+                    verifiedHarnessCount: 0,
+                    supportsPowerShell: true,
+                    supportsPosixShell: true,
+                    notes: [],
+                },
+                shells: [
+                    {
+                        id: 'pwsh',
+                        name: 'PowerShell 7',
+                        family: 'powershell',
+                        installed: true,
+                        verified: true,
+                        resolvedPath: 'C:\\Program Files\\PowerShell\\7\\pwsh.exe',
+                        version: '7.5.0',
+                        preferred: true,
+                        notes: [],
+                    },
+                    {
+                        id: 'cygwin-bash',
+                        name: 'Cygwin Bash',
+                        family: 'posix',
+                        installed: true,
+                        verified: true,
+                        resolvedPath: 'C:\\cygwin64\\bin\\bash.exe',
+                        version: '3.5.4',
+                        preferred: false,
+                        notes: [],
+                    },
+                ],
+                tools: [],
+                harnesses: [],
+            }),
+        });
+
+        const session = await supervisor.createSession({
+            cliType: 'node',
+            workingDirectory: tempDir,
+            executionProfile: 'posix',
+        });
+
+        expect(session.executionProfile).toBe('posix');
+        expect(session.executionPolicy).toEqual(expect.objectContaining({
+            requestedProfile: 'posix',
+            effectiveProfile: 'posix',
+            shellId: 'cygwin-bash',
+            shellLabel: 'Cygwin Bash',
+        }));
+        expect(session.env).toEqual(expect.objectContaining({
+            BORG_EXECUTION_PROFILE_REQUESTED: 'posix',
+            BORG_EXECUTION_SHELL_ID: 'cygwin-bash',
+            BORG_SUPPORTS_POWERSHELL: '1',
+            BORG_SUPPORTS_POSIX_SHELL: '1',
+        }));
+    });
+
     it('persists metadata patches for a running session', async () => {
         const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'borg-session-supervisor-'));
         tempDirs.push(tempDir);

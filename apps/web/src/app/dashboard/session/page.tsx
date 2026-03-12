@@ -252,6 +252,8 @@ export default function SessionDashboard() {
                                 cliType: session.cliType ?? 'cli',
                                 workingDirectory: session.workingDirectory ?? '',
                                 worktreePath: session.worktreePath,
+                                executionProfile: session.executionProfile,
+                                executionPolicy: session.executionPolicy,
                                 autoRestart: session.autoRestart,
                                 status: session.status ?? 'created',
                                 restartCount: session.restartCount ?? 0,
@@ -270,6 +272,11 @@ export default function SessionDashboard() {
                                                 <h3 className="text-base font-semibold text-white">{session.name}</h3>
                                                 <Badge className={getSessionTone(session.status)}>{session.status}</Badge>
                                                 <Badge variant="outline" className="border-zinc-700 text-zinc-300">{session.cliType}</Badge>
+                                                {session.executionPolicy?.shellLabel ? (
+                                                    <Badge variant="outline" className="border-cyan-500/30 text-cyan-200">
+                                                        {session.executionPolicy.shellLabel}
+                                                    </Badge>
+                                                ) : null}
                                                 {session.autoRestart === false && (
                                                     <Badge variant="outline" className="border-amber-700/50 text-amber-500 bg-amber-950/20">Manual Restart</Badge>
                                                 )}

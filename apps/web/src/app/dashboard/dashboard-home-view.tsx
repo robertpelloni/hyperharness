@@ -14,7 +14,9 @@ export interface DashboardStartupStatus {
     checks: {
         mcpAggregator: {
             ready: boolean;
+            liveReady?: boolean;
             serverCount: number;
+            connectedCount?: number;
             initialization: {
                 inProgress: boolean;
                 initialized: boolean;
@@ -28,7 +30,12 @@ export interface DashboardStartupStatus {
             persistedServerCount: number;
             persistedToolCount: number;
             configuredServerCount?: number;
+            advertisedServerCount?: number;
+            advertisedToolCount?: number;
+            advertisedAlwaysOnServerCount?: number;
+            advertisedAlwaysOnToolCount?: number;
             inventoryReady: boolean;
+            warmupInProgress?: boolean;
         };
         configSync: {
             ready: boolean;
@@ -66,6 +73,20 @@ export interface DashboardStartupStatus {
             acceptingConnections?: boolean;
             clientCount: number;
             hasConnectedClients?: boolean;
+        };
+        executionEnvironment: {
+            ready: boolean;
+            preferredShellId?: string | null;
+            preferredShellLabel?: string | null;
+            shellCount: number;
+            verifiedShellCount: number;
+            toolCount: number;
+            verifiedToolCount: number;
+            harnessCount: number;
+            verifiedHarnessCount: number;
+            supportsPowerShell: boolean;
+            supportsPosixShell: boolean;
+            notes?: string[];
         };
     };
 }
@@ -163,6 +184,57 @@ export interface StartupChecklistItem {
     label: string;
     ready: boolean;
     detail: string;
+}
+
+function getAdvertisedServerCount(aggregator: DashboardStartupStatus['checks']['mcpAggregator']): number {
+    return aggregator.advertisedServerCount ?? aggregator.persistedServerCount ?? aggregator.configuredServerCount ?? aggregator.serverCount;
+}
+
+function getAdvertisedToolCount(aggregator: DashboardStartupStatus['checks']['mcpAggregator']): number {
+    return aggregator.advertisedToolCount ?? aggregator.persistedToolCount;
+}
+
+function getCachedInventoryDetail(aggregator: DashboardStartupStatus['checks']['mcpAggregator']): string {
+    const advertisedServerCount = getAdvertisedServerCount(aggregator);
+    const advertisedToolCount = getAdvertisedToolCount(aggregator);
+    const alwaysOnToolCount = aggregator.advertisedAlwaysOnToolCount ?? 0;
+
+    if (aggregator.inventoryReady && advertisedServerCount === 0 && advertisedToolCount === 0) {
+        return 'No configured servers yet · empty cached inventory is ready';
+    }
+
+    if (aggregator.inventoryReady) {
+        const alwaysOnSuffix = alwaysOnToolCount > 0
+            ? ` · ${alwaysOnToolCount} always-on advertised immediately`
+            : '';
+        return `${advertisedServerCount} cached servers · ${advertisedToolCount} advertised tools${alwaysOnSuffix}`;
+    }
+
+    return 'Waiting for the first cached MCP inventory snapshot';
+}
+
+function getLiveMcpDetail(aggregator: DashboardStartupStatus['checks']['mcpAggregator']): string {
+    const targetServerCount = Math.max(aggregator.configuredServerCount ?? 0, getAdvertisedServerCount(aggregator));
+    const connectedCount = aggregator.connectedCount ?? 0;
+    const liveReady = aggregator.liveReady ?? aggregator.ready;
+
+    if (liveReady && targetServerCount === 0) {
+        return 'No downstream servers configured · live MCP runtime is ready';
+    }
+
+    if (liveReady) {
+        if (targetServerCount > 0 && connectedCount < targetServerCount) {
+            return `${connectedCount}/${targetServerCount} live server connections warmed · cached tools stay usable while the rest connect`;
+        }
+
+        return `${connectedCount}/${targetServerCount || connectedCount} live server connections ready`;
+    }
+
+    if (aggregator.inventoryReady) {
+        return 'Cached inventory is already advertised · live MCP runtime is still warming';
+    }
+
+    return 'Waiting for live MCP runtime initialization';
 }
 
 export interface DashboardAlert {
@@ -306,31 +378,35 @@ export function buildOverviewMetrics(
 }
 
 export function buildStartupChecklist(startupStatus: DashboardStartupStatus): StartupChecklistItem[] {
-    const configSync = startupStatus.checks.configSync.status;
     const aggregator = startupStatus.checks.mcpAggregator;
+    const memory = startupStatus.checks.memory;
     const restore = startupStatus.checks.sessionSupervisor.restore;
     const extensionBridge = startupStatus.checks.extensionBridge;
-    const routerInventoryDetail = aggregator.inventoryReady
-        ? aggregator.persistedServerCount === 0 && aggregator.persistedToolCount === 0
-            ? 'No configured servers yet · empty inventory is ready'
-            : `${aggregator.persistedServerCount} persisted servers · ${aggregator.persistedToolCount} persisted tools`
-        : `${aggregator.persistedServerCount} persisted servers · ${aggregator.persistedToolCount} persisted tools`;
+    const executionEnvironment = startupStatus.checks.executionEnvironment;
     const bridgeClientLabel = `${extensionBridge.clientCount} connected bridge client${extensionBridge.clientCount === 1 ? '' : 's'}`;
+    const executionDetail = executionEnvironment.preferredShellLabel
+        ? `${executionEnvironment.preferredShellLabel} preferred · ${executionEnvironment.verifiedToolCount}/${executionEnvironment.toolCount} verified tools`
+        : `${executionEnvironment.verifiedShellCount}/${executionEnvironment.shellCount} verified shells · ${executionEnvironment.verifiedToolCount}/${executionEnvironment.toolCount} verified tools`;
 
     return [
         {
-            label: 'Config sync',
-            ready: startupStatus.checks.configSync.ready,
-            detail: configSync?.inProgress
-                ? 'Syncing Borg MCP config…'
-                : configSync?.lastCompletedAt
-                    ? `${configSync.lastServerCount} servers, ${configSync.lastToolCount} tools cached`
-                    : 'Waiting for first config sync',
+            label: 'Cached inventory',
+            ready: aggregator.inventoryReady,
+            detail: getCachedInventoryDetail(aggregator),
         },
         {
-            label: 'Router inventory',
-            ready: aggregator.ready && aggregator.inventoryReady,
-            detail: routerInventoryDetail,
+            label: 'Live MCP runtime',
+            ready: aggregator.liveReady ?? aggregator.ready,
+            detail: getLiveMcpDetail(aggregator),
+        },
+        {
+            label: 'Memory / context',
+            ready: memory.ready,
+            detail: memory.ready
+                ? 'Memory manager initialized and agent context services are available'
+                : memory.initialized
+                    ? 'Memory manager is present, but agent context wiring is still finishing'
+                    : 'Waiting for memory initialization',
         },
         {
             label: 'Session restore',
@@ -345,6 +421,11 @@ export function buildStartupChecklist(startupStatus: DashboardStartupStatus): St
             detail: extensionBridge.ready
                 ? `${bridgeClientLabel} · browser/editor bridge listener ready for new clients`
                 : 'Browser/editor bridge listener is offline',
+        },
+        {
+            label: 'Execution environment',
+            ready: executionEnvironment.ready,
+            detail: executionDetail,
         },
     ];
 }
@@ -371,7 +452,11 @@ export function buildDashboardAlerts(
             href: '/dashboard/mcp',
             hrefLabel: 'Inspect MCP router',
         });
-    } else if (mcpStatus.serverCount > 0 && mcpStatus.connectedCount === 0) {
+    } else if (
+        mcpStatus.serverCount > 0
+        && mcpStatus.connectedCount === 0
+        && Boolean(startupStatus.checks.mcpAggregator.liveReady ?? startupStatus.checks.mcpAggregator.ready)
+    ) {
         alerts.push({
             id: 'router-disconnected',
             severity: 'critical',

@@ -35,6 +35,10 @@ const InputArea: React.FC<InputAreaProps> = ({ onSubmit, onToggleMinimize }) => 
 
     // Listen for context save events from sidebar/background
     const unsubscribeContextSave = eventBus.on('context:save', (data) => {
+      if (data.openManager === false) {
+        return;
+      }
+
       setContextManagerInitialContent(data.content);
       setShowContextManager(true);
     });

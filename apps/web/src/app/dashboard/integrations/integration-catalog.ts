@@ -20,6 +20,15 @@ export type StartupStatusSummary = {
             supportedCapabilities?: string[];
             supportedHookPhases?: string[];
         };
+        executionEnvironment?: {
+            ready?: boolean;
+            preferredShellLabel?: string | null;
+            verifiedShellCount?: number;
+            shellCount?: number;
+            verifiedToolCount?: number;
+            toolCount?: number;
+            supportsPosixShell?: boolean;
+        };
     };
 };
 
@@ -52,6 +61,11 @@ export type IntegrationOverview = {
     syncedClientCount: number;
     installedHarnessCount: number;
     totalHarnessCount: number;
+    executionEnvironmentReady: boolean;
+    executionPreferredShell: string | null;
+    verifiedExecutionShellCount: number;
+    verifiedExecutionToolCount: number;
+    supportsPosixShell: boolean;
 };
 
 export type InstallSurfaceCard = {
@@ -541,6 +555,11 @@ export function getIntegrationOverview(
     const syncedClientCount = (syncTargets ?? []).filter((target) => target.exists).length;
     const totalHarnessCount = cliHarnesses?.length ?? 0;
     const installedHarnessCount = (cliHarnesses ?? []).filter((harness) => Boolean(harness.installed)).length;
+    const executionEnvironmentReady = Boolean(startupStatus?.checks?.executionEnvironment?.ready);
+    const executionPreferredShell = startupStatus?.checks?.executionEnvironment?.preferredShellLabel ?? null;
+    const verifiedExecutionShellCount = Number(startupStatus?.checks?.executionEnvironment?.verifiedShellCount ?? 0);
+    const verifiedExecutionToolCount = Number(startupStatus?.checks?.executionEnvironment?.verifiedToolCount ?? 0);
+    const supportsPosixShell = Boolean(startupStatus?.checks?.executionEnvironment?.supportsPosixShell);
 
     return {
         extensionBridgeReady,
@@ -553,6 +572,11 @@ export function getIntegrationOverview(
         syncedClientCount,
         installedHarnessCount,
         totalHarnessCount,
+        executionEnvironmentReady,
+        executionPreferredShell,
+        verifiedExecutionShellCount,
+        verifiedExecutionToolCount,
+        supportsPosixShell,
     };
 }
 

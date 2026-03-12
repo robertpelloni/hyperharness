@@ -1,4 +1,5 @@
 import type { RegisteredBridgeClient } from '../bridge/bridge-manifest.js';
+import type { ExecutionEnvironmentSummary } from '../services/execution-environment.js';
 
 type StartupStatusInput = {
     mcpServer: unknown;
@@ -43,6 +44,9 @@ type StartupStatusInput = {
     liveServerCount: number;
     persistedServerCount: number;
     persistedToolCount: number;
+    persistedAlwaysOnServerCount: number;
+    persistedAlwaysOnToolCount: number;
+    executionEnvironment?: ExecutionEnvironmentSummary | null;
 };
 
 export async function buildStartupStatusSnapshot(input: StartupStatusInput) {
@@ -58,6 +62,9 @@ export async function buildStartupStatusSnapshot(input: StartupStatusInput) {
         liveServerCount,
         persistedServerCount,
         persistedToolCount,
+        persistedAlwaysOnServerCount,
+        persistedAlwaysOnToolCount,
+        executionEnvironment,
     } = input;
     const mcpServerRuntime = mcpServer as {
         memoryManager?: unknown;
@@ -98,6 +105,8 @@ export async function buildStartupStatusSnapshot(input: StartupStatusInput) {
         ?? persistedServerCount,
     );
     const knownServerCount = Math.max(liveServerCount, persistedServerCount, configuredServerCount);
+    const advertisedServerCount = Math.max(persistedServerCount, configuredServerCount);
+    const advertisedToolCount = Math.max(persistedToolCount, Number(configSyncStatus?.lastToolCount ?? 0));
     const inventoryKnown = Boolean(configSyncStatus?.lastCompletedAt || aggregatorStatus?.initialized);
     const inventoryReady = inventoryKnown && (
         configuredServerCount === 0
@@ -106,10 +115,17 @@ export async function buildStartupStatusSnapshot(input: StartupStatusInput) {
         || liveServerCount > 0
     );
     const aggregatorReady = Boolean(aggregatorStatus?.initialized);
+    const liveReady = mcpReady && aggregatorReady;
+    const mcpWarmupInProgress = Boolean(
+        aggregatorStatus?.inProgress
+        || configSyncStatus?.inProgress
+        || (inventoryReady && configuredServerCount > 0 && liveServerCount < configuredServerCount),
+    );
+    const executionReady = Boolean(executionEnvironment?.ready);
 
     return {
         status: 'running',
-        ready: mcpReady
+        ready: liveReady
             && memoryReady
             && browserReady
             && sessionReady
@@ -121,14 +137,20 @@ export async function buildStartupStatusSnapshot(input: StartupStatusInput) {
         uptime: process.uptime(),
         checks: {
             mcpAggregator: {
-                ready: mcpReady && aggregatorReady,
+                ready: liveReady,
+                liveReady,
                 serverCount: knownServerCount,
                 connectedCount: liveServerCount,
                 initialization: aggregatorStatus ?? null,
                 persistedServerCount,
                 persistedToolCount,
+                advertisedServerCount,
+                advertisedToolCount,
+                advertisedAlwaysOnServerCount: persistedAlwaysOnServerCount,
+                advertisedAlwaysOnToolCount: persistedAlwaysOnToolCount,
                 configuredServerCount,
                 inventoryReady,
+                warmupInProgress: mcpWarmupInProgress,
             },
             configSync: {
                 ready: configSyncReady,
@@ -157,6 +179,20 @@ export async function buildStartupStatusSnapshot(input: StartupStatusInput) {
                 clients: bridgeStatus.clients ?? [],
                 supportedCapabilities: bridgeStatus.supportedCapabilities ?? [],
                 supportedHookPhases: bridgeStatus.supportedHookPhases ?? [],
+            },
+            executionEnvironment: {
+                ready: executionReady,
+                preferredShellId: executionEnvironment?.preferredShellId ?? null,
+                preferredShellLabel: executionEnvironment?.preferredShellLabel ?? null,
+                shellCount: Number(executionEnvironment?.shellCount ?? 0),
+                verifiedShellCount: Number(executionEnvironment?.verifiedShellCount ?? 0),
+                toolCount: Number(executionEnvironment?.toolCount ?? 0),
+                verifiedToolCount: Number(executionEnvironment?.verifiedToolCount ?? 0),
+                harnessCount: Number(executionEnvironment?.harnessCount ?? 0),
+                verifiedHarnessCount: Number(executionEnvironment?.verifiedHarnessCount ?? 0),
+                supportsPowerShell: Boolean(executionEnvironment?.supportsPowerShell),
+                supportsPosixShell: Boolean(executionEnvironment?.supportsPosixShell),
+                notes: executionEnvironment?.notes ?? [],
             },
         },
     };

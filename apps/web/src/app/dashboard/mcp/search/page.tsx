@@ -11,6 +11,14 @@ type SearchResult = {
     name: string;
     description: string;
     server: string;
+    serverDisplayName?: string;
+    serverTags?: string[];
+    toolTags?: string[];
+    semanticGroup?: string;
+    semanticGroupLabel?: string;
+    advertisedName?: string;
+    keywords?: string[];
+    alwaysOn?: boolean;
     originalName?: string | null;
     loaded?: boolean;
     hydrated?: boolean;
@@ -302,6 +310,11 @@ export default function SearchDashboard() {
                                                 <div className="flex items-start justify-between gap-4">
                                                     <div className="min-w-0">
                                                         <div className="font-mono text-blue-400 font-medium text-lg mb-1 break-all">{tool.name}</div>
+                                                        {tool.advertisedName && tool.advertisedName !== tool.name ? (
+                                                            <div className="text-xs text-cyan-300 mb-2 break-all">
+                                                                advertised as <span className="font-mono">{tool.advertisedName}</span>
+                                                            </div>
+                                                        ) : null}
                                                         <div className="flex flex-wrap gap-2 mb-2">
                                                             {tool.rank ? (
                                                                 <span className="text-[10px] bg-blue-500/10 border border-blue-500/20 px-2 py-0.5 rounded text-blue-300 uppercase tracking-wider">
@@ -309,8 +322,13 @@ export default function SearchDashboard() {
                                                                 </span>
                                                             ) : null}
                                                             <span className="text-[10px] bg-zinc-800 px-2 py-0.5 rounded text-zinc-400 uppercase tracking-wider">
-                                                                {tool.server}
+                                                                {tool.serverDisplayName || tool.server}
                                                             </span>
+                                                            {tool.semanticGroupLabel ? (
+                                                                <span className="text-[10px] bg-indigo-500/10 border border-indigo-500/20 px-2 py-0.5 rounded text-indigo-300 uppercase tracking-wider">
+                                                                    {tool.semanticGroupLabel}
+                                                                </span>
+                                                            ) : null}
                                                             {isLoaded ? (
                                                                 <span className="text-[10px] bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded text-emerald-300 uppercase tracking-wider">
                                                                     loaded
@@ -348,6 +366,18 @@ export default function SearchDashboard() {
                                                                 <div className="mt-1 font-mono text-zinc-300 break-all">{tool.originalName || 'n/a'}</div>
                                                             </div>
                                                         </div>
+                                                        {(tool.serverTags?.length || tool.toolTags?.length) ? (
+                                                            <div className="mt-3 grid gap-2 text-xs text-zinc-500 md:grid-cols-2">
+                                                                <div>
+                                                                    <span className="uppercase tracking-wider text-zinc-600">Server tags</span>
+                                                                    <div className="mt-1 text-zinc-300">{(tool.serverTags ?? []).join(', ') || 'n/a'}</div>
+                                                                </div>
+                                                                <div>
+                                                                    <span className="uppercase tracking-wider text-zinc-600">Tool tags</span>
+                                                                    <div className="mt-1 text-zinc-300">{(tool.toolTags ?? []).join(', ') || 'n/a'}</div>
+                                                                </div>
+                                                            </div>
+                                                        ) : null}
                                                     </div>
                                                     <Link
                                                         href={`/dashboard/mcp/inspector?tool=${encodeURIComponent(tool.name)}`}

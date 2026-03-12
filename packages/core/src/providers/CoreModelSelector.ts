@@ -1,5 +1,6 @@
 import { ModelSelector, type ModelSelectionRequest, type SelectedModel } from '@borg/ai';
 
+import { ProviderBalanceService } from './ProviderBalanceService.js';
 import { ProviderRegistry } from './ProviderRegistry.js';
 import { NormalizedQuotaService } from './NormalizedQuotaService.js';
 import {
@@ -29,6 +30,7 @@ const DEFAULT_PROVIDER_LIMITS: Record<string, number> = {
 interface SelectorOptions {
     registry?: ProviderRegistry;
     quotaService?: NormalizedQuotaService;
+    balanceService?: ProviderBalanceService;
     routingStrategy?: ProviderRoutingStrategy;
     taskStrategies?: Partial<Record<ProviderTaskType, ProviderRoutingStrategy>>;
 }
@@ -44,7 +46,7 @@ export class CoreModelSelector extends ModelSelector {
     constructor(options: SelectorOptions = {}) {
         super();
         this.registry = options.registry ?? new ProviderRegistry();
-        this.quotaTracker = options.quotaService ?? new NormalizedQuotaService(this.registry);
+        this.quotaTracker = options.quotaService ?? new NormalizedQuotaService(this.registry, options.balanceService);
         this.quotaTracker.setConfig({
             dailyBudgetUsd: 5,
             monthlyBudgetUsd: 100,
@@ -82,7 +84,8 @@ export class CoreModelSelector extends ModelSelector {
         return { ...this.taskStrategies };
     }
 
-    public getProviderSnapshots() {
+    public async getProviderSnapshots() {
+        await this.quotaTracker.refreshProviderBalances();
         return this.quotaTracker.getAllQuotas();
     }
 

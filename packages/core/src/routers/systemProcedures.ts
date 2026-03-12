@@ -14,6 +14,7 @@ import {
 } from '../lib/trpc-core.js';
 import { mcpServersRepository, toolsRepository } from '../db/repositories/index.js';
 import { buildStartupStatusSnapshot } from './startupStatus.js';
+import { detectLocalExecutionEnvironment } from '../services/execution-environment.js';
 
 export const systemProcedures = {
     health: publicProcedure.query(() => {
@@ -27,13 +28,24 @@ export const systemProcedures = {
         const sessionSupervisor = getSessionSupervisor();
         const mcpConfigService = getMcpConfigService();
 
-        const [liveServerCount, sessionCount, browserStatus, persistedServerCount, persistedToolCount] = await Promise.all([
+        const [liveServerCount, sessionCount, browserStatus, persistedServers, persistedTools, executionEnvironment] = await Promise.all([
             aggregator?.listServers?.().then((servers) => servers.length).catch(() => 0) ?? 0,
             Promise.resolve(sessionSupervisor?.listSessions?.().length ?? 0),
             Promise.resolve(browserService?.getStatus?.() ?? { active: false, pageCount: 0, pageIds: [] }),
-            mcpServersRepository.findAll().then((servers) => servers.length).catch(() => 0),
-            toolsRepository.findAll().then((tools) => tools.length).catch(() => 0),
+            mcpServersRepository.findAll().catch(() => []),
+            toolsRepository.findAll().catch(() => []),
+            detectLocalExecutionEnvironment().catch(() => null),
         ]);
+
+        const persistedServerCount = persistedServers.length;
+        const alwaysOnServerUuids = new Set(
+            persistedServers
+                .filter((server) => Boolean(server.always_on))
+                .map((server) => server.uuid),
+        );
+        const persistedToolCount = persistedTools.length;
+        const persistedAlwaysOnServerCount = alwaysOnServerUuids.size;
+        const persistedAlwaysOnToolCount = persistedTools.filter((tool) => Boolean(tool.always_on) || alwaysOnServerUuids.has(tool.mcp_server_uuid)).length;
 
         return buildStartupStatusSnapshot({
             mcpServer,
@@ -47,6 +59,9 @@ export const systemProcedures = {
             liveServerCount,
             persistedServerCount,
             persistedToolCount,
+            persistedAlwaysOnServerCount,
+            persistedAlwaysOnToolCount,
+            executionEnvironment: executionEnvironment?.summary ?? null,
         });
     }),
     getTaskStatus: publicProcedure

@@ -8,6 +8,7 @@ import {
     DialogContent,
     DialogDescription,
     DialogHeader,
+    Input,
     DialogTitle,
     ScrollArea,
     Tabs,
@@ -45,6 +46,18 @@ export type SessionDetailsDialogSession = {
     cliType?: string;
     workingDirectory?: string;
     worktreePath?: string;
+    executionProfile?: 'auto' | 'powershell' | 'posix' | 'compatibility';
+    executionPolicy?: {
+        requestedProfile?: 'auto' | 'powershell' | 'posix' | 'compatibility';
+        effectiveProfile?: 'powershell' | 'posix' | 'compatibility' | 'fallback';
+        shellId?: string | null;
+        shellLabel?: string | null;
+        shellFamily?: 'powershell' | 'cmd' | 'posix' | 'wsl' | null;
+        shellPath?: string | null;
+        supportsPowerShell?: boolean;
+        supportsPosixShell?: boolean;
+        reason?: string;
+    } | null;
     autoRestart?: boolean;
     status?: string;
     restartCount?: number;
@@ -81,6 +94,14 @@ function getLogTone(stream: 'stdout' | 'stderr' | 'system'): string {
 export function SessionDetailsDialog({ session, currentTimestamp }: SessionDetailsDialogProps) {
     const [open, setOpen] = useState(false);
     const [copied, setCopied] = useState(false);
+    const [shellCommand, setShellCommand] = useState('');
+    const [shellResult, setShellResult] = useState<null | {
+        output: string;
+        exitCode: number;
+        durationMs: number;
+        succeeded: boolean;
+        shellFamily: 'powershell' | 'cmd' | 'posix' | 'wsl' | 'default';
+    }>(null);
     const sessionId = session.id ?? '';
 
     const logsQuery = trpc.session.logs.useQuery(
@@ -103,6 +124,24 @@ export function SessionDetailsDialog({ session, currentTimestamp }: SessionDetai
         { enabled: open, refetchInterval: open ? 5000 : false },
     );
 
+    const executeShellMutation = trpc.session.executeShell.useMutation({
+        onSuccess: (result) => {
+            setShellResult({
+                output: result.output,
+                exitCode: result.exitCode,
+                durationMs: result.durationMs,
+                succeeded: result.succeeded,
+                shellFamily: result.shellFamily,
+            });
+            toast.success(result.succeeded ? 'Command completed' : `Command exited with code ${result.exitCode}`);
+            void logsQuery.refetch();
+        },
+        onError: (error) => {
+            setShellResult(null);
+            toast.error(`Shell command failed: ${error.message}`);
+        },
+    });
+
     const attachCommand = useMemo(() => {
         if (!attachInfoQuery.data) {
             return null;
@@ -112,6 +151,7 @@ export function SessionDetailsDialog({ session, currentTimestamp }: SessionDetai
             attachInfoQuery.data.cwd,
             attachInfoQuery.data.command,
             attachInfoQuery.data.args,
+            session.executionPolicy,
         );
     }, [attachInfoQuery.data]);
 
@@ -213,6 +253,13 @@ export function SessionDetailsDialog({ session, currentTimestamp }: SessionDetai
                                 <div className="space-y-2">
                                     <p>Status: <span className="text-white">{session.status ?? 'unknown'}</span></p>
                                     <p>Restart policy: <span className="text-white">{session.autoRestart === false ? 'Manual only' : 'Automatic'}</span></p>
+                                    <p>Execution profile: <span className="text-white">{session.executionProfile ?? 'auto'}</span></p>
+                                    {session.executionPolicy?.shellLabel ? (
+                                        <p>Selected shell: <span className="text-white">{session.executionPolicy.shellLabel}</span></p>
+                                    ) : null}
+                                    {session.executionPolicy?.reason ? (
+                                        <p className="text-zinc-400">Policy: {session.executionPolicy.reason}</p>
+                                    ) : null}
                                     <p>Last activity: <span className="text-white">{session.lastActivityAt ? formatRelativeTimestamp(session.lastActivityAt, currentTimestamp) : 'unknown'}</span></p>
                                     <p>Restarts: <span className="text-white">{session.restartCount ?? 0}/{session.maxRestartAttempts ?? 0}</span></p>
                                     {session.scheduledRestartAt ? (
@@ -362,6 +409,47 @@ export function SessionDetailsDialog({ session, currentTimestamp }: SessionDetai
                                             <pre className="whitespace-pre-wrap break-words font-mono text-xs text-zinc-200">{attachCommand}</pre>
                                         </div>
                                     ) : null}
+
+                                    <div className="rounded-lg border border-zinc-800 bg-zinc-950/80 p-3">
+                                        <div className="mb-2 flex items-center justify-between gap-3">
+                                            <span className="text-xs uppercase tracking-[0.18em] text-zinc-500">Run one-shot shell command</span>
+                                            {session.executionPolicy?.shellLabel ? (
+                                                <Badge variant="outline" className="border-cyan-500/30 text-cyan-200">
+                                                    {session.executionPolicy.shellLabel}
+                                                </Badge>
+                                            ) : null}
+                                        </div>
+                                        <div className="flex gap-2">
+                                            <Input
+                                                value={shellCommand}
+                                                onChange={(event) => setShellCommand(event.target.value)}
+                                                placeholder="pwd"
+                                                className="bg-zinc-900 border-white/10 text-white"
+                                            />
+                                            <Button
+                                                onClick={() => executeShellMutation.mutate({ id: sessionId, command: shellCommand.trim() })}
+                                                disabled={!shellCommand.trim() || executeShellMutation.isPending || !sessionId}
+                                                className="bg-cyan-600 hover:bg-cyan-500 text-white"
+                                            >
+                                                {executeShellMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Run'}
+                                            </Button>
+                                        </div>
+                                        <p className="mt-2 text-xs text-zinc-500">
+                                            Runs inside the session workspace using the selected Borg execution policy.
+                                        </p>
+                                        {shellResult ? (
+                                            <div className="mt-3 rounded-md border border-white/5 bg-black/30 p-3">
+                                                <div className="mb-2 flex flex-wrap items-center gap-2 text-xs text-zinc-400">
+                                                    <Badge className={shellResult.succeeded ? 'bg-emerald-600 hover:bg-emerald-500' : 'bg-amber-600 hover:bg-amber-500'}>
+                                                        {shellResult.succeeded ? 'Success' : `Exit ${shellResult.exitCode}`}
+                                                    </Badge>
+                                                    <Badge variant="outline" className="border-zinc-700 text-zinc-300">{shellResult.shellFamily}</Badge>
+                                                    <span>{shellResult.durationMs}ms</span>
+                                                </div>
+                                                <pre className="whitespace-pre-wrap break-words font-mono text-xs text-zinc-200">{shellResult.output || '(no output)'}</pre>
+                                            </div>
+                                        ) : null}
+                                    </div>
                                 </div>
                             ) : (
                                 <p className="text-sm text-zinc-500">Attach information is unavailable for this session.</p>

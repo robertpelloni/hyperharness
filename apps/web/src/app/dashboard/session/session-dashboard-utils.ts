@@ -71,18 +71,60 @@ export function getHealthTone(status?: string): string {
     }
 }
 
-export function buildAttachCommand(cwd: string, command: string, args: string[]): string {
-    const isWindows = typeof process !== 'undefined' && process.platform === 'win32';
-    
-    if (isWindows) {
+type AttachExecutionPolicy = {
+    shellFamily?: 'powershell' | 'cmd' | 'posix' | 'wsl' | null;
+    shellPath?: string | null;
+    shellLabel?: string | null;
+};
+
+function quotePowerShellLiteral(value: string): string {
+    return `'${value.replace(/'/g, "''")}'`;
+}
+
+function quoteDouble(value: string): string {
+    return `"${value.replace(/"/g, '\\"')}"`;
+}
+
+function quoteForPosixSingle(value: string): string {
+    return `'${value.replace(/'/g, `'"'"'`)}'`;
+}
+
+export function buildAttachCommand(
+    cwd: string,
+    command: string,
+    args: string[],
+    executionPolicy?: AttachExecutionPolicy | null,
+): string {
+    const shellFamily = executionPolicy?.shellFamily ?? (typeof process !== 'undefined' && process.platform === 'win32' ? 'powershell' : 'posix');
+
+    if (shellFamily === 'cmd') {
+        const quotedCommand = quoteDouble(command);
+        const quotedArgs = args.map(quoteDouble).join(' ');
+        return `cd /d ${quoteDouble(cwd)} && ${quotedCommand}${quotedArgs ? ` ${quotedArgs}` : ''}`;
+    }
+
+    if (shellFamily === 'posix') {
+        const quotedArgs = args.map(quoteForPosixSingle).join(' ');
+        return `cd ${quoteForPosixSingle(cwd)} && ${quoteForPosixSingle(command)}${quotedArgs ? ` ${quotedArgs}` : ''}`;
+    }
+
+    if (shellFamily === 'wsl') {
+        const innerCommand = `cd ${quoteForPosixSingle(cwd)} && ${quoteForPosixSingle(command)}${args.length > 0 ? ` ${args.map(quoteForPosixSingle).join(' ')}` : ''}`;
+        return `wsl -e sh -lc ${quoteForPosixSingle(innerCommand)}`;
+    }
+
+    if (shellFamily === 'powershell') {
         const quotedArgs = args.map((arg) => `'${arg.replace(/'/g, "''")}'`).join(' ');
         const commandPart = `& '${command.replace(/'/g, "''")}'`;
         const argsPart = quotedArgs ? ` ${quotedArgs}` : '';
-        return `Set-Location -LiteralPath '${cwd.replace(/'/g, "''")}'; ${commandPart}${argsPart}`;
+        const prelude = executionPolicy?.shellPath
+            ? `& ${quotePowerShellLiteral(executionPolicy.shellPath)} -NoLogo -NoProfile -Command `
+            : '';
+        const script = `Set-Location -LiteralPath ${quotePowerShellLiteral(cwd)}; ${commandPart}${argsPart}`;
+        return prelude ? `${prelude}${quotePowerShellLiteral(script)}` : script;
     }
 
-    const quotedArgs = args.map((arg) => `"${arg.replace(/"/g, '\\"')}"`).join(' ');
-    // Handle spaces in cwd
-    const quotedCwd = `"${cwd.replace(/"/g, '\\"')}"`;
+    const quotedArgs = args.map(quoteDouble).join(' ');
+    const quotedCwd = quoteDouble(cwd);
     return `cd ${quotedCwd} && ${command}${args.length > 0 ? ' ' + quotedArgs : ''}`;
 }

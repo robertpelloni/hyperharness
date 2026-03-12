@@ -16,6 +16,14 @@ export interface MCPAggregatedTool extends MCPToolDefinition {
     name: string;
     server: string;
     _originalName: string;
+    serverDisplayName?: string;
+    advertisedName?: string;
+    serverTags?: string[];
+    toolTags?: string[];
+    semanticGroup?: string;
+    semanticGroupLabel?: string;
+    keywords?: string[];
+    alwaysOn?: boolean;
 }
 
 export interface MCPClientLike {

@@ -16,6 +16,19 @@ import {
 } from './toolSearchRanking.js';
 import type { ToolContextPayload } from '../services/toolContextMemory.js';
 
+type SearchableTool = Tool & {
+    server?: string;
+    serverDisplayName?: string;
+    originalName?: string;
+    advertisedName?: string;
+    serverTags?: string[];
+    toolTags?: string[];
+    semanticGroup?: string;
+    semanticGroupLabel?: string;
+    keywords?: string[];
+    alwaysOn?: boolean;
+};
+
 function createTextResult(text: string, isError = false): CallToolResult {
     return {
         content: [{ type: 'text', text }],
@@ -162,13 +175,26 @@ export class NativeSessionMetaTools {
 
     private searchTools(query: string, limit: number): RankedToolSearchResult[] {
         const rankedResults = rankToolSearchCandidates(
-            Array.from(this.catalog.values()).map((tool) => ({
+            Array.from(this.catalog.values()).map((tool) => {
+                const searchableTool = tool as SearchableTool;
+                return {
                 name: tool.name,
                 description: tool.description ?? '',
+                serverName: searchableTool.server,
+                serverDisplayName: searchableTool.serverDisplayName,
+                originalName: searchableTool.originalName,
+                advertisedName: searchableTool.advertisedName,
+                serverTags: searchableTool.serverTags,
+                toolTags: searchableTool.toolTags,
+                semanticGroup: searchableTool.semanticGroup,
+                semanticGroupLabel: searchableTool.semanticGroupLabel,
+                keywords: searchableTool.keywords,
+                alwaysOn: searchableTool.alwaysOn,
                 loaded: this.workingSet.isLoaded(tool.name),
                 hydrated: this.workingSet.isHydrated(tool.name),
                 deferred: !this.workingSet.isHydrated(tool.name),
-            })),
+                };
+            }),
             query,
             limit,
         );

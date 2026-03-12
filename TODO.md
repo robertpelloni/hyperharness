@@ -228,9 +228,9 @@ Evidence used for this queue:
 ### 10) Rebuild the task-file discipline promised by `AGENTS.md`
 
 **Current reality**
-- `tasks/active/` is empty.
-- `tasks/backlog/` is empty.
-- Implementor workflow is therefore undercut by the repo’s own docs.
+- `tasks/active/` is still too thin relative to the amount of in-flight work.
+- `tasks/backlog/` is seeded again, but large ecosystem parity asks still need to be decomposed into implementation-sized tasks.
+- Implementor workflow is still undercut when major asks live only in chat history instead of task files.
 
 **Do next**
 - Seed task briefs for the top 1.0 items in this file.
@@ -240,9 +240,34 @@ Evidence used for this queue:
 - [ ] `tasks/active/` contains the next 1–3 concrete implementation tasks.
 - [ ] `tasks/backlog/` reflects ordered follow-ons from this TODO.
 
+### 11) Consolidate external-parity asks into staged Borg capability tracks
+
+**Why this matters**
+- The repo has accumulated overlapping asks around MetaMCP, Claude-mem, MCP-SuperAssistant, Jules-Autopilot, browser extensions, IDE hooks, and session-manager portability.
+- Without a single consolidation brief, those asks keep reappearing as “assimilate everything” instead of small Borg-native work slices.
+
+**Evidence**
+- `tasks/backlog/015-ecosystem-assimilation-consolidation.md`
+- `AGENTS.md`
+- `ROADMAP.md`
+- `HANDOFF.md`
+
+**Do next**
+- Use the new consolidation brief to carve the next real tasks under these tracks only:
+	- boot-ready control plane
+	- Borg-native MCP router maturity
+	- browser extension platform
+	- IDE / CLI / hook-based memory capture
+	- portable tool+model session fabric
+- Reject future parity work that cannot be mapped to one of those tracks and a concrete operator workflow.
+
+**Acceptance criteria**
+- [ ] New implementation tasks reference a consolidation track instead of restating full upstream parity demands.
+- [ ] Borg 1.0 work stays distinct from 1.5 memory/extension work and 2.0 autonomy work.
+
 ## P2 — cleanup, coherence, and robustness
 
-### 11) Rationalize stale documentation and route drift
+### 12) Rationalize stale documentation and route drift
 
 **Issues found during audit**
 - `README.md` still references `/dashboard/mcp` as the landing route even though recent repo memory says `/dashboard` is now the home surface.
@@ -254,7 +279,7 @@ Evidence used for this queue:
 - [ ] Canonical docs are obvious from the root.
 - [ ] Archived docs remain clearly marked archive-only.
 
-### 12) Reduce stub debt in `packages/core/src/services/stubs/`
+### 13) Reduce stub debt in `packages/core/src/services/stubs/`
 
 **Current stub files**
 - `packages/core/src/services/stubs/agent.service.stub.ts`
@@ -269,7 +294,7 @@ Evidence used for this queue:
 - [ ] Each stub is either deleted, implemented, or explicitly documented as compatibility-only.
 - [ ] No stub silently backs a UI that appears production-ready.
 
-### 13) Keep experimental swarm/autonomy work behind an honest boundary
+### 14) Keep experimental swarm/autonomy work behind an honest boundary
 
 **Why**
 - The repo contains real swarm and council depth, but Borg 1.0 should not depend on it.

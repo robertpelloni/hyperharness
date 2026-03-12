@@ -15,7 +15,9 @@ function createStartupStatus(overrides?: StartupCheckOverrides): DashboardStartu
         checks: {
             mcpAggregator: {
                 ready: true,
+                liveReady: true,
                 serverCount: 0,
+                connectedCount: 0,
                 initialization: {
                     inProgress: false,
                     initialized: true,
@@ -25,6 +27,9 @@ function createStartupStatus(overrides?: StartupCheckOverrides): DashboardStartu
                 persistedServerCount: 0,
                 persistedToolCount: 0,
                 configuredServerCount: 0,
+                advertisedServerCount: 0,
+                advertisedToolCount: 0,
+                advertisedAlwaysOnToolCount: 0,
                 inventoryReady: true,
                 ...overrides?.mcpAggregator,
             },
@@ -66,6 +71,15 @@ function createStartupStatus(overrides?: StartupCheckOverrides): DashboardStartu
                 hasConnectedClients: false,
                 ...overrides?.extensionBridge,
             },
+            executionEnvironment: {
+                ready: true,
+                preferredShellLabel: 'PowerShell 7',
+                shellCount: 2,
+                verifiedShellCount: 2,
+                toolCount: 5,
+                verifiedToolCount: 5,
+                ...overrides?.executionEnvironment,
+            },
         },
     };
 }
@@ -75,10 +89,10 @@ describe('system status startup helpers', () => {
         const checks = buildSystemStartupChecks(createStartupStatus());
 
         expect(checks[1]).toEqual({
-            name: 'Router Inventory',
+            name: 'Live MCP Runtime',
             status: 'Operational',
-            latency: '0 tools',
-            detail: 'No configured servers yet · empty inventory is ready',
+            latency: '0/0 servers',
+            detail: 'No downstream servers configured · live MCP runtime is ready',
         });
     });
 
@@ -86,17 +100,27 @@ describe('system status startup helpers', () => {
         const checks = buildSystemStartupChecks(createStartupStatus({
             mcpAggregator: {
                 ready: false,
+                liveReady: false,
                 inventoryReady: true,
                 persistedServerCount: 2,
                 persistedToolCount: 18,
+                advertisedServerCount: 2,
+                advertisedToolCount: 18,
             },
         }));
 
-        expect(checks[1]).toEqual({
-            name: 'Router Inventory',
-            status: 'Pending',
+        expect(checks[0]).toEqual({
+            name: 'Cached Inventory',
+            status: 'Operational',
             latency: '18 tools',
-            detail: '2 persisted servers',
+            detail: '2 cached servers · 18 advertised tools',
+        });
+
+        expect(checks[1]).toEqual({
+            name: 'Live MCP Runtime',
+            status: 'Pending',
+            latency: '0/2 servers',
+            detail: 'Cached inventory is already advertised · live MCP runtime is still warming',
         });
     });
 
@@ -111,6 +135,13 @@ describe('system status startup helpers', () => {
         }));
 
         expect(checks[3]).toEqual({
+            name: 'Session Restore',
+            status: 'Operational',
+            latency: '0 sessions',
+            detail: '0 restored · 0 auto-resumed',
+        });
+
+        expect(checks[4]).toEqual({
             name: 'Client Bridge',
             status: 'Operational',
             latency: '0 clients',
@@ -129,10 +160,35 @@ describe('system status startup helpers', () => {
         }));
 
         expect(checks[3]).toEqual({
+            name: 'Session Restore',
+            status: 'Operational',
+            latency: '0 sessions',
+            detail: '0 restored · 0 auto-resumed',
+        });
+
+        expect(checks[4]).toEqual({
             name: 'Client Bridge',
             status: 'Pending',
             latency: '0 clients',
             detail: 'Browser/editor client bridge is still coming online',
+        });
+    });
+
+    it('shows the execution environment posture with preferred shell context', () => {
+        const checks = buildSystemStartupChecks(createStartupStatus({
+            executionEnvironment: {
+                ready: true,
+                preferredShellLabel: 'PowerShell 7',
+                toolCount: 6,
+                verifiedToolCount: 5,
+            },
+        }));
+
+        expect(checks[5]).toEqual({
+            name: 'Execution Environment',
+            status: 'Operational',
+            latency: '5 tools',
+            detail: 'PowerShell 7 preferred · 5/6 verified tools',
         });
     });
 });

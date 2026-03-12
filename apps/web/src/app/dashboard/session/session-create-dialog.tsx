@@ -49,6 +49,29 @@ interface SessionCreateDialogProps {
     onCreated?: () => Promise<void> | void;
 }
 
+const EXECUTION_PROFILE_OPTIONS = [
+    {
+        value: 'auto',
+        label: 'Auto',
+        description: 'Prefer Borg\'s default verified shell for this host.',
+    },
+    {
+        value: 'powershell',
+        label: 'PowerShell-native',
+        description: 'Bias toward PowerShell for general Windows harness supervision.',
+    },
+    {
+        value: 'posix',
+        label: 'POSIX pipelines',
+        description: 'Bias toward Cygwin, Git Bash, or WSL when Unix-style pipelines matter.',
+    },
+    {
+        value: 'compatibility',
+        label: 'Compatibility-first',
+        description: 'Use the most conservative shell posture Borg can verify on this host.',
+    },
+] as const;
+
 function getDefaultHarness(catalog: SessionHarnessCatalogEntry[]): string {
     return catalog.find((entry) => entry.sessionCapable && entry.installed && entry.id)?.id
         ?? catalog.find((entry) => entry.sessionCapable && entry.id)?.id
@@ -62,6 +85,7 @@ export function SessionCreateDialog({ catalog, onCreated }: SessionCreateDialogP
     const [workingDirectory, setWorkingDirectory] = useState('');
     const [argsInput, setArgsInput] = useState('');
     const [envInput, setEnvInput] = useState('');
+    const [executionProfile, setExecutionProfile] = useState<(typeof EXECUTION_PROFILE_OPTIONS)[number]['value']>('auto');
     const [autoRestart, setAutoRestart] = useState(true);
     const [isolateWorktree, setIsolateWorktree] = useState(true);
     const [maxRestartAttempts, setMaxRestartAttempts] = useState('5');
@@ -87,6 +111,7 @@ export function SessionCreateDialog({ catalog, onCreated }: SessionCreateDialogP
             setWorkingDirectory('');
             setArgsInput('');
             setEnvInput('');
+            setExecutionProfile('auto');
             setAutoRestart(true);
             setIsolateWorktree(true);
             setMaxRestartAttempts('5');
@@ -217,6 +242,25 @@ export function SessionCreateDialog({ catalog, onCreated }: SessionCreateDialogP
                         </div>
                     </div>
 
+                    <div className="grid gap-2">
+                        <Label htmlFor="session-execution-profile">Execution profile</Label>
+                        <Select value={executionProfile} onValueChange={(value) => setExecutionProfile(value as (typeof EXECUTION_PROFILE_OPTIONS)[number]['value'])}>
+                            <SelectTrigger id="session-execution-profile" className="bg-zinc-900 border-white/10 text-white">
+                                <SelectValue placeholder="Select an execution profile" />
+                            </SelectTrigger>
+                            <SelectContent className="bg-zinc-900 border-white/10 text-white">
+                                {EXECUTION_PROFILE_OPTIONS.map((option) => (
+                                    <SelectItem key={option.value} value={option.value} className="focus:bg-white/10 focus:text-white">
+                                        {option.label}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                        <p className="text-xs text-zinc-500">
+                            {EXECUTION_PROFILE_OPTIONS.find((option) => option.value === executionProfile)?.description}
+                        </p>
+                    </div>
+
                     <div className="grid gap-3 rounded-xl border border-white/10 bg-zinc-900/70 p-4 md:grid-cols-2">
                         <div className="flex items-start justify-between gap-4">
                             <div>
@@ -247,6 +291,7 @@ export function SessionCreateDialog({ catalog, onCreated }: SessionCreateDialogP
                                 workingDirectory: workingDirectory.trim(),
                                 args: parseArgsInput(argsInput),
                                 env: parseEnvInput(envInput),
+                                executionProfile,
                                 autoRestart,
                                 isolateWorktree,
                                 maxRestartAttempts: Number.isFinite(Number(maxRestartAttempts)) ? Number(maxRestartAttempts) : 5,

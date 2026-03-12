@@ -20,6 +20,13 @@ describe('integration catalog helpers', () => {
                             clientCount: 3,
                             supportedHookPhases: ['chat.submit', 'editor.selection'],
                         },
+                        executionEnvironment: {
+                            ready: true,
+                            preferredShellLabel: 'PowerShell 7',
+                            verifiedShellCount: 2,
+                            verifiedToolCount: 5,
+                            supportsPosixShell: true,
+                        },
                     },
                 },
                 {
@@ -43,6 +50,11 @@ describe('integration catalog helpers', () => {
             syncedClientCount: 1,
             installedHarnessCount: 2,
             totalHarnessCount: 3,
+            executionEnvironmentReady: true,
+            executionPreferredShell: 'PowerShell 7',
+            verifiedExecutionShellCount: 2,
+            verifiedExecutionToolCount: 5,
+            supportsPosixShell: true,
         });
     });
 
@@ -56,6 +68,13 @@ describe('integration catalog helpers', () => {
                         clientCount: 0,
                         hasConnectedClients: false,
                         supportedHookPhases: ['chat.submit'],
+                    },
+                    executionEnvironment: {
+                        ready: true,
+                        preferredShellLabel: 'PowerShell 7',
+                        verifiedShellCount: 1,
+                        verifiedToolCount: 3,
+                        supportsPosixShell: false,
                     },
                 },
             },
@@ -78,6 +97,11 @@ describe('integration catalog helpers', () => {
             syncedClientCount: 0,
             installedHarnessCount: 0,
             totalHarnessCount: 0,
+            executionEnvironmentReady: true,
+            executionPreferredShell: 'PowerShell 7',
+            verifiedExecutionShellCount: 1,
+            verifiedExecutionToolCount: 3,
+            supportsPosixShell: false,
         });
 
         expect(getBridgeClientStatDetail(overview)).toBe('Listener ready · waiting for browser / IDE clients');
@@ -94,6 +118,13 @@ describe('integration catalog helpers', () => {
                         clientCount: 0,
                         hasConnectedClients: false,
                         supportedHookPhases: [],
+                    },
+                    executionEnvironment: {
+                        ready: false,
+                        preferredShellLabel: null,
+                        verifiedShellCount: 0,
+                        verifiedToolCount: 0,
+                        supportsPosixShell: false,
                     },
                 },
             },

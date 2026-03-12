@@ -57,6 +57,9 @@ describe('billing dashboard provider portals', () => {
 
     expect(cards).toHaveLength(PROVIDER_PORTALS.length);
     expect(providerIds.has('github-copilot')).toBe(true);
+    expect(providerIds.has('antigravity')).toBe(true);
+    expect(providerIds.has('kiro')).toBe(true);
+    expect(providerIds.has('kimi-coding')).toBe(true);
     expect(cards.find((card) => card.id === 'azure-openai')).toMatchObject({
       statusLabel: 'Not connected',
       statusTone: 'muted',

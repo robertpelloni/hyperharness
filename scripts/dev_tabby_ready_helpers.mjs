@@ -5,13 +5,34 @@ import { fileURLToPath } from 'node:url';
 const WEB_DEV_PORT_MARKER = ['apps', 'web', '.borg-dev-port.json'];
 
 const STARTUP_CHECK_LABELS = {
-  mcpAggregator: 'MCP router inventory',
   configSync: 'MCP config sync',
   sessionSupervisor: 'session restore',
   browser: 'browser runtime',
   memory: 'memory initialization',
   extensionBridge: 'extension bridge listener',
 };
+
+function getPendingMcpStartupChecks(startupStatusData) {
+  const aggregator = startupStatusData?.checks?.mcpAggregator;
+  if (!aggregator || typeof aggregator !== 'object') {
+    return [];
+  }
+
+  const pending = [];
+  if (aggregator.inventoryReady === false) {
+    pending.push('cached MCP inventory');
+  }
+
+  if (aggregator.inventoryReady === undefined && aggregator.ready === false) {
+    pending.push('cached MCP inventory');
+  }
+
+  if ((aggregator.liveReady ?? aggregator.ready) === false) {
+    pending.push('live MCP runtime');
+  }
+
+  return pending;
+}
 
 const BROWSER_EXTENSION_ARTIFACTS = [
   {
@@ -161,12 +182,15 @@ export function getPendingStartupChecks(startupStatusData) {
     return [];
   }
 
-  return Object.entries(STARTUP_CHECK_LABELS)
+  return [
+    ...getPendingMcpStartupChecks(startupStatusData),
+    ...Object.entries(STARTUP_CHECK_LABELS)
     .filter(([key]) => {
       const check = checks[key];
       return Boolean(check) && typeof check === 'object' && check.ready === false;
     })
-    .map(([, label]) => label);
+    .map(([, label]) => label),
+  ];
 }
 
 export function getWaitingReasons(state) {

@@ -35,4 +35,34 @@ describe('toolSearchRanking auto-load decisions', () => {
 
         expect(pickAutoLoadCandidate(rankedResults, 'open')).toBeNull();
     });
+
+    it('matches semantic tags and group labels for intent-style queries', () => {
+        const rankedResults = rankToolSearchCandidates([
+            {
+                name: 'browser__open_tab',
+                description: 'Open a browser tab',
+                advertisedName: 'browser [browser, search] -> open_tab [browser, read]',
+                serverTags: ['browser', 'search'],
+                toolTags: ['browser', 'read'],
+                semanticGroup: 'browser-automation',
+                semanticGroupLabel: 'browser automation',
+                keywords: ['browser', 'automation', 'tab', 'open'],
+            },
+            {
+                name: 'filesystem__read_file',
+                description: 'Read a file from disk',
+                serverTags: ['filesystem'],
+                toolTags: ['filesystem', 'read'],
+                semanticGroup: 'filesystem-operations',
+                semanticGroupLabel: 'filesystem operations',
+                keywords: ['file', 'disk', 'read'],
+            },
+        ], 'browser automation', 10);
+
+        expect(rankedResults[0]).toMatchObject({
+            name: 'browser__open_tab',
+            semanticGroup: 'browser-automation',
+        });
+        expect(rankedResults[0]?.matchReason).toMatch(/semantic group match|semantic tag match/);
+    });
 });

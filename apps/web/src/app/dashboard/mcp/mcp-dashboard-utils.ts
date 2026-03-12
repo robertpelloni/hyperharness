@@ -7,6 +7,7 @@ export type ManagedServerDiscoveryRecord = {
         toolCount?: number | null;
         lastSuccessfulBinaryLoadAt?: string | null;
     } | null;
+    always_on?: boolean;
 };
 
 export type BulkMetadataTargetMode = 'all' | 'unresolved';
@@ -58,6 +59,7 @@ export type DashboardServerRecord = {
     metadataSource?: string;
     metadataToolCount?: number;
     lastSuccessfulBinaryLoadAt?: string;
+    always_on?: boolean;
     config?: {
         command?: string;
         args?: string[];
@@ -176,6 +178,7 @@ export function buildDashboardServerRecords(
             metadataSource: server._meta?.metadataSource ?? undefined,
             metadataToolCount: server._meta?.toolCount ?? undefined,
             lastSuccessfulBinaryLoadAt: server._meta?.lastSuccessfulBinaryLoadAt ?? undefined,
+            always_on: server.always_on,
             config: {
                 command: runtime?.config?.command ?? server.command ?? undefined,
                 args: runtime?.config?.args ?? server.args ?? [],

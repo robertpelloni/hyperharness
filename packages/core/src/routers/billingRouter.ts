@@ -16,12 +16,23 @@ interface ProviderQuotaRuntime {
     rateLimitRpm: number | null;
     availability: string;
     lastError?: string;
+    windows?: Array<{
+        key: string;
+        label: string;
+        used: number;
+        limit: number | null;
+        remaining: number | null;
+        resetDate: string | null;
+        unit: string;
+    }>;
+    source?: string;
+    connectionId?: string | null;
 }
 
 interface BillingSelectorRuntime {
     getAvailableModels?: () => BillingModelRuntime[];
     getFallbackChain?: (options?: { routingTaskType?: ProviderTaskType }) => FallbackEntryRuntime[];
-    getProviderSnapshots?: () => ProviderQuotaRuntime[];
+    getProviderSnapshots?: () => ProviderQuotaRuntime[] | Promise<ProviderQuotaRuntime[]>;
     getRoutingStrategy?: () => ProviderRoutingStrategy;
     setRoutingStrategy?: (strategy: ProviderRoutingStrategy) => void;
     getTaskRoutingRules?: () => Record<ProviderTaskType, ProviderRoutingStrategy>;
@@ -103,7 +114,7 @@ export const billingRouter = t.router({
         const quota = llm.modelSelector.getQuotaService();
         const selector = llm.modelSelector as typeof llm.modelSelector & BillingSelectorRuntime;
 
-        const normalized = selector.getProviderSnapshots?.();
+        const normalized = await selector.getProviderSnapshots?.();
         if (normalized && normalized.length > 0) {
             return normalized.map((provider) => ({
                 provider: provider.provider,
@@ -119,6 +130,9 @@ export const billingRouter = t.router({
                 rateLimitRpm: provider.rateLimitRpm,
                 availability: provider.availability,
                 lastError: provider.lastError ?? null,
+                windows: provider.windows ?? [],
+                source: provider.source ?? null,
+                connectionId: provider.connectionId ?? null,
             }));
         }
 

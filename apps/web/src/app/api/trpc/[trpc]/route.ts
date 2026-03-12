@@ -111,6 +111,7 @@ const LOCAL_COMPAT_RESPONSE_KEYS = {
   'mcpServers.list': 'mcpServers.list',
   'apiKeys.list': 'apiKeys.list',
   'tools.detectCliHarnesses': 'tools.detectCliHarnesses',
+  'tools.detectExecutionEnvironment': 'tools.detectExecutionEnvironment',
   'tools.detectInstallSurfaces': 'tools.detectInstallSurfaces',
   'expert.getStatus': 'expert.getStatus',
   'session.getState': 'session.getState',
@@ -515,7 +516,13 @@ function buildLocalStartupStatus(servers: unknown[]): {
       persistedServerCount: number;
       persistedToolCount: number;
       configuredServerCount: number;
+      liveReady: boolean;
+      advertisedServerCount: number;
+      advertisedToolCount: number;
+      advertisedAlwaysOnServerCount: number;
+      advertisedAlwaysOnToolCount: number;
       inventoryReady: false;
+      warmupInProgress: true;
     };
     configSync: {
       ready: boolean;
@@ -550,6 +557,20 @@ function buildLocalStartupStatus(servers: unknown[]): {
       supportedCapabilities: never[];
       supportedHookPhases: never[];
     };
+    executionEnvironment: {
+      ready: false;
+      preferredShellId: null;
+      preferredShellLabel: null;
+      shellCount: number;
+      verifiedShellCount: number;
+      toolCount: number;
+      verifiedToolCount: number;
+      harnessCount: number;
+      verifiedHarnessCount: number;
+      supportsPowerShell: false;
+      supportsPosixShell: false;
+      notes: never[];
+    };
   };
 } {
   const status = buildStatusFromServers(servers);
@@ -565,13 +586,19 @@ function buildLocalStartupStatus(servers: unknown[]): {
     checks: {
       mcpAggregator: {
         ready: serverCount > 0,
+        liveReady: serverCount > 0,
         initialization: 'compat-fallback',
         serverCount,
         connectedCount,
         persistedServerCount: serverCount,
         persistedToolCount: 0,
         configuredServerCount: serverCount,
+        advertisedServerCount: serverCount,
+        advertisedToolCount: 0,
+        advertisedAlwaysOnServerCount: 0,
+        advertisedAlwaysOnToolCount: 0,
         inventoryReady: false,
+        warmupInProgress: true,
       },
       configSync: {
         ready: serverCount > 0,
@@ -605,6 +632,20 @@ function buildLocalStartupStatus(servers: unknown[]): {
         clients: [],
         supportedCapabilities: [],
         supportedHookPhases: [],
+      },
+      executionEnvironment: {
+        ready: false,
+        preferredShellId: null,
+        preferredShellLabel: null,
+        shellCount: 0,
+        verifiedShellCount: 0,
+        toolCount: 0,
+        verifiedToolCount: 0,
+        harnessCount: 0,
+        verifiedHarnessCount: 0,
+        supportsPowerShell: false,
+        supportsPosixShell: false,
+        notes: [],
       },
     },
   };
@@ -736,6 +777,26 @@ async function buildLocalCompatResponse(req: Request, body?: string): Promise<Re
     'mcpServers.get': null,
     'apiKeys.list': [],
     'tools.detectCliHarnesses': [],
+    'tools.detectExecutionEnvironment': {
+      os: 'unknown',
+      summary: {
+        ready: false,
+        preferredShellId: null,
+        preferredShellLabel: null,
+        shellCount: 0,
+        verifiedShellCount: 0,
+        toolCount: 0,
+        verifiedToolCount: 0,
+        harnessCount: 0,
+        verifiedHarnessCount: 0,
+        supportsPowerShell: false,
+        supportsPosixShell: false,
+        notes: [],
+      },
+      shells: [],
+      tools: [],
+      harnesses: [],
+    },
     'tools.detectInstallSurfaces': [],
     'expert.getStatus': {},
     'session.getState': {

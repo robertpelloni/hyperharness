@@ -2,7 +2,15 @@ export interface ToolSearchCandidate {
     name: string;
     description?: string | null;
     serverName?: string | null;
+    serverDisplayName?: string | null;
     originalName?: string | null;
+    advertisedName?: string | null;
+    serverTags?: string[];
+    toolTags?: string[];
+    semanticGroup?: string | null;
+    semanticGroupLabel?: string | null;
+    keywords?: string[];
+    alwaysOn?: boolean;
     loaded?: boolean;
     hydrated?: boolean;
     deferred?: boolean;
@@ -12,7 +20,15 @@ export interface RankedToolSearchResult {
     name: string;
     description: string;
     serverName?: string;
+    serverDisplayName?: string;
     originalName?: string;
+    advertisedName?: string;
+    serverTags?: string[];
+    toolTags?: string[];
+    semanticGroup?: string;
+    semanticGroupLabel?: string;
+    keywords?: string[];
+    alwaysOn?: boolean;
     loaded: boolean;
     hydrated: boolean;
     deferred: boolean;
@@ -39,6 +55,10 @@ function tokenizeQuery(query: string): string[] {
 
 function buildNoQueryScore(candidate: ToolSearchCandidate): number {
     let score = 0;
+
+    if (candidate.alwaysOn) {
+        score += 30;
+    }
 
     if (candidate.loaded) {
         score += 20;
@@ -67,8 +87,17 @@ function scoreCandidate(candidate: ToolSearchCandidate, normalizedQuery: string,
 
     const normalizedName = normalizeText(candidate.name);
     const normalizedOriginalName = normalizeText(candidate.originalName);
+    const normalizedAdvertisedName = normalizeText(candidate.advertisedName);
     const normalizedDescription = normalizeText(candidate.description);
     const normalizedServerName = normalizeText(candidate.serverName);
+    const normalizedServerDisplayName = normalizeText(candidate.serverDisplayName);
+    const normalizedSemanticGroup = normalizeText(candidate.semanticGroup);
+    const normalizedSemanticGroupLabel = normalizeText(candidate.semanticGroupLabel);
+    const normalizedTagText = normalizeText([
+        ...(candidate.serverTags ?? []),
+        ...(candidate.toolTags ?? []),
+        ...(candidate.keywords ?? []),
+    ].join(' '));
 
     let score = 0;
     let matchReason = '';
@@ -79,21 +108,39 @@ function scoreCandidate(candidate: ToolSearchCandidate, normalizedQuery: string,
     } else if (normalizedOriginalName === normalizedQuery) {
         score += 115;
         matchReason = 'exact original tool name match';
+    } else if (normalizedAdvertisedName === normalizedQuery) {
+        score += 110;
+        matchReason = 'exact advertised tool name match';
     } else if (normalizedName.startsWith(normalizedQuery)) {
         score += 90;
         matchReason = 'tool name prefix match';
     } else if (normalizedOriginalName.startsWith(normalizedQuery)) {
         score += 85;
         matchReason = 'original tool name prefix match';
+    } else if (normalizedAdvertisedName.startsWith(normalizedQuery)) {
+        score += 80;
+        matchReason = 'advertised tool name prefix match';
     } else if (normalizedName.includes(normalizedQuery)) {
         score += 70;
         matchReason = 'tool name contains query';
     } else if (normalizedOriginalName.includes(normalizedQuery)) {
         score += 65;
         matchReason = 'original tool name contains query';
+    } else if (normalizedAdvertisedName.includes(normalizedQuery)) {
+        score += 60;
+        matchReason = 'advertised tool name contains query';
+    } else if (normalizedTagText.includes(normalizedQuery)) {
+        score += 58;
+        matchReason = 'semantic tag match';
+    } else if (normalizedSemanticGroupLabel.includes(normalizedQuery) || normalizedSemanticGroup.includes(normalizedQuery)) {
+        score += 55;
+        matchReason = 'semantic group match';
     } else if (normalizedDescription.includes(normalizedQuery)) {
         score += 45;
         matchReason = 'description contains query';
+    } else if (normalizedServerDisplayName.includes(normalizedQuery)) {
+        score += 35;
+        matchReason = 'advertised server name contains query';
     } else if (normalizedServerName.includes(normalizedQuery)) {
         score += 30;
         matchReason = 'server name contains query';
@@ -102,8 +149,13 @@ function scoreCandidate(candidate: ToolSearchCandidate, normalizedQuery: string,
     const tokenMatches = queryTokens.filter((token) => (
         normalizedName.includes(token)
         || normalizedOriginalName.includes(token)
+        || normalizedAdvertisedName.includes(token)
         || normalizedDescription.includes(token)
+        || normalizedServerDisplayName.includes(token)
         || normalizedServerName.includes(token)
+        || normalizedSemanticGroup.includes(token)
+        || normalizedSemanticGroupLabel.includes(token)
+        || normalizedTagText.includes(token)
     ));
 
     if (tokenMatches.length === 0 && score === 0) {
@@ -120,6 +172,10 @@ function scoreCandidate(candidate: ToolSearchCandidate, normalizedQuery: string,
 
     if (candidate.loaded) {
         score += 5;
+    }
+
+    if (candidate.alwaysOn) {
+        score += 4;
     }
 
     if (candidate.hydrated) {
@@ -164,7 +220,15 @@ export function rankToolSearchCandidates(candidates: ToolSearchCandidate[], quer
                 name: candidate.name,
                 description: candidate.description ?? '',
                 serverName: candidate.serverName ?? undefined,
+                serverDisplayName: candidate.serverDisplayName ?? undefined,
                 originalName: candidate.originalName ?? undefined,
+                advertisedName: candidate.advertisedName ?? undefined,
+                serverTags: candidate.serverTags ?? [],
+                toolTags: candidate.toolTags ?? [],
+                semanticGroup: candidate.semanticGroup ?? undefined,
+                semanticGroupLabel: candidate.semanticGroupLabel ?? undefined,
+                keywords: candidate.keywords ?? [],
+                alwaysOn: candidate.alwaysOn ?? false,
                 loaded,
                 hydrated,
                 deferred,

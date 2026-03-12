@@ -14,6 +14,7 @@ type InspectorTool = {
     description: string;
     server: string;
     inputSchema: Record<string, unknown> | null;
+    always_on?: boolean;
 };
 
 type WorkingSetTool = {
@@ -78,6 +79,8 @@ function InspectorDashboardContent() {
     const workingSetQuery = trpc.mcp.getWorkingSet.useQuery(undefined, { refetchInterval: 4000 });
     const telemetryQuery = trpc.mcp.getToolSelectionTelemetry.useQuery(undefined, { refetchInterval: 4000 });
     const preferencesQuery = trpc.mcp.getToolPreferences.useQuery();
+    const dbToolsQuery = trpc.tools.list.useQuery();
+
     const [toolFilter, setToolFilter] = useState('');
     const [telemetryFilter, setTelemetryFilter] = useState<TelemetryFilter>('all');
     const [selectedTool, setSelectedTool] = useState<InspectorTool | null>(null);
@@ -184,6 +187,9 @@ function InspectorDashboardContent() {
         importantTools: [],
         alwaysLoadedTools: [],
     };
+    const dbTools = dbToolsQuery.data ?? [];
+    const dbAlwaysOnTools = new Set(dbTools.filter((t: any) => t.always_on).map((t: any) => t.name));
+
     const alwaysLoadedTools = new Set(preferences.alwaysLoadedTools);
     const loadedToolNames = new Set(workingSet.map((tool) => tool.name));
     const hydratedToolNames = new Set(workingSet.filter((tool) => tool.hydrated).map((tool) => tool.name));
@@ -199,6 +205,18 @@ function InspectorDashboardContent() {
             toast.error(error.message);
         },
     });
+    const setDbAlwaysOnMutation = trpc.tools.setAlwaysOn.useMutation({
+        onSuccess: async () => {
+            await Promise.all([
+                dbToolsQuery.refetch(),
+                utils.mcp.getWorkingSet.invalidate(),
+            ]);
+        },
+        onError: (error) => {
+            toast.error(error.message);
+        },
+    });
+
     const clearTelemetryMutation = trpc.mcp.clearToolSelectionTelemetry.useMutation({
         onSuccess: async () => {
             toast.success('Telemetry history cleared');
@@ -294,7 +312,9 @@ function InspectorDashboardContent() {
     const selectedToolSchema = hydratedSchema ?? selectedTool?.inputSchema ?? null;
     const selectedIsLoaded = selectedTool ? loadedToolNames.has(selectedTool.name) : false;
     const selectedIsHydrated = selectedTool ? hydratedToolNames.has(selectedTool.name) : false;
-    const selectedIsAlwaysLoaded = selectedTool ? alwaysLoadedTools.has(selectedTool.name) : false;
+    const selectedIsAlwaysLoadedConfig = selectedTool ? alwaysLoadedTools.has(selectedTool.name) : false;
+    const selectedIsAlwaysLoadedDb = selectedTool ? dbAlwaysOnTools.has(selectedTool.name) : false;
+    const selectedIsAlwaysLoaded = selectedIsAlwaysLoadedConfig || selectedIsAlwaysLoadedDb;
 
     const updateToolPreferences = (next: ToolPreferenceMutationInput) => {
         setPreferencesMutation.mutate(next as never);
@@ -302,10 +322,14 @@ function InspectorDashboardContent() {
 
     const toggleAlwaysLoaded = (toolName: string) => {
         const next = new Set(alwaysLoadedTools);
-        if (next.has(toolName)) {
+        const isCurrentlyOn = alwaysLoadedTools.has(toolName) || dbAlwaysOnTools.has(toolName);
+
+        if (isCurrentlyOn) {
             next.delete(toolName);
+            setDbAlwaysOnMutation.mutate({ uuid: toolName, alwaysOn: false });
         } else {
             next.add(toolName);
+            setDbAlwaysOnMutation.mutate({ uuid: toolName, alwaysOn: true });
         }
 
         updateToolPreferences({
@@ -476,11 +500,11 @@ function InspectorDashboardContent() {
                                         </Button>
                                         <Button
                                             onClick={() => toggleAlwaysLoaded(selectedTool.name)}
-                                            disabled={setPreferencesMutation.isPending}
+                                            disabled={setPreferencesMutation.isPending || setDbAlwaysOnMutation.isPending}
                                             variant="outline"
                                             title="Keep this tool warm so it is reloaded automatically into the session working set"
                                             aria-label={`${selectedIsAlwaysLoaded ? 'Disable' : 'Enable'} always-on loading for ${selectedTool.name}`}
-                                            className="border-cyan-700 text-cyan-200 hover:bg-cyan-950/30"
+                                            className={selectedIsAlwaysLoaded ? "border-cyan-500/30 text-cyan-200 bg-cyan-500/10 hover:bg-cyan-500/20" : "border-cyan-700/50 text-cyan-500 hover:bg-cyan-950/30"}
                                         >
                                             {selectedIsAlwaysLoaded ? 'Disable always-on' : 'Enable always-on'}
                                         </Button>
@@ -572,7 +596,7 @@ function InspectorDashboardContent() {
                                             {tool.hydrated ? (
                                                 <span className="bg-purple-500/10 border border-purple-500/20 px-2 py-0.5 rounded text-purple-300">schema</span>
                                             ) : null}
-                                            {alwaysLoadedTools.has(tool.name) ? (
+                                            {(alwaysLoadedTools.has(tool.name) || dbAlwaysOnTools.has(tool.name)) ? (
                                                 <span className="bg-cyan-500/10 border border-cyan-500/20 px-2 py-0.5 rounded text-cyan-300">always on</span>
                                             ) : null}
                                         </div>

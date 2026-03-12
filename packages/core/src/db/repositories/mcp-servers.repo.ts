@@ -45,6 +45,7 @@ import {
     hydrateMetadataFromCache,
     type MetadataReloadStrategy,
 } from "../../mcp/serverMetadataCache.js";
+import { deriveSemanticCatalogForServer } from "../../mcp/catalogMetadata.js";
 import { toolsRepository } from "./tools.repo.js";
 
 
@@ -425,7 +426,9 @@ export class McpServersRepository {
                 const toolList = toolsByServerUuid.get(tool.mcp_server_uuid) ?? [];
                 toolList.push({
                     name: tool.name,
+                    title: tool.title ?? null,
                     description: tool.description,
+                    alwaysOn: tool.always_on ?? false,
                     inputSchema: {
                         properties: tool.toolSchema?.properties,
                         required: tool.toolSchema?.required,
@@ -460,6 +463,12 @@ export class McpServersRepository {
                 const existingServerConfig = existingConfig.mcpServers?.[server.name];
                 const tools = toolsByServerUuid.get(server.uuid) ?? [];
                 const overrideMetadata = metadataOverrides[server.name];
+                const derivedCatalog = deriveSemanticCatalogForServer({
+                    serverName: server.name,
+                    description: server.description ?? null,
+                    alwaysOn: server.always_on ?? false,
+                    tools,
+                });
                 const metadata = overrideMetadata ?? {
                     ...(existingServerConfig?._meta ?? {}),
                     ...buildBaseServerMetadata(server),
@@ -474,13 +483,17 @@ export class McpServersRepository {
                     cacheHydratedAt: existingServerConfig?._meta?.cacheHydratedAt,
                     error: existingServerConfig?._meta?.error,
                     reloadableFromCache: existingServerConfig?._meta?.reloadableFromCache ?? tools.length > 0,
-                    toolCount: tools.length,
-                    tools,
+                    displayName: derivedCatalog.serverDisplayName,
+                    description: server.description ?? null,
+                    serverTags: derivedCatalog.serverTags,
+                    alwaysOn: server.always_on ?? false,
+                    toolCount: derivedCatalog.tools.length,
+                    tools: derivedCatalog.tools,
                 };
 
                 if (overrideMetadata && overrideMetadata.tools.length === 0 && tools.length > 0) {
-                    metadata.tools = tools;
-                    metadata.toolCount = tools.length;
+                    metadata.tools = derivedCatalog.tools;
+                    metadata.toolCount = derivedCatalog.tools.length;
                 }
 
                 config._meta = metadata;

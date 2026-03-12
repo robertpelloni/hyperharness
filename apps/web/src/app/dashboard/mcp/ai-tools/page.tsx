@@ -20,6 +20,7 @@ export default function AIToolsDashboard() {
     const serversQuery = trpc.mcpServers.list.useQuery();
     const apiKeysQuery = trpc.apiKeys.list.useQuery();
     const cliDetectionsQuery = toolsClient.detectCliHarnesses.useQuery();
+    const executionEnvironmentQuery = toolsClient.detectExecutionEnvironment.useQuery();
     const providerQuotasQuery = trpc.billing.getProviderQuotas.useQuery();
     const sessionsQuery = trpc.session.list.useQuery();
     const { data: tools, isLoading: loadingTools } = toolsQuery;
@@ -106,7 +107,7 @@ export default function AIToolsDashboard() {
     const connectedProviders = useMemo(() => providerDirectoryCards.filter((card) => card.statusTone === 'success'), [providerDirectoryCards]);
     const detectedHarnesses = useMemo(() => cliHarnessCards.filter((card) => card.installed), [cliHarnessCards]);
 
-    const loading = loadingTools || loadingServers || loadingKeys || loadingCliDetections;
+    const loading = loadingTools || loadingServers || loadingKeys || loadingCliDetections || executionEnvironmentQuery.isLoading;
 
     return (
         <div className="p-8 space-y-8 h-full overflow-y-auto">
@@ -134,6 +135,95 @@ export default function AIToolsDashboard() {
                 <StatCard title="Detected Harnesses" value={`${detectedHarnesses.length}/${cliHarnessCards.length}`} icon={TerminalSquare} tone="text-violet-400" />
                 <StatCard title="Connected Providers" value={`${connectedProviders.length}/${providerDirectoryCards.length}`} icon={Bot} tone="text-cyan-400" />
             </div>
+
+            <Card className="bg-zinc-900 border-zinc-800">
+                <CardHeader>
+                    <CardTitle className="text-white">Execution Environment</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                    {!executionEnvironmentQuery.data ? (
+                        <div className="rounded border border-dashed border-zinc-800 bg-zinc-950/40 p-6 text-sm text-zinc-500">
+                            Execution environment details are still loading.
+                        </div>
+                    ) : (
+                        <>
+                            <div className="grid grid-cols-1 md:grid-cols-4 gap-3 text-xs text-zinc-300">
+                                <div className="rounded border border-zinc-800 bg-zinc-950/50 p-3">
+                                    <div className="text-zinc-500 uppercase tracking-wide text-[10px]">Preferred shell</div>
+                                    <div className="mt-2 text-sm text-white">{executionEnvironmentQuery.data.summary.preferredShellLabel ?? 'None verified'}</div>
+                                </div>
+                                <div className="rounded border border-zinc-800 bg-zinc-950/50 p-3">
+                                    <div className="text-zinc-500 uppercase tracking-wide text-[10px]">Verified shells</div>
+                                    <div className="mt-2 text-sm text-white">{executionEnvironmentQuery.data.summary.verifiedShellCount}/{executionEnvironmentQuery.data.summary.shellCount}</div>
+                                </div>
+                                <div className="rounded border border-zinc-800 bg-zinc-950/50 p-3">
+                                    <div className="text-zinc-500 uppercase tracking-wide text-[10px]">Verified tools</div>
+                                    <div className="mt-2 text-sm text-white">{executionEnvironmentQuery.data.summary.verifiedToolCount}/{executionEnvironmentQuery.data.summary.toolCount}</div>
+                                </div>
+                                <div className="rounded border border-zinc-800 bg-zinc-950/50 p-3">
+                                    <div className="text-zinc-500 uppercase tracking-wide text-[10px]">Execution posture</div>
+                                    <div className="mt-2 text-sm text-white">{executionEnvironmentQuery.data.summary.ready ? 'Ready' : 'Partial'}</div>
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+                                <div className="space-y-3">
+                                    <div className="text-[10px] uppercase tracking-wide text-zinc-500">Detected shells</div>
+                                    {executionEnvironmentQuery.data.shells.map((shell: any) => (
+                                        <div key={shell.id} className="rounded-lg border border-zinc-800 bg-zinc-950/50 p-4 space-y-2">
+                                            <div className="flex items-center justify-between gap-3">
+                                                <div>
+                                                    <div className="flex items-center gap-2">
+                                                        <span className="text-sm font-semibold text-white">{shell.name}</span>
+                                                        <span className={`rounded-full border px-2 py-0.5 text-[10px] uppercase tracking-wide ${getStatusBadgeClasses(shell.verified ? 'success' : shell.installed ? 'warning' : 'muted')}`}>
+                                                            {shell.verified ? 'verified' : shell.installed ? 'detected' : 'missing'}
+                                                        </span>
+                                                        {shell.preferred ? (
+                                                            <span className="rounded-full border border-cyan-500/30 bg-cyan-500/10 px-2 py-0.5 text-[10px] uppercase tracking-wide text-cyan-300">
+                                                                preferred
+                                                            </span>
+                                                        ) : null}
+                                                    </div>
+                                                    <div className="mt-1 text-xs text-zinc-400 break-all">{shell.resolvedPath ?? 'Not detected'}</div>
+                                                </div>
+                                                <div className="text-xs text-zinc-500 uppercase tracking-wide">{shell.family}</div>
+                                            </div>
+                                            <div className="text-xs text-zinc-300">{shell.version ?? 'Version unavailable'}</div>
+                                        </div>
+                                    ))}
+                                </div>
+
+                                <div className="space-y-3">
+                                    <div className="text-[10px] uppercase tracking-wide text-zinc-500">Common local tools</div>
+                                    {executionEnvironmentQuery.data.tools.map((tool: any) => (
+                                        <div key={tool.id} className="rounded-lg border border-zinc-800 bg-zinc-950/50 p-4 space-y-2">
+                                            <div className="flex items-center justify-between gap-3">
+                                                <div>
+                                                    <div className="flex items-center gap-2">
+                                                        <span className="text-sm font-semibold text-white">{tool.name}</span>
+                                                        <span className={`rounded-full border px-2 py-0.5 text-[10px] uppercase tracking-wide ${getStatusBadgeClasses(tool.verified ? 'success' : tool.installed ? 'warning' : 'muted')}`}>
+                                                            {tool.verified ? 'verified' : tool.installed ? 'detected' : 'missing'}
+                                                        </span>
+                                                    </div>
+                                                    <div className="mt-1 text-xs text-zinc-400 break-all">{tool.resolvedPath ?? 'Not detected'}</div>
+                                                </div>
+                                                <div className="text-xs text-zinc-500">{tool.version ?? '—'}</div>
+                                            </div>
+                                            <div className="flex flex-wrap gap-2">
+                                                {(tool.capabilities ?? []).map((capability: string) => (
+                                                    <span key={capability} className="rounded-full border border-zinc-700 bg-zinc-900 px-2 py-1 text-[11px] text-zinc-300">
+                                                        {capability}
+                                                    </span>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        </>
+                    )}
+                </CardContent>
+            </Card>
 
             <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
                 <Card className="bg-zinc-900 border-zinc-800">

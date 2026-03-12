@@ -12,6 +12,17 @@ export interface BillingProviderQuotaSummary {
     rateLimitRpm?: number | null;
     availability?: string;
     lastError?: string | null;
+    windows?: Array<{
+        key: string;
+        label: string;
+        used: number;
+        limit: number | null;
+        remaining: number | null;
+        resetDate: string | null;
+        unit: string;
+    }>;
+    source?: string | null;
+    connectionId?: string | null;
 }
 
 export interface BillingTaskRoutingRuleSummary {
@@ -150,6 +161,36 @@ export const PROVIDER_PORTALS: ProviderPortalDefinition[] = [
             { label: 'Billing', href: 'https://github.com/settings/billing' },
             { label: 'PATs', href: 'https://github.com/settings/tokens' },
             { label: 'Docs', href: 'https://docs.github.com/copilot' },
+        ],
+    },
+    {
+        id: 'antigravity',
+        label: 'Antigravity',
+        notes: 'Google Cloud Code Assist / Antigravity subscription and quota surfaces.',
+        actions: [
+            { label: 'Code Assist', href: 'https://console.cloud.google.com/' },
+            { label: 'Google Cloud', href: 'https://console.cloud.google.com/' },
+            { label: 'Docs', href: 'https://cloud.google.com/code-assist/docs' },
+        ],
+    },
+    {
+        id: 'kiro',
+        label: 'Kiro',
+        notes: 'Kiro / AWS CodeWhisperer subscription and quota management links.',
+        actions: [
+            { label: 'Kiro', href: 'https://kiro.dev/' },
+            { label: 'AWS Builder ID', href: 'https://view.awsapps.com/start' },
+            { label: 'Docs', href: 'https://docs.aws.amazon.com/codewhisperer/' },
+        ],
+    },
+    {
+        id: 'kimi-coding',
+        label: 'Kimi Coding',
+        notes: 'Kimi Coding membership and usage overview.',
+        actions: [
+            { label: 'Kimi', href: 'https://kimi.com/' },
+            { label: 'Coding', href: 'https://kimi.com/' },
+            { label: 'Docs', href: 'https://platform.moonshot.ai/docs' },
         ],
     },
 ];

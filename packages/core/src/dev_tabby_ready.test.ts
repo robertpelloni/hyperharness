@@ -18,7 +18,8 @@ describe('dev_tabby_ready startup summaries', () => {
         },
       }),
     ).toEqual([
-      'MCP router inventory',
+      'cached MCP inventory',
+      'live MCP runtime',
       'session restore',
       'memory initialization',
       'extension bridge listener',

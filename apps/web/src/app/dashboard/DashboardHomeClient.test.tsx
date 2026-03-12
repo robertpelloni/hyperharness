@@ -3,7 +3,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 
 const invalidate = vi.fn(async () => undefined);
 
-vi.mock('@/utils/trpc', () => {
+vi.mock('../../utils/trpc', () => {
   const createUseQuery = <T,>(data: T) => () => ({ data });
   const createUseMutation = () => () => ({ mutate: vi.fn() });
 
@@ -60,7 +60,9 @@ vi.mock('@/utils/trpc', () => {
           checks: {
             mcpAggregator: {
               ready: true,
+              liveReady: true,
               serverCount: 2,
+              connectedCount: 1,
               initialization: {
                 inProgress: false,
                 initialized: true,
@@ -70,6 +72,10 @@ vi.mock('@/utils/trpc', () => {
               persistedServerCount: 2,
               persistedToolCount: 9,
               configuredServerCount: 2,
+              advertisedServerCount: 2,
+              advertisedToolCount: 9,
+              advertisedAlwaysOnServerCount: 0,
+              advertisedAlwaysOnToolCount: 0,
               inventoryReady: true,
             },
             configSync: {
@@ -103,6 +109,20 @@ vi.mock('@/utils/trpc', () => {
               acceptingConnections: true,
               clientCount: 1,
               hasConnectedClients: true,
+            },
+            executionEnvironment: {
+              ready: true,
+              preferredShellId: 'pwsh',
+              preferredShellLabel: 'PowerShell 7',
+              shellCount: 2,
+              verifiedShellCount: 2,
+              toolCount: 5,
+              verifiedToolCount: 5,
+              harnessCount: 2,
+              verifiedHarnessCount: 2,
+              supportsPowerShell: true,
+              supportsPosixShell: true,
+              notes: ['Prefer PowerShell 7.'],
             },
           },
         }),
@@ -231,7 +251,8 @@ describe('DashboardHomeClient', () => {
     expect(html).toContain('Supervised CLI runtime');
     expect(html).toContain('Quota and fallback posture');
     expect(html).toContain('Startup readiness');
-    expect(html).toContain('Config sync');
+    expect(html).toContain('Cached inventory');
+    expect(html).toContain('Live MCP runtime');
     expect(html).toContain('Healthy workspace');
     expect(html).toContain('Manual restart only');
     expect(html).toContain('Anthropic');

@@ -1,5 +1,6 @@
 import path from 'path';
 
+import { deriveSemanticCatalogForServer } from './catalogMetadata.js';
 import { MCPConfigStore } from './configStore.js';
 import { namespaceToolName, parseNamespacedToolName } from './namespaces.js';
 import { StdioClient } from './StdioClient.js';
@@ -202,7 +203,7 @@ export class MCPAggregator {
         }
 
         return tools.filter((tool) => {
-            const haystack = `${tool.name} ${tool._originalName} ${tool.description ?? ''} ${tool.server}`.toLowerCase();
+            const haystack = `${tool.name} ${tool._originalName} ${tool.advertisedName ?? ''} ${tool.description ?? ''} ${tool.server} ${tool.serverDisplayName ?? ''} ${(tool.serverTags ?? []).join(' ')} ${(tool.toolTags ?? []).join(' ')} ${tool.semanticGroup ?? ''} ${tool.semanticGroupLabel ?? ''} ${(tool.keywords ?? []).join(' ')}`.toLowerCase();
             return haystack.includes(normalizedQuery);
         });
     }
@@ -235,12 +236,34 @@ export class MCPAggregator {
     }
 
     private namespaceTool(serverName: string, tool: MCPToolDefinition): MCPAggregatedTool {
+        const derived = deriveSemanticCatalogForServer({
+            serverName,
+            tools: [{
+                name: tool.name,
+                title: typeof tool.title === 'string' ? tool.title : null,
+                description: tool.description ?? null,
+                inputSchema: typeof tool.inputSchema === 'object' && tool.inputSchema !== null
+                    ? tool.inputSchema as Record<string, unknown>
+                    : null,
+                alwaysOn: false,
+            }],
+        });
+        const derivedTool = derived.tools[0];
+
         return {
             ...tool,
             server: serverName,
             name: namespaceToolName(serverName, tool.name),
             _originalName: tool.name,
             description: `[${serverName}] ${tool.description ?? ''}`.trim(),
+            serverDisplayName: derivedTool?.serverDisplayName ?? serverName,
+            advertisedName: derivedTool?.advertisedName ?? namespaceToolName(serverName, tool.name),
+            serverTags: derivedTool?.serverTags ?? [],
+            toolTags: derivedTool?.toolTags ?? [],
+            semanticGroup: derivedTool?.semanticGroup ?? 'general-utility',
+            semanticGroupLabel: derivedTool?.semanticGroupLabel ?? 'general utility',
+            keywords: derivedTool?.keywords ?? [],
+            alwaysOn: Boolean(derivedTool?.alwaysOn),
         };
     }
 

@@ -173,7 +173,9 @@ describe('dashboard home helpers', () => {
         checks: {
           mcpAggregator: {
             ready: true,
+            liveReady: true,
             serverCount: 1,
+            connectedCount: 1,
             initialization: {
               inProgress: false,
               initialized: true,
@@ -182,6 +184,10 @@ describe('dashboard home helpers', () => {
             },
             persistedServerCount: 1,
             persistedToolCount: 6,
+            advertisedServerCount: 1,
+            advertisedToolCount: 6,
+            advertisedAlwaysOnServerCount: 0,
+            advertisedAlwaysOnToolCount: 0,
             inventoryReady: true,
           },
           configSync: {
@@ -214,6 +220,19 @@ describe('dashboard home helpers', () => {
             ready: true,
             clientCount: 0,
           },
+          executionEnvironment: {
+            ready: true,
+            preferredShellId: 'pwsh',
+            preferredShellLabel: 'PowerShell 7',
+            shellCount: 2,
+            verifiedShellCount: 2,
+            toolCount: 4,
+            verifiedToolCount: 4,
+            harnessCount: 1,
+            verifiedHarnessCount: 1,
+            supportsPowerShell: true,
+            supportsPosixShell: false,
+          },
         },
       },
       [],
@@ -236,7 +255,9 @@ describe('dashboard home helpers', () => {
       checks: {
         mcpAggregator: {
           ready: true,
+          liveReady: true,
           serverCount: 2,
+          connectedCount: 1,
           initialization: {
             inProgress: false,
             initialized: true,
@@ -246,6 +267,10 @@ describe('dashboard home helpers', () => {
           persistedServerCount: 2,
           persistedToolCount: 14,
           configuredServerCount: 2,
+          advertisedServerCount: 2,
+          advertisedToolCount: 14,
+          advertisedAlwaysOnServerCount: 1,
+          advertisedAlwaysOnToolCount: 3,
           inventoryReady: true,
         },
         configSync: {
@@ -281,19 +306,37 @@ describe('dashboard home helpers', () => {
           clientCount: 1,
           hasConnectedClients: true,
         },
+        executionEnvironment: {
+          ready: true,
+          preferredShellId: 'pwsh',
+          preferredShellLabel: 'PowerShell 7',
+          shellCount: 2,
+          verifiedShellCount: 2,
+          toolCount: 4,
+          verifiedToolCount: 4,
+          harnessCount: 1,
+          verifiedHarnessCount: 1,
+          supportsPowerShell: true,
+          supportsPosixShell: false,
+        },
       },
     };
 
     expect(buildStartupChecklist(startupStatus)).toEqual([
       {
-        label: 'Config sync',
+        label: 'Cached inventory',
         ready: true,
-        detail: '2 servers, 14 tools cached',
+        detail: '2 cached servers · 14 advertised tools · 3 always-on advertised immediately',
       },
       {
-        label: 'Router inventory',
+        label: 'Live MCP runtime',
         ready: true,
-        detail: '2 persisted servers · 14 persisted tools',
+        detail: '1/2 live server connections warmed · cached tools stay usable while the rest connect',
+      },
+      {
+        label: 'Memory / context',
+        ready: true,
+        detail: 'Memory manager initialized and agent context services are available',
       },
       {
         label: 'Session restore',
@@ -304,6 +347,11 @@ describe('dashboard home helpers', () => {
         label: 'Client bridge',
         ready: true,
         detail: '1 connected bridge client · browser/editor bridge listener ready for new clients',
+      },
+      {
+        label: 'Execution environment',
+        ready: true,
+        detail: 'PowerShell 7 preferred · 4/4 verified tools',
       },
     ]);
   });
@@ -316,7 +364,9 @@ describe('dashboard home helpers', () => {
       checks: {
         mcpAggregator: {
           ready: true,
+          liveReady: true,
           serverCount: 0,
+          connectedCount: 0,
           initialization: {
             inProgress: false,
             initialized: true,
@@ -326,6 +376,10 @@ describe('dashboard home helpers', () => {
           persistedServerCount: 0,
           persistedToolCount: 0,
           configuredServerCount: 0,
+          advertisedServerCount: 0,
+          advertisedToolCount: 0,
+          advertisedAlwaysOnServerCount: 0,
+          advertisedAlwaysOnToolCount: 0,
           inventoryReady: true,
         },
         configSync: {
@@ -361,19 +415,37 @@ describe('dashboard home helpers', () => {
           clientCount: 0,
           hasConnectedClients: false,
         },
+        executionEnvironment: {
+          ready: true,
+          preferredShellId: 'pwsh',
+          preferredShellLabel: 'PowerShell 7',
+          shellCount: 1,
+          verifiedShellCount: 1,
+          toolCount: 3,
+          verifiedToolCount: 3,
+          harnessCount: 0,
+          verifiedHarnessCount: 0,
+          supportsPowerShell: true,
+          supportsPosixShell: false,
+        },
       },
     };
 
     expect(buildStartupChecklist(startupStatus)).toEqual([
       {
-        label: 'Config sync',
+        label: 'Cached inventory',
         ready: true,
-        detail: '0 servers, 0 tools cached',
+        detail: 'No configured servers yet · empty cached inventory is ready',
       },
       {
-        label: 'Router inventory',
+        label: 'Live MCP runtime',
         ready: true,
-        detail: 'No configured servers yet · empty inventory is ready',
+        detail: 'No downstream servers configured · live MCP runtime is ready',
+      },
+      {
+        label: 'Memory / context',
+        ready: true,
+        detail: 'Memory manager initialized and agent context services are available',
       },
       {
         label: 'Session restore',
@@ -384,6 +456,11 @@ describe('dashboard home helpers', () => {
         label: 'Client bridge',
         ready: true,
         detail: '0 connected bridge clients · browser/editor bridge listener ready for new clients',
+      },
+      {
+        label: 'Execution environment',
+        ready: true,
+        detail: 'PowerShell 7 preferred · 3/3 verified tools',
       },
     ]);
   });
@@ -403,7 +480,9 @@ describe('dashboard home helpers', () => {
       checks: {
         mcpAggregator: {
           ready: false,
+          liveReady: false,
           serverCount: 2,
+          connectedCount: 0,
           initialization: {
             inProgress: true,
             initialized: false,
@@ -412,6 +491,10 @@ describe('dashboard home helpers', () => {
           },
           persistedServerCount: 2,
           persistedToolCount: 14,
+          advertisedServerCount: 2,
+          advertisedToolCount: 14,
+          advertisedAlwaysOnServerCount: 0,
+          advertisedAlwaysOnToolCount: 0,
           inventoryReady: false,
         },
         configSync: {
@@ -443,6 +526,19 @@ describe('dashboard home helpers', () => {
         extensionBridge: {
           ready: true,
           clientCount: 1,
+        },
+        executionEnvironment: {
+          ready: false,
+          preferredShellId: null,
+          preferredShellLabel: null,
+          shellCount: 1,
+          verifiedShellCount: 0,
+          toolCount: 0,
+          verifiedToolCount: 0,
+          harnessCount: 0,
+          verifiedHarnessCount: 0,
+          supportsPowerShell: false,
+          supportsPosixShell: false,
         },
       },
     };
@@ -490,8 +586,8 @@ describe('dashboard home helpers', () => {
     );
 
     expect(alerts.map((alert) => alert.title)).toEqual([
-      'All configured MCP servers are disconnected',
       'Supervised sessions have failed',
+      'Some MCP servers need attention',
       'Startup sequence is still warming up',
       'Provider routing has degraded capacity',
     ]);
@@ -512,7 +608,9 @@ describe('DashboardHomeView', () => {
           checks: {
             mcpAggregator: {
               ready: true,
+              liveReady: true,
               serverCount: 2,
+              connectedCount: 1,
               initialization: {
                 inProgress: false,
                 initialized: true,
@@ -521,6 +619,10 @@ describe('DashboardHomeView', () => {
               },
               persistedServerCount: 2,
               persistedToolCount: 14,
+              advertisedServerCount: 2,
+              advertisedToolCount: 14,
+              advertisedAlwaysOnServerCount: 0,
+              advertisedAlwaysOnToolCount: 2,
               inventoryReady: true,
             },
             configSync: {
@@ -553,6 +655,19 @@ describe('DashboardHomeView', () => {
             extensionBridge: {
               ready: true,
               clientCount: 1,
+            },
+            executionEnvironment: {
+              ready: true,
+              preferredShellId: 'pwsh',
+              preferredShellLabel: 'PowerShell 7',
+              shellCount: 2,
+              verifiedShellCount: 2,
+              toolCount: 5,
+              verifiedToolCount: 5,
+              harnessCount: 1,
+              verifiedHarnessCount: 1,
+              supportsPowerShell: true,
+              supportsPosixShell: true,
             },
           },
         }}
@@ -623,7 +738,9 @@ describe('DashboardHomeView', () => {
     expect(html).toContain('Providers');
     expect(html).toContain('Server health and traffic');
     expect(html).toContain('Startup readiness');
-    expect(html).toContain('Router inventory');
+    expect(html).toContain('Cached inventory');
+    expect(html).toContain('Live MCP runtime');
+    expect(html).toContain('Memory / context');
     expect(html).toContain('Supervised CLI runtime');
     expect(html).toContain('Quota and fallback posture');
     expect(html).toContain('Detailed MCP view');
@@ -651,7 +768,9 @@ describe('DashboardHomeView', () => {
           checks: {
             mcpAggregator: {
               ready: false,
+              liveReady: false,
               serverCount: 2,
+              connectedCount: 0,
               initialization: {
                 inProgress: true,
                 initialized: false,
@@ -660,6 +779,10 @@ describe('DashboardHomeView', () => {
               },
               persistedServerCount: 2,
               persistedToolCount: 14,
+              advertisedServerCount: 2,
+              advertisedToolCount: 14,
+              advertisedAlwaysOnServerCount: 0,
+              advertisedAlwaysOnToolCount: 0,
               inventoryReady: false,
             },
             configSync: {
@@ -691,6 +814,19 @@ describe('DashboardHomeView', () => {
             extensionBridge: {
               ready: true,
               clientCount: 1,
+            },
+            executionEnvironment: {
+              ready: false,
+              preferredShellId: null,
+              preferredShellLabel: null,
+              shellCount: 1,
+              verifiedShellCount: 0,
+              toolCount: 0,
+              verifiedToolCount: 0,
+              harnessCount: 0,
+              verifiedHarnessCount: 0,
+              supportsPowerShell: false,
+              supportsPosixShell: false,
             },
           },
         }}
@@ -757,7 +893,9 @@ describe('DashboardHomeView', () => {
           checks: {
             mcpAggregator: {
               ready: true,
+              liveReady: true,
               serverCount: 1,
+              connectedCount: 1,
               initialization: {
                 inProgress: false,
                 initialized: true,
@@ -766,6 +904,10 @@ describe('DashboardHomeView', () => {
               },
               persistedServerCount: 1,
               persistedToolCount: 4,
+              advertisedServerCount: 1,
+              advertisedToolCount: 4,
+              advertisedAlwaysOnServerCount: 0,
+              advertisedAlwaysOnToolCount: 0,
               inventoryReady: true,
             },
             configSync: {
@@ -797,6 +939,19 @@ describe('DashboardHomeView', () => {
             extensionBridge: {
               ready: true,
               clientCount: 1,
+            },
+            executionEnvironment: {
+              ready: true,
+              preferredShellId: 'pwsh',
+              preferredShellLabel: 'PowerShell 7',
+              shellCount: 1,
+              verifiedShellCount: 1,
+              toolCount: 3,
+              verifiedToolCount: 3,
+              harnessCount: 0,
+              verifiedHarnessCount: 0,
+              supportsPowerShell: true,
+              supportsPosixShell: false,
             },
           },
         }}

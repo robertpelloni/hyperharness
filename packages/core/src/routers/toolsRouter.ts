@@ -2,6 +2,7 @@ import { z } from 'zod';
 import { t, publicProcedure, adminProcedure } from '../lib/trpc-core.js';
 import { toolRegistry, RegisteredTool } from '../services/ToolRegistry.js';
 import { detectCliHarnesses } from '../services/cli-harness-detection.js';
+import { detectLocalExecutionEnvironment } from '../services/execution-environment.js';
 import { detectInstallSurfaceArtifacts } from '../services/install-surface-detection.js';
 import { toolsRepository, mcpServersRepository } from '../db/repositories/index.js';
 import {
@@ -92,6 +93,10 @@ export const toolsRouter = t.router({
 
     detectCliHarnesses: publicProcedure.query(async () => {
         return detectCliHarnesses();
+    }),
+
+    detectExecutionEnvironment: publicProcedure.query(async () => {
+        return detectLocalExecutionEnvironment();
     }),
 
     detectInstallSurfaces: publicProcedure.query(async () => {

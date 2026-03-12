@@ -2,6 +2,7 @@ import { z } from 'zod';
 import fs from 'node:fs/promises';
 import { mcpServersRepository, toolsRepository } from '../db/repositories/index.js';
 import { t, publicProcedure, adminProcedure, getMcpAggregator, getMcpServer } from '../lib/trpc-core.js';
+import { deriveSemanticCatalogForServer } from '../mcp/catalogMetadata.js';
 import { namespaceToolName } from '../mcp/namespaces.js';
 import { pickAutoLoadCandidate, rankToolSearchCandidates } from '../mcp/toolSearchRanking.js';
 import { toolSelectionTelemetry } from '../mcp/toolSelectionTelemetry.js';
@@ -64,21 +65,60 @@ async function getCachedToolInventory() {
     ]);
 
     const serverNames = new Map(servers.map((server) => [server.uuid, server.name]));
+    const toolsByServerUuid = new Map<string, typeof tools>();
     const toolCounts = new Map<string, number>();
 
     for (const tool of tools) {
         toolCounts.set(tool.mcp_server_uuid, (toolCounts.get(tool.mcp_server_uuid) ?? 0) + 1);
+        const bucket = toolsByServerUuid.get(tool.mcp_server_uuid) ?? [];
+        bucket.push(tool);
+        toolsByServerUuid.set(tool.mcp_server_uuid, bucket);
     }
 
+    const derivedByServerUuid = new Map(servers.map((server) => [
+        server.uuid,
+        deriveSemanticCatalogForServer({
+            serverName: server.name,
+            description: server.description ?? null,
+            alwaysOn: server.always_on ?? false,
+            tools: (toolsByServerUuid.get(server.uuid) ?? []).map((tool) => ({
+                name: tool.name,
+                title: tool.title ?? null,
+                description: tool.description ?? null,
+                inputSchema: tool.toolSchema ?? null,
+                alwaysOn: tool.always_on ?? false,
+            })),
+        }),
+    ]));
+
     return {
-        servers,
+        servers: servers.map((server) => {
+            const derived = derivedByServerUuid.get(server.uuid);
+            return {
+                ...server,
+                displayName: derived?.serverDisplayName ?? server.name,
+                tags: derived?.serverTags ?? [],
+                alwaysOnAdvertised: Boolean(server.always_on),
+            };
+        }),
         toolCounts,
         tools: tools.map((tool) => {
             const serverName = serverNames.get(tool.mcp_server_uuid) ?? 'unknown';
+            const derivedServer = derivedByServerUuid.get(tool.mcp_server_uuid);
+            const derivedTool = derivedServer?.tools.find((candidate) => candidate.name === tool.name);
             return {
                 name: namespaceToolName(serverName, tool.name),
                 description: tool.description ?? '',
                 server: serverName,
+                serverDisplayName: derivedTool?.serverDisplayName ?? serverName,
+                serverTags: derivedTool?.serverTags ?? [],
+                toolTags: derivedTool?.toolTags ?? [],
+                semanticGroup: derivedTool?.semanticGroup ?? 'general-utility',
+                semanticGroupLabel: derivedTool?.semanticGroupLabel ?? 'general utility',
+                advertisedName: derivedTool?.advertisedName ?? namespaceToolName(serverName, tool.name),
+                keywords: derivedTool?.keywords ?? [],
+                alwaysOn: Boolean(tool.always_on ?? false) || Boolean(derivedServer?.alwaysOn),
+                originalName: tool.name,
                 inputSchema: tool.toolSchema ?? null,
             };
         }),
@@ -152,8 +192,11 @@ export const mcpRouter = t.router({
                 const runtime = runtimeStates.get(server.name);
                 return {
                     name: server.name ?? 'unknown',
+                    displayName: server.displayName ?? server.name ?? 'unknown',
+                    tags: server.tags ?? [],
                     status: runtime?.status ?? (server.error_status === 'NONE' ? 'cached' : server.error_status.toLowerCase()),
                     toolCount: runtime?.toolCount ?? toolCounts.get(server.uuid) ?? 0,
+                    alwaysOn: Boolean(server.alwaysOnAdvertised),
                     config: {
                         command: runtime?.config?.command ?? server.command ?? '',
                         args: runtime?.config?.args ?? server.args ?? [],
@@ -182,6 +225,14 @@ export const mcpRouter = t.router({
                 name: tool.name,
                 description: tool.description ?? '',
                 server: tool.server ?? 'unknown',
+                serverDisplayName: tool.serverDisplayName ?? tool.server ?? 'unknown',
+                serverTags: tool.serverTags ?? [],
+                toolTags: tool.toolTags ?? [],
+                semanticGroup: tool.semanticGroup ?? 'general-utility',
+                semanticGroupLabel: tool.semanticGroupLabel ?? 'general utility',
+                advertisedName: tool.advertisedName ?? tool.name,
+                keywords: tool.keywords ?? [],
+                alwaysOn: Boolean(tool.alwaysOn),
                 inputSchema: tool.inputSchema ?? null,
             }));
         } catch {
@@ -215,7 +266,15 @@ export const mcpRouter = t.router({
                         name: string;
                         description: string;
                         serverName?: string;
+                        serverDisplayName?: string;
                         originalName?: string;
+                        advertisedName?: string;
+                        serverTags?: string[];
+                        toolTags?: string[];
+                        semanticGroup?: string;
+                        semanticGroupLabel?: string;
+                        keywords?: string[];
+                        alwaysOn?: boolean;
                         loaded?: boolean;
                         hydrated?: boolean;
                         deferred?: boolean;
@@ -232,6 +291,14 @@ export const mcpRouter = t.router({
                             name: tool.name,
                             description: tool.description ?? '',
                             server: tool.serverName ?? 'unknown',
+                            serverDisplayName: tool.serverDisplayName ?? tool.serverName ?? 'unknown',
+                            serverTags: tool.serverTags ?? [],
+                            toolTags: tool.toolTags ?? [],
+                            semanticGroup: tool.semanticGroup ?? 'general-utility',
+                            semanticGroupLabel: tool.semanticGroupLabel ?? 'general utility',
+                            advertisedName: tool.advertisedName ?? tool.name,
+                            keywords: tool.keywords ?? [],
+                            alwaysOn: Boolean(tool.alwaysOn),
                             originalName: tool.originalName ?? null,
                             loaded: Boolean(tool.loaded),
                             hydrated: Boolean(tool.hydrated),
@@ -272,7 +339,15 @@ export const mcpRouter = t.router({
                         name: tool.name,
                         description: tool.description ?? '',
                         serverName: tool.server,
-                        originalName: tool.name.includes('__') ? tool.name.split('__').slice(1).join('__') : undefined,
+                        serverDisplayName: tool.serverDisplayName,
+                        advertisedName: tool.advertisedName,
+                        originalName: tool.originalName ?? (tool.name.includes('__') ? tool.name.split('__').slice(1).join('__') : undefined),
+                        serverTags: tool.serverTags,
+                        toolTags: tool.toolTags,
+                        semanticGroup: tool.semanticGroup,
+                        semanticGroupLabel: tool.semanticGroupLabel,
+                        keywords: tool.keywords,
+                        alwaysOn: tool.alwaysOn,
                         deferred: tool.inputSchema == null,
                         hydrated: tool.inputSchema != null,
                     })),
@@ -297,6 +372,14 @@ export const mcpRouter = t.router({
                     name: tool.name,
                     description: tool.description ?? '',
                     server: tool.serverName ?? 'unknown',
+                    serverDisplayName: tool.serverDisplayName ?? tool.serverName ?? 'unknown',
+                    serverTags: tool.serverTags ?? [],
+                    toolTags: tool.toolTags ?? [],
+                    semanticGroup: tool.semanticGroup ?? 'general-utility',
+                    semanticGroupLabel: tool.semanticGroupLabel ?? 'general utility',
+                    advertisedName: tool.advertisedName ?? tool.name,
+                    keywords: tool.keywords ?? [],
+                    alwaysOn: Boolean(tool.alwaysOn),
                     originalName: tool.originalName ?? null,
                     loaded: tool.loaded || tool.name === autoLoadDecision?.toolName,
                     hydrated: tool.hydrated,
@@ -330,6 +413,14 @@ export const mcpRouter = t.router({
                 name: tool.name,
                 description: tool.description ?? '',
                 server: tool.server ?? 'unknown',
+                serverDisplayName: tool.serverDisplayName ?? tool.server ?? 'unknown',
+                serverTags: tool.serverTags ?? [],
+                toolTags: tool.toolTags ?? [],
+                semanticGroup: tool.semanticGroup ?? 'general-utility',
+                semanticGroupLabel: tool.semanticGroupLabel ?? 'general utility',
+                advertisedName: tool.advertisedName ?? tool.name,
+                keywords: tool.keywords ?? [],
+                alwaysOn: Boolean(tool.alwaysOn),
                 originalName: null,
                 loaded: false,
                 hydrated: tool.inputSchema != null,

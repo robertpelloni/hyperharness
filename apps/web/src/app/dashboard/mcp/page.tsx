@@ -59,6 +59,7 @@ type ManagedServerMetadata = {
     url?: string | null;
     bearerToken?: string | null;
     headers?: Record<string, string>;
+    always_on?: boolean;
     _meta?: {
         status?: string;
         metadataSource?: string;
@@ -698,6 +699,7 @@ export default function MCPDashboard(): React.JSX.Element {
     const reloadMetadataMutation = mcpServersClient.reloadMetadata.useMutation();
     const clearMetadataCacheMutation = mcpServersClient.clearMetadataCache.useMutation();
     const deleteServerMutation = mcpServersClient.delete.useMutation();
+    const updateServerMutation = mcpServersClient.update.useMutation();
     const resetServerHealthMutation = trpc.serverHealth.reset.useMutation();
     const { data: editingServer } = mcpServersClient.get.useQuery(
         { uuid: editingServerUuid ?? '' },
@@ -770,6 +772,20 @@ export default function MCPDashboard(): React.JSX.Element {
             toast.error(message);
         } finally {
             setDeletingServerUuid(null);
+        }
+    }
+
+    async function handleToggleAlwaysOn(serverUuid: string, serverName: string, currentValue: boolean) {
+        try {
+            await updateServerMutation.mutateAsync({
+                uuid: serverUuid,
+                always_on: !currentValue,
+            });
+            await refreshDashboardQueries();
+            toast.success(`'Always On' setting updated for ${serverName}.`);
+        } catch (error) {
+            const message = error instanceof Error ? error.message : 'Failed to update setting.';
+            toast.error(message);
         }
     }
 
@@ -1150,6 +1166,11 @@ export default function MCPDashboard(): React.JSX.Element {
                                                 <span className="rounded border border-zinc-800 bg-zinc-900/60 px-2 py-1">
                                                     cache {server.metadataStatus ?? 'pending'}
                                                 </span>
+                                                {server.always_on ? (
+                                                    <span className="rounded border border-indigo-500/20 bg-indigo-500/10 px-2 py-1 text-indigo-200 font-bold">
+                                                        Always On
+                                                    </span>
+                                                ) : null}
                                                 <span className="rounded border border-zinc-800 bg-zinc-900/60 px-2 py-1">
                                                     source {server.metadataSource ?? 'none'}
                                                 </span>
@@ -1318,6 +1339,19 @@ export default function MCPDashboard(): React.JSX.Element {
                                                             <Pencil className="mr-2 h-3.5 w-3.5" />
                                                             Edit tools
                                                         </Link>
+                                                        <Button
+                                                            type="button"
+                                                            variant="outline"
+                                                            size="sm"
+                                                            disabled={updateServerMutation.isPending}
+                                                            onClick={() => void handleToggleAlwaysOn(serverUuid, server.name, !!server.always_on)}
+                                                            title={`Toggle Always On status for ${server.name}`}
+                                                            aria-label={`Toggle Always On for ${server.name}`}
+                                                            className={`border-zinc-700 hover:bg-zinc-800 ${server.always_on ? 'text-indigo-400 border-indigo-500/30 bg-indigo-500/5' : 'text-zinc-300'}`}
+                                                        >
+                                                            <Zap className="mr-2 h-3.5 w-3.5" />
+                                                            Toggle Auto-Load Tools: {server.always_on ? 'ON' : 'OFF'}
+                                                        </Button>
                                                         <Button
                                                             type="button"
                                                             variant="outline"

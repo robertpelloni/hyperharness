@@ -16,3 +16,6 @@
 [submodule "external/claude-mem"]
 	path = external/claude-mem
 	url = https://github.com/robertpelloni/claude-mem
+[submodule "external/OmniRoute"]
+	path = external/OmniRoute
+	url = https://github.com/diegosouzapw/OmniRoute

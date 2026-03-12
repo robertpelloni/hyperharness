@@ -3,6 +3,8 @@ export type ProviderRoutingStrategy = 'cheapest' | 'best' | 'round-robin';
 export type ProviderTaskType = 'coding' | 'planning' | 'research' | 'general' | 'worker' | 'supervisor';
 export type ProviderAvailability = 'available' | 'rate_limited' | 'quota_exhausted' | 'cooldown' | 'missing_auth';
 export type ProviderCapability = 'coding' | 'reasoning' | 'vision' | 'tools' | 'long_context';
+export type ProviderBalanceProvider = 'github' | 'claude' | 'codex' | 'antigravity' | 'kiro' | 'kimi-coding';
+export type ProviderQuotaUnit = 'percent' | 'requests' | 'tokens' | 'credits' | 'unknown';
 
 export interface ProviderModelDefinition {
     id: string;
@@ -40,6 +42,16 @@ export interface ProviderAuthState {
     detail: string;
 }
 
+export interface ProviderQuotaWindowSnapshot {
+    key: string;
+    label: string;
+    used: number;
+    limit: number | null;
+    remaining: number | null;
+    resetDate: string | null;
+    unit: ProviderQuotaUnit;
+}
+
 export interface ProviderQuotaSnapshot extends ProviderAuthState {
     used: number;
     limit: number | null;
@@ -50,6 +62,35 @@ export interface ProviderQuotaSnapshot extends ProviderAuthState {
     availability: ProviderAvailability;
     lastError?: string;
     retryAfter?: string | null;
+    windows?: ProviderQuotaWindowSnapshot[];
+    source?: 'runtime' | 'balance';
+    connectionId?: string | null;
+}
+
+export interface ProviderBalanceConnection {
+    id: string;
+    provider: ProviderBalanceProvider;
+    authMethod: Extract<ProviderAuthMethod, 'oauth' | 'pat'>;
+    accessToken: string;
+    refreshToken?: string | null;
+    expiresAt?: string | null;
+    accountLabel?: string | null;
+    metadata?: Record<string, unknown>;
+}
+
+export interface ProviderBalanceConnectionSource {
+    getConnection(provider: ProviderBalanceProvider): Promise<ProviderBalanceConnection | null>;
+}
+
+export interface ProviderBalanceTokenRefresher {
+    refreshConnection(connection: ProviderBalanceConnection): Promise<ProviderBalanceConnection>;
+}
+
+export interface ProviderQuotaProvider {
+    provider: ProviderBalanceProvider;
+    billingProvider: string;
+    name: string;
+    fetchQuotaSnapshot(connection: ProviderBalanceConnection): Promise<ProviderQuotaSnapshot>;
 }
 
 export interface RoutingSelectionRequest {

@@ -2,6 +2,99 @@
 
 _Last updated: 2026-03-11_
 
+## Latest session update — live smoke continuation + CLI lock cleanup
+
+### What was verified live
+
+The root dev flow is currently healthy in this workspace once the dashboard hydrates.
+
+Live probes during this continuation showed:
+
+- `http://127.0.0.1:3000/api/trpc/startupStatus?input={}` returned ready state with:
+  - `checks.memory.ready: true`
+  - `checks.memory.initialized: true`
+  - `checks.mcpAggregator.serverCount: 65`
+  - `checks.mcpAggregator.connectedCount: 0`
+  - `checks.mcpAggregator.persistedServerCount: 65`
+- `http://127.0.0.1:3000/api/trpc/mcp.getStatus?input={}` reported:
+  - `serverCount: 65`
+  - `toolCount: 271`
+- `/dashboard`
+  - first paint still shows fallback values briefly
+  - after hydration, the operator home reflects the live state correctly (`0/65`, `271 tools`, startup readiness ready)
+- `/dashboard/mcp/system`
+  - now hydrates to `Healthy` / `Ready`
+  - shows `4/4 phases ready`
+  - reflects the current MCP inventory counts correctly (`65 persisted servers`, `271 tools`)
+
+Interpretation: the current regression is **not** that the dashboard stays permanently stale. The boot surfaces are hydrating correctly, though there is still an initial fallback-first render on the home page.
+
+### Lock-path follow-up: real bug fixed
+
+The previous handoff recommended validating single-instance startup behavior. That check exposed a real lock-cleanup bug.
+
+Observed behavior:
+
+- starting a second CLI instance with:
+  - `pnpm -C packages/cli exec tsx src/index.ts start --port 3100 --host 127.0.0.1`
+- did **not** fail at the lock layer in this session
+- instead, it advanced into startup and crashed later on:
+  - `Error: listen EADDRINUSE ... port 3001`
+- after that fatal crash, the process left a stale `C:\Users\hyper\.borg\lock`
+
+Important nuance:
+
+- `scripts/dev_tabby_ready.mjs` will **reuse any already-running core bridge on port `3001`** and skip launching the CLI child entirely
+- in this session, the root dev stack was healthy but was not guaranteed to have been started through the current lock-managed CLI path
+- so this run did **not** conclusively prove whether the active core bridge itself was launched with a live Borg lock
+
+What was fixed:
+
+- `packages/cli/src/commands/start.ts`
+  - added `createLockLifecycleHandlers(...)`
+  - fatal startup failures now release the Borg lock before exiting
+  - wired cleanup for:
+    - `uncaughtException`
+    - `unhandledRejection`
+    - `SIGINT`
+    - `SIGTERM`
+    - normal process exit
+- `packages/cli/src/commands/start.test.ts`
+  - added regression coverage proving the lock is released when startup crashes with an uncaught exception
+  - tightened the existing “live lock” test so it simulates the actual blocking condition (running process + occupied port)
+
+### Validation for this follow-up
+
+- `pnpm exec vitest run packages/cli/src/commands/start.test.ts`
+  - passed (`8` tests)
+- `pnpm -C packages/cli exec tsc --noEmit`
+  - passed after fixing current serializer drift (see below)
+- `shell: core: typecheck-marker`
+  - result: **`CORE_TSC_OK`**
+
+### Serializer follow-up needed by current worktree changes
+
+The CLI typecheck surfaced an in-flight regression from other recent work: the `always_on` field had been added to current server/tool schemas but not fully propagated through the core DB serializers.
+
+Fixed files:
+
+- `packages/core/src/db/serializers/mcp-servers.serializer.ts`
+- `packages/core/src/db/serializers/namespaces.serializer.ts`
+- `packages/core/src/db/serializers/tools.serializer.ts`
+
+These serializers now carry `always_on` through the output model and tolerate older joined row shapes where that field may still be absent.
+
+### Known follow-up item
+
+The workspace task `shell: cli: test start command` is currently misconfigured:
+
+- it runs `vitest ... --reporter=basic`
+- in this workspace/Vitest version that is treated as a missing custom reporter module and fails before the tests run
+
+Use this direct command instead until the task definition is corrected:
+
+- `pnpm exec vitest run packages/cli/src/commands/start.test.ts`
+
 ## Latest session update — MCP discovery fix, config path, dashboard truthfulness
 
 ### What changed this session

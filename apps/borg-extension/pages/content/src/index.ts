@@ -14,6 +14,8 @@ import { useConnectionStore } from './stores/connection.store';
 import { useUIStore } from './stores/ui.store';
 import { useConfigStore } from './stores/config.store';
 import { useAdapterStore } from './stores/adapter.store';
+import { useContextStore } from './stores/context.store';
+import { useActivityStore } from './stores/activity.store';
 import { initializeLogger, createLogger } from '@extension/shared/lib/logger';
 
 // Import the new initialization system
@@ -644,7 +646,41 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   // MCP Context Save handling
   else if (message.type === 'mcp:save-context') {
     logger.debug('[Content] Received save context request', message.payload);
-    eventBus.emit('context:save', message.payload);
+
+    const savedContext = useContextStore.getState().captureContext({
+      content: message.payload?.content ?? '',
+      name: message.payload?.name,
+      source: message.payload?.source ?? 'context-menu',
+      sourceUrl: message.payload?.sourceUrl,
+      sourceTitle: message.payload?.sourceTitle,
+    });
+
+    if (savedContext) {
+      useActivityStore.getState().addLog({
+        type: 'info',
+        title: savedContext.duplicate ? 'Context refreshed' : 'Context saved',
+        detail: savedContext.item.name,
+        status: 'success',
+        metadata: {
+          contextId: savedContext.item.id,
+          source: savedContext.item.source,
+          sourceUrl: savedContext.item.sourceUrl,
+        },
+      });
+    }
+
+    eventBus.emit('context:save', {
+      content: message.payload?.content ?? '',
+      source: message.payload?.source ?? 'context-menu',
+      sourceUrl: message.payload?.sourceUrl,
+      sourceTitle: message.payload?.sourceTitle,
+      timestamp: message.payload?.timestamp ?? Date.now(),
+      saved: !!savedContext,
+      duplicate: savedContext?.duplicate,
+      contextId: savedContext?.item.id,
+      name: savedContext?.item.name,
+      openManager: false,
+    });
     sendResponse({ success: true });
     return false; // Sync response
   }
