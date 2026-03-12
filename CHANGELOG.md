@@ -6,7 +6,15 @@ All notable changes to this project will be documented in this file.
 
 - fix(mcp): `discoverServerTools` now supports SSE and STREAMABLE_HTTP transports alongside STDIO, with a 30-second timeout to prevent hanging discoveries.
 - fix(config): `mcp.json` and `mcp.jsonc` now default to `~/.borg/` instead of the workspace root via new `getBorgConfigDir()` helper; `JsonConfigProvider` updated to match.
-- fix(dashboard): System Status page truthfulness — replaced hardcoded PostgreSQL/Redis/uptime/version with live data from `startupStatus` (SQLite, Event Bus, live uptime, v0.9.0-beta).
+## [0.9.0-beta] - 2026-03-11
+
+### ✨ Features & Parity Updates
+- **Dashboard Honesty Pass**: Restructured application navigation (Top Nav & Sidebar) to clearly separate "Borg 1.0 Core" features from "Labs & Experimental" pages.
+- **Experimental Guardrails**: Added explicit "Labs" and "Beta" UI badges to developmental surfaces including the Director, Council, and Super Assistant dashboards.
+
+### 🐛 Fixes & Polish
+- **System Status Truthfulness**: The System Status page now renders live tRPC data for Database (SQLite), Event Bus, Version (v0.9.0-beta), and real-time Uptime, removing previously hardcoded placeholders.
+- **MCP Discovery Timeout**: Added a 30-second timeout to MCP server discovery handshakes to prevent infinite hanging when an upstream server stalls.
 - docs: replaced the root `ROADMAP.md` milestone stub with a reality-based roadmap that reflects the current shipped, partial, and blocked Borg surfaces.
 - docs: added canonical root `TODO.md` and `HANDOFF.md` files so implementor models have an ordered queue and current handoff instead of relying on archived docs.
 - fix(cli): `borg start` now writes a single-instance lock in `~/.borg/lock`, refuses duplicate live startups, clears stale locks automatically, and reuses the stale lock's old port when that port is still available.

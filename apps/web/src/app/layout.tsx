@@ -22,6 +22,7 @@ export const metadata: Metadata = {
 
 import { TRPCProvider } from "../utils/TRPCProvider";
 import { ToastProvider } from "../components/ui/Toast";
+import { Navigation } from "../components/Navigation";
 
 export default function RootLayout({
   children,
@@ -35,7 +36,12 @@ export default function RootLayout({
       >
         <TRPCProvider>
           <ToastProvider>
-            {children}
+            <div className="flex flex-col min-h-screen">
+              <Navigation />
+              <div className="flex-1 overflow-auto min-w-0">
+                {children}
+              </div>
+            </div>
           </ToastProvider>
         </TRPCProvider>
       </body>

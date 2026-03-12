@@ -14,19 +14,15 @@ _Last updated: 2026-03-11_
 2. **Config path: `~/.borg/` instead of workspace root**
    - `packages/core/src/mcp/mcpJsonConfig.ts` → `getBorgConfigDir()` returns `os.homedir()/.borg`
    - `getBorgMcpJsoncPath()`, `getBorgMcpJsonPath()`, `loadBorgMcpConfig()`, `writeBorgMcpConfig()` all default to `~/.borg/`
-   - `packages/core/src/services/config/JsonConfigProvider.ts` → constructor uses `getBorgConfigDir()` instead of `process.cwd()`
-   - Existing `mcp.json`/`mcp.jsonc` were migrated to `~/.borg/`
+## Current focus + recent wins
 
-3. **System Status truthfulness**
-   - `apps/web/src/app/dashboard/mcp/system/page.tsx` → replaced hardcoded values:
-     - Database: PostgreSQL 15.4 → SQLite (local)
-     - Redis Cache → Event Bus (in-process pub/sub)
-     - Uptime: hardcoded → live from `startupStatus.uptime`
-     - Version: v0.5.0-beta → v0.9.0-beta
-
-### What was NOT changed (still on backlog)
-
-- MCP Router completeness (search UX, progressive disclosure) — audit found these pages are already production-quality (600+ lines with real tRPC queries)
+- ✅ **MCP Discovery Enhancements:** Added support for SSE and STREAMABLE_HTTP transports with a 30-second handshake timeout to prevent hangs.
+- ✅ **Configuration Path Restructure:** `mcp.json` and `mcp.jsonc` have been migrated from the local project root to the global `~/.borg/` directory.
+- ✅ **System Status Truthfulness:** The System Status dashboard now displays real, live data from tRPC endpoints instead of hardcoded placeholders (e.g., SQLite, Event Bus, live uptime, v0.9.0-beta).
+- ✅ **Dashboard Honesty Pass (Task 008):** Restructured the UI to clearly delineate between Borg 1.0 Core features and Experimental/Parity pages.
+  - Added a "Labs" dropdown to the top navigation.
+  - Reorganized the multi-page sidebar navigation into "Borg 1.0 Core" and "Labs & Experimental" sections.
+  - Added explicit "Labs" and "Beta" badges to in-development surfaces like the Director, Council, and Super Assistant pages.
 - Provider routing improvements
 - Session supervisor improvements
 - README quickstart update
