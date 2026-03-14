@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { pickAutoLoadCandidate, rankToolSearchCandidates } from './toolSearchRanking.js';
+import { evaluateAutoLoadCandidate, pickAutoLoadCandidate, rankToolSearchCandidates } from './toolSearchRanking.js';
 
 describe('toolSearchRanking auto-load decisions', () => {
     it('picks a high-confidence exact match for auto-load', () => {
@@ -34,6 +34,28 @@ describe('toolSearchRanking auto-load decisions', () => {
         ], 'open', 10);
 
         expect(pickAutoLoadCandidate(rankedResults, 'open')).toBeNull();
+        expect(evaluateAutoLoadCandidate(rankedResults, 'open')).toMatchObject({
+            evaluated: true,
+            outcome: 'skipped',
+            decision: null,
+        });
+        expect(evaluateAutoLoadCandidate(rankedResults, 'open')?.skipReason).toMatch(/criteria|ambiguous/i);
+    });
+
+    it('reports not-applicable auto-load outcome for empty query', () => {
+        const rankedResults = rankToolSearchCandidates([
+            {
+                name: 'browser__open_tab',
+                description: 'Open a browser tab',
+            },
+        ], '', 10);
+
+        expect(evaluateAutoLoadCandidate(rankedResults, '')).toMatchObject({
+            evaluated: false,
+            outcome: 'not-applicable',
+            decision: null,
+            skipReason: 'no query or ranked results available',
+        });
     });
 
     it('matches semantic tags and group labels for intent-style queries', () => {

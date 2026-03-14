@@ -61,6 +61,10 @@ type ToolSelectionTelemetryEvent = {
     latencyMs?: number;
     autoLoadReason?: string;
     autoLoadConfidence?: number;
+    autoLoadEvaluated?: boolean;
+    autoLoadOutcome?: 'loaded' | 'skipped' | 'not-applicable';
+    autoLoadSkipReason?: string;
+    autoLoadMinConfidence?: number;
 };
 
 type WorkingSetEvictionEvent = {
@@ -927,7 +931,17 @@ export default function SearchDashboard() {
                                             {typeof event.autoLoadConfidence === 'number' ? (
                                                 <div className="text-xs text-cyan-300">confidence: {(event.autoLoadConfidence * 100).toFixed(0)}%</div>
                                             ) : null}
+                                            {typeof event.autoLoadMinConfidence === 'number' ? (
+                                                <div className="text-xs text-zinc-400">confidence floor: {(event.autoLoadMinConfidence * 100).toFixed(0)}%</div>
+                                            ) : null}
+                                            {event.autoLoadEvaluated ? (
+                                                <div className="text-xs text-zinc-400">auto-load evaluated: <span className="text-zinc-200">yes</span></div>
+                                            ) : null}
+                                            {event.autoLoadOutcome ? (
+                                                <div className="text-xs text-zinc-400">auto-load outcome: <span className="text-zinc-200">{event.autoLoadOutcome}</span></div>
+                                            ) : null}
                                             {event.autoLoadReason ? <div className="text-xs text-cyan-300 break-all">auto-load: {event.autoLoadReason}</div> : null}
+                                            {event.autoLoadSkipReason ? <div className="text-xs text-amber-300 break-all">auto-load skipped: {event.autoLoadSkipReason}</div> : null}
                                             {typeof event.latencyMs === 'number' ? <div className="text-xs text-zinc-500">latency: {event.latencyMs}ms</div> : null}
                                             {event.source ? <div className="text-xs text-zinc-500">source: {event.source}</div> : null}
                                             {event.evictedTools && event.evictedTools.length > 0 ? (

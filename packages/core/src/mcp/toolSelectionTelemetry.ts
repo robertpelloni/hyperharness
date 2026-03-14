@@ -20,6 +20,10 @@ export interface ToolSelectionTelemetryEvent {
     latencyMs?: number;
     autoLoadReason?: string;
     autoLoadConfidence?: number;
+    autoLoadEvaluated?: boolean;
+    autoLoadOutcome?: 'loaded' | 'skipped' | 'not-applicable';
+    autoLoadSkipReason?: string;
+    autoLoadMinConfidence?: number;
 }
 
 const MAX_TELEMETRY_EVENTS = 100;

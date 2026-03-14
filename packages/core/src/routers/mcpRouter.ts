@@ -3,7 +3,7 @@ import fs from 'node:fs/promises';
 import { t, publicProcedure, adminProcedure, getMcpAggregator, getMcpServer } from '../lib/trpc-core.js';
 import { getCachedToolInventory } from '../mcp/cachedToolInventory.js';
 import { parseNamespacedToolName } from '../mcp/namespaces.js';
-import { pickAutoLoadCandidate, rankToolSearchCandidates, type ToolSearchProfile } from '../mcp/toolSearchRanking.js';
+import { evaluateAutoLoadCandidate, rankToolSearchCandidates, type ToolSearchProfile } from '../mcp/toolSearchRanking.js';
 import { toolSelectionTelemetry } from '../mcp/toolSelectionTelemetry.js';
 import { getBorgMcpJsoncPath, loadBorgMcpConfig, stripJsonComments, writeBorgMcpConfig } from '../mcp/mcpJsonConfig.js';
 import {
@@ -464,11 +464,18 @@ export const mcpRouter = t.router({
                     selectedProfile,
                 );
 
-                const autoLoadDecision = server
-                    ? pickAutoLoadCandidate(rankedCandidateResults, normalizedQuery, {
+                const autoLoadEvaluation = server
+                    ? evaluateAutoLoadCandidate(rankedCandidateResults, normalizedQuery, {
                         minConfidence: preferences.autoLoadMinConfidence,
                     })
-                    : null;
+                    : {
+                        evaluated: false,
+                        outcome: 'not-applicable' as const,
+                        decision: null,
+                        skipReason: 'runtime MCP server unavailable',
+                        minConfidence: preferences.autoLoadMinConfidence,
+                    };
+                const autoLoadDecision = autoLoadEvaluation.decision;
 
                 if (server && autoLoadDecision) {
                     const autoLoadStartedAt = Date.now();
@@ -530,6 +537,10 @@ export const mcpRouter = t.router({
                     latencyMs: toLatencyMs(searchStartedAt),
                     autoLoadReason: autoLoadDecision?.reason,
                     autoLoadConfidence: autoLoadDecision?.confidence,
+                    autoLoadEvaluated: autoLoadEvaluation.evaluated,
+                    autoLoadOutcome: autoLoadEvaluation.outcome,
+                    autoLoadSkipReason: autoLoadEvaluation.skipReason,
+                    autoLoadMinConfidence: autoLoadEvaluation.minConfidence,
                     status: 'success',
                 });
 

@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.7.119] — 2026-03-14
+
+- changed(mcp/search): added explicit auto-load evaluation outcomes (`loaded`, `skipped`, `not-applicable`) so search telemetry now records whether an auto-load decision was actually evaluated and what happened.
+- changed(mcp/search): cached-ranking telemetry now captures auto-load skip rationale (for example, confidence floor not met or ambiguous match), plus the configured minimum confidence used during evaluation.
+- changed(mcp/search-ui): `/dashboard/mcp/search` telemetry cards now render auto-load outcome, confidence floor, and skip reasons for clearer operator diagnosis of “why this did/didn’t auto-load”.
+- test(core): expanded `toolSearchRanking.test.ts` with coverage for `evaluateAutoLoadCandidate(...)` not-applicable/skipped outcomes while preserving existing auto-load decision behavior.
+
 ## [2.7.118] — 2026-03-14
 
 - changed(mcp/working-set): added operator-configurable working-set capacity controls — `maxLoadedTools` (4..64, default 16) and `maxHydratedSchemas` (2..32, default 8) are now persisted in `mcp.jsonc` preferences.

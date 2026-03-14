@@ -49,6 +49,16 @@ export interface ToolSearchAutoLoadDecision {
     secondScore: number;
 }
 
+export type ToolSearchAutoLoadOutcome = 'loaded' | 'skipped' | 'not-applicable';
+
+export interface ToolSearchAutoLoadEvaluation {
+    evaluated: boolean;
+    outcome: ToolSearchAutoLoadOutcome;
+    decision: ToolSearchAutoLoadDecision | null;
+    skipReason?: string;
+    minConfidence?: number;
+}
+
 interface ToolSearchAutoLoadOptions {
     minConfidence?: number;
 }
@@ -320,14 +330,34 @@ export function pickAutoLoadCandidate(
     query: string,
     options?: ToolSearchAutoLoadOptions,
 ): ToolSearchAutoLoadDecision | null {
+    return evaluateAutoLoadCandidate(results, query, options).decision;
+}
+
+export function evaluateAutoLoadCandidate(
+    results: RankedToolSearchResult[],
+    query: string,
+    options?: ToolSearchAutoLoadOptions,
+): ToolSearchAutoLoadEvaluation {
     const normalizedQuery = normalizeText(query);
     if (!normalizedQuery || results.length === 0) {
-        return null;
+        return {
+            evaluated: false,
+            outcome: 'not-applicable',
+            decision: null,
+            skipReason: 'no query or ranked results available',
+        };
     }
 
     const [topResult, secondResult] = results;
     if (!topResult || topResult.loaded) {
-        return null;
+        return {
+            evaluated: false,
+            outcome: 'not-applicable',
+            decision: null,
+            skipReason: topResult?.loaded
+                ? 'top result already loaded'
+                : 'no top-ranked result available',
+        };
     }
 
     const scoreGap = topResult.score - (secondResult?.score ?? 0);
@@ -336,15 +366,30 @@ export function pickAutoLoadCandidate(
     const hasStrongKeywordMatch = topResult.score >= 125 && scoreGap >= 18;
 
     if (!(hasExactMatch || hasPrefixMatch || hasStrongKeywordMatch)) {
-        return null;
+        return {
+            evaluated: true,
+            outcome: 'skipped',
+            decision: null,
+            skipReason: 'top result did not meet exact/prefix/strong-keyword auto-load criteria',
+        };
     }
 
     if (hasPrefixMatch && topResult.score < 90) {
-        return null;
+        return {
+            evaluated: true,
+            outcome: 'skipped',
+            decision: null,
+            skipReason: 'prefix match score below minimum threshold',
+        };
     }
 
     if (!hasExactMatch && scoreGap < 10) {
-        return null;
+        return {
+            evaluated: true,
+            outcome: 'skipped',
+            decision: null,
+            skipReason: 'top result too ambiguous relative to second result',
+        };
     }
 
     const baseConfidence = hasExactMatch
@@ -357,15 +402,26 @@ export function pickAutoLoadCandidate(
     const minConfidence = Math.max(0, Math.min(0.99, options?.minConfidence ?? 0.85));
 
     if (confidence < minConfidence) {
-        return null;
+        return {
+            evaluated: true,
+            outcome: 'skipped',
+            decision: null,
+            skipReason: 'confidence below configured auto-load threshold',
+            minConfidence,
+        };
     }
 
     return {
-        toolName: topResult.name,
-        reason: `auto-loaded after ${topResult.matchReason}`,
-        confidence,
-        scoreGap,
-        topScore: topResult.score,
-        secondScore: secondResult?.score ?? 0,
+        evaluated: true,
+        outcome: 'loaded',
+        decision: {
+            toolName: topResult.name,
+            reason: `auto-loaded after ${topResult.matchReason}`,
+            confidence,
+            scoreGap,
+            topScore: topResult.score,
+            secondScore: secondResult?.score ?? 0,
+        },
+        minConfidence,
     };
 }
