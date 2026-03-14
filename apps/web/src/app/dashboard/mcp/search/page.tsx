@@ -96,6 +96,12 @@ type ToolPreferenceMutationInput = {
 
 type TelemetryWindowPreset = 'all' | '5m' | '15m' | '1h' | '24h';
 
+type TelemetryTrendBucket = {
+    start: number;
+    end: number;
+    label: string;
+};
+
 function resolveTelemetryWindowStart(windowPreset: TelemetryWindowPreset): number | null {
     const now = Date.now();
 
@@ -116,6 +122,41 @@ function resolveTelemetryWindowStart(windowPreset: TelemetryWindowPreset): numbe
     }
 
     return null;
+}
+
+function buildTelemetryTrendBuckets(options: {
+    windowPreset: TelemetryWindowPreset;
+    windowStart: number | null;
+    events: ToolSelectionTelemetryEvent[];
+}): TelemetryTrendBucket[] {
+    if (options.events.length === 0) {
+        return [];
+    }
+
+    const now = Date.now();
+    const earliestEventTimestamp = Math.min(...options.events.map((event) => event.timestamp));
+    const computedStart = options.windowStart ?? earliestEventTimestamp;
+    const start = Math.min(computedStart, now - 1000);
+
+    const targetBucketCount = options.windowPreset === 'all'
+        ? 6
+        : options.windowPreset === '24h'
+            ? 6
+            : 5;
+    const totalWindowMs = Math.max(60_000, now - start);
+    const bucketSizeMs = Math.max(1, Math.ceil(totalWindowMs / targetBucketCount));
+
+    return Array.from({ length: targetBucketCount }, (_value, index) => {
+        const bucketStart = start + (index * bucketSizeMs);
+        const bucketEnd = index === targetBucketCount - 1 ? now : Math.min(now, bucketStart + bucketSizeMs);
+        const label = new Date(bucketEnd).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+        return {
+            start: bucketStart,
+            end: bucketEnd,
+            label,
+        };
+    });
 }
 
 function formatRelativeTimestamp(timestamp: number | null): string {
@@ -272,6 +313,11 @@ export default function SearchDashboard() {
         success: filteredTelemetryEvents.filter((event) => event.status === 'success').length,
         error: filteredTelemetryEvents.filter((event) => event.status === 'error').length,
     };
+    const telemetryTrendBuckets = buildTelemetryTrendBuckets({
+        windowPreset: telemetryWindowFilter,
+        windowStart: telemetryWindowStart,
+        events: filteredTelemetryEvents,
+    });
     const telemetrySourceStats = (['runtime-search', 'cached-ranking', 'live-aggregator'] as const)
         .map((source) => {
             const sourceEvents = filteredTelemetryEvents.filter((event) => event.source === source);
@@ -285,9 +331,23 @@ export default function SearchDashboard() {
                 success: sourceEvents.filter((event) => event.status === 'success').length,
                 error: sourceEvents.filter((event) => event.status === 'error').length,
                 avgLatencyMs,
+                trend: telemetryTrendBuckets.map((bucket) => {
+                    const bucketEvents = sourceEvents.filter((event) => event.timestamp >= bucket.start && event.timestamp < bucket.end);
+                    const bucketErrors = bucketEvents.filter((event) => event.status === 'error').length;
+
+                    return {
+                        label: bucket.label,
+                        count: bucketEvents.length,
+                        errorCount: bucketErrors,
+                    };
+                }),
             };
         });
     const maxTelemetrySourceCount = telemetrySourceStats.reduce((max, item) => Math.max(max, item.count), 0);
+    const maxTelemetryTrendBucketCount = telemetrySourceStats.reduce((max, source) => {
+        const sourceMax = source.trend.reduce((bucketMax, bucket) => Math.max(bucketMax, bucket.count), 0);
+        return Math.max(max, sourceMax);
+    }, 0);
     const recentEvictions = (evictionHistoryQuery.data as WorkingSetEvictionEvent[] | undefined) ?? [];
     const preferences = (preferencesQuery.data as ToolPreferences | undefined) ?? {
         importantTools: [],
@@ -1080,7 +1140,7 @@ export default function SearchDashboard() {
                                                 : 0;
 
                                             return (
-                                                <div key={`telemetry-source-${item.source}`} className="space-y-1">
+                                                <div key={`telemetry-source-${item.source}`} className="space-y-2">
                                                     <div className="flex items-center justify-between gap-3 text-xs">
                                                         <span className="font-mono text-zinc-300">{item.source}</span>
                                                         <span className="text-zinc-500">
@@ -1093,6 +1153,44 @@ export default function SearchDashboard() {
                                                             style={{ width: `${widthPercent}%` }}
                                                         />
                                                     </div>
+
+                                                    {item.trend.length > 0 ? (
+                                                        <div className="space-y-1">
+                                                            <div className="text-[10px] uppercase tracking-wider text-zinc-500">trend ({telemetryWindowFilter})</div>
+                                                            <div className="grid grid-cols-6 gap-1">
+                                                                {item.trend.map((bucket) => {
+                                                                    const intensity = maxTelemetryTrendBucketCount > 0
+                                                                        ? Math.max(0, Math.min(1, bucket.count / maxTelemetryTrendBucketCount))
+                                                                        : 0;
+                                                                    const errorRatio = bucket.count > 0
+                                                                        ? bucket.errorCount / bucket.count
+                                                                        : 0;
+
+                                                                    return (
+                                                                        <div
+                                                                            key={`${item.source}-${bucket.label}`}
+                                                                            className="space-y-1"
+                                                                            title={`${bucket.label} • ${bucket.count} events • ${bucket.errorCount} errors`}
+                                                                        >
+                                                                            <div className="h-2 rounded border border-zinc-800/80 bg-zinc-900/80 overflow-hidden">
+                                                                                <div
+                                                                                    className="h-full bg-cyan-500/80"
+                                                                                    style={{ width: `${Math.round(intensity * 100)}%` }}
+                                                                                />
+                                                                                {errorRatio > 0 ? (
+                                                                                    <div
+                                                                                        className="-mt-2 h-full bg-red-500/70"
+                                                                                        style={{ width: `${Math.round(errorRatio * 100)}%` }}
+                                                                                    />
+                                                                                ) : null}
+                                                                            </div>
+                                                                            <div className="text-[9px] text-zinc-500 text-center">{bucket.label}</div>
+                                                                        </div>
+                                                                    );
+                                                                })}
+                                                            </div>
+                                                        </div>
+                                                    ) : null}
                                                 </div>
                                             );
                                         })}

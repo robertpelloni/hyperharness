@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.7.125] — 2026-03-14
+
+- changed(mcp/search-ui): added per-source time-bucket trend strips in `/dashboard/mcp/search` so operators can quickly spot momentum shifts in `runtime-search`, `cached-ranking`, and `live-aggregator` traffic.
+- changed(mcp/search-ui): trend buckets inherit the active telemetry window preset and display event + error intensity per bucket, improving fast diagnosis of bursty failures versus steady-state traffic.
+- changed(mcp/search-ui): per-source telemetry rows now combine volume bar, success/error counts, average latency, and short bucketed trend context in a single triage panel.
+
 ## [2.7.124] — 2026-03-14
 
 - changed(mcp/search-ui): added telemetry time-window presets (`all`, `5m`, `15m`, `1h`, `24h`) in `/dashboard/mcp/search` so operators can triage routing events by recent incident window instead of scanning a single rolling list.
