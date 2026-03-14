@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.7.113] — 2026-03-14
+
+- changed(mcp/search): added direct `Hydrate schema` actions on both search-result cards and loaded working-set cards, so operators can hydrate metadata-only tools without leaving `/dashboard/mcp/search`.
+- changed(mcp/search): split loaded tool display into explicit `Server always-on`, `Keep warm profile`, and `Dynamic loaded` sections for clearer operator understanding of why tools are resident.
+- changed(mcp/search): distinguished badges for server-advertised always-on tools vs user keep-warm preferences, avoiding the prior conflation of both under a single "always on" label.
+- changed(mcp/search): load/unload/hydrate actions now invalidate working-set, search, and tool-selection telemetry queries together for immediate UI state consistency.
+
 ## [2.7.112] — 2026-03-14
 
 - feat(dashboard): added `/dashboard/tests` — Auto-Test Runner page backed by `tests` tRPC procedures (`status`, `start`, `stop`, `results`) with watcher controls and per-file output inspection.

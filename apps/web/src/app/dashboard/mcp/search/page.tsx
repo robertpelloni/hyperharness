@@ -122,7 +122,26 @@ export default function SearchDashboard() {
     const unloadMutation = trpc.mcp.unloadTool.useMutation({
         onSuccess: async (data) => {
             toast.success(data.message || 'Tool unloaded');
-            await utils.mcp.getWorkingSet.invalidate();
+            await Promise.all([
+                utils.mcp.getWorkingSet.invalidate(),
+                utils.mcp.searchTools.invalidate(),
+                utils.mcp.getToolSelectionTelemetry.invalidate(),
+            ]);
+        },
+        onError: (error) => {
+            toast.error(error.message);
+        },
+    });
+
+    const hydrateMutation = trpc.mcp.getToolSchema.useMutation({
+        onSuccess: async (_data, variables) => {
+            const toolName = (variables as { name?: string } | undefined)?.name ?? 'tool';
+            toast.success(`Schema hydrated for ${toolName}`);
+            await Promise.all([
+                utils.mcp.getWorkingSet.invalidate(),
+                utils.mcp.searchTools.invalidate(),
+                utils.mcp.getToolSelectionTelemetry.invalidate(),
+            ]);
         },
         onError: (error) => {
             toast.error(error.message);
@@ -168,6 +187,8 @@ export default function SearchDashboard() {
     const results = (searchQuery.data || []) as SearchResult[];
     const isLoading = searchQuery.isLoading;
     const workingSet = ((workingSetQuery.data?.tools as WorkingSetTool[] | undefined) ?? []);
+    const allToolsQuery = trpc.mcp.listTools.useQuery(undefined, { refetchInterval: 15000 });
+    const allKnownTools = (allToolsQuery.data as SearchResult[] | undefined) ?? [];
     const telemetry = ((telemetryQuery.data as ToolSelectionTelemetryEvent[] | undefined) ?? []).slice(0, 12);
     const preferences = (preferencesQuery.data as ToolPreferences | undefined) ?? {
         importantTools: [],
@@ -176,6 +197,14 @@ export default function SearchDashboard() {
     const importantTools = new Set(preferences.importantTools);
     const alwaysLoadedTools = new Set(preferences.alwaysLoadedTools);
     const loadedToolNames = new Set(workingSet.map((tool) => tool.name));
+    const alwaysOnAdvertisedNames = new Set(
+        allKnownTools
+            .filter((tool) => Boolean(tool.alwaysOn))
+            .map((tool) => tool.name),
+    );
+    const alwaysOnWorkingSet = workingSet.filter((tool) => alwaysOnAdvertisedNames.has(tool.name));
+    const keepWarmWorkingSet = workingSet.filter((tool) => alwaysLoadedTools.has(tool.name) && !alwaysOnAdvertisedNames.has(tool.name));
+    const dynamicWorkingSet = workingSet.filter((tool) => !alwaysLoadedTools.has(tool.name) && !alwaysOnAdvertisedNames.has(tool.name));
     const hydratedCount = workingSet.filter((tool) => tool.hydrated).length;
 
     useEffect(() => {
@@ -344,9 +373,14 @@ export default function SearchDashboard() {
                                                                     metadata only
                                                                 </span>
                                                             ) : null}
+                                                            {(tool.alwaysOn || alwaysOnAdvertisedNames.has(tool.name)) ? (
+                                                                <span className="text-[10px] bg-sky-500/10 border border-sky-500/20 px-2 py-0.5 rounded text-sky-300 uppercase tracking-wider">
+                                                                    server always-on
+                                                                </span>
+                                                            ) : null}
                                                             {(tool.alwaysLoaded || alwaysLoadedTools.has(tool.name)) ? (
                                                                 <span className="text-[10px] bg-cyan-500/10 border border-cyan-500/20 px-2 py-0.5 rounded text-cyan-300 uppercase tracking-wider">
-                                                                    always on
+                                                                    keep warm profile
                                                                 </span>
                                                             ) : null}
                                                             {(tool.important || importantTools.has(tool.name)) ? (
@@ -431,6 +465,16 @@ export default function SearchDashboard() {
                                                         Call now
                                                     </Button>
                                                     <Button
+                                                        onClick={() => hydrateMutation.mutate({ name: tool.name })}
+                                                        disabled={hydrateMutation.isPending || !isLoaded || Boolean(tool.hydrated)}
+                                                        title="Hydrate this tool's schema into the active working set"
+                                                        aria-label={`Hydrate schema for tool ${tool.name}`}
+                                                        variant="outline"
+                                                        className="border-purple-700 text-purple-200 hover:bg-purple-950/30"
+                                                    >
+                                                        Hydrate schema
+                                                    </Button>
+                                                    <Button
                                                         onClick={() => unloadMutation.mutate({ name: tool.name })}
                                                         disabled={unloadMutation.isPending || !isLoaded}
                                                         title="Unload this tool from the current working set"
@@ -478,51 +522,75 @@ export default function SearchDashboard() {
                                 </div>
                             </div>
 
-                            <div className="space-y-2 max-h-[420px] overflow-y-auto">
+                            <div className="space-y-3 max-h-[420px] overflow-y-auto">
                                 {workingSet.length > 0 ? (
-                                    workingSet.map((tool) => (
-                                        <div key={tool.name} className="rounded-lg border border-zinc-800 bg-zinc-950/60 p-3 space-y-2">
-                                            <div className="flex items-start justify-between gap-3">
-                                                <div className="min-w-0">
-                                                    <div className="font-mono text-sm text-zinc-100 break-all">{tool.name}</div>
-                                                    <div className="text-xs text-zinc-500 mt-1">
-                                                        loaded {formatRelativeTimestamp(tool.lastLoadedAt)}
-                                                    </div>
+                                    <>
+                                        {[
+                                            { label: 'Server always-on', tone: 'text-sky-300', tools: alwaysOnWorkingSet },
+                                            { label: 'Keep warm profile', tone: 'text-cyan-300', tools: keepWarmWorkingSet },
+                                            { label: 'Dynamic loaded', tone: 'text-zinc-300', tools: dynamicWorkingSet },
+                                        ].map((section) => (
+                                            <div key={section.label} className="space-y-2">
+                                                <div className={`text-[10px] uppercase tracking-wider ${section.tone}`}>
+                                                    {section.label} ({section.tools.length})
                                                 </div>
-                                                {tool.hydrated ? (
-                                                    <span className="text-[10px] bg-purple-500/10 border border-purple-500/20 px-2 py-0.5 rounded text-purple-300 uppercase tracking-wider">
-                                                        schema ready
-                                                    </span>
-                                                ) : (
-                                                    <span className="text-[10px] bg-zinc-800 px-2 py-0.5 rounded text-zinc-400 uppercase tracking-wider">
-                                                        metadata only
-                                                    </span>
+                                                {section.tools.length > 0 ? section.tools.map((tool) => (
+                                                    <div key={tool.name} className="rounded-lg border border-zinc-800 bg-zinc-950/60 p-3 space-y-2">
+                                                        <div className="flex items-start justify-between gap-3">
+                                                            <div className="min-w-0">
+                                                                <div className="font-mono text-sm text-zinc-100 break-all">{tool.name}</div>
+                                                                <div className="text-xs text-zinc-500 mt-1">
+                                                                    loaded {formatRelativeTimestamp(tool.lastLoadedAt)}
+                                                                </div>
+                                                            </div>
+                                                            {tool.hydrated ? (
+                                                                <span className="text-[10px] bg-purple-500/10 border border-purple-500/20 px-2 py-0.5 rounded text-purple-300 uppercase tracking-wider">
+                                                                    schema ready
+                                                                </span>
+                                                            ) : (
+                                                                <span className="text-[10px] bg-zinc-800 px-2 py-0.5 rounded text-zinc-400 uppercase tracking-wider">
+                                                                    metadata only
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                        <div className="grid grid-cols-3 gap-2">
+                                                            <Link
+                                                                href={`/dashboard/mcp/inspector?tool=${encodeURIComponent(tool.name)}`}
+                                                                title="Inspect this loaded tool"
+                                                                aria-label={`Inspect loaded tool ${tool.name}`}
+                                                                className="inline-flex items-center justify-center rounded-md border border-zinc-700 px-3 py-2 text-sm text-zinc-300 hover:bg-zinc-800"
+                                                            >
+                                                                Inspect
+                                                            </Link>
+                                                            <Button
+                                                                onClick={() => hydrateMutation.mutate({ name: tool.name })}
+                                                                disabled={hydrateMutation.isPending || tool.hydrated}
+                                                                variant="outline"
+                                                                title="Hydrate this loaded tool schema"
+                                                                aria-label={`Hydrate loaded tool ${tool.name}`}
+                                                                className="w-full border-purple-700 text-purple-200 hover:bg-purple-950/30"
+                                                            >
+                                                                Hydrate
+                                                            </Button>
+                                                            <Button
+                                                                onClick={() => unloadMutation.mutate({ name: tool.name })}
+                                                                variant="outline"
+                                                                title="Remove this loaded tool from the active session"
+                                                                aria-label={`Unload loaded tool ${tool.name}`}
+                                                                className="w-full border-zinc-700 text-zinc-300 hover:bg-zinc-800"
+                                                            >
+                                                                Unload
+                                                            </Button>
+                                                        </div>
+                                                    </div>
+                                                )) : (
+                                                    <div className="rounded-lg border border-dashed border-zinc-800 p-3 text-xs text-zinc-500 text-center">
+                                                        none
+                                                    </div>
                                                 )}
                                             </div>
-                                            {alwaysLoadedTools.has(tool.name) ? (
-                                                <div className="text-[10px] uppercase tracking-wider text-cyan-300">Always-on profile</div>
-                                            ) : null}
-                                            <div className="grid grid-cols-2 gap-2">
-                                                <Link
-                                                    href={`/dashboard/mcp/inspector?tool=${encodeURIComponent(tool.name)}`}
-                                                    title="Inspect this loaded tool"
-                                                    aria-label={`Inspect loaded tool ${tool.name}`}
-                                                    className="inline-flex items-center justify-center rounded-md border border-zinc-700 px-3 py-2 text-sm text-zinc-300 hover:bg-zinc-800"
-                                                >
-                                                    Inspect
-                                                </Link>
-                                                <Button
-                                                    onClick={() => unloadMutation.mutate({ name: tool.name })}
-                                                    variant="outline"
-                                                    title="Remove this loaded tool from the active session"
-                                                    aria-label={`Unload loaded tool ${tool.name}`}
-                                                    className="w-full border-zinc-700 text-zinc-300 hover:bg-zinc-800"
-                                                >
-                                                    Unload
-                                                </Button>
-                                            </div>
-                                        </div>
-                                    ))
+                                        ))}
+                                    </>
                                 ) : (
                                     <div className="rounded-lg border border-dashed border-zinc-800 p-6 text-sm text-zinc-500 text-center">
                                         No tools currently loaded.
