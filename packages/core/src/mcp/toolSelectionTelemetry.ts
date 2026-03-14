@@ -12,6 +12,9 @@ export interface ToolSelectionTelemetryEvent {
     topResultName?: string;
     topMatchReason?: string;
     topScore?: number;
+    secondResultName?: string;
+    secondMatchReason?: string;
+    secondScore?: number;
     scoreGap?: number;
     toolName?: string;
     status: 'success' | 'error';

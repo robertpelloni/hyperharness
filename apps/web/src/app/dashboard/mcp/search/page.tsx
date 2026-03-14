@@ -53,6 +53,9 @@ type ToolSelectionTelemetryEvent = {
     topResultName?: string;
     topMatchReason?: string;
     topScore?: number;
+    secondResultName?: string;
+    secondMatchReason?: string;
+    secondScore?: number;
     scoreGap?: number;
     toolName?: string;
     status: 'success' | 'error';
@@ -950,6 +953,9 @@ export default function SearchDashboard() {
                                             {event.topResultName ? <div className="text-xs text-zinc-400 break-all">top result: <span className="font-mono text-zinc-200">{event.topResultName}</span></div> : null}
                                             {event.topMatchReason ? <div className="text-xs text-zinc-400">why: <span className="text-zinc-200">{event.topMatchReason}</span></div> : null}
                                             {typeof event.topScore === 'number' ? <div className="text-xs text-zinc-400">top score: <span className="text-zinc-200">{event.topScore.toFixed(1)}</span></div> : null}
+                                            {event.secondResultName ? <div className="text-xs text-zinc-400 break-all">second result: <span className="font-mono text-zinc-200">{event.secondResultName}</span></div> : null}
+                                            {event.secondMatchReason ? <div className="text-xs text-zinc-500">second why: <span className="text-zinc-300">{event.secondMatchReason}</span></div> : null}
+                                            {typeof event.secondScore === 'number' ? <div className="text-xs text-zinc-500">second score: <span className="text-zinc-300">{event.secondScore.toFixed(1)}</span></div> : null}
                                             {typeof event.scoreGap === 'number' ? <div className="text-xs text-zinc-400">score gap: <span className="text-zinc-200">{event.scoreGap.toFixed(1)}</span></div> : null}
                                             {typeof event.autoLoadConfidence === 'number' ? (
                                                 <div className="text-xs text-cyan-300">confidence: {(event.autoLoadConfidence * 100).toFixed(0)}%</div>

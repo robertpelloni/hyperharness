@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.7.121] — 2026-03-14
+
+- changed(mcp/search): enriched search telemetry with second-candidate context (`secondResultName`, `secondMatchReason`, `secondScore`) and explicit score-gap capture across runtime-search, cached-ranking, and live-aggregator paths.
+- changed(mcp/search-ui): `/dashboard/mcp/search` telemetry cards now render top-vs-second candidate details so operators can diagnose ambiguity and near-tie ranking behavior without leaving the page.
+- changed(mcp/decision-observability): live-aggregator telemetry now records top score and score gap consistently with cached/runtime paths, improving apples-to-apples routing diagnostics.
+
 ## [2.7.120] — 2026-03-14
 
 - changed(mcp/working-set): added new `clear_eviction_history` meta-tool so operators can reset recent working-set eviction events without restarting the session.
