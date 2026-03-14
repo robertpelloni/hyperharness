@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.7.130] — 2026-03-14
+
+- fixed(mcp/config): local dashboard compatibility-mode MCP config writes now target Borg config home (`~/.borg/mcp.jsonc` + `~/.borg/mcp.json`) instead of repo-root files.
+- changed(mcp/config): local compatibility-mode reads now prioritize Borg config home and retain repo-root `mcp.jsonc`/`mcp.json` as legacy fallback read sources only.
+- test(mcp/config): updated tRPC route compatibility tests to run against an isolated temporary `BORG_CONFIG_DIR`, validating local managed-server actions without mutating workspace-root config files.
+- changed(mcp/search-ui): MCP JSONC editor tooltip now reflects Borg config-home save location rather than claiming root-repo writes.
+
+## [2.7.129] — 2026-03-14
+
+- changed(mcp/search-ui): added telemetry triage presets in `/dashboard/mcp/search` (`Errors now`, `Runtime failures`, `Load incidents`, `Hydration failures`, `Live aggregator`) so operators can jump to common incident scopes in one click.
+- changed(mcp/search-ui): added active telemetry filter chips with one-click per-chip clear actions (`type`, `status`, `window`, `source`) for faster iterative diagnosis without resetting everything.
+- changed(mcp/search-ui): reset action now disables when filters are already at default scope, reducing no-op clicks during telemetry triage.
+
 ## [2.7.128] — 2026-03-14
 
 - changed(mcp/search-ui): telemetry filters now sync to URL query parameters (`telemetryType`, `telemetryStatus`, `telemetryWindow`, `telemetrySource`) so triage views are shareable and reproducible.

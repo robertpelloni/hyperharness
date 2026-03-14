@@ -1,7 +1,8 @@
 import { existsSync } from 'node:fs';
 import fs from 'node:fs/promises';
+import os from 'node:os';
 import path from 'node:path';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { resolveUpstreamBases } from '../../../../lib/trpc-upstream';
 import { GET, POST } from './route';
@@ -29,8 +30,13 @@ function resolveRepoRoot(): string {
 }
 
 const REPO_ROOT = resolveRepoRoot();
-const MCP_JSONC_PATH = path.join(REPO_ROOT, 'mcp.jsonc');
-const MCP_JSON_PATH = path.join(REPO_ROOT, 'mcp.json');
+
+function getCompatConfigPaths(configDir: string): { jsoncPath: string; jsonPath: string } {
+  return {
+    jsoncPath: path.join(configDir, 'mcp.jsonc'),
+    jsonPath: path.join(configDir, 'mcp.json'),
+  };
+}
 
 async function readOptionalFile(filePath: string): Promise<string | null> {
   try {
@@ -79,14 +85,32 @@ describe('resolveUpstreamBases', () => {
 describe('legacy MCP dashboard compatibility bridge', () => {
   const originalFetch = global.fetch;
   const originalUpstream = process.env.BORG_TRPC_UPSTREAM;
+  const originalBorgConfigDir = process.env.BORG_CONFIG_DIR;
+  let compatConfigDir = '';
 
-  afterEach(() => {
+  beforeEach(async () => {
+    compatConfigDir = await fs.mkdtemp(path.join(os.tmpdir(), 'borg-trpc-compat-'));
+    process.env.BORG_CONFIG_DIR = compatConfigDir;
+  });
+
+  afterEach(async () => {
     global.fetch = originalFetch;
 
     if (originalUpstream === undefined) {
       delete process.env.BORG_TRPC_UPSTREAM;
     } else {
       process.env.BORG_TRPC_UPSTREAM = originalUpstream;
+    }
+
+    if (originalBorgConfigDir === undefined) {
+      delete process.env.BORG_CONFIG_DIR;
+    } else {
+      process.env.BORG_CONFIG_DIR = originalBorgConfigDir;
+    }
+
+    if (compatConfigDir) {
+      await fs.rm(compatConfigDir, { recursive: true, force: true });
+      compatConfigDir = '';
     }
   });
 
@@ -366,6 +390,8 @@ describe('legacy MCP dashboard compatibility bridge', () => {
     global.fetch = vi.fn(async () => {
       throw new Error('connect ECONNREFUSED');
     }) as typeof fetch;
+
+    const { jsoncPath: MCP_JSONC_PATH, jsonPath: MCP_JSON_PATH } = getCompatConfigPaths(compatConfigDir);
 
     const originalJsonc = await readOptionalFile(MCP_JSONC_PATH);
     const originalJson = await readOptionalFile(MCP_JSON_PATH);

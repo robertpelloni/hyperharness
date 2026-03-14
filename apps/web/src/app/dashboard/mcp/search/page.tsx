@@ -97,6 +97,7 @@ type ToolPreferenceMutationInput = {
 
 type TelemetryWindowPreset = 'all' | '5m' | '15m' | '1h' | '24h';
 type TelemetrySourceFilter = 'all' | 'runtime-search' | 'cached-ranking' | 'live-aggregator';
+type TelemetryTriagePreset = 'errors-now' | 'runtime-failures' | 'load-incidents' | 'hydration-failures' | 'live-aggregator-focus';
 
 const TELEMETRY_FILTERS_STORAGE_KEY = 'borg.mcp.search.telemetryFilters.v1';
 const TELEMETRY_TYPE_QUERY_KEY = 'telemetryType';
@@ -322,6 +323,10 @@ export default function SearchDashboard() {
     const filteredTelemetryEvents = telemetryEventsPreStatusFilter
         .filter((event) => telemetryStatusFilter === 'all' || event.status === telemetryStatusFilter);
     const telemetry = filteredTelemetryEvents.slice(0, 12);
+    const telemetryFiltersAtDefault = telemetryTypeFilter === 'all'
+        && telemetryStatusFilter === 'all'
+        && telemetryWindowFilter === '15m'
+        && telemetrySourceFilter === 'all';
     const telemetrySummary = {
         total: filteredTelemetryEvents.length,
         success: filteredTelemetryEvents.filter((event) => event.status === 'success').length,
@@ -613,6 +618,45 @@ export default function SearchDashboard() {
         } catch {
             // Ignore local storage cleanup errors.
         }
+    };
+
+    const applyTelemetryPreset = (preset: TelemetryTriagePreset) => {
+        if (preset === 'errors-now') {
+            setTelemetryTypeFilter('all');
+            setTelemetryStatusFilter('error');
+            setTelemetryWindowFilter('15m');
+            setTelemetrySourceFilter('all');
+            return;
+        }
+
+        if (preset === 'runtime-failures') {
+            setTelemetryTypeFilter('all');
+            setTelemetryStatusFilter('error');
+            setTelemetryWindowFilter('1h');
+            setTelemetrySourceFilter('runtime-search');
+            return;
+        }
+
+        if (preset === 'load-incidents') {
+            setTelemetryTypeFilter('load');
+            setTelemetryStatusFilter('error');
+            setTelemetryWindowFilter('1h');
+            setTelemetrySourceFilter('all');
+            return;
+        }
+
+        if (preset === 'hydration-failures') {
+            setTelemetryTypeFilter('hydrate');
+            setTelemetryStatusFilter('error');
+            setTelemetryWindowFilter('24h');
+            setTelemetrySourceFilter('all');
+            return;
+        }
+
+        setTelemetryTypeFilter('all');
+        setTelemetryStatusFilter('all');
+        setTelemetryWindowFilter('15m');
+        setTelemetrySourceFilter('live-aggregator');
     };
 
     const copyTelemetryShareLink = async () => {
@@ -1214,6 +1258,81 @@ export default function SearchDashboard() {
                         <CardContent className="p-4">
                             <div className="mb-3 grid gap-2">
                                 <div className="flex flex-wrap items-center gap-2 text-xs">
+                                    <span className="text-zinc-500 uppercase tracking-wider">Presets</span>
+                                    {([
+                                        { value: 'errors-now', label: 'Errors now' },
+                                        { value: 'runtime-failures', label: 'Runtime failures' },
+                                        { value: 'load-incidents', label: 'Load incidents' },
+                                        { value: 'hydration-failures', label: 'Hydration failures' },
+                                        { value: 'live-aggregator-focus', label: 'Live aggregator' },
+                                    ] as const).map((preset) => (
+                                        <button
+                                            key={`telemetry-preset-${preset.value}`}
+                                            type="button"
+                                            onClick={() => applyTelemetryPreset(preset.value)}
+                                            className="rounded-md border border-zinc-700 bg-zinc-950/70 px-2 py-1 text-zinc-300 transition-colors hover:bg-zinc-800"
+                                            title={`Apply ${preset.label.toLowerCase()} telemetry triage preset`}
+                                            aria-label={`Apply ${preset.label} telemetry triage preset`}
+                                        >
+                                            {preset.label}
+                                        </button>
+                                    ))}
+                                </div>
+
+                                <div className="flex flex-wrap items-center gap-2 text-xs">
+                                    <span className="text-zinc-500 uppercase tracking-wider">Active filters</span>
+                                    {telemetryTypeFilter !== 'all' ? (
+                                        <button
+                                            type="button"
+                                            onClick={() => setTelemetryTypeFilter('all')}
+                                            className="rounded-md border border-blue-500/30 bg-blue-500/10 px-2 py-1 text-blue-200 transition-colors hover:bg-blue-500/20"
+                                            title="Clear telemetry type filter"
+                                            aria-label="Clear telemetry type filter"
+                                        >
+                                            type: {telemetryTypeFilter} ×
+                                        </button>
+                                    ) : null}
+                                    {telemetryStatusFilter !== 'all' ? (
+                                        <button
+                                            type="button"
+                                            onClick={() => setTelemetryStatusFilter('all')}
+                                            className="rounded-md border border-cyan-500/30 bg-cyan-500/10 px-2 py-1 text-cyan-200 transition-colors hover:bg-cyan-500/20"
+                                            title="Clear telemetry status filter"
+                                            aria-label="Clear telemetry status filter"
+                                        >
+                                            status: {telemetryStatusFilter} ×
+                                        </button>
+                                    ) : null}
+                                    {telemetryWindowFilter !== '15m' ? (
+                                        <button
+                                            type="button"
+                                            onClick={() => setTelemetryWindowFilter('15m')}
+                                            className="rounded-md border border-violet-500/30 bg-violet-500/10 px-2 py-1 text-violet-200 transition-colors hover:bg-violet-500/20"
+                                            title="Clear telemetry window filter"
+                                            aria-label="Clear telemetry window filter"
+                                        >
+                                            window: {telemetryWindowFilter} ×
+                                        </button>
+                                    ) : null}
+                                    {telemetrySourceFilter !== 'all' ? (
+                                        <button
+                                            type="button"
+                                            onClick={() => setTelemetrySourceFilter('all')}
+                                            className="rounded-md border border-amber-500/30 bg-amber-500/10 px-2 py-1 text-amber-200 transition-colors hover:bg-amber-500/20"
+                                            title="Clear telemetry source filter"
+                                            aria-label="Clear telemetry source filter"
+                                        >
+                                            source: {telemetrySourceFilter} ×
+                                        </button>
+                                    ) : null}
+                                    {telemetryFiltersAtDefault ? (
+                                        <span className="rounded-md border border-zinc-700 bg-zinc-950/70 px-2 py-1 text-zinc-500">
+                                            default scope
+                                        </span>
+                                    ) : null}
+                                </div>
+
+                                <div className="flex flex-wrap items-center gap-2 text-xs">
                                     <span className="rounded-md border border-zinc-700 bg-zinc-950/70 px-2 py-1 text-zinc-300">
                                         total: {telemetrySummary.total}
                                     </span>
@@ -1326,6 +1445,7 @@ export default function SearchDashboard() {
                                     <button
                                         type="button"
                                         onClick={resetTelemetryFilters}
+                                        disabled={telemetryFiltersAtDefault}
                                         className="ml-auto rounded-md border border-zinc-700 bg-zinc-950/70 px-2 py-1 text-zinc-300 transition-colors hover:bg-zinc-800"
                                         title="Reset telemetry type/status/window/source filters to defaults"
                                         aria-label="Reset telemetry filters"
@@ -1531,7 +1651,7 @@ export default function SearchDashboard() {
                             <textarea
                                 value={jsoncDraft}
                                 onChange={(event) => setJsoncDraft(event.target.value)}
-                                title="Edit the Borg MCP JSONC configuration. Changes are saved to the root mcp.jsonc file."
+                                title="Edit the Borg MCP JSONC configuration. Changes are saved to the Borg config mcp.jsonc file (typically ~/.borg/mcp.jsonc)."
                                 aria-label="MCP JSONC configuration editor"
                                 className="w-full h-48 bg-zinc-950 border border-zinc-800 rounded-md p-3 font-mono text-xs text-zinc-200 outline-none"
                                 spellCheck={false}

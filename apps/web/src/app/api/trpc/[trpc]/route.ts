@@ -1,6 +1,7 @@
 import { createHash } from 'node:crypto';
 import { existsSync } from 'node:fs';
 import fs from 'node:fs/promises';
+import os from 'node:os';
 import path from 'node:path';
 
 import { normalizeImportedServerType } from '../../../../lib/mcp-import';
@@ -30,10 +31,37 @@ function resolveRepoRoot(): string {
   return path.resolve(process.cwd(), '..', '..');
 }
 
-const REPO_ROOT = resolveRepoRoot();
-const MCP_JSONC_PATH = path.join(REPO_ROOT, 'mcp.jsonc');
-const MCP_JSON_PATH = path.join(REPO_ROOT, 'mcp.json');
+const LEGACY_REPO_ROOT = resolveRepoRoot();
+const LEGACY_MCP_JSONC_PATH = path.join(LEGACY_REPO_ROOT, 'mcp.jsonc');
+const LEGACY_MCP_JSON_PATH = path.join(LEGACY_REPO_ROOT, 'mcp.json');
 const JSONC_HEADER = `// Borg MCP configuration\n// This file is Borg-owned and may include cached server metadata under mcpServers.<name>._meta.\n`;
+
+function resolveBorgConfigDir(): string {
+  const configuredDir = process.env.BORG_CONFIG_DIR?.trim();
+  if (configuredDir) {
+    return configuredDir;
+  }
+
+  return path.join(os.homedir(), '.borg');
+}
+
+function resolvePrimaryMcpPaths(): { jsoncPath: string; jsonPath: string } {
+  const configDir = resolveBorgConfigDir();
+  return {
+    jsoncPath: path.join(configDir, 'mcp.jsonc'),
+    jsonPath: path.join(configDir, 'mcp.json'),
+  };
+}
+
+function resolveMcpReadCandidates(): Array<{ filePath: string; allowComments: boolean }> {
+  const primaryPaths = resolvePrimaryMcpPaths();
+  return [
+    { filePath: primaryPaths.jsoncPath, allowComments: true },
+    { filePath: primaryPaths.jsonPath, allowComments: false },
+    { filePath: LEGACY_MCP_JSONC_PATH, allowComments: true },
+    { filePath: LEGACY_MCP_JSON_PATH, allowComments: false },
+  ];
+}
 
 type LocalMcpServerEntry = {
   command?: string;
@@ -430,7 +458,7 @@ function parseLocalMcpConfig(raw: string, allowComments: boolean): LocalMcpConfi
 async function loadLocalMcpConfig(): Promise<LocalMcpConfig> {
   let lastParseError: unknown;
 
-  for (const [filePath, allowComments] of [[MCP_JSONC_PATH, true], [MCP_JSON_PATH, false]] as const) {
+  for (const { filePath, allowComments } of resolveMcpReadCandidates()) {
     try {
       const raw = await fs.readFile(filePath, 'utf-8');
       return parseLocalMcpConfig(raw, allowComments);
@@ -457,14 +485,19 @@ async function loadLocalMcpConfig(): Promise<LocalMcpConfig> {
 }
 
 async function writeLocalMcpConfig(config: LocalMcpConfig): Promise<void> {
+  const { jsoncPath, jsonPath } = resolvePrimaryMcpPaths();
+  await fs.mkdir(path.dirname(jsoncPath), { recursive: true });
+
   await Promise.all([
-    fs.writeFile(MCP_JSONC_PATH, `${JSONC_HEADER}${JSON.stringify(config, null, 2)}\n`, 'utf-8'),
-    fs.writeFile(MCP_JSON_PATH, `${JSON.stringify({ mcpServers: config.mcpServers }, null, 2)}\n`, 'utf-8'),
+    fs.writeFile(jsoncPath, `${JSONC_HEADER}${JSON.stringify(config, null, 2)}\n`, 'utf-8'),
+    fs.writeFile(jsonPath, `${JSON.stringify({ mcpServers: config.mcpServers }, null, 2)}\n`, 'utf-8'),
   ]);
 }
 
 async function readLocalMcpSource(): Promise<{ path: string; content: string }> {
-  for (const filePath of [MCP_JSONC_PATH, MCP_JSON_PATH]) {
+  const primaryPaths = resolvePrimaryMcpPaths();
+
+  for (const { filePath } of resolveMcpReadCandidates()) {
     try {
       const content = await fs.readFile(filePath, 'utf-8');
       return { path: filePath, content };
@@ -479,7 +512,7 @@ async function readLocalMcpSource(): Promise<{ path: string; content: string }> 
   }
 
   return {
-    path: MCP_JSONC_PATH,
+    path: primaryPaths.jsoncPath,
     content: `${JSONC_HEADER}${JSON.stringify({ mcpServers: {} }, null, 2)}\n`,
   };
 }
