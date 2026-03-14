@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.7.112] — 2026-03-14
+
+- feat(dashboard): added `/dashboard/tests` — Auto-Test Runner page backed by `tests` tRPC procedures (`status`, `start`, `stop`, `results`) with watcher controls and per-file output inspection.
+- feat(session): added `/dashboard/session/[id]` — session detail page with metadata, attach-info panel, health snapshot, live log tail, and contextual shell execution via `session.executeShell`.
+- changed(session): added `View Details` action button on `/dashboard/session` cards linking directly to the new dynamic session detail route.
+- changed(nav): added `Tests` entry to Labs navigation so the test-runner surface is reachable from sidebar navigation.
+
 ## [2.7.111] — 2026-03-14
 
 - feat(dashboard): added `/dashboard/command` — Command Center page with live slash-command list, REPL execution via `commands` tRPC namespace, and arrow-key history navigation.

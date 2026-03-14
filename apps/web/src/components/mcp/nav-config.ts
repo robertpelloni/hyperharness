@@ -268,6 +268,7 @@ export const LABS_DASHBOARD_NAV: NavItem[] = [
     { title: "Code", href: "/dashboard/code", icon: FileCode2, description: "LSP symbol navigation and search across the active workspace.", variant: "ghost" },
     { title: "Context Manager", href: "/dashboard/context", icon: FolderOpen, description: "Manage files injected into the Borg context prompt for active AI sessions.", variant: "ghost" },
     { title: "Command", href: "/dashboard/command", icon: Terminal, description: "Execute slash commands and explore registered command handlers via a live REPL.", variant: "ghost" },
+    { title: "Tests", href: "/dashboard/tests", icon: FlaskConical, description: "Auto-test watcher: start/stop file-watch mode, view per-file pass/fail results.", variant: "ghost" },
     { title: "Traffic Inspector", href: "/dashboard/inspector", icon: FileSearch, variant: "ghost" },
     { title: "Workflows", href: "/dashboard/workflows", icon: Workflow, variant: "ghost" },
     { title: "Library", href: "/dashboard/library", icon: Library, variant: "ghost" },
