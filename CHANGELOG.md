@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.7.124] — 2026-03-14
+
+- changed(mcp/search-ui): added telemetry time-window presets (`all`, `5m`, `15m`, `1h`, `24h`) in `/dashboard/mcp/search` so operators can triage routing events by recent incident window instead of scanning a single rolling list.
+- changed(mcp/search-ui): telemetry summary chips now reflect the active filter window/type/status scope, making `total/success/error` counts match the currently visible slice.
+- changed(mcp/search-ui): added a per-source telemetry breakdown panel (runtime-search, cached-ranking, live-aggregator) with event-volume bars plus success/error and average-latency context to speed up source-level ranking diagnostics.
+
 ## [2.7.123] — 2026-03-14
 
 - changed(mcp/search-ui): added telemetry summary chips (`total`, `success`, `errors`) to `/dashboard/mcp/search` for at-a-glance event health.

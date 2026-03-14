@@ -94,6 +94,30 @@ type ToolPreferenceMutationInput = {
     maxHydratedSchemas?: number;
 };
 
+type TelemetryWindowPreset = 'all' | '5m' | '15m' | '1h' | '24h';
+
+function resolveTelemetryWindowStart(windowPreset: TelemetryWindowPreset): number | null {
+    const now = Date.now();
+
+    if (windowPreset === '5m') {
+        return now - (5 * 60 * 1000);
+    }
+
+    if (windowPreset === '15m') {
+        return now - (15 * 60 * 1000);
+    }
+
+    if (windowPreset === '1h') {
+        return now - (60 * 60 * 1000);
+    }
+
+    if (windowPreset === '24h') {
+        return now - (24 * 60 * 60 * 1000);
+    }
+
+    return null;
+}
+
 function formatRelativeTimestamp(timestamp: number | null): string {
     if (!timestamp) {
         return '—';
@@ -122,6 +146,7 @@ export default function SearchDashboard() {
     const [jsoncDraft, setJsoncDraft] = useState('');
     const [telemetryTypeFilter, setTelemetryTypeFilter] = useState<'all' | ToolSelectionTelemetryEvent['type']>('all');
     const [telemetryStatusFilter, setTelemetryStatusFilter] = useState<'all' | ToolSelectionTelemetryEvent['status']>('all');
+    const [telemetryWindowFilter, setTelemetryWindowFilter] = useState<TelemetryWindowPreset>('15m');
     const utils = trpc.useUtils();
     const searchQuery = trpc.mcp.searchTools.useQuery(
         { query, profile: profile === 'default' ? undefined : profile },
@@ -236,15 +261,33 @@ export default function SearchDashboard() {
     const allToolsQuery = trpc.mcp.listTools.useQuery(undefined, { refetchInterval: 15000 });
     const allKnownTools = (allToolsQuery.data as SearchResult[] | undefined) ?? [];
     const telemetryEvents = ((telemetryQuery.data as ToolSelectionTelemetryEvent[] | undefined) ?? []);
-    const telemetry = telemetryEvents
+    const telemetryWindowStart = resolveTelemetryWindowStart(telemetryWindowFilter);
+    const filteredTelemetryEvents = telemetryEvents
+        .filter((event) => telemetryWindowStart == null || event.timestamp >= telemetryWindowStart)
         .filter((event) => telemetryTypeFilter === 'all' || event.type === telemetryTypeFilter)
-        .filter((event) => telemetryStatusFilter === 'all' || event.status === telemetryStatusFilter)
-        .slice(0, 12);
+        .filter((event) => telemetryStatusFilter === 'all' || event.status === telemetryStatusFilter);
+    const telemetry = filteredTelemetryEvents.slice(0, 12);
     const telemetrySummary = {
-        total: telemetryEvents.length,
-        success: telemetryEvents.filter((event) => event.status === 'success').length,
-        error: telemetryEvents.filter((event) => event.status === 'error').length,
+        total: filteredTelemetryEvents.length,
+        success: filteredTelemetryEvents.filter((event) => event.status === 'success').length,
+        error: filteredTelemetryEvents.filter((event) => event.status === 'error').length,
     };
+    const telemetrySourceStats = (['runtime-search', 'cached-ranking', 'live-aggregator'] as const)
+        .map((source) => {
+            const sourceEvents = filteredTelemetryEvents.filter((event) => event.source === source);
+            const avgLatencyMs = sourceEvents.length > 0
+                ? Math.round(sourceEvents.reduce((sum, event) => sum + (event.latencyMs ?? 0), 0) / sourceEvents.length)
+                : 0;
+
+            return {
+                source,
+                count: sourceEvents.length,
+                success: sourceEvents.filter((event) => event.status === 'success').length,
+                error: sourceEvents.filter((event) => event.status === 'error').length,
+                avgLatencyMs,
+            };
+        });
+    const maxTelemetrySourceCount = telemetrySourceStats.reduce((max, item) => Math.max(max, item.count), 0);
     const recentEvictions = (evictionHistoryQuery.data as WorkingSetEvictionEvent[] | undefined) ?? [];
     const preferences = (preferencesQuery.data as ToolPreferences | undefined) ?? {
         importantTools: [],
@@ -997,6 +1040,68 @@ export default function SearchDashboard() {
                                         );
                                     })}
                                 </div>
+
+                                <div className="flex flex-wrap items-center gap-2 text-xs">
+                                    <span className="text-zinc-500 uppercase tracking-wider">Window</span>
+                                    {([
+                                        { value: 'all', label: 'All' },
+                                        { value: '5m', label: '5m' },
+                                        { value: '15m', label: '15m' },
+                                        { value: '1h', label: '1h' },
+                                        { value: '24h', label: '24h' },
+                                    ] as const).map((option) => {
+                                        const active = telemetryWindowFilter === option.value;
+                                        return (
+                                            <button
+                                                key={`telemetry-window-${option.value}`}
+                                                type="button"
+                                                onClick={() => setTelemetryWindowFilter(option.value)}
+                                                className={`rounded-md border px-2 py-1 transition-colors ${active
+                                                    ? 'border-violet-500/50 bg-violet-500/15 text-violet-200'
+                                                    : 'border-zinc-700 bg-zinc-950/70 text-zinc-300 hover:bg-zinc-800'
+                                                    }`}
+                                                title={`Filter telemetry to ${option.label} window`}
+                                                aria-label={`Filter telemetry to ${option.label} window`}
+                                            >
+                                                {option.label}
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+
+                            <div className="mb-4 space-y-2 rounded-lg border border-zinc-800 bg-zinc-950/50 p-3">
+                                <div className="text-[10px] uppercase tracking-wider text-zinc-500">Per-source breakdown</div>
+                                {telemetrySourceStats.some((item) => item.count > 0) ? (
+                                    <div className="space-y-2">
+                                        {telemetrySourceStats.map((item) => {
+                                            const widthPercent = maxTelemetrySourceCount > 0
+                                                ? Math.max(6, Math.round((item.count / maxTelemetrySourceCount) * 100))
+                                                : 0;
+
+                                            return (
+                                                <div key={`telemetry-source-${item.source}`} className="space-y-1">
+                                                    <div className="flex items-center justify-between gap-3 text-xs">
+                                                        <span className="font-mono text-zinc-300">{item.source}</span>
+                                                        <span className="text-zinc-500">
+                                                            {item.count} events • {item.success} ok / {item.error} err • avg {item.avgLatencyMs}ms
+                                                        </span>
+                                                    </div>
+                                                    <div className="h-1.5 w-full rounded bg-zinc-800/80">
+                                                        <div
+                                                            className="h-1.5 rounded bg-gradient-to-r from-cyan-500/70 to-blue-500/70"
+                                                            style={{ width: `${widthPercent}%` }}
+                                                        />
+                                                    </div>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                ) : (
+                                    <div className="text-xs text-zinc-500">
+                                        No source telemetry in the selected filter window.
+                                    </div>
+                                )}
                             </div>
 
                             <div className="space-y-3 max-h-[420px] overflow-y-auto">
