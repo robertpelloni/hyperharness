@@ -5,12 +5,17 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const FALLBACK_PORTS = [3000, 3010, 3020, 3030, 3040];
-const WILDCARD_NEXT_DEV_TYPES = ".next-dev-*/types/**/*.ts";
-const WILDCARD_NEXT_DEV_DEV_TYPES = ".next-dev-*/dev/types/**/*.ts";
 const SPECIFIC_NEXT_DEV_TYPES_PATTERN = /^\.next-dev-\d+\/(types|dev\/types)\/\*\*\/\*\.ts$/;
 const WEB_DEV_PORT_MARKER = ".borg-dev-port.json";
 
-function normalizeTsconfigIncludes() {
+function buildNextDevTypeIncludes(distDir) {
+  return [
+    `${distDir}/types/**/*.ts`,
+    `${distDir}/dev/types/**/*.ts`,
+  ];
+}
+
+function normalizeTsconfigIncludes(distDir = ".next-dev-3000") {
   try {
     const scriptDir = path.dirname(fileURLToPath(import.meta.url));
     const tsconfigPath = path.resolve(scriptDir, "..", "tsconfig.json");
@@ -29,12 +34,10 @@ function normalizeTsconfigIncludes() {
       return !SPECIFIC_NEXT_DEV_TYPES_PATTERN.test(entry);
     });
 
-    if (!sanitizedIncludes.includes(WILDCARD_NEXT_DEV_TYPES)) {
-      sanitizedIncludes.push(WILDCARD_NEXT_DEV_TYPES);
-    }
-
-    if (!sanitizedIncludes.includes(WILDCARD_NEXT_DEV_DEV_TYPES)) {
-      sanitizedIncludes.push(WILDCARD_NEXT_DEV_DEV_TYPES);
+    for (const include of buildNextDevTypeIncludes(distDir)) {
+      if (!sanitizedIncludes.includes(include)) {
+        sanitizedIncludes.push(include);
+      }
     }
 
     parsed.include = [...new Set(sanitizedIncludes)];
@@ -184,9 +187,6 @@ async function cleanupStaleDevLockIfSafe(selectedPort, distDir) {
 }
 
 async function main() {
-  // Keep TypeScript include globs stable across dev port changes.
-  normalizeTsconfigIncludes();
-
   // pnpm scripts often forward args as: ["--", "--port", "3000"].
   // Next.js should only receive the real flags, not the delimiter token.
   const passThroughArgs = process.argv.slice(2).filter((arg) => arg !== "--");
@@ -211,6 +211,9 @@ async function main() {
     NEXT_DIST_DIR: distDir,
   };
 
+  // Keep TypeScript includes aligned with the active per-port Next.js dev output.
+  normalizeTsconfigIncludes(distDir);
+
   await cleanupStaleDevLockIfSafe(selectedPort, distDir);
   writeWebDevPortMarker(selectedPort, distDir);
 
@@ -229,14 +232,14 @@ async function main() {
 
   child.on("error", (error) => {
     removeWebDevPortMarker(selectedPort);
-    normalizeTsconfigIncludes();
+    normalizeTsconfigIncludes(distDir);
     console.error(`[web dev] ${error instanceof Error ? error.message : String(error)}`);
     process.exit(1);
   });
 
   child.on("exit", (code, signal) => {
     removeWebDevPortMarker(selectedPort);
-    normalizeTsconfigIncludes();
+    normalizeTsconfigIncludes(distDir);
 
     if (signal) {
       process.kill(process.pid, signal);

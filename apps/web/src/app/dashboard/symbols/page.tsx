@@ -5,6 +5,7 @@ import { Card, CardHeader, CardTitle, CardContent, Button } from "@borg/ui";
 import { Loader2, Code2, Trash2, Pin, Search, StickyNote, Star, Trash } from "lucide-react";
 import { trpc } from '@/utils/trpc';
 import { toast } from 'sonner';
+import { filterSymbols, normalizeSymbols, type NormalizedSymbol, type SymbolType } from './symbols-page-normalizers';
 
 export default function SymbolsDashboard() {
     const { data: symbols, isLoading, refetch } = trpc.symbols.list.useQuery();
@@ -30,10 +31,8 @@ export default function SymbolsDashboard() {
         }
     });
 
-    const filteredSymbols = symbols?.filter((s: any) => 
-        s.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-        s.file.toLowerCase().includes(searchQuery.toLowerCase())
-    );
+    const normalizedSymbols = normalizeSymbols(symbols);
+    const filteredSymbols = filterSymbols(normalizedSymbols, searchQuery);
 
     return (
         <div className="p-8 space-y-8">
@@ -53,7 +52,7 @@ export default function SymbolsDashboard() {
                         size="sm" 
                         className="text-zinc-400 hover:text-red-400 border-zinc-800"
                         onClick={() => { if(confirm("Clear all pins?")) clearMutation.mutate(); }}
-                        disabled={clearMutation.isPending || !symbols?.length}
+                        disabled={clearMutation.isPending || normalizedSymbols.length === 0}
                     >
                         <Trash className="mr-2 h-4 w-4" /> Clear All
                     </Button>
@@ -78,15 +77,15 @@ export default function SymbolsDashboard() {
                     <div className="col-span-full flex justify-center p-12">
                         <Loader2 className="h-8 w-8 animate-spin text-zinc-500" />
                     </div>
-                ) : !filteredSymbols || filteredSymbols.length === 0 ? (
+                ) : filteredSymbols.length === 0 ? (
                     <div className="col-span-full text-center p-20 bg-zinc-900/30 rounded-lg border border-zinc-800 border-dashed">
                         <Pin className="h-12 w-12 mx-auto mb-4 opacity-10 rotate-12" />
                         <p className="text-lg font-medium text-zinc-500">No symbols pinned.</p>
                         <p className="text-sm mt-1 text-zinc-600">Pin critical functions or classes to anchor agent focus.</p>
                     </div>
                 ) : (
-                    filteredSymbols.map((symbol: any) => (
-                        <SymbolCard key={symbol.id} symbol={symbol} onUpdate={refetch} onUnpin={() => unpinMutation.mutate({ id: symbol.id })} />
+                    filteredSymbols.map((symbol) => (
+                        <SymbolCard key={symbol.id} symbol={symbol} onUnpin={() => unpinMutation.mutate({ id: symbol.id })} />
                     ))
                 )}
             </div>
@@ -94,7 +93,7 @@ export default function SymbolsDashboard() {
     );
 }
 
-function SymbolCard({ symbol, onUpdate, onUnpin }: { symbol: any; onUpdate: () => void; onUnpin: () => void }) {
+function SymbolCard({ symbol, onUnpin }: { symbol: NormalizedSymbol; onUnpin: () => void }) {
     return (
         <Card className="bg-zinc-900 border-zinc-800 hover:border-zinc-700 transition-all group relative overflow-hidden">
             <div className="absolute top-0 right-0 p-2 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -136,7 +135,7 @@ function SymbolCard({ symbol, onUpdate, onUnpin }: { symbol: any; onUpdate: () =
     );
 }
 
-function getTypeColor(type: string) {
+function getTypeColor(type: SymbolType) {
     switch (type) {
         case 'function': return 'bg-blue-500/10 text-blue-400 border-blue-500/20';
         case 'class': return 'bg-purple-500/10 text-purple-400 border-purple-500/20';

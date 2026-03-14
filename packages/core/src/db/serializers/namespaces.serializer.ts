@@ -7,6 +7,12 @@ import {
     NamespaceWithServers,
 } from "../../types/mcp-admin/index.js";
 
+function readAlwaysOnFlag(record: object): boolean {
+    return 'always_on' in record && typeof record.always_on === 'boolean'
+        ? record.always_on
+        : false;
+}
+
 export class NamespacesSerializer {
     static serializeNamespace(dbNamespace: DatabaseNamespace): Namespace {
         return {
@@ -46,6 +52,7 @@ export class NamespacesSerializer {
                 env: server.env || {},
                 bearerToken: server.bearerToken,
                 headers: server.headers || {},
+                always_on: readAlwaysOnFlag(server),
                 created_at: server.created_at.toISOString(),
                 user_id: server.user_id,
                 status: server.status,
@@ -60,6 +67,7 @@ export class NamespacesSerializer {
             description: dbTool.description,
             toolSchema: dbTool.toolSchema,
             is_deferred: dbTool.is_deferred ?? false,
+            always_on: readAlwaysOnFlag(dbTool),
             created_at: dbTool.created_at.toISOString(),
             updated_at: dbTool.updated_at.toISOString(),
             mcp_server_uuid: dbTool.mcp_server_uuid,

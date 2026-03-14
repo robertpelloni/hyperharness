@@ -1,6 +1,8 @@
 import { z } from 'zod';
-import { t, publicProcedure, getAgentMemoryService, getSessionManager, getSessionSupervisor } from '../lib/trpc-core.js';
+import { t, publicProcedure, getAgentMemoryService, getSessionManager, getSessionSupervisor, getShellService } from '../lib/trpc-core.js';
 import { detectCliHarnesses } from '../services/cli-harness-detection.js';
+
+const sessionExecutionProfileSchema = z.enum(['auto', 'powershell', 'posix', 'compatibility']);
 
 const supervisedSessionStatusSchema = z.enum(['created', 'starting', 'running', 'stopping', 'stopped', 'restarting', 'error']);
 
@@ -10,6 +12,19 @@ const sessionSupervisorLogEntrySchema = z.object({
     message: z.string(),
 });
 
+const sessionShellExecutionResultSchema = z.object({
+    command: z.string(),
+    cwd: z.string(),
+    shellFamily: z.enum(['powershell', 'cmd', 'posix', 'wsl', 'default']),
+    shellPath: z.string().nullable(),
+    stdout: z.string(),
+    stderr: z.string(),
+    output: z.string(),
+    exitCode: z.number(),
+    durationMs: z.number(),
+    succeeded: z.boolean(),
+});
+
 const supervisedSessionSnapshotSchema = z.object({
     id: z.string(),
     name: z.string(),
@@ -17,6 +32,18 @@ const supervisedSessionSnapshotSchema = z.object({
     command: z.string(),
     args: z.array(z.string()),
     env: z.record(z.string()),
+    executionProfile: sessionExecutionProfileSchema,
+    executionPolicy: z.object({
+        requestedProfile: sessionExecutionProfileSchema,
+        effectiveProfile: z.enum(['powershell', 'posix', 'compatibility', 'fallback']),
+        shellId: z.string().nullable(),
+        shellLabel: z.string().nullable(),
+        shellFamily: z.enum(['powershell', 'cmd', 'posix', 'wsl']).nullable(),
+        shellPath: z.string().nullable(),
+        supportsPowerShell: z.boolean(),
+        supportsPosixShell: z.boolean(),
+        reason: z.string(),
+    }).nullable(),
     requestedWorkingDirectory: z.string(),
     workingDirectory: z.string(),
     worktreePath: z.string().optional(),
@@ -59,6 +86,7 @@ export const sessionRouter = t.router({
         command: z.string().min(1).optional(),
         args: z.array(z.string()).optional(),
         env: z.record(z.string()).optional(),
+        executionProfile: sessionExecutionProfileSchema.optional(),
         autoRestart: z.boolean().optional(),
         isolateWorktree: z.boolean().optional(),
         metadata: z.record(z.unknown()).optional(),
@@ -134,6 +162,43 @@ export const sessionRouter = t.router({
         id: z.string(),
     })).mutation(async ({ input }) => {
         return getSessionSupervisor().restartSession(input.id);
+    }),
+
+    executeShell: publicProcedure.input(z.object({
+        id: z.string(),
+        command: z.string().min(1),
+        timeoutMs: z.number().int().min(1_000).max(120_000).optional(),
+    })).output(sessionShellExecutionResultSchema).mutation(async ({ input }) => {
+        const supervisor = getSessionSupervisor();
+        const session = supervisor.getSession(input.id);
+
+        if (!session) {
+            throw new Error(`Unknown supervised session '${input.id}'.`);
+        }
+
+        const shellService = getShellService();
+        if (!shellService?.executeWithContext) {
+            throw new Error('ShellService does not support contextual execution.');
+        }
+
+        return await shellService.executeWithContext(input.command, {
+            cwd: session.workingDirectory,
+            env: session.env,
+            session: session.id,
+            executionPolicy: session.executionPolicy,
+            timeoutMs: input.timeoutMs,
+        }) as {
+            command: string;
+            cwd: string;
+            shellFamily: 'powershell' | 'cmd' | 'posix' | 'wsl' | 'default';
+            shellPath: string | null;
+            stdout: string;
+            stderr: string;
+            output: string;
+            exitCode: number;
+            durationMs: number;
+            succeeded: boolean;
+        };
     }),
 
     logs: publicProcedure.input(z.object({

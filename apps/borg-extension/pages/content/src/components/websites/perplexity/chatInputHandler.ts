@@ -5,6 +5,7 @@
  */
 
 import { logMessage } from '@src/utils/helpers';
+import { findBestActionButton, isButtonDisabled } from '@src/utils/dom';
 import { createLogger } from '@extension/shared/lib/logger';
 
 /**
@@ -231,28 +232,26 @@ export const submitChatInput = async (maxWaitTime = 5000): Promise<boolean> => {
     }
 
     const findSubmitButton = (): HTMLButtonElement | null => {
-      return (document.querySelector('button[aria-label="Submit"]') ??
-        document.querySelector('button[aria-label="Send"]') ??
-        document.querySelector('button[type="submit"]') ??
-        chatInput.parentElement?.querySelector('button') ??
-        document.querySelector('button svg[stroke="currentColor"]')?.closest('button')) as HTMLButtonElement | null;
+      return findBestActionButton({
+        actionLabels: ['Submit', 'Send'],
+        preferredSelectors: [
+          'button[aria-label="Submit"]',
+          'button[aria-label="Send"]',
+          'button[type="submit"]',
+        ],
+        near: chatInput,
+      });
     };
-
-    const isDisabled = (btn: HTMLButtonElement) =>
-      btn.disabled ||
-      btn.getAttribute('disabled') !== null ||
-      btn.getAttribute('aria-disabled') === 'true' ||
-      btn.classList.contains('disabled');
 
     let button = findSubmitButton();
     if (button) {
       logMessage(`Found submit button (${button.getAttribute('aria-label') || 'unknown'})`);
       const start = Date.now();
-      while (isDisabled(button) && Date.now() - start < maxWaitTime) {
+      while (isButtonDisabled(button) && Date.now() - start < maxWaitTime) {
         await new Promise(res => setTimeout(res, 300));
         button = findSubmitButton()!;
       }
-      if (!isDisabled(button)) {
+      if (!isButtonDisabled(button)) {
         logMessage('Clicking submit button');
         button.click();
         return true;

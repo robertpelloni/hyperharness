@@ -31,6 +31,7 @@ export const ToolSchema = z.object({
         required: z.array(z.string()).optional(),
     }),
     is_deferred: z.boolean().default(false),
+    always_on: z.boolean().default(false),
     created_at: z.string().datetime(),
     updated_at: z.string().datetime(),
     mcp_server_uuid: z.string().uuid(),
@@ -93,6 +94,7 @@ export const ToolCreateInputSchema = z.object({
         required: z.array(z.string()).optional(),
     }),
     is_deferred: z.boolean().default(false),
+    always_on: z.boolean().default(false),
     mcp_server_uuid: z.string(),
 });
 
@@ -107,6 +109,7 @@ export const ToolUpsertInputSchema = z.object({
                     required: z.array(z.string()).optional(),
                 })
                 .optional(),
+            always_on: z.boolean().optional(),
         }),
     ),
     mcpServerUuid: z.string(),
@@ -127,6 +130,7 @@ export const DatabaseToolSchema = z.object({
         required: z.array(z.string()).optional(),
     }),
     is_deferred: z.boolean().default(false),
+    always_on: z.boolean().default(false),
     created_at: z.date(),
     updated_at: z.date(),
     mcp_server_uuid: z.string(),

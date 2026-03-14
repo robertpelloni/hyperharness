@@ -19,6 +19,7 @@ describe('compatibilityToolDefinitions', () => {
             'load_tool_set',
             'toolset_list',
             'import_mcp_config',
+            'auto_call_tool',
         ]);
     });
 
@@ -49,8 +50,12 @@ describe('compatibilityToolDefinitions', () => {
             'search_tools',
             'load_tool',
             'get_tool_schema',
+            'get_tool_context',
             'unload_tool',
             'list_loaded_tools',
+            'set_capacity',
+            'get_eviction_history',
+            'clear_eviction_history',
         ]);
     });
 

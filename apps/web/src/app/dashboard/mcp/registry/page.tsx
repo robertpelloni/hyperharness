@@ -6,19 +6,9 @@ import { Button } from "@borg/ui";
 import { Loader2, Globe, Download, ExternalLink, Database } from "lucide-react";
 import { trpc } from '@/utils/trpc';
 import { toast } from 'sonner';
+import { getInstalledServerNames, normalizeRegistryItems, type RegistryListItem } from './registry-page-normalizers';
 
-type RegistryItem = {
-    id?: string;
-    name: string;
-    description: string;
-    author?: string;
-    command?: string;
-    args?: string[];
-    env?: Record<string, string>;
-    tags: string[];
-    url?: string;
-    category?: string;
-};
+type RegistryItem = RegistryListItem;
 
 // Fallback install templates if live registry has no install metadata
 const QUICK_INSTALL_TEMPLATES: RegistryItem[] = [
@@ -73,14 +63,8 @@ export default function RegistryDashboard() {
     const { data: installedServers } = trpc.mcpServers.list.useQuery();
     const { data: registry, isLoading: loadingRegistry } = trpc.mcpServers.registrySnapshot.useQuery();
 
-    const liveRegistry: RegistryItem[] = (registry || []).map((item: any) => ({
-        id: item.id,
-        name: item.name,
-        description: item.description,
-        tags: Array.isArray(item.tags) ? item.tags : [],
-        url: item.url,
-        category: item.category,
-    }));
+    const installedServerNames = getInstalledServerNames(installedServers);
+    const liveRegistry: RegistryItem[] = normalizeRegistryItems(registry);
 
     const source = liveRegistry.length > 0 ? liveRegistry : QUICK_INSTALL_TEMPLATES;
     const filtered = source.filter((item) =>
@@ -121,7 +105,7 @@ export default function RegistryDashboard() {
                     <RegistryCard
                         key={item.id || item.name}
                         item={item}
-                        isInstalled={!!installedServers?.some((s: any) => s.name === item.name)}
+                        isInstalled={installedServerNames.has(item.name)}
                     />
                 ))}
             </div>

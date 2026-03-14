@@ -1,6 +1,6 @@
 import type { Tool } from '@modelcontextprotocol/sdk/types.js';
 
-type ToolLoadingName = 'search_tools' | 'load_tool' | 'get_tool_schema' | 'get_tool_context' | 'unload_tool' | 'list_loaded_tools';
+type ToolLoadingName = 'search_tools' | 'load_tool' | 'get_tool_schema' | 'get_tool_context' | 'unload_tool' | 'list_loaded_tools' | 'set_capacity' | 'get_eviction_history' | 'clear_eviction_history';
 
 interface ToolLoadingDefinitionOverrides {
     descriptions?: Partial<Record<ToolLoadingName, string>>;
@@ -72,6 +72,39 @@ const baseDefinitions: Record<ToolLoadingName, Tool> = {
             properties: {},
         },
     },
+    set_capacity: {
+        name: 'set_capacity',
+        description: 'Reconfigure the session working-set capacity limits at runtime. Changes take effect on the next load or hydrate operation.',
+        inputSchema: {
+            type: 'object',
+            properties: {
+                maxLoadedTools: {
+                    type: 'number',
+                    description: 'Maximum number of tools that may be loaded simultaneously (4..64). Defaults to 16 when not set.',
+                },
+                maxHydratedSchemas: {
+                    type: 'number',
+                    description: 'Maximum number of full tool schemas that may be hydrated simultaneously (2..32). Defaults to 8 when not set.',
+                },
+            },
+        },
+    },
+    get_eviction_history: {
+        name: 'get_eviction_history',
+        description: 'Return the bounded recent eviction history for the session working set, showing which tools were evicted and when.',
+        inputSchema: {
+            type: 'object',
+            properties: {},
+        },
+    },
+    clear_eviction_history: {
+        name: 'clear_eviction_history',
+        description: 'Clear the bounded eviction-history buffer for the current session working set.',
+        inputSchema: {
+            type: 'object',
+            properties: {},
+        },
+    },
 };
 
 const toolLoadingOrder: ToolLoadingName[] = [
@@ -81,6 +114,9 @@ const toolLoadingOrder: ToolLoadingName[] = [
     'get_tool_context',
     'unload_tool',
     'list_loaded_tools',
+    'set_capacity',
+    'get_eviction_history',
+    'clear_eviction_history',
 ];
 
 export function getToolLoadingDefinitions(overrides: ToolLoadingDefinitionOverrides = {}): Tool[] {

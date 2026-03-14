@@ -2,6 +2,540 @@
 
 _Last updated: 2026-03-11_
 
+## Latest session update — memory story consolidation slice
+
+### Follow-up slice — fuzzy intent-aware cross-session links
+
+#### What changed
+
+- `packages/core/src/services/agentMemoryConnections.ts`
+  - extended cross-session goal/objective correlation beyond exact text matches so sessions can now link when their intent anchors use similar phrasing instead of identical strings
+  - added a conservative token-overlap heuristic for intent themes (for example, `Keep the memory dashboard truthful` vs `Keep memory dashboard views truthful and coherent`)
+  - exact goal/objective matches still win first; fuzzy theme matches only apply when no exact session-level intent overlap exists
+- `packages/core/src/services/agentMemoryConnections.test.ts`
+  - added focused coverage for cross-session ranking when the related session shares the same goal/objective theme with different wording
+
+#### Focused validation
+
+- `get_errors` on touched helper/test files: **clean**
+- `pnpm exec vitest run packages/core/src/services/agentMemoryConnections.test.ts packages/core/src/services/agentMemoryTimeline.test.ts packages/core/src/services/agentMemoryPivot.test.ts apps/web/src/app/dashboard/memory/memory-dashboard-utils.test.ts`
+  - result: **passed** (`21` tests total)
+- `pnpm -C apps/web exec tsc --noEmit --pretty false`
+  - result: **passed**
+
+#### Recommended next move
+
+The next best slice inside `013-memory-story-consolidation` is still to deepen traversal beyond ranked one-hop cards, especially:
+
+1. a backend detail endpoint for graph-style related-record traversal
+2. optional timeline-day grouping inside the inspector for long same-session histories
+3. richer observation-level inheritance so same-session records can expose goal/objective anchors more directly in the UI
+
+### Follow-up slice — goal/objective pivot anchors
+
+#### What changed
+
+- `packages/types/src/schemas/memory.ts`
+  - extended the shared `searchMemoryPivot` contract so pivots can now target `goal` and `objective` anchors in addition to `session`, `tool`, `concept`, and `file`
+- `packages/core/src/services/AgentMemoryService.ts`
+  - widened the native pivot-search input union so Borg's service contract accepts the new intent pivot kinds
+- `packages/core/src/services/agentMemoryPivot.ts`
+  - added direct backend matching for goal/objective anchors derived from structured prompts and session summaries
+  - goal pivots match `activeGoal` plus explicit goal prompts, while objective pivots match `lastObjective` plus explicit objective prompts
+  - non-session pivot behavior still pulls in same-session companion records so intent pivots return the surrounding work context rather than isolated records only
+- `packages/core/src/services/agentMemoryPivot.test.ts`
+  - added focused coverage for goal and objective pivot ranking
+- `apps/web/src/app/dashboard/memory/memory-dashboard-utils.ts`
+  - extended inspector pivot generation to emit `Goal pivots` and `Objective pivots` sections for prompt and summary records
+- `apps/web/src/app/dashboard/memory/memory-dashboard-utils.test.ts`
+  - added focused coverage for prompt/summary goal-objective pivot sections
+
+#### Focused validation
+
+- `get_errors` on touched schema/service/dashboard helper files: **clean**
+- `pnpm exec vitest run packages/core/src/services/agentMemoryPivot.test.ts packages/core/src/services/agentMemoryConnections.test.ts packages/core/src/services/agentMemoryTimeline.test.ts apps/web/src/app/dashboard/memory/memory-dashboard-utils.test.ts`
+  - result: **passed** (`21` tests total)
+- `pnpm -C apps/web exec tsc --noEmit --pretty false`
+  - result: **passed** (`WEB_TSC_OK`)
+
+#### Recommended next move
+
+The next best slice inside `013-memory-story-consolidation` is to deepen traversal beyond one-hop pivots, especially:
+
+1. a backend detail endpoint for graph-style related-record traversal
+2. optional timeline-day grouping inside the inspector for long same-session histories
+3. richer same-session intent inheritance for observation-level pivot chips if we want observations to surface session goals/objectives directly
+
+### Follow-up slice — anchor-aware session window grouping
+
+#### What changed
+
+- `apps/web/src/app/dashboard/memory/memory-dashboard-utils.ts`
+  - added `groupMemoryWindowAroundAnchor(...)` to split same-session context into explicit `Earlier in session` and `Later in session` groups around the selected memory anchor
+  - earlier records are ordered nearest-anchor first, while later records stay chronological from the anchor forward
+- `apps/web/src/app/dashboard/memory/memory-dashboard-utils.test.ts`
+  - added focused coverage for anchor-aware session-window grouping
+- `apps/web/src/app/dashboard/memory/page.tsx`
+  - replaced the flat `Session window` list with grouped sections so the inspector now explains chronology more clearly around the selected record
+
+#### Focused validation
+
+- `get_errors` on touched dashboard files: **clean**
+- `pnpm exec vitest run apps/web/src/app/dashboard/memory/memory-dashboard-utils.test.ts packages/core/src/services/agentMemoryConnections.test.ts packages/core/src/services/agentMemoryTimeline.test.ts packages/core/src/services/agentMemoryPivot.test.ts`
+  - result: **passed** (`18` tests total)
+- `pnpm -C apps/web exec tsc --noEmit --pretty false; if ($LASTEXITCODE -eq 0) { Write-Output 'WEB_TSC_OK' } else { exit $LASTEXITCODE }`
+  - result: **passed** (`WEB_TSC_OK`)
+
+#### Recommended next move
+
+The next best slice inside `013-memory-story-consolidation` is to deepen record traversal beyond ranked cards, especially:
+
+1. a backend detail endpoint for graph-style related-record traversal
+2. richer prompt/summary pivot actions for goal and objective anchors
+3. optional timeline-day grouping inside the inspector for long same-session histories
+
+### Follow-up slice — backend cross-session memory links
+
+#### What changed
+
+- `packages/types/src/schemas/memory.ts`
+  - added a typed `getCrossSessionMemoryLinks` contract so the dashboard can request related records anchored to a selected memory id
+- `packages/core/src/services/agentMemoryConnections.ts`
+  - added a pure backend helper that finds related records from other sessions using shared concepts, files, tools, and source metadata
+  - same-session records are intentionally excluded so this surface complements, rather than duplicates, the new session window
+- `packages/core/src/services/agentMemoryConnections.test.ts`
+  - added focused coverage for cross-session ranking and unknown-anchor behavior
+- `packages/core/src/services/AgentMemoryService.ts`
+  - added `getCrossSessionLinks(...)` so cross-session correlation is part of the native memory service contract
+- `packages/core/src/routers/memoryRouter.ts`
+  - added `getCrossSessionMemoryLinks` so the dashboard can request backend-ranked cross-session relationships directly
+- `apps/web/src/app/dashboard/memory/page.tsx`
+  - added a backend-backed `Cross-session links` inspector block beneath the session window
+  - selected records can now surface related observations from other sessions with explicit reasons (`shared concepts`, `shared file`, `same tool`, `same source`, `other session`)
+
+#### Focused validation
+
+- `get_errors` on touched files: **clean**
+- `pnpm exec vitest run packages/core/src/services/agentMemoryConnections.test.ts packages/core/src/services/agentMemoryTimeline.test.ts packages/core/src/services/agentMemoryPivot.test.ts apps/web/src/app/dashboard/memory/memory-dashboard-utils.test.ts`
+  - result: **passed** (`17` tests total)
+- `pnpm -C apps/web exec tsc --noEmit --pretty false; if ($LASTEXITCODE -eq 0) { Write-Output 'WEB_TSC_OK' } else { exit $LASTEXITCODE }`
+  - result: **passed** (`WEB_TSC_OK`)
+
+#### Recommended next move
+
+The next best slice inside `013-memory-story-consolidation` is to deepen the record graph around prompts and summaries, especially:
+
+1. explicit goal/objective correlation across sessions
+2. anchor-aware grouping so the inspector can visually distinguish current session context vs other-session echoes
+3. optional backend detail endpoints for graph-style traversal beyond the current ranked cards
+
+#### Additional refinement landed after the initial slice
+
+- `packages/core/src/services/agentMemoryConnections.ts`
+  - cross-session correlation now inherits goal/objective signals from prompt and summary records in the same session instead of only looking at the selected record in isolation
+  - this lets an observation surface related prompt/summary work from other sessions even when the observation itself does not carry explicit goal fields
+- `packages/core/src/services/agentMemoryConnections.test.ts`
+  - updated fixtures and expectations to cover shared goal/objective ranking across observation, prompt, and summary records
+
+#### Additional focused validation
+
+- `get_errors` on the updated helper/test files: **clean**
+- `pnpm exec vitest run packages/core/src/services/agentMemoryConnections.test.ts packages/core/src/services/agentMemoryTimeline.test.ts packages/core/src/services/agentMemoryPivot.test.ts apps/web/src/app/dashboard/memory/memory-dashboard-utils.test.ts`
+  - result: **passed** (`17` tests total)
+
+### Follow-up slice — backend session timeline window
+
+#### What changed
+
+- `packages/types/src/schemas/memory.ts`
+  - added a typed `getMemoryTimelineWindow` contract so the UI can request same-session context around a selected record with explicit before/after bounds
+- `packages/core/src/services/agentMemoryTimeline.ts`
+  - added a pure backend helper that filters by session, finds the nearest anchor record by timestamp, and returns a chronological same-session window around it
+- `packages/core/src/services/agentMemoryTimeline.test.ts`
+  - added focused coverage for anchor selection, chronological windowing, and unknown-session behavior
+- `packages/core/src/services/AgentMemoryService.ts`
+  - added `getTimelineWindow(...)` so session-window lookups are part of the service contract instead of a front-end-only heuristic
+- `packages/core/src/routers/memoryRouter.ts`
+  - added `getMemoryTimelineWindow` so the dashboard can request nearby same-session records directly from the backend
+- `apps/web/src/app/dashboard/memory/page.tsx`
+  - added a backend-backed `Session window` inspector block that shows nearby same-session records around the selected memory anchor
+  - the dashboard now tracks the selected record's session id separately and invalidates the new query alongside the existing memory views
+
+#### Focused validation
+
+- `get_errors` on touched files: **clean**
+- `pnpm exec vitest run packages/core/src/services/agentMemoryTimeline.test.ts packages/core/src/services/agentMemoryPivot.test.ts`
+  - result: **passed** (`6` tests total)
+- `pnpm -C apps/web exec tsc --noEmit --pretty false; if ($LASTEXITCODE -eq 0) { Write-Output 'WEB_TSC_OK' } else { exit $LASTEXITCODE }`
+  - result: **passed** (`WEB_TSC_OK`)
+
+#### Recommended next move
+
+The next best slice inside `013-memory-story-consolidation` is to build on this backend session window and add richer relationship semantics, especially:
+
+1. explicit cross-session correlation (for recurring concepts/files/goals across sessions)
+2. anchor-aware timeline labels or grouping inside the inspector (`earlier`, `anchor`, `later` with stronger provenance)
+3. deeper graph-style memory navigation beyond the current pivot + session-window model
+
+### Follow-up slice — backend-backed memory pivots
+
+#### What changed
+
+- `packages/types/src/schemas/memory.ts`
+  - added a typed backend pivot contract for memory searches (`session`, `tool`, `concept`, `file`)
+- `packages/core/src/services/agentMemoryPivot.ts`
+  - added a pure backend helper that ranks direct pivot matches and session-related companion records
+  - file, concept, tool, and session pivots now resolve against Borg-native structured memory metadata instead of relying on front-end-only correlation
+- `packages/core/src/services/AgentMemoryService.ts`
+  - added `searchByPivot(...)` backed by the new helper so structured memory pivots are part of the service contract
+- `packages/core/src/routers/memoryRouter.ts`
+  - added `searchMemoryPivot` so the dashboard can request related memory records from the backend directly
+- `apps/web/src/app/dashboard/memory/page.tsx`
+  - wired inspector pivots to the backend query instead of only steering local search text
+  - pivot result sets still respect the active search mode, and manual edits to the search box clear the active pivot state cleanly
+- `apps/web/src/app/dashboard/memory/memory-dashboard-utils.ts`
+  - updated inspector pivot actions so tool/concept/file pivots now intentionally surface related records across the native memory model instead of staying observations-only
+- tests
+  - added `packages/core/src/services/agentMemoryPivot.test.ts`
+  - updated `apps/web/src/app/dashboard/memory/memory-dashboard-utils.test.ts`
+
+#### Focused validation
+
+- `get_errors` on touched files: **clean**
+- `pnpm exec vitest run packages/core/src/services/agentMemoryPivot.test.ts apps/web/src/app/dashboard/memory/memory-dashboard-utils.test.ts apps/web/src/app/dashboard/memory/claude-mem/claude-mem-status.test.ts`
+  - result: **passed** (`18` tests total)
+
+#### Important caveat
+
+I also checked broader type status after this slice, but the repo still has unrelated pre-existing failures outside the memory pivot work, including current issues under:
+
+- `packages/core/src/routers/sessionRouter.ts`
+- `packages/core/src/services/ShellService.ts`
+- `packages/core/src/routers/systemProcedures.ts`
+- generated Next.js `.next-dev-*` route typings
+- `apps/web/src/app/dashboard/billing/page.tsx`
+
+Those were not introduced by the pivot slice; the touched memory files themselves were diagnostics-clean and their focused tests passed.
+
+#### Recommended next move
+
+The next natural step inside `013-memory-story-consolidation` is to deepen backend relationships beyond current pivot matching, especially:
+
+1. explicit cross-session correlation APIs
+2. timeline/context windows around a selected record
+3. claude-mem-style observation timeline/search affordances without front-end-only heuristics
+
+### Follow-up slice — one-click inspector search pivots
+
+#### What changed
+
+- `apps/web/src/app/dashboard/memory/memory-dashboard-utils.ts`
+  - added explicit pivot-action helpers for:
+    - session identifiers
+    - tool names
+    - concepts
+    - files read / modified
+  - grouped those actions into inspector-ready sections so the page can render a coherent pivot surface instead of manually reconstructing metadata chips
+- `apps/web/src/app/dashboard/memory/page.tsx`
+  - added a **Pivot this record** block to the memory inspector
+  - selected records can now immediately re-query the dashboard from session, tool, concept, and file metadata with a single click
+  - made **All Records** behave like a true aggregate view by merging generic records with observation, prompt, and session-summary results during search instead of only querying the generic memory path
+- `apps/web/src/app/dashboard/memory/memory-dashboard-utils.test.ts`
+  - added focused coverage for pivot-section generation across session/tool/concept/file metadata
+
+#### Focused validation
+
+- `get_errors` on touched memory dashboard files: **clean**
+- `pnpm exec vitest run apps/web/src/app/dashboard/memory/memory-dashboard-utils.test.ts apps/web/src/app/dashboard/memory/claude-mem/claude-mem-status.test.ts`
+  - result: **passed** (`15` tests total)
+
+#### Recommended next move
+
+The next likely win inside `013-memory-story-consolidation` is to move these pivots beyond front-end query steering and expose backend-backed relationship/search APIs, especially for:
+
+1. file-path pivots
+2. concept pivots
+3. richer same-session cross-record retrieval
+
+### Follow-up slice — related-record inspector pivots
+
+#### What changed
+
+- `apps/web/src/app/dashboard/memory/memory-dashboard-utils.ts`
+  - added relation helpers for current timeline records, including:
+    - session linkage extraction
+    - tool/source/concept/file overlap scoring
+    - related-record ranking with stable fallback ordering
+- `apps/web/src/app/dashboard/memory/page.tsx`
+  - added a `Related records` block to the inspector
+  - selected records can now jump directly to correlated prompts, session summaries, and observations already present in the current result set
+  - relation reasons are surfaced explicitly (`same session`, `same tool`, `shared concepts`, `shared file`, etc.) instead of leaving correlation implicit
+- `apps/web/src/app/dashboard/memory/memory-dashboard-utils.test.ts`
+  - added focused coverage for related-record ranking and relation-reason output
+
+#### Focused validation
+
+- `get_errors` on touched memory dashboard files: **clean**
+- `pnpm exec vitest run apps/web/src/app/dashboard/memory/memory-dashboard-utils.test.ts apps/web/src/app/dashboard/memory/claude-mem/claude-mem-status.test.ts`
+  - result: **passed** (`14` tests total)
+
+#### Recommended next move
+
+The next likely win inside `013-memory-story-consolidation` is to move beyond client-side correlation and expose true backend-backed relationships such as:
+
+1. search/pivot by file path
+2. search/pivot by concept
+3. same-session / cross-session correlation APIs
+
+The dashboard now has coherent native record kinds, search modes, a timeline, a detail inspector, and lightweight correlation pivots using the currently loaded records.
+
+### Follow-up slice — timeline + detail inspector
+
+#### What changed
+
+- `apps/web/src/app/dashboard/memory/page.tsx`
+  - replaced the flat result list with a two-pane memory explorer:
+    - left: day-grouped record timeline
+    - right: detail inspector for the selected record
+  - records now stay selectable across mode/search changes when possible, with the first available record auto-selected when context changes
+  - timeline rows now emphasize time, kind, preview, score, and provenance in a scan-friendly structure instead of dumping only raw content
+  - detail view now renders structured sections for observations, prompts, session summaries, and generic facts
+- `apps/web/src/app/dashboard/memory/memory-dashboard-utils.ts`
+  - added helpers for:
+    - stable record keys
+    - timestamp sorting
+    - day-based grouping (`Today`, `Yesterday`, etc.)
+    - structured detail-section derivation for the inspector
+- `apps/web/src/app/dashboard/memory/memory-dashboard-utils.test.ts`
+  - added coverage for timeline grouping, stable record keys, and detail-section generation
+
+#### Focused validation
+
+- `get_errors` on touched memory dashboard files: **clean**
+- `pnpm exec vitest run apps/web/src/app/dashboard/memory/memory-dashboard-utils.test.ts apps/web/src/app/dashboard/memory/claude-mem/claude-mem-status.test.ts`
+  - result: **passed** (`13` tests total)
+
+#### Recommended next move
+
+If continuing `013-memory-story-consolidation`, the next best slice is either:
+
+1. timeline drill-ins that deep-link to related files/sessions/tools, or
+2. explicit session/observation correlation surfaces (for example, “related observations” and “same session” pivots)
+
+At this point the main dashboard has a coherent native memory model, search lenses, timeline grouping, and detail rendering; the next improvements should connect records together rather than merely restyling them.
+
+### Follow-up slice — coherent search modes + record-model helpers
+
+#### What changed
+
+- `apps/web/src/app/dashboard/memory/page.tsx`
+  - added explicit search-mode lenses for:
+    - all records
+    - facts
+    - observations
+    - prompts
+    - session summaries
+  - wired those modes to the correct Borg-native queries instead of relying only on the generic `searchAgentMemory` path
+  - added a visible **Borg Memory Model** explainer card so operators can see how facts, structured observations, prompts, summaries, and the claude-mem adapter relate
+  - improved refresh behavior after fact import/add flows by invalidating the relevant memory queries instead of refreshing only one result list
+  - updated the main result rows to render coherent record titles, previews, timestamps, and provenance instead of raw content-only blobs
+- `apps/web/src/app/dashboard/memory/memory-dashboard-utils.ts`
+  - added the shared record-model helpers now used by the dashboard, including:
+    - memory kind detection
+    - record filtering by search mode
+    - badge/title/preview derivation
+    - timestamp normalization
+    - provenance token assembly
+    - operator-facing search-mode hints
+- `apps/web/src/app/dashboard/memory/memory-dashboard-utils.test.ts`
+  - added focused coverage for helper behavior across fact, observation, prompt, and session-summary records
+
+#### Focused validation
+
+- `get_errors` on:
+  - `apps/web/src/app/dashboard/memory/page.tsx`
+  - `apps/web/src/app/dashboard/memory/memory-dashboard-utils.ts`
+  - `apps/web/src/app/dashboard/memory/memory-dashboard-utils.test.ts`
+  - result: **clean**
+- `pnpm exec vitest run apps/web/src/app/dashboard/memory/memory-dashboard-utils.test.ts apps/web/src/app/dashboard/memory/claude-mem/claude-mem-status.test.ts`
+  - result: **passed** (`11` tests total)
+
+#### Recommended next move
+
+The next high-value step under `013-memory-story-consolidation` is now a real observation/session timeline detail workflow on `/dashboard/memory` (grouping, deep drill-in, and stronger provenance navigation), since the dashboard can finally distinguish the major Borg-native record kinds honestly.
+
+### What changed
+
+- `apps/web/src/app/dashboard/memory/page.tsx`
+  - renamed the page posture from a generic “Agent Memory Bank” into Borg-native memory control language
+  - fixed the top stat cards to use coherent tier counts (`session`, `working`, `longTerm`) instead of mismatched field names
+  - added a dedicated recent **Session Summaries** panel beside observations and prompts
+  - added provenance details across observations, prompts, summaries, and search results (`source`, `session`, `tool`, file counts)
+  - updated the search prompt so the dashboard explicitly covers facts, observations, prompts, and summaries
+- `packages/core/src/services/AgentMemoryService.ts`
+  - expanded `getStats()` to emit:
+    - `totalCount`
+    - `sessionCount`
+    - `workingCount`
+    - `longTermCount`
+    - `sessionSummaryCount`
+  - kept the lower-level `session` / `working` / `long_term` counters too
+- `apps/web/src/app/dashboard/memory/claude-mem/claude-mem-status.ts`
+  - updated the parity matrix so it no longer incorrectly claims Borg has zero structured observation pipeline
+  - added explicit shipped capabilities for:
+    - canonical Borg observation schema
+    - structured prompt + session summary capture
+  - downgraded the claude-mem “compression pipeline” gap from fully missing to partial, because Borg already records heuristic structured observations with facts, concepts, files, and hashes
+- `apps/web/src/app/dashboard/memory/claude-mem/page.tsx`
+  - rewrote the framing from “claude-mem is the memory story” to “claude-mem is an adapter around Borg-native memory primitives”
+  - changed the primary CTA to `/dashboard/memory`
+  - updated the recommended next slice toward native observation search/timeline/provenance completion
+
+### Focused validation
+
+- `get_errors` on all touched files: **clean**
+- `pnpm exec vitest run apps/web/src/app/dashboard/memory/claude-mem/claude-mem-status.test.ts`: **passed** (`6` tests)
+
+### Important caveat
+
+I attempted broader typecheck validation after this slice, but the repo currently has unrelated pre-existing blockers outside the memory-story changes, including:
+
+- `packages/core/src/routers/sessionRouter.ts`
+- `packages/core/src/services/ShellService.ts`
+- `packages/core/src/routers/systemProcedures.ts`
+- generated Next.js route typing noise under `.next-dev-*`
+- syntax issues already present in `apps/web/src/app/dashboard/billing/page.tsx`
+
+Those failures were not introduced by this memory slice; the touched memory files themselves were clean in editor diagnostics.
+
+### Recommended next move
+
+If continuing the memory track, the next high-value slice is to give `/dashboard/memory` a true observation-centric search/timeline detail workflow instead of only recent-card previews and generic full-text result rows.
+
+## Latest session update — ecosystem ask consolidated, next task promoted
+
+### What changed
+
+- Completed the ecosystem-planning consolidation brief by moving `015-ecosystem-assimilation-consolidation.md` into `tasks/completed/`
+- Promoted `013-memory-story-consolidation.md` into `tasks/active/` as the next real implementation slice
+- Anchored the canonical capability-track map in one place so future tasks can reference:
+  - **Track A** — boot-ready control plane
+  - **Track B** — Borg-native MCP router maturity
+  - **Track C** — browser extension platform
+  - **Track D** — IDE / CLI / hook-based memory capture
+  - **Track E** — session fabric and model/tool portability
+  - **Track F** — advanced autonomy and marketplace
+- Updated `ROADMAP.md` and `TODO.md` to point at the completed consolidation brief instead of leaving the large assimilation request implicit
+
+### Why this matters
+
+The user-facing vision still contains huge upstream parity asks. Without one Borg-owned capability map, those asks keep reappearing as infinite “assimilate everything” directives that fight the focused 1.0 roadmap.
+
+This session turned that broad request into a stable planning boundary:
+
+- Borg 1.0 stays focused on startup truthfulness, router maturity, supervisor trust, provider truthfulness, and dashboard honesty
+- Borg 1.5 gets the browser-extension + memory-capture platform work
+- Borg 2.0 keeps autonomy, marketplace, swarm babysitting, and larger operator automation behind an explicit later milestone
+
+### Immediate next task
+
+`tasks/active/013-memory-story-consolidation.md` is now the recommended next implementation slice.
+
+That task is the first concrete follow-up under **Track D** and should define Borg's canonical observation model before any deeper claude-mem-style parity claims are made.
+
+## Latest session update — live smoke continuation + CLI lock cleanup
+
+### What was verified live
+
+The root dev flow is currently healthy in this workspace once the dashboard hydrates.
+
+Live probes during this continuation showed:
+
+- `http://127.0.0.1:3000/api/trpc/startupStatus?input={}` returned ready state with:
+  - `checks.memory.ready: true`
+  - `checks.memory.initialized: true`
+  - `checks.mcpAggregator.serverCount: 65`
+  - `checks.mcpAggregator.connectedCount: 0`
+  - `checks.mcpAggregator.persistedServerCount: 65`
+- `http://127.0.0.1:3000/api/trpc/mcp.getStatus?input={}` reported:
+  - `serverCount: 65`
+  - `toolCount: 271`
+- `/dashboard`
+  - first paint still shows fallback values briefly
+  - after hydration, the operator home reflects the live state correctly (`0/65`, `271 tools`, startup readiness ready)
+- `/dashboard/mcp/system`
+  - now hydrates to `Healthy` / `Ready`
+  - shows `4/4 phases ready`
+  - reflects the current MCP inventory counts correctly (`65 persisted servers`, `271 tools`)
+
+Interpretation: the current regression is **not** that the dashboard stays permanently stale. The boot surfaces are hydrating correctly, though there is still an initial fallback-first render on the home page.
+
+### Lock-path follow-up: real bug fixed
+
+The previous handoff recommended validating single-instance startup behavior. That check exposed a real lock-cleanup bug.
+
+Observed behavior:
+
+- starting a second CLI instance with:
+  - `pnpm -C packages/cli exec tsx src/index.ts start --port 3100 --host 127.0.0.1`
+- did **not** fail at the lock layer in this session
+- instead, it advanced into startup and crashed later on:
+  - `Error: listen EADDRINUSE ... port 3001`
+- after that fatal crash, the process left a stale `C:\Users\hyper\.borg\lock`
+
+Important nuance:
+
+- `scripts/dev_tabby_ready.mjs` will **reuse any already-running core bridge on port `3001`** and skip launching the CLI child entirely
+- in this session, the root dev stack was healthy but was not guaranteed to have been started through the current lock-managed CLI path
+- so this run did **not** conclusively prove whether the active core bridge itself was launched with a live Borg lock
+
+What was fixed:
+
+- `packages/cli/src/commands/start.ts`
+  - added `createLockLifecycleHandlers(...)`
+  - fatal startup failures now release the Borg lock before exiting
+  - wired cleanup for:
+    - `uncaughtException`
+    - `unhandledRejection`
+    - `SIGINT`
+    - `SIGTERM`
+    - normal process exit
+- `packages/cli/src/commands/start.test.ts`
+  - added regression coverage proving the lock is released when startup crashes with an uncaught exception
+  - tightened the existing “live lock” test so it simulates the actual blocking condition (running process + occupied port)
+
+### Validation for this follow-up
+
+- `pnpm exec vitest run packages/cli/src/commands/start.test.ts`
+  - passed (`8` tests)
+- `pnpm -C packages/cli exec tsc --noEmit`
+  - passed after fixing current serializer drift (see below)
+- `shell: core: typecheck-marker`
+  - result: **`CORE_TSC_OK`**
+
+### Serializer follow-up needed by current worktree changes
+
+The CLI typecheck surfaced an in-flight regression from other recent work: the `always_on` field had been added to current server/tool schemas but not fully propagated through the core DB serializers.
+
+Fixed files:
+
+- `packages/core/src/db/serializers/mcp-servers.serializer.ts`
+- `packages/core/src/db/serializers/namespaces.serializer.ts`
+- `packages/core/src/db/serializers/tools.serializer.ts`
+
+These serializers now carry `always_on` through the output model and tolerate older joined row shapes where that field may still be absent.
+
+### Known follow-up item
+
+The workspace task `shell: cli: test start command` is currently misconfigured:
+
+- it runs `vitest ... --reporter=basic`
+- in this workspace/Vitest version that is treated as a missing custom reporter module and fails before the tests run
+
+Use this direct command instead until the task definition is corrected:
+
+- `pnpm exec vitest run packages/cli/src/commands/start.test.ts`
+
 ## Latest session update — MCP discovery fix, config path, dashboard truthfulness
 
 ### What changed this session
@@ -23,6 +557,10 @@ _Last updated: 2026-03-11_
   - Added a "Labs" dropdown to the top navigation.
   - Reorganized the multi-page sidebar navigation into "Borg 1.0 Core" and "Labs & Experimental" sections.
   - Added explicit "Labs" and "Beta" badges to in-development surfaces like the Director, Council, and Super Assistant pages.
+- ✅ **Health, Logs & Operator Surfaces (Task 009):** Exposed existing backend capabilities from the `core` tRPC routers to new dedicated dashboard sections within the Borg 1.0 Core.
+  - `/dashboard/health`: Displays real-time overall system status and detailed tracking per MCP Server (uptime, crash attempts, error states) with manual health-reset capabilities.
+  - `/dashboard/logs`: Real-time searchable and filterable execution history powered by the `logsRouter`. Provides aggregate success/error rates, top tools, and a latency summary.
+  - `/dashboard/audit`: A centralized ledger driven by `auditRouter` exposing cryptographically relevant system config changes and agent actions.
 - Provider routing improvements
 - Session supervisor improvements
 - README quickstart update

@@ -7,6 +7,14 @@ export type BorgMcpToolMetadata = {
     name: string;
     title?: string | null;
     description?: string | null;
+    advertisedName?: string | null;
+    serverDisplayName?: string | null;
+    serverTags?: string[];
+    toolTags?: string[];
+    semanticGroup?: string | null;
+    semanticGroupLabel?: string | null;
+    keywords?: string[];
+    alwaysOn?: boolean;
     inputSchema?: Record<string, unknown> | null;
     outputSchema?: Record<string, unknown> | null;
     annotations?: Record<string, unknown> | null;
@@ -24,6 +32,10 @@ export type BorgMcpServerDiscoveryMetadata = {
     configFingerprint?: string;
     transportType?: 'STDIO' | 'SSE' | 'STREAMABLE_HTTP';
     serverName?: string;
+    displayName?: string;
+    description?: string | null;
+    serverTags?: string[];
+    alwaysOn?: boolean;
     command?: string | null;
     args?: string[];
     envKeys?: string[];

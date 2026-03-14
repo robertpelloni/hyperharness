@@ -40,6 +40,7 @@ function sortServers(servers: DashboardServerSummary[]) {
 
 export function DashboardHomeClient() {
     const utils = trpc.useUtils();
+    const toolsClient = trpc.tools as any;
     const [pendingSessionActionId, setPendingSessionActionId] = useState<string | null>(null);
     const [currentTimestamp, setCurrentTimestamp] = useState<number | null>(null);
 
@@ -58,6 +59,10 @@ export function DashboardHomeClient() {
     const providerQuotasQuery = trpc.billing.getProviderQuotas.useQuery(undefined, { refetchInterval: 10000 });
     const fallbackChainQuery = trpc.billing.getFallbackChain.useQuery(undefined, { refetchInterval: 10000 });
     const sessionsQuery = trpc.session.list.useQuery(undefined, { refetchInterval: 3000 });
+    const installArtifactsQuery = toolsClient?.detectInstallSurfaces?.useQuery
+        ? toolsClient.detectInstallSurfaces.useQuery(undefined, { refetchInterval: 10000 })
+        : ({ data: null, refetch: async () => undefined } as { data: null; refetch: () => Promise<unknown> });
+    const isBootstrapping = !startupStatusQuery.data && !mcpStatusQuery.data;
 
     const refreshDashboard = async () => {
         await Promise.all([
@@ -68,6 +73,7 @@ export function DashboardHomeClient() {
             utils.billing.getProviderQuotas.invalidate(),
             utils.billing.getFallbackChain.invalidate(),
             utils.session.list.invalidate(),
+            installArtifactsQuery.refetch(),
         ]);
     };
 
@@ -106,12 +112,19 @@ export function DashboardHomeClient() {
         checks: {
             mcpAggregator: {
                 ready: false,
+                liveReady: false,
                 serverCount: 0,
+                connectedCount: 0,
                 initialization: null,
                 persistedServerCount: 0,
                 persistedToolCount: 0,
                 configuredServerCount: 0,
+                advertisedServerCount: 0,
+                advertisedToolCount: 0,
+                advertisedAlwaysOnServerCount: 0,
+                advertisedAlwaysOnToolCount: 0,
                 inventoryReady: false,
+                warmupInProgress: false,
             },
             configSync: {
                 ready: false,
@@ -137,6 +150,20 @@ export function DashboardHomeClient() {
                 acceptingConnections: false,
                 clientCount: 0,
                 hasConnectedClients: false,
+            },
+            executionEnvironment: {
+                ready: false,
+                preferredShellId: null,
+                preferredShellLabel: null,
+                shellCount: 0,
+                verifiedShellCount: 0,
+                toolCount: 0,
+                verifiedToolCount: 0,
+                harnessCount: 0,
+                verifiedHarnessCount: 0,
+                supportsPowerShell: false,
+                supportsPosixShell: false,
+                notes: [],
             },
         },
     }) as DashboardStartupStatus;
@@ -170,6 +197,7 @@ export function DashboardHomeClient() {
         <DashboardHomeView
             generatedAtLabel={currentTimestamp ? new Date(currentTimestamp).toLocaleTimeString() : 'just now'}
             currentTimestamp={currentTimestamp}
+            isBootstrapping={isBootstrapping}
             mcpStatus={mcpStatus}
             startupStatus={startupStatus}
             servers={servers}
@@ -177,6 +205,7 @@ export function DashboardHomeClient() {
             providers={providers}
             fallbackChain={fallbackChain}
             sessions={sessions}
+            installSurfaceArtifacts={installArtifactsQuery.data ?? null}
             onStartSession={(sessionId) => {
                 setPendingSessionActionId(sessionId);
                 startSessionMutation.mutate({ id: sessionId });

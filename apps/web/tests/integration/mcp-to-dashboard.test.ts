@@ -68,7 +68,11 @@ describe('dashboard MCP flow integration', () => {
           checks: {
             mcpAggregator: {
               ready: true,
+              liveReady: true,
+              residentReady: true,
               serverCount: 2,
+              connectedCount: 1,
+              residentConnectedCount: 0,
               initialization: {
                 inProgress: false,
                 initialized: true,
@@ -79,6 +83,7 @@ describe('dashboard MCP flow integration', () => {
               persistedToolCount: 12,
               configuredServerCount: 2,
               inventoryReady: true,
+              inventorySource: 'database',
             },
             configSync: {
               ready: true,
@@ -112,6 +117,20 @@ describe('dashboard MCP flow integration', () => {
               acceptingConnections: true,
               clientCount: 1,
               hasConnectedClients: true,
+            },
+            executionEnvironment: {
+              ready: true,
+              preferredShellId: 'pwsh',
+              preferredShellLabel: 'PowerShell 7',
+              shellCount: 1,
+              verifiedShellCount: 1,
+              toolCount: 2,
+              verifiedToolCount: 2,
+              harnessCount: 0,
+              verifiedHarnessCount: 0,
+              supportsPowerShell: true,
+              supportsPosixShell: false,
+              notes: [],
             },
           },
         },

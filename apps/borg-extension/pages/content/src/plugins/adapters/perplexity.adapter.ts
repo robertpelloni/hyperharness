@@ -1,5 +1,6 @@
 import { BaseAdapterPlugin } from './base.adapter';
 import type { AdapterCapability, PluginContext } from '../plugin-types';
+import { findBestActionButton, isButtonDisabled, isElementVisible } from '../../utils/dom';
 
 /**
  * Perplexity Adapter for Perplexity AI (perplexity.ai)
@@ -332,37 +333,22 @@ export class PerplexityAdapter extends BaseAdapterPlugin {
     this.context.logger.debug('Attempting to submit Perplexity chat input');
 
     // First try to find submit button
-    let submitButton: HTMLButtonElement | null = null;
-    const selectors = this.selectors.SUBMIT_BUTTON.split(', ');
-    
-    for (const selector of selectors) {
-      submitButton = document.querySelector(selector.trim()) as HTMLButtonElement;
-      if (submitButton) {
-        this.context.logger.debug(`Found submit button using selector: ${selector.trim()}`);
-        break;
-      }
-    }
+    const selectors = this.selectors.SUBMIT_BUTTON.split(', ').map(selector => selector.trim());
+    const chatInput = document.querySelector(this.selectors.CHAT_INPUT) as HTMLTextAreaElement | null;
+    const submitButton = findBestActionButton({
+      actionLabels: ['Submit', 'Send'],
+      preferredSelectors: selectors,
+      near: chatInput,
+    });
 
-    // Also check for generic button near chat input
-    if (!submitButton) {
-      const chatInput = document.querySelector(this.selectors.CHAT_INPUT) as HTMLTextAreaElement;
-      if (chatInput) {
-        submitButton = chatInput.parentElement?.querySelector('button') as HTMLButtonElement;
-        if (submitButton) {
-          this.context.logger.debug('Found submit button near chat input');
-        }
-      }
+    if (submitButton) {
+      this.context.logger.debug('Found Perplexity submit button via action matcher');
     }
 
     if (submitButton) {
       try {
         // Check if the button is disabled
-        const isDisabled = submitButton.disabled || 
-                          submitButton.getAttribute('disabled') !== null ||
-                          submitButton.getAttribute('aria-disabled') === 'true' ||
-                          submitButton.classList.contains('disabled');
-
-        if (isDisabled) {
+        if (isButtonDisabled(submitButton)) {
           this.context.logger.warn('Perplexity submit button is disabled, waiting for it to be enabled');
           
           // Wait for button to be enabled (with timeout)
@@ -373,10 +359,7 @@ export class PerplexityAdapter extends BaseAdapterPlugin {
             await new Promise(resolve => setTimeout(resolve, 300));
             
             // Re-check if button is now enabled
-            const stillDisabled = submitButton!.disabled || 
-                                 submitButton!.getAttribute('disabled') !== null ||
-                                 submitButton!.getAttribute('aria-disabled') === 'true' ||
-                                 submitButton!.classList.contains('disabled');
+            const stillDisabled = isButtonDisabled(submitButton!);
             
             if (!stillDisabled) {
               break;
@@ -384,10 +367,7 @@ export class PerplexityAdapter extends BaseAdapterPlugin {
           }
           
           // Final check
-          const finallyDisabled = submitButton.disabled || 
-                                 submitButton.getAttribute('disabled') !== null ||
-                                 submitButton.getAttribute('aria-disabled') === 'true' ||
-                                 submitButton.classList.contains('disabled');
+          const finallyDisabled = isButtonDisabled(submitButton);
           
           if (finallyDisabled) {
             this.context.logger.warn('Submit button remained disabled, falling back to Enter key');
@@ -396,8 +376,7 @@ export class PerplexityAdapter extends BaseAdapterPlugin {
         }
 
         // Check if the button is visible and clickable
-        const rect = submitButton.getBoundingClientRect();
-        if (rect.width === 0 || rect.height === 0) {
+        if (!isElementVisible(submitButton)) {
           this.context.logger.warn('Perplexity submit button is not visible, falling back to Enter key');
           return this.submitWithEnterKey();
         }

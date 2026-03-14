@@ -5,10 +5,12 @@ import { AgentPlayground } from '@/components/agents/AgentPlayground';
 import { trpc } from '@/utils/trpc';
 import { Card, CardHeader, CardTitle, CardContent, Badge, Button } from '@borg/ui';
 import Link from 'next/link';
+import { normalizeAgentsDashboardStatus } from './agents-page-normalizers';
 
 export default function AgentsDashboard() {
     const { data: status } = trpc.pulse.getSystemStatus.useQuery(undefined, { refetchInterval: 5000 });
-    const agents = (status as any)?.agents || [];
+    const normalizedStatus = normalizeAgentsDashboardStatus(status);
+    const agents = normalizedStatus.agents;
 
     return (
         <div className="p-8 space-y-8 h-full flex flex-col">
@@ -71,7 +73,7 @@ export default function AgentsDashboard() {
                             <div className="space-y-4">
                                 <div className="flex justify-between items-center">
                                     <span className="text-sm text-zinc-400">Memory System</span>
-                                    {(status as any)?.memoryInitialized ? (
+                                    {normalizedStatus.memoryInitialized ? (
                                         <Badge variant="secondary" className="bg-green-500/10 text-green-500">Connected</Badge>
                                     ) : (
                                         <Badge variant="destructive">Disconnected</Badge>
@@ -79,7 +81,7 @@ export default function AgentsDashboard() {
                                 </div>
                                 <div className="flex justify-between items-center">
                                     <span className="text-sm text-zinc-400">Aggregator Uptime</span>
-                                    <span className="font-mono text-sm text-cyan-400">{Math.floor(((status as any)?.uptime || 0) / 60)}m</span>
+                                    <span className="font-mono text-sm text-cyan-400">{Math.floor(normalizedStatus.uptimeSeconds / 60)}m</span>
                                 </div>
                             </div>
                         </CardContent>

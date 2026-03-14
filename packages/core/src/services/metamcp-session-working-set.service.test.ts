@@ -106,4 +106,96 @@ describe('SessionToolWorkingSet', () => {
         expect(workingSet.isLoaded('pinned')).toBe(true);
         expect(workingSet.isHydrated('pinned')).toBe(false);
     });
+
+    it('records evicted tools in the bounded eviction history with tier=loaded', () => {
+        const workingSet = new SessionToolWorkingSet({
+            maxLoadedTools: 2,
+            maxHydratedSchemas: 2,
+        });
+
+        workingSet.loadTool('alpha');
+        workingSet.loadTool('beta');
+        workingSet.loadTool('gamma'); // evicts alpha
+
+        const history = workingSet.getEvictionHistory();
+        expect(history).toHaveLength(1);
+        expect(history[0].toolName).toBe('alpha');
+        expect(history[0].tier).toBe('loaded');
+        expect(typeof history[0].timestamp).toBe('number');
+    });
+
+    it('records hydrated schema evictions separately with tier=hydrated', () => {
+        const workingSet = new SessionToolWorkingSet({
+            maxLoadedTools: 4,
+            maxHydratedSchemas: 2,
+        });
+
+        workingSet.hydrateTool('alpha');
+        workingSet.hydrateTool('beta');
+        workingSet.hydrateTool('gamma'); // evicts alpha schema only
+
+        const history = workingSet.getEvictionHistory();
+        expect(history).toHaveLength(1);
+        expect(history[0].toolName).toBe('alpha');
+        expect(history[0].tier).toBe('hydrated');
+        // alpha is still loaded (metadata) even though schema was evicted
+        expect(workingSet.isLoaded('alpha')).toBe(true);
+    });
+
+    it('returns history most recent first', () => {
+        const workingSet = new SessionToolWorkingSet({
+            maxLoadedTools: 2,
+            maxHydratedSchemas: 2,
+        });
+
+        workingSet.loadTool('a');
+        workingSet.loadTool('b');
+        workingSet.loadTool('c'); // evicts a
+        workingSet.loadTool('d'); // evicts b
+
+        const history = workingSet.getEvictionHistory();
+        expect(history[0].toolName).toBe('b');
+        expect(history[1].toolName).toBe('a');
+    });
+
+    it('clearEvictionHistory empties the ring buffer', () => {
+        const workingSet = new SessionToolWorkingSet({
+            maxLoadedTools: 1,
+            maxHydratedSchemas: 1,
+        });
+
+        workingSet.loadTool('alpha');
+        workingSet.loadTool('beta'); // evicts alpha
+
+        expect(workingSet.getEvictionHistory()).toHaveLength(1);
+        workingSet.clearEvictionHistory();
+        expect(workingSet.getEvictionHistory()).toHaveLength(0);
+    });
+
+    it('reconfigure updates capacity limits without clearing loaded tools', () => {
+        const workingSet = new SessionToolWorkingSet({
+            maxLoadedTools: 8,
+            maxHydratedSchemas: 4,
+        });
+
+        workingSet.loadTool('alpha');
+        workingSet.loadTool('beta');
+
+        workingSet.reconfigure({ maxLoadedTools: 32, maxHydratedSchemas: 16 });
+
+        expect(workingSet.getLimits()).toEqual({ maxLoadedTools: 32, maxHydratedSchemas: 16 });
+        // Previously loaded tools are still present.
+        expect(workingSet.isLoaded('alpha')).toBe(true);
+        expect(workingSet.isLoaded('beta')).toBe(true);
+    });
+
+    it('reconfigure clamps inputs to valid bounds', () => {
+        const workingSet = new SessionToolWorkingSet();
+
+        workingSet.reconfigure({ maxLoadedTools: 200, maxHydratedSchemas: 0 });
+
+        const limits = workingSet.getLimits();
+        expect(limits.maxLoadedTools).toBe(64);       // clamped to max
+        expect(limits.maxHydratedSchemas).toBe(2);    // clamped to min
+    });
 });

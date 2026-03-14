@@ -6,10 +6,12 @@ import { Button } from "@borg/ui";
 import { Loader2, Plus, FileCode, Trash2, Play, Edit2 } from "lucide-react";
 import { trpc } from '@/utils/trpc';
 import { toast } from 'sonner';
+import { normalizeSavedScripts } from './scripts-page-normalizers';
 
 export default function ScriptsDashboard() {
     const { data: scripts, isLoading, refetch } = trpc.savedScripts.list.useQuery();
     const [isCreateOpen, setIsCreateOpen] = useState(false);
+    const normalizedScripts = normalizeSavedScripts(scripts);
 
     return (
         <div className="p-8 space-y-8">
@@ -36,13 +38,13 @@ export default function ScriptsDashboard() {
                     <div className="col-span-3 flex justify-center p-12">
                         <Loader2 className="h-8 w-8 animate-spin text-zinc-500" />
                     </div>
-                ) : (scripts?.length ?? 0) === 0 ? (
+                ) : normalizedScripts.length === 0 ? (
                     <div className="col-span-3 text-center p-12 text-zinc-500 bg-zinc-900/50 rounded-lg border border-zinc-800 border-dashed">
                         <FileCode className="h-12 w-12 mx-auto mb-4 opacity-30" />
                         <p className="text-lg font-medium">No Scripts Saved</p>
                         <p className="text-sm mt-1">Save your common automation tasks here.</p>
                     </div>
-                ) : scripts?.map((script: any) => (
+                ) : normalizedScripts.map((script) => (
                     <ScriptCard key={script.uuid} script={script} onUpdate={refetch} />
                 ))}
             </div>

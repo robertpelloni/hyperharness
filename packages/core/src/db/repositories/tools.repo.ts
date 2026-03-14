@@ -187,6 +187,14 @@ export class ToolsRepository {
 
         return { upserted, deleted };
     }
+    async setAlwaysOn(uuid: string, alwaysOn: boolean): Promise<DatabaseTool | undefined> {
+        const [updatedTool] = await db
+            .update(toolsTable)
+            .set({ always_on: alwaysOn, updated_at: new Date() })
+            .where(eq(toolsTable.uuid, uuid))
+            .returning();
+        return updatedTool;
+    }
 }
 
 export const toolsRepository = new ToolsRepository();

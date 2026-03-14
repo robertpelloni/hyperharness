@@ -1,6 +1,7 @@
 import { createHash } from 'node:crypto';
 
 import type { DatabaseMcpServer } from '../types/mcp-admin/index.js';
+import { deriveSemanticCatalogForServer } from './catalogMetadata.js';
 import type { BorgMcpServerDiscoveryMetadata, BorgMcpToolMetadata } from './mcpJsonConfig.js';
 
 export type MetadataReloadStrategy = 'auto' | 'binary' | 'cache' | 'skip';
@@ -99,6 +100,7 @@ export function buildBaseServerMetadata(server: Pick<DatabaseMcpServer, 'name' |
         configFingerprint: buildServerConfigFingerprint(server),
         transportType: server.type,
         serverName: server.name,
+        displayName: server.name,
         command: server.command ?? null,
         args: server.args ?? [],
         envKeys: Object.keys(server.env ?? {}).sort((left, right) => left.localeCompare(right)),
@@ -107,8 +109,54 @@ export function buildBaseServerMetadata(server: Pick<DatabaseMcpServer, 'name' |
     };
 }
 
+function enrichServerMetadata(
+    server: Pick<DatabaseMcpServer, 'name' | 'description' | 'always_on'>,
+    metadata: BorgMcpServerDiscoveryMetadata,
+): BorgMcpServerDiscoveryMetadata {
+    const derived = deriveSemanticCatalogForServer({
+        serverName: server.name,
+        description: server.description ?? null,
+        alwaysOn: server.always_on ?? false,
+        tools: metadata.tools.map((tool) => ({
+            name: tool.name,
+            title: tool.title ?? null,
+            description: tool.description ?? null,
+            inputSchema: tool.inputSchema ?? null,
+            alwaysOn: tool.alwaysOn ?? false,
+        })),
+    });
+
+    const derivedTools = new Map(derived.tools.map((tool) => [tool.name, tool]));
+
+    return {
+        ...metadata,
+        displayName: derived.serverDisplayName,
+        description: server.description ?? null,
+        serverTags: derived.serverTags,
+        alwaysOn: derived.alwaysOn,
+        tools: metadata.tools.map((tool) => {
+            const derivedTool = derivedTools.get(tool.name);
+            if (!derivedTool) {
+                return tool;
+            }
+
+            return {
+                ...tool,
+                advertisedName: derivedTool.advertisedName,
+                serverDisplayName: derivedTool.serverDisplayName,
+                serverTags: derivedTool.serverTags,
+                toolTags: derivedTool.toolTags,
+                semanticGroup: derivedTool.semanticGroup,
+                semanticGroupLabel: derivedTool.semanticGroupLabel,
+                keywords: derivedTool.keywords,
+                alwaysOn: derivedTool.alwaysOn,
+            };
+        }),
+    };
+}
+
 export function buildBinaryDiscoveryMetadata(
-    server: Pick<DatabaseMcpServer, 'name' | 'type' | 'command' | 'args' | 'env' | 'url' | 'headers' | 'bearerToken'>,
+    server: Pick<DatabaseMcpServer, 'name' | 'description' | 'always_on' | 'type' | 'command' | 'args' | 'env' | 'url' | 'headers' | 'bearerToken'>,
     rawTools: unknown[],
     discoveredAt: string,
 ): BorgMcpServerDiscoveryMetadata {
@@ -116,7 +164,7 @@ export function buildBinaryDiscoveryMetadata(
         .map((rawTool) => normalizeDiscoveredToolMetadata(rawTool))
         .filter((tool): tool is BorgMcpToolMetadata => Boolean(tool));
 
-    return {
+    return enrichServerMetadata(server, {
         ...buildBaseServerMetadata(server),
         status: 'ready',
         metadataSource: 'binary',
@@ -126,16 +174,16 @@ export function buildBinaryDiscoveryMetadata(
         reloadableFromCache: true,
         toolCount: tools.length,
         tools,
-    };
+    });
 }
 
 export function buildFailureDiscoveryMetadata(
-    server: Pick<DatabaseMcpServer, 'name' | 'type' | 'command' | 'args' | 'env' | 'url' | 'headers' | 'bearerToken'>,
+    server: Pick<DatabaseMcpServer, 'name' | 'description' | 'always_on' | 'type' | 'command' | 'args' | 'env' | 'url' | 'headers' | 'bearerToken'>,
     status: BorgMcpServerDiscoveryMetadata['status'],
     discoveredAt: string,
     error: string,
 ): BorgMcpServerDiscoveryMetadata {
-    return {
+    return enrichServerMetadata(server, {
         ...buildBaseServerMetadata(server),
         status,
         metadataSource: status === 'unsupported' ? 'derived' : 'binary',
@@ -145,7 +193,7 @@ export function buildFailureDiscoveryMetadata(
         toolCount: 0,
         tools: [],
         error,
-    };
+    });
 }
 
 export function hasReusableMetadataCache(
@@ -174,10 +222,10 @@ export function hasReusableMetadataCache(
 
 export function hydrateMetadataFromCache(
     metadata: BorgMcpServerDiscoveryMetadata,
-    server: Pick<DatabaseMcpServer, 'name' | 'type' | 'command' | 'args' | 'env' | 'url' | 'headers' | 'bearerToken'>,
+    server: Pick<DatabaseMcpServer, 'name' | 'description' | 'always_on' | 'type' | 'command' | 'args' | 'env' | 'url' | 'headers' | 'bearerToken'>,
     hydratedAt: string,
 ): BorgMcpServerDiscoveryMetadata {
-    return {
+    return enrichServerMetadata(server, {
         ...metadata,
         ...buildBaseServerMetadata(server),
         metadataSource: 'cache',
@@ -185,5 +233,5 @@ export function hydrateMetadataFromCache(
         reloadableFromCache: Array.isArray(metadata.tools),
         toolCount: Array.isArray(metadata.tools) ? metadata.tools.length : 0,
         tools: Array.isArray(metadata.tools) ? metadata.tools : [],
-    };
+    });
 }

@@ -112,3 +112,160 @@ export function observeChanges(
   logger.debug('[Utils.observeChanges] Mutation observer started.');
   return observer;
 }
+
+export type FindActionButtonOptions = {
+  actionLabels: string[];
+  preferredSelectors?: string[];
+  root?: ParentNode;
+  near?: HTMLElement | null;
+  iconPathHints?: string[];
+};
+
+const ACTION_MENU_HINT_PATTERN =
+  /\b(menu|dropdown|options|more|model|voice|attach|upload|search|web search|tools?)\b|ask every time|always run/;
+
+const normalizeText = (value: string | null | undefined): string => value?.trim().toLowerCase() ?? '';
+
+const escapeRegExp = (value: string): string => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+const getButtonDescriptor = (button: HTMLButtonElement): string =>
+  normalizeText(
+    [
+      button.textContent,
+      button.getAttribute('aria-label'),
+      button.getAttribute('title'),
+      button.getAttribute('name'),
+      button.getAttribute('data-testid'),
+      button.className,
+    ]
+      .filter(Boolean)
+      .join(' '),
+  );
+
+export const isElementVisible = (element: HTMLElement): boolean => {
+  const style = window.getComputedStyle(element);
+  const rect = element.getBoundingClientRect();
+  const hasRenderableContent =
+    Boolean(element.textContent?.trim()) || Boolean(element.querySelector('svg, img, span, path'));
+
+  return !(
+    style.display === 'none' ||
+    style.visibility === 'hidden' ||
+    style.opacity === '0' ||
+    element.hidden ||
+    element.getAttribute('aria-hidden') === 'true' ||
+    ((rect.width <= 0 || rect.height <= 0) && !hasRenderableContent)
+  );
+};
+
+export const isButtonDisabled = (button: HTMLButtonElement): boolean =>
+  button.disabled ||
+  button.getAttribute('disabled') !== null ||
+  button.getAttribute('aria-disabled') === 'true' ||
+  button.classList.contains('disabled');
+
+export const findBestActionButton = ({
+  actionLabels,
+  preferredSelectors = [],
+  root = document,
+  near = null,
+  iconPathHints = [],
+}: FindActionButtonOptions): HTMLButtonElement | null => {
+  const labels = actionLabels.map(normalizeText).filter(Boolean);
+  if (labels.length === 0) {
+    return null;
+  }
+
+  const candidates = new Set<HTMLButtonElement>();
+  const addCandidate = (element: Element | null | undefined) => {
+    if (!element) {
+      return;
+    }
+
+    const button = element instanceof HTMLButtonElement ? element : element.closest('button');
+    if (button instanceof HTMLButtonElement) {
+      candidates.add(button);
+    }
+  };
+
+  for (const selector of preferredSelectors) {
+    addCandidate(root.querySelector(selector));
+  }
+
+  const nearbyScopes = [
+    near?.closest('form'),
+    near?.parentElement,
+    near?.closest('[role="group"]'),
+    near?.closest('section'),
+    near?.closest('div'),
+  ].filter(Boolean) as Element[];
+
+  for (const scope of nearbyScopes) {
+    scope.querySelectorAll('button').forEach(button => addCandidate(button));
+  }
+
+  root.querySelectorAll('button').forEach(button => addCandidate(button));
+
+  let bestButton: HTMLButtonElement | null = null;
+  let bestScore = Number.NEGATIVE_INFINITY;
+
+  for (const button of candidates) {
+    if (!isElementVisible(button)) {
+      continue;
+    }
+
+    const descriptor = getButtonDescriptor(button);
+    let score = 0;
+
+    if (!descriptor && button.type !== 'submit' && iconPathHints.length === 0) {
+      continue;
+    }
+
+    if (
+      button.getAttribute('aria-haspopup') !== null ||
+      button.getAttribute('aria-controls')?.toLowerCase().includes('menu') ||
+      button.getAttribute('role') === 'menuitem' ||
+      ACTION_MENU_HINT_PATTERN.test(descriptor)
+    ) {
+      score -= 250;
+    }
+
+    for (const label of labels) {
+      const exactPattern = new RegExp(`^${escapeRegExp(label)}$`, 'i');
+      const wholeWordPattern = new RegExp(`\\b${escapeRegExp(label)}\\b`, 'i');
+
+      if (exactPattern.test(normalizeText(button.getAttribute('aria-label')))) {
+        score += 200;
+      }
+      if (exactPattern.test(normalizeText(button.textContent))) {
+        score += 180;
+      }
+      if (wholeWordPattern.test(descriptor)) {
+        score += 90;
+      }
+    }
+
+    if (button.type === 'submit') {
+      score += 40;
+    }
+
+    if (near && button.closest('form') && button.closest('form') === near.closest('form')) {
+      score += 30;
+    }
+
+    if (near && near.parentElement && button.parentElement === near.parentElement) {
+      score += 20;
+    }
+
+    if (iconPathHints.some(hint => button.querySelector(`svg path[d*="${hint}"]`))) {
+      score += 60;
+    }
+
+    if (score > bestScore) {
+      bestScore = score;
+      bestButton = button;
+    }
+  }
+
+  return bestScore > 0 ? bestButton : null;
+};

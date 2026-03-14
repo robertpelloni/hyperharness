@@ -5,7 +5,7 @@ import { tmpdir } from 'node:os';
 
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { acquireSingleInstanceLock, resolveDataDir, startCoreRuntime } from './start.js';
+import { acquireSingleInstanceLock, createLockLifecycleHandlers, resolveDataDir, startCoreRuntime } from './start.js';
 
 const tempDirs: string[] = [];
 
@@ -187,7 +187,38 @@ describe('acquireSingleInstanceLock', () => {
             requestedPort: 4000,
             explicitPort: false,
             host: '127.0.0.1',
+        }, {
+            isProcessRunning: () => true,
+            isPortFree: async () => false,
         })).rejects.toThrow('Borg is already running');
+    });
+
+    it('releases the lock when startup crashes with an uncaught exception', async () => {
+        const dataDir = createTempDir();
+        const handle = await acquireSingleInstanceLock({
+            dataDir,
+            requestedPort: 4100,
+            explicitPort: true,
+            host: '127.0.0.1',
+        });
+
+        const exit = vi.fn();
+        const logError = vi.fn();
+        const lifecycle = createLockLifecycleHandlers(handle, { exit, logError });
+
+        lifecycle.handleUncaughtException(new Error('bridge bind failed'));
+
+        await expect(acquireSingleInstanceLock({
+            dataDir,
+            requestedPort: 4100,
+            explicitPort: true,
+            host: '127.0.0.1',
+        })).resolves.toMatchObject({
+            port: 4100,
+        });
+
+        expect(exit).toHaveBeenCalledWith(1);
+        expect(logError).toHaveBeenCalled();
     });
 });
 

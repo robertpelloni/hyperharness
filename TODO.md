@@ -228,9 +228,9 @@ Evidence used for this queue:
 ### 10) Rebuild the task-file discipline promised by `AGENTS.md`
 
 **Current reality**
-- `tasks/active/` is empty.
-- `tasks/backlog/` is empty.
-- Implementor workflow is therefore undercut by the repo’s own docs.
+- `tasks/active/` is still too thin relative to the amount of in-flight work.
+- `tasks/backlog/` is seeded again, but large ecosystem parity asks still need to be decomposed into implementation-sized tasks.
+- Implementor workflow is still undercut when major asks live only in chat history instead of task files.
 
 **Do next**
 - Seed task briefs for the top 1.0 items in this file.
@@ -240,9 +240,38 @@ Evidence used for this queue:
 - [ ] `tasks/active/` contains the next 1–3 concrete implementation tasks.
 - [ ] `tasks/backlog/` reflects ordered follow-ons from this TODO.
 
+### 11) Consolidate external-parity asks into staged Borg capability tracks
+
+**Why this matters**
+- The repo has accumulated overlapping asks around MetaMCP, Claude-mem, MCP-SuperAssistant, Jules-Autopilot, browser extensions, IDE hooks, and session-manager portability.
+- Without a single consolidation brief, those asks keep reappearing as “assimilate everything” instead of small Borg-native work slices.
+
+**Current canonical brief**
+- `tasks/completed/015-ecosystem-assimilation-consolidation.md`
+- Use its Track A-F capability map when writing or promoting follow-up implementation tasks.
+
+**Evidence**
+- `tasks/completed/015-ecosystem-assimilation-consolidation.md`
+- `AGENTS.md`
+- `ROADMAP.md`
+- `HANDOFF.md`
+
+**Do next**
+- Use the new consolidation brief to carve the next real tasks under these tracks only:
+	- boot-ready control plane
+	- Borg-native MCP router maturity
+	- browser extension platform
+	- IDE / CLI / hook-based memory capture
+	- portable tool+model session fabric
+- Reject future parity work that cannot be mapped to one of those tracks and a concrete operator workflow.
+
+**Acceptance criteria**
+- [ ] New implementation tasks reference a consolidation track instead of restating full upstream parity demands.
+- [ ] Borg 1.0 work stays distinct from 1.5 memory/extension work and 2.0 autonomy work.
+
 ## P2 — cleanup, coherence, and robustness
 
-### 11) Rationalize stale documentation and route drift
+### 12) Rationalize stale documentation and route drift
 
 **Issues found during audit**
 - `README.md` still references `/dashboard/mcp` as the landing route even though recent repo memory says `/dashboard` is now the home surface.
@@ -254,7 +283,7 @@ Evidence used for this queue:
 - [ ] Canonical docs are obvious from the root.
 - [ ] Archived docs remain clearly marked archive-only.
 
-### 12) Reduce stub debt in `packages/core/src/services/stubs/`
+### 13) Reduce stub debt in `packages/core/src/services/stubs/`
 
 **Current stub files**
 - `packages/core/src/services/stubs/agent.service.stub.ts`
@@ -269,7 +298,7 @@ Evidence used for this queue:
 - [ ] Each stub is either deleted, implemented, or explicitly documented as compatibility-only.
 - [ ] No stub silently backs a UI that appears production-ready.
 
-### 13) Keep experimental swarm/autonomy work behind an honest boundary
+### 14) Keep experimental swarm/autonomy work behind an honest boundary
 
 **Why**
 - The repo contains real swarm and council depth, but Borg 1.0 should not depend on it.
@@ -290,3 +319,127 @@ Evidence used for this queue:
 8. Memory model consolidation
 9. Bridge workflow completion
 10. Task-file restoration and doc cleanup
+
+
+
+
+
+
+# TODO.md — Borg Task List
+
+> Version: 1.0.0-alpha.1
+> Updated: 2026-07-15
+> Priority: 🔴 Critical | 🟠 High | 🟡 Medium | ⚪ Low
+
+---
+
+## Phase 1: Foundation (Borg 1.0-alpha) — CURRENT
+
+### Ring 0: The Heartbeat
+- [ ] 🔴 Create `VERSION` file (single source of truth)
+- [ ] 🔴 Set up monorepo structure (Go core + TS dashboard)
+- [ ] 🔴 Implement `borg start` / `borg stop` / `borg status` CLI
+- [ ] 🔴 Go daemon: starts, stays alive, exposes HTTP + WebSocket API
+- [ ] 🔴 Dashboard shell: opens in browser, shows version and uptime
+- [ ] 🔴 Can start ONE coding session and stream its logs to dashboard
+- [ ] 🟠 Initialize CHANGELOG.md, AGENTS.md, MEMORY.md, HANDOFF.md
+- [ ] 🟠 Git commit/push protocol established and documented
+
+### Ring 1: MCP Router
+- [ ] 🔴 Aggregate 3+ MCP servers behind one stdio endpoint
+- [ ] 🔴 Implement 6 permanent meta-tools (search, load, unload, schema, list, run_code)
+- [ ] 🔴 Tool namespace collision detection and resolution
+- [ ] 🔴 Tool enable/disable per server and per tool
+- [ ] 🟠 Health checks with auto-restart for crashed MCP servers
+- [ ] 🟠 Deferred binary startup (index metadata without spawning)
+- [ ] 🟠 Dashboard: MCP server status page with tool list
+- [ ] 🟡 TOON format for compact tool descriptions
+- [ ] 🟡 Traffic inspection: log JSON-RPC calls
+
+### Ring 2: Provider Router
+- [ ] 🔴 API key management (encrypted local store)
+- [ ] 🔴 Fallback chain configuration (JSONC)
+- [ ] 🔴 Quota tracking with pre-emptive switching at 95%
+- [ ] 🔴 Circuit breaker for 429/529 errors with backoff
+- [ ] 🟠 Health check protocol (latency + error rate scoring)
+- [ ] 🟠 Dashboard: per-provider cost, quota remaining, fallback activity
+- [ ] 🟡 Task-type specific routing strategies
+- [ ] 🟡 Cost optimization mode
+
+### Ring 3: Session Supervisor
+- [ ] 🔴 Multi-session management (start/stop/restart N sessions)
+- [ ] 🔴 Process isolation (one session = one child process)
+- [ ] 🔴 Crash detection and automatic restart
+- [ ] 🟠 Checkpoint creation (git commit + conversation serialize)
+- [ ] 🟠 Checkpoint restore (rehydrate conversation + worktree)
+- [ ] 🟠 Model handoff on provider failure
+- [ ] 🟠 Dashboard: session management page
+- [ ] 🟡 Worktree isolation per session
+- [ ] 🟡 Configurable restart policies (always, N-times, never)
+
+### Ring 4: Council
+- [ ] 🟠 Idle detection (configurable timeout, default 120s)
+- [ ] 🟠 Cheerleader mode (rotate through bump prompts)
+- [ ] 🟠 Message injection into managed sessions
+- [ ] 🟡 Informed supervisor mode (flash model reads TODO/ROADMAP)
+- [ ] 🟡 Dashboard: council controls and intervention log
+
+### Ring 5: Progressive Tool Disclosure
+- [ ] 🟠 Semantic tool search (vector similarity)
+- [ ] 🟠 Confidence-based auto-load (silent above 0.85)
+- [ ] 🟠 LRU eviction (soft cap 16, hard cap 24, active binaries ~4)
+- [ ] 🟡 Tool profiles for common workflows (coding, research, ops)
+- [ ] 🟡 Tool reranking based on usage patterns
+
+---
+
+## Phase 2: Memory & Context (Borg 1.5)
+
+- [ ] 🟠 Memory plugin system (file-based, vector DB, graph)
+- [ ] 🟠 Automatic context harvesting from sessions
+- [ ] 🟠 Import/export memories across formats
+- [ ] 🟡 RAG with document intake, chunking, semantic search
+- [ ] 🟡 Context compaction and pruning
+- [ ] 🟡 Session history search and archive
+- [ ] ⚪ Browser extension: memory capture from web pages
+- [ ] ⚪ Browser extension: MCP injection into web chat interfaces
+
+---
+
+## Phase 3: Orchestration (Borg 2.0)
+
+- [ ] 🟡 Multi-model council (expert panel mode with debate)
+- [ ] 🟡 Architect-implementer-reviewer agent workflows
+- [ ] 🟡 Cloud dev session management (Jules, Copilot Cloud)
+- [ ] ⚪ IDE extensions (VS Code, Cursor, Windsurf)
+- [ ] ⚪ Mobile remote control
+- [ ] ⚪ Skill library and prompt management
+- [ ] ⚪ Provider OAuth management (Claude Max, AI Plus, Copilot)
+- [ ] ⚪ Agent2Agent protocol support
+- [ ] ⚪ Feature parity with referenced CLI tools
+
+---
+
+## Documentation Tasks
+- [ ] 🔴 Write AGENTS.md (universal LLM instructions)
+- [ ] 🔴 Write DEPLOY.md (installation and startup)
+- [ ] 🔴 Write ARCHITECTURE.md (system design diagrams)
+- [ ] 🟠 Write MCP_ROUTER_SPEC.md
+- [ ] 🟠 Write COUNCIL_SPEC.md
+- [ ] 🟠 Write PROVIDER_ROUTER_SPEC.md
+- [ ] 🟡 Document all submodules in SUBMODULES.md
+- [ ] 🟡 Create API.md for dashboard WebSocket/REST endpoints
+
+---
+
+## Bugs / Known Issues
+- [ ] (None yet — project is pre-alpha)
+
+---
+
+## Design Rules (Do Not Violate)
+1. Session is the primitive. Everything orbits sessions.
+2. Models see ≤6 meta-tools. Everything else is progressive disclosure.
+3. Failures must be recoverable. Sessions survive crashes.
+4. Dashboard tells stories, not raw telemetry.
+5. Useful to a stranger in under five minutes.

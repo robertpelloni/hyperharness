@@ -14,6 +14,57 @@ import {
 } from '../lib/trpc-core.js';
 import { mcpServersRepository, toolsRepository } from '../db/repositories/index.js';
 import { buildStartupStatusSnapshot } from './startupStatus.js';
+import { detectLocalExecutionEnvironment } from '../services/execution-environment.js';
+import { getCachedToolInventory } from '../mcp/cachedToolInventory.js';
+import { readClaudeMemStoreStatus } from './memoryRouter.claude-mem.js';
+import { summarizeCachedInventory } from './startupInventorySummary.js';
+import type { MemoryPipelineSummary } from '../services/memory/MemoryManager.js';
+
+const EXECUTION_ENV_CACHE_TTL_MS = Number(process.env.BORG_EXECUTION_ENV_CACHE_TTL_MS ?? 30_000);
+
+let executionEnvironmentCache:
+    | {
+        value: Awaited<ReturnType<typeof detectLocalExecutionEnvironment>> | null;
+        expiresAt: number;
+      }
+    | null = null;
+let executionEnvironmentInFlight: Promise<Awaited<ReturnType<typeof detectLocalExecutionEnvironment>> | null> | null = null;
+
+async function getCachedExecutionEnvironment() {
+    if (EXECUTION_ENV_CACHE_TTL_MS <= 0) {
+        return detectLocalExecutionEnvironment().catch(() => null);
+    }
+
+    const now = Date.now();
+    if (executionEnvironmentCache && executionEnvironmentCache.expiresAt > now) {
+        return executionEnvironmentCache.value;
+    }
+
+    if (executionEnvironmentInFlight) {
+        return executionEnvironmentInFlight;
+    }
+
+    executionEnvironmentInFlight = detectLocalExecutionEnvironment()
+        .then((environment) => {
+            executionEnvironmentCache = {
+                value: environment,
+                expiresAt: Date.now() + EXECUTION_ENV_CACHE_TTL_MS,
+            };
+            return environment;
+        })
+        .catch(() => {
+            executionEnvironmentCache = {
+                value: null,
+                expiresAt: Date.now() + EXECUTION_ENV_CACHE_TTL_MS,
+            };
+            return null;
+        })
+        .finally(() => {
+            executionEnvironmentInFlight = null;
+        });
+
+    return executionEnvironmentInFlight;
+}
 
 export const systemProcedures = {
     health: publicProcedure.query(() => {
@@ -27,13 +78,46 @@ export const systemProcedures = {
         const sessionSupervisor = getSessionSupervisor();
         const mcpConfigService = getMcpConfigService();
 
-        const [liveServerCount, sessionCount, browserStatus, persistedServerCount, persistedToolCount] = await Promise.all([
-            aggregator?.listServers?.().then((servers) => servers.length).catch(() => 0) ?? 0,
+        const memoryManager = (mcpServer as { memoryManager?: { getPipelineSummary?: () => MemoryPipelineSummary } }).memoryManager;
+        const memoryPipelineSummary: MemoryPipelineSummary | null = memoryManager?.getPipelineSummary?.() ?? null;
+
+        const [runtimeServers, sessionCount, browserStatus, persistedServers, persistedTools, executionEnvironment, cachedInventory, claudeMemStoreStatus] = await Promise.all([
+            aggregator?.listServers?.().catch(() => []) ?? [],
             Promise.resolve(sessionSupervisor?.listSessions?.().length ?? 0),
             Promise.resolve(browserService?.getStatus?.() ?? { active: false, pageCount: 0, pageIds: [] }),
-            mcpServersRepository.findAll().then((servers) => servers.length).catch(() => 0),
-            toolsRepository.findAll().then((tools) => tools.length).catch(() => 0),
+            mcpServersRepository.findAll().catch(() => []),
+            toolsRepository.findAll().catch(() => []),
+            getCachedExecutionEnvironment(),
+            getCachedToolInventory().catch(() => ({ servers: [], tools: [], toolCounts: new Map(), source: 'empty' as const, snapshotUpdatedAt: null })),
+            readClaudeMemStoreStatus(process.cwd(), memoryPipelineSummary).catch(() => null),
         ]);
+
+        const liveServerCount = runtimeServers.filter((server) => server.status === 'connected').length;
+        const residentLiveServerCount = runtimeServers.filter(
+            (server) => server.status === 'connected' && Boolean(server.advertisedAlwaysOn),
+        ).length;
+        const warmingServerCount = runtimeServers.filter((server) => server.warmupStatus === 'scheduled' || server.warmupStatus === 'warming').length;
+        const failedWarmupServerCount = runtimeServers.filter((server) => server.warmupStatus === 'failed').length;
+
+        const cachedInventorySummary = summarizeCachedInventory(cachedInventory);
+
+        const persistedServerCount = cachedInventorySummary.source === 'empty'
+            ? persistedServers.length
+            : cachedInventorySummary.serverCount;
+        const alwaysOnServerUuids = new Set(
+            persistedServers
+                .filter((server) => Boolean(server.always_on))
+                .map((server) => server.uuid),
+        );
+        const persistedToolCount = cachedInventorySummary.source === 'empty'
+            ? persistedTools.length
+            : cachedInventorySummary.toolCount;
+        const persistedAlwaysOnServerCount = cachedInventorySummary.source === 'empty'
+            ? alwaysOnServerUuids.size
+            : cachedInventorySummary.alwaysOnServerCount;
+        const persistedAlwaysOnToolCount = cachedInventorySummary.source === 'empty'
+            ? persistedTools.filter((tool) => Boolean(tool.always_on) || alwaysOnServerUuids.has(tool.mcp_server_uuid)).length
+            : cachedInventorySummary.alwaysOnToolCount;
 
         return buildStartupStatusSnapshot({
             mcpServer,
@@ -45,8 +129,29 @@ export const systemProcedures = {
             sessionCount,
             mcpConfigService,
             liveServerCount,
+            residentLiveServerCount,
+            warmingServerCount,
+            failedWarmupServerCount,
             persistedServerCount,
             persistedToolCount,
+            persistedAlwaysOnServerCount,
+            persistedAlwaysOnToolCount,
+            inventorySource: cachedInventorySummary.source,
+            inventorySnapshotUpdatedAt: cachedInventorySummary.snapshotUpdatedAt,
+            executionEnvironment: executionEnvironment?.summary ?? null,
+            claudeMem: claudeMemStoreStatus
+                ? {
+                    enabled: Boolean(claudeMemStoreStatus.runtimePipeline.claudeMemEnabled),
+                    storePath: claudeMemStoreStatus.storePath,
+                    storeExists: claudeMemStoreStatus.exists,
+                    totalEntries: claudeMemStoreStatus.totalEntries,
+                    sectionCount: claudeMemStoreStatus.sectionCount,
+                    defaultSectionCount: claudeMemStoreStatus.defaultSectionCount,
+                    presentDefaultSectionCount: claudeMemStoreStatus.presentDefaultSectionCount,
+                    missingSections: claudeMemStoreStatus.missingSections,
+                    lastUpdatedAt: claudeMemStoreStatus.lastUpdatedAt,
+                }
+                : null,
         });
     }),
     getTaskStatus: publicProcedure

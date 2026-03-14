@@ -82,6 +82,7 @@ function initializeSchema(database: InstanceType<typeof Database>): void {
             env TEXT NOT NULL DEFAULT '{}',
             url TEXT,
             error_status TEXT NOT NULL DEFAULT 'NONE',
+            always_on INTEGER NOT NULL DEFAULT 0,
             created_at INTEGER NOT NULL DEFAULT (strftime('%s', 'now')),
             bearer_token TEXT,
             headers TEXT NOT NULL DEFAULT '{}',
@@ -105,6 +106,7 @@ function initializeSchema(database: InstanceType<typeof Database>): void {
             description TEXT,
             tool_schema TEXT NOT NULL,
             is_deferred INTEGER NOT NULL DEFAULT 0,
+            always_on INTEGER NOT NULL DEFAULT 0,
             created_at INTEGER NOT NULL DEFAULT (strftime('%s', 'now')),
             updated_at INTEGER NOT NULL DEFAULT (strftime('%s', 'now')),
             mcp_server_uuid TEXT NOT NULL,
@@ -361,6 +363,29 @@ function initializeSchema(database: InstanceType<typeof Database>): void {
 
         CREATE UNIQUE INDEX IF NOT EXISTS saved_scripts_name_user_unique_idx ON saved_scripts(name, user_id);
     `);
+
+    // Dynamic Migrations for existing databases
+    try {
+        const tableInfo = database.pragma("table_info(mcp_servers)") as Array<{ name: string }>;
+        const hasAlwaysOn = tableInfo.some((col) => col.name === "always_on");
+        if (!hasAlwaysOn) {
+            database.exec(`ALTER TABLE mcp_servers ADD COLUMN always_on INTEGER NOT NULL DEFAULT 0;`);
+            console.info("[DB Migration] Added 'always_on' column to mcp_servers table.");
+        }
+    } catch (err) {
+        console.warn("[DB Migration] Failed to alter mcp_servers table:", err);
+    }
+
+    try {
+        const tableInfo = database.pragma("table_info(tools)") as Array<{ name: string }>;
+        const hasAlwaysOn = tableInfo.some((col) => col.name === "always_on");
+        if (!hasAlwaysOn) {
+            database.exec(`ALTER TABLE tools ADD COLUMN always_on INTEGER NOT NULL DEFAULT 0;`);
+            console.info("[DB Migration] Added 'always_on' column to tools table.");
+        }
+    } catch (err) {
+        console.warn("[DB Migration] Failed to alter tools table:", err);
+    }
 }
 
 // Default to SQLite local file

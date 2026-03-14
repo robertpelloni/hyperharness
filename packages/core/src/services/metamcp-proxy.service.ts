@@ -22,7 +22,7 @@ import { SavedScriptConfig } from "../interfaces/IConfigProvider.js";
 
 import { codeExecutorService } from "./CodeExecutorService.js";
 import { deferredLoadingService } from "./deferred-loading.service.js";
-// DB Repositories removed
+import { toolsRepository, mcpServersRepository } from "../db/repositories/index.js";
 
 // Ported Services
 import { configImportService } from "./config-import.service.js";
@@ -54,6 +54,7 @@ import {
     executeCompatibleSearchMemory,
     executeCompatibleSaveMemory,
     executeCompatibleSaveScript,
+    executeSemanticAutoCall,
 } from "../mcp/compatibilityToolRuntime.js";
 import {
     executeGetToolSchemaCompatibility,
@@ -244,7 +245,23 @@ export const attachTo = async (
     const registerDiscoveryHandlers = options.registerDiscoveryHandlers ?? true;
     const getAlwaysVisibleTools = async (): Promise<string[]> => {
         try {
-            return await jsonConfigProvider.loadAlwaysVisibleTools();
+            const configTools = await jsonConfigProvider.loadAlwaysVisibleTools();
+            const dbTools = await toolsRepository.findAll();
+            const dbServers = await mcpServersRepository.findAll();
+            
+            const alwaysOnServers = new Set(
+                dbServers.filter(s => s.always_on).map(s => s.uuid)
+            );
+            
+            const alwaysOnToolNames = dbTools
+                .filter(t => t.always_on || alwaysOnServers.has(t.mcp_server_uuid))
+                .map(t => {
+                    const server = dbServers.find(s => s.uuid === t.mcp_server_uuid);
+                    const serverName = server?.name || 'unknown';
+                    return `${sanitizeName(serverName)}__${t.name}`;
+                });
+                
+            return [...new Set([...configTools, ...alwaysOnToolNames])];
         } catch (error) {
             console.error("Error loading always-visible tools", error);
             return [];
@@ -293,6 +310,7 @@ export const attachTo = async (
                     get_tool_context: "Fetch compact Borg memory context before calling a downstream tool so the model can reuse recent observations, summaries, and file-specific learnings.",
                     unload_tool: "Remove a previously loaded tool from the current session working set so it no longer appears in the exposed tool list.",
                     list_loaded_tools: "List tools currently loaded into the session working set, including whether their full schemas are hydrated.",
+                    clear_eviction_history: "Clear the bounded recent eviction-history buffer for the current session working set.",
                 },
             }),
             ...getCompatibilityToolDefinitions(),
@@ -591,6 +609,40 @@ export const attachTo = async (
             return formatResult(await executeListLoadedToolsCompatibility(toolWorkingSet));
         }
 
+        if (name === "set_capacity") {
+            // Clamp inputs to safe bounds before forwarding to the working-set service.
+            const rawMax = typeof args?.maxLoadedTools === 'number' ? args.maxLoadedTools : undefined;
+            const rawHydrated = typeof args?.maxHydratedSchemas === 'number' ? args.maxHydratedSchemas : undefined;
+            const maxLoadedTools = rawMax !== undefined ? Math.max(4, Math.min(64, Math.round(rawMax))) : undefined;
+            const maxHydratedSchemas = rawHydrated !== undefined ? Math.max(2, Math.min(32, Math.round(rawHydrated))) : undefined;
+            toolWorkingSet.reconfigure({ maxLoadedTools, maxHydratedSchemas });
+            const updated = toolWorkingSet.getLimits();
+            return {
+                content: [{
+                    type: 'text',
+                    text: `Working-set capacity updated: maxLoadedTools=${updated.maxLoadedTools}, maxHydratedSchemas=${updated.maxHydratedSchemas}`,
+                }],
+            };
+        }
+
+        if (name === "get_eviction_history") {
+            const history = toolWorkingSet.getEvictionHistory();
+            return formatResult({
+                content: [{ type: 'text', text: JSON.stringify(history) }],
+            });
+        }
+
+        if (name === "clear_eviction_history") {
+            const clearedCount = toolWorkingSet.getEvictionHistory().length;
+            toolWorkingSet.clearEvictionHistory();
+            return formatResult({
+                content: [{
+                    type: 'text',
+                    text: `Cleared ${clearedCount} eviction history entr${clearedCount === 1 ? 'y' : 'ies'}.`,
+                }],
+            });
+        }
+
         if (name === "save_script") {
             return await executeCompatibleSaveScript(args, {
                 saveScript: async (script) => {
@@ -697,6 +749,26 @@ export const attachTo = async (
                     }
                 }, handlerContext),
                 'Agent runner not available in MetaMCP proxy mode.',
+            ));
+        }
+
+        if (name === "auto_call_tool") {
+            const mcp = getMcpServer();
+            return formatResult(await executeSemanticAutoCall(
+                args,
+                mcp.llmService,
+                (query, limit) => searchRegisteredTools(query, limit, {
+                    isLoaded: (toolName) => toolWorkingSet.isLoaded(toolName),
+                    isHydrated: (toolName) => toolWorkingSet.isHydrated(toolName),
+                }),
+                async (toolName, toolArgs, meta) => await delegateHandler({
+                    method: "tools/call",
+                    params: {
+                        name: toolName,
+                        arguments: toolArgs,
+                        _meta: meta,
+                    }
+                }, handlerContext)
             ));
         }
 

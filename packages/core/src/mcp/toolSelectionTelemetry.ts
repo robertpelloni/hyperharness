@@ -6,14 +6,29 @@ export interface ToolSelectionTelemetryEvent {
     timestamp: number;
     sessionId?: string;
     query?: string;
+    profile?: string;
     source?: 'runtime-search' | 'cached-ranking' | 'live-aggregator';
     resultCount?: number;
     topResultName?: string;
     topMatchReason?: string;
+    topScore?: number;
+    secondResultName?: string;
+    secondMatchReason?: string;
+    secondScore?: number;
+    scoreGap?: number;
     toolName?: string;
     status: 'success' | 'error';
     message?: string;
     evictedTools?: string[];
+    latencyMs?: number;
+    autoLoadReason?: string;
+    autoLoadConfidence?: number;
+    autoLoadEvaluated?: boolean;
+    autoLoadOutcome?: 'loaded' | 'skipped' | 'not-applicable';
+    autoLoadSkipReason?: string;
+    autoLoadMinConfidence?: number;
+    autoLoadExecutionStatus?: 'success' | 'error' | 'not-attempted';
+    autoLoadExecutionError?: string;
 }
 
 const MAX_TELEMETRY_EVENTS = 100;

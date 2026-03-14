@@ -2,14 +2,20 @@
 
 import { Card, CardHeader, CardTitle, CardContent, CardDescription, Tabs, TabsContent, TabsList, TabsTrigger } from "@borg/ui";
 import { useEffect, useState } from "react";
-import { fetchSubmodulesAction, healSubmodulesAction, fetchUserLinksAction, LinkCategory } from "./actions";
-import { SubmoduleInfo } from "@/lib/git";
+import { fetchSubmodulesAction, healSubmodulesAction, fetchUserLinksAction } from "./actions";
 import { Button } from "@borg/ui";
 import { Loader2, RefreshCw, GitCommit, Calendar, ExternalLink, Copy, Check } from "lucide-react";
+import {
+    normalizeSubmodules,
+    normalizeUserLinks,
+    summarizeSubmoduleCounts,
+    type NormalizedLinkCategory,
+    type NormalizedSubmoduleInfo,
+} from './submodules-page-normalizers';
 
 export default function SubmodulesPage() {
-    const [submodules, setSubmodules] = useState<SubmoduleInfo[]>([]);
-    const [userLinks, setUserLinks] = useState<LinkCategory[]>([]);
+    const [submodules, setSubmodules] = useState<NormalizedSubmoduleInfo[]>([]);
+    const [userLinks, setUserLinks] = useState<NormalizedLinkCategory[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -17,16 +23,13 @@ export default function SubmodulesPage() {
             fetchSubmodulesAction(),
             fetchUserLinksAction()
         ]).then(([subs, links]) => {
-            setSubmodules(subs);
-            setUserLinks(links);
+            setSubmodules(normalizeSubmodules(subs));
+            setUserLinks(normalizeUserLinks(links));
             setLoading(false);
         });
     }, []);
 
-    const cleanCount = submodules.filter(s => s.status === 'clean').length;
-    const dirtyCount = submodules.filter(s => s.status === 'dirty').length;
-    const missingCount = submodules.filter(s => s.status === 'missing').length;
-    const errorCount = submodules.filter(s => s.status === 'error').length;
+    const summaryCounts = summarizeSubmoduleCounts(submodules, userLinks);
 
     return (
         <div className="p-8 space-y-8 max-w-7xl mx-auto">
@@ -39,10 +42,10 @@ export default function SubmodulesPage() {
             </div>
 
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                <StatusCard title="Clean" value={cleanCount} color="text-green-500" />
-                <StatusCard title="Dirty" value={dirtyCount} color="text-yellow-500" />
-                <StatusCard title="Missing" value={missingCount} color="text-red-500" />
-                <StatusCard title="Resources" value={userLinks.reduce((acc, cat) => acc + cat.links.length, 0)} color="text-blue-500" />
+                <StatusCard title="Clean" value={summaryCounts.clean} color="text-green-500" />
+                <StatusCard title="Dirty" value={summaryCounts.dirty} color="text-yellow-500" />
+                <StatusCard title="Missing" value={summaryCounts.missing} color="text-red-500" />
+                <StatusCard title="Resources" value={summaryCounts.resources} color="text-blue-500" />
             </div>
 
             <Tabs defaultValue="modules" className="space-y-4">

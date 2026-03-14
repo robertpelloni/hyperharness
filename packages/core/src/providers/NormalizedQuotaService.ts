@@ -1,5 +1,6 @@
 import { QuotaService, type QuotaConfig } from '@borg/ai';
 
+import { ProviderBalanceService } from './ProviderBalanceService.js';
 import { ProviderRegistry } from './ProviderRegistry.js';
 import { type ProviderAvailability, type ProviderQuotaSnapshot } from './types.js';
 
@@ -16,6 +17,7 @@ const DEFAULT_RETRY_MS = 60_000;
 
 export class NormalizedQuotaService extends QuotaService {
     private readonly registry: ProviderRegistry;
+    private readonly balanceService: ProviderBalanceService;
     private readonly providerUsage: UsageRecord[] = [];
     private configState: QuotaConfig = {
         dailyBudgetUsd: 5,
@@ -24,9 +26,10 @@ export class NormalizedQuotaService extends QuotaService {
     };
     private readonly snapshots = new Map<string, ProviderQuotaSnapshot>();
 
-    constructor(registry: ProviderRegistry) {
+    constructor(registry: ProviderRegistry, balanceService: ProviderBalanceService = new ProviderBalanceService()) {
         super();
         this.registry = registry;
+        this.balanceService = balanceService;
         this.refreshAuthStates();
     }
 
@@ -129,6 +132,20 @@ export class NormalizedQuotaService extends QuotaService {
             config: this.configState,
             isExceeded: this.isBudgetExceeded(),
         };
+    }
+
+    public async refreshProviderBalances() {
+        const liveSnapshots = await this.balanceService.fetchSnapshots();
+        for (const snapshot of liveSnapshots) {
+            const existing = this.snapshots.get(snapshot.provider);
+            this.snapshots.set(snapshot.provider, {
+                ...existing,
+                ...snapshot,
+                windows: snapshot.windows ?? existing?.windows,
+                source: snapshot.source ?? existing?.source ?? 'balance',
+                connectionId: snapshot.connectionId ?? existing?.connectionId ?? null,
+            });
+        }
     }
 
     public getQuota(provider: string): ProviderQuotaSnapshot | undefined {

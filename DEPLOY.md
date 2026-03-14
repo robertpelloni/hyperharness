@@ -1,6 +1,6 @@
 # Borg Deployment Guide
 
-> **Version**: 2.7.32
+> **Version**: 0.9.0-beta
 > **Scope**: Local Development & Production Deployment
 
 ---
@@ -20,30 +20,35 @@ Borg is designed to run locally as your personal AI Operating System.
 
 ### Quick Start
 ```bash
-# 1. Install dependencies & submodules
-git submodule update --init --recursive
+# 1. Install dependencies
 pnpm install
 
-# 2. Build shared packages
-pnpm run build
-
-# 3. Start the stack (Backend + Dashboard + CLI)
-# This runs 'turbo run dev' which orchestrates all apps
+# 2. Start the Borg dev readiness launcher
 pnpm run dev
 
-# 4. Verify cross-service readiness
+# 3. Verify cross-service readiness
 node scripts/verify_dev_readiness.mjs
 
 # Optional machine-readable output
 node scripts/verify_dev_readiness.mjs --json --soft
 ```
 
+`pnpm run dev` launches Borg's readiness-aware development wrapper rather than a bare workspace watch. It brings up the core bridge, the dashboard, supporting package watchers, and reports a truthful ready summary once the live startup contract is satisfied.
+
 ### Access Points
-- **Dashboard**: `http://localhost:3000` (Next.js App)
-- **Borg Server**: `http://localhost:3001` (Core API & WebSocket)
-- **MCP Server**: `stdio` (via CLI wrapper) or `SSE` (if configured)
-- **MetaMCP Frontend**: `http://localhost:12008`
-- **MetaMCP Backend**: `http://localhost:12009/health`
+- **Dashboard**: `http://127.0.0.1:<detected-port>/dashboard`
+  - the dev wrapper prefers the marked Next.js dev port and may fall back among `3000`, `3010`, `3020`, `3030`, or `3040`
+- **Core bridge / core HTTP probe**: `http://127.0.0.1:3001`
+- **Core WebSocket bridge**: `ws://127.0.0.1:3001`
+- **Startup status probe**: `http://127.0.0.1:3001/api/trpc/startupStatus?input=%7B%7D`
+- **MCP status probe**: `http://127.0.0.1:3001/api/trpc/mcp.getStatus?input=%7B%7D`
+- **MCP server**: `stdio` via the CLI entrypoint or the core bridge transport surface
+
+Notes:
+
+- The dashboard root redirects from `/` to `/dashboard`.
+- The readiness wrapper can automatically open the detected dashboard URL unless `BORG_DEV_READY_OPEN_BROWSER=0` is set.
+- If an existing Borg-owned core bridge is already healthy on port `3001`, the wrapper reuses it instead of spawning a duplicate core process.
 
 ---
 
@@ -82,7 +87,7 @@ Both containers include built-in healthchecks (30s interval, 5s timeout, 3 retri
    pnpm run build
    ```
 2. **Environment Variables**:
-   Create a `.env` file in `packages/core` and `apps/web`:
+  Create a `.env` file where your chosen deployment path expects it. For the current local control-plane defaults, the important values are:
    ```env
    # Core
    PORT=3001
@@ -94,13 +99,11 @@ Both containers include built-in healthchecks (30s interval, 5s timeout, 3 retri
    ```
 3. **Start**:
    ```bash
-   # Start logic only
-   cd packages/core
-   npm start
-   
-   # Start UI
-   cd apps/web
-   npm start
+  # Root production-style build
+  pnpm run build
+
+  # Root CLI start path
+  node packages/cli/dist/index.js start
    ```
 
 ---
@@ -134,9 +137,31 @@ Add via "Borg" extension or manual MCP settings using the same command tuple.
 ## 5. Troubleshooting
 
 - **Port 3001 In Use**: The core server creates a WebSocket on 3001. Ensure no other instance is running.
+- **Dashboard on an unexpected port**: `pnpm run dev` may move the dashboard off `3000` if that port is occupied. Use the ready summary from the launcher or rerun `node scripts/verify_dev_readiness.mjs` to discover the active dashboard URL.
 - **Circular Dependencies**: If `pnpm build` fails, check `packages/core` for circular imports (Ref: Phase 63 fix).
 - **Database Locks**: SQLite may lock if multiple processes access `dev.db` in write mode.
 - **Docker Build Fails**: Ensure `turbo` can prune the workspace. Run `pnpm dlx turbo prune @borg/web @borg/core --docker` locally first to validate.
+
+### Optional verbose Borg core startup logs
+
+Normal `pnpm run dev` keeps `packages/core/src/MCPServer.ts` boot logging quiet unless you opt in.
+
+Use either flag when you want verbose startup/import tracing:
+
+```powershell
+$env:BORG_MCP_SERVER_DEBUG='1'; pnpm run dev
+```
+
+```powershell
+$env:DEBUG='borg:mcp-server'; pnpm run dev
+```
+
+To clear them again in the current PowerShell session:
+
+```powershell
+Remove-Item Env:BORG_MCP_SERVER_DEBUG -ErrorAction SilentlyContinue
+Remove-Item Env:DEBUG -ErrorAction SilentlyContinue
+```
 
 ---
 

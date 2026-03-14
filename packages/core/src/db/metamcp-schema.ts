@@ -71,6 +71,9 @@ export const mcpServersTable = sqliteTable(
             .$type<{ [key: string]: string }>()
             .notNull()
             .default(sql`'{}'`),
+        always_on: integer("always_on", { mode: "boolean" })
+            .notNull()
+            .default(false),
         user_id: text("user_id").notNull(), // Foreign key to usersTable (if auth exists) or 'system'
     },
     (table) => ({
@@ -129,6 +132,9 @@ export const toolsTable = sqliteTable(
             }>()
             .notNull(),
         is_deferred: integer("is_deferred", { mode: "boolean" })
+            .notNull()
+            .default(false),
+        always_on: integer("always_on", { mode: "boolean" })
             .notNull()
             .default(false),
         created_at: integer("created_at", { mode: "timestamp" })

@@ -1,6 +1,7 @@
 import { BaseAdapterPlugin } from './base.adapter';
 import type { AdapterCapability, PluginContext } from '../plugin-types';
 import { createLogger } from '@extension/shared/lib/logger';
+import { findBestActionButton, isButtonDisabled } from '../../utils/dom';
 
 /**
  * OpenRouter Adapter for OpenRouter (openrouter.ai)
@@ -288,46 +289,21 @@ export class OpenRouterAdapter extends BaseAdapterPlugin {
 
     try {
       // First try to find submit button
-      let submitButton: HTMLButtonElement | null = null;
-      const selectors = this.selectors.SUBMIT_BUTTON.split(', ');
+      const chatInput = document.querySelector(this.selectors.CHAT_INPUT.split(', ')[0]) as HTMLElement | null;
+      const submitButton = findBestActionButton({
+        actionLabels: ['Send message', 'Send prompt', 'Send', 'Submit'],
+        preferredSelectors: this.selectors.SUBMIT_BUTTON.split(', ').map(selector => selector.trim()),
+        near: chatInput,
+        iconPathHints: ['M4.5 10.5', 'M12 3.5'],
+      });
 
-      for (const selector of selectors) {
-        const element = document.querySelector(selector.trim());
-        if (element) {
-          // Handle SVG case where we need to find the parent button
-          if (element.tagName === 'svg' || element.tagName === 'path') {
-            submitButton = element.closest('button') as HTMLButtonElement;
-          } else {
-            submitButton = element as HTMLButtonElement;
-          }
-
-          if (submitButton) {
-            this.context.logger.debug(`Found submit button using selector: ${selector.trim()}`);
-            break;
-          }
-        }
-      }
-
-      // Additional check for the new send button structure (Jan 2026)
-      if (!submitButton) {
-        // Look for the send button by its specific characteristics - arrow up icon
-        const sendButtons = document.querySelectorAll('button');
-        for (let i = 0; i < sendButtons.length; i++) {
-          const button = sendButtons[i];
-          const svg = button.querySelector('svg[stroke="currentColor"]');
-          // Check for the arrow-up path: "M4.5 10.5 12 3m0 0 7.5 7.5M12 3v18"
-          const path = svg?.querySelector('path[d*="M4.5 10.5"]');
-          if (path && svg) {
-            submitButton = button as HTMLButtonElement;
-            this.context.logger.debug('Found submit button by SVG arrow-up path structure');
-            break;
-          }
-        }
+      if (submitButton) {
+        this.context.logger.debug('Found OpenRouter submit button via action matcher');
       }
 
       if (submitButton) {
         // Check if button is enabled
-        if (submitButton.disabled || submitButton.getAttribute('aria-disabled') === 'true') {
+        if (isButtonDisabled(submitButton)) {
           this.context.logger.warn('OpenRouter submit button is disabled, trying alternative methods');
         } else {
           // Try clicking the button
@@ -350,7 +326,6 @@ export class OpenRouterAdapter extends BaseAdapterPlugin {
       }
 
       // Fallback: Try form submission
-      const chatInput = document.querySelector(this.selectors.CHAT_INPUT.split(', ')[0]) as HTMLElement;
       if (chatInput) {
         const form = chatInput.closest('form');
         if (form) {

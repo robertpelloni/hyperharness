@@ -4,8 +4,8 @@ import path from 'node:path';
 
 import { afterEach, describe, expect, it } from 'vitest';
 
-import { JsonConfigProvider } from './JsonConfigProvider.js';
-import { loadBorgMcpConfig } from '../../mcp/mcpJsonConfig.js';
+import { JsonConfigProvider } from './JsonConfigProvider.ts';
+import { loadBorgMcpConfig } from '../../mcp/mcpJsonConfig.ts';
 
 const tempDirs: string[] = [];
 
@@ -50,6 +50,7 @@ describe('JsonConfigProvider always-visible tools compatibility', () => {
         expect(config.settings?.toolSelection).toEqual({
             importantTools: [],
             alwaysLoadedTools: ['browser__open'],
+            autoLoadMinConfidence: 0.85,
         });
     });
 });

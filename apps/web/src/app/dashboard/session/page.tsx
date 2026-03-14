@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
 import { Card, CardHeader, CardTitle, CardContent, Button, Badge } from "@borg/ui";
 import { Loader2, Activity, Play, Square, Target, Crosshair, HelpCircle, ActivitySquare, RotateCcw } from "lucide-react";
 import { trpc } from '@/utils/trpc';
@@ -9,6 +10,11 @@ import { toast } from 'sonner';
 import { SessionCreateDialog } from './session-create-dialog';
 import { SessionDetailsDialog, type SessionDetailsDialogSession } from './session-details-dialog';
 import { formatRelativeTimestamp, formatRestartCountdown, getSessionTone } from './session-dashboard-utils';
+import {
+    normalizeSessionCatalog,
+    normalizeSessionList,
+    normalizeSessionState,
+} from './session-page-normalizers';
 
 export default function SessionDashboard() {
     const utils = trpc.useUtils();
@@ -88,13 +94,15 @@ export default function SessionDashboard() {
     const [goalInput, setGoalInput] = useState("");
     const [objectiveInput, setObjectiveInput] = useState("");
 
+    const normalizedSessionState = normalizeSessionState(sessionState);
+
     // Keep inputs synced with external state changes only if user hasn't typed
     useEffect(() => {
         if (sessionState) {
-            if (!goalInput) setGoalInput(sessionState.activeGoal || "");
-            if (!objectiveInput) setObjectiveInput(sessionState.lastObjective || "");
+            if (!goalInput) setGoalInput(normalizedSessionState.activeGoal);
+            if (!objectiveInput) setObjectiveInput(normalizedSessionState.lastObjective);
         }
-    }, [sessionState]);
+    }, [sessionState, normalizedSessionState.activeGoal, normalizedSessionState.lastObjective]);
 
     const handleSaveGoal = () => {
         updateMutation.mutate({ activeGoal: goalInput });
@@ -105,12 +113,11 @@ export default function SessionDashboard() {
     };
 
     const toggleAutoDrive = () => {
-        if (!sessionState) return;
-        updateMutation.mutate({ isAutoDriveActive: !sessionState.isAutoDriveActive });
+        updateMutation.mutate({ isAutoDriveActive: !normalizedSessionState.isAutoDriveActive });
     };
 
-    const sessions = sessionsQuery.data ?? [];
-    const catalog = catalogQuery.data ?? [];
+    const sessions = normalizeSessionList(sessionsQuery.data);
+    const catalog = normalizeSessionCatalog(catalogQuery.data);
     const installedHarnessCount = catalog.filter((entry) => entry.installed).length;
     const runningSessionCount = sessions.filter((session) => session.status === 'running').length;
 
@@ -140,15 +147,15 @@ export default function SessionDashboard() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Auto-Drive Control */}
-                <Card className={`border-2 ${sessionState?.isAutoDriveActive ? 'border-emerald-500/50 bg-emerald-950/10' : 'border-zinc-800 bg-zinc-900'} shadow-xl transition-all`}>
+                <Card className={`border-2 ${normalizedSessionState.isAutoDriveActive ? 'border-emerald-500/50 bg-emerald-950/10' : 'border-zinc-800 bg-zinc-900'} shadow-xl transition-all`}>
                     <CardHeader className="pb-2">
                         <CardTitle className="text-lg font-bold flex items-center justify-between">
                             <div className="flex items-center gap-2">
-                                <Activity className={`h-5 w-5 ${sessionState?.isAutoDriveActive ? 'text-emerald-500 animate-pulse' : 'text-zinc-500'}`} />
+                                <Activity className={`h-5 w-5 ${normalizedSessionState.isAutoDriveActive ? 'text-emerald-500 animate-pulse' : 'text-zinc-500'}`} />
                                 Auto-Drive Engine
                             </div>
-                            <Badge variant={sessionState?.isAutoDriveActive ? "default" : "secondary"} className={sessionState?.isAutoDriveActive ? "bg-emerald-500 hover:bg-emerald-600" : ""}>
-                                {sessionState?.isAutoDriveActive ? "ACTIVE" : "PAUSED"}
+                            <Badge variant={normalizedSessionState.isAutoDriveActive ? "default" : "secondary"} className={normalizedSessionState.isAutoDriveActive ? "bg-emerald-500 hover:bg-emerald-600" : ""}>
+                                {normalizedSessionState.isAutoDriveActive ? "ACTIVE" : "PAUSED"}
                             </Badge>
                         </CardTitle>
                     </CardHeader>
@@ -159,10 +166,10 @@ export default function SessionDashboard() {
                         <Button
                             onClick={toggleAutoDrive}
                             disabled={updateMutation.isPending}
-                            className={`w-full py-6 font-bold tracking-widest ${sessionState?.isAutoDriveActive ? 'bg-red-900/50 hover:bg-red-900/80 text-red-400' : 'bg-emerald-600 hover:bg-emerald-500 text-white'}`}
+                            className={`w-full py-6 font-bold tracking-widest ${normalizedSessionState.isAutoDriveActive ? 'bg-red-900/50 hover:bg-red-900/80 text-red-400' : 'bg-emerald-600 hover:bg-emerald-500 text-white'}`}
                         >
                             {updateMutation.isPending ? <Loader2 className="w-5 h-5 animate-spin mx-auto" /> :
-                                sessionState?.isAutoDriveActive ? <><Square className="w-4 h-4 mr-2 fill-current" /> STOP AUTO-DRIVE</> : <><Play className="w-4 h-4 mr-2 fill-current" /> ENGAGE AUTO-DRIVE</>}
+                                normalizedSessionState.isAutoDriveActive ? <><Square className="w-4 h-4 mr-2 fill-current" /> STOP AUTO-DRIVE</> : <><Play className="w-4 h-4 mr-2 fill-current" /> ENGAGE AUTO-DRIVE</>}
                         </Button>
                     </CardContent>
                 </Card>
@@ -200,7 +207,7 @@ export default function SessionDashboard() {
                                 className="flex-1 bg-black border border-zinc-800 rounded-md p-3 text-sm text-white focus:ring-1 focus:ring-indigo-500 outline-none"
                                 placeholder="Enter global objective for the system..."
                             />
-                            <Button onClick={handleSaveGoal} disabled={updateMutation.isPending || goalInput === sessionState?.activeGoal} className="bg-indigo-600 hover:bg-indigo-500">
+                            <Button onClick={handleSaveGoal} disabled={updateMutation.isPending || goalInput === normalizedSessionState.activeGoal} className="bg-indigo-600 hover:bg-indigo-500">
                                 Set Goal
                             </Button>
                         </div>
@@ -215,7 +222,7 @@ export default function SessionDashboard() {
                                     className="flex-1 bg-black border border-zinc-800 rounded-md p-2 text-sm text-zinc-300 focus:ring-1 focus:ring-zinc-600 outline-none"
                                     placeholder="Enter current micro-task..."
                                 />
-                                <Button variant="secondary" onClick={handleSaveObjective} disabled={updateMutation.isPending || objectiveInput === sessionState?.lastObjective}>
+                                <Button variant="secondary" onClick={handleSaveObjective} disabled={updateMutation.isPending || objectiveInput === normalizedSessionState.lastObjective}>
                                     Update
                                 </Button>
                             </div>
@@ -242,7 +249,7 @@ export default function SessionDashboard() {
                                 No supervised sessions exist yet. Create one to launch Aider, Claude Code, Gemini CLI, Codex, or OpenCode under Borg supervision.
                             </div>
                         ) : sessions.map((session) => {
-                            const latestLog = session.logs[session.logs.length - 1];
+                            const latestLog = session.logs.length > 0 ? session.logs[session.logs.length - 1] : null;
                             const isPending = pendingSessionActionId === session.id;
                             const canStart = session.status === 'created' || session.status === 'stopped' || session.status === 'error';
                             const canStop = session.status === 'starting' || session.status === 'running' || session.status === 'restarting';
@@ -252,6 +259,8 @@ export default function SessionDashboard() {
                                 cliType: session.cliType ?? 'cli',
                                 workingDirectory: session.workingDirectory ?? '',
                                 worktreePath: session.worktreePath,
+                                executionProfile: session.executionProfile,
+                                executionPolicy: session.executionPolicy,
                                 autoRestart: session.autoRestart,
                                 status: session.status ?? 'created',
                                 restartCount: session.restartCount ?? 0,
@@ -270,16 +279,22 @@ export default function SessionDashboard() {
                                                 <h3 className="text-base font-semibold text-white">{session.name}</h3>
                                                 <Badge className={getSessionTone(session.status)}>{session.status}</Badge>
                                                 <Badge variant="outline" className="border-zinc-700 text-zinc-300">{session.cliType}</Badge>
+                                                {session.executionPolicy?.shellLabel ? (
+                                                    <Badge variant="outline" className="border-cyan-500/30 text-cyan-200">
+                                                        {session.executionPolicy.shellLabel}
+                                                    </Badge>
+                                                ) : null}
+                                                {session.autoRestart === false && (
+                                                    <Badge variant="outline" className="border-amber-700/50 text-amber-500 bg-amber-950/20">Manual Restart</Badge>
+                                                )}
+                                                {session.status === 'error' && (
+                                                    <Badge className="bg-red-950 text-red-400 border border-red-800">Crashed</Badge>
+                                                )}
                                             </div>
                                             <p className="break-all font-mono text-xs text-zinc-500">{session.worktreePath ?? session.workingDirectory}</p>
                                             <p className="text-xs text-zinc-500">
                                                 Last activity {formatRelativeTimestamp(session.lastActivityAt, currentTimestamp)} · Restarts {session.restartCount}/{session.maxRestartAttempts}
                                             </p>
-                                            {session.autoRestart === false ? (
-                                                <p className="text-xs text-amber-300">
-                                                    Manual restart only · Auto-restart is disabled for this session.
-                                                </p>
-                                            ) : null}
                                             {session.status === 'restarting' && session.scheduledRestartAt ? (
                                                 <p className="text-xs text-amber-300">
                                                     Restart queued {formatRestartCountdown(session.scheduledRestartAt, currentTimestamp)}
@@ -295,12 +310,23 @@ export default function SessionDashboard() {
                                                 </div>
                                             ) : null}
                                             {session.lastError ? (
-                                                <p className="text-sm text-red-300">{session.lastError}</p>
+                                                <div className="rounded-md border border-red-900/50 bg-red-950/30 p-3 mt-2">
+                                                    <p className="text-sm font-semibold text-red-400 mb-1">Session Crashed</p>
+                                                    <p className="text-xs text-red-300/80 break-words">{session.lastError}</p>
+                                                </div>
                                             ) : null}
                                         </div>
 
                                         <div className="flex flex-wrap gap-2">
                                             <SessionDetailsDialog session={sessionDetails} currentTimestamp={currentTimestamp} />
+                                            <Link href={`/dashboard/session/${session.id}`}>
+                                                <Button
+                                                    variant="outline"
+                                                    className="border-blue-500/30 text-blue-200 hover:bg-blue-500/10"
+                                                >
+                                                    View Details
+                                                </Button>
+                                            </Link>
                                             <Button
                                                 onClick={() => {
                                                     setPendingSessionActionId(session.id);

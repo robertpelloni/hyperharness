@@ -12,9 +12,11 @@ describe('mcp tool preferences helpers', () => {
         expect(normalizeToolPreferences({
             importantTools: [' github__issues ', '', 'github__issues', 'browser__open'],
             alwaysLoadedTools: [' browser__open ', 'browser__open', ''],
+            autoLoadMinConfidence: 2,
         })).toEqual({
             importantTools: ['github__issues', 'browser__open'],
             alwaysLoadedTools: ['browser__open'],
+            autoLoadMinConfidence: 0.99,
         });
     });
 
@@ -22,9 +24,11 @@ describe('mcp tool preferences helpers', () => {
         expect(readToolPreferencesFromSettings({
             importantTools: ['github__issues'],
             alwaysLoadedTools: ['browser__open'],
+            autoLoadMinConfidence: 0.9,
         })).toEqual({
             importantTools: ['github__issues'],
             alwaysLoadedTools: ['browser__open'],
+            autoLoadMinConfidence: 0.9,
         });
     });
 
@@ -45,6 +49,7 @@ describe('mcp tool preferences helpers', () => {
         ], {
             importantTools: ['github__issues'],
             alwaysLoadedTools: ['browser__open'],
+            autoLoadMinConfidence: 0.85,
         }, [
             {
                 name: 'github__issues',
@@ -55,6 +60,7 @@ describe('mcp tool preferences helpers', () => {
                 name: 'browser__open',
                 description: 'Open a browser page',
                 server: 'browser',
+                alwaysOn: true,
             },
         ]);
 
@@ -62,18 +68,43 @@ describe('mcp tool preferences helpers', () => {
             name: tool.name,
             important: tool.important,
             alwaysLoaded: tool.alwaysLoaded,
+            alwaysOn: tool.alwaysOn,
         }))).toEqual([
             {
                 name: 'browser__open',
                 important: false,
                 alwaysLoaded: true,
+                alwaysOn: true,
             },
             {
                 name: 'github__issues',
                 important: true,
                 alwaysLoaded: false,
+                alwaysOn: false,
             },
         ]);
+    });
+
+    it('always advertises always-on catalog tools even when they are not in the initial result set', () => {
+        const merged = mergeToolPreferences([], {
+            importantTools: [],
+            alwaysLoadedTools: [],
+            autoLoadMinConfidence: 0.85,
+        }, [
+            {
+                name: 'memory__recall',
+                description: 'Recall a saved memory',
+                server: 'memory',
+                alwaysOn: true,
+            },
+        ]);
+
+        expect(merged[0]).toMatchObject({
+            name: 'memory__recall',
+            alwaysOn: true,
+            alwaysShow: true,
+        });
+        expect(merged[0]?.matchReason).toContain('always-on');
     });
 
     it('persists both important and always-loaded settings', () => {
@@ -85,12 +116,14 @@ describe('mcp tool preferences helpers', () => {
         }, {
             importantTools: ['github__issues'],
             alwaysLoadedTools: ['browser__open'],
+            autoLoadMinConfidence: 0.9,
         })).toEqual({
             unrelated: true,
             toolSelection: {
                 previous: 'keep-me',
                 importantTools: ['github__issues'],
                 alwaysLoadedTools: ['browser__open'],
+                autoLoadMinConfidence: 0.9,
             },
         });
     });

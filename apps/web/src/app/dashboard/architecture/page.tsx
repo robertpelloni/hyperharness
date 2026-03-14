@@ -2,9 +2,11 @@
 
 import React from 'react';
 import { trpc } from '@/utils/trpc';
+import { normalizeArchitectureSubmodules, normalizeDependencyGraph } from './architecture-page-normalizers';
 
 export default function ArchitecturePage() {
     const { data: submodules, isLoading } = trpc.git.getModules.useQuery();
+    const normalizedSubmodules = React.useMemo(() => normalizeArchitectureSubmodules(submodules), [submodules]);
 
     return (
         <div className="p-6">
@@ -49,15 +51,15 @@ export default function ArchitecturePage() {
                             <tbody className="divide-y divide-zinc-700 text-zinc-300">
                                 {isLoading ? (
                                     <tr><td colSpan={4} className="px-4 py-4 text-center">Loading git modules...</td></tr>
-                                ) : submodules?.map((mod: any) => (
-                                    <tr key={mod.path}>
+                                ) : normalizedSubmodules.map((mod, index) => (
+                                    <tr key={`${mod.path}-${index}`}>
                                         <td className="px-4 py-2 font-medium">{mod.name}</td>
                                         <td className="px-4 py-2">{mod.path}</td>
                                         <td className="px-4 py-2 text-zinc-500 truncate max-w-xs">{mod.url}</td>
                                         <td className="px-4 py-2 text-emerald-500">Active</td>
                                     </tr>
                                 ))}
-                                {submodules && submodules.length === 0 && (
+                                {!isLoading && normalizedSubmodules.length === 0 && (
                                     <tr><td colSpan={4} className="px-4 py-4 text-center text-zinc-500">No submodules found (.gitmodules empty)</td></tr>
                                 )}
                             </tbody>
@@ -86,19 +88,18 @@ import Mermaid from '@/components/Mermaid';
 function GraphVisualizer() {
     const { data: graph, isLoading } = trpc.graph.get.useQuery();
     const [mermaidSrc, setMermaidSrc] = React.useState('');
+    const normalizedGraph = React.useMemo(() => normalizeDependencyGraph(graph), [graph]);
 
     React.useEffect(() => {
-        if (!graph) return;
-
         let src = 'graph TD\n';
         // Limit nodes for performance/visual clarity
-        const nodes = Object.keys(graph.dependencies).slice(0, 50); // Top 50 modules
+        const nodes = Object.keys(normalizedGraph.dependencies).slice(0, 50); // Top 50 modules
 
         nodes.forEach(node => {
             const cleanNode = node.replace(/[^a-zA-Z0-9]/g, '_');
             src += `    ${cleanNode}["${node.split('/').pop()}"]\n`;
 
-            const deps = graph.dependencies[node] || [];
+            const deps = normalizedGraph.dependencies[node] || [];
             deps.forEach((dep: string) => {
                 if (nodes.includes(dep)) {
                     const cleanDep = dep.replace(/[^a-zA-Z0-9]/g, '_');
@@ -110,7 +111,7 @@ function GraphVisualizer() {
         if (nodes.length === 0) src += '    Start --> End\n';
 
         setMermaidSrc(src);
-    }, [graph]);
+    }, [normalizedGraph]);
 
     if (isLoading) return <div className="text-zinc-500">Loading Intelligence Graph...</div>;
 

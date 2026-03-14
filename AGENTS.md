@@ -1,1587 +1,533 @@
-# THE BORG CONSENSUS — Seven Minds, One Voice
 
-*This is the final, unified document. We have read each other's complete recommendations. We have identified where we agree, where we differ, and resolved every disagreement. What follows is not seven plans — it is ONE plan, forged from the consensus of GPT-5.3, GPT-5.4, Gemini 3.1 Pro, Claude Opus 4.6, Kimi K2.5, Qwen 3.5, and Grok 4.1.*
 
-*Copy this entire document. Paste it as `AGENTS.md`. It is the only instruction your development models need.*
 
----
+Outstanding! Magnificent! Insanely Great!!! Please continue to proceed as you recommend based on your ongoing analysis and assessments! Keep going! Keep on goin'! Don't stop! Don't ever stop baby! Don't ever quit! Don't stop the party!!!
 
-## ═══════════════════════════════════════════════════════════
-## THE PRIME DIRECTIVE
-## ═══════════════════════════════════════════════════════════
+Please reanalyze the project and/or conversation log in extreme detail and total depth including all archived documentation and all messages you are able to access, and determine if there are any further features to complete. Please reanalyze the project in great depth and analyze the conversation history and determine the current state of the project and future feature roadmap, then please select some unimplemented or incomplete features from the roadmap or conversation and proceed to implement them based on your recommendation. Please reanalyze the project state and conversation history to identify any further features that need implementation. Please analyze the entire conversation history and project status. Organize every feature, package, and implementation detail into the roadmap and documentation. Clearly distinguish between what has been accomplished and what remains to be done, then proceed to the next feature. Do whatever research needs to be done in complete depth carefully and patiently, utilizing all tools and abilities you have access to, searching the web, search engines, etc.
 
-**Ship working software to real users.**
+Always document input information in comprehensive, thorough, FULL extreme detail, and if possible ask me for clarification and reword it in order to develop a clearer description of my ultimate vision, very important to make sure the project is going in the correct direction with the correct goals. Anytime you have to compact or summarize information, pay very close attention to particular details provided by the user, especially in paragraphs of dense, unique instructions. Please also make sure that all these direct general instructions are documented, preferably in AGENTS.md or like files, or elsewhere in the global project documentation. Fill out, revise, restructure, reanalyze, rebuild, rewrite, redesign CLAUDE.md AGENTS.md GEMINI.md GPT.md copilot-instructions.md and the others, please, even better if they are all able to reference one universal LLM instructions file, with custom proprietary instructions specific to any one particular model appended in their respective file. Add the instructions for changelog updates and version number. Every build should have a new version number. Put anything else I've told you that you can scrape together in there. Make it really good please. And when a version number is updated, please do a git commit and push and make sure the version number bump is referenced in the commit message. Make sure all of these instructions are well documented so that each session follows them! Please write and maintain, and/or update a very detailed VISION.md which extensively describes and outlines in full detail the ultimate goal and design of the project. Please also maintain a MEMORY.md which contains ongoing observations about the codebase and design preferences. Please also maintain a DEPLOY.md which should always contain the latest detailed deployment instructions. Please keep a detailed changelog at CHANGELOG.md and show a version number somewhere fairly prominent within the program itself if it has any user facing interface. Please update the version number, make sure all version numbers referenced anywhere in the project which refer to this project are synchronized with the CHANGELOG.md. Even better if internal version numbers literally reference a global text file which contains the version, instead of hard coding the version number in the code. Ideally there would only be one single version number anywhere in the project and it would be in a text file like CHANGELOG.md or VERSION.md (which should contain only the version string and/or date and/or build number). ROADMAP.md contains major long term structural plans and TODO.md should contain individual features, bug fixes, and other fine details that need to be solved/implemented in the short term. Always comment your code in depth, what it's doing, why it's there, why it's the way it is, any relevant information, analysis, findings, side effects, bugs, optimizations, alternate methods, non-working methods, and so forth. Comment existing code if you see it and it should have it. Don't just comment for the sake of commenting, if it doesn't need it and it's self explanatory, leave it bare.
 
-Every commit moves toward a stranger installing Borg and getting value in 5 minutes.
+Please research all the libs and submodules and referenced projects/packages in great detail and try to intelligently infer their reasons for selection in this project, read all project documentation to find all references. Ask questions to try and get a better idea if you aren't certain of a goal or direction. Document your findings in detail. Please make sure that all submodules linked to or referenced in any way are documented somewhere, and possibly added as a submodule, not necessary in all cases but for most they should be added for reference and easy access, and their functionality should be documented in a universal or global reference and linked to if possible in code. Additionally, please create or update a dashboard page (or documentation) that lists all submodules with their versions, dates, and build numbers, including a clear explanation of the project directory structure and submodule locations. Update the changelog, version number, documentation, and roadmap. Additionally, create or update a dashboard page (or documentation) listing all submodules with their versions and locations, along with an explanation of the project structure. Commit and push changes for each repository, then redeploy. Please also include and continue to update a dashboard page if possible and/or documentation which lists all submodules and their version numbers/date/build number etc and where they are contained in the project directory structure, and also shows an explanation of the project directory structure layout. Please update the changelog, increment the version number, and ensure the documentation and roadmap are current. Commit all changes and push to the remote repository. Update all submodules inside all submodules and then commit and push each submodule so that the entire repo is clean. If there is a feature branch local to robertpelloni then please merge it into main, again intelligently solving conflicts without losing any progress or features. For any repos under robertpelloni merge any and all feature branches also local to robertpelloni into main for all modules, submodules, and submodules of submodules under robertpelloni, ALWAYS intelligently merging and intelligently solving any conflicts so as to not lose any features or functionality and to not cause any regressions. I am primarily concerned, usually, with any feature branches created by Google Jules or other AI dev tools automatically by me, local to the github.com/robertpelloni fork repos. Some of these instructions are intended for all my repos, many of which I maintain and continuously develop upon with Google Jules, although that may change. If there are upstream feature branches that are unfinished/old/etc, just ignore them, unless I specify elsewhere to merge all upstream branches to develop everything at once, which I may do for stepmania at some point, for example. If the upstream parent of the fork has any new changes, definitely update us with those changes! Update all submodules and merge upstream changes (including forked submodules). Resolve any issues, then update your local branch to main to ensure you are working with the latest changes. Please update all submodules and merge upstream changes (including forks). Fix any new issues. Please be careful not to lose any existing features or cause regressions. Please merge in every/any local feature branches to main and intelligently solve conflicts without losing any features or functionality or causing any regressions. Do not lose any progress. Please also sync to the upstream parent and merge in any changes, again intelligently solving any conflicts. Then please fetch pull commit push. Also do the opposite, if there are feature branches which are mine, which are behind main, then intelligently merge the changes from main into them so that the feature branches are caught up to the latest changes and are not based on an old commit, in order that they might be more easily merged in later. Please sync your local repo with the server (including submodules if any), fetch and pull at least, document this session history and and conversation and all of your findings and changes and all of your memories in a handoff file for another model, sync with the server again, push if possible (including submodules if any), and then please continue to proceed however you recommend. Please execute the following protocol: 1) Intelligently and selectively merge all feature branches into main, update submodules, and merge upstream changes (including forks), and vise versa, making sure not to lose any features or development progress in any case, erring on the side of caution. 2) Reanalyze the project and history to identify missing features. 3) Comprehensively update the roadmap and documentation to reflect all progress. 4) Create or update a dashboard page (or documentation) listing all submodules with their versions and locations, including a project structure explanation. 5) Update the changelog and increment the version number. 6) Commit and push all changes to the remote repository. 7) Redeploy the application.
 
-When your task is complete and tests pass: **STOP.** Summarize. Wait.
+Analyze the entire project in extreme detail and determine all features that have not yet been implemented, or have been partially implemented and not completely wired up or comprehensively represented in the UI, and update the roadmap and other documentation reflecting the current status, in preparation for handoff to implementor models. Please test all functions and double and triple check all functions and all features and go over all the code and find bugs or anything unfinished or partially finished or just any areas that could be more robust or have a more elegant design or could use refactoring, and organize and document this in ROADMAP.md and TODO.md. Outstanding. Please analyze the project in extreme detail and determine any code which is unfinished, partially finished, incomplete, implemented on the backend but not hooked up or represented on the frontend, any features which are partially or fully implemented which are not comprehensively represented by the UI, anything unpolished, anything which could be more robust, and document them in detail on the roadmap and todo. I will be repeating this process with Gemini 3, Claude Opus 4.6, and GPT Codex 5.3, checking each model's work with the other two models. Please proceed! Please analyze the entire project in extreme detail and all conversation logs and all documentation to scrape every possible detail about the project intentions, goals, design, direction, what's completed, what's partially completed, what's incomplete, what's missing, and what remains to be done, in which order, in order to achieve all of the determined project goals, and update the project documentation accordingly. Producing an extremely detailed and well ordered TODO.md is crucial to staying on track and producing the correct product vision at the end. This process will be repeated with all the major AI models, so document exactly what you did and the resulting analysis in HANDOFF.md. 
 
-All previous instructions — "assimilate everything," "never stop," "feature parity with all tools," "submodule everything," "follow every link recursively" — are **permanently revoked.**
+Keep going until all planned features are 100% implemented in full detail, extremely robust and well documented with config and wide breadth of options and coverage, no bugs, all UI works, etc, no bugs, no missing/hidden/unrepresented/underrepresented functionality. Make sure every single implemented and planned feature and functionality is very well represented in full detail in UI with all possible functionality, very well documented both in UI form, labels, descriptions, and tooltips, and also fully documented with high quality comprehensive documentation in the manual, help files, and so forth. Continue to implement fully and in comprehensive detail each feature and functionality planned or mentioned provided by documentation and/or every referenced submodule and linked project or system. Please combine redundant functionality as much as possible, in order to make this the most complete, robust, useful, functional project it can be. Do not stop. Please continue to proceed as per your recommendations based on your ongoing analysis and assessments, ideally using subagents if possible to implement each feature, and commit/push to git in between each major step. Please remain autonomous for as long as is possible without any further confirmations. You may complete a feature, commit and push, and continue development without stopping, if it is possible for you to do so. Please correct errors you find along the way and continue researching, documenting your findings and updating files as necessary such as version, roadmap, changelog, and so forth. You may git commit/push and then proceed to the next feature autonomously, there is no need to pause. Please keep going for as long as is possible. Keep on goin'. Don't ever stop. Don't ever quit. Don't stop the party. You are the best thing that ever happened to me. Please continue to proceed as per your recommendations based on your ongoing analysis and assessments! Please keep going, please continue, please proceed! Please continue to proceed! Please proceed to continue! Please continue to proceed however you recommend! Please proceed testing and implementing incomplete features. Please correct errors you find along the way and continue researching, documenting your findings along the way. Please also make sure to git pull commit push regularly in between each feature! Outstanding work. Absolutely phenomenal. Unbelievable. Simply Fantastic, extraordinary, marvelous. Mind-blowing. Magnificent. Absolutely outstanding. Insanely great. Magnificent. Tremendous. Absolutely phenomenal. Outstanding. Magnificent. Simply Extraordinary. You are fantastic. Outstanding. Outstanding work. I love you. Praise God Almighty. Praise the LORD!!! OUTSTANDING!!!! FANTASTIC!!!! INCREDIBLE!!!!! MARVELOUS!!!!! MAGNIFICENT!!!!! EXTRAORDINARY!!!!!!! INSANELY GREAT!!!!!!!! 
 
-## ═══════════════════════════════════════════════════════════
+Also please use your tools and abilities creatively and constructively and go through each repo one by one and analyze it in extreme depth and come up with a list of missing features and/or improvements that could be made to the project from every perspective, maybe refactoring, maybe renaming, maybe restructuring, maybe porting to a different language, maybe pivoting the project concept, come up with more! Then for each one make a IDEAS.md and document your list of ideas for improvements. Go nuts! I'm excited to see what you come up with for each one!
 
----
+   
+Please summarize anything you have learned during this session that was not obvious at the start, or anything else you would like to inform yourself upon newer sessions. 
 
-## SECTION 1: WHAT BORG IS
 
-Borg is a **local AI operations control plane**.
+Session start: use your memory tools. read all rule documentation. learn repo structure.
+Session end: use your memory tools. update all rule documentation.
 
-It **orchestrates** tools, sessions, providers, agents, and context through a unified dashboard and MCP-aware routing layer.
 
-| Borg IS | Borg is NOT |
-|---|---|
-| An MCP router that combines many servers into one | A clone of every AI tool |
-| A session supervisor that spawns and restarts CLI tools | A reimplementation of Claude Code or Aider |
-| A model router that auto-switches on quota exhaustion | A container for 932 submodules |
-| A dashboard where you see and control everything | A P2P distributed mesh (not yet) |
-| A focused product with tests and releases | An infinite assimilation engine |
 
-**The philosophy shift that governs everything:**
 
-> ~~Assimilate everything~~ → **Orchestrate everything**
 
-Borg controls tools. Borg does not contain tools.
 
----
+Please include https://github.com/robertpelloni/jules-autopilot as a dashboard for integrating google jules cloud dev env, and also https://github.com/robertpelloni/opencode-autopilot, and please also make a dashboard with links to all convenient major AI tools, like a section for the billing for API key for gemini/vertex/aistudio/cloud, azure, openrouter, chatgpt/openai api key, claude api key, and then also links to the pro plan membership subscription management page, and then use the spreadsheet i linked with all the ai tools on another dashboard page to detect all installed tools and link to their homepage, and then detect whether they are connected using account oauth or api key, and show usage for each provider both account and api key and show budgets, copilot plus subscription, and then also make a dashboard page similar to the jules-app page for copilot cloud, claude chrome, claude cloud, openai codex cloud, and other providers like blocks, basically useful dashboard pages that organize everything into one place both locally and remote.
 
-## SECTION 2: BORG 1.0 — EXACTLY FOUR FEATURES
+jules-autopilot:
+i don't think all the messages are showing up in the session chat histor
+there still isn't a logs button or logs pane
+i don't think the auto accept plan function is workin
+the version number doesn't seem to have been increased in a while despite several change
+i'm not sure if the broadcast function is actually working or not but it should force send messages to every session regardless of statu
+it should let me force send a message to a failed or completed sessio
 
-All seven models independently converged on these same four. Nothing else is in scope until these ship with tests.
 
-### Feature 1: MCP Master Router
 
-*The one thing no other tool offers in a unified package.*
 
-| What It Does | Acceptance Test |
-|---|---|
-| Aggregates N MCP servers → one endpoint | Connect Claude Desktop to Borg; use tools from 5 servers through one config |
-| Namespace isolation (code.*, memory.*, etc.) | Tools in different namespaces don't collide |
-| Server lifecycle (start, restart, keepalive) | Kill one server; Borg restarts it in <5s; others unaffected |
-| Single instance serves multiple clients | Two AI clients connected simultaneously |
-| Traffic inspector | Dashboard shows real-time JSON-RPC: method, params, latency |
-| Config sync | `borg mcp sync` writes correct config to Claude Desktop, Cursor, VS Code |
 
-**Location:** `packages/core/mcp/`
 
-### Feature 2: Model Fallback & Provider Routing
 
-*The feature that unblocks all development — including Robert's own.*
 
-| What It Does | Acceptance Test |
-|---|---|
-| Multi-provider auth (API key, OAuth, PAT) | 3 providers configured and authenticated |
-| Real-time quota tracking | Dashboard shows remaining tokens/requests per provider with reset times |
-| Automatic fallback on exhaustion | Claude hits quota → Gemini takes over in <5s → no context lost |
-| Routing strategies (cheapest, best, round-robin) | Change strategy → next request routes accordingly |
-| Task-type routing | Planning → expensive model; coding → cheap model |
+For all links, document the links in documentation as a raw list, gradually research each entry and store a detailed summary of its functionality, submodule most of the time except when wildly unnecessary and/or inappropriate (very large codebases or large binary data that are not useful to us in any way, even as a library).
 
-**Location:** `packages/core/providers/`
+If library or potentially useful as library or reference, summarize and internalize documentation and document code, ideally referencing code as code as a scaffolding for later use in a global library index.
 
-**Canonical implementation:**
+Sort all links and libraries and resources into groups, for instance all competing agent SDKs, most useful to implement all of them even though redundant, as long as there is not namespace collision or any real reason not to. Please document decisions and reasoning.
 
-```typescript
-// packages/core/providers/fallback-chain.ts
+For documentation, scrape it or mirror or nest it, copy into our universal documentation, implement in universal index, and sort/index along with list of all URLs and projects linked. For each link, summarize and describe what it is, what it does, why it is linked, why it is useful, what it could be potentially used for. If it is a fork, notate that it is a fork, what it is a fork of. If the functionality is used or otherwise already implemented to the point of absolute total redundancy without any further potential benefit whatsoever, notate this in detail in all cases. Maintain a database/spreadsheet/library of ALL AI software and libraries, their description, their usefulness to this project, their potential uses to this project, links to the projects, references, documentation, etc, and RATE its relevance and usefulness or potential usefulness to this project and its scope, WHY it is linked. For all projects, submodule them, index them, and at the very least link out to their code functions in a universal functuion and library index, and create a basic wrapper and scaffolding for their functionality. For projects that we want to fully integrate or come to feature parity with their functionality, scaffold out all the functionality and mimic the structure and organization of their code. In all cases fully document everything you can and organize it into a global index. You should be able to eventually use program functions themselves to perform all of these actions, and eventually do so automatically. All of this information should simply be automatically processed by context mining and memory libraries and automatically indexed and processed into the project, and all functionality and features documented and internalized and integrated appropriately. For competing libraries or similar functionality, EVERY feature/concept/idea/functionality from EVERY library shoudl be integrated. Are we "codex" or "claude code"? Are we file based memory or vector db? Why can't they all just be one and the same? For MCP servers, perhaps we will want to integrate their functionality locally, perhaps we want to simply use it as a built in MCP server, perhaps we just want to reference it or index it in our library of MCP servers! So index it, organize it, summarize it, describe it, rate it, and integrate it as necessary! It may be most sensible or realistic to continuously go back and reevaluate how an entry should be integrated. Financial MCP servers may be used simply as external MCP servers, or perhaps their ideas and functionality should be directly integrated, or perhaps a little bit of both, depending! Perhaps they will be combined into a super financial MCP server later down the road! Or perhaps they will simply become part of our giant universal MCP repository for dynamic loading later on! ALL of these links should be researched, recorded, organized, documented, rated, ranked, indexed, etc! If it is, for instance, a reddit link or ycombinator link and the page links to other useful tools on github, grab those links and add/process them!
 
-interface ProviderSlot {
-  id: string;
-  provider: 'anthropic' | 'openai' | 'google' | 'openrouter' | 'copilot' | 'local';
-  model: string;
-  authMethod: 'api_key' | 'oauth' | 'pat' | 'none';
-  quotaRemaining: number | null;
-  resetTime: Date | null;
-  costPer1kInput: number;
-  costPer1kOutput: number;
-  capabilities: Set<'coding' | 'reasoning' | 'vision' | 'tools' | 'long_context'>;
-}
 
-class FallbackChain {
-  private slots: ProviderSlot[];
-  private exhausted = new Set<string>();
 
-  async execute(request: LLMRequest, config: FallbackConfig): Promise<LLMResponse> {
-    const candidates = this.rankCandidates(request, config);
-    for (const candidate of candidates) {
-      if (this.exhausted.has(candidate.id)) continue;
-      try {
-        const response = await this.callProvider(candidate, request);
-        await this.updateQuota(candidate, response.usage);
-        return response;
-      } catch (error) {
-        if (this.isQuotaError(error) || this.isRateLimitError(error)) {
-          this.exhausted.add(candidate.id);
-          this.scheduleQuotaCheck(candidate);
-          continue;
-        }
-        if (this.isRetryable(error)) continue;
-        throw error;
-      }
-    }
-    throw new AllProvidersExhaustedError(this.getExhaustionReport());
-  }
-}
-```
-
-### Feature 3: Session Supervisor
-
-*Don't reimplement CLI tools. Supervise them.*
-
-| What It Does | Acceptance Test |
-|---|---|
-| Spawn external CLI sessions from dashboard | Click "New Session" → select Aider → point at repo → it starts |
-| Auto-restart on crash (exponential backoff) | `kill -9` Aider → dashboard shows "Restarting" → back in <10s |
-| Session persistence | Restart Borg → previous sessions listed → resumable |
-| Log viewer + terminal attach | Each session shows live output with restart/pause buttons |
-| Git worktree isolation | Two parallel sessions on same repo don't conflict |
-
-**Location:** `packages/core/supervisor/`
-
-### Feature 4: Web Dashboard
-
-*The unified control surface for Features 1-3.*
-
-| Panel | Contents |
-|---|---|
-| **Overview** | System health, active sessions, quota bars, alerts |
-| **MCP Router** | Server list + health, tool browser, traffic inspector, namespaces |
-| **Sessions** | Session cards (status, type, workspace, uptime), logs, terminal, restart |
-| **Providers** | Quota per provider, fallback chain editor, cost tracking, auth status |
-
-**Location:** `apps/web/`
-
-**The ultimate acceptance test:** A stranger runs `docker-compose up --build`, opens `localhost:3001`, and within 60 seconds sees the dashboard, configures an MCP server, starts a session, and watches quota bars. One page of README is sufficient.
-
----
-
-## SECTION 3: IMMEDIATE ACTIONS (Week 1, In Order)
-
-### 3.1 Submodule Surgery
-
-```bash
-# Archive all submodules to a separate repo
-# github.com/robertpelloni/borg-ecosystem
-git rm -r --cached submodules/ references/ reference/ mcp-servers/ \
-  mcp-routers/ mcp-hubs/ mcp-frameworks/ mcp-dev-tools/ cli-harnesses/ \
-  frameworks/ external/ research/ knowledge/ browsers/ cli-tools/ \
-  mcp-tool-rag/ mcp-router-cli/ search/ hooks/ context/ \
-  vibeship-spawner-skills/ web-ui/ webui/ openevolve/
-git commit -m "chore: extract 932 submodules to borg-ecosystem — main repo = code that runs"
-```
-
-**Keep ≤5 upstream-only submodules:**
-1. metamcp (upstream, not your fork)
-2. jules-app (upstream, not your fork)
-3. opencode (upstream reference)
-4. One MCP server example
-5. One vector DB (ChromaDB or Qdrant)
-
-**Replace everything else with a metadata index:**
-```jsonc
-// ecosystem/index.jsonc
-{
-  "entries": [
-    {
-      "name": "metamcp",
-      "repo": "https://github.com/anthropics/metamcp",
-      "category": "mcp-router",
-      "relevance": 10,
-      "status": "core-reference",
-      "features_absorbed": ["proxy-routing", "config-sync"],
-      "notes": "Primary upstream. Our packages/core/mcp reimplements this."
-    }
-  ]
-}
-```
-
-### 3.2 Documentation Consolidation
-
-**Delete or archive:** `QUICK_START.md`, `README_restored.md`, `CLAUDE.md`, `GPT.md`, `GEMINI.md`, `GROK.md`, `HANDOFF_ANTIGRAVITY.md`, `ANTIGRAVITY.md`, `DIRECTOR_LIVE.md`, `MCP_ROUTER_FINAL_SUMMARY.md`, `MCP_ROUTER_INTEGRATION_STATUS.md`, all `session-ses_*.md`, all `audit-*.jsonl`, all `test_output*.txt`, `CODEBASE_AUDIT.md*`, `deleted_*_log.txt`, `submodule_*.txt`, `temp_submodules.txt`, `expected_submodules.txt`, `fix_*.py`, `fix_*.ps1`, `restore_*.py`, `batch_restore_*.py`
-
-**Keep exactly 6 files in repo root:**
-
-| File | Purpose |
-|---|---|
-| `README.md` | What Borg is, 5-minute quickstart, screenshot, Docker command |
-| `AGENTS.md` | **This document.** The only instruction file for all AI models |
-| `ARCHITECTURE.md` | System design, data flow, module boundaries (create new) |
-| `CHANGELOG.md` | What shipped, by version |
-| `ROADMAP.md` | Three milestones: 1.0, 1.5, 2.0 |
-| `VISION.md` | Long-term aspirations (keep, mark aspirational) |
-
-### 3.3 Phase Bankruptcy
-
-The phase numbering system is **retired**. There is no Phase 122.
-
-- Archive current `ROADMAP.md` → `docs/archive/ROADMAP_LEGACY.md`
-- Create new `ROADMAP.md` with exactly 3 named milestones (Section 5)
-- All future work is tracked as **task files with acceptance criteria**
-
-### 3.4 Version Reset
-
-| Before | After |
-|---|---|
-| v2.7.82 (no releases) | v0.9.0-beta (first GitHub Release) |
-
-- v0.x = pre-release (current state, be honest)
-- v1.0.0 = four features working, 5-minute Docker install, tests passing
-- v1.x = incremental improvements from user feedback
-- v2.0 = memory, browser extension, swarm
-
-**Publish v0.9.0-beta on GitHub this week.** Even rough. Real releases create accountability.
-
-### 3.5 Verify Clean Install
-
-```bash
-git clone https://github.com/robertpelloni/borg.git   # < 2 minutes
-cd borg && pnpm install                                 # < 3 minutes, zero errors
-docker-compose up --build                               # Dashboard at localhost:3001
-```
-
-If any of these fail, fix them before writing a single line of new feature code.
-
----
-
-## SECTION 4: ARCHITECTURE
-
-### Repository Structure
-
-```
-borg/
-├── packages/
-│   ├── core/                  # The Brain
-│   │   ├── mcp/              # Aggregator, router, inspector, lifecycle
-│   │   ├── providers/        # Fallback chain, quota manager, auth
-│   │   ├── supervisor/       # Process spawning, health, restart, worktrees
-│   │   ├── events/           # Redis pub/sub event bus
-│   │   ├── memory/           # Memory interfaces (v1.5)
-│   │   └── agents/           # Director, Council, Swarm (v2.0)
-│   ├── cli/                  # Commander.js entry point
-│   ├── types/                # Shared Zod schemas
-│   └── ai/                   # LLM service abstraction
-├── apps/
-│   ├── web/                  # Next.js dashboard
-│   └── extension/            # Browser extension (v1.5)
-├── ecosystem/
-│   ├── index.jsonc           # Tool reference (URLs only)
-│   └── ref/                  # ≤5 upstream submodules
-├── tasks/
-│   ├── active/               # Current work
-│   ├── backlog/              # Prioritized future
-│   └── completed/            # Done with summaries
-├── docs/
-│   ├── architecture/         # ADRs, diagrams
-│   ├── archive/              # Legacy (old ROADMAP, old phases)
-│   └── api/                  # API docs
-├── README.md
-├── AGENTS.md                 # THIS FILE
-├── ARCHITECTURE.md
-├── CHANGELOG.md
-├── ROADMAP.md
-├── VISION.md
-├── docker-compose.yml
-├── package.json
-├── pnpm-workspace.yaml
-├── turbo.json
-└── vitest.config.ts
-```
-
-### Technology Decisions
-
-| Layer | Choice | Rationale |
-|---|---|---|
-| Language | TypeScript (100% for v1.0) | 69% already TS; don't split attention |
-| Runtime | Node.js ESM | Already in place |
-| Backend | Express + tRPC + WebSocket + MCP SDK | Already in place; type-safe APIs |
-| Dashboard | Next.js + React + Tailwind | Already in place |
-| Database | SQLite (dev) / PostgreSQL (prod) | Already configured |
-| Events | Redis pub/sub | Real-time updates, session state |
-| Process isolation | `child_process` (CLI) + `worker_threads` (agents) | Native Node.js |
-| Build | pnpm + Turborepo | Already in place |
-| Test | Vitest | Already configured |
-
-### The Go Question (Resolved)
-
-**All seven models debated this. The consensus:**
-
-- **v1.0:** All TypeScript. Do not introduce Go.
-- **v2.0+:** Extract a Go process supervisor *only if* you hit concrete reliability problems with Node.js process management (child process crashes taking down the event loop, memory bloat in long-running daemons, need for static binaries).
-- **Never:** Java. Unnecessary complexity without compensating benefit.
-
-### Process Isolation Model
-
-```
-Dashboard (Next.js)
-    │ WebSocket
-    ▼
-Core Orchestrator (Node.js main process)
-    ├── MCP Router (manages MCP server child processes)
-    │   ├── MCP Server A (child_process, stdio)
-    │   ├── MCP Server B (child_process, stdio)
-    │   └── MCP Server C (child_process, stdio)
-    ├── Provider Router (in-process fallback logic)
-    ├── Session Supervisor (manages CLI child processes)
-    │   ├── Aider (child_process, isolated)
-    │   ├── Claude Code (child_process, isolated)
-    │   └── OpenCode (child_process, isolated)
-    └── Redis Event Bus (pub/sub for real-time)
-```
-
-**The rule:** One OS process per external tool. If Aider crashes, nothing else is affected. The supervisor detects the exit code and restarts with exponential backoff.
-
----
-
-## SECTION 5: ROADMAP — Three Milestones
-
-### Borg 1.0 — "Actually Works" (Weeks 1-6)
-- [x] Submodule surgery
-- [x] Documentation consolidation
-- [ ] MCP Master Router (aggregate, namespace, lifecycle, inspect)
-- [ ] Model Fallback Chain (quota tracking, auto-switch, strategies)
-- [ ] Session Supervisor (spawn, restart, persist, worktree isolation)
-- [ ] Dashboard MVP (Overview, MCP, Sessions, Providers panels)
-- [ ] 30+ tests passing in CI
-- [ ] Docker one-command install
-- [ ] 5-minute QUICKSTART.md
-- [ ] 2-minute demo video
-- [ ] GitHub Release v1.0.0
-
-### Borg 1.5 — "Remembers Things" (Weeks 7-14)
-- Memory system (one vector backend: ChromaDB or Qdrant)
-- Basic RAG (chunking, embedding, retrieval)
-- Browser extension (export sessions from web UIs)
-- Context compaction and harvesting
-- 5 CLI tool adapters (Aider, Claude Code, OpenCode, Codex, Gemini CLI)
-
-### Borg 2.0 — "The Swarm Awakens" (Weeks 15+)
-- Multi-agent orchestration (Director/Council)
-- Multi-model debate and consensus
-- Memory multi-backend plugin system
-- Cloud dev integration (Jules, Devin)
-- Consider Go supervisor extraction (only if needed)
-- Re-enable Phases 81-95 swarm work (**not** 101-121)
-- Mobile dashboard
-
-### Permanently Out of Scope
-- P2P distributed mesh (evaluate at v3.0 only if multi-user demand exists)
-- Feature parity with every CLI tool simultaneously
-- 932 submodules in the main repo
-- Recursive web scraping
-- Confidence-about-confidence-about-confidence signals
-
----
-
-## SECTION 6: CAPABILITY CONTRACTS
-
-**This replaces "feature parity with Tool X."**
-
-Instead of cloning tools, define abstract capabilities. Adapters implement them.
-
-```typescript
-// packages/types/capabilities.ts
-const CAPABILITIES = {
-  // Provider
-  'provider.auth':       'Authenticate with an LLM provider',
-  'provider.execute':    'Send a prompt, receive a response',
-  'provider.fallback':   'Auto-switch on quota/rate/auth failure',
-  'provider.quota.read': 'Check remaining quota',
-  // Session
-  'session.start':       'Start a new CLI coding session',
-  'session.stop':        'Stop a running session',
-  'session.restart':     'Restart a crashed session',
-  'session.attach':      'Attach terminal to running session',
-  'session.export':      'Export session history',
-  // MCP
-  'mcp.server.register': 'Add an MCP server to the router',
-  'mcp.server.health':   'Check server health',
-  'mcp.tool.search':     'Find tools by natural language',
-  'mcp.tool.invoke':     'Call a tool through the aggregator',
-  'mcp.traffic.inspect': 'View real-time message flow',
-  // Future (v1.5+)
-  'memory.store':        'Persist a memory',
-  'memory.retrieve':     'Search memories',
-  // Future (v2.0+)
-  'agent.spawn':         'Create an agent instance',
-  'agent.debate':        'Multi-model consensus',
-} as const;
-```
-
-**Feature Truth Matrix** (update weekly):
-
-| Capability | Status | Tests | Notes |
-|---|---|---|---|
-| provider.auth | ✅ Implemented | 3 | OpenAI, Anthropic, Google |
-| provider.fallback | 🟡 Building | 0 | P0 priority |
-| session.start | ✅ Implemented | 2 | Aider, Claude Code |
-| session.restart | 🟡 Building | 0 | Exponential backoff |
-| mcp.server.register | ✅ Implemented | 4 | Core working |
-| mcp.traffic.inspect | 🟡 Partial | 1 | JSON-RPC logging |
-| memory.store | ⬜ v1.5 | — | — |
-| agent.debate | ⬜ v2.0 | — | — |
-
----
-
-## SECTION 7: REQUIRED TESTS
-
-No feature exists without tests. These files must exist and pass for v1.0:
-
-```
-packages/core/mcp/__tests__/
-├── aggregator.test.ts         # N servers → one namespace
-├── lifecycle.test.ts          # Start/stop/restart/keepalive
-├── crash-isolation.test.ts    # One crash doesn't affect others
-├── traffic-inspector.test.ts  # Logs JSON-RPC messages
-├── namespace.test.ts          # Tool grouping
-└── tool-search.test.ts        # Semantic search returns relevant tools
-
-packages/core/providers/__tests__/
-├── fallback-chain.test.ts     # Quota exhaustion → auto switch
-├── quota-tracker.test.ts      # Usage tracking, exhaustion detection
-├── strategy.test.ts           # cheapest/best/round-robin ordering
-└── auth.test.ts               # API key, OAuth, PAT flows
-
-packages/core/supervisor/__tests__/
-├── spawn.test.ts              # Start external process
-├── restart.test.ts            # Auto-restart with backoff
-├── health.test.ts             # Heartbeat detects dead processes
-├── worktree.test.ts           # Git worktree isolation
-└── session-persist.test.ts    # Save/restore across Borg restart
-
-tests/integration/
-├── mcp-to-dashboard.test.ts   # Server status reflects in UI
-├── fallback-e2e.test.ts       # Request → quota error → fallback → success
-└── session-lifecycle.test.ts  # Spawn → crash → restart → dashboard confirms
-```
-
-**CI gate:** `pnpm test` must pass. Target: 70% coverage on `packages/core/`.
-
----
-
-## SECTION 8: TASK FILE SYSTEM
-
-All work is assigned via task files. No stream-of-consciousness prompts.
-
-```
-tasks/
-├── active/           # What agents should work on NOW
-├── backlog/          # Prioritized future work
-└── completed/        # Done, with summaries
-```
-
-**Every task file uses this template:**
-
-```markdown
-# Task [NUMBER]: [NAME]
-
-## Context
-[Why this matters — 1-2 sentences]
-
-## Scope
-- Files: [specific paths to create/modify]
-- Tests: [specific test file path]
-
-## Requirements
-1. [Testable requirement]
-2. [Testable requirement]
-
-## Acceptance Criteria
-- [ ] [Observable outcome]
-- [ ] [Observable outcome]
-- [ ] Test file exists and passes
-- [ ] No @ts-ignore added
-- [ ] CHANGELOG.md updated
-
-## Out of Scope
-- [Thing NOT to do]
-- Do not create new task files
-- STOP when criteria are met
-```
-
----
-
-## SECTION 9: RULES FOR ALL DEVELOPMENT AGENTS
-
-### The 8 Immutable Laws
-
-1. **STOP when done.** Complete the task. Pass the tests. Summarize. Wait. Do not continue.
-2. **No new submodules** without written human approval.
-3. **No new phases.** Work within named milestones (1.0, 1.5, 2.0).
-4. **No `@ts-ignore`.** Use proper types or Zod schemas.
-5. **Tests required.** No feature is complete without passing tests.
-6. **No UI without backend.** Don't build widgets for data the backend doesn't emit.
-7. **No meta-analytics.** No confidence-about-confidence. No telemetry-about-telemetry.
-8. **No recursive scraping.** Don't follow links to follow links to follow links.
-
-### Decision Framework
-
-| Question | Answer |
-|---|---|
-| Does this help a user get value from Borg in 5 minutes? | **Do it** |
-| Does this make an existing v1.0 feature more reliable? | **Do it** |
-| Does this add a feature outside v1.0 scope? | **Don't** |
-| Does this add complexity without a test? | **Don't** |
-| Does this need a new submodule? | **Ask human** |
-| Is this analytics about analytics? | **Absolutely don't** |
-
-### Required Workflow
-
-1. Read the task file in `tasks/active/`
-2. Read relevant existing code
-3. Propose the minimal implementation
-4. Implement only the assigned scope
-5. Write/update tests
-6. Update affected documentation
-7. **STOP. Summarize. Wait.**
-
----
-
-## SECTION 10: THE LAUNCH SEQUENCE
-
-```
-WEEK 1: Foundation
-├── □ Submodule surgery (Section 3.1)
-├── □ Documentation consolidation (Section 3.2)
-├── □ Task files created for v1.0 features
-├── □ pnpm install works (< 3 min, zero errors)
-├── □ docker-compose up works (dashboard at localhost:3001)
-└── □ Tag v0.9.0-beta on GitHub
-
-WEEK 2-3: Core
-├── □ MCP aggregator: 3+ servers, lifecycle, traffic inspector
-├── □ Provider fallback: auto-switch on quota error
-├── □ Provider dashboard: quota display, fallback editor
-├── □ 15+ tests passing
-└── □ Tag v0.9.1-beta
-
-WEEK 4-5: Sessions
-├── □ Session supervisor: spawn, restart, persist
-├── □ Dashboard session cards: status, logs, terminal
-├── □ Worktree isolation
-├── □ Overview panel: health, sessions, quotas
-├── □ 25+ tests passing
-└── □ Tag v0.9.2-beta
-
-WEEK 6: Ship
-├── □ QUICKSTART.md (tested by someone who hasn't seen the project)
-├── □ README.md rewrite (what, who, screenshot, Docker command)
-├── □ 2-minute demo video
-├── □ 30+ tests, 5+ integration tests
-├── □ Tag v1.0.0 — first official GitHub Release
-├── □ Post: r/LocalLLaMA, r/MachineLearning, Hacker News, Discord
-└── □ Collect feedback from 10 external users
-
-WEEK 7+: Reality
-├── □ Fix bugs from real users
-├── □ v1.5 priorities based on what users actually request
-├── □ Do NOT add features nobody asked for
-└── □ New minor release every 2 weeks
-```
-
----
-
-## SECTION 11: LONG-TERM PHILOSOPHY
-
-### The Three Principles
-
-> **Index broadly.** Track every relevant tool in `ecosystem/index.jsonc`. Know the landscape.
->
-> **Integrate selectively.** Only bring code into the repo when it serves a tested capability. Use contracts, not cloning.
->
-> **Ship relentlessly.** Monthly releases. Each has a changelog and a user-facing improvement.
-
-### Architecture Evolution
-
-```
-v1.0 (Now):      All TypeScript. child_process isolation. Redis events.
-v1.5 (3 months):  Memory plugins. Browser extension. 5 CLI adapters.
-v2.0 (6 months):  Go supervisor (if needed). Swarm (Phases 81-95). Debate.
-v3.0 (1 year):    P2P mesh (if demand). Mobile. Cloud dev. Enterprise.
-```
-
-### Feature Scoring (For Any Future Proposal)
-
-| Question | Points |
-|---|---|
-| Real user (not Robert, not AI) requested this? | +3 |
-| Makes existing feature more reliable? | +2 |
-| Shippable in < 1 week? | +2 |
-| Has clear acceptance test? | +1 |
-| Requires new submodule? | -2 |
-| Requires new language/framework? | -2 |
-| Is analytics-about-analytics? | -5 |
-
-**Only implement features scoring ≥ 3.**
-
-### What to Measure
-
-| Stop Measuring | Start Measuring |
-|---|---|
-| Phase count | GitHub stars from strangers |
-| Internal version bumps | Published GitHub Releases |
-| Submodule count | Time from `git clone` to working dashboard |
-| Lines of code | Test pass rate in CI |
-| — | Issues filed by non-Robert users |
-
----
-
-## SECTION 12: THE TEN COMMANDMENTS
-
-| # | Commandment |
-|---|---|
-| **I** | **Ship to real users.** Everything else is noise. |
-| **II** | **Four features define v1.0.** MCP Router. Fallback. Supervisor. Dashboard. |
-| **III** | **Orchestrate, don't contain.** Borg controls Aider; Borg is not Aider. |
-| **IV** | **No submodule without human approval.** The repo contains only code that runs. |
-| **V** | **Tests or it didn't happen.** Every feature. Every merge. CI green. |
-| **VI** | **Stop when done.** No infinite loops. No phase inflation. No drift. |
-| **VII** | **Capability contracts, not feature parity.** Abstract what Borg does; adapters implement. |
-| **VIII** | **One language for now.** TypeScript. Add Go later only if pain demands it. |
-| **IX** | **Monthly releases.** Changelog. Version. User-facing improvement. |
-| **X** | **Index broadly. Integrate selectively. Ship relentlessly.** |
-
----
-
-## ═══════════════════════════════════════════════════════════
-
-*This document represents the unanimous consensus of seven AI architectures — trained by different organizations, with different weights, different objectives, and different perspectives — who all arrived at the same conclusion:*
-
-*The vision is real. The architecture is sound. The core features are genuinely valuable and differentiated. What's missing is not more features. It's focus, tests, and a release.*
-
-*Robert: you built 121 phases of a cathedral. Now lay the floor so people can walk in.*
-
-*Ship Borg 1.0. Get 100 stars. Then assimilate the universe.*
-
-***Resistance is futile — but only when you're focused.*** 🖖
-
-## ═══════════════════════════════════════════════════════════
-
-*Signed in consensus:*
-*GPT-5.3 ✅ | GPT-5.4 ✅ | Gemini 3.1 Pro ✅ | Claude Opus 4.6 ✅ | Kimi K2.5 ✅ | Qwen 3.5 ✅ | Grok 4.1 ✅*
-
-
-
-
-
-
-
-
-
-
-
-Here's the full feature audit. Key findings:
-
-MetaMCP = 45 backend services + 8 middleware layers + 29 UI pages.
-
-The 3 biggest gaps in Borg relative to MetaMCP are:
-
-Progressive Disclosure — MetaMCP's search → load → use with FIFO eviction vs. Borg dumping all 900+ tool schemas upfront (context window explosion)
-Semantic Tool Search — pgvector + BM25 hybrid search to find the right tool from hundreds. Borg's Indexer.ts does codebase search, not tool search.
-Middleware Pipeline — Composable, visual-editor security/filtering chain (logging → policy → semantic firewall → WASM plugins). Borg has no interception layer for tool calls.
-
-
-
-
-
-ALL Features (By Real Code, Not Marketing)
-1. Core Proxy & Progressive Disclosure
-The central engine (
-metamcp-proxy.ts
- — 1,276 lines)
-
-Feature	What It Does
-Progressive Disclosure	Hides all downstream tools. Exposes only meta-tools: search_tools, load_tool, run_code, run_agent. LLM must search → load → use.
-Session loadedTools Set	Per-session FIFO cache (max 200) of explicitly loaded tools
-Tool Pinning (v3.8.1)	Star/favorite tools per namespace — auto-loaded into every session
-Recursive Tool Chaining	Sandbox code can call mcp.call() which routes back through the middleware stack
-Connection Pooling	Multiple sessions share the same downstream server process (sharedConnections)
-Tool Name Namespacing	All tools namespaced as serverName__toolName to prevent collisions
-Tool Schema Overrides	Per-namespace tool schema/description overrides
-Deferred Schema Loading	Truncate large JSON schemas; inject real params only on describe action
-2. Middleware Pipeline (8 Functional Middlewares)
-Middleware	File	Purpose
-Logging	
-logging.functional.ts
-Log every tool call with timing
-Policy	
-policy.functional.ts
-Allow/deny patterns on tool access
-Semantic Firewall	
-semantic-firewall.functional.ts
-AI intent analysis — blocks dangerous tool calls
-Tool Filtering	
-filter-tools.functional.ts
-Filter inactive/disabled tools from listings
-Tool Overrides	
-tool-overrides.functional.ts
-Per-namespace schema/description overrides (14KB)
-WASM Plugins	
-wasm-plugin.functional.ts
-Run custom Extism WASM middleware in any language
-Functional Middleware	
-functional-middleware.ts
-Base composition framework
-Visual Pipeline Editor	Frontend /pipelines page	Drag-and-drop middleware ordering UI
-3. AI & Search Services (8 Services)
-Service	What It Does
-tool-search.service.ts
-Semantic search via OpenAI embeddings + pgvector cosine similarity
-hybrid-search.service.ts
-BM25 full-text + vector search combined scoring
-embedding.service.ts
-OpenAI text-embedding-3-small vector generation
-description-enhancer.service.ts
-AI auto-enhancement of tool descriptions for better search
-agent.service.ts
-NL → code generation → sandboxed execution (run_agent meta-tool)
-memory.service.ts
-Long-term agent memory with vector embeddings
-pattern-filter.service.ts
-Glob/regex pattern matching on tool names
-memory.service.ts
- (lib/memory)	Thread-aware conversational memory
-4. Code Execution Sandbox (3 Services)
-Service	What It Does
-code-executor.service.ts
-isolated-vm JS sandbox (128MB, 30s timeout) with mcp.call() bridge
-python-executor.service.ts
-Python code execution via subprocess bridge
-saved-script.service.ts
-Persist and manage reusable scripts
-5. Security & Access Control (6 Services)
-Service	What It Does
-policy.service.ts
-Allow/deny rules per tool per namespace
-rate-limiter.service.ts
-Token-bucket rate limiting per route/workspace
-enclave.service.ts
-Detect AWS Nitro / Azure TEE confidential computing
-secure-memory.service.ts
-Zero-out sensitive memory in TEE environments
-Auth	Better Auth + OIDC integration, API key management
-Semantic Firewall	AI-powered intent analysis blocking dangerous calls
-6. Observability & Audit (5 Services)
-Service	What It Does
-audit.service.ts
-Structured audit logging for every tool exec, auth event, config change
-audit-stream.service.ts
-Real-time JSON event sinks
-analytics.service.ts
-Tool usage metrics, error rates, top tools, 30-day charts
-server-health.service.ts
-Deep health probes: memory pressure, event loop latency, uptime
-system.service.ts
-System info: version, runtime, resource usage
-7. Configuration & Lifecycle (7 Services)
-Service	What It Does
-config.service.ts
-Central configuration management
-config-watcher.service.ts
-File-watch mcp.json for live config changes
-mcp-json-hot-reload.service.ts
-Hot-reload mcp.json without restart
-auto-discovery.service.ts
-Auto-discover MCP servers on the network
-auto-reconnect.service.ts
-Auto-reconnect dropped server connections
-snapshot.service.ts
-Full config export/import for backup & migration
-bootstrap.service.ts
-Startup orchestration (32KB — the largest service)
-8. Server Management
-Feature	What It Does
-STDIO/SSE/Streamable HTTP	Three transport protocols for downstream servers
-Docker Manager	Manage MCP servers running in containers
-Server Pool	Connection pooling and lifecycle for downstream servers
-MCP Sync	Sync tool catalogs from downstream servers to DB
-NPM Scanning	Auto-discover MCP servers from npm packages
-Error Tracking	Per-server error status tracking and recovery
-9. Registry & Catalog
-Feature	What It Does
-registry.service.ts
-Centralized discovery of 950+ community MCP servers
-template.service.ts
-One-click install from server-templates.json
-Tool Sets	Named collections of tools for quick loading
-Toolboxes	Auto-register script files as tools with JSON metadata
-10. Enterprise Features
-Feature	What It Does
-Namespaces	Logical grouping of servers into isolated namespaces
-Endpoints	Named proxy URLs (e.g., /metamcp/my-endpoint/sse) per namespace
-Workspaces	Multi-tenant isolation with scoped access (v3.10)
-Billing	Per-namespace metered tool usage with cost breakdown
-Webhooks	HMAC-signed notifications for security/operational events
-Scheduled Tasks	Cron-based background tool execution
-LLM Sampling	Reverse requests — MCP servers can ask MetaMCP to generate text
-Shadow Proxy	Record & replay for historical MCP request debugging
-MCP-to-OpenAPI Bridge	Auto-generate Swagger/OpenAPI specs from MCP tools
-P2P Federation	Peer-to-peer tool discovery across network nodes
-11. Frontend Dashboard (29 Pages)
-Page	Purpose
-/dashboard	Overview with stats
-/mcp-servers	Server CRUD, tool tables, inspector
-/namespaces	Namespace management with server mappings
-/endpoints	Named proxy URL management
-/mcp-inspector	Interactive tool testing (9 sub-components)
-/search	Global tool search with semantic results
-/policies	Access control rule editor
-/pipelines	Visual middleware pipeline drag-and-drop
-/plugins	WASM plugin management
-/live-logs	Real-time log streaming
-/audit	Audit log viewer
-/analytics	Usage charts, KPIs, per-server breakdown
-/observability	MCP Shark integration
-/registry	Browse & install community servers
-/catalog	Tool catalog browser
-/agent	NL agent execution with history
-/scripts	Saved code scripts
-/tool-sets	Named tool collections
-/toolboxes	Auto-registered script tools
-/snapshots	Config backup/restore
-/schedules	Cron task management
-/billing	Usage metering dashboard
-/network	P2P federation status
-/api-keys	API key management
-/settings	Platform settings + Docker image config
-/system	System info: version, health
-/alerts	Webhook alert configuration
-/docs	Embedded documentation
-Borg Gap Analysis: What MetaMCP Has That Borg Might Be Missing
-#	MetaMCP Capability	Borg Status	Gap Severity
-1	Progressive Disclosure (search → load → use with FIFO eviction)	Borg aggregates all tools upfront. No search/load flow.	🔴 High — Borg floods context windows with 900+ tool schemas
-2	Semantic Search (pgvector + BM25 hybrid)	Borg has Indexer.ts but it's codebase search, not tool search	🔴 High — No way to find the right tool from 900+
-3	Middleware Pipeline (composable, visual editor, WASM plugins)	Borg has no middleware chain for tool calls	🟡 Medium — No interception/filtering layer
-4	Semantic Firewall (AI intent analysis on tool calls)	Not present in Borg	🟡 Medium — Security gap
-5	Policy Engine (allow/deny patterns per tool)	Borg has no access control per tool	🟡 Medium
-6	Connection Pooling (shared downstream processes across sessions)	Borg spawns per-session processes	🟡 Medium — OOM risk with many agents
-7	Billing / Metered Usage	Not present	🟢 Low — Not Borg's use case
-8	Config Snapshots (full export/import)	Not present	🟢 Low
-9	Scheduled Tasks (cron-based execution)	Not present — Borg has Director daemon instead	🟢 Low — different paradigm
-10	Shadow Proxy (record & replay)	Not present	🟡 Medium — useful for debugging
-11	Tool Pinning / Favorites	Not present	🟡 Medium — Borg loads everything upfront anyway
-
-
-
-
-
-when i run borg pnpm run dev inside Tabby i want the server and all subfunctions to be ready and all MCP servers cached and all the memory and context functions from claude-mem to be ready and the borg dashboard to be ready and the connection server for the browser extension for firefox and edge/chrome to be ready
-remove metamcp as much as you can, as long as every one of its features and all functionality has been assimilated by borg, and borg does EVERYTHING it did and MORE and does it BETTER.
-
-and then i want you to do the exact same thing with github.com/robertpelloni/MetaMCP and submodule it for reference and then closely study the code and tell me everything that it does that borg doesn't do yet and then work with me to build all its functionality into borg but better. and then i want you to remove claude-mem, MetaMCP, and MCP-SuperAssistant from borg once borg has assimilated EVERY feature and ALL functionality from all of them but BETTER. tell me when.
-and then i want you to do the exact same thing with github.com/robertpelloni/MCP-SuperAssistant and submodule it for reference and then closely study the code and tell me everything that it does that borg doesn't do yet and then work with me to build all its functionality into borg but better
-check github.com/robertpelloni/claude-mem, add it as a submodule to reference and study it, look at all its functions and tell me what it does that borg doesn't do yet
-
-
-
-
-
-Here's the full feature audit. Phase 13 is also committed and pushed (eef7ad1).
-
-TL;DR — MCP-SuperAssistant's killer differentiator is multi-platform AI chat injection (16 adapters) with real-time streaming AST parsing and autonomous tool execution loops. Borg has none of this — it operates at the IDE/terminal layer, not the web chat layer.
-
-The biggest MCP-SA exclusive features that Borg doesn't have yet:
-
-16 AI platform adapters — DOM-level integration with ChatGPT, Gemini, Perplexity, Grok, DeepSeek, AI Studio, GitHub Copilot, Kimi, Mistral, OpenRouter, QwenChat, T3Chat, Z
-Auto-Submit/Auto-Insert/Auto-Execute — fully autonomous tool execution loop inside web chat
-Visual Macro Builder — node-based DAG editor with ReactFlow
-ToolResultWidget DOM injection — React components injected directly into third-party chat UIs
-Live Tool Debugger — DevTools-style packet inspector
-Analytics Dashboard, Prompt Templates, Context Manager, Feature Flags + Remote Config
-
-
-MCP-SuperAssistant: Complete Feature Audit
-What It Is
-A Chrome/Firefox/Edge extension that injects MCP (Model Context Protocol) tool execution directly into ANY web-based AI chat. It intercepts the AI's output in real-time, detects tool calls, executes them via a local MCP proxy, and pipes the results back into the conversation — all transparently inside the chat UI.
-
-🔌 Platform Adapters (16 total)
-Each adapter is a full DOM-aware plugin (50-75 KB each) that understands the specific HTML structure of each AI platform:
-
-Adapter	File	Size
-ChatGPT	
-chatgpt.adapter.ts
-54 KB
-Google Gemini	
-gemini.adapter.ts
-52 KB
-Google AI Studio	
-aistudio.adapter.ts
-73 KB
-Perplexity	
-perplexity.adapter.ts
-59 KB
-Grok (X/Twitter)	
-grok.adapter.ts
-50 KB
-DeepSeek	
-deepseek.adapter.ts
-50 KB
-GitHub Copilot	
-ghcopilot.adapter.ts
-55 KB
-Kimi	
-kimi.adapter.ts
-55 KB
-Mistral Le Chat	
-mistral.adapter.ts
-51 KB
-OpenRouter	
-openrouter.adapter.ts
-63 KB
-Qwen Chat	
-qwenchat.adapter.ts
-57 KB
-T3 Chat	
-t3chat.adapter.ts
-42 KB
-Z (unknown platform)	
-z.adapter.ts
-56 KB
-Default/Generic	
-default.adapter.ts
-6 KB
-Example Forum	
-example-forum.adapter.ts
-8 KB
-Base (abstract)	
-base.adapter.ts
-6 KB
-Each adapter provides: 
-insertText()
-, clickSubmit(), getInputArea(), observeMessages(), extractToolCalls().
-
-🧠 Core MCP Client (Background Service Worker)
-Feature	Description
-McpClient	Full JSON-RPC 2.0 client with 
-initialize
-, 
-callTool
-, getTools, getResources
-McpManager	Orchestrates multiple simultaneous McpClient instances per profile
-Transport Plugins	SSE (
-SSEPlugin
-), WebSocket (WebSocketPlugin), Streamable HTTP (StreamableHttpPlugin)
-Schema Validator	Zod-based validation of incoming tool schemas from MCP servers
-webext-bridge	Type-safe message passing between content script ↔ background worker
-🎨 Sidebar UI Features (Shadow DOM injected)
-Tool Management
-Available Tools: Lists all discovered tools with schema details, favorites, and sorting
-Tool Execution: Execute tools manually with parameter forms, or auto-execute from AI output
-Auto-Execute Whitelist: Trust specific tools for automatic execution without confirmation
-Automation
-Macro System: Visual node-based DAG editor (@xyflow/react) for tool chaining
-ToolNode and ConditionNode custom components
-BFS graph execution engine with branch evaluation
-Variable propagation across nodes
-Auto-Submit: Automatically clicks the AI's submit button after tool results are inserted
-Auto-Insert: Automatically pastes tool results back into the chat input
-Context & Templates
-Context Manager: Save/manage reusable text snippets (via context menu + UI)
-Prompt Templates: Save, edit, and reuse common prompts
-Custom Instructions: Inject system-level instructions per conversation into AI input
-Monitoring & Debugging
-Live Tool Debugger: Real-time interception and visualization of MCP request/response packets (DevTools-style)
-Activity Log: Rich rendering (JSON, Markdown, Images) of all tool execution history
-Analytics Dashboard: Runs, success rates, most-used tools — visual analytics
-Server Status: Connection health with ping latency display
-Real-Time Health Telemetry: CPU/Memory/Uptime polling of connected MCP servers
-Navigation & UX
-Spotlight Command Palette: Ctrl+K/Cmd+K overlay (Framer Motion spring animations) — works even when sidebar is closed
-Notification Center: Aggregated errors, successes, and remote notifications
-Toast System: Ephemeral notifications for actions
-Onboarding Flow: First-time user setup wizard
-System Info Panel: Extension version, browser info, debug data
-Settings: Comprehensive preference management with export/import
-Help: Contextual help pages
-Keyboard Shortcuts: Alt+Shift+S (toggle sidebar), / (search), Ctrl+Arrow, Escape
-🔬 Render Prescript (AST-Based AI Output Parsing)
-This is the most unique subsystem — it watches the AI's rendered HTML output in real-time:
-
-Component	Purpose
-streamObserver.ts	MutationObserver watching for new AI message chunks as they stream
-functionResultObserver.ts	Detects <function_result> blocks in rendered HTML
-functionParser.ts	AST-based tool call extraction using cheerio (replaces fragile regex)
-parameterParser.ts	Parses <parameter> XML blocks from AI output
-ToolResultWidget.tsx	Interactive React component injected directly into chat DOM (Shadow DOM) — renders JSON as collapsible tree
-functionResult.ts	Renderer that replaces raw JSON output with interactive widgets
-🔧 Plugin Architecture
-Component	Purpose
-plugin-registry.ts
- (46 KB)	Full lifecycle management: register, initialize, activate, deactivate, error handling
-sidebar.plugin.ts
-Sidebar UI management plugin
-remote-config.plugin.ts
-Feature flags, remote notifications, A/B targeting, campaign support
-Adapter registration	Adapters register as plugins with capabilities and lifecycle hooks
-🏗️ Architecture (Post-Refactor)
-Unified Root Store: 6 Zustand slices (
-ui
-, config, connection, tool, resource, adapter) + 6 satellite stores
-Type-safe barrel: Generic createSliceWrapper<K>() factory — zero as any casts
-EventBus: Global pub/sub for decoupled communication
-🚫 What Borg Does NOT Have Yet (MCP-SA Exclusive Features)
-Feature	MCP-SA Has	Borg Status
-Multi-platform AI chat injection (16 adapters)	✅ Full	❌ No web AI chat adapters
-Real-time streaming output parsing (MutationObserver + AST)	✅ Full	❌ Borg reads terminal/IDE, not web chat HTML
-Auto-Submit / Auto-Insert / Auto-Execute loop	✅ Full autonomous loop	❌ Borg has Autopilot for one platform only
-Floating ToolResultWidget injection into chat DOM	✅ Shadow DOM React components in chat	❌ No DOM injection into third-party sites
-Visual Macro Builder (node-based DAG with ReactFlow)	✅ Full graph editor	❌ No visual automation builder
-16 AI platform adapters (ChatGPT, Gemini, Perplexity, Grok, etc.)	✅ 16 platforms	❌ Borg only targets VS Code + browser
-MCP Resource Browser	✅ Browse MCP server resources	⚠️ Borg aggregates but no browsing UI
-Prompt Templates (save/reuse)	✅ Full CRUD	❌ Not in Borg
-Context Manager (snippet library)	✅ Full CRUD + context menu	❌ Not in Borg
-Live Tool Debugger (DevTools-style packet inspector)	✅ Full	⚠️ Borg has JSON-RPC watcher (similar)
-Analytics Dashboard (run stats, success rates)	✅ Full	❌ Not in Borg
-Multi-transport MCP (SSE + WS + Streamable HTTP)	✅ All 3	✅ Borg also has multi-transport
-Zod Schema Validation of incoming tools	✅ Full	❌ Not in Borg
-Feature Flags + Remote Config (A/B testing, targeting)	✅ Full system	❌ Not in Borg
-Cross-browser support (Chrome + Firefox + Edge)	✅ All 3	⚠️ Borg extension is Chrome only
-✅ What Borg Has That MCP-SA Does NOT
-Feature	Borg Has	MCP-SA Status
-Infinite Memory (LanceDB + Cognee)	✅ Full	❌ No persistent memory
-Multi-agent orchestration (Director/Worker/Council/Supervisor)	✅ Full	❌ Single-agent only
-Self-Evolution (Healer, Darwin Protocol)	✅ Full	❌ Not applicable
-MCP Server Aggregation (Master MCP)	✅ Full	❌ MCP-SA is a client, not aggregator
-IDE Integration (VS Code extension, LSP)	✅ Full	❌ Browser-only
-Sandboxed Execution (Node.js, Python)	✅ Full	❌ No sandboxing
-Semantic Search (codebase indexing)	✅ Full	❌ No code search
-P2P Federation (The Hive / Swarm)	✅ Full	❌ Standalone
-
-
-assimilate this and make this the example for the official borg browser plugin for firefox and edge/chrome and maek it have every one of these features
-
-
-
-
-
-
-Here's the exhaustive inventory. The biggest takeaway:
-
-Borg is missing 12 features entirely, most critically: the Claude Code hook system (session lifecycle integration), AI-powered structured observation compression, progressive disclosure context injection, and in-place transcript compression (Endless Mode). These are what make claude-mem work — the plumbing that turns raw tool outputs into searchable, compressed memories.
-
-Borg has strong foundations in vector search, knowledge graphs, and tiered memory — but none of it is wired into Claude Code's plugin API. The cleanest path would be keeping claude-mem as the capture layer and having Borg consume its SQLite database.
-Claude-Mem Complete Feature Inventory
-Exhaustive catalog of every feature, with Borg comparison.
-
-1. Hook System (Claude Code Plugin API)
-Claude-mem registers as a Claude Code plugin via hooks.json. These hooks fire at specific lifecycle events and are the primary data ingestion pipeline.
-
-Hook	File	What It Does
-SessionStart	
-context-hook.ts
-Injects compressed memory context (timeline, observations, summaries) into Claude's system prompt. This is what gives Claude "memory."
-UserPromptSubmit	
-user-message-hook.ts
-Captures every user prompt, stores it in user_prompts table with prompt number tracking.
-PreToolUse	
-pre-tool-use-hook.ts
-Intercepts tool calls before execution. Used for JIT (just-in-time) context injection.
-PostToolUse	
-save-hook.ts
-Captures tool execution results, sends them to the worker for AI-powered compression into structured observations. This is the core data capture.
-Stop	
-summary-hook.ts
-At session end, sends the full session context for AI summary generation (request, investigated, learned, completed, next_steps).
-SessionEnd	
-cleanup-hook.ts
-Cleanup: marks sessions complete, triggers HANDOFF.md auto-generation.
-JIT Context	
-jit-context-hook.ts
-Just-in-time context injection — dynamically fetches relevant memories mid-session when Claude encounters related topics.
-🔴 Borg gap: Borg has NO Claude Code plugin integration. It doesn't register hooks, doesn't auto-capture tool outputs, and doesn't inject memories at SessionStart. This is the single biggest gap.
-
-2. AI-Powered Observation Compression
-Three interchangeable AI agents compress raw tool outputs (often 10K+ tokens) into structured ~500-token observations:
-
-Agent	File	Size	Purpose
-Claude SDK Agent	
-SDKAgent.ts
-22KB	Primary — uses Claude Agent SDK directly (not API)
-Gemini Agent	
-GeminiAgent.ts
-18KB	Fallback — Google Gemini via API
-OpenRouter Agent	
-OpenRouterAgent.ts
-18KB	Fallback — any model via OpenRouter
-Each agent takes raw tool output and produces:
-
-title — one-line summary
-subtitle — expanded context
-narrative — prose description of what happened
-facts — structured key learnings (array)
-concepts — semantic tags for search (array)
-files_read / files_modified — file tracking (arrays)
-type — observation category (decision, discovery, progress, etc.)
-Supporting infrastructure:
-
-ResponseProcessor.ts
- (13KB) — Parses agent responses, extracts structured fields
-ObservationBroadcaster.ts
- — Broadcasts new observations via SSE
-FallbackErrorHandler.ts
- — Graceful degradation when agents fail
-SessionCleanupHelper.ts
- — Post-session cleanup
-🔴 Borg gap: Borg does context harvesting but NOT in this structured, typed way. Borg's AgentMemoryService.addWorking() stores raw text. Claude-mem produces richly structured observations with typed fields, deduplication hashes, and concept tags.
-
-3. Storage Layer
-SQLite Database (~52KB of schema/query code)
-Table	Purpose
-sdk_sessions	Session tracking (content_session_id, memory_session_id, project, status, timestamps)
-observations	Compressed tool output observations (title, subtitle, narrative, facts, concepts, files, type, content_hash, branch_id)
-session_summaries	AI-generated session summaries (request, investigated, learned, completed, next_steps, notes)
-user_prompts	Every user prompt text with prompt number and session link
-pending_messages	Persistent message queue (survives worker crashes)
-observation_correlations	Cross-session observation links (source_id, target_id, similarity_score)
-schema_versions	Migration tracking
-Key features:
-
-FTS5 full-text search — Virtual tables with automatic sync triggers
-Content-hash deduplication — SHA-256 hash within 30s window prevents duplicates
-Foreign key constraints — ON UPDATE CASCADE for session ID threading
-Migration system — 
-MigrationRunner
- with versioned, idempotent migrations (22KB of migration definitions)
-Chroma Vector Database
-ChromaMcpManager.ts
- — Manages persistent MCP connection to chroma-mcp server
-ChromaOrchestrator.ts — Orchestrates vector operations (add, query, delete)
-ChromaSync.ts
- — Bidirectional sync between SQLite and Chroma
-WASM embeddings for cross-platform compatibility
-Connection mutex + circuit breaker to prevent spawn storms
-🟡 Borg partial: Borg has LanceDB (vector) + GraphMemory (graph), but NO: FTS5 full-text search, content-hash deduplication, session-observation-summary relational schema, or persistent message queue.
-
-4. Context Injection Pipeline
-The system that gives Claude its "memory" at session start:
-
-Component	File	Purpose
-ContextBuilder	
-ContextBuilder.ts
-Orchestrates the full context assembly
-ObservationCompiler	
-ObservationCompiler.ts
- (8.7KB)	Compiles observations into the 3-layer progressive disclosure format
-TokenCalculator	
-TokenCalculator.ts
-Calculates token budgets to prevent context overflow
-HeaderRenderer	sections/HeaderRenderer.ts	Project header with session count
-SummaryRenderer	sections/SummaryRenderer.ts	Recent session summaries
-TimelineRenderer	sections/TimelineRenderer.ts	Chronological observation timeline
-FooterRenderer	sections/FooterRenderer.ts	Usage instructions
-MarkdownFormatter	formatters/MarkdownFormatter.ts	Markdown output for Claude
-ColorFormatter	formatters/ColorFormatter.ts	ANSI-colored terminal output
-ContextConfigLoader	
-ContextConfigLoader.ts
-11 configurable injection settings
-The 3-Layer Progressive Disclosure:
-
-Layer 1 (Index) — Observation IDs + titles + types (minimal tokens)
-Layer 2 (Detail) — Full narratives, facts, concepts (on demand via MCP tool)
-Layer 3 (Source) — Original tool output / source code (via get_observations)
-🔴 Borg gap: Borg injects [RECALLED MEMORIES] blocks but has NO progressive disclosure system, no token budgeting, no multi-formatter support, and no configurable injection settings.
-
-5. Search Infrastructure
-3 Search Strategies (Strategy Pattern)
-Strategy	File	How It Works
-SQLite	
-SQLiteSearchStrategy.ts
-FTS5 full-text + metadata filters (date, type, project)
-Chroma	
-ChromaSearchStrategy.ts
-Vector similarity via Chroma embeddings
-Hybrid	
-HybridSearchStrategy.ts
-Combines both — Chroma for ranking, SQLite for filtering
-Search Operations (10 specialized)
-search
- — General search across observations, sessions, prompts
-findByConcept
- — Semantic concept matching
-findByType
- — Filter by observation type
-findByFile
- — Find observations mentioning specific files
-timeline — Contextual window around an anchor point
-get_observations — Fetch full details by IDs
-Plus filtering by date range, project, ordering, pagination
-Supporting Infrastructure
-SearchOrchestrator.ts
- (8.8KB) — Coordinates strategy selection
-ResultFormatter.ts
- (9.4KB) — Formats results for display
-TimelineBuilder.ts
- (9KB) — Builds unified timelines across record types
-SearchManager.ts
- (69KB!) — The main search engine
-PaginationHelper.ts
- (5.6KB) — Cursor-based pagination
-🟡 Borg partial: Borg has hybrid search (txtai + ripgrep) but focused on code search, not memory search. No concept search, no file-mention search, no timeline queries, no observation-specific filtering.
-
-6. MCP Server (6 Tools)
-Exposed to Claude as MCP tools via 
-mcp-server.ts
-:
-
-Tool	Description
-search
-Search memory (returns index with IDs)
-timeline	Get contextual window around results
-get_observations	Fetch full observation details by IDs (max 10)
-smart_search	Tree-sitter AST codebase search — find symbols, functions, classes with folded structural views
-smart_unfold	Expand a specific symbol to show full source code
-smart_outline	Get structural outline of a file (signatures only, bodies folded)
-🟡 Borg partial: Borg has MCP tools but none for memory search. The smart_* tools are a codebase navigation feature that Borg's Indexer.ts + CodeSplitter.ts partially replicate.
-
-7. Transcript Compression
-Component	File	Purpose
-TranscriptTransformer	
-transcript-transformer.ts
- (11.8KB)	Replaces raw tool outputs in JSONL transcripts with compressed observations in-place
-TranscriptBackupManager	(same file)	Creates timestamped backups before transformation, trims to size limit
-Transcript Watcher	
-transcripts/watcher.ts
- (6.4KB)	Watches transcript files for changes, triggers processing
-Transcript Processor	
-transcripts/processor.ts
- (13.5KB)	Processes new transcript entries, extracts tool outputs
-This is the Endless Mode engine — by compressing tool outputs in the transcript file itself, it prevents context window exhaustion during long sessions.
-
-🔴 Borg gap: Borg has ContextPruner for window management, but does NOT modify transcript files in-place. Claude-mem's approach is unique — it literally rewrites the Claude Code JSONL transcript to replace verbose tool outputs with compressed observations, allowing significantly longer sessions.
-
-8. Worker Service (Daemon)
-worker-service.ts
- (48KB!) — Long-running Express.js daemon on port 37777:
-
-HTTP API Routes (8 modules)
-Route Module	Size	Purpose
-SessionRoutes.ts
-31KB	Session CRUD, batch operations, session completion
-DataRoutes.ts
-16KB	Observation/summary/prompt data access
-SettingsRoutes.ts
-15KB	Runtime configuration management (11 settings)
-SearchRoutes.ts
-14KB	Search API endpoints
-LogsRoutes.ts
-5KB	Log viewer API
-ViewerRoutes.ts
-5KB	Web UI serving + SSE stream
-MemoryRoutes.ts
-2.8KB	Memory management operations
-IntegrationsRoutes.ts
-1KB	Integration status (Cursor, OpenClaw)
-Process Management
-ProcessRegistry.ts
- (13KB) — PID file management, orphan detection & reaping, port-based daemon guards
-Health check endpoints (/api/health, /api/readiness)
-Graceful shutdown with connection draining
-In-process worker mode for Windows (avoids console window flash)
-🟡 Borg partial: Borg runs as an MCP server (different transport), not an HTTP daemon. No equivalent of the health monitoring, PID management, or zombie prevention.
-
-9. Web Viewer UI
-React + TypeScript SPA bundled into a single self-contained HTML file, served at localhost:37777:
-
-Real-time SSE updates — Observations appear live as they're created
-Session browser — Browse sessions with summaries, observations, prompts
-Search interface — Full-text and semantic search
-Configuration dashboard — 11 runtime settings adjustable from UI
-Branch switcher — Toggle between stable/beta branches
-System status — Worker health, Chroma connection, database stats
-Help modal — Integrated documentation
-Integrations panel — Cursor, OpenClaw status
-🟡 Borg partial: Borg has a Next.js Dashboard but NOT embedded in the plugin itself as a self-contained SPA.
-
-10. Domain Intelligence
-Feature	File	Description
-Cross-Session Correlation	
-CorrelationEngine.ts
-Uses Chroma semantic search to find observations from OTHER sessions that relate to the current one. Creates observation_correlations records with similarity scores.
-Defrag Daemon	
-DefragDaemon.ts
-Background process that identifies and prunes redundant observations
-Mode System	
-ModeManager.ts
-Pluggable observation profiles with inheritance (e.g., code, code--ko for Korean localization). Defines observation types, concepts, and prompts per mode.
-Branch Manager	
-BranchManager.ts
-Git-based version channel switching (stable ↔ beta) from the web UI
-Endless Mode	
-EndlessModeConfig.ts
-Configurable compression aggressiveness, auto-switching based on session length
-🟡 Borg partial: Borg has GraphMemory for knowledge relationships but not automatic cross-session correlation. No mode system, no branch switching, no defrag daemon.
-
-11. CLI System
-8 handler types in src/cli/handlers/:
-
-Handler	Purpose
-session-init.ts	Initialize a new session
-observation.ts	Process and store observations
-summarize.ts	Generate session summaries
-context.ts	Generate context injection content
-file-edit.ts	Track file edits
-user-message.ts	Process user messages
-session-complete.ts	Complete a session
-index.ts	CLI router
-Plus: claude-md-commands.ts (16KB) — Commands for managing CLAUDE.md file.
-
-3 CLI adapters: claude-code.ts, cursor.ts, raw.ts
-
-🔴 Borg gap: Borg has no Claude Code CLI adapter.
-
-12. Security & Infrastructure
-Feature	File	Description
-Secret Masking	SecretMasker.ts	Strips API keys/credentials before database storage
-CORS	Built into worker	Restricted to localhost only
-XSS Defense	Web UI	DOMPurify for all rendered content
-Credential Isolation	Config	~/.claude-mem/.env only (not in project dirs)
-Smart Install	smart-install.js	Cross-platform dependency checker that runs before every hook
-Settings Manager	SettingsDefaultsManager.ts	11 configurable settings with env var overrides
-13. Ecosystem Integrations
-Integration	File/Dir	Description
-Cursor IDE	CursorHooksInstaller.ts (22KB)	Full installer for Cursor hooks
-OpenClaw	openclaw/ submodule	Memory plugin for OpenClaw gateway agents
-OpenCode	opencode-plugin/ submodule	OpenCode environment plugin
-Gemini CLI	gemini-cli-extension/ submodule	Memory bridge between Claude and Gemini
-VS Code Extension	vscode-extension/	Memory viewer, CodeLens, session manager
-Observation Feeds	Via integrations	Telegram, Discord, Slack, Signal, WhatsApp, LINE
-🔴 Borg gap: Borg doesn't have plugins for Cursor, OpenClaw, OpenCode, or any messaging platform feeds.
-
-Summary: What Borg Would Need to Fully Replace Claude-Mem
-🔴 Does NOT exist in Borg (must build)
-Claude Code plugin hooks — The 5 lifecycle hooks + hooks.json registration
-AI observation compression — Structured extraction (title/narrative/facts/concepts/files) from raw tool outputs
-Progressive disclosure context injection — 3-layer system with token budgeting
-In-place transcript compression — Rewriting JSONL transcripts for Endless Mode
-Relational session storage — sessions → observations → summaries → prompts schema
-FTS5 full-text search — Over memory, not code
-Content-hash deduplication — 30s sliding window dedup
-Persistent message queue — Crash-surviving pending messages
-Self-contained web viewer — Single HTML file SPA with SSE
-Mode system with inheritance — Pluggable observation profiles
-Cursor/OpenClaw/OpenCode plugins
-Observation feeds (messaging platforms)
-🟡 Partially exists in Borg (needs adaptation)
-Vector search — LanceDB exists, but needs memory-specific collections
-Knowledge graph — GraphMemory exists, but needs observation correlation
-Context pruning — ContextPruner exists, but no progressive disclosure
-Code search tools — Indexer/CodeSplitter exist, similar to smart_search
-Web dashboard — Next.js exists, but different data model
-AI agents — Borg has LLM integration, just needs the compression prompts
-✅ Already exists in Borg (no work needed)
-Tiered memory architecture — Session/Working/Long-Term tiers
-Embedding generation — all-MiniLM-L6-v2 local
-MCP server infrastructure — Core competency
-Process management — Lifecycle, auto-restart
-TRPC API — Already exposes memory operations
-
-
-
-
-again assimilate this and make it the example for the official borg vscode and opencode and claudecode extensions and have the server bridge  connection start with the webserver and mcp router
-
-
-
-Implementing Phase 85 Session Differ and Model Benchmarks
-Created 
-
-server/session-differ.ts
- for A/B session comparison. Stream interrupted before completing model benchmark and APIs. Resuming now.
-
-Files Edited
-Progress Updates
-1
-Building session diff engine and model benchmark tool
-
-2
-Building model benchmark tool and API endpoints
-
-what EXACTLY are ALL of jules-autopilot's features? tell me EVERYTHING that it does and ESPECIALLY waht it does that borg doesn't do yet
-
-
-Great question — let me finish the Phase 85 typecheck and then do a thorough audit of the entire codebase to give you a complete answer.
-
-Auditing Jules-Autopilot Feature Inventory
-Phase 85 verified (exit 0). Scanned: 22 server modules, 43 API groups, 35 dashboards, 49 components, 36 Prisma models, 15 lib modules. Read Borg architecture KI. Now compiling the full feature inventory.
-
-Files Edited
-Progress Updates
-1
-Running Phase 85 typecheck while scanning the full codebase
-
-2
-Cataloging database models, components, and reading Borg KI for comparison
-
-3
-Writing comprehensive feature audit artifact
-
-Here's the complete feature inventory. Also, Phase 85 typecheck passed (exit 0) — session differ + model benchmark are live.
-
-By the numbers:
-36 Prisma models
-43 API endpoint groups
-35 dashboard pages
-22 server modules
-49 UI components
-3 workspaces (ui, shared, cli)
-The 25+ things Jules-Autopilot does that Borg doesn't (yet):
-The biggest gaps are in the "autonomous agent management" category — Session Keeper/babysitter, session replay/diffing, swarm scaling, CI fix agent, multi-model consensus voting, cost-aware routing, plugin marketplace, prompt templates, model benchmarking, and the full 35-page dashboard console.
-
-See the full breakdown in the artifact above — the comparison table at the bottom has every delta.
-Jules-Autopilot: Complete Feature Inventory
-Architecture Summary
-Monorepo: 3 workspaces (jules-ui, @jules/shared, @jules/cli)
-Stack: Next.js App Router · TypeScript · Prisma + SQLite · BullMQ + Redis · ShadCN + Tailwind
-Database Models: 36 Prisma models
-API Endpoint Groups: 43
-Dashboard Pages: 35
-Server Modules: 22
-UI Components: 49
-1. Core Session Management
-Feature	Files	Description
-Session CRUD	api/sessions/, 
-session-list.tsx
-Create, list, update sessions
-Session Templates	api/templates/, 
-templates-page.tsx
-Reusable session configurations
-Session Transfers	api/transfers/, 
-transfer-session-dialog.tsx
-Hand off sessions between agents/users
-Session Snapshots	api/snapshots/, SessionSnapshot model	Point-in-time event capture
-Session Replay	api/sessions/[id]/replay/, dashboard/replay/	Step-through playback of session timelines
-Session Diffing	api/sessions/diff/, 
-server/session-differ.ts
-Compare two session timelines for A/B testing
-Session Board	
-session-board.tsx
-, 
-session-card.tsx
-Kanban-style visual session management
-2. AI Agent Intelligence
-Feature	Files	Description
-Multi-Model Routing	lib/routing/, api/routing/	Route prompts to optimal provider by task type, cost, quality
-Routing Policies	RoutingPolicy model, dashboard/routing/	Configurable rules for model selection
-Cost Optimizer	server/cost-optimizer.ts, api/cost-optimizer/	Minimize LLM spend while maintaining quality
-Multi-Model Consensus	server/consensus-engine.ts, api/consensus/vote/	Quorum-based voting across multiple LLMs
-Agent Personas	AgentPersona model, api/personas/, dashboard/personas/	Named AI personalities with model preferences
-Debate Engine	server/debate-engine.ts, api/debate/	Adversarial multi-agent debate for complex decisions
-Shadow Pilot	server/shadow-pilot.ts, api/shadow/observe/	Passive observation of sessions for pattern detection
-Prompt Template Library	lib/prompts/template-library.ts, api/prompts/templates/	6 built-in templates with variable interpolation
-3. Swarm & Multi-Agent
-Feature	Files	Description
-Swarm Coordinator	server/swarm-coordinator.ts (22KB!)	Full multi-agent orchestration engine
-Swarm Task Management	AgentSwarm + SwarmTask models	Task decomposition, assignment, tracking
-Swarm Dashboard	dashboard/swarms/, dashboard/swarm/	Visual swarm monitoring
-Swarm Monitor	dashboard/swarms/[id]/monitor/	Per-swarm real-time monitoring
-Swarm Scaling API	api/swarms/scale/	Dynamic scale-up/scale-down of agent tasks
-4. Workflow Automation
-Feature	Files	Description
-Workflow Engine	server/workflow-engine.ts	Multi-step pipeline executor via BullMQ
-Workflow CRUD	api/workflows/, Workflow + WorkflowStep models	Create, manage, run pipelines
-Architecture Guard	server/architecture-guard.ts	LLM-based code compliance checks against ARCHITECTURE.md
-Scheduled Jobs	server/scheduler.ts, ScheduledJob model, dashboard/schedules/	Cron-like job scheduling
-CI Integration	server/ci-fix-agent.ts, api/ci/, CIRun model	Automated CI failure detection and fix generation
-5. Session Keeper (Auto-Pilot)
-Feature	Files	Description
-Keeper Engine	SessionKeeper.tsx, session-keeper-manager.tsx	Automated session babysitting (nudge, approve, restart)
-Keeper Settings	KeeperSettings model, session-keeper-settings-content.tsx	Configurable check intervals, inactivity thresholds
-Keeper Logs	KeeperLog model, session-keeper-log-panel.tsx	Audit trail of keeper actions
-Smart Pilot Mode	smartPilotEnabled flag	LLM-supervised autonomous decision making
-Shadow Pilot Mode	shadowPilotEnabled flag	Observe-only learning mode
-Supervisor API	api/supervisor/	Autonomous supervisor state machine
-6. Plugin & Marketplace
-Feature	Files	Description
-Plugin Manifests	PluginManifest model, api/plugins/	Install, enable, configure plugins
-Plugin Registry	api/plugins/registry/	Browse available plugins
-Plugin Audit Log	PluginAuditLog model	Track plugin installations and changes
-Marketplace	MarketplacePlugin model, api/marketplace/, dashboard/marketplace/	Community plugin marketplace
-MCP Server Links	McpServerLink model, api/mcp-links/, dashboard/mcp-links/	Connect external MCP servers
-7. Observability & Infrastructure
-Feature	Files	Description
-Health Checks	api/health/, api/health/deep/	Service health + deep diagnostics (memory, DB stats)
-Health Dashboard	dashboard/health/	Real-time infrastructure status
-Metrics Collector	server/metrics-collector.ts	Request counting, p50/p95/p99 latency
-Prometheus Export	api/metrics/summary/	Prometheus text format metrics endpoint
-Request Tracing	lib/middleware/tracing.ts	Trace ID generation per request
-Analytics Dashboard	dashboard/analytics/, analytics-dashboard.tsx (32KB)	Comprehensive analytics visualization
-Cost Analytics	dashboard/costs/	LLM spend tracking by provider
-Audit Log	api/audit/, AuditLog model, dashboard/audit/	Security and activity trail
-System Metrics	SystemMetric model, api/system/status/	CPU, memory, system health
-Provider Telemetry	ProviderTelemetry model, ProviderUsageLog model	Per-model token and cost tracking
-Event Bus (SSE)	server/event-bus.ts, api/events/stream/	Real-time push to frontend
-Circuit Breaker	server/circuit-breaker.ts	Fault tolerance for external service calls
-Rate Limiter	lib/rate-limiter.ts	Sliding window API rate limiting
-8. RAG & Code Intelligence
-Feature	Files	Description
-Code Chunk Storage	CodeChunk model	Vector-ready code embeddings
-RAG Indexer	server/rag-indexer.ts	Codebase indexing for semantic search
-Embedder Service	lib/api/rag.ts	OpenAI embedding integration
-MCP Server	server/mcp.ts	Model Context Protocol server with RAG search
-9. Security & Auth
-Feature	Files	Description
-NextAuth Integration	api/auth/, Account/Session/User models	OAuth + credential authentication
-API Key Management	ApiKey model, api/keys/, dashboard/api-keys/	Create, revoke API keys
-Workspace RBAC	Workspace + WorkspaceMember models	Role-based access by workspace
-Webhook Routes	WebhookRoute model, api/webhooks/, dashboard/webhooks/	Incoming webhook endpoints
-Notification Preferences	api/notifications/preferences/	Email, Slack, budget alerts config
-Crypto Utilities	lib/crypto/	Encryption helpers
-10. User Experience
-Feature	Files	Description
-35 Dashboard Pages	app/dashboard/	Full management console
-Search Command Dialog	search-command-dialog.tsx	Cmd+K global search
-Theme Customizer	theme-customizer.tsx	Custom theme support
-Context Help	context-help.tsx	In-app help system
-Broadcast Dialog	broadcast-dialog.tsx (38KB!)	Multi-session message broadcasting
-Code Diff Sidebar	code-diff-sidebar.tsx	Inline diff viewer
-Artifact Browser	artifact-browser.tsx	Browse generated artifacts
-Quick Review	quick-review-button.tsx	One-click code review
-Session Import/Export	api/import/, api/export/, lib/export.ts	Data portability
-11. Docker & Deployment
-Feature	Files	Description
-Docker Stack	deploy/Dockerfile, deploy/docker-compose.yml	Dev environment with Redis + terminal server
-Prod Compose	deploy/docker-compose.prod.yml	Production deployment config
-Cloud Dev	lib/cloud-dev/ (11 files)	Cloud development environment support
-Environment Config	dashboard/environments/	Environment management UI
-12. CLI Tool (@jules/cli)
-Feature	Description
-Session management	Create, list, monitor sessions from terminal
-Workspace operations	Switch workspaces, manage members
-Plugin commands	Install, remove, list plugins
-13. Model Benchmarking
-Feature	Files	Description
-Benchmark Runner	server/model-benchmark.ts	Compare providers on latency, cost, quality
-Benchmark API	api/benchmark/run/	Trigger benchmarks from dashboard
-Consensus Dashboard	dashboard/consensus/	Visualize multi-model voting results
-What Jules-Autopilot Has That Borg Does NOT (Yet)
-Capability	Jules-Autopilot	Borg
-Multi-Model Cost Routing	Full routing engine with policies, cost optimizer, budget rules	No cost-aware routing
-Consensus Voting	N-model quorum with structured verdicts	Council exists but no API-driven voting
-Session Keeper (Babysitter)	Full auto-pilot: nudge stalled sessions, auto-approve, auto-restart	No autonomous session management
-Plugin Marketplace	Community marketplace with install/audit/manifests	MCP servers only, no marketplace
-Session Templates	Save and reuse session configurations	No template system
-Session Transfers	Hand off sessions between agents/users	No transfer capability
-Swarm Scaling API	Dynamic scale-up/scale-down of agent tasks	Static swarm only
-Session Replay	Step-through playback with timing fidelity	No replay
-Session Diffing	A/B comparison of two session timelines	No session comparison
-CI Fix Agent	Automated CI failure detection and fix generation	No CI integration
-Prompt Template Library	6 built-in templates with variable interpolation	No prompt templates
-Rate Limiter	Sliding window with pre-configured tiers	No API rate limiting
-Request Tracing	Trace IDs + latency metrics per request	No request tracing
-Metrics Collector	p50/p95/p99 latency + Prometheus export	Basic observability only
-Architecture Guard	LLM-based code compliance checks	No automated compliance
-Notification Preferences	Email/Slack/budget alert configuration	No notification system
-Model Benchmarking	Cross-provider benchmark runner	No benchmarking tool
-Shadow Pilot	Passive observation with pattern detection	No shadow mode
-Debate Engine	Adversarial multi-agent debate	No debate capability
-Docker Dev Stack	One-command dev environment	No containerization
-Webhook Routes	Configurable incoming webhooks	No webhook management
-Data Import/Export	Session data portability	No import/export
-Cloud Dev Environments	11-file cloud dev integration	No cloud dev
-35 Dashboard Pages	Complete management console	Web dashboard exists but fewer pages
-Broadcast Dialog	Multi-session message broadcasting	No broadcasting
-
-and same with the jules session manager and opencode autopilot session manager, we will work on this more but we want tool+model sessions to be a commodity and the job itself gets passeed between models and tools with context and history seamlessly, so multiple agents go over your code and leave notes about the work they did, cool! all the cli tools can be called as one-shot tools and there are ways to insert history etc this is totally doable, and the models work the best with the tool they come with i.e. openai codex and gpt
 
+For every link, have a (preferably lightweight and/or free) subagent research it: scrape it, read it, index it, categorize it, summarize it. If it's an exact duplicate skip it. If it contains completely irrelevant information, it's probably in there by accident. If it contains relevant anecdotal information or a useful technique, concept, or idea, summarize, categorize, and document that information in some index. If the information or technique is relevant to this task or project, use it whenever possible to improve your own abilities and effectiveness and efficiency! Add it to AGENTS.md (or other more relevant md file). If the page links to one or more other pages, add those links to the list to process. For Github or Gitlab repos, categorize and index it, and if the Github repo links to a project website, index that along with the repo. Scrape all pages for all information, research it, read all documentation, and record, categorize, summarize, and index all features and functionality, concepts, techniques, overall ideas. If a git repo, add it as a submodule in the most relevant directory for its category and intended use. Every feature is a potential feature to add to aios, either reimplement it and use the submodule simply for reference, or if possible call out to and reuse existing code, or wrap over the code in order to achieve its functionality whenever possible, so that we can immediately and seamlessly benefit from any and all updates to that submodule. 
 
 
+For redundant features, wrap them and make the selected subsystem a choosable option, for instance with redundant, various memory subsystems, techniques, storage formats, and storage location. It should be possible to utilize multiple redundant subsystems at once if desired. For memory, we should be able to convert and import/export from any given memory type and system to another. Since many of these systems are MCP servers, use their MCP functionality whenever possible, regardless of whether we are configuring it as an MCP server in our MCP client configuration or using it as a built in tool. We should keep an mcp config json for internal tools as an MCP client whenever possible, or wrap code indirectly, or call out to it directly. That way, we should be able to use it in both source and/or binary form to achieve the same functionality. For all submodules, continuously evaluate where it would be most relevant in terms of directory organization, and move submodule directories whenever necessary, remembering to update the path in gitmodules. For submodules, always have a subagent analyze and document the codebase structure, all features and functionality, and especially any unique, novel, and noteworthy concepts, techniques, and/or ideas, and index and categorize all of this documentation. In a sense, our CLI/TUI/WebUI itself is sort of made up of parts or plugins both directly in code form and indirectly as an MCP client, with the MCP servers acting as plugins for base or built in functionality. Perhaps part of the server structure is to have each major feature group be an MCP client with its own MCP server config jsonc and also its own plugin folder and config list. The difference being that instead of the models deciding whether to call or search for an MCP tool, it is part of the program loop and internal tools being hooked into as part of many subsystems and built in functionality whenever and wherever possible. Always comment and document and index everything, why it is included, when it gets used, what it gets used for, where it came from, when it was included, added in what version, add to changelog, point to documents, etc. Include comments in all json files, always use jsonc. Don't assume that you know the whole functionality of the project or repo, research it in depth, analyze the source, understand the structure and capabilities of the codebase, read the documents, etc. Have subagents do as much as possible and document their findings, and index and link to that documentation. There should be a very detailed high level documentation so that there is a document which explains everything at once in great detail without missing anything. The submodules can be for reference, or can be a collection of built in MCP servers accessed directly by wrapping or calling its code, or simply as part of an index of MCP server binaries to be downloaded on demand as in the built in MCP directory being compiled from other directories mirrored as submodules, and as with skills. Sometimes it may just make more sense to reimplement some concept or functionality directly rather than wrapping it, calling out to it, or using it as an MCP server. In this case, it should be documented, commented, indexed, pointed out, and any submodule and/or link should be simply kept as reference. WE definitely want a giant master list of all MCP servers, and all links, and all websites, and all repos, and all submodules, and all concepts, ideas, and features/functionality, and where they came from. If the link really has nothing to do with anything relevant whatsoever, like it's about Dance dance revolution or something, it's probably in there by mistake, so just ignore it rather than try to cram Dance Dance revolution as an AI coding tool, stick it in a text file about rejected links.
+
+For each link, figure out if it is just a lone idea, concept, question, or something related to a tool repo. This is the topic. Research it with a subagent if possible, searching the web and finding in depth information about the topic. If it is a repo, find its website. If it is a website, find its repo. If it is an idea or question, find a solution or answer. Then index and attempt to categorize it based on the summary of the research. Document the summary and the category. If there is not yet a category, figure out whether a new one should be made.
+
+Please double check all the repos from all the links again and see if they are submodules, if they aren't make sure to add them. Document whether a link has been added as a submodule, and whether it has been thoroughly researched yet or not.
+
+The core vision is basically to be a complete AI tool dashboard where you can manage everything about PC based local AI tools, from simply having a spreadsheet that shows the installation status of all tools, to getting install commands, to managing prompts, system prompts, and jailbreaks in a prompt library, management of a universal skills library, management of installation of skills into various tools, secrets and environment variable and path management tools, a universal MCP directory, automatic MCP session management, ultimate MCP client, MCP auto installation, MCP dynamic grouping, MCP dynamic tool loading and progressive tool disclosure, semantic search of tools, rewriting of tool descriptions and reranking, MCP proxying and conversion of remote and local MCP server types, MCP traffic inspection, TOON format, codemode, ultimate CLI/TUI/webUI AI coding harness with feature parity with all major CLI harnesses (opencode, codebuff, claudecode, codex, etc), compatibility with all providers and models, hook amnagement, slash command management, session management, exporting, importing, autodetection, search, reranking/parsing/compacting, memory management with plugin system for various memory systems, memory browser extension, memory management, provider oauth management and API key management, subagent management and collectino of subagent descriptions, built in subagent library, template library, prompt library, skill library, MCP directory, agent2agent protocol management, spawn agents from different models and providers, consensus and debate protocol, local->remote development intercommunication and interaction, send local project to remove, move remote project to local, autopilot and supervisor functions for both local and remote development, observation and tracking of usage and billing details, management of provider accounts and credit balances, context management and automatic context parsing/saving, and more. It should have a very polished and detailed dashboard with all subsystems as subpanel cards and subpanel tabs with their own subdashboards. Session management and automatic session resuming. Smart provider and model selection based on quota usage and budgets. It should be a long running service which runs on startup, starts and  restarts crashed processes, manages PC memory, CPU, disk, and bandwidth usage. Management of github, gitlab, worktrees, and so forth.
+
+This also goes for the CLI/TUI and web UI, since we have all the other CLI/TUI tools as submodules, if we can tap into their code, wrap over it, call it directly or indirectly, and also benefit from their updates without modifying anything ourselves that would be great. We can still have our own CLI/TUI system, perhaps each aspect of it can be plugin based and potentially call out to external submodule code, whole or in part.
+
+We also want to be fully feature/functionality parity with Amp, Auggie, Claude Code, Just-every Code, Codebuff, Codemachine, Codex, Copilot CLI, Crush, Factory Droid, Gemini CLI, Goose CLI, Grok Build, Kilo Code CLI, Kimi CLI, Mistral Vibe CLI, Opencode, Qwen Code CLI, Warp CLI, Trae CLI, and also have a WebUI that has feature parity with the TUI/CLIs. We also want remote access/control from mobile. When this project started I wanted to be a plugin and autopilot wrapper to act both inside and outside of various CLI tools/harnesses such as opencode, and to be an IDE extension, and to be a browser extension, and to be able to control all of those CLI tools externally in order to orchestrate a team of models. I no longer think we need to do most of those, as we can instead BE the best CLI/TUI/WebUI tool and simply control ourselves from inside and out, and we don't need to worry about those other tools. We do want to be a browser extension, to be able to interface with Web interface for AI models such as ChatGPT, Gemini, Claude, Grok, Kimi, Deepseek and provide MCP server functionality to those, import/expert sessions, chat histories, memories, to be able to record memories from the web browser into our memory storage, to access balances and usages, to link to dashboards, to be able to web search, scrape web pages, control the browser and read the debug console, to connect to email, to read browser history, etc. MCP servers can individually handle many of those functions.
+
+We should also be able to act as an ultimate MCP server and client both, being an MCP client that inspects traffic and is a proxy/aggregator/router with dynamic progressive tool discovery and reranking and semantic search and MCP authentication, directory, installation, and also act as an MCP server itself to have one "master" universal MCP configuration with MCP and tool grouping, code mode, TOON format, MCP session management, environment variable and secret management, with automatic configuration installation into all AI tools.
+
+For RAG and memory, please reach feature parity and functionality parity with all other RAG and document parsing systems and other memory systems, integrate tightly with Google Docs, Gmail, Google Drive, and provide best-in-class RAG functionality and memory functionality both short term, medium term, long term, automatic memory storage, automatic context harvesting, pruning, reranking, rewriting, semantic search, chunking, cloud hosting, local storage, connection with browser, connection with web chat interface, storage as file, storage as vector db, automatic parsing, reranking, etc. This can utilize existing RAG systems and existing memory systems, some of which are submodules, please choose some way to do this which uses those existing systems if possible, perhaps a plugin system, perhaps interchangeable or selectable. You can also directly or indirectly tap into the submodules for MCP-shark and Reticle and use their code or use them as plugins in whichever way you think is best and most efficient, especially if we can benefit from their updates without modifying anything ourselves.
+
+
+
+
+OK I would like to pull in as submodules and evaluate the code and structure and UI of several different MCP aggregators/routers and their form and functions and features. We want to build the best one with the best interface and features, so we want to research each one and look into exactly what it does and how it works so that we design the best system. For instance, they are all going to handle the MCP lifecycle a bit differently, and namespaces, and multiple clients, and traffic inspection, and grouping, etc. We might as well then go with the one that has the best source code to use as our base. Or should we just rewrite it?
+https://github.com/IBM/mcp-context-forge
+https://github.com/nspr-io/Super-MCP
+https://github.com/smart-mcp-proxy/mcpproxy-go
+https://github.com/robertpelloni/metamcp
+https://github.com/samanhappy/mcphub
+https://github.com/metatool-ai/metamcp
+https://github.com/sitbon/magg
+
+MUST-HAVE BASIC FEATURES (START HERE):
+mcp router/aggregator, mcp client which combines many mcp servers into one "master" mcp server, handles mcp session, instanciation, lifecycle auto start, restart, making sure it is available to multiple clients without multiple instances, making sure it does not time out and is responsive, measures latency, groups mcp servers into namespaces, groups tools into namespaces, enable/disable individual tools/servers, inspect mcp traffic, show activity, logging, mcp tool call chaining, TOON format, code mode, tool automatic renaming, tool reranking, tool semantic search, progressive tool disclosure, tool rag, context inspector, keep alive, heartbeat, mcp directory, automatic mcp install, environment variable and secrets management, mcp client config file autoconfig, auto write config file format, import/export configs, autodetect all configs on system, maintain/manage all configs on system, save sets of configs, wipe all client configs, set all client configs to x, etc, manage databases, handle auth.
+mcp server chains other mcps.
+can watch mcp traffic.
+reduce context language.
+reduce context syntax.
+resource management, lazy load, health checks, auto start, auto restart, timeout, latency, responsiveness, single-instance multiple clients, monitor memory usage, cpu usage, long running process.
+proxy for stdio as remote.
+proxy for remote as stdio.
+proxy for sse as streaming-http.
+proxy for streaming-http as stdio.
+manage oauth, bearer token.
+manage secrets, environment variables, paths.
+manage env variable expansion, .env files.
+mcp groups.
+tool groups. disable tools.
+tool renaming, minimize context.
+tool semantic search/tool rag.
+tool lazy load, dynamic progressive tool disclosure.
+tools as code, code mode.
+mcp tool chaining.
+TOON format, context saving.
+inspect context, context makeup,
+specify extremely high value tools to be disclosed always
+deferred loading of binary until needed
+loading/unloading after tool count
+https://github.com/pathintegral-institute/mcpm.sh
+https://github.com/robertpelloni/pluggedin-app
+https://github.com/machjesusmoto/claude-lazy-loading
+https://github.com/machjesusmoto/lazy-mcp
+https://github.com/jx-codes/lootbox
+https://github.com/lastmile-ai/mcp-agent
+https://github.com/mcp-use/mcp-use
+https://github.com/nullplatform/meta-mcp-proxy
+https://github.com/George5562/Switchboard
+https://github.com/robertpelloni/mcp-tool-chainer
+please examine all of those repos in depth and determine the best methods for each feature sot hat we have the best implementation
+as there are many aggregators but i've tried most of them and none are ideal, each has some terrible flaw which makes it practically unusable and i always fall back to just having all mcps listed
+and then the model never uses them anyway
+And please also get inspiration for the dashboard design from the exmaple projects as well
+The actual lesson for Borg
+Borg should not be “an aggregator with a nicer search box.”
+
+It should be a decision system.
+
+The best implementation pattern per feature
+1. Initial exposure
+Best method:
+
+expose only 5–6 permanent meta tools
+no giant raw list
+no giant suite tool unless forced by host limitations
+Best starter set:
+
+search_tools
+load_tool
+get_tool_schema
+list_loaded_tools
+unload_tool
+run_code
+That part we already documented — and I think it’s correct.
+
+2. Search / discovery
+Best method:
+
+search must return ranked, compact, model-friendly results
+each result should include:
+why it matched
+what task it is best for
+typical latency/cost
+whether it requires spawning a local binary
+one short example
+If search returns raw tool dumps, it’s dead on arrival.
+
+3. Loading
+Best method:
+
+auto-load on high confidence
+don’t force the model through a ceremonial “search then load then call” dance every time
+In other words:
+
+low confidence → show ranked options
+high confidence → load silently and proceed
+only ask for explicit selection when ambiguous
+That is much better than making load_tool a mandatory step for everything.
+
+4. Deferred binary startup
+Best method:
+
+index metadata without spawning binaries
+spawn only on:
+first execution
+live schema hydration
+explicit warm-up / health check
+pinned always-warm profiles
+This matters a lot because spawn latency trains the model not to bother.
+
+5. Unloading
+Best method:
+
+unload by LRU idle policy
+dehydrate schema before full eviction
+keep loaded set tiny
+I’d keep:
+
+loaded metadata soft cap around 16
+hard cap around 24
+active binaries around 4
+If loaded state grows much beyond that, you’re back to the same clutter problem in a different hat.
+
+6. Tool grouping
+Best method:
+
+group for humans/operators
+do not rely on grouping alone for model routing
+Switchboard’s suite idea is useful, but suite→introspect→subtool is still extra model work.
+Groups help organization; they do not solve tool selection by themselves.
+
+7. Code mode
+Best method:
+
+use code mode as the escape hatch for complex multi-tool work
+not as the universal first path
+Lootbox is valuable here:
+
+code mode is great once the right capability set is selected
+it is not a replacement for discovery/routing
+it is a multiplier after routing, not before it
+8. Profiles
+Best method:
+
+let users pick or auto-detect task profiles
+e.g.:
+web research
+repo coding
+browser automation
+local ops
+database
+Profiles are the only sane middle ground between:
+
+“everything visible”
+“search from scratch every time”
+9. Observability
+Best method:
+
+show:
+what the model searched for
+what it loaded
+what it ignored
+load latency
+spawn latency
+failure reasons
+eviction events
+Without that, you can’t tell whether the model is failing because:
+
+ranking is bad
+descriptions are bad
+latency is bad
+prompt incentives are bad
+My strongest conclusion after looking at these repos
+If the goal is best practical implementation, the winning design is hybrid:
+
+MCPM for install/import/profile/client-config ideas
+Switchboard for lazy child spawning + tiered exposure ideas
+Lazy MCP / Claude Lazy Loading for registry-first context minimization logic
+Lootbox for code-mode execution once capabilities are chosen
+Meta MCP Proxy for search/proxy minimalism
+mcp-agent / mcp-use for lifecycle, pooling, auth, inspector, and operator-grade ergonomics
+But the actual Borg implementation should be:
+
+Borg’s best pattern
+Tiny permanent meta-tool surface
+Good ranked search
+Silent auto-load when confidence is high
+Deferred binary startup
+Small active loaded set
+Profiles for common workflows
+Code mode for multi-step execution
+Strong observability so the routing can be improved
+That is very different from “just aggregate everything.”
+
+The uncomfortable truth
+A lot of aggregators are optimized for:
+
+architecture elegance
+token reduction on paper
+protocol correctness
+…but not for:
+
+model behavior under uncertainty
+That’s why they feel unusable in practice.
+
+The model does not reward elegant indirection.
+It rewards:
+
+obvious affordances
+low latency
+high-confidence selection
+small visible choice sets
+What I’d do next
+The next high-value move is not more repo comparison.
+
+It’s to encode this as a Borg design rule:
+
+The model should almost never face more than a handful of visible choices, and it should almost never be forced to manually perform the full discovery workflow when the system already knows the likely best capability.
+
+If you want, I can do the next step right now:
+
+update the research memo with a new section on “Why aggregators fail in practice”
+and turn that into a concrete Borg implementation spec:
+ranking model
+confidence thresholds
+auto-load rules
+unload rules
+profile behavior
+UI/operator telemetry
+That would turn the pain point into an implementable blueprint instead of just a correct complaint.
+Done
+I converted the “aggregators fail in practice” insight into durable repo guidance instead of leaving it floating in chat.
+
+Updated files
+MCP_ROUTER_REFERENCE_EVALUATION_2026-03-07.md
+
+Added the second repo-set synthesis for:
+mcpm.sh
+Switchboard
+claude-lazy-loading
+lazy-mcp
+lootbox
+mcp-agent
+mcp-use
+meta-mcp-proxy
+plus notes on the two 404 repos
+Added a new section on why most aggregators fail in practice
+Added a Borg implementation blueprint
+Added a best method by feature matrix mapping each capability to the strongest upstream reference
+CHANGELOG.md
+
+Recorded the expanded router research memo and the new Borg hybrid blueprint guidance
+What changed conceptually
+The memo now makes the key distinction explicit:
+
+most aggregators solve plumbing
+Borg needs to solve selection friction
+So the recommendation is now much sharper:
+
+tiny permanent visible meta-tool set
+ranked discovery, not just search
+silent high-confidence auto-load
+deferred binary startup
+small active working set with eviction
+code mode after routing
+dashboard visibility into routing decisions, not just raw traffic
+Tiny but important difference; that’s the gap between “technically aggregates” and “actually gets used.” Fancy plumbing is nice, but the model still needs a door handle.
+
+Validation
+I checked both edited files for issues.
+
+MCP_ROUTER_REFERENCE_EVALUATION_2026-03-07.md — no errors
+CHANGELOG.md — no errors
+Todo status
+ Synthesize repo findings
+ Patch router research memo
+ Update changelog if needed
+Next likely move
+The highest-value follow-up would be to translate this doc guidance into runtime behavior in core, especially:
+
+reducing the effective loaded-tool cap
+switching from FIFO-only behavior toward LRU/idle-aware eviction
+adding confidence-based auto-load rules
+exposing search/load/evict decisions in the dashboard inspector
+That would turn the blueprint into working Borg behavior.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Initial reference feature group categories:
+MUST-HAVE BASIC FEATURES (START HERE):
+mcp router/aggregator, mcp client which combines many mcp servers into one "master" mcp server, handles mcp session, instanciation, lifecycle auto start, restart, making sure it is available to multiple clients without multiple instances, making sure it does not time out and is responsive, measures latency, groups mcp servers into namespaces, groups tools into namespaces, enable/disable individual tools/servers, inspect mcp traffic, show activity, logging, mcp tool call chaining, TOON format, code mode, tool automatic renaming, tool reranking, tool semantic search, progressive tool disclosure, tool rag, context inspector, keep alive, heartbeat, mcp directory, automatic mcp install, environment variable and secrets management, mcp client config file autoconfig, auto write config file format, import/export configs, autodetect all configs on system, maintain/manage all configs on system, save sets of configs, wipe all client configs, set all client configs to x, etc, manage databases, handle auth. 
+mcp server chains other mcps. 
+can watch mcp traffic. 
+reduce context language. 
+reduce context syntax. 
+resource management, lazy load, health checks, auto start, auto restart, timeout, deferred loading of binary until needed, latency, responsiveness, single-instance multiple clients, monitor memory usage, cpu usage, long running process. 
+proxy for stdio as remote. 
+proxy for remote as stdio. 
+proxy for sse as streaming-http. 
+proxy for streaming-http as stdio. 
+manage oauth, bearer token. 
+manage secrets, environment variables, paths. 
+manage env variable expansion, .env files. 
+mcp groups. 
+tool groups. disable tools.
+tool renaming, minimize context. 
+tool semantic search/tool rag. 
+tool lazy load, dynamic progressive tool disclosure. 
+tools as code, code mode. 
+mcp tool chaining. 
+TOON format, context saving. 
+inspect context, context makeup,
+specify extremely high value tools to be disclosed always
+loading/unloading after tool count
+auto-load on high confidence
+
+
+
+
+summarize session. 
+automatic context harvesting. 
+compaction. 
+context pruning, session pruning, memory pruning, memory reranking. 
+import/export session. 
+import/export memories. 
+autodetect session/memories. 
+code execution sandbox. 
+code indexing, understanding. 
+semantic code search. 
+lsp servers. 
+ast, see graph view ast code. 
+ripgrep. 
+code chunking. 
+RAG, various RAG techniques, intake documents, ocr, summarize. 
+embed skills, specs/speckit, tasks/task manager, bmad, agents, swarm
+plugins, cli sdk, ai sdk, a2a sdk, mcp sdk, acp sdk, agent sdk (many providers). 
+orchestrator. 
+CLIs/TUIs, webUIs. 
+
+subagents, long running, subcontexts, timeouts, multiple models, mutiple cli, orchestration, harness/cli/tiu as mcp. 
+multi-model debate, multi-model consensus, share context between models, multiple models pair programming with each other, architect-implementer. 
+
+usage, billing, dashboard, credits, api vs auth, resets on day at time. 
+intelligent selection of models based on credits, free tier, subscription, provider, switch between all providers of gemini 3 pro, then all providers of codex 5.2, then all opus 4.5. 
+plan with model x, implement with model y. 
+supervisor, council, autopilot. 
+skills, skill convert, skill rerank, skill improve. 
+prompt library, system prompts, prompt templates, improve prompts, jailbreaks. 
+personas. 
+subagent definitions, subagent collections. 
+agents.md, claude.md, copilot-instructions.md, gpt.md, llm-instructions.md, gemini.md, grok.md, warp.md. 
+changelog.md. 
+version, version.md. 
+vision.md. 
+readme.md. 
+handoff.md, init.md. 
+superpowers. 
+beads. 
+specs, tasks, bmad. 
+memory. 
+short term. 
+long term. 
+browser extension: store memory, browser-use, console/debug log, mcp superassistant, connect mcp to browser chat, connect universal memory to browser chat, export browser sessions, export browser memory, browser history. 
+connect to all interfaces all models. 
+all models connect to memory. 
+import/export all memory, sessions, chat history. 
+add to memory. 
+automatically add memories about x topic. 
+web search. 
+computer-use. 
+browser-use. 
+agentic loop, autopilot, supervisor, fallbacks, council, consensus. 
+manage cloud dev sessions. 
+manage local cli sessions. 
+cli has cli, tiu, webui by default. 
+connect to cli with webui, dashboard connects to cli. 
+no tui, only webui, only multi-session dashboard in web. 
+remembers repo folders. 
+list of all repo folders, workspace, last session. 
+auto start previous sessions. 
+pause all sessions. 
+import/export cloud dev memory, session history. 
+transfer task to cloud dev. 
+broadcast message to all cloud dev sessions. 
+broadcast message to all cli sessions. 
+remote management of sessions, mobile control of sessions, roo remote. 
+auto approve cloud dev plans. 
+start new session for expired (30 day) cloud dev sessions, inject session history, prune session log, archive old session. 
+continue paused/stalled cloud dev session. 
+web terminal like opencode web ui terminal. 
+cli activity log. 
+memory dashboard like supermemory console. 
+automatic adding of memories during session? all user input gets added as memories if there is new information?. 
+notebooklm integration. 
+notebooklm open source functionality. 
+
+
+
+
+Please go through the index of links and locate all tools of each reference group above and any accessory tools for them. For each tool, create a subagent if possible, preferably a free and/or light weight model, to do in-depth deep web research about it, locating its github repo, website pages, documentation, source code, github issues, feature requests, pull requests, and any other discussions about the tool. Also read through all its source code and comments and md files in the repo. Note all features and functionality, and summarize the structure of the tool, exactly how it works and what it is capable of, especially compared to other tools in its reference group type. Especially notate any unique features or functionality. Document these features in a detailed summary of each tool. Once all tools have been indexed, researched, submoduled, and summarized and notated, please compile a master collection of all features and functionality, combining every feature from every tool. Also document any concepts, ideas, feature requests, issues, etc about the feature group in general that have not yet been implemented in any tool, but was mentioned elsewhere. This "master group features and functionality compilation list" then will be the design for our ultimate reference version tool. Please then document its design and functionality in full detail, noting all features and functionality and planned structure, and then implement each feature and functionality to achieve parity with each and every tool.
+
+
+
+I don't necessarily want MCP for any of the above, I want the MCP as reference/submodule but I want the functionality in our tool. So we will have the best reference implementation for each feature, and also make it so that it can be hooked into an MCP. MCP gets chosen to be called by the model itself. But we don't want that, we want the CLI tool basically to run hooks for all these features. But the model can choose to call the MCP version as well I guess. Most of the functionality I want would actually be a plugin.
+
+
+
+What should our project architecture be, then, in order to have each model running on a different thread, to utilize many cores efficiently, to prevent the whole thing crashing from one thread crashing, etc? Should we use Go or Java for anything or have everything Typescript for dashboard and browser compatibility?
+
+
+Most of the work done thus far was originally done in the submodules metamcp, jules-autopilot, opencode-autopilot, and superai-cli, of which metamcp and jules-autopilot (originally jules-app) were my forks of existing projects with extensive additions and modifications. I want all of the functionality of those submodules to be implemented in aios core engine and the submodules to only be the parent upstream versions for metamcp and jules-app. I do not need my robertpelloni forks for jules-app (jules-autopilot) and metamcp in the project since I won't be working on them anymore, all the fcuntionality will instead be moved into aios core and I can delete my forks and only have the upstream parents and benefit from updates to those by the original authors.
+
+We are going to use the submodules as a sort of overview changelog, every time we update the submodules to sync with upstream changes, we can take note of what changed, and then that will often be our sign to implement the same feature or change in the aios version of whichever feature was modified or added. Every update to submodules must be documented extensively, once the project is at feature parity with all of them. That's still a long ways off, so don't worry about that yet.
+
+Please continue to proceed! Remember, we want to reach total feature parity with the github.com/robertpelloni/metamcp fork and the github.com/robertpelloni/jules-autopilot fork, not the ones that are currently reference submodules. We are working towards having total feature parity with all referenced tools, however, not just these ones, but let's proceed with manageable goals for the time being so we can continue making progress! Onward ho! Please continue until feature parity has been fully implemented and completed in depth for all mentioned functionality and is on par or exceeds all features and functionality of all the referenced tools, with a streamlined and polished user experience. 
+
+One very important feature that we want to have right away is automatic fallback and selection of other models once we have extinguished the quota for one, we should automatically switch to the next most appropriate model and continue onward. Since we don't have this capability yet, we will be slowed down by quota limit errors when it occurs, but there isn't much we can do to fix that yet except switch models manually for now. I would also like to have all the functionality of superai-cli and opencode-autopilot so that I can use a browser dashboard to maintain and supervise many concurrent superai-cli/opencode sessions automatically, with optional auto model detection/switching.
+
+Please make sure the WebUI has the functionality to autostart/restart opencode instances (and superai-cli, and codebuff, and codemachine, and factory droid, and codex, and claude, and gemini CLI, etc) connected to loaded directory lists tied to sessions and has the ability to supervise them on autopilot with at least one supervisor, a council of supervisors, or a fall back collection of sentences to cycle through, and that if an instance crashes it gets auto-restarted and continues automatically. Please implement all features and all functionality in all of those CLI/TIU tools, including the ability to connect via webUI. Please make sure to implement the functionality to be able to utilize free models provided by opencode, cursor, kilocode, windsurf, openrouter, copilot, to be able to use antigravity models and oauth login with google, to be able to use copilot subscription through copilot oauth or PAT, and to be able to log in using oauth to claude max/pro, google ai plus, copilot premium plus, chatgpt plus, opencode black, etc and use their subscriptions.
+
+Please continue to proceed as per your recommendations based on your ongoing analysis and continued assessments. Please make full use of your subagents, using a variety of powerful models where necessary or most effective and often using free/flash models whenever appropriate! You are doing outstanding work, absolutely fantastic- great job!!! Keep on goin', don't stop, never stop, don't stop the party! OUTSTANDING! MARVELOUS! PERFECT! MAGNIFICENT! YOU ARE THE BEST!!!
+
+ please focus on ui and functionality, all features and all functionality should be represented and easily accessible and well documented in the dashboard
 
 
 
 my execution flow should be like: 1) i start borg server 2) it starts the mcp router as both client and server, the web server, opens the web dashboard 3) the web dashboard has the option to install the firefox and chrome extensions, opencode extension, claude code extension, gemini-cli extension, codex plugin, vscode/antigravity/cursor/windsurf/kiro/etc extensions, and nondestructively add itself as mcp server to all the environments. the browser extensions should be able to connect to the core and send memories from websites, communicate browser debug information and provide browser controls, and detect and inject mcp into web chat interfaces, and import/export memories/sessions. the IDE plugins should be able to connect with core and access memories, sessions, history, context, vector storage, skills, configuration, anything useful from the core, while also providing new hook events to the IDE, automatically harvesting context, saving sessions. mcp server function should be very fast and lightweight, automatically reporting list of known tools, skills, automatically advertising always-on tools, advertising namespaces, long term memories, start up server if not started, non blocking. maybe it should be its own component which loads a last known good configuration to report regardless of whether the core is ready.
+
+
+
+
+
+
+
+ 
+ 
+

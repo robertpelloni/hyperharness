@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
+import { createExtensionStateStorage } from './extension-storage';
 
 export type LogType = 'tool_execution' | 'connection' | 'error' | 'info';
 export type LogStatus = 'success' | 'error' | 'pending' | 'info';
@@ -44,7 +45,7 @@ export const useActivityStore = create<ActivityStore>()(
     }),
     {
       name: 'mcp-activity-logs',
-      storage: createJSONStorage(() => localStorage),
+      storage: createJSONStorage(createExtensionStateStorage),
     },
   ),
 );

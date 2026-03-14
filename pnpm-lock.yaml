@@ -1178,6 +1178,9 @@ importers:
       '@borg/tools':
         specifier: workspace:*
         version: link:../tools
+      '@borg/types':
+        specifier: workspace:*
+        version: link:../types
       '@hyperswarm/secret-stream':
         specifier: ^6.9.1
         version: 6.9.1(bare-url@2.3.2)

@@ -5,6 +5,7 @@ import { trpc } from '@/utils/trpc';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@borg/ui';
 import { Badge } from "@borg/ui";
 import { Activity, File, Terminal, Zap, Cpu, Clock } from 'lucide-react';
+import { normalizeDashboardEvents, normalizeDashboardSystemStatus } from './events-page-normalizers';
 
 export default function EventsPage() {
     // Fetch real events from EventBus via pulse router
@@ -15,6 +16,8 @@ export default function EventsPage() {
     const { data: systemStatus } = trpc.pulse.getSystemStatus.useQuery(undefined, {
         refetchInterval: 5000,
     });
+    const normalizedEvents = React.useMemo(() => normalizeDashboardEvents(events), [events]);
+    const normalizedSystemStatus = React.useMemo(() => normalizeDashboardSystemStatus(systemStatus), [systemStatus]);
 
     // Categorize events by type
     const eventTypeColors: Record<string, string> = {
@@ -48,11 +51,11 @@ export default function EventsPage() {
                     {systemStatus && (
                         <Badge variant="outline" className="border-zinc-700">
                             <Clock className="w-3 h-3 mr-1" />
-                            {Math.round((systemStatus as any).uptime ?? 0)}s uptime
+                            {Math.round(normalizedSystemStatus.uptime)}s uptime
                         </Badge>
                     )}
-                    <Badge variant="outline" className={events.length > 0 ? "text-green-400 border-green-900 bg-green-950/30 animate-pulse" : "text-zinc-500 border-zinc-700"}>
-                        <Activity className="w-3 h-3 mr-2" /> {events.length > 0 ? 'Live' : 'Idle'}
+                    <Badge variant="outline" className={normalizedEvents.length > 0 ? "text-green-400 border-green-900 bg-green-950/30 animate-pulse" : "text-zinc-500 border-zinc-700"}>
+                        <Activity className="w-3 h-3 mr-2" /> {normalizedEvents.length > 0 ? 'Live' : 'Idle'}
                     </Badge>
                 </div>
             </div>
@@ -61,14 +64,14 @@ export default function EventsPage() {
             <div className="grid grid-cols-4 gap-4">
                 <Card className="border-zinc-800 bg-zinc-950/50">
                     <CardContent className="pt-4 text-center">
-                        <div className="text-2xl font-bold text-white">{events.length}</div>
+                        <div className="text-2xl font-bold text-white">{normalizedEvents.length}</div>
                         <div className="text-xs text-muted-foreground">Total Events</div>
                     </CardContent>
                 </Card>
                 <Card className="border-zinc-800 bg-zinc-950/50">
                     <CardContent className="pt-4 text-center">
                         <div className="text-2xl font-bold text-blue-400">
-                            {events.filter((e: any) => e.type?.startsWith('file:')).length}
+                            {normalizedEvents.filter((e) => e.type.startsWith('file:')).length}
                         </div>
                         <div className="text-xs text-muted-foreground">File Events</div>
                     </CardContent>
@@ -76,7 +79,7 @@ export default function EventsPage() {
                 <Card className="border-zinc-800 bg-zinc-950/50">
                     <CardContent className="pt-4 text-center">
                         <div className="text-2xl font-bold text-purple-400">
-                            {events.filter((e: any) => e.type?.startsWith('agent:')).length}
+                            {normalizedEvents.filter((e) => e.type.startsWith('agent:')).length}
                         </div>
                         <div className="text-xs text-muted-foreground">Agent Events</div>
                     </CardContent>
@@ -84,7 +87,7 @@ export default function EventsPage() {
                 <Card className="border-zinc-800 bg-zinc-950/50">
                     <CardContent className="pt-4 text-center">
                         <div className="text-2xl font-bold text-green-400">
-                            {(systemStatus as any)?.agents?.length ?? 0}
+                            {normalizedSystemStatus.agents.length}
                         </div>
                         <div className="text-xs text-muted-foreground">Active Agents</div>
                     </CardContent>
@@ -103,8 +106,8 @@ export default function EventsPage() {
                                 <Cpu className="w-5 h-5 text-green-400" />
                                 <span>Borg Core</span>
                             </div>
-                            <Badge className={systemStatus?.status === 'online' ? "bg-green-600" : "bg-red-600"}>
-                                {systemStatus?.status === 'online' ? 'Online' : 'Offline'}
+                            <Badge className={normalizedSystemStatus.status === 'online' ? "bg-green-600" : "bg-red-600"}>
+                                {normalizedSystemStatus.status === 'online' ? 'Online' : 'Offline'}
                             </Badge>
                         </div>
                         <div className="flex items-center justify-between">
@@ -123,10 +126,10 @@ export default function EventsPage() {
                         </div>
 
                         {/* Active Agents */}
-                        {(systemStatus as any)?.agents && (systemStatus as any).agents.length > 0 && (
+                        {normalizedSystemStatus.agents.length > 0 && (
                             <div className="mt-4 pt-4 border-t border-zinc-800">
                                 <div className="text-xs text-muted-foreground mb-2 uppercase">Active Agents</div>
-                                {(systemStatus as any).agents.map((agent: string, i: number) => (
+                                {normalizedSystemStatus.agents.map((agent, i: number) => (
                                     <div key={i} className="text-sm font-mono text-zinc-300 mb-1">{agent}</div>
                                 ))}
                             </div>
@@ -138,33 +141,33 @@ export default function EventsPage() {
                 <Card className="col-span-1 lg:col-span-2 border-zinc-800 bg-black">
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2"><Zap className="w-5 h-5 text-purple-400" /> Event Stream</CardTitle>
-                        <CardDescription>{events.length} events in buffer</CardDescription>
+                        <CardDescription>{normalizedEvents.length} events in buffer</CardDescription>
                     </CardHeader>
                     <CardContent>
                         <div className="h-[500px] overflow-y-auto pr-4 space-y-2">
                             {isLoading ? (
                                 <div className="text-zinc-500 text-center py-10">Loading events...</div>
-                            ) : events.length === 0 ? (
+                            ) : normalizedEvents.length === 0 ? (
                                 <div className="text-zinc-500 text-center py-10 italic">
                                     No events recorded yet. Events will appear as the system operates.
                                 </div>
                             ) : (
-                                events.slice().reverse().map((event: any, i: number) => (
+                                normalizedEvents.slice().reverse().map((event, i: number) => (
                                     <div key={i} className="flex flex-col p-3 rounded-md border border-zinc-900 bg-zinc-900/30 text-sm">
                                         <div className="flex justify-between items-start mb-1">
                                             <span className={`font-mono ${getEventColor(event.type)}`}>
                                                 {event.type || 'unknown'}
                                             </span>
                                             <span className="text-xs text-zinc-500">
-                                                {event.timestamp ? formatTime(event.timestamp) : '—'}
+                                                {event.timestamp !== null ? formatTime(event.timestamp) : '—'}
                                             </span>
                                         </div>
-                                        {event.source && (
+                                        {event.source.length > 0 && (
                                             <div className="text-zinc-400 text-xs">Source: {event.source}</div>
                                         )}
-                                        {event.data && (
+                                        {event.dataPreview !== null && (
                                             <div className="font-mono text-xs text-zinc-600 mt-1 truncate max-w-full">
-                                                {typeof event.data === 'string' ? event.data : JSON.stringify(event.data).slice(0, 200)}
+                                                {event.dataPreview.slice(0, 200)}
                                             </div>
                                         )}
                                     </div>

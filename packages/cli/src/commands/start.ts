@@ -36,6 +36,19 @@ export interface BorgStartLockHandle {
   releaseSync: () => void;
 }
 
+export interface BorgStartLifecycleHandlers {
+  cleanup: () => void;
+  handleSigint: () => void;
+  handleSigterm: () => void;
+  handleUncaughtException: (error: unknown) => void;
+  handleUnhandledRejection: (reason: unknown) => void;
+}
+
+interface CreateLockLifecycleHandlersDeps {
+  exit?: (code: number) => void;
+  logError?: (message?: unknown, ...optionalParams: unknown[]) => void;
+}
+
 interface AcquireSingleInstanceLockOptions {
   dataDir: string;
   requestedPort: number;
@@ -236,6 +249,40 @@ export async function startCoreRuntime(
   });
 }
 
+export function createLockLifecycleHandlers(
+  lockHandle: BorgStartLockHandle,
+  deps: CreateLockLifecycleHandlersDeps = {},
+): BorgStartLifecycleHandlers {
+  const exit = deps.exit ?? ((code: number) => process.exit(code));
+  const logError = deps.logError ?? ((message?: unknown, ...optionalParams: unknown[]) => console.error(message, ...optionalParams));
+
+  const cleanup = () => {
+    lockHandle.releaseSync();
+  };
+
+  return {
+    cleanup,
+    handleSigint: () => {
+      cleanup();
+      exit(130);
+    },
+    handleSigterm: () => {
+      cleanup();
+      exit(143);
+    },
+    handleUncaughtException: (error: unknown) => {
+      cleanup();
+      logError(error instanceof Error ? error.stack ?? error.message : String(error));
+      exit(1);
+    },
+    handleUnhandledRejection: (reason: unknown) => {
+      cleanup();
+      logError(reason instanceof Error ? reason.stack ?? reason.message : String(reason));
+      exit(1);
+    },
+  };
+}
+
 export function registerStartCommand(program: Command): void {
   program
     .command('start')
@@ -277,6 +324,7 @@ Examples:
         });
 
         const port = lockHandle.port;
+  const lifecycle = createLockLifecycleHandlers(lockHandle);
 
         console.log(chalk.yellow('  Starting server...'));
         console.log(chalk.dim(`  Host: ${host}:${port}`));
@@ -311,19 +359,11 @@ Examples:
         }
         console.log(chalk.dim('\n  Press Ctrl+C to stop\n'));
 
-        const cleanup = () => {
-          lockHandle?.releaseSync();
-        };
-
-        process.once('exit', cleanup);
-        process.once('SIGINT', () => {
-          cleanup();
-          process.exit(130);
-        });
-        process.once('SIGTERM', () => {
-          cleanup();
-          process.exit(143);
-        });
+        process.once('exit', lifecycle.cleanup);
+        process.once('SIGINT', lifecycle.handleSigint);
+        process.once('SIGTERM', lifecycle.handleSigterm);
+        process.once('uncaughtException', lifecycle.handleUncaughtException);
+        process.once('unhandledRejection', lifecycle.handleUnhandledRejection);
       } catch (err: unknown) {
         lockHandle?.releaseSync();
         const msg = err instanceof Error ? err.message : String(err);

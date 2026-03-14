@@ -6,10 +6,12 @@ import { Button } from "@borg/ui";
 import { Loader2, Calendar, User, Search, FileText } from "lucide-react";
 import { trpc } from '@/utils/trpc';
 import { toast } from 'sonner';
+import { normalizeAuditLogs } from './audit-log-normalizers';
 
 export default function AuditDashboard() {
     const [limit, setLimit] = useState(50);
     const { data: logs, isLoading } = trpc.audit.list.useQuery({ limit });
+    const normalizedLogs = normalizeAuditLogs(logs);
 
     return (
         <div className="p-8 space-y-8 h-full flex flex-col">
@@ -35,7 +37,7 @@ export default function AuditDashboard() {
                         <div className="flex justify-center p-12">
                             <Loader2 className="h-8 w-8 animate-spin text-zinc-500" />
                         </div>
-                    ) : ((logs as any)?.length ?? 0) === 0 ? (
+                    ) : normalizedLogs.length === 0 ? (
                         <div className="text-center p-12 text-zinc-500">
                             <FileText className="h-12 w-12 mx-auto mb-4 opacity-30" />
                             <p className="text-lg font-medium">No Audit Logs</p>
@@ -52,7 +54,7 @@ export default function AuditDashboard() {
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-zinc-800">
-                                {(logs as any)?.map((log: any) => (
+                                {normalizedLogs.map((log) => (
                                     <tr key={log.id} className="hover:bg-zinc-800/50 transition-colors">
                                         <td className="p-4 text-zinc-500 whitespace-nowrap font-mono text-xs">
                                             {new Date(log.timestamp).toLocaleString()}

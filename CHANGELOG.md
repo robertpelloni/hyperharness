@@ -2,17 +2,213 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.7.130] — 2026-03-14
+
+- fixed(mcp/config): local dashboard compatibility-mode MCP config writes now target Borg config home (`~/.borg/mcp.jsonc` + `~/.borg/mcp.json`) instead of repo-root files.
+- changed(mcp/config): local compatibility-mode reads now prioritize Borg config home and retain repo-root `mcp.jsonc`/`mcp.json` as legacy fallback read sources only.
+- test(mcp/config): updated tRPC route compatibility tests to run against an isolated temporary `BORG_CONFIG_DIR`, validating local managed-server actions without mutating workspace-root config files.
+- changed(mcp/search-ui): MCP JSONC editor tooltip now reflects Borg config-home save location rather than claiming root-repo writes.
+
+## [2.7.129] — 2026-03-14
+
+- changed(mcp/search-ui): added telemetry triage presets in `/dashboard/mcp/search` (`Errors now`, `Runtime failures`, `Load incidents`, `Hydration failures`, `Live aggregator`) so operators can jump to common incident scopes in one click.
+- changed(mcp/search-ui): added active telemetry filter chips with one-click per-chip clear actions (`type`, `status`, `window`, `source`) for faster iterative diagnosis without resetting everything.
+- changed(mcp/search-ui): reset action now disables when filters are already at default scope, reducing no-op clicks during telemetry triage.
+
+## [2.7.128] — 2026-03-14
+
+- changed(mcp/search-ui): telemetry filters now sync to URL query parameters (`telemetryType`, `telemetryStatus`, `telemetryWindow`, `telemetrySource`) so triage views are shareable and reproducible.
+- changed(mcp/search-ui): added `Copy link` action in `/dashboard/mcp/search` telemetry controls to copy the current filter-scoped diagnostics URL.
+- changed(mcp/search-ui): URL filter values now take precedence on load, with local-storage preferences used as fallback when no URL filter state is present.
+
+## [2.7.127] — 2026-03-14
+
+- changed(mcp/search-ui): persisted telemetry triage filters (`type`, `status`, `window`, `source`) in local browser storage so `/dashboard/mcp/search` keeps operator context across reloads.
+- changed(mcp/search-ui): added one-click `Reset filters` action that restores default telemetry scope (`all` + `15m`) and clears persisted filter state.
+- changed(mcp/search-ui): strengthened filter-state resilience by ignoring invalid persisted payloads and falling back to safe defaults.
+
+## [2.7.126] — 2026-03-14
+
+- changed(mcp/search-ui): added telemetry source filtering (`all`, `runtime-search`, `cached-ranking`, `live-aggregator`) in `/dashboard/mcp/search` so operators can isolate source-specific behavior without leaving the panel.
+- changed(mcp/search-ui): added a status-over-time trend strip that shows per-bucket success/error ratio for the selected telemetry scope, improving quick detection of error-heavy windows.
+- changed(mcp/search-ui): per-source rows now include a one-click `Focus failures` action that sets source + error filters together for faster failure triage.
+
+## [2.7.125] — 2026-03-14
+
+- changed(mcp/search-ui): added per-source time-bucket trend strips in `/dashboard/mcp/search` so operators can quickly spot momentum shifts in `runtime-search`, `cached-ranking`, and `live-aggregator` traffic.
+- changed(mcp/search-ui): trend buckets inherit the active telemetry window preset and display event + error intensity per bucket, improving fast diagnosis of bursty failures versus steady-state traffic.
+- changed(mcp/search-ui): per-source telemetry rows now combine volume bar, success/error counts, average latency, and short bucketed trend context in a single triage panel.
+
+## [2.7.124] — 2026-03-14
+
+- changed(mcp/search-ui): added telemetry time-window presets (`all`, `5m`, `15m`, `1h`, `24h`) in `/dashboard/mcp/search` so operators can triage routing events by recent incident window instead of scanning a single rolling list.
+- changed(mcp/search-ui): telemetry summary chips now reflect the active filter window/type/status scope, making `total/success/error` counts match the currently visible slice.
+- changed(mcp/search-ui): added a per-source telemetry breakdown panel (runtime-search, cached-ranking, live-aggregator) with event-volume bars plus success/error and average-latency context to speed up source-level ranking diagnostics.
+
+## [2.7.123] — 2026-03-14
+
+- changed(mcp/search-ui): added telemetry summary chips (`total`, `success`, `errors`) to `/dashboard/mcp/search` for at-a-glance event health.
+- changed(mcp/search-ui): added in-panel telemetry filters by event type (`search`, `load`, `hydrate`, `unload`) and status (`success`, `error`) so operators can isolate decision and failure events faster.
+- changed(mcp/search-ui): telemetry list now applies the selected filters before rendering the latest entries, reducing noise during routing diagnostics.
+
+## [2.7.122] — 2026-03-14
+
+- changed(mcp/search): cached-ranking telemetry now records auto-load execution state (`success`, `error`, `not-attempted`) so decision telemetry distinguishes selection from runtime load execution.
+- changed(mcp/search): auto-load `load_tool` failures are now captured as explicit `load` telemetry events with error status/message instead of being silently swallowed.
+- changed(mcp/search-ui): `/dashboard/mcp/search` telemetry cards now show auto-load execution status and any load failure message for faster operator triage of ranking-vs-runtime issues.
+
+## [2.7.121] — 2026-03-14
+
+- changed(mcp/search): enriched search telemetry with second-candidate context (`secondResultName`, `secondMatchReason`, `secondScore`) and explicit score-gap capture across runtime-search, cached-ranking, and live-aggregator paths.
+- changed(mcp/search-ui): `/dashboard/mcp/search` telemetry cards now render top-vs-second candidate details so operators can diagnose ambiguity and near-tie ranking behavior without leaving the page.
+- changed(mcp/decision-observability): live-aggregator telemetry now records top score and score gap consistently with cached/runtime paths, improving apples-to-apples routing diagnostics.
+
+## [2.7.120] — 2026-03-14
+
+- changed(mcp/working-set): added new `clear_eviction_history` meta-tool so operators can reset recent working-set eviction events without restarting the session.
+- changed(mcp/router): added `mcp.clearWorkingSetEvictionHistory` mutation that calls the new meta-tool and returns a user-facing clear confirmation message.
+- changed(mcp/search-ui): added a `Clear` action in the `/dashboard/mcp/search` **Recent evictions** panel to clear eviction history in-place and refresh the panel immediately.
+- test(core): updated `compatibility-tool-definitions.test.ts` expected tool-loading order to include `clear_eviction_history`.
+
+## [2.7.119] — 2026-03-14
+
+- changed(mcp/search): added explicit auto-load evaluation outcomes (`loaded`, `skipped`, `not-applicable`) so search telemetry now records whether an auto-load decision was actually evaluated and what happened.
+- changed(mcp/search): cached-ranking telemetry now captures auto-load skip rationale (for example, confidence floor not met or ambiguous match), plus the configured minimum confidence used during evaluation.
+- changed(mcp/search-ui): `/dashboard/mcp/search` telemetry cards now render auto-load outcome, confidence floor, and skip reasons for clearer operator diagnosis of “why this did/didn’t auto-load”.
+- test(core): expanded `toolSearchRanking.test.ts` with coverage for `evaluateAutoLoadCandidate(...)` not-applicable/skipped outcomes while preserving existing auto-load decision behavior.
+
+## [2.7.118] — 2026-03-14
+
+- changed(mcp/working-set): added operator-configurable working-set capacity controls — `maxLoadedTools` (4..64, default 16) and `maxHydratedSchemas` (2..32, default 8) are now persisted in `mcp.jsonc` preferences.
+- changed(mcp/working-set): `SessionToolWorkingSet` gained a `reconfigure()` method so capacity changes take effect on the live session immediately after saving preferences, without a restart.
+- changed(mcp/working-set): added a bounded eviction-history ring buffer (last 20 events) with `getEvictionHistory()` / `clearEvictionHistory()` — each entry records the evicted tool name, timestamp, and tier (`loaded` | `hydrated`).
+- changed(mcp/meta-tools): added two new meta-tools — `set_capacity` (reconfigures the working-set limits at runtime) and `get_eviction_history` (returns the bounded recent eviction log). Registered in `toolLoadingDefinitions.ts` and handled in `metamcp-proxy.service.ts`.
+- changed(mcp/search): `/dashboard/mcp/search` now includes a "Working-set capacity" panel with sliders for `maxLoadedTools`/`maxHydratedSchemas` that save immediately to preferences and apply to the live session.
+- changed(mcp/search): `/dashboard/mcp/search` now shows a "Recent evictions" panel (conditionally visible) listing the last up to 10 evicted tools with their tier and relative timestamp, polling every 8 s.
+- test(core): updated `metamcp-session-working-set.service.test.ts` with focused coverage for `reconfigure()`, eviction history recording, and `clearEvictionHistory()`.
+
+## [2.7.117] — 2026-03-14
+
+- changed(mcp/search): added persisted `autoLoadMinConfidence` tool-selection preference (default `0.85`, bounded `0.50..0.99`) so auto-load behavior is explicitly operator-controlled instead of hardcoded.
+- changed(mcp/search): cached-ranking auto-load now respects the configured confidence floor before issuing `load_tool`, reducing unintended eager loads for ambiguous results.
+- changed(mcp/search): `/dashboard/mcp/search` now includes an auto-load confidence threshold control (slider + numeric input) and saves it with the existing important/keep-warm tool preferences.
+- changed(mcp/inspector): inspector always-on toggles now preserve the current auto-load confidence preference when updating tool-selection settings.
+- test(core): updated tool-preference and JSON-config provider tests for the new confidence field and stabilized the provider test import path to use source modules.
+
+## [2.7.116] — 2026-03-14
+
+- changed(mcp/search): added task-profile-aware search ranking (`web-research`, `repo-coding`, `browser-automation`, `local-ops`, `database`) so tool discovery can bias toward the current workflow instead of generic scoring alone.
+- changed(mcp/search): `/dashboard/mcp/search` now includes a task profile selector that threads profile context into search requests and surfaces the active profile in search guidance and telemetry entries.
+- changed(mcp/search): search telemetry now records the selected profile across runtime, cached, and live-aggregator search paths for clearer explainability of ranking behavior.
+
+## [2.7.115] — 2026-03-14
+
+- changed(mcp/search): expanded decision telemetry to include search/load/hydrate/unload latency, top score, score gap, auto-load reason, and auto-load confidence so routing behavior is operator-explainable.
+- changed(mcp/search): telemetry panel now renders score-gap/confidence/latency fields, making it easier to diagnose ambiguity vs latency as the root cause of poor tool selection outcomes.
+
+## [2.7.114] — 2026-03-14
+
+- changed(policies): `/dashboard/mcp/policies` now shows an explicit audit/preview-mode banner clarifying that policy rules are editable but runtime allow/deny enforcement is currently pass-through in this build.
+- docs(core): `policy.service.stub.ts` now includes explicit compatibility comments documenting its non-enforcing placeholder behavior to reduce accidental assumptions in future UI/runtime work.
+
+## [2.7.113] — 2026-03-14
+
+- changed(mcp/search): added direct `Hydrate schema` actions on both search-result cards and loaded working-set cards, so operators can hydrate metadata-only tools without leaving `/dashboard/mcp/search`.
+- changed(mcp/search): split loaded tool display into explicit `Server always-on`, `Keep warm profile`, and `Dynamic loaded` sections for clearer operator understanding of why tools are resident.
+- changed(mcp/search): distinguished badges for server-advertised always-on tools vs user keep-warm preferences, avoiding the prior conflation of both under a single "always on" label.
+- changed(mcp/search): load/unload/hydrate actions now invalidate working-set, search, and tool-selection telemetry queries together for immediate UI state consistency.
+
+## [2.7.112] — 2026-03-14
+
+- feat(dashboard): added `/dashboard/tests` — Auto-Test Runner page backed by `tests` tRPC procedures (`status`, `start`, `stop`, `results`) with watcher controls and per-file output inspection.
+- feat(session): added `/dashboard/session/[id]` — session detail page with metadata, attach-info panel, health snapshot, live log tail, and contextual shell execution via `session.executeShell`.
+- changed(session): added `View Details` action button on `/dashboard/session` cards linking directly to the new dynamic session detail route.
+- changed(nav): added `Tests` entry to Labs navigation so the test-runner surface is reachable from sidebar navigation.
+
+## [2.7.111] — 2026-03-14
+
+- feat(dashboard): added `/dashboard/command` — Command Center page with live slash-command list, REPL execution via `commands` tRPC namespace, and arrow-key history navigation.
+- feat(dashboard): added `/dashboard/chronicle` — Git Chronicle page with configurable commit log and working-tree status via `git` tRPC namespace.
+- feat(dashboard): added `/dashboard/library` — Resource Library hub linking to scripts, skills, tool sets, memory, plans, manual, chronicle, and architecture with live item counts from `savedScripts` and `skills` tRPC namespaces.
+- feat(dashboard): added `/dashboard/context` — Context Manager page for add/remove/clear of context files and assembled context prompt viewer via `borgContext` tRPC namespace.
+- changed(nav): added "Sessions" link to `CORE_DASHBOARD_NAV` pointing to `/dashboard/session` so the session supervisor is reachable from the main nav section.
+- changed(nav): added "Context Manager" entry to `LABS_DASHBOARD_NAV` pointing to `/dashboard/context`.
+- changed(nav): added inline descriptions for `Command`, `Symbols`, `Code`, `Chronicle`, and `Library` nav items.
+- changed(nav): imported `MonitorPlay` and `FolderOpen` icons for new Session and Context nav entries.
+- task(tracking): seeded `tasks/backlog/` with three new implementation-ready task briefs: stub-debt reduction, MCP working-set hydration UX, and session detail/worktree reliability.
+
 ## [Unreleased]
 
+- changed(health): `/dashboard/health` now treats degraded `startupStatus` compat-fallback snapshots as a first-class state in the top-level MCP Router metric, showing degraded router telemetry instead of implying the router is merely still initializing.
+
+- changed(health): `/dashboard/health` now treats degraded `startupStatus` compat-fallback snapshots as a first-class state in the top-level Event Bus metric, showing degraded telemetry instead of implying the service is merely still starting.
+
+- changed(integrations): `/dashboard/integrations` now treats degraded `startupStatus` compat-fallback snapshots as unavailable live bridge telemetry, showing the live fallback summary instead of claiming the extension bridge is still simply booting.
+
+- changed(memory): `/dashboard/memory/claude-mem` now treats degraded `startupStatus` compat-fallback snapshots as a first-class operator state, surfacing the live fallback summary instead of collapsing that payload into generic "Core warming up" copy.
+
+- changed(dashboard): startup surfaces now recognize the local compat-fallback startup contract, showing degraded startup status and the live fallback summary on `/dashboard`, `/dashboard/health`, and `/dashboard/mcp/system` instead of collapsing that state into generic warmup copy.
+
+- changed(dashboard): `/dashboard/health` and `/dashboard/mcp/system` now read `NODE_ENV`, platform, uptime, and version from the live `startupStatus` runtime metadata instead of hardcoded placeholders, and the shared uptime formatter now treats core uptime as seconds rather than milliseconds.
+
+- changed(dashboard): retired the remaining startup "phases" wording on the health, system, and home dashboard surfaces so operator copy now consistently reflects the current startup-check contract.
+
+- changed(billing): added curated quick-access sections to `/dashboard/billing` so operators can jump straight to API keys/tokens, plans/billing/credits, and cloud/OAuth consoles before drilling into the full provider portal matrix.
+
+- changed(dashboard): improved the `/dashboard` first-run zero-provider experience so the overview metric, provider panel, and fallback panel now tell operators to configure their first provider instead of showing passive empty-state copy.
+
+- docs(readme): aligned `README.md` with the current local `pnpm run dev` readiness launcher, clarified that Docker still exposes the dashboard on `localhost:3001`, documented dynamic dashboard port fallback for local dev, and pointed the repo layout at `apps/borg-extension` as the official browser-extension workspace.
+
+- docs(deploy): aligned `DEPLOY.md` with the verified `0.9.0-beta` control-plane workflow, including the root `pnpm run dev` readiness launcher, dashboard port fallback behavior, core bridge probes on `3001`, and startup troubleshooting for dynamic dashboard ports.
+
+- fix(startup): gate verbose `packages/core/src/MCPServer.ts` import/boot progress logs behind `BORG_MCP_SERVER_DEBUG=1` or `DEBUG=borg:mcp-server`, keeping normal `pnpm run dev` output quiet while preserving real errors and fallback warnings.
+
+- fix(startup): `pnpm run dev` now best-effort replaces a reused Borg core bridge that is healthy but serving an older `startupStatus` contract by stopping the stale owner via the Borg startup lock when available, or via the current port-3001 listener PID only when that listener's command line still looks Borg-owned, before launching a fresh CLI/core instance.
+
+- fix(startup): `pnpm run dev` now requires the live `startupStatus` payload to expose the current readiness-contract fields before declaring the stack ready, so reusing an older core bridge no longer produces a false green boot summary and instead surfaces a specific startup-contract refresh warning.
+
+- test(validation): re-ran the current startup, memory, MCP probe, and billing fallback slices directly after noisy task-terminal output, confirming the live workspace is green (`33` focused core tests, `43` focused web tests, focused fallback rerun, `CORE_TSC_OK`, and `WEB_TSC_OK`) without additional code fixes.
+
+- test(validation): stabilized the focused dashboard fallback integration mock so `DashboardHomeClient` can be rendered under Vitest without leaking into the real tRPC hook context, then re-verified the startup, memory, MCP probe, and dashboard slices with focused core/web tests plus a clean `apps/web` typecheck.
+
+- docs(cleanup): removed the duplicated stale root README content, aligned the documented web landing route with the real `/ -> /dashboard` redirect, added an explicit `docs/archive/README.md` marker for archive-only material, restored the task-file flow by moving completed slices out of `tasks/active/`, and pruned unused service stubs from `packages/core/src/services/stubs/`.
+
+- fixed(dashboard): the MCP system status page now reuses the shared startup readiness helpers for cached-vs-live/runtime cards, so on-demand-only router postures no longer show false resident-runtime warnings while cached inventory is already operational.
+- fixed(startup): startup readiness now derives advertised cached server/tool counts and always-on posture from the same selected inventory source (`database`, `config`, or `empty`), so last-known-good config snapshots no longer report stale DB-backed MCP counts during non-blocking warmup.
+- changed(memory): refined backend cross-session memory links so sessions with similarly worded goals/objectives can correlate even when the intent anchor text is not an exact string match, improving related-record recall for `/dashboard/memory`.
+- changed(memory): extended backend `/dashboard/memory` pivots to understand prompt/session-summary goal and objective anchors, so inspector pivot chips can now re-query related intent-driven records instead of only session/tool/concept/file links.
+- changed(memory): grouped the `/dashboard/memory` session window around the selected anchor into explicit `Earlier in session` and `Later in session` sections, making same-session chronology clearer without changing the underlying backend timeline query.
+- changed(memory): added a backend `getCrossSessionMemoryLinks` path and a new `/dashboard/memory` inspector card for related records from other sessions, so selected observations can surface recurring concepts, files, tools, and sources across session boundaries instead of only within the active session timeline.
+- changed(memory): refined cross-session memory correlation so prompt and session-summary goals/objectives propagate at the session level, allowing selected observations to surface related work from other sessions even when the observation itself does not store explicit goal metadata.
+- changed(memory): added a backend `getMemoryTimelineWindow` path plus a pure session-window helper so `/dashboard/memory` can show nearby same-session records around the selected memory anchor instead of relying only on generic related-record heuristics.
+- changed(memory): added a backend `searchMemoryPivot` path and service-level structured pivot matching for session/tool/concept/file metadata, then wired `/dashboard/memory` to use those backend results so inspector pivots return real related records instead of only steering local UI state.
+- changed(memory): added one-click inspector search pivots to `/dashboard/memory` so selected records can immediately re-query by session, tool, concept, or file metadata, and made `All Records` aggregate generic facts with observation/prompt/session-summary searches instead of only hitting the generic memory path.
+- changed(memory): added related-record pivots to the `/dashboard/memory` inspector so selected observations, prompts, and session summaries can jump to correlated records from the same session, tool, source, concepts, or files without leaving the native Borg memory timeline.
+- changed(memory): turned `/dashboard/memory` search results into a structured timeline plus detail inspector, grouping records by day and rendering observation/prompt/session-summary sections so operators can drill into Borg-native memory provenance instead of scanning a flat blob list.
+- changed(memory): upgraded `/dashboard/memory` from a generic full-text list into a Borg-native record explorer with explicit search modes for facts, observations, prompts, and session summaries, added a visible memory-model explainer, and extracted tested helper logic for coherent record titles, previews, timestamps, and provenance tokens.
+- changed(memory): aligned the primary memory dashboard and claude-mem parity surface around Borg's actual native memory model, including typed observations, captured prompts, session summaries, clearer provenance, and corrected tier/stat reporting instead of framing claude-mem as the whole runtime story.
+- docs(tasking): completed the ecosystem assimilation consolidation brief, promoted the memory-story follow-up into `tasks/active/`, and anchored the Borg-native Track A-F capability map in the roadmap, TODO, and handoff docs so future work references scoped Borg tracks instead of repo-wide parity demands.
+- fixed(startup): aligned the Tabby dev launcher waiting logic with resident/always-on MCP runtime semantics, so Borg no longer reports startup complete before resident servers warm or waits on the wrong live-runtime label.
+- changed(startup): Borg's stdio MCP entrypoint now best-effort boots the long-running Borg core as a detached background process when an MCP client launches the router before the control plane is already up, so the interactive MCP client can proceed while the dashboard/bridge warm in parallel.
+- changed(mcp): always-on downstream MCP servers now warm in the background from cached advertised inventory, keeping startup non-blocking while exposing live runtime state, warmup posture, and latest runtime errors more truthfully in the MCP dashboard and inspection panel.
+- fixed(startup): `startupStatus` now counts only actually connected downstream MCP servers as live, while separately surfacing warming and failed warmup counts so the dashboard no longer overstates live runtime readiness during non-blocking startup.
+- changed(startup): split Borg startup readiness into cached MCP inventory vs live MCP runtime semantics, including advertised cached server/tool counts and always-on tool counts so operators can see what is available immediately while live connections continue warming.
+- changed(dashboard): updated the home dashboard, MCP system status helpers, and launcher waiting labels to explain cached-vs-live MCP posture, memory/context readiness, and non-blocking warmup behavior more truthfully.
+- test(startup): added focused regression coverage for always-on cached tool advertisement, cached-vs-live startup checklist copy, system status rows, and launcher wait-label semantics.
 - fix(mcp): `discoverServerTools` now supports SSE and STREAMABLE_HTTP transports alongside STDIO, with a 30-second timeout to prevent hanging discoveries.
 - fix(config): `mcp.json` and `mcp.jsonc` now default to `~/.borg/` instead of the workspace root via new `getBorgConfigDir()` helper; `JsonConfigProvider` updated to match.
 ## [0.9.0-beta] - 2026-03-11
 
 ### ✨ Features & Parity Updates
+- **Health, Logs & Operator Surfaces**: Exposed real-time tRPC-driven dashboards under the "Borg 1.0 Core" section.
+  - `Health Dashboard`: Tracks system startup readiness, event bus/DB status, and instance-level MCP server crash counts/error states.
+  - `Logs Dashboard`: Live searchable view of tool executions, error rates, average latency, and top requested tools.
+  - `System Audit Dashboard`: Centralized timeline of security, configuration, and agent-driven events.
 - **Dashboard Honesty Pass**: Restructured application navigation (Top Nav & Sidebar) to clearly separate "Borg 1.0 Core" features from "Labs & Experimental" pages.
 - **Experimental Guardrails**: Added explicit "Labs" and "Beta" UI badges to developmental surfaces including the Director, Council, and Super Assistant dashboards.
 
 ### 🐛 Fixes & Polish
+- **Session Supervisor Operator Loop**: Added clear UI badges for "Manual Restart" and "Crashed" session states, surfaced underlying crash errors on session cards, enforced reliable worktree isolation when configured, and improved cross-platform terminal attach commands.
 - **System Status Truthfulness**: The System Status page now renders live tRPC data for Database (SQLite), Event Bus, Version (v0.9.0-beta), and real-time Uptime, removing previously hardcoded placeholders.
 - **MCP Discovery Timeout**: Added a 30-second timeout to MCP server discovery handshakes to prevent infinite hanging when an upstream server stalls.
 - docs: replaced the root `ROADMAP.md` milestone stub with a reality-based roadmap that reflects the current shipped, partial, and blocked Borg surfaces.

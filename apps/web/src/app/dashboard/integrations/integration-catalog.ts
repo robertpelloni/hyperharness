@@ -10,6 +10,8 @@ export type CliHarnessDetectionSummary = {
 };
 
 export type StartupStatusSummary = {
+    status?: string;
+    summary?: string;
     checks?: {
         extensionBridge?: {
             ready?: boolean;
@@ -19,6 +21,15 @@ export type StartupStatusSummary = {
             clients?: BridgeClientSummary[];
             supportedCapabilities?: string[];
             supportedHookPhases?: string[];
+        };
+        executionEnvironment?: {
+            ready?: boolean;
+            preferredShellLabel?: string | null;
+            verifiedShellCount?: number;
+            shellCount?: number;
+            verifiedToolCount?: number;
+            toolCount?: number;
+            supportsPosixShell?: boolean;
         };
     };
 };
@@ -42,6 +53,8 @@ export type BrowserStatusSummary = {
 };
 
 export type IntegrationOverview = {
+    startupDegraded: boolean;
+    startupSummary: string | null;
     extensionBridgeReady: boolean;
     extensionBridgeAcceptingConnections: boolean;
     hasConnectedBridgeClients: boolean;
@@ -52,6 +65,11 @@ export type IntegrationOverview = {
     syncedClientCount: number;
     installedHarnessCount: number;
     totalHarnessCount: number;
+    executionEnvironmentReady: boolean;
+    executionPreferredShell: string | null;
+    verifiedExecutionShellCount: number;
+    verifiedExecutionToolCount: number;
+    supportsPosixShell: boolean;
 };
 
 export type InstallSurfaceCard = {
@@ -445,6 +463,10 @@ function getInstallSurfaceNextStep(surfaceId: InstallSurfaceCard['id'], status: 
 }
 
 export function getBridgeClientStatDetail(overview: IntegrationOverview): string {
+    if (overview.startupDegraded) {
+        return overview.startupSummary ?? 'Compat fallback is active, so live bridge telemetry is currently unavailable.';
+    }
+
     if (!overview.extensionBridgeAcceptingConnections) {
         return 'Bridge has not finished coming online';
     }
@@ -457,6 +479,11 @@ export function getBridgeClientStatDetail(overview: IntegrationOverview): string
 }
 
 export function getBridgeClientEmptyStateMessage(overview: IntegrationOverview): string {
+    if (overview.startupDegraded) {
+        return overview.startupSummary
+            ?? 'Startup is running in local compat fallback, so live IDE/browser bridge client telemetry is unavailable right now.';
+    }
+
     if (overview.extensionBridgeAcceptingConnections) {
         return 'Bridge listener is ready, but no IDE or browser bridges have connected yet.';
     }
@@ -525,6 +552,8 @@ export function getIntegrationOverview(
     syncTargets?: SyncTargetSummary[] | null,
     cliHarnesses?: CliHarnessDetectionSummary[] | null,
 ): IntegrationOverview {
+    const startupDegraded = startupStatus?.status === 'degraded';
+    const startupSummary = startupStatus?.summary?.trim() ?? null;
     const extensionClientCount = Number(startupStatus?.checks?.extensionBridge?.clientCount ?? 0);
     const extensionBridgeReady = Boolean(startupStatus?.checks?.extensionBridge?.ready);
     const extensionBridgeAcceptingConnections = Boolean(
@@ -541,8 +570,15 @@ export function getIntegrationOverview(
     const syncedClientCount = (syncTargets ?? []).filter((target) => target.exists).length;
     const totalHarnessCount = cliHarnesses?.length ?? 0;
     const installedHarnessCount = (cliHarnesses ?? []).filter((harness) => Boolean(harness.installed)).length;
+    const executionEnvironmentReady = Boolean(startupStatus?.checks?.executionEnvironment?.ready);
+    const executionPreferredShell = startupStatus?.checks?.executionEnvironment?.preferredShellLabel ?? null;
+    const verifiedExecutionShellCount = Number(startupStatus?.checks?.executionEnvironment?.verifiedShellCount ?? 0);
+    const verifiedExecutionToolCount = Number(startupStatus?.checks?.executionEnvironment?.verifiedToolCount ?? 0);
+    const supportsPosixShell = Boolean(startupStatus?.checks?.executionEnvironment?.supportsPosixShell);
 
     return {
+        startupDegraded,
+        startupSummary,
         extensionBridgeReady,
         extensionBridgeAcceptingConnections,
         hasConnectedBridgeClients,
@@ -553,6 +589,11 @@ export function getIntegrationOverview(
         syncedClientCount,
         installedHarnessCount,
         totalHarnessCount,
+        executionEnvironmentReady,
+        executionPreferredShell,
+        verifiedExecutionShellCount,
+        verifiedExecutionToolCount,
+        supportsPosixShell,
     };
 }
 

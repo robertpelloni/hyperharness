@@ -161,6 +161,9 @@ export type AgentMemoryServiceRuntime = {
     captureUserPrompt?: (input: Record<string, unknown>) => Promise<unknown>;
     getRecentUserPrompts?: (limit?: number, options?: Record<string, unknown>) => unknown[];
     searchUserPrompts?: (query: string, options?: Record<string, unknown>) => Promise<unknown[]>;
+    searchByPivot?: (input: Record<string, unknown>) => unknown[];
+    getTimelineWindow?: (input: Record<string, unknown>) => unknown[];
+    getCrossSessionLinks?: (input: Record<string, unknown>) => unknown[];
 };
 
 export type SymbolPinServiceRuntime = {
@@ -203,6 +206,7 @@ export type ShellServiceRuntime = {
     logCommand: (input: Record<string, unknown>) => Promise<string>;
     queryHistory: (query: string, limit?: number) => Promise<unknown[]> | unknown[];
     getSystemHistory: (limit?: number) => Promise<unknown[]> | unknown[];
+    executeWithContext?: (command: string, options?: Record<string, unknown>) => Promise<unknown>;
 };
 
 export type EventBusRuntime = {
@@ -254,6 +258,18 @@ export type SessionSupervisorLogRuntime = {
     message: string;
 };
 
+export type SessionExecutionPolicyRuntime = {
+    requestedProfile: 'auto' | 'powershell' | 'posix' | 'compatibility';
+    effectiveProfile: 'powershell' | 'posix' | 'compatibility' | 'fallback';
+    shellId: string | null;
+    shellLabel: string | null;
+    shellFamily: 'powershell' | 'cmd' | 'posix' | 'wsl' | null;
+    shellPath: string | null;
+    supportsPowerShell: boolean;
+    supportsPosixShell: boolean;
+    reason: string;
+};
+
 export type SessionSupervisorSessionRuntime = {
     id: string;
     name: string;
@@ -261,6 +277,8 @@ export type SessionSupervisorSessionRuntime = {
     command: string;
     args: string[];
     env: Record<string, string>;
+    executionProfile: 'auto' | 'powershell' | 'posix' | 'compatibility';
+    executionPolicy: SessionExecutionPolicyRuntime | null;
     requestedWorkingDirectory: string;
     workingDirectory: string;
     worktreePath?: string;
@@ -410,6 +428,12 @@ export type MCPSimpleServerRuntime = {
     name?: string;
     status?: string;
     toolCount?: number;
+    advertisedToolCount?: number;
+    advertisedAlwaysOn?: boolean;
+    advertisedSource?: 'database' | 'config' | 'empty';
+    warmupStatus?: 'idle' | 'scheduled' | 'warming' | 'ready' | 'failed';
+    lastConnectedAt?: number;
+    lastError?: string;
     tools?: unknown[];
     command?: string;
     args?: string[];
@@ -424,6 +448,14 @@ export type MCPAggregatedToolRuntime = {
     name: string;
     description?: string;
     server?: string;
+    serverDisplayName?: string;
+    advertisedName?: string;
+    serverTags?: string[];
+    toolTags?: string[];
+    semanticGroup?: string;
+    semanticGroupLabel?: string;
+    keywords?: string[];
+    alwaysOn?: boolean;
     inputSchema?: unknown;
 };
 

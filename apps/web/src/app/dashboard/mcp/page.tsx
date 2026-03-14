@@ -37,6 +37,13 @@ type AggregatedServer = {
     name: string;
     status: string;
     toolCount: number;
+    runtimeState?: string;
+    warmupState?: string;
+    runtimeConnected?: boolean;
+    advertisedToolCount?: number;
+    advertisedSource?: string;
+    lastConnectedAt?: string | null;
+    lastError?: string | null;
     metadataStatus?: string;
     metadataSource?: string;
     metadataToolCount?: number;
@@ -59,6 +66,7 @@ type ManagedServerMetadata = {
     url?: string | null;
     bearerToken?: string | null;
     headers?: Record<string, string>;
+    always_on?: boolean;
     _meta?: {
         status?: string;
         metadataSource?: string;
@@ -178,10 +186,12 @@ function StatusBadge({ status }: { status: string }): React.JSX.Element {
 function ServerInspectionPanel(
     {
         server,
+        runtime,
         health,
         onClose,
     }: {
         server?: ManagedServerMetadata;
+        runtime?: AggregatedServer;
         health?: ManagedServerHealth;
         onClose: () => void;
     },
@@ -192,7 +202,7 @@ function ServerInspectionPanel(
                 <div>
                     <CardTitle className="text-base text-white">Inspect downstream MCP server</CardTitle>
                     <p className="mt-1 text-sm text-zinc-500">
-                        Review the effective transport config, cached metadata, and current health counters without leaving the control plane.
+                        Review the effective transport config, cached-vs-runtime posture, and current health counters without leaving the control plane.
                     </p>
                 </div>
                 <Button
@@ -220,15 +230,28 @@ function ServerInspectionPanel(
                                     Transport <span className="font-medium text-white">{server.type ?? 'STDIO'}</span>
                                 </div>
                             </div>
-                            <StatusBadge status={server._meta?.status ?? 'pending'} />
+                            <div className="flex flex-wrap gap-2">
+                                <StatusBadge status={server._meta?.status ?? 'pending'} />
+                                {runtime ? <StatusBadge status={runtime.runtimeState ?? runtime.status} /> : null}
+                            </div>
                         </div>
 
                         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+                            <div className="rounded-lg border border-zinc-800 bg-zinc-950/60 p-4 text-sm">
+                                <div className="text-xs uppercase tracking-wider text-zinc-500">Runtime</div>
+                                <div className="mt-2 space-y-1 text-zinc-300">
+                                    <div>Runtime state: <span className="font-semibold text-white">{runtime?.runtimeState ?? runtime?.status ?? 'unknown'}</span></div>
+                                    <div>Warmup: <span className="font-semibold text-white">{runtime?.warmupState ?? 'idle'}</span></div>
+                                    <div>Advertised source: <span className="font-semibold text-white">{runtime?.advertisedSource ?? 'unknown'}</span></div>
+                                    <div>Advertised tools: <span className="font-semibold text-white">{String(runtime?.advertisedToolCount ?? runtime?.metadataToolCount ?? 0)}</span></div>
+                                </div>
+                            </div>
                             <div className="rounded-lg border border-zinc-800 bg-zinc-950/60 p-4 text-sm">
                                 <div className="text-xs uppercase tracking-wider text-zinc-500">Connection</div>
                                 <div className="mt-2 space-y-1 text-zinc-300">
                                     <div>Command: <span className="font-mono text-xs text-white">{server.command ?? 'n/a'}</span></div>
                                     <div>URL: <span className="break-all font-mono text-xs text-white">{server.url ?? 'n/a'}</span></div>
+                                    <div>Last runtime connect: <span className="font-semibold text-white">{runtime?.lastConnectedAt ?? 'never'}</span></div>
                                 </div>
                             </div>
                             <div className="rounded-lg border border-zinc-800 bg-zinc-950/60 p-4 text-sm">
@@ -251,6 +274,12 @@ function ServerInspectionPanel(
                             <div className="rounded-lg border border-zinc-800 bg-zinc-950/60 p-4 text-sm">
                                 <div className="text-xs uppercase tracking-wider text-zinc-500">Description</div>
                                 <div className="mt-2 text-zinc-300">{server.description ?? 'No description provided.'}</div>
+                                {runtime?.lastError ? (
+                                    <div className="mt-3 rounded border border-rose-500/20 bg-rose-500/10 p-3 text-xs text-rose-100">
+                                        <div className="font-semibold text-white">Latest runtime error</div>
+                                        <div className="mt-1 break-words">{runtime.lastError}</div>
+                                    </div>
+                                ) : null}
                             </div>
                         </div>
 
@@ -698,6 +727,7 @@ export default function MCPDashboard(): React.JSX.Element {
     const reloadMetadataMutation = mcpServersClient.reloadMetadata.useMutation();
     const clearMetadataCacheMutation = mcpServersClient.clearMetadataCache.useMutation();
     const deleteServerMutation = mcpServersClient.delete.useMutation();
+    const updateServerMutation = mcpServersClient.update.useMutation();
     const resetServerHealthMutation = trpc.serverHealth.reset.useMutation();
     const { data: editingServer } = mcpServersClient.get.useQuery(
         { uuid: editingServerUuid ?? '' },
@@ -717,6 +747,7 @@ export default function MCPDashboard(): React.JSX.Element {
     const unresolvedDiscoveryTargetUuids = getBulkMetadataTargetUuids(managedServerList, 'unresolved');
     const allDiscoveryTargetUuids = getBulkMetadataTargetUuids(managedServerList, 'all');
     const serverList = buildDashboardServerRecords((servers || []) as AggregatedServer[], managedServerList);
+    const inspectingRuntimeServer = useMemo(() => serverList.find((server) => server.uuid === inspectingServerUuid), [inspectingServerUuid, serverList]);
     const toolList = (tools || []) as AggregatedTool[];
     const existingServerNames = useMemo(() => Array.from(new Set([
         ...serverList.map((server) => server.name),
@@ -770,6 +801,20 @@ export default function MCPDashboard(): React.JSX.Element {
             toast.error(message);
         } finally {
             setDeletingServerUuid(null);
+        }
+    }
+
+    async function handleToggleAlwaysOn(serverUuid: string, serverName: string, currentValue: boolean) {
+        try {
+            await updateServerMutation.mutateAsync({
+                uuid: serverUuid,
+                always_on: !currentValue,
+            });
+            await refreshDashboardQueries();
+            toast.success(`'Always On' setting updated for ${serverName}.`);
+        } catch (error) {
+            const message = error instanceof Error ? error.message : 'Failed to update setting.';
+            toast.error(message);
         }
     }
 
@@ -935,6 +980,7 @@ export default function MCPDashboard(): React.JSX.Element {
             {inspectingServerUuid ? (
                 <ServerInspectionPanel
                     server={inspectingServer}
+                    runtime={inspectingRuntimeServer}
                     health={inspectingServerHealth}
                     onClose={() => setInspectingServerUuid(null)}
                 />
@@ -1150,6 +1196,17 @@ export default function MCPDashboard(): React.JSX.Element {
                                                 <span className="rounded border border-zinc-800 bg-zinc-900/60 px-2 py-1">
                                                     cache {server.metadataStatus ?? 'pending'}
                                                 </span>
+                                                <span className={`rounded border px-2 py-1 ${server.runtimeConnected ? 'border-emerald-500/20 bg-emerald-500/10 text-emerald-200' : 'border-zinc-800 bg-zinc-900/60'}`}>
+                                                    runtime {server.runtimeState ?? server.status}
+                                                </span>
+                                                <span className={`rounded border px-2 py-1 ${server.warmupState === 'ready' ? 'border-emerald-500/20 bg-emerald-500/10 text-emerald-200' : server.warmupState === 'failed' ? 'border-rose-500/20 bg-rose-500/10 text-rose-200' : server.warmupState === 'warming' || server.warmupState === 'scheduled' ? 'border-amber-500/20 bg-amber-500/10 text-amber-200' : 'border-zinc-800 bg-zinc-900/60'}`}>
+                                                    warmup {server.warmupState ?? 'idle'}
+                                                </span>
+                                                {server.always_on ? (
+                                                    <span className="rounded border border-indigo-500/20 bg-indigo-500/10 px-2 py-1 text-indigo-200 font-bold">
+                                                        Always On
+                                                    </span>
+                                                ) : null}
                                                 <span className="rounded border border-zinc-800 bg-zinc-900/60 px-2 py-1">
                                                     source {server.metadataSource ?? 'none'}
                                                 </span>
@@ -1173,13 +1230,16 @@ export default function MCPDashboard(): React.JSX.Element {
                                             <div className="mt-1 text-white font-semibold">{server.toolCount}</div>
                                         </div>
                                         <div className="rounded border border-zinc-800 bg-zinc-900/60 p-2.5">
-                                            <div className="text-xs uppercase tracking-wider text-zinc-500">Env keys</div>
-                                            <div className="mt-1 text-white font-semibold">{server.config?.env?.length ?? 0}</div>
+                                            <div className="text-xs uppercase tracking-wider text-zinc-500">Advertised tools</div>
+                                            <div className="mt-1 text-white font-semibold">{server.advertisedToolCount ?? server.metadataToolCount ?? 0}</div>
                                         </div>
                                     </div>
                                     <div className="mt-3 space-y-3">
                                         <div className="rounded border border-zinc-800 bg-zinc-900/60 p-2.5 text-xs text-zinc-400">
                                             <div>Cached tools: <span className="font-semibold text-white">{server.metadataToolCount ?? 0}</span></div>
+                                            <div className="mt-1">Advertised source: <span className="font-semibold text-white">{server.advertisedSource ?? 'unknown'}</span></div>
+                                            <div className="mt-1">Last runtime connect: <span className="font-semibold text-white">{server.lastConnectedAt ?? 'never'}</span></div>
+                                            <div className="mt-1">Env keys: <span className="font-semibold text-white">{server.config?.env?.length ?? 0}</span></div>
                                             <div className="mt-1 break-all">Last binary load: {server.lastSuccessfulBinaryLoadAt ?? 'never'}</div>
                                         </div>
                                         {hasStaleReadyCache ? (
@@ -1283,6 +1343,15 @@ export default function MCPDashboard(): React.JSX.Element {
                                                         <Activity className="mr-2 h-3.5 w-3.5" />
                                                         Logs
                                                     </Link>
+                                                        <Link
+                                                            href={`/dashboard/mcp/testing/servers?target=${encodeURIComponent(server.name)}`}
+                                                            title={`Open the interactive probe panel for ${server.name}`}
+                                                            aria-label={`Open interactive test for ${server.name}`}
+                                                            className="inline-flex items-center justify-center rounded-md border border-cyan-500/30 px-3 py-2 text-sm text-cyan-200 transition-colors hover:bg-cyan-500/10"
+                                                        >
+                                                            <Play className="mr-2 h-3.5 w-3.5" />
+                                                            Interactive test
+                                                        </Link>
                                                     <Button
                                                         type="button"
                                                         variant="outline"
@@ -1318,6 +1387,19 @@ export default function MCPDashboard(): React.JSX.Element {
                                                             <Pencil className="mr-2 h-3.5 w-3.5" />
                                                             Edit tools
                                                         </Link>
+                                                        <Button
+                                                            type="button"
+                                                            variant="outline"
+                                                            size="sm"
+                                                            disabled={updateServerMutation.isPending}
+                                                            onClick={() => void handleToggleAlwaysOn(serverUuid, server.name, !!server.always_on)}
+                                                            title={`Toggle Always On status for ${server.name}`}
+                                                            aria-label={`Toggle Always On for ${server.name}`}
+                                                            className={`border-zinc-700 hover:bg-zinc-800 ${server.always_on ? 'text-indigo-400 border-indigo-500/30 bg-indigo-500/5' : 'text-zinc-300'}`}
+                                                        >
+                                                            <Zap className="mr-2 h-3.5 w-3.5" />
+                                                            Toggle Auto-Load Tools: {server.always_on ? 'ON' : 'OFF'}
+                                                        </Button>
                                                         <Button
                                                             type="button"
                                                             variant="outline"

@@ -42,6 +42,8 @@ import {
     ShoppingBag,
     Code2,
     Puzzle,
+    MonitorPlay,
+    FolderOpen,
 } from "lucide-react";
 
 export interface NavItem {
@@ -242,7 +244,11 @@ export const INTEGRATIONS_NAV: NavItem[] = [
 export const CORE_DASHBOARD_NAV: NavItem[] = [
     { title: "Mission Control", href: "/", icon: LayoutDashboard, variant: "ghost" },
     { title: "Supervisor", href: "/dashboard/supervisor", icon: Eye, variant: "ghost" },
+    { title: "Sessions", href: "/dashboard/session", icon: MonitorPlay, description: "Manage supervised AI coding sessions, harness configurations, and restart policies.", variant: "ghost" },
     { title: "Providers", href: "/dashboard/billing", icon: Key, variant: "ghost" },
+    { title: "Health", href: "/dashboard/health", icon: Activity, variant: "ghost" },
+    { title: "Logs", href: "/dashboard/logs", icon: Terminal, variant: "ghost" },
+    { title: "Audit", href: "/dashboard/audit", icon: FileText, variant: "ghost" },
     { title: "Documentation", href: "/docs", icon: BookOpen, variant: "ghost" },
     { title: "Settings", href: "/dashboard/settings", icon: Settings2, variant: "ghost" },
 ];
@@ -258,9 +264,11 @@ export const LABS_DASHBOARD_NAV: NavItem[] = [
     { title: "Ingestion", href: "/dashboard/ingestion", icon: Database, variant: "ghost" },
     { title: "Research", href: "/dashboard/research", icon: FlaskConical, variant: "ghost" },
     { title: "Browser", href: "/dashboard/browser", icon: Globe, variant: "ghost" },
-    { title: "Symbols", href: "/dashboard/symbols", icon: Code2, variant: "ghost" },
-    { title: "Code", href: "/dashboard/code", icon: FileCode2, variant: "ghost" },
-    { title: "Command", href: "/dashboard/command", icon: Terminal, variant: "ghost" },
+    { title: "Symbols", href: "/dashboard/symbols", icon: Code2, description: "Browse pinned code symbols and architectural references.", variant: "ghost" },
+    { title: "Code", href: "/dashboard/code", icon: FileCode2, description: "LSP symbol navigation and search across the active workspace.", variant: "ghost" },
+    { title: "Context Manager", href: "/dashboard/context", icon: FolderOpen, description: "Manage files injected into the Borg context prompt for active AI sessions.", variant: "ghost" },
+    { title: "Command", href: "/dashboard/command", icon: Terminal, description: "Execute slash commands and explore registered command handlers via a live REPL.", variant: "ghost" },
+    { title: "Tests", href: "/dashboard/tests", icon: FlaskConical, description: "Auto-test watcher: start/stop file-watch mode, view per-file pass/fail results.", variant: "ghost" },
     { title: "Traffic Inspector", href: "/dashboard/inspector", icon: FileSearch, variant: "ghost" },
     { title: "Workflows", href: "/dashboard/workflows", icon: Workflow, variant: "ghost" },
     { title: "Library", href: "/dashboard/library", icon: Library, variant: "ghost" },
@@ -278,6 +286,8 @@ export const LABS_DASHBOARD_NAV: NavItem[] = [
     { title: "Infrastructure", href: "/dashboard/infrastructure", icon: Server, variant: "ghost" },
     { title: "Evolution", href: "/dashboard/evolution", icon: Sparkles, variant: "ghost" },
     { title: "Chronicle", href: "/dashboard/chronicle", icon: ScrollText, variant: "ghost" },
+    { title: "Chronicle", href: "/dashboard/chronicle", icon: ScrollText, description: "Git commit log and working-tree status for the active Borg workspace.", variant: "ghost" },
+    { title: "Library", href: "/dashboard/library", icon: Library, description: "Resource hub for scripts, skills, tool sets, memory, plans, and documentation.", variant: "ghost" },
     { title: "Submodules", href: "/dashboard/submodules", icon: FileCode, variant: "ghost" },
     { title: "Workshop", href: "/dashboard/workshop", icon: Wrench, variant: "ghost" },
     { title: "Auto-Dev", href: "/dashboard/workshop/auto-dev", icon: Bot, variant: "ghost" },

@@ -6,10 +6,12 @@ import { Button } from "@borg/ui";
 import { Loader2, Plus, Shield, Trash2, Edit2 } from "lucide-react";
 import { trpc } from '@/utils/trpc';
 import { toast } from 'sonner';
+import { normalizePolicies } from './policies-page-normalizers';
 
 export default function PoliciesDashboard() {
     const { data: policies, isLoading, refetch } = trpc.policies.list.useQuery();
     const [isCreateOpen, setIsCreateOpen] = useState(false);
+    const normalizedPolicies = normalizePolicies(policies);
 
     return (
         <div className="p-8 space-y-8">
@@ -27,6 +29,15 @@ export default function PoliciesDashboard() {
                 </div>
             </div>
 
+            <Card className="bg-amber-950/20 border-amber-700/40">
+                <CardContent className="p-4">
+                    <p className="text-sm text-amber-200">
+                        Policy enforcement is currently in <span className="font-semibold">audit/preview mode</span>. Rules are editable and stored,
+                        but runtime allow/deny enforcement is pass-through in this build.
+                    </p>
+                </CardContent>
+            </Card>
+
             {isCreateOpen && (
                 <CreatePolicyForm onSuccess={() => { setIsCreateOpen(false); refetch(); }} />
             )}
@@ -36,13 +47,13 @@ export default function PoliciesDashboard() {
                     <div className="col-span-3 flex justify-center p-12">
                         <Loader2 className="h-8 w-8 animate-spin text-zinc-500" />
                     </div>
-                ) : (policies?.length ?? 0) === 0 ? (
+                ) : normalizedPolicies.length === 0 ? (
                     <div className="col-span-3 text-center p-12 text-zinc-500 bg-zinc-900/50 rounded-lg border border-zinc-800 border-dashed">
                         <Shield className="h-12 w-12 mx-auto mb-4 opacity-30" />
                         <p className="text-lg font-medium">No Policies Defined</p>
                         <p className="text-sm mt-1">Create a policy to restrict access to sensitive tools.</p>
                     </div>
-                ) : policies?.map((policy: any) => (
+                ) : normalizedPolicies.map((policy) => (
                     <PolicyCard key={policy.uuid} policy={policy} onUpdate={refetch} />
                 ))}
             </div>

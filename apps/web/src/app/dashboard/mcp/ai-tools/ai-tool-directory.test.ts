@@ -30,6 +30,18 @@ describe('getCliHarnessCards', () => {
             statusTone: 'success',
         });
     });
+
+    it('returns an empty list when detections payload is malformed', () => {
+        const cards = getCliHarnessCards(
+            { not: 'an-array' } as unknown as any[],
+            [
+                { cliType: 'claude', status: 'running' },
+                { cliType: 'claude', status: 'stopped' },
+            ],
+        );
+
+        expect(cards).toEqual([]);
+    });
 });
 
 describe('getProviderDirectoryCards', () => {
@@ -55,6 +67,17 @@ describe('getProviderDirectoryCards', () => {
             authLabel: 'api key',
             availabilityLabel: 'healthy',
             usageLabel: '42 / 100',
+        });
+    });
+
+    it('falls back to portal defaults when quota payload is malformed', () => {
+        const cards = getProviderDirectoryCards('invalid-quotas' as unknown as any[]);
+        const openai = cards.find((card) => card.provider === 'openai');
+
+        expect(cards.length).toBeGreaterThan(0);
+        expect(openai).toMatchObject({
+            statusLabel: 'Not connected',
+            usageLabel: '0 used',
         });
     });
 });

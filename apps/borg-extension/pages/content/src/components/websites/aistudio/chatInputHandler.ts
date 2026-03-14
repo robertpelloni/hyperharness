@@ -6,6 +6,7 @@
 
 // import { logger } from '@src/utils/helpers';
 import { createLogger } from '@extension/shared/lib/logger';
+import { findBestActionButton, isButtonDisabled } from '@src/utils/dom';
 
 /**
  * Find the AiStudio chat input textarea element
@@ -231,16 +232,13 @@ export const submitChatInput = (maxWaitTime = 5000): Promise<boolean> => {
 
       // Define a function to find the submit button
       const findSubmitButton = (): HTMLButtonElement | null => {
-        const submitButton =
-          document.querySelector('button[aria-label="Submit"]') ||
-          document.querySelector('button[aria-label="Send"]') ||
-          document.querySelector('button[type="submit"]') ||
-          // Look for a button next to the textarea
-          chatInput.parentElement?.querySelector('button') ||
-          // Common pattern: button with paper plane icon
-          document.querySelector('button svg[stroke="currentColor"]')?.closest('button');
-
-        return submitButton as HTMLButtonElement | null;
+        return findBestActionButton({
+          actionLabels: ['submit', 'send', 'run'],
+          preferredSelectors: ['button[aria-label="Submit"]', 'button[aria-label="Send"]', 'button[type="submit"]'],
+          root: document,
+          near: chatInput,
+          iconPathHints: ['M12 3', 'm12 3', 'paper'],
+        });
       };
 
       // Try to find and check the submit button
@@ -259,11 +257,7 @@ export const submitChatInput = (maxWaitTime = 5000): Promise<boolean> => {
           }
 
           // Check if the button is disabled
-          const isDisabled =
-            button.disabled ||
-            button.getAttribute('disabled') !== null ||
-            button.getAttribute('aria-disabled') === 'true' ||
-            button.classList.contains('disabled');
+          const isDisabled = isButtonDisabled(button);
 
           if (!isDisabled) {
             logger.debug('Submit button is enabled, clicking it');
@@ -345,7 +339,7 @@ export const submitChatInput = (maxWaitTime = 5000): Promise<boolean> => {
         tryClickingButton();
 
         // If the button is already enabled and clicked, clear the interval
-        if (submitButton && !submitButton.disabled) {
+        if (submitButton && !isButtonDisabled(submitButton)) {
           clearInterval(intervalId);
         }
       } else {

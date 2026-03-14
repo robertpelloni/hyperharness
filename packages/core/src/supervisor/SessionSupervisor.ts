@@ -4,6 +4,14 @@ import path from 'node:path';
 import { spawn } from 'node:child_process';
 
 import {
+    detectLocalExecutionEnvironment,
+    type LocalExecutionEnvironment,
+} from '../services/execution-environment.js';
+import {
+    buildExecutionPolicyEnv,
+    selectSessionExecutionPolicy,
+} from '../services/session-execution-policy.js';
+import {
     type CreateSupervisedSessionInput,
     type PersistedSessionSupervisorState,
     type SchedulerLike,
@@ -62,6 +70,7 @@ export class SessionSupervisor {
     private readonly spawnProcess: SpawnSupervisedProcess;
     private readonly scheduler: SchedulerLike;
     private readonly worktreeManager?: WorktreeManagerLike;
+    private readonly detectExecutionEnvironment: () => Promise<LocalExecutionEnvironment>;
 
     private readonly sessions = new Map<string, SupervisedSessionSnapshot>();
     private readonly runtimes = new Map<string, SessionRuntime>();
@@ -88,6 +97,7 @@ export class SessionSupervisor {
         this.spawnProcess = options.spawnProcess ?? defaultSpawnProcess;
         this.scheduler = options.scheduler ?? defaultScheduler();
         this.worktreeManager = options.worktreeManager;
+        this.detectExecutionEnvironment = options.detectExecutionEnvironment ?? (() => detectLocalExecutionEnvironment());
 
         this.restoreSessions();
     }
@@ -112,6 +122,16 @@ export class SessionSupervisor {
             : undefined;
         const resolvedCommand = this.resolveCommand(input.cliType, input.command);
         const resolvedArgs = input.args ?? this.resolveDefaultArgs(input.cliType);
+        const requestedExecutionProfile = input.executionProfile ?? 'auto';
+        let executionPolicy = null;
+        try {
+            executionPolicy = selectSessionExecutionPolicy(
+                await this.detectExecutionEnvironment(),
+                requestedExecutionProfile,
+            );
+        } catch (error) {
+            console.warn('[SessionSupervisor] Failed to detect execution environment:', error);
+        }
         const now = this.now();
 
         const session: SupervisedSessionSnapshot = {
@@ -120,7 +140,12 @@ export class SessionSupervisor {
             cliType: input.cliType,
             command: resolvedCommand,
             args: [...resolvedArgs],
-            env: { ...(input.env ?? {}) },
+            env: {
+                ...(input.env ?? {}),
+                ...buildExecutionPolicyEnv(executionPolicy),
+            },
+            executionProfile: requestedExecutionProfile,
+            executionPolicy,
             requestedWorkingDirectory,
             workingDirectory: worktreePath ?? requestedWorkingDirectory,
             worktreePath,
@@ -138,6 +163,13 @@ export class SessionSupervisor {
         this.sessions.set(id, session);
         this.runtimes.set(id, this.createRuntimeState());
         this.appendLog(id, 'system', `Session created for ${session.cliType} in ${session.workingDirectory}`);
+        if (executionPolicy?.shellLabel) {
+            this.appendLog(
+                id,
+                'system',
+                `Execution policy ${executionPolicy.requestedProfile} selected ${executionPolicy.shellLabel} (${executionPolicy.reason})`,
+            );
+        }
         this.persist();
         return this.cloneSession(session);
     }
@@ -376,14 +408,7 @@ export class SessionSupervisor {
     }
 
     private async shouldUseWorktree(workingDirectory: string, requestedIsolation: boolean): Promise<boolean> {
-        if (!requestedIsolation || !this.worktreeManager) {
-            return false;
-        }
-
-        return [...this.sessions.values()].some((session) => (
-            session.requestedWorkingDirectory === workingDirectory
-            && ACTIVE_SESSION_STATUSES.has(session.status)
-        ));
+        return !!(requestedIsolation && this.worktreeManager);
     }
 
     private async createWorktree(sessionId: string): Promise<string> {
@@ -534,6 +559,8 @@ export class SessionSupervisor {
             ...session,
             args: [...(session.args ?? [])],
             env: { ...(session.env ?? {}) },
+            executionProfile: session.executionProfile ?? 'auto',
+            executionPolicy: session.executionPolicy ?? null,
             metadata: { ...(session.metadata ?? {}) },
             logs: [...(session.logs ?? [])].slice(-this.maxLogEntries),
             status,
@@ -567,6 +594,7 @@ export class SessionSupervisor {
             ...session,
             args: [...session.args],
             env: { ...session.env },
+            executionPolicy: session.executionPolicy ? { ...session.executionPolicy } : null,
             metadata: { ...session.metadata },
             logs: session.logs.map((entry) => ({ ...entry })),
         };

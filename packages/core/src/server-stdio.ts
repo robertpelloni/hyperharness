@@ -23,6 +23,18 @@ async function main() {
     });
 
     try {
+        const { ensureBackgroundCoreRunning } = await import('./backgroundCoreBootstrap.js');
+        void ensureBackgroundCoreRunning({
+            waitForReady: false,
+            log: (message, ...optionalParams) => console.error(message, ...optionalParams),
+        }).then((result) => {
+            if (result.status === 'spawned') {
+                console.error(`[Borg Core] Background control-plane bootstrap requested (PID: ${result.pid ?? 'unknown'}).`);
+            }
+        }).catch((error) => {
+            console.error('[Borg Core] Background control-plane bootstrap failed:', error);
+        });
+
         const { MCPServer } = await import('./MCPServer.js');
         const mcp = new MCPServer({ skipWebsocket: true });
         await mcp.start();

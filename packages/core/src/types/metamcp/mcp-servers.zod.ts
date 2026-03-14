@@ -213,6 +213,7 @@ export const McpServerSchema = z.object({
     created_at: z.string(),
     bearerToken: z.string().nullable(),
     headers: z.record(z.string()),
+    always_on: z.boolean().default(false),
     user_id: z.string().nullable(),
     error_status: McpServerErrorStatusEnum.optional(),
 });
@@ -450,6 +451,7 @@ export const McpServerCreateInputSchema = z.object({
     url: z.string().nullable().optional(),
     bearerToken: z.string().nullable().optional(),
     headers: z.record(z.string()).optional(),
+    always_on: z.boolean().optional(),
     user_id: z.string().nullable().optional(),
     metadataStrategy: z.enum(['auto', 'binary', 'cache']).optional(),
 });
@@ -475,6 +477,7 @@ export const McpServerUpdateInputSchema = z.object({
     url: z.string().nullable().optional(),
     bearerToken: z.string().nullable().optional(),
     headers: z.record(z.string()).optional(),
+    always_on: z.boolean().optional(),
     user_id: z.string().nullable().optional(),
     metadataStrategy: z.enum(['auto', 'binary', 'cache']).optional(),
 });
@@ -496,6 +499,7 @@ export const DatabaseMcpServerSchema = z.object({
     created_at: z.date(),
     bearerToken: z.string().nullable(),
     headers: z.record(z.string()),
+    always_on: z.boolean(),
     user_id: z.string().nullable(),
 });
 

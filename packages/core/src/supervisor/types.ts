@@ -1,3 +1,6 @@
+import type { LocalExecutionEnvironment } from '../services/execution-environment.js';
+import type { SessionExecutionPolicy, SessionExecutionProfile } from '../services/session-execution-policy.js';
+
 export type SessionLogStream = 'stdout' | 'stderr' | 'system';
 export type SupervisedSessionStatus = 'created' | 'starting' | 'running' | 'stopping' | 'stopped' | 'restarting' | 'error';
 export type SupervisedSessionHealthStatus = 'healthy' | 'degraded' | 'unresponsive' | 'crashed';
@@ -70,6 +73,7 @@ export interface CreateSupervisedSessionInput {
     command?: string;
     args?: string[];
     env?: Record<string, string>;
+    executionProfile?: SessionExecutionProfile;
     autoRestart?: boolean;
     isolateWorktree?: boolean;
     metadata?: Record<string, unknown>;
@@ -83,6 +87,8 @@ export interface SupervisedSessionSnapshot {
     command: string;
     args: string[];
     env: Record<string, string>;
+    executionProfile: SessionExecutionProfile;
+    executionPolicy: SessionExecutionPolicy | null;
     requestedWorkingDirectory: string;
     workingDirectory: string;
     worktreePath?: string;
@@ -122,4 +128,5 @@ export interface SessionSupervisorOptions {
     spawnProcess?: SpawnSupervisedProcess;
     scheduler?: SchedulerLike;
     worktreeManager?: WorktreeManagerLike;
+    detectExecutionEnvironment?: () => Promise<LocalExecutionEnvironment>;
 }

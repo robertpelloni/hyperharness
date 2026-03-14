@@ -1,6 +1,7 @@
 import { createHash } from 'node:crypto';
 import { existsSync } from 'node:fs';
 import fs from 'node:fs/promises';
+import os from 'node:os';
 import path from 'node:path';
 
 import { normalizeImportedServerType } from '../../../../lib/mcp-import';
@@ -30,10 +31,37 @@ function resolveRepoRoot(): string {
   return path.resolve(process.cwd(), '..', '..');
 }
 
-const REPO_ROOT = resolveRepoRoot();
-const MCP_JSONC_PATH = path.join(REPO_ROOT, 'mcp.jsonc');
-const MCP_JSON_PATH = path.join(REPO_ROOT, 'mcp.json');
+const LEGACY_REPO_ROOT = resolveRepoRoot();
+const LEGACY_MCP_JSONC_PATH = path.join(LEGACY_REPO_ROOT, 'mcp.jsonc');
+const LEGACY_MCP_JSON_PATH = path.join(LEGACY_REPO_ROOT, 'mcp.json');
 const JSONC_HEADER = `// Borg MCP configuration\n// This file is Borg-owned and may include cached server metadata under mcpServers.<name>._meta.\n`;
+
+function resolveBorgConfigDir(): string {
+  const configuredDir = process.env.BORG_CONFIG_DIR?.trim();
+  if (configuredDir) {
+    return configuredDir;
+  }
+
+  return path.join(os.homedir(), '.borg');
+}
+
+function resolvePrimaryMcpPaths(): { jsoncPath: string; jsonPath: string } {
+  const configDir = resolveBorgConfigDir();
+  return {
+    jsoncPath: path.join(configDir, 'mcp.jsonc'),
+    jsonPath: path.join(configDir, 'mcp.json'),
+  };
+}
+
+function resolveMcpReadCandidates(): Array<{ filePath: string; allowComments: boolean }> {
+  const primaryPaths = resolvePrimaryMcpPaths();
+  return [
+    { filePath: primaryPaths.jsoncPath, allowComments: true },
+    { filePath: primaryPaths.jsonPath, allowComments: false },
+    { filePath: LEGACY_MCP_JSONC_PATH, allowComments: true },
+    { filePath: LEGACY_MCP_JSON_PATH, allowComments: false },
+  ];
+}
 
 type LocalMcpServerEntry = {
   command?: string;
@@ -111,6 +139,7 @@ const LOCAL_COMPAT_RESPONSE_KEYS = {
   'mcpServers.list': 'mcpServers.list',
   'apiKeys.list': 'apiKeys.list',
   'tools.detectCliHarnesses': 'tools.detectCliHarnesses',
+  'tools.detectExecutionEnvironment': 'tools.detectExecutionEnvironment',
   'tools.detectInstallSurfaces': 'tools.detectInstallSurfaces',
   'expert.getStatus': 'expert.getStatus',
   'session.getState': 'session.getState',
@@ -429,7 +458,7 @@ function parseLocalMcpConfig(raw: string, allowComments: boolean): LocalMcpConfi
 async function loadLocalMcpConfig(): Promise<LocalMcpConfig> {
   let lastParseError: unknown;
 
-  for (const [filePath, allowComments] of [[MCP_JSONC_PATH, true], [MCP_JSON_PATH, false]] as const) {
+  for (const { filePath, allowComments } of resolveMcpReadCandidates()) {
     try {
       const raw = await fs.readFile(filePath, 'utf-8');
       return parseLocalMcpConfig(raw, allowComments);
@@ -456,14 +485,19 @@ async function loadLocalMcpConfig(): Promise<LocalMcpConfig> {
 }
 
 async function writeLocalMcpConfig(config: LocalMcpConfig): Promise<void> {
+  const { jsoncPath, jsonPath } = resolvePrimaryMcpPaths();
+  await fs.mkdir(path.dirname(jsoncPath), { recursive: true });
+
   await Promise.all([
-    fs.writeFile(MCP_JSONC_PATH, `${JSONC_HEADER}${JSON.stringify(config, null, 2)}\n`, 'utf-8'),
-    fs.writeFile(MCP_JSON_PATH, `${JSON.stringify({ mcpServers: config.mcpServers }, null, 2)}\n`, 'utf-8'),
+    fs.writeFile(jsoncPath, `${JSONC_HEADER}${JSON.stringify(config, null, 2)}\n`, 'utf-8'),
+    fs.writeFile(jsonPath, `${JSON.stringify({ mcpServers: config.mcpServers }, null, 2)}\n`, 'utf-8'),
   ]);
 }
 
 async function readLocalMcpSource(): Promise<{ path: string; content: string }> {
-  for (const filePath of [MCP_JSONC_PATH, MCP_JSON_PATH]) {
+  const primaryPaths = resolvePrimaryMcpPaths();
+
+  for (const { filePath } of resolveMcpReadCandidates()) {
     try {
       const content = await fs.readFile(filePath, 'utf-8');
       return { path: filePath, content };
@@ -478,7 +512,7 @@ async function readLocalMcpSource(): Promise<{ path: string; content: string }> 
   }
 
   return {
-    path: MCP_JSONC_PATH,
+    path: primaryPaths.jsoncPath,
     content: `${JSONC_HEADER}${JSON.stringify({ mcpServers: {} }, null, 2)}\n`,
   };
 }
@@ -515,7 +549,13 @@ function buildLocalStartupStatus(servers: unknown[]): {
       persistedServerCount: number;
       persistedToolCount: number;
       configuredServerCount: number;
+      liveReady: boolean;
+      advertisedServerCount: number;
+      advertisedToolCount: number;
+      advertisedAlwaysOnServerCount: number;
+      advertisedAlwaysOnToolCount: number;
       inventoryReady: false;
+      warmupInProgress: true;
     };
     configSync: {
       ready: boolean;
@@ -550,6 +590,20 @@ function buildLocalStartupStatus(servers: unknown[]): {
       supportedCapabilities: never[];
       supportedHookPhases: never[];
     };
+    executionEnvironment: {
+      ready: false;
+      preferredShellId: null;
+      preferredShellLabel: null;
+      shellCount: number;
+      verifiedShellCount: number;
+      toolCount: number;
+      verifiedToolCount: number;
+      harnessCount: number;
+      verifiedHarnessCount: number;
+      supportsPowerShell: false;
+      supportsPosixShell: false;
+      notes: never[];
+    };
   };
 } {
   const status = buildStatusFromServers(servers);
@@ -565,13 +619,19 @@ function buildLocalStartupStatus(servers: unknown[]): {
     checks: {
       mcpAggregator: {
         ready: serverCount > 0,
+        liveReady: serverCount > 0,
         initialization: 'compat-fallback',
         serverCount,
         connectedCount,
         persistedServerCount: serverCount,
         persistedToolCount: 0,
         configuredServerCount: serverCount,
+        advertisedServerCount: serverCount,
+        advertisedToolCount: 0,
+        advertisedAlwaysOnServerCount: 0,
+        advertisedAlwaysOnToolCount: 0,
         inventoryReady: false,
+        warmupInProgress: true,
       },
       configSync: {
         ready: serverCount > 0,
@@ -605,6 +665,20 @@ function buildLocalStartupStatus(servers: unknown[]): {
         clients: [],
         supportedCapabilities: [],
         supportedHookPhases: [],
+      },
+      executionEnvironment: {
+        ready: false,
+        preferredShellId: null,
+        preferredShellLabel: null,
+        shellCount: 0,
+        verifiedShellCount: 0,
+        toolCount: 0,
+        verifiedToolCount: 0,
+        harnessCount: 0,
+        verifiedHarnessCount: 0,
+        supportsPowerShell: false,
+        supportsPosixShell: false,
+        notes: [],
       },
     },
   };
@@ -736,6 +810,26 @@ async function buildLocalCompatResponse(req: Request, body?: string): Promise<Re
     'mcpServers.get': null,
     'apiKeys.list': [],
     'tools.detectCliHarnesses': [],
+    'tools.detectExecutionEnvironment': {
+      os: 'unknown',
+      summary: {
+        ready: false,
+        preferredShellId: null,
+        preferredShellLabel: null,
+        shellCount: 0,
+        verifiedShellCount: 0,
+        toolCount: 0,
+        verifiedToolCount: 0,
+        harnessCount: 0,
+        verifiedHarnessCount: 0,
+        supportsPowerShell: false,
+        supportsPosixShell: false,
+        notes: [],
+      },
+      shells: [],
+      tools: [],
+      harnesses: [],
+    },
     'tools.detectInstallSurfaces': [],
     'expert.getStatus': {},
     'session.getState': {

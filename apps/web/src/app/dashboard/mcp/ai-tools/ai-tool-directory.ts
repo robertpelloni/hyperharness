@@ -45,7 +45,11 @@ export function getCliHarnessCards(
 ): CliHarnessCard[] {
     const sessionCounts = new Map<string, { active: number; running: number }>();
 
-    for (const session of sessions ?? []) {
+    for (const session of (Array.isArray(sessions) ? sessions : [])) {
+        if (!session || typeof session !== 'object' || typeof session.cliType !== 'string') {
+            continue;
+        }
+
         const current = sessionCounts.get(session.cliType) ?? { active: 0, running: 0 };
         current.active += 1;
         if (session.status === 'running' || session.status === 'starting' || session.status === 'restarting') {
@@ -54,7 +58,8 @@ export function getCliHarnessCards(
         sessionCounts.set(session.cliType, current);
     }
 
-    return [...(detections ?? [])]
+    return [...(Array.isArray(detections) ? detections : [])]
+        .filter((entry) => Boolean(entry) && typeof entry === 'object' && typeof entry.id === 'string')
         .map((entry) => {
             const counts = sessionCounts.get(entry.id) ?? { active: 0, running: 0 };
             return {
@@ -84,9 +89,11 @@ export function getCliHarnessCards(
 export function getProviderDirectoryCards(
     quotas: BillingProviderQuotaSummary[] | undefined,
 ): ProviderDirectoryCard[] {
-    const quotaMap = new Map((quotas ?? []).map((quota) => [quota.provider, quota]));
+    const normalizedQuotas = (Array.isArray(quotas) ? quotas : [])
+        .filter((quota) => Boolean(quota) && typeof quota === 'object' && typeof quota.provider === 'string')
+    const quotaMap = new Map(normalizedQuotas.map((quota) => [quota.provider, quota]));
 
-    return getProviderPortalCards(quotas).map((portal) => {
+    return getProviderPortalCards(normalizedQuotas).map((portal) => {
         const quota = quotaMap.get(portal.id);
         const used = quota?.used ?? 0;
         const limit = quota?.limit ?? null;

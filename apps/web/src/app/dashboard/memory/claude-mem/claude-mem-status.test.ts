@@ -4,7 +4,10 @@ import { CLAUDE_MEM_CAPABILITIES, getClaudeMemOperatorGuidance, getClaudeMemStat
 
 describe('claude-mem status helpers', () => {
     it('summarizes the current Borg claude-mem parity state honestly', () => {
-        expect(getClaudeMemStatusSummary({ ready: true })).toEqual({
+        expect(getClaudeMemStatusSummary({ ready: true }, [
+            { id: 'browser-extension-chromium', status: 'ready' },
+            { id: 'browser-extension-firefox', status: 'ready' },
+        ])).toEqual({
             shippedCount: CLAUDE_MEM_CAPABILITIES.filter((item) => item.status === 'shipped').length,
             partialCount: CLAUDE_MEM_CAPABILITIES.filter((item) => item.status === 'partial').length,
             missingCount: CLAUDE_MEM_CAPABILITIES.filter((item) => item.status === 'missing').length,
@@ -13,6 +16,7 @@ describe('claude-mem status helpers', () => {
             coreReady: true,
             coreStatusLabel: 'Core ready',
             coreStatusTone: 'ready',
+            coreStatusDetail: null,
             pendingStartupChecks: 0,
         });
     });
@@ -23,6 +27,19 @@ describe('claude-mem status helpers', () => {
         expect(getClaudeMemStatusSummary(null).coreReady).toBe(false);
     });
 
+    it('treats degraded startup compat fallback as a first-class operator state', () => {
+        expect(getClaudeMemStatusSummary({
+            ready: false,
+            status: 'degraded',
+            summary: 'Using local MCP config fallback for 64 configured server(s); live startup telemetry is unavailable.',
+        })).toMatchObject({
+            coreReady: false,
+            coreStatusLabel: 'Core running in compat fallback',
+            coreStatusTone: 'degraded',
+            coreStatusDetail: 'Using local MCP config fallback for 64 configured server(s); live startup telemetry is unavailable.',
+        });
+    });
+
     it('surfaces pending startup checks even after core reaches ready state', () => {
         expect(getClaudeMemStatusSummary({
             ready: true,
@@ -30,10 +47,58 @@ describe('claude-mem status helpers', () => {
                 configSync: { ready: true },
                 extensionBridge: { ready: false },
             },
-        })).toMatchObject({
+        }, [
+            { id: 'browser-extension-chromium', status: 'ready' },
+            { id: 'browser-extension-firefox', status: 'ready' },
+        ])).toMatchObject({
             coreReady: true,
             pendingStartupChecks: 1,
             coreStatusTone: 'pending',
+            coreStatusLabel: 'Core ready · 1 startup check pending',
+            coreStatusDetail: null,
+        });
+    });
+
+    it('counts extension install artifacts as a pending startup check until both bundles are ready', () => {
+        expect(getClaudeMemStatusSummary({
+            ready: true,
+            checks: {
+                configSync: { ready: true },
+            },
+        }, null)).toMatchObject({
+            coreReady: true,
+            pendingStartupChecks: 1,
+            coreStatusTone: 'pending',
+            coreStatusLabel: 'Core ready · 1 startup check pending',
+        });
+
+        expect(getClaudeMemStatusSummary({
+            ready: true,
+            checks: {
+                configSync: { ready: true },
+            },
+        }, [
+            { id: 'browser-extension-chromium', status: 'ready' },
+            { id: 'browser-extension-firefox', status: 'ready' },
+        ])).toMatchObject({
+            coreReady: true,
+            pendingStartupChecks: 0,
+            coreStatusTone: 'ready',
+            coreStatusLabel: 'Core ready',
+        });
+    });
+
+    it('does not double-count install artifacts when startup telemetry already reports that check', () => {
+        expect(getClaudeMemStatusSummary({
+            ready: true,
+            checks: {
+                extensionInstallArtifacts: { ready: false },
+            },
+        }, [
+            { id: 'browser-extension-chromium', status: 'missing' },
+            { id: 'browser-extension-firefox', status: 'missing' },
+        ])).toMatchObject({
+            pendingStartupChecks: 1,
             coreStatusLabel: 'Core ready · 1 startup check pending',
         });
     });

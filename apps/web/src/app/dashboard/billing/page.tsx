@@ -11,18 +11,36 @@ import {
     formatTaskRoutingLabel,
     getPortalBadgeClasses,
     getProviderPortalCards,
+    getProviderQuickAccessSections,
     getRoutingStrategyBadgeClasses,
     ROUTING_STRATEGY_OPTIONS,
     type BillingRoutingStrategy,
     type BillingTaskRoutingRuleSummary,
     type BillingProviderQuotaSummary,
 } from './billing-portal-data';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@borg/ui';
+import { Input } from '@borg/ui';
+import {
+    getBillingUsageSummary,
+    getDefaultRoutingStrategy,
+    getFallbackTaskType,
+    normalizeBillingPricingModels,
+    normalizeBillingQuotaRows,
+    normalizeFallbackChain,
+    normalizeTaskRoutingRules,
+} from './billing-page-normalizers';
 
 const FALLBACK_TASK_OPTIONS: BillingTaskRoutingRuleSummary['taskType'][] = ['general', 'coding', 'planning', 'research', 'worker', 'supervisor'];
 
 export default function ProviderAuthBillingMatrix() {
     const [historyDays, setHistoryDays] = useState(30);
     const [fallbackTaskType, setFallbackTaskType] = useState<BillingTaskRoutingRuleSummary['taskType']>('general');
+    
+    // Key update dialog state
+    const [activePortalId, setActivePortalId] = useState<string | null>(null);
+    const [activePortalName, setActivePortalName] = useState<string>('');
+    const [newKeyValue, setNewKeyValue] = useState<string>('');
+    
     const utils = trpc.useUtils();
 
     const { data: status, isLoading: isStatusLoading } = trpc.billing.getStatus.useQuery();
@@ -51,8 +69,44 @@ export default function ProviderAuthBillingMatrix() {
             toast.error(`Task routing update failed: ${error.message}`);
         },
     });
+
+    const updateKeyMutation = trpc.settings.updateProviderKey.useMutation({
+        onSuccess: async (result) => {
+            toast.success(`Key updated securely to ${result.updatedKey}`);
+            // Also attempt to immediately test the connection
+            if (activePortalId) {
+                testConnectionMutation.mutate({ provider: activePortalId });
+            }
+            await utils.billing.getProviderQuotas.invalidate();
+            setActivePortalId(null);
+            setNewKeyValue('');
+        },
+        onError: (error) => {
+            toast.error(`Failed to update key: ${error.message}`);
+        }
+    });
+
+    const testConnectionMutation = trpc.settings.testConnection.useMutation({
+        onSuccess: async (result) => {
+            if (result.success) {
+                toast.success(`Connection test successful! (${result.latencyMs}ms)`);
+            } else {
+                toast.error(`Connection failed: ${result.error}`);
+            }
+            // invalidate quotas to refresh connected status badge
+            await utils.billing.getProviderQuotas.invalidate();
+        }
+    });
+
     const providerPortalCards = getProviderPortalCards(quotas as BillingProviderQuotaSummary[] | undefined);
-    const routingRules = (taskRouting?.rules ?? []) as BillingTaskRoutingRuleSummary[];
+    const providerQuickAccessSections = getProviderQuickAccessSections(quotas as BillingProviderQuotaSummary[] | undefined);
+    const usageSummary = getBillingUsageSummary(status);
+    const quotaRows = normalizeBillingQuotaRows(quotas);
+    const fallbackChain = normalizeFallbackChain(fallback);
+    const fallbackSelectedTaskType = getFallbackTaskType(fallback, fallbackTaskType);
+    const defaultRoutingStrategy = getDefaultRoutingStrategy(taskRouting);
+    const routingRules = normalizeTaskRoutingRules(taskRouting);
+    const pricingModels = normalizeBillingPricingModels(pricing);
     const activeRoutingMutationTask = setTaskRoutingRuleMutation.variables && 'taskType' in setTaskRoutingRuleMutation.variables
         ? setTaskRoutingRuleMutation.variables.taskType
         : undefined;
@@ -67,6 +121,11 @@ export default function ProviderAuthBillingMatrix() {
             taskType,
             strategy: nextValue === 'default' ? null : nextValue,
         });
+    };
+
+    const handleSaveKey = () => {
+        if (!activePortalId || !newKeyValue.trim()) return;
+        updateKeyMutation.mutate({ provider: activePortalId, key: newKeyValue });
     };
 
     const renderCostChart = () => {
@@ -137,10 +196,10 @@ export default function ProviderAuthBillingMatrix() {
                         <CardContent>
                             <div className="flex items-end gap-2 mb-2">
                                 <span className="text-4xl font-mono text-white font-bold">
-                                    ${isStatusLoading ? '0.00' : status?.usage.currentMonth?.toFixed(2) || '0.00'}
+                                    ${isStatusLoading ? '0.00' : usageSummary.currentMonth.toFixed(2)}
                                 </span>
                                 <span className="text-sm text-zinc-500 mb-1 font-mono">
-                                    / ${isStatusLoading ? '0.00' : status?.usage.limit?.toFixed(2) || '0.00'} Limit
+                                    / ${isStatusLoading ? '0.00' : usageSummary.limit.toFixed(2)} Limit
                                 </span>
                             </div>
 
@@ -148,13 +207,13 @@ export default function ProviderAuthBillingMatrix() {
                             <div className="w-full h-2 bg-zinc-950 rounded-full overflow-hidden mt-4">
                                 <div
                                     className="h-full bg-emerald-500 transition-all duration-1000"
-                                    style={{ width: `${Math.min(100, (((status?.usage.currentMonth || 0) / (status?.usage.limit || 100)) * 100))}%` }}
+                                    style={{ width: `${Math.min(100, ((usageSummary.currentMonth / (usageSummary.limit || 100)) * 100))}%` }}
                                 />
                             </div>
 
                             <div className="mt-6 space-y-3">
                                 <div className="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-2">Cost Breakdown</div>
-                                {status?.usage.breakdown.map((item: any, i: number) => (
+                                {usageSummary.breakdown.map((item, i: number) => (
                                     <div key={i} className="flex justify-between items-center text-sm">
                                         <span className="text-zinc-300 capitalize flex items-center gap-2">
                                             {item.provider}
@@ -195,9 +254,9 @@ export default function ProviderAuthBillingMatrix() {
                             ) : (
                                 <div className="space-y-3">
                                     <div className="rounded-lg border border-zinc-800/60 bg-black/30 px-3 py-2 text-[11px] text-zinc-500">
-                                        Ranked providers for <span className="font-semibold text-zinc-300">{formatTaskRoutingLabel(fallback?.selectedTaskType ?? fallbackTaskType)}</span> work.
+                                        Ranked providers for <span className="font-semibold text-zinc-300">{formatTaskRoutingLabel(fallbackSelectedTaskType)}</span> work.
                                     </div>
-                                    {fallback?.chain.length ? fallback.chain.map((link: any, idx: number) => (
+                                    {fallbackChain.length ? fallbackChain.map((link, idx: number) => (
                                         <div key={idx} className="flex items-center gap-3 p-3 rounded-lg bg-black/40 border border-zinc-800/50">
                                             <div className="w-6 h-6 rounded-full bg-amber-500/10 text-amber-500 flex items-center justify-center font-bold text-xs shrink-0 border border-amber-500/20">
                                                 {link.priority}
@@ -205,7 +264,7 @@ export default function ProviderAuthBillingMatrix() {
                                             <div className="flex-1 min-w-0">
                                                 <div className="flex items-center gap-2">
                                                     <span className="font-bold text-zinc-200 capitalize text-sm truncate">{link.provider}</span>
-                                                    {link.model && <Badge variant="outline" className="text-[10px] px-1.5 py-0 bg-zinc-800 text-zinc-400 border-zinc-700 truncate">{link.model}</Badge>}
+                                                    {link.model ? <Badge variant="outline" className="text-[10px] px-1.5 py-0 bg-zinc-800 text-zinc-400 border-zinc-700 truncate">{link.model}</Badge> : null}
                                                 </div>
                                                 <div className="text-xs text-zinc-500 mt-0.5 truncate">{link.reason}</div>
                                             </div>
@@ -240,7 +299,7 @@ export default function ProviderAuthBillingMatrix() {
                                             <div className="flex items-center gap-2">
                                                 {setRoutingStrategyMutation.isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin text-cyan-400" /> : null}
                                                 <select
-                                                    value={taskRouting?.defaultStrategy ?? 'best'}
+                                                    value={defaultRoutingStrategy}
                                                     onChange={handleDefaultStrategyChange}
                                                     disabled={setRoutingStrategyMutation.isPending || setTaskRoutingRuleMutation.isPending}
                                                     className="rounded-md border border-zinc-700 bg-zinc-950 px-2 py-1.5 text-xs text-zinc-200 outline-none focus:border-cyan-500"
@@ -347,7 +406,7 @@ export default function ProviderAuthBillingMatrix() {
                                 <tbody className="divide-y divide-zinc-800/50">
                                     {isQuotasLoading ? (
                                         <tr><td colSpan={5} className="px-6 py-12 text-center text-zinc-500"><Loader2 className="w-6 h-6 animate-spin mx-auto" /></td></tr>
-                                    ) : quotas?.map((q: any) => (
+                                    ) : quotaRows.map((q) => (
                                         <tr key={q.provider} className="hover:bg-white/[0.02] transition-colors">
                                             <td className="px-6 py-4 font-medium text-zinc-200 capitalize">
                                                 <div>
@@ -406,6 +465,56 @@ export default function ProviderAuthBillingMatrix() {
                     <Card id="provider-portals" className="bg-zinc-900 border-zinc-800 shadow-xl overflow-hidden">
                         <CardHeader className="bg-black/20 border-b border-white/5 pb-4">
                             <CardTitle className="text-sm font-bold text-zinc-400 uppercase tracking-widest flex items-center gap-2">
+                                <ExternalLink className="h-4 w-4 text-emerald-400" />
+                                Quick Setup Shortcuts
+                            </CardTitle>
+                            <p className="text-sm text-zinc-500 mt-2">
+                                Curated one-click links for the setup chores operators reach for most: credentials, plans, billing, and cloud consoles.
+                            </p>
+                        </CardHeader>
+                        <CardContent className="p-6 border-b border-white/5">
+                            <div className="grid gap-4 xl:grid-cols-3">
+                                {providerQuickAccessSections.map((section) => (
+                                    <div key={section.id} className="rounded-xl border border-zinc-800 bg-black/30 p-4 shadow-sm">
+                                        <div className="flex items-start justify-between gap-3">
+                                            <div>
+                                                <h3 className="text-sm font-semibold text-zinc-100">{section.title}</h3>
+                                                <p className="mt-1 text-xs text-zinc-500">{section.description}</p>
+                                            </div>
+                                            <Badge variant="outline" className="text-[10px] bg-zinc-800 text-zinc-400 border-zinc-700">
+                                                {section.links.length} links
+                                            </Badge>
+                                        </div>
+
+                                        <div className="mt-4 space-y-2">
+                                            {section.links.map((link) => (
+                                                <a
+                                                    key={`${section.id}-${link.providerId}-${link.actionLabel}`}
+                                                    href={link.href}
+                                                    target="_blank"
+                                                    rel="noreferrer"
+                                                    className="flex items-center gap-3 rounded-lg border border-zinc-800/80 bg-zinc-950/70 px-3 py-2.5 transition hover:border-emerald-500/30 hover:text-emerald-200"
+                                                >
+                                                    <div className="min-w-0 flex-1">
+                                                        <div className="truncate text-sm font-medium text-zinc-100">{link.providerLabel}</div>
+                                                        <div className="text-[11px] text-zinc-500">{link.actionLabel}</div>
+                                                    </div>
+                                                    <Badge variant="outline" className={`shrink-0 text-[10px] ${getPortalBadgeClasses(link.statusTone)}`}>
+                                                        {link.statusLabel}
+                                                    </Badge>
+                                                    <ExternalLink className="h-3.5 w-3.5 shrink-0 text-zinc-500" />
+                                                </a>
+                                            ))}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </CardContent>
+                    </Card>
+
+                    <Card className="bg-zinc-900 border-zinc-800 shadow-xl overflow-hidden">
+                        <CardHeader className="bg-black/20 border-b border-white/5 pb-4">
+                            <CardTitle className="text-sm font-bold text-zinc-400 uppercase tracking-widest flex items-center gap-2">
                                 <WalletCards className="h-4 w-4 text-cyan-400" />
                                 Provider Portals & Subscriptions
                             </CardTitle>
@@ -443,6 +552,19 @@ export default function ProviderAuthBillingMatrix() {
                                         </div>
 
                                         <div className="mt-4 flex flex-wrap gap-2">
+                                            <Button 
+                                                variant="outline"
+                                                size="sm"
+                                                className="h-7 text-[10px] bg-zinc-800/80 text-zinc-300 border-zinc-700 hover:bg-zinc-700"
+                                                onClick={() => {
+                                                    setActivePortalId(portal.id);
+                                                    setActivePortalName(portal.label);
+                                                    setNewKeyValue('');
+                                                }}
+                                            >
+                                                <Key className="h-3 w-3 mr-1.5" />
+                                                Update Key
+                                            </Button>
                                             {portal.actions.map((action) => (
                                                 <a
                                                     key={`${portal.id}-${action.label}`}
@@ -483,7 +605,7 @@ export default function ProviderAuthBillingMatrix() {
                                 <tbody className="divide-y divide-zinc-800/50">
                                     {isPricingLoading ? (
                                         <tr><td colSpan={4} className="px-6 py-12 text-center text-zinc-500"><Loader2 className="w-6 h-6 animate-spin mx-auto" /></td></tr>
-                                    ) : pricing?.models.filter((m: any) => m.inputPrice !== null).map((m: any) => (
+                                    ) : pricingModels.filter((m) => m.inputPrice !== null).map((m) => (
                                         <tr key={m.id} className="hover:bg-white/[0.02] transition-colors">
                                             <td className="px-6 py-3">
                                                 <div className="flex items-center gap-2">
@@ -530,6 +652,46 @@ export default function ProviderAuthBillingMatrix() {
                     </Card>
                 </div>
             </div>
+
+            <Dialog open={!!activePortalId} onOpenChange={(open) => !open && setActivePortalId(null)}>
+                <DialogContent className="sm:max-w-md bg-zinc-950 border-zinc-800 text-zinc-200">
+                    <DialogHeader>
+                        <DialogTitle>Update {activePortalName} Credentials</DialogTitle>
+                        <DialogDescription className="text-zinc-400">
+                            Enter your new API key, Personal Access Token (PAT), or OAuth token.
+                            This will be written to `.env` immediately.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="py-4">
+                        <Input
+                            autoFocus
+                            placeholder="Enter credential string..."
+                            type="password"
+                            value={newKeyValue}
+                            onChange={(e) => setNewKeyValue(e.target.value)}
+                            className="bg-black/50 border-zinc-800 focus-visible:ring-cyan-500/50"
+                        />
+                    </div>
+                    <DialogFooter>
+                        <Button 
+                            variant="outline" 
+                            onClick={() => setActivePortalId(null)}
+                            className="bg-zinc-900 border-zinc-800 hover:bg-zinc-800 text-zinc-300"
+                        >
+                            Cancel
+                        </Button>
+                        <Button
+                            onClick={handleSaveKey}
+                            disabled={!newKeyValue.trim() || updateKeyMutation.isPending}
+                            className="bg-cyan-600 hover:bg-cyan-500 text-white border-transparent"
+                        >
+                            {updateKeyMutation.isPending ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Key className="w-4 h-4 mr-2" />}
+                            Save & Test Connection
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
         </div>
     );
 }

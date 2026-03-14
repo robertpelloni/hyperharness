@@ -7,10 +7,12 @@ import {
     Box, Cpu, Globe, Share2
 } from "lucide-react";
 import { toast } from "sonner";
+import { normalizeMarketplaceEntries } from './marketplace-page-normalizers';
 
 export default function MarketplacePage() {
     const [filter, setFilter] = useState("");
     const { data: entries, isLoading, refetch } = trpc.marketplace.list.useQuery({ filter });
+    const normalizedEntries = normalizeMarketplaceEntries(entries);
     const utils = trpc.useContext();
 
     const installMutation = trpc.marketplace.install.useMutation({
@@ -60,7 +62,7 @@ export default function MarketplacePage() {
                 <div className="text-zinc-500">Loading marketplace...</div>
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {entries?.map((entry) => (
+                    {normalizedEntries.map((entry) => (
                         <div
                             key={entry.id}
                             className="group relative bg-zinc-900/40 border border-zinc-800 hover:border-zinc-700 hover:bg-zinc-900/60 rounded-xl p-6 transition-all duration-300"
@@ -102,7 +104,7 @@ export default function MarketplacePage() {
                             </p>
 
                             <div className="flex items-center gap-2 flex-wrap">
-                                {entry.tags?.slice(0, 3).map(tag => (
+                                {entry.tags.slice(0, 3).map(tag => (
                                     <span key={tag} className="text-[10px] bg-zinc-800 text-zinc-400 px-2 py-0.5 rounded border border-zinc-700/50">
                                         {tag}
                                     </span>

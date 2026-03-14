@@ -6,11 +6,14 @@ import { Button } from "@borg/ui";
 import { Loader2, Plus, Box, Trash2, Layers, Wrench, Check } from "lucide-react";
 import { trpc } from '@/utils/trpc';
 import { toast } from 'sonner';
+import { normalizeSelectableTools, normalizeToolSets } from './tool-sets-page-normalizers';
 
 export default function ToolSetsDashboard() {
     const { data: toolSets, isLoading, refetch } = trpc.toolSets.list.useQuery();
     const { data: tools } = trpc.tools.list.useQuery(); // For selection in creation
     const [isCreateOpen, setIsCreateOpen] = useState(false);
+    const normalizedToolSets = normalizeToolSets(toolSets);
+    const normalizedSelectableTools = normalizeSelectableTools(tools);
 
     return (
         <div className="p-8 space-y-8">
@@ -30,7 +33,7 @@ export default function ToolSetsDashboard() {
 
             {isCreateOpen && (
                 <CreateToolSetForm
-                    tools={tools || []}
+                    tools={normalizedSelectableTools}
                     onSuccess={() => { setIsCreateOpen(false); refetch(); }}
                 />
             )}
@@ -40,13 +43,13 @@ export default function ToolSetsDashboard() {
                     <div className="col-span-3 flex justify-center p-12">
                         <Loader2 className="h-8 w-8 animate-spin text-zinc-500" />
                     </div>
-                ) : (toolSets?.length ?? 0) === 0 ? (
+                ) : normalizedToolSets.length === 0 ? (
                     <div className="col-span-3 text-center p-12 text-zinc-500 bg-zinc-900/50 rounded-lg border border-zinc-800 border-dashed">
                         <Layers className="h-12 w-12 mx-auto mb-4 opacity-30" />
                         <p className="text-lg font-medium">No Tool Sets</p>
                         <p className="text-sm mt-1">Combine tools into a set for easier assignment.</p>
                     </div>
-                ) : toolSets?.map((ts: any) => (
+                ) : normalizedToolSets.map((ts) => (
                     <ToolSetCard key={ts.uuid} toolSet={ts} onUpdate={refetch} />
                 ))}
             </div>

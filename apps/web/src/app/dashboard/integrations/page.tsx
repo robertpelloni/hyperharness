@@ -4,7 +4,7 @@ import { useState } from 'react';
 import type { ComponentType } from 'react';
 import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@borg/ui';
-import { Bot, Cable, Check, Copy, ExternalLink, FolderCode, Globe, Loader2, Puzzle, Settings2, Sparkles } from 'lucide-react';
+import { Bot, Cable, Check, Copy, ExternalLink, FolderCode, Globe, Loader2, Puzzle, Settings2, Sparkles, TerminalSquare } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { trpc } from '@/utils/trpc';
@@ -56,8 +56,12 @@ export default function IntegrationsDashboard() {
     const startupStatusQuery = trpc.startupStatus.useQuery(undefined, { refetchInterval: 10000 });
     const browserStatusQuery = trpc.browser.status.useQuery(undefined, { refetchInterval: 5000 });
     const syncTargetsQuery = mcpServersClient.syncTargets.useQuery();
-    const cliDetectionsQuery = toolsClient.detectCliHarnesses.useQuery();
-    const installArtifactsQuery = toolsClient.detectInstallSurfaces.useQuery();
+    const cliDetectionsQuery = toolsClient?.detectCliHarnesses?.useQuery
+        ? toolsClient.detectCliHarnesses.useQuery()
+        : ({ data: [], isLoading: false } as { data: []; isLoading: boolean });
+    const installArtifactsQuery = toolsClient?.detectInstallSurfaces?.useQuery
+        ? toolsClient.detectInstallSurfaces.useQuery(undefined, { refetchInterval: 10000 })
+        : ({ data: [], isLoading: false } as { data: []; isLoading: boolean });
     const startupStatus: StartupStatusSummary | null = (startupStatusQuery.data ?? null) as StartupStatusSummary | null;
 
     const overview = getIntegrationOverview(
@@ -117,7 +121,7 @@ export default function IntegrationsDashboard() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-4">
                 <StatCard
                     title="Extension bridge clients"
                     value={String(overview.extensionClientCount)}
@@ -145,6 +149,13 @@ export default function IntegrationsDashboard() {
                     detail="Local coding harnesses discovered on PATH"
                     icon={Bot}
                     tone="text-amber-400"
+                />
+                <StatCard
+                    title="Execution environment"
+                    value={overview.executionPreferredShell ?? (overview.executionEnvironmentReady ? 'Ready' : 'Pending')}
+                    detail={`${overview.verifiedExecutionToolCount} verified tools${overview.supportsPosixShell ? ' · POSIX available' : ''}`}
+                    icon={TerminalSquare}
+                    tone="text-emerald-400"
                 />
             </div>
 

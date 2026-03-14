@@ -349,16 +349,14 @@ const Sidebar: React.FC<SidebarProps> = ({ initialPreferences }) => {
     // Listen for context menu save action
     const unsubscribeContextSave = eventBus.on('context:save', data => {
       logMessage(`[Sidebar] Received context save request: ${data.content.substring(0, 20)}...`);
-      // We'll handle this by opening the Context Manager or just adding it
-      // For now, let's just add a toast and maybe open the manager
       addToast({
-        title: 'Text Selected',
-        message: 'Text copied from context menu. Open Context Manager to save.',
-        type: 'info',
+        title: data.saved ? (data.duplicate ? 'Context Updated' : 'Context Saved') : 'Text Selected',
+        message: data.saved
+          ? `${data.name || 'Selection'} is now in the Context Library.`
+          : 'Text copied from context menu. Open Context Manager to save.',
+        type: data.saved ? 'success' : 'info',
         duration: 3000,
       });
-      // In a real implementation, we might want to auto-open the Context Manager
-      // or pass this data to the InputArea
     });
     unsubscribeCallbacks.push(unsubscribeContextSave);
 

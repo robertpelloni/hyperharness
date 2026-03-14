@@ -1,5 +1,6 @@
 import path from 'path';
 
+import { deriveSemanticCatalogForServer } from './catalogMetadata.js';
 import { MCPConfigStore } from './configStore.js';
 import { namespaceToolName, parseNamespacedToolName } from './namespaces.js';
 import { StdioClient } from './StdioClient.js';
@@ -12,6 +13,15 @@ import type {
     MCPServerState,
     MCPToolDefinition,
 } from './types.js';
+
+type AdvertisedInventorySeed = {
+    servers: Array<{
+        name: string;
+        alwaysOnAdvertised?: boolean;
+        advertisedToolCount?: number;
+    }>;
+    source?: 'database' | 'config' | 'empty';
+};
 
 export class MCPAggregator {
     public readonly clients: Map<string, MCPClientLike> = new Map();
@@ -65,10 +75,6 @@ export class MCPAggregator {
                     toolCount: 0,
                     restartCount: 0,
                 });
-
-                if (serverCfg.enabled) {
-                    await this.connectToServer(name, serverCfg);
-                }
             }
             this.initializationState.initialized = true;
             this.initializationState.lastCompletedAt = this.now();
@@ -90,9 +96,84 @@ export class MCPAggregator {
         };
     }
 
+    public seedAdvertisedInventory(seed: AdvertisedInventorySeed): void {
+        const advertisedByName = new Map(seed.servers.map((server) => [server.name, server]));
+
+        for (const [name, state] of this.serverStates.entries()) {
+            const advertised = advertisedByName.get(name);
+            if (!advertised) {
+                continue;
+            }
+
+            this.serverStates.set(name, {
+                ...state,
+                advertisedAlwaysOn: Boolean(advertised.alwaysOnAdvertised),
+                advertisedToolCount: advertised.advertisedToolCount ?? state.advertisedToolCount ?? 0,
+                advertisedSource: seed.source ?? state.advertisedSource,
+                warmupStatus: state.warmupStatus
+                    ?? (advertised.alwaysOnAdvertised ? 'scheduled' : 'idle'),
+                config: {
+                    ...state.config,
+                    alwaysOn: Boolean(advertised.alwaysOnAdvertised || state.config.alwaysOn),
+                },
+            });
+        }
+    }
+
+    public warmAdvertisedServers(): void {
+        for (const [name, state] of this.getEnabledServerEntries()) {
+            if (!state.advertisedAlwaysOn) {
+                continue;
+            }
+
+            if (state.status === 'connected') {
+                this.serverStates.set(name, {
+                    ...state,
+                    warmupStatus: 'ready',
+                });
+                continue;
+            }
+
+            if (state.warmupStatus === 'warming') {
+                continue;
+            }
+
+            this.serverStates.set(name, {
+                ...state,
+                warmupStatus: 'scheduled',
+            });
+
+            void this.ensureConnectedClient(name)
+                .then(() => {
+                    const nextState = this.serverStates.get(name);
+                    if (!nextState) {
+                        return;
+                    }
+
+                    this.serverStates.set(name, {
+                        ...nextState,
+                        warmupStatus: 'ready',
+                    });
+                })
+                .catch((error) => {
+                    const nextState = this.serverStates.get(name);
+                    if (!nextState) {
+                        return;
+                    }
+
+                    this.serverStates.set(name, {
+                        ...nextState,
+                        warmupStatus: 'failed',
+                        lastError: error instanceof Error ? error.message : String(error),
+                    });
+                });
+        }
+    }
+
     public async connectToServer(name: string, config: MCPServerConfig): Promise<void> {
         const state = this.upsertState(name, config);
         state.status = 'connecting';
+        state.warmupStatus = state.advertisedAlwaysOn ? 'warming' : state.warmupStatus;
 
         console.log(`[MCPAggregator] Connecting to downstream server: ${name}...`);
         try {
@@ -105,11 +186,13 @@ export class MCPAggregator {
             await client.connect();
             this.clients.set(name, client);
             state.status = 'connected';
+            state.lastConnectedAt = this.now();
+            state.warmupStatus = state.advertisedAlwaysOn ? 'ready' : state.warmupStatus;
             state.lastError = undefined;
-            state.toolCount = (await this.listToolsForServer(name, client)).length;
             console.log(`[MCPAggregator] ✓ Connected to ${name}`);
         } catch (error) {
             state.status = 'error';
+            state.warmupStatus = state.advertisedAlwaysOn ? 'failed' : state.warmupStatus;
             state.lastError = error instanceof Error ? error.message : String(error);
             console.error(`[MCPAggregator] ❌ Failed to connect to ${name}:`, error);
         }
@@ -118,15 +201,13 @@ export class MCPAggregator {
     public async executeTool(name: string, args: unknown): Promise<unknown> {
         const namespacedTool = parseNamespacedToolName(name);
         if (namespacedTool) {
-            const client = this.clients.get(namespacedTool.serverName);
-            if (!client) {
-                throw new Error(`Tool '${name}' not found in any connected MCP server.`);
-            }
+            const client = await this.ensureConnectedClient(namespacedTool.serverName);
 
             return this.callToolOnServer(namespacedTool.serverName, namespacedTool.toolName, args, client);
         }
 
-        for (const [serverName, client] of this.clients.entries()) {
+        for (const [serverName] of this.getEnabledServerEntries()) {
+            const client = await this.ensureConnectedClient(serverName);
             const tools = await this.listToolsForServer(serverName, client);
             if (tools.find((tool) => tool.name === name)) {
                 return this.callToolOnServer(serverName, name, args, client);
@@ -139,7 +220,8 @@ export class MCPAggregator {
     public async listAggregatedTools(): Promise<MCPAggregatedTool[]> {
         const allTools: MCPAggregatedTool[] = [];
 
-        for (const [serverName, client] of this.clients.entries()) {
+        for (const [serverName] of this.getEnabledServerEntries()) {
+            const client = await this.ensureConnectedClient(serverName);
             const tools = await this.listToolsForServer(serverName, client);
             const namespaced = tools.map((tool) => this.namespaceTool(serverName, tool));
             allTools.push(...namespaced);
@@ -202,7 +284,7 @@ export class MCPAggregator {
         }
 
         return tools.filter((tool) => {
-            const haystack = `${tool.name} ${tool._originalName} ${tool.description ?? ''} ${tool.server}`.toLowerCase();
+            const haystack = `${tool.name} ${tool._originalName} ${tool.advertisedName ?? ''} ${tool.description ?? ''} ${tool.server} ${tool.serverDisplayName ?? ''} ${(tool.serverTags ?? []).join(' ')} ${(tool.toolTags ?? []).join(' ')} ${tool.semanticGroup ?? ''} ${tool.semanticGroupLabel ?? ''} ${(tool.keywords ?? []).join(' ')}`.toLowerCase();
             return haystack.includes(normalizedQuery);
         });
     }
@@ -227,20 +309,85 @@ export class MCPAggregator {
                 config,
                 status: config.enabled ? 'stopped' : 'stopped',
                 toolCount: 0,
+                advertisedToolCount: 0,
+                advertisedAlwaysOn: Boolean(config.alwaysOn),
+                warmupStatus: config.alwaysOn ? 'scheduled' : 'idle',
                 restartCount: 0,
             };
+
+        nextState.config = {
+            ...nextState.config,
+            alwaysOn: nextState.config.alwaysOn ?? nextState.advertisedAlwaysOn,
+        };
+        nextState.advertisedAlwaysOn = Boolean(nextState.advertisedAlwaysOn || nextState.config.alwaysOn);
+        nextState.warmupStatus = nextState.warmupStatus
+            ?? (nextState.advertisedAlwaysOn ? 'scheduled' : 'idle');
 
         this.serverStates.set(name, nextState);
         return nextState;
     }
 
+    private getEnabledServerEntries(): Array<[string, MCPServerState]> {
+        return Array.from(this.serverStates.entries())
+            .filter(([, state]) => Boolean(state.config.enabled));
+    }
+
+    private async ensureConnectedClient(name: string): Promise<MCPClientLike> {
+        const existingClient = this.clients.get(name);
+        if (existingClient) {
+            const state = this.serverStates.get(name);
+            if (state && state.advertisedAlwaysOn && state.warmupStatus !== 'ready') {
+                this.serverStates.set(name, {
+                    ...state,
+                    warmupStatus: 'ready',
+                });
+            }
+            return existingClient;
+        }
+
+        const state = this.serverStates.get(name);
+        if (!state || !state.config.enabled) {
+            throw new Error(`Tool '${name}' not found in any connected MCP server.`);
+        }
+
+        await this.connectToServer(name, state.config);
+        const connectedClient = this.clients.get(name);
+        if (!connectedClient) {
+            throw new Error(`Failed to connect to downstream MCP server '${name}'.`);
+        }
+
+        return connectedClient;
+    }
+
     private namespaceTool(serverName: string, tool: MCPToolDefinition): MCPAggregatedTool {
+        const derived = deriveSemanticCatalogForServer({
+            serverName,
+            tools: [{
+                name: tool.name,
+                title: typeof tool.title === 'string' ? tool.title : null,
+                description: tool.description ?? null,
+                inputSchema: typeof tool.inputSchema === 'object' && tool.inputSchema !== null
+                    ? tool.inputSchema as Record<string, unknown>
+                    : null,
+                alwaysOn: false,
+            }],
+        });
+        const derivedTool = derived.tools[0];
+
         return {
             ...tool,
             server: serverName,
             name: namespaceToolName(serverName, tool.name),
             _originalName: tool.name,
             description: `[${serverName}] ${tool.description ?? ''}`.trim(),
+            serverDisplayName: derivedTool?.serverDisplayName ?? serverName,
+            advertisedName: derivedTool?.advertisedName ?? namespaceToolName(serverName, tool.name),
+            serverTags: derivedTool?.serverTags ?? [],
+            toolTags: derivedTool?.toolTags ?? [],
+            semanticGroup: derivedTool?.semanticGroup ?? 'general-utility',
+            semanticGroupLabel: derivedTool?.semanticGroupLabel ?? 'general utility',
+            keywords: derivedTool?.keywords ?? [],
+            alwaysOn: Boolean(derivedTool?.alwaysOn),
         };
     }
 

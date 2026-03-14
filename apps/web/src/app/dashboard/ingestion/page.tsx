@@ -1,6 +1,6 @@
 import React from 'react';
 import { PageHeader } from '@/components/PageHeader';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@borg/ui';
 import { Database, AlertTriangle, CheckCircle, Clock } from 'lucide-react';
 import fs from 'fs/promises';
 import path from 'path';

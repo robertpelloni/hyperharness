@@ -6,10 +6,20 @@ import {
     MEMORY_INTERCHANGE_FORMATS,
 } from '../services/memory/MemoryExportImportService.js';
 import { readClaudeMemStoreStatus } from './memoryRouter.claude-mem.js';
-
-const memoryInterchangeFormatSchema = z.enum(['json', 'csv', 'jsonl', 'json-provider', 'claude-mem-store']);
-const observationTypeSchema = z.enum(['discovery', 'decision', 'progress', 'warning', 'fix']);
-const userPromptRoleSchema = z.enum(['goal', 'objective', 'prompt']);
+import { 
+    getCrossSessionMemoryLinksInputSchema,
+    memoryInterchangeFormatSchema, 
+    getMemoryTimelineWindowInputSchema,
+    searchMemoryPivotInputSchema,
+    observationTypeSchema, 
+    userPromptRoleSchema, 
+    structuredObservationSchema, 
+    structuredUserPromptSchema, 
+    getRecentObservationsInputSchema, 
+    searchObservationsInputSchema, 
+    getRecentUserPromptsInputSchema, 
+    searchUserPromptsInputSchema 
+} from '@borg/types';
 
 export const memoryRouter = t.router({
     saveContext: publicProcedure.input(z.object({
@@ -86,21 +96,7 @@ export const memoryRouter = t.router({
         return { success: true };
     }),
 
-    recordObservation: publicProcedure.input(z.object({
-        toolName: z.string().optional(),
-        title: z.string().optional(),
-        subtitle: z.string().optional(),
-        narrative: z.string().optional(),
-        rawInput: z.unknown().optional(),
-        rawOutput: z.unknown().optional(),
-        facts: z.array(z.string()).optional(),
-        concepts: z.array(z.string()).optional(),
-        filesRead: z.array(z.string()).optional(),
-        filesModified: z.array(z.string()).optional(),
-        type: observationTypeSchema.optional(),
-        namespace: z.enum(['user', 'agent', 'project']).default('project'),
-        metadata: z.record(z.unknown()).optional(),
-    })).mutation(async ({ input }) => {
+    recordObservation: publicProcedure.input(structuredObservationSchema).mutation(async ({ input }) => {
         const service = getAgentMemoryService();
         if (!service?.recordObservation) return { success: false };
 
@@ -108,14 +104,7 @@ export const memoryRouter = t.router({
         return { success: true, memory };
     }),
 
-    captureUserPrompt: publicProcedure.input(z.object({
-        content: z.string().min(1),
-        role: userPromptRoleSchema.default('prompt'),
-        sessionId: z.string().optional(),
-        activeGoal: z.string().nullable().optional(),
-        lastObjective: z.string().nullable().optional(),
-        metadata: z.record(z.unknown()).optional(),
-    })).mutation(async ({ input }) => {
+    captureUserPrompt: publicProcedure.input(structuredUserPromptSchema).mutation(async ({ input }) => {
         const service = getAgentMemoryService();
         if (!service?.captureUserPrompt) return { success: false };
 
@@ -123,11 +112,7 @@ export const memoryRouter = t.router({
         return { success: true, memory };
     }),
 
-    getRecentObservations: publicProcedure.input(z.object({
-        limit: z.number().optional().default(10),
-        namespace: z.enum(['user', 'agent', 'project']).optional(),
-        type: observationTypeSchema.optional(),
-    }).optional().default({ limit: 10 })).query(async ({ input }) => {
+    getRecentObservations: publicProcedure.input(getRecentObservationsInputSchema).query(async ({ input }) => {
         const service = getAgentMemoryService();
         if (!service?.getRecentObservations) return [];
         return service.getRecentObservations(input.limit, {
@@ -136,12 +121,7 @@ export const memoryRouter = t.router({
         });
     }),
 
-    searchObservations: publicProcedure.input(z.object({
-        query: z.string(),
-        limit: z.number().optional().default(10),
-        namespace: z.enum(['user', 'agent', 'project']).optional(),
-        type: observationTypeSchema.optional(),
-    })).query(async ({ input }) => {
+    searchObservations: publicProcedure.input(searchObservationsInputSchema).query(async ({ input }) => {
         const service = getAgentMemoryService();
         if (!service?.searchObservations) return [];
         return await service.searchObservations(input.query, {
@@ -151,10 +131,7 @@ export const memoryRouter = t.router({
         });
     }),
 
-    getRecentUserPrompts: publicProcedure.input(z.object({
-        limit: z.number().optional().default(10),
-        role: userPromptRoleSchema.optional(),
-    }).optional().default({ limit: 10 })).query(async ({ input }) => {
+    getRecentUserPrompts: publicProcedure.input(getRecentUserPromptsInputSchema).query(async ({ input }) => {
         const service = getAgentMemoryService();
         if (!service?.getRecentUserPrompts) return [];
         return service.getRecentUserPrompts(input.limit, {
@@ -162,17 +139,31 @@ export const memoryRouter = t.router({
         });
     }),
 
-    searchUserPrompts: publicProcedure.input(z.object({
-        query: z.string(),
-        limit: z.number().optional().default(10),
-        role: userPromptRoleSchema.optional(),
-    })).query(async ({ input }) => {
+    searchUserPrompts: publicProcedure.input(searchUserPromptsInputSchema).query(async ({ input }) => {
         const service = getAgentMemoryService();
         if (!service?.searchUserPrompts) return [];
         return await service.searchUserPrompts(input.query, {
             limit: input.limit,
             role: input.role,
         });
+    }),
+
+    searchMemoryPivot: publicProcedure.input(searchMemoryPivotInputSchema).query(async ({ input }) => {
+        const service = getAgentMemoryService();
+        if (!service?.searchByPivot) return [];
+        return service.searchByPivot(input);
+    }),
+
+    getMemoryTimelineWindow: publicProcedure.input(getMemoryTimelineWindowInputSchema).query(async ({ input }) => {
+        const service = getAgentMemoryService();
+        if (!service?.getTimelineWindow) return [];
+        return service.getTimelineWindow(input);
+    }),
+
+    getCrossSessionMemoryLinks: publicProcedure.input(getCrossSessionMemoryLinksInputSchema).query(async ({ input }) => {
+        const service = getAgentMemoryService();
+        if (!service?.getCrossSessionLinks) return [];
+        return service.getCrossSessionLinks(input);
     }),
 
     captureSessionSummary: publicProcedure.input(z.object({

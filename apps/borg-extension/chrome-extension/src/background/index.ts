@@ -593,6 +593,10 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
       type: 'mcp:save-context',
       payload: {
         content: info.selectionText,
+        source: 'context-menu',
+        sourceUrl: tab.url,
+        sourceTitle: tab.title,
+        timestamp: Date.now(),
       },
     });
   }
