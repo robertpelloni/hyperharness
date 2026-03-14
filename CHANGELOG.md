@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.7.126] — 2026-03-14
+
+- changed(mcp/search-ui): added telemetry source filtering (`all`, `runtime-search`, `cached-ranking`, `live-aggregator`) in `/dashboard/mcp/search` so operators can isolate source-specific behavior without leaving the panel.
+- changed(mcp/search-ui): added a status-over-time trend strip that shows per-bucket success/error ratio for the selected telemetry scope, improving quick detection of error-heavy windows.
+- changed(mcp/search-ui): per-source rows now include a one-click `Focus failures` action that sets source + error filters together for faster failure triage.
+
 ## [2.7.125] — 2026-03-14
 
 - changed(mcp/search-ui): added per-source time-bucket trend strips in `/dashboard/mcp/search` so operators can quickly spot momentum shifts in `runtime-search`, `cached-ranking`, and `live-aggregator` traffic.

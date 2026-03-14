@@ -95,6 +95,7 @@ type ToolPreferenceMutationInput = {
 };
 
 type TelemetryWindowPreset = 'all' | '5m' | '15m' | '1h' | '24h';
+type TelemetrySourceFilter = 'all' | 'runtime-search' | 'cached-ranking' | 'live-aggregator';
 
 type TelemetryTrendBucket = {
     start: number;
@@ -188,6 +189,7 @@ export default function SearchDashboard() {
     const [telemetryTypeFilter, setTelemetryTypeFilter] = useState<'all' | ToolSelectionTelemetryEvent['type']>('all');
     const [telemetryStatusFilter, setTelemetryStatusFilter] = useState<'all' | ToolSelectionTelemetryEvent['status']>('all');
     const [telemetryWindowFilter, setTelemetryWindowFilter] = useState<TelemetryWindowPreset>('15m');
+    const [telemetrySourceFilter, setTelemetrySourceFilter] = useState<TelemetrySourceFilter>('all');
     const utils = trpc.useUtils();
     const searchQuery = trpc.mcp.searchTools.useQuery(
         { query, profile: profile === 'default' ? undefined : profile },
@@ -303,9 +305,11 @@ export default function SearchDashboard() {
     const allKnownTools = (allToolsQuery.data as SearchResult[] | undefined) ?? [];
     const telemetryEvents = ((telemetryQuery.data as ToolSelectionTelemetryEvent[] | undefined) ?? []);
     const telemetryWindowStart = resolveTelemetryWindowStart(telemetryWindowFilter);
-    const filteredTelemetryEvents = telemetryEvents
+    const telemetryEventsPreStatusFilter = telemetryEvents
         .filter((event) => telemetryWindowStart == null || event.timestamp >= telemetryWindowStart)
         .filter((event) => telemetryTypeFilter === 'all' || event.type === telemetryTypeFilter)
+        .filter((event) => telemetrySourceFilter === 'all' || event.source === telemetrySourceFilter);
+    const filteredTelemetryEvents = telemetryEventsPreStatusFilter
         .filter((event) => telemetryStatusFilter === 'all' || event.status === telemetryStatusFilter);
     const telemetry = filteredTelemetryEvents.slice(0, 12);
     const telemetrySummary = {
@@ -316,7 +320,19 @@ export default function SearchDashboard() {
     const telemetryTrendBuckets = buildTelemetryTrendBuckets({
         windowPreset: telemetryWindowFilter,
         windowStart: telemetryWindowStart,
-        events: filteredTelemetryEvents,
+        events: telemetryEventsPreStatusFilter,
+    });
+    const telemetryStatusTrend = telemetryTrendBuckets.map((bucket) => {
+        const bucketEvents = telemetryEventsPreStatusFilter.filter((event) => event.timestamp >= bucket.start && event.timestamp < bucket.end);
+        const successCount = bucketEvents.filter((event) => event.status === 'success').length;
+        const errorCount = bucketEvents.filter((event) => event.status === 'error').length;
+
+        return {
+            label: bucket.label,
+            total: bucketEvents.length,
+            successCount,
+            errorCount,
+        };
     });
     const telemetrySourceStats = (['runtime-search', 'cached-ranking', 'live-aggregator'] as const)
         .map((source) => {
@@ -1128,6 +1144,59 @@ export default function SearchDashboard() {
                                         );
                                     })}
                                 </div>
+
+                                <div className="flex flex-wrap items-center gap-2 text-xs">
+                                    <span className="text-zinc-500 uppercase tracking-wider">Source</span>
+                                    {([
+                                        { value: 'all', label: 'All' },
+                                        { value: 'runtime-search', label: 'Runtime' },
+                                        { value: 'cached-ranking', label: 'Cached' },
+                                        { value: 'live-aggregator', label: 'Live' },
+                                    ] as const).map((option) => {
+                                        const active = telemetrySourceFilter === option.value;
+                                        return (
+                                            <button
+                                                key={`telemetry-source-filter-${option.value}`}
+                                                type="button"
+                                                onClick={() => setTelemetrySourceFilter(option.value)}
+                                                className={`rounded-md border px-2 py-1 transition-colors ${active
+                                                    ? 'border-amber-500/50 bg-amber-500/15 text-amber-200'
+                                                    : 'border-zinc-700 bg-zinc-950/70 text-zinc-300 hover:bg-zinc-800'
+                                                    }`}
+                                                title={`Filter telemetry to ${option.label} source`}
+                                                aria-label={`Filter telemetry to ${option.label} source`}
+                                            >
+                                                {option.label}
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+
+                            <div className="mb-4 space-y-2 rounded-lg border border-zinc-800 bg-zinc-950/50 p-3">
+                                <div className="text-[10px] uppercase tracking-wider text-zinc-500">Status trend ({telemetryWindowFilter})</div>
+                                {telemetryStatusTrend.some((bucket) => bucket.total > 0) ? (
+                                    <div className="grid grid-cols-6 gap-1">
+                                        {telemetryStatusTrend.map((bucket) => {
+                                            const successWidth = bucket.total > 0 ? Math.round((bucket.successCount / bucket.total) * 100) : 0;
+                                            const errorWidth = bucket.total > 0 ? Math.round((bucket.errorCount / bucket.total) * 100) : 0;
+
+                                            return (
+                                                <div key={`status-trend-${bucket.label}`} className="space-y-1" title={`${bucket.label} • ${bucket.successCount} ok / ${bucket.errorCount} err`}>
+                                                    <div className="h-2 rounded border border-zinc-800/80 bg-zinc-900/80 overflow-hidden flex">
+                                                        <div className="h-full bg-emerald-500/70" style={{ width: `${successWidth}%` }} />
+                                                        <div className="h-full bg-red-500/75" style={{ width: `${errorWidth}%` }} />
+                                                    </div>
+                                                    <div className="text-[9px] text-zinc-500 text-center">{bucket.label}</div>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                ) : (
+                                    <div className="text-xs text-zinc-500">
+                                        No status trend data in the selected scope.
+                                    </div>
+                                )}
                             </div>
 
                             <div className="mb-4 space-y-2 rounded-lg border border-zinc-800 bg-zinc-950/50 p-3">
@@ -1143,9 +1212,24 @@ export default function SearchDashboard() {
                                                 <div key={`telemetry-source-${item.source}`} className="space-y-2">
                                                     <div className="flex items-center justify-between gap-3 text-xs">
                                                         <span className="font-mono text-zinc-300">{item.source}</span>
-                                                        <span className="text-zinc-500">
-                                                            {item.count} events • {item.success} ok / {item.error} err • avg {item.avgLatencyMs}ms
-                                                        </span>
+                                                        <div className="flex items-center gap-2">
+                                                            <span className="text-zinc-500">
+                                                                {item.count} events • {item.success} ok / {item.error} err • avg {item.avgLatencyMs}ms
+                                                            </span>
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => {
+                                                                    setTelemetrySourceFilter(item.source);
+                                                                    setTelemetryStatusFilter('error');
+                                                                }}
+                                                                disabled={item.error === 0}
+                                                                className="rounded border border-red-500/30 bg-red-500/10 px-2 py-0.5 text-[10px] text-red-200 disabled:opacity-40"
+                                                                title="Focus this source and show only error events"
+                                                                aria-label={`Focus failing events for ${item.source}`}
+                                                            >
+                                                                Focus failures
+                                                            </button>
+                                                        </div>
                                                     </div>
                                                     <div className="h-1.5 w-full rounded bg-zinc-800/80">
                                                         <div
