@@ -68,6 +68,8 @@ type ToolSelectionTelemetryEvent = {
     autoLoadOutcome?: 'loaded' | 'skipped' | 'not-applicable';
     autoLoadSkipReason?: string;
     autoLoadMinConfidence?: number;
+    autoLoadExecutionStatus?: 'success' | 'error' | 'not-attempted';
+    autoLoadExecutionError?: string;
 };
 
 type WorkingSetEvictionEvent = {
@@ -969,8 +971,12 @@ export default function SearchDashboard() {
                                             {event.autoLoadOutcome ? (
                                                 <div className="text-xs text-zinc-400">auto-load outcome: <span className="text-zinc-200">{event.autoLoadOutcome}</span></div>
                                             ) : null}
+                                            {event.autoLoadExecutionStatus ? (
+                                                <div className="text-xs text-zinc-400">auto-load execution: <span className="text-zinc-200">{event.autoLoadExecutionStatus}</span></div>
+                                            ) : null}
                                             {event.autoLoadReason ? <div className="text-xs text-cyan-300 break-all">auto-load: {event.autoLoadReason}</div> : null}
                                             {event.autoLoadSkipReason ? <div className="text-xs text-amber-300 break-all">auto-load skipped: {event.autoLoadSkipReason}</div> : null}
+                                            {event.autoLoadExecutionError ? <div className="text-xs text-red-300 break-all">auto-load failed: {event.autoLoadExecutionError}</div> : null}
                                             {typeof event.latencyMs === 'number' ? <div className="text-xs text-zinc-500">latency: {event.latencyMs}ms</div> : null}
                                             {event.source ? <div className="text-xs text-zinc-500">source: {event.source}</div> : null}
                                             {event.evictedTools && event.evictedTools.length > 0 ? (

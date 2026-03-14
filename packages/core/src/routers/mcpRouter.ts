@@ -479,11 +479,14 @@ export const mcpRouter = t.router({
                         minConfidence: preferences.autoLoadMinConfidence,
                     };
                 const autoLoadDecision = autoLoadEvaluation.decision;
+                let autoLoadExecutionStatus: 'success' | 'error' | 'not-attempted' = 'not-attempted';
+                let autoLoadExecutionError: string | undefined;
 
                 if (server && autoLoadDecision) {
                     const autoLoadStartedAt = Date.now();
                     try {
                         const loadResult = await server.executeTool('load_tool', { name: autoLoadDecision.toolName });
+                        autoLoadExecutionStatus = 'success';
                         toolSelectionTelemetry.record({
                             type: 'load',
                             toolName: autoLoadDecision.toolName,
@@ -496,8 +499,20 @@ export const mcpRouter = t.router({
                             scoreGap: autoLoadDecision.scoreGap,
                             topScore: autoLoadDecision.topScore,
                         });
-                    } catch {
-                        // Ignore auto-load failures here and still return ranked search results.
+                    } catch (error) {
+                        autoLoadExecutionStatus = 'error';
+                        autoLoadExecutionError = error instanceof Error ? error.message : String(error);
+                        toolSelectionTelemetry.record({
+                            type: 'load',
+                            toolName: autoLoadDecision.toolName,
+                            status: 'error',
+                            message: autoLoadExecutionError,
+                            latencyMs: toLatencyMs(autoLoadStartedAt),
+                            autoLoadReason: autoLoadDecision.reason,
+                            autoLoadConfidence: autoLoadDecision.confidence,
+                            scoreGap: autoLoadDecision.scoreGap,
+                            topScore: autoLoadDecision.topScore,
+                        });
                     }
                 }
 
@@ -547,6 +562,8 @@ export const mcpRouter = t.router({
                     autoLoadOutcome: autoLoadEvaluation.outcome,
                     autoLoadSkipReason: autoLoadEvaluation.skipReason,
                     autoLoadMinConfidence: autoLoadEvaluation.minConfidence,
+                    autoLoadExecutionStatus,
+                    autoLoadExecutionError,
                     status: 'success',
                 });
 

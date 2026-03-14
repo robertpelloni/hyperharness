@@ -27,6 +27,8 @@ export interface ToolSelectionTelemetryEvent {
     autoLoadOutcome?: 'loaded' | 'skipped' | 'not-applicable';
     autoLoadSkipReason?: string;
     autoLoadMinConfidence?: number;
+    autoLoadExecutionStatus?: 'success' | 'error' | 'not-attempted';
+    autoLoadExecutionError?: string;
 }
 
 const MAX_TELEMETRY_EVENTS = 100;

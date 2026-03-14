@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.7.122] — 2026-03-14
+
+- changed(mcp/search): cached-ranking telemetry now records auto-load execution state (`success`, `error`, `not-attempted`) so decision telemetry distinguishes selection from runtime load execution.
+- changed(mcp/search): auto-load `load_tool` failures are now captured as explicit `load` telemetry events with error status/message instead of being silently swallowed.
+- changed(mcp/search-ui): `/dashboard/mcp/search` telemetry cards now show auto-load execution status and any load failure message for faster operator triage of ranking-vs-runtime issues.
+
 ## [2.7.121] — 2026-03-14
 
 - changed(mcp/search): enriched search telemetry with second-candidate context (`secondResultName`, `secondMatchReason`, `secondScore`) and explicit score-gap capture across runtime-search, cached-ranking, and live-aggregator paths.
