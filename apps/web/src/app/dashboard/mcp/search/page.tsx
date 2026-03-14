@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { Button, Card, CardContent, CardHeader, CardTitle } from "@borg/ui";
 import { Loader2, Search, Zap, Code, Layers, ExternalLink, Activity, Database, ArrowDownToLine, Sparkles, Trash2, SlidersHorizontal, History } from "lucide-react";
 import { trpc } from '@/utils/trpc';
@@ -98,6 +99,10 @@ type TelemetryWindowPreset = 'all' | '5m' | '15m' | '1h' | '24h';
 type TelemetrySourceFilter = 'all' | 'runtime-search' | 'cached-ranking' | 'live-aggregator';
 
 const TELEMETRY_FILTERS_STORAGE_KEY = 'borg.mcp.search.telemetryFilters.v1';
+const TELEMETRY_TYPE_QUERY_KEY = 'telemetryType';
+const TELEMETRY_STATUS_QUERY_KEY = 'telemetryStatus';
+const TELEMETRY_WINDOW_QUERY_KEY = 'telemetryWindow';
+const TELEMETRY_SOURCE_QUERY_KEY = 'telemetrySource';
 
 type TelemetryTrendBucket = {
     start: number;
@@ -182,6 +187,9 @@ function formatRelativeTimestamp(timestamp: number | null): string {
 }
 
 export default function SearchDashboard() {
+    const router = useRouter();
+    const pathname = usePathname();
+    const searchParams = useSearchParams();
     const [query, setQuery] = useState('');
     const [profile, setProfile] = useState<ToolSearchProfile | 'default'>('default');
     const [autoLoadMinConfidenceDraft, setAutoLoadMinConfidenceDraft] = useState(0.85);
@@ -404,6 +412,37 @@ export default function SearchDashboard() {
     }, [preferences.maxLoadedTools, preferences.maxHydratedSchemas]);
 
     useEffect(() => {
+        let hasHydratedFromUrl = false;
+
+        const urlType = searchParams.get(TELEMETRY_TYPE_QUERY_KEY);
+        const urlStatus = searchParams.get(TELEMETRY_STATUS_QUERY_KEY);
+        const urlWindow = searchParams.get(TELEMETRY_WINDOW_QUERY_KEY);
+        const urlSource = searchParams.get(TELEMETRY_SOURCE_QUERY_KEY);
+
+        if (urlType && ['all', 'search', 'load', 'hydrate', 'unload'].includes(urlType)) {
+            setTelemetryTypeFilter(urlType as 'all' | ToolSelectionTelemetryEvent['type']);
+            hasHydratedFromUrl = true;
+        }
+
+        if (urlStatus && ['all', 'success', 'error'].includes(urlStatus)) {
+            setTelemetryStatusFilter(urlStatus as 'all' | ToolSelectionTelemetryEvent['status']);
+            hasHydratedFromUrl = true;
+        }
+
+        if (urlWindow && ['all', '5m', '15m', '1h', '24h'].includes(urlWindow)) {
+            setTelemetryWindowFilter(urlWindow as TelemetryWindowPreset);
+            hasHydratedFromUrl = true;
+        }
+
+        if (urlSource && ['all', 'runtime-search', 'cached-ranking', 'live-aggregator'].includes(urlSource)) {
+            setTelemetrySourceFilter(urlSource as TelemetrySourceFilter);
+            hasHydratedFromUrl = true;
+        }
+
+        if (hasHydratedFromUrl) {
+            return;
+        }
+
         try {
             const raw = window.localStorage.getItem(TELEMETRY_FILTERS_STORAGE_KEY);
             if (!raw) {
@@ -435,7 +474,7 @@ export default function SearchDashboard() {
         } catch {
             // Ignore invalid persisted filter payloads and continue with defaults.
         }
-    }, []);
+    }, [searchParams]);
 
     useEffect(() => {
         try {
@@ -452,6 +491,42 @@ export default function SearchDashboard() {
             // Ignore storage write failures (private mode/quota) and keep UI functional.
         }
     }, [telemetrySourceFilter, telemetryStatusFilter, telemetryTypeFilter, telemetryWindowFilter]);
+
+    useEffect(() => {
+        const nextParams = new URLSearchParams(searchParams.toString());
+
+        if (telemetryTypeFilter === 'all') {
+            nextParams.delete(TELEMETRY_TYPE_QUERY_KEY);
+        } else {
+            nextParams.set(TELEMETRY_TYPE_QUERY_KEY, telemetryTypeFilter);
+        }
+
+        if (telemetryStatusFilter === 'all') {
+            nextParams.delete(TELEMETRY_STATUS_QUERY_KEY);
+        } else {
+            nextParams.set(TELEMETRY_STATUS_QUERY_KEY, telemetryStatusFilter);
+        }
+
+        if (telemetryWindowFilter === '15m') {
+            nextParams.delete(TELEMETRY_WINDOW_QUERY_KEY);
+        } else {
+            nextParams.set(TELEMETRY_WINDOW_QUERY_KEY, telemetryWindowFilter);
+        }
+
+        if (telemetrySourceFilter === 'all') {
+            nextParams.delete(TELEMETRY_SOURCE_QUERY_KEY);
+        } else {
+            nextParams.set(TELEMETRY_SOURCE_QUERY_KEY, telemetrySourceFilter);
+        }
+
+        const currentQuery = searchParams.toString();
+        const nextQuery = nextParams.toString();
+        if (currentQuery === nextQuery) {
+            return;
+        }
+
+        router.replace(nextQuery ? `${pathname}?${nextQuery}` : pathname, { scroll: false });
+    }, [pathname, router, searchParams, telemetrySourceFilter, telemetryStatusFilter, telemetryTypeFilter, telemetryWindowFilter]);
 
     const updateToolPreferences = (next: ToolPreferenceMutationInput) => {
         setPreferencesMutation.mutate(next as never);
@@ -537,6 +612,18 @@ export default function SearchDashboard() {
             window.localStorage.removeItem(TELEMETRY_FILTERS_STORAGE_KEY);
         } catch {
             // Ignore local storage cleanup errors.
+        }
+    };
+
+    const copyTelemetryShareLink = async () => {
+        const nextParams = new URLSearchParams(searchParams.toString());
+        const shareUrl = `${window.location.origin}${pathname}${nextParams.toString() ? `?${nextParams.toString()}` : ''}`;
+
+        try {
+            await navigator.clipboard.writeText(shareUrl);
+            toast.success('Share link copied');
+        } catch {
+            toast.error('Failed to copy share link');
         }
     };
 
@@ -1244,6 +1331,16 @@ export default function SearchDashboard() {
                                         aria-label="Reset telemetry filters"
                                     >
                                         Reset filters
+                                    </button>
+
+                                    <button
+                                        type="button"
+                                        onClick={copyTelemetryShareLink}
+                                        className="rounded-md border border-zinc-700 bg-zinc-950/70 px-2 py-1 text-zinc-300 transition-colors hover:bg-zinc-800"
+                                        title="Copy URL with current telemetry filters"
+                                        aria-label="Copy telemetry share link"
+                                    >
+                                        Copy link
                                     </button>
                                 </div>
                             </div>

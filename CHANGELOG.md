@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.7.128] — 2026-03-14
+
+- changed(mcp/search-ui): telemetry filters now sync to URL query parameters (`telemetryType`, `telemetryStatus`, `telemetryWindow`, `telemetrySource`) so triage views are shareable and reproducible.
+- changed(mcp/search-ui): added `Copy link` action in `/dashboard/mcp/search` telemetry controls to copy the current filter-scoped diagnostics URL.
+- changed(mcp/search-ui): URL filter values now take precedence on load, with local-storage preferences used as fallback when no URL filter state is present.
+
 ## [2.7.127] — 2026-03-14
 
 - changed(mcp/search-ui): persisted telemetry triage filters (`type`, `status`, `window`, `source`) in local browser storage so `/dashboard/mcp/search` keeps operator context across reloads.
