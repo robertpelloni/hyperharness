@@ -1,5 +1,5 @@
 
-console.error("[MCPServer] Starting imports...");
+mcpServerDebugLog('[MCPServer] Starting imports...');
 import './debug_marker.js';
 
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
@@ -13,24 +13,24 @@ import {
     ListToolsRequestSchema,
     ReadResourceRequestSchema,
 } from "@modelcontextprotocol/sdk/types.js";
-console.error("[MCPServer] ✓ @modelcontextprotocol/sdk");
+mcpServerDebugLog('[MCPServer] ✓ @modelcontextprotocol/sdk');
 
 import { fileURLToPath } from 'url';
 import path from 'path';
 import fs from 'fs';
-console.error("[MCPServer] ✓ path/url/fs");
+mcpServerDebugLog('[MCPServer] ✓ path/url/fs');
 
 import { Router } from "./Router.js";
-console.error("[MCPServer] ✓ Router");
+mcpServerDebugLog('[MCPServer] ✓ Router');
 
 import { ModelSelector, LLMService } from "@borg/ai";
 import { CoreModelSelector } from './providers/CoreModelSelector.js';
-console.error("[MCPServer] ✓ ModelSelector");
+mcpServerDebugLog('[MCPServer] ✓ ModelSelector');
 
 import { WebSocketServer } from 'ws';
 import { WebSocketServerTransport } from './transports/WebSocketServerTransport.js';
 import http from 'http';
-console.error("[MCPServer] ✓ ws/http");
+mcpServerDebugLog('[MCPServer] ✓ ws/http');
 
 import { McpmInstaller } from "./skills/McpmInstaller.js";
 import { Director } from "@borg/agents";
@@ -70,11 +70,12 @@ import { CodeModeService } from "./services/CodeModeService.js";
 import { WorkflowEngine } from "./orchestrator/WorkflowEngine.js";
 import { AgentMemoryService } from "./services/AgentMemoryService.js";
 import { MemoryManager } from "./services/MemoryManager.js"; // Use legacy MemoryManager
-console.error("[MCPServer] ✓ Phase 51/53 Infrastructure");
+mcpServerDebugLog('[MCPServer] ✓ Phase 51/53 Infrastructure');
 import { SkillAssimilationService } from "./services/SkillAssimilationService.js";
 import { MarketplaceService } from "./services/MarketplaceService.js";
 import { registerSystemWorkflows } from "./orchestrator/SystemWorkflows.js";
 import { MCPAggregator } from "./mcp/MCPAggregator.js";
+import { getCachedToolInventory } from './mcp/cachedToolInventory.js';
 import { createDirectModeAgentRunner, getDirectModeCompatibilityTools, getDirectModeMetadataGuardResult, getDirectModeSavedScriptTools, tryHandleDirectModeCompatibilityTool } from './mcp/directModeCompatibility.js';
 import { getDownstreamPrompt, listDownstreamPrompts, listDownstreamResources, listDownstreamResourceTemplates, readDownstreamResource } from './mcp/downstreamDiscovery.js';
 import { isToolNotFoundError, shouldPreferAggregatorExecution } from "./mcp/legacyProxyMode.js";
@@ -99,10 +100,10 @@ import {
 } from './services/toolContextInjection.js';
 import { readToolPreferencesFromSettings } from './routers/mcp-tool-preferences.js';
 
-console.error("[MCPServer] ✓ SkillRegistry");
+mcpServerDebugLog('[MCPServer] ✓ SkillRegistry');
 
 import { SpawnerService } from "./agents/SpawnerService.js";
-console.error("[MCPServer] ✓ SpawnerService");
+mcpServerDebugLog('[MCPServer] ✓ SpawnerService');
 
 import {
     FileSystemTools,
@@ -121,19 +122,20 @@ import {
     ChainExecutor,
     type ChainRequest
 } from "@borg/tools";
-console.error("[MCPServer] ✓ All Tools & ChainExecutor");
+mcpServerDebugLog('[MCPServer] ✓ All Tools & ChainExecutor');
 
-console.error("[MCPServer] ✓ All Tools & ChainExecutor");
+mcpServerDebugLog('[MCPServer] ✓ All Tools & ChainExecutor');
 
 // Council and Director already imported above
-console.error("[MCPServer] ✓ Council");
+mcpServerDebugLog('[MCPServer] ✓ Council');
 
 import { CommandRegistry } from "./commands/CommandRegistry.js";
 import { GitCommand } from "./commands/lib/GitCommands.js";
 import { HelpCommand, VersionCommand, DirectorCommand } from "./commands/lib/SystemCommands.js";
 import { ContextCommand } from "./commands/lib/ContextCommands.js";
 import { UndoCommand, DiffCommand, StashCommand, FixCommand } from "./commands/lib/WorkflowCommands.js";
-console.error("[MCPServer] ✓ Commands");
+import { mcpServerDebugLog } from './mcpServerDebug.js';
+mcpServerDebugLog('[MCPServer] ✓ Commands');
 
 import { ContextManager } from "./context/ContextManager.js";
 import { SymbolPinService } from "./services/SymbolPinService.js";
@@ -163,7 +165,7 @@ import {
     createDefaultBridgeClient,
     type RegisteredBridgeClient,
 } from './bridge/bridge-manifest.js';
-console.error("[MCPServer] ✓ PermissionManager");
+mcpServerDebugLog('[MCPServer] ✓ PermissionManager');
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -194,7 +196,7 @@ interface TextContentEnvelope {
     content?: Array<{ text?: string }>;
 }
 
-console.error("[MCPServer] All imports complete!");
+mcpServerDebugLog('[MCPServer] All imports complete!');
 
 declare global {
     var mcpServerInstance: MCPServer;
@@ -567,7 +569,7 @@ export class MCPServer {
         // Load persistent config
         const savedConfig = this.configManager.loadConfig();
         if (savedConfig) {
-            console.error("[MCPServer] Loaded persistent config.");
+            mcpServerDebugLog('[MCPServer] Loaded persistent config.');
             this.directorConfig = { ...this.directorConfig, ...savedConfig };
             // Ensure nested merge for council
             if (savedConfig.council) {
@@ -646,7 +648,7 @@ export class MCPServer {
 
         if (!options.skipWebsocket) {
             const PORT = 3001;
-            console.log(`[MCPServer] Preparing WebSocket/HTTP bridge for port ${PORT}...`);
+            mcpServerDebugLog(`[MCPServer] Preparing WebSocket/HTTP bridge for port ${PORT}...`);
 
             // Create a dedicated MCP server instance for websocket transport.
             // Without this, `this.wsServer` stays null and `.connect()` throws
@@ -668,7 +670,7 @@ export class MCPServer {
     public async initializeMemorySystem() {
         if (this.memoryInitialized) return;
 
-        console.error("[MCPServer] Lazy-loading memory system (MemoryManager)...");
+        mcpServerDebugLog('[MCPServer] Lazy-loading memory system (MemoryManager)...');
         // this.memoryManager is instantiated in constructor but lazily initialized internally
         // Actually, we should instantiate it here or in constructor?
         // Let's rely on internal lazy loading of MemoryManager, but trigger it here to be safe
@@ -758,7 +760,7 @@ export class MCPServer {
     }
 
     public async executeTool(name: string, args: any): Promise<any> {
-        console.log(`[DEBUG] executeTool called with: '${name}' (len: ${name.length})`);
+        mcpServerDebugLog(`[DEBUG] executeTool called with: '${name}' (len: ${name.length})`);
         const callId = Math.random().toString(36).substring(7);
         const startTime = Date.now();
         const toolContext = await this.resolveAutomaticToolContext(name, args);
@@ -1020,11 +1022,11 @@ export class MCPServer {
             }
 
             // Log flow
-            console.log(`[DEBUG] Flow check: name='${name}'`);
+            mcpServerDebugLog(`[DEBUG] Flow check: name='${name}'`);
 
             // --- SWARM TOOLS (Phase 51) ---
             if (name === "start_squad") {
-                console.log("[DEBUG] ENTERED start_squad BLOCK");
+                mcpServerDebugLog('[DEBUG] ENTERED start_squad BLOCK');
                 const branch = args?.branch as string;
                 const goal = args?.goal as string;
                 if (!branch || !goal) throw new Error("Missing params: branch, goal");
@@ -2186,7 +2188,10 @@ export class MCPServer {
         }
     }
 
-    public async getNativeTools(): Promise<Tool[]> {
+    public async getNativeTools(options?: {
+        downstreamTools?: Tool[];
+        skipLiveDiscovery?: boolean;
+    }): Promise<Tool[]> {
         const internalTools: any[] = [
             {
                 name: "router_status",
@@ -2921,8 +2926,12 @@ export class MCPServer {
         const skillTools = this.skillRegistry.getSkillTools();
 
         // Aggregation: Fetch tools from all connected sub-MCPs
-        const externalTools = await this.router.listTools();
-        const aggregatedTools = await this.mcpAggregator.listAggregatedTools();
+        const externalTools = options?.skipLiveDiscovery ? [] : await this.router.listTools();
+        const aggregatedTools = options?.downstreamTools ?? (
+            options?.skipLiveDiscovery
+                ? []
+                : await this.mcpAggregator.listAggregatedTools()
+        );
 
         return [
             ...internalTools,
@@ -2933,8 +2942,19 @@ export class MCPServer {
         ] as Tool[];
     }
 
+    private async getCachedAdvertisedDownstreamTools(): Promise<Tool[]> {
+        const { tools } = await getCachedToolInventory();
+
+        return tools.map((tool) => ({
+            ...tool,
+            inputSchema: typeof tool.inputSchema === 'object' && tool.inputSchema !== null
+                ? tool.inputSchema
+                : { type: 'object', properties: {} },
+        })) as Tool[];
+    }
+
     private async setupHandlers(serverInstance: Server) {
-        console.error("[MCPServer] Using Borg-native MCP handlers.");
+        mcpServerDebugLog('[MCPServer] Using Borg-native MCP handlers.');
         await this.setupDirectHandlers(serverInstance);
     }
 
@@ -3027,12 +3047,15 @@ export class MCPServer {
     }
 
     private async getDirectModeTools(): Promise<Tool[]> {
-        const aggregatedTools = await this.mcpAggregator.listAggregatedTools();
-        this.nativeSessionMetaTools.refreshCatalog(aggregatedTools as Tool[]);
+        const cachedAdvertisedDownstreamTools = await this.getCachedAdvertisedDownstreamTools();
+        this.nativeSessionMetaTools.refreshCatalog(cachedAdvertisedDownstreamTools);
         await this.syncNativeToolPreferences();
 
-        const allNativeTools = await this.getNativeTools();
-        const aggregatedToolNames = new Set(aggregatedTools.map((tool) => tool.name));
+        const allNativeTools = await this.getNativeTools({
+            downstreamTools: cachedAdvertisedDownstreamTools,
+            skipLiveDiscovery: true,
+        });
+        const aggregatedToolNames = new Set(cachedAdvertisedDownstreamTools.map((tool) => tool.name));
         const baseTools = allNativeTools.filter((tool) => !aggregatedToolNames.has(tool.name));
         const savedScriptTools = await getDirectModeSavedScriptTools(jsonConfigProvider);
 
@@ -3092,15 +3115,32 @@ export class MCPServer {
             return compatibilityResult;
         }
 
-        const aggregatedTools = await this.mcpAggregator.listAggregatedTools();
-        this.nativeSessionMetaTools.refreshCatalog(aggregatedTools as Tool[]);
+        const cachedAdvertisedDownstreamTools = await this.getCachedAdvertisedDownstreamTools();
+        this.nativeSessionMetaTools.refreshCatalog(cachedAdvertisedDownstreamTools);
         return await this.nativeSessionMetaTools.handleToolCall(name, args);
     }
 
     async start() {
-        console.error("[MCPServer] Loading Skills...");
+        mcpServerDebugLog('[MCPServer] Loading Skills...');
         // Non-blocking initialization of aggregator to prevent stalling Stdio/WS start
-        this.mcpAggregator.initialize().catch(e => console.error("[MCPServer] Aggregator Init Failed:", e));
+        this.mcpAggregator.initialize()
+            .then(async () => {
+                const inventory = await getCachedToolInventory();
+                const toolCountsByName = new Map(
+                    inventory.servers.map((server) => [server.name, inventory.toolCounts.get(server.uuid) ?? 0]),
+                );
+
+                this.mcpAggregator.seedAdvertisedInventory({
+                    servers: inventory.servers.map((server) => ({
+                        name: server.name,
+                        alwaysOnAdvertised: server.alwaysOnAdvertised,
+                        advertisedToolCount: toolCountsByName.get(server.name) ?? 0,
+                    })),
+                    source: inventory.source,
+                });
+                this.mcpAggregator.warmAdvertisedServers();
+            })
+            .catch(e => console.error("[MCPServer] Aggregator Init Failed:", e));
 
         // Startup readiness should only report memory as ready once the runtime flag
         // is actually set. The current memory bootstrap is lightweight, so we prime
@@ -3113,19 +3153,19 @@ export class MCPServer {
         // Build Graph in Background
         this.autoTestService.repoGraph.buildGraph().catch(e => console.error("Graph build failed", e));
 
-        console.log(`[MCPServer] 🚀 Borg Core ready.`);
-        console.error("[MCPServer] Preparing request handlers...");
+        mcpServerDebugLog('[MCPServer] 🚀 Borg Core ready.');
+        mcpServerDebugLog('[MCPServer] Preparing request handlers...');
         await this.serverSetupPromise;
 
         // 1. Start Stdio (for local CLI usage)
-        console.error("[MCPServer] Connecting Stdio...");
+        mcpServerDebugLog('[MCPServer] Connecting Stdio...');
         const stdioTransport = new StdioServerTransport();
         await this.server.connect(stdioTransport);
-        console.error("Borg Core: Stdio Transport Active");
+        mcpServerDebugLog('Borg Core: Stdio Transport Active');
 
         // 2. Start WebSocket (for Extension/Web usage)
         if (this.wsServer && !this.wssInstance) {
-            console.error("[MCPServer] Starting WebSocket Server...");
+            mcpServerDebugLog('[MCPServer] Starting WebSocket Server...');
             const PORT = 3001;
             const httpServer = http.createServer(async (req, res) => {
                 if (req.method === 'GET' && req.url === '/api/mesh/stream') {
@@ -3371,7 +3411,7 @@ export class MCPServer {
             });
 
             httpServer.listen(PORT, () => {
-                console.error(`Borg Core: WebSocket Transport Active on ws://localhost:${PORT}`);
+                mcpServerDebugLog(`Borg Core: WebSocket Transport Active on ws://localhost:${PORT}`);
             });
 
             // 2.5 Setup WS Message Handling mechanism
@@ -3549,29 +3589,29 @@ export class MCPServer {
                 });
             });
         } else {
-            console.error("[MCPServer] Skipping WebSocket (No wsServer instance).");
+            mcpServerDebugLog('[MCPServer] Skipping WebSocket (No wsServer instance).');
         }
 
         // 3. Connect to Supervisor (Native Automation)
-        console.error("[MCPServer] Connecting to Supervisor...");
+        mcpServerDebugLog('[MCPServer] Connecting to Supervisor...');
 
         try {
-            console.error(`[MCPServer] DEBUG __dirname: ${__dirname}`);
+            mcpServerDebugLog(`[MCPServer] DEBUG __dirname: ${__dirname}`);
             const rootDir = this.findMonorepoRoot(__dirname);
-            console.error(`[MCPServer] DEBUG rootDir: ${rootDir}`);
+            mcpServerDebugLog(`[MCPServer] DEBUG rootDir: ${rootDir}`);
             if (rootDir) {
                 const supervisorPath = path.join(rootDir, 'packages', 'borg-supervisor', 'dist', 'index.js');
-                console.error(`[MCPServer] Supervisor Path Resolved: ${supervisorPath}`);
+                mcpServerDebugLog(`[MCPServer] Supervisor Path Resolved: ${supervisorPath}`);
 
                 await this.router.connectToServer('borg-supervisor', 'node', [supervisorPath]);
-                console.error(`Borg Core: Connected to Supervisor at ${supervisorPath}`);
+                mcpServerDebugLog(`Borg Core: Connected to Supervisor at ${supervisorPath}`);
 
                 // Phase 16: Google Workspace Integration
                 const workspacePath = path.join(rootDir, 'external', 'mcp-servers', 'workspace', 'workspace-server', 'dist', 'index.js');
-                console.error(`[MCPServer] Google Workspace Server Path: ${workspacePath}`);
+                mcpServerDebugLog(`[MCPServer] Google Workspace Server Path: ${workspacePath}`);
                 if (fs.existsSync(workspacePath)) {
                     await this.router.connectToServer('google-workspace', 'node', [workspacePath]);
-                    console.error("Borg Core: Connected to Google Workspace Server (GMail/Calendar)");
+                    mcpServerDebugLog('Borg Core: Connected to Google Workspace Server (GMail/Calendar)');
                 }
             } else {
                 console.error("[MCPServer] Failed to locate Monorepo Root. Skipping Supervisor.");
@@ -3581,14 +3621,14 @@ export class MCPServer {
         }
 
         if (this.wsServer && this.wssInstance) {
-            console.error("[MCPServer] Connecting internal WS transport...");
+            mcpServerDebugLog('[MCPServer] Connecting internal WS transport...');
             if (this.wsServerSetupPromise) {
                 await this.wsServerSetupPromise;
             }
             const wsTransport = new WebSocketServerTransport(this.wssInstance);
             await this.wsServer.connect(wsTransport);
         }
-        console.error("[MCPServer] Start Complete.");
+        mcpServerDebugLog('[MCPServer] Start Complete.');
     }
 
     private findMonorepoRoot(startDir: string): string | null {

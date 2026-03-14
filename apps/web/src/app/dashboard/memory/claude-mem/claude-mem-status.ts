@@ -9,6 +9,8 @@ export type ClaudeMemCapability = {
 
 export type ClaudeMemStartupSummary = {
     ready?: boolean;
+    status?: string;
+    summary?: string;
     checks?: {
         [key: string]: {
             ready?: boolean;
@@ -24,8 +26,14 @@ export type ClaudeMemStatusSummary = {
     stageLabel: string;
     coreReady: boolean;
     coreStatusLabel: string;
-    coreStatusTone: 'ready' | 'pending' | 'warming';
+    coreStatusTone: 'ready' | 'pending' | 'warming' | 'degraded';
+    coreStatusDetail: string | null;
     pendingStartupChecks: number;
+};
+
+export type ClaudeMemInstallSurfaceArtifact = {
+    id: string;
+    status: 'ready' | 'partial' | 'missing';
 };
 
 export type ClaudeMemStoreSnapshot = {
@@ -75,16 +83,28 @@ export const CLAUDE_MEM_CAPABILITIES: ClaudeMemCapability[] = [
         evidence: 'apps/web/src/app/dashboard/memory/claude-mem/page.tsx',
     },
     {
+        title: 'Canonical Borg observation schema',
+        status: 'shipped',
+        note: 'Borg defines shared observation input contracts in `@borg/types` and stores typed observation payloads with facts, concepts, files, hashes, and timestamps.',
+        evidence: 'packages/types/src/schemas/memory.ts',
+    },
+    {
+        title: 'Structured prompt and session summary capture',
+        status: 'shipped',
+        note: 'Borg natively records structured user prompts and supervised-session summaries alongside the adapter layer, instead of relying on the claude-mem store alone.',
+        evidence: 'packages/core/src/services/AgentMemoryService.ts',
+    },
+    {
         title: 'Generic Borg memory search foundation',
         status: 'partial',
-        note: 'Borg can already search its own memory providers, but that is not yet claude-mem-specific search/timeline/observation workflow parity.',
-        evidence: 'apps/web/src/app/dashboard/memory/vector/VectorMemoryDashboard.tsx',
+        note: 'Borg can already search observations, prompts, summaries, and raw memory records from the main memory dashboard, but that is not yet a dedicated claude-mem search/timeline workflow.',
+        evidence: 'apps/web/src/app/dashboard/memory/page.tsx',
     },
     {
         title: 'Vector and graph memory primitives adjacent to the adapter',
         status: 'partial',
         note: 'Borg has broader memory infrastructure around the adapter, but it is not yet wired into a native claude-mem runtime story.',
-        evidence: 'apps/web/src/app/dashboard/memory/vector/VectorMemoryDashboard.tsx',
+        evidence: 'apps/web/src/app/dashboard/memory/page.tsx',
     },
     {
         title: 'Claude Code lifecycle hooks',
@@ -94,9 +114,9 @@ export const CLAUDE_MEM_CAPABILITIES: ClaudeMemCapability[] = [
     },
     {
         title: 'Structured observation compression pipeline',
-        status: 'missing',
-        note: 'Raw tool outputs are not yet compressed into typed observations with facts, concepts, files, and deduplicated hashes the way claude-mem does.',
-        evidence: 'Gap vs upstream observation agents and response processors',
+        status: 'partial',
+        note: 'Borg already records heuristic typed observations with facts, concepts, files, and deduplicated hashes, but it does not yet have claude-mem-style model-driven observation workers or response processors.',
+        evidence: 'packages/core/src/services/AgentMemoryService.ts',
     },
     {
         title: 'Progressive-disclosure memory injection',
@@ -136,9 +156,9 @@ export const CLAUDE_MEM_IMPLEMENTATION_FILES = [
         note: 'Fans out reads/writes across Borg JSON memory and the claude-mem-inspired adapter.',
     },
     {
-        label: 'Generic vector explorer',
-        path: 'apps/web/src/app/dashboard/memory/vector/VectorMemoryDashboard.tsx',
-        note: 'Useful for raw memory inspection, but not a claude-mem parity surface on its own.',
+        label: 'Primary Borg memory dashboard',
+        path: 'apps/web/src/app/dashboard/memory/page.tsx',
+        note: 'Borg-native view for observations, prompts, session summaries, search, and provider interchange.',
     },
     {
         label: 'This parity page',
@@ -153,6 +173,26 @@ function getPendingStartupChecks(startupStatus?: ClaudeMemStartupSummary | null)
     }
 
     return Object.values(startupStatus.checks).filter((check) => check?.ready === false).length;
+}
+
+const BROWSER_EXTENSION_SURFACE_IDS = [
+    'browser-extension-chromium',
+    'browser-extension-firefox',
+] as const;
+
+function hasStartupInstallArtifactCheck(startupStatus?: ClaudeMemStartupSummary | null): boolean {
+    const keys = Object.keys(startupStatus?.checks ?? {});
+    return keys.some((key) => /artifact|installsurface/i.test(key));
+}
+
+function getPendingInstallArtifactCheckCount(installSurfaceArtifacts?: ClaudeMemInstallSurfaceArtifact[] | null): number {
+    const relevantArtifacts = (installSurfaceArtifacts ?? []).filter((artifact) => BROWSER_EXTENSION_SURFACE_IDS.includes(artifact.id as (typeof BROWSER_EXTENSION_SURFACE_IDS)[number]));
+    if (relevantArtifacts.length === 0) {
+        return 1;
+    }
+
+    const allReady = relevantArtifacts.length === BROWSER_EXTENSION_SURFACE_IDS.length && relevantArtifacts.every((artifact) => artifact.status === 'ready');
+    return allReady ? 0 : 1;
 }
 
 export function getClaudeMemOperatorGuidance(storeStatus?: ClaudeMemStoreSnapshot | null): ClaudeMemOperatorGuidance {
@@ -210,12 +250,20 @@ export function getClaudeMemOperatorGuidance(storeStatus?: ClaudeMemStoreSnapsho
     };
 }
 
-export function getClaudeMemStatusSummary(startupStatus?: ClaudeMemStartupSummary | null): ClaudeMemStatusSummary {
+export function getClaudeMemStatusSummary(
+    startupStatus?: ClaudeMemStartupSummary | null,
+    installSurfaceArtifacts?: ClaudeMemInstallSurfaceArtifact[] | null,
+): ClaudeMemStatusSummary {
     const shippedCount = CLAUDE_MEM_CAPABILITIES.filter((item) => item.status === 'shipped').length;
     const partialCount = CLAUDE_MEM_CAPABILITIES.filter((item) => item.status === 'partial').length;
     const missingCount = CLAUDE_MEM_CAPABILITIES.filter((item) => item.status === 'missing').length;
     const coreReady = Boolean(startupStatus?.ready);
-    const pendingStartupChecks = getPendingStartupChecks(startupStatus);
+    const startupPendingChecks = getPendingStartupChecks(startupStatus);
+    const installArtifactPendingChecks = startupStatus && !hasStartupInstallArtifactCheck(startupStatus)
+        ? getPendingInstallArtifactCheckCount(installSurfaceArtifacts)
+        : 0;
+    const pendingStartupChecks = startupPendingChecks + installArtifactPendingChecks;
+    const startupSummary = startupStatus?.summary?.trim() || null;
 
     const stage = missingCount === 0 && partialCount === 0
         ? 'full-parity'
@@ -225,19 +273,31 @@ export function getClaudeMemStatusSummary(startupStatus?: ClaudeMemStartupSummar
 
     const coreStatusLabel = !startupStatus
         ? 'Core warming up'
-        : coreReady && pendingStartupChecks > 0
-            ? `Core ready · ${pendingStartupChecks} startup check${pendingStartupChecks === 1 ? '' : 's'} pending`
-            : coreReady
-                ? 'Core ready'
-                : 'Core warming up';
+        : startupStatus.status === 'degraded'
+            ? 'Core running in compat fallback'
+            : coreReady && pendingStartupChecks > 0
+                ? `Core ready · ${pendingStartupChecks} startup check${pendingStartupChecks === 1 ? '' : 's'} pending`
+                : coreReady
+                    ? 'Core ready'
+                    : 'Core warming up';
 
     const coreStatusTone = !startupStatus
         ? 'warming'
-        : coreReady && pendingStartupChecks > 0
-            ? 'pending'
-            : coreReady
-                ? 'ready'
-                : 'warming';
+        : startupStatus.status === 'degraded'
+            ? 'degraded'
+            : coreReady && pendingStartupChecks > 0
+                ? 'pending'
+                : coreReady
+                    ? 'ready'
+                    : 'warming';
+
+    const coreStatusDetail = !startupStatus
+        ? null
+        : startupStatus.status === 'degraded'
+            ? (startupSummary || 'Live startup telemetry is unavailable, so Borg is serving a cached compatibility snapshot.')
+            : !coreReady && startupSummary
+                ? startupSummary
+                : null;
 
     return {
         shippedCount,
@@ -252,6 +312,7 @@ export function getClaudeMemStatusSummary(startupStatus?: ClaudeMemStartupSummar
         coreReady,
         coreStatusLabel,
         coreStatusTone,
+        coreStatusDetail,
         pendingStartupChecks,
     };
 }

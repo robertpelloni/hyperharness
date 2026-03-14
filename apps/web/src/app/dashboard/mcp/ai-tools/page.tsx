@@ -15,12 +15,26 @@ export default function AIToolsDashboard() {
     const [healthServerUuid, setHealthServerUuid] = useState('');
     const mcpServersClient = trpc.mcpServers as any;
     const toolsClient = trpc.tools as any;
+    const hasCliDetectionQuery = typeof toolsClient?.detectCliHarnesses?.useQuery === 'function';
+    const hasExecutionEnvironmentQuery = typeof toolsClient?.detectExecutionEnvironment?.useQuery === 'function';
 
     const toolsQuery = trpc.tools.list.useQuery();
     const serversQuery = trpc.mcpServers.list.useQuery();
     const apiKeysQuery = trpc.apiKeys.list.useQuery();
-    const cliDetectionsQuery = toolsClient.detectCliHarnesses.useQuery();
-    const executionEnvironmentQuery = toolsClient.detectExecutionEnvironment.useQuery();
+    const cliDetectionsQuery = hasCliDetectionQuery
+        ? toolsClient.detectCliHarnesses.useQuery()
+        : {
+            data: null,
+            isLoading: false,
+            refetch: async () => undefined,
+        };
+    const executionEnvironmentQuery = hasExecutionEnvironmentQuery
+        ? toolsClient.detectExecutionEnvironment.useQuery()
+        : {
+            data: null,
+            isLoading: false,
+            refetch: async () => undefined,
+        };
     const providerQuotasQuery = trpc.billing.getProviderQuotas.useQuery();
     const sessionsQuery = trpc.session.list.useQuery();
     const { data: tools, isLoading: loadingTools } = toolsQuery;
@@ -94,18 +108,88 @@ export default function AIToolsDashboard() {
     }, [apiKeys]);
 
     const normalizedSessions = useMemo(() => {
-        return (sessions ?? [])
-            .filter((session: any) => typeof session?.cliType === 'string')
+        return (Array.isArray(sessions) ? sessions : [])
+            .filter((session: any) => session && typeof session === 'object' && typeof session.cliType === 'string')
             .map((session: any) => ({
                 cliType: String(session.cliType),
                 status: String(session.status ?? 'unknown'),
             }));
     }, [sessions]);
 
-    const cliHarnessCards = useMemo(() => getCliHarnessCards(cliDetections, normalizedSessions), [cliDetections, normalizedSessions]);
-    const providerDirectoryCards = useMemo(() => getProviderDirectoryCards(providerQuotas), [providerQuotas]);
+    const normalizedCliDetections = useMemo(() => {
+        return (Array.isArray(cliDetections) ? cliDetections : [])
+            .filter((detection: any) => detection && typeof detection === 'object')
+            .map((detection: any, index: number) => ({
+                id: typeof detection.id === 'string' && detection.id.trim().length > 0 ? detection.id : `cli-${index}`,
+                name: typeof detection.name === 'string' && detection.name.trim().length > 0 ? detection.name : 'Unknown harness',
+                command: typeof detection.command === 'string' ? detection.command : '',
+                homepage: typeof detection.homepage === 'string' && detection.homepage.trim().length > 0 ? detection.homepage : '#',
+                docsUrl: typeof detection.docsUrl === 'string' && detection.docsUrl.trim().length > 0 ? detection.docsUrl : '#',
+                installHint: typeof detection.installHint === 'string' ? detection.installHint : 'Installation instructions unavailable',
+                sessionCapable: Boolean(detection.sessionCapable),
+                installed: Boolean(detection.installed),
+                resolvedPath: typeof detection.resolvedPath === 'string' && detection.resolvedPath.trim().length > 0 ? detection.resolvedPath : null,
+                version: typeof detection.version === 'string' && detection.version.trim().length > 0 ? detection.version : null,
+                detectionError: typeof detection.detectionError === 'string' && detection.detectionError.trim().length > 0 ? detection.detectionError : null,
+            }));
+    }, [cliDetections]);
+
+    const normalizedProviderQuotas = useMemo(() => {
+        return (Array.isArray(providerQuotas) ? providerQuotas : []).filter((quota: any) => quota && typeof quota === 'object');
+    }, [providerQuotas]);
+
+    const cliHarnessCards = useMemo(() => getCliHarnessCards(normalizedCliDetections, normalizedSessions), [normalizedCliDetections, normalizedSessions]);
+    const providerDirectoryCards = useMemo(() => getProviderDirectoryCards(normalizedProviderQuotas), [normalizedProviderQuotas]);
     const connectedProviders = useMemo(() => providerDirectoryCards.filter((card) => card.statusTone === 'success'), [providerDirectoryCards]);
     const detectedHarnesses = useMemo(() => cliHarnessCards.filter((card) => card.installed), [cliHarnessCards]);
+    const executionEnvironmentData = useMemo(() => {
+        const raw = executionEnvironmentQuery.data as any;
+        if (!raw || typeof raw !== 'object') {
+            return null;
+        }
+
+        const summary = raw.summary && typeof raw.summary === 'object' ? raw.summary : {};
+        const shells = (Array.isArray(raw.shells) ? raw.shells : []).map((shell: any, index: number) => {
+            const candidate = shell && typeof shell === 'object' ? shell : {};
+            return {
+                id: typeof candidate.id === 'string' && candidate.id.trim().length > 0 ? candidate.id : `shell-${index}`,
+                name: typeof candidate.name === 'string' && candidate.name.trim().length > 0 ? candidate.name : 'Unknown shell',
+                verified: Boolean(candidate.verified),
+                installed: Boolean(candidate.installed),
+                preferred: Boolean(candidate.preferred),
+                resolvedPath: typeof candidate.resolvedPath === 'string' && candidate.resolvedPath.trim().length > 0 ? candidate.resolvedPath : null,
+                family: typeof candidate.family === 'string' && candidate.family.trim().length > 0 ? candidate.family : 'unknown',
+                version: typeof candidate.version === 'string' && candidate.version.trim().length > 0 ? candidate.version : null,
+            };
+        });
+        const tools = (Array.isArray(raw.tools) ? raw.tools : []).map((tool: any, index: number) => {
+            const candidate = tool && typeof tool === 'object' ? tool : {};
+            return {
+                id: typeof candidate.id === 'string' && candidate.id.trim().length > 0 ? candidate.id : `tool-${index}`,
+                name: typeof candidate.name === 'string' && candidate.name.trim().length > 0 ? candidate.name : 'Unknown tool',
+                verified: Boolean(candidate.verified),
+                installed: Boolean(candidate.installed),
+                resolvedPath: typeof candidate.resolvedPath === 'string' && candidate.resolvedPath.trim().length > 0 ? candidate.resolvedPath : null,
+                version: typeof candidate.version === 'string' && candidate.version.trim().length > 0 ? candidate.version : null,
+                capabilities: Array.isArray(candidate.capabilities)
+                    ? candidate.capabilities.filter((capability: unknown): capability is string => typeof capability === 'string' && capability.trim().length > 0)
+                    : [],
+            };
+        });
+
+        return {
+            summary: {
+                preferredShellLabel: typeof summary.preferredShellLabel === 'string' ? summary.preferredShellLabel : null,
+                verifiedShellCount: typeof summary.verifiedShellCount === 'number' ? summary.verifiedShellCount : 0,
+                shellCount: typeof summary.shellCount === 'number' ? summary.shellCount : shells.length,
+                verifiedToolCount: typeof summary.verifiedToolCount === 'number' ? summary.verifiedToolCount : 0,
+                toolCount: typeof summary.toolCount === 'number' ? summary.toolCount : tools.length,
+                ready: Boolean(summary.ready),
+            },
+            shells,
+            tools,
+        };
+    }, [executionEnvironmentQuery.data]);
 
     const loading = loadingTools || loadingServers || loadingKeys || loadingCliDetections || executionEnvironmentQuery.isLoading;
 
@@ -141,7 +225,7 @@ export default function AIToolsDashboard() {
                     <CardTitle className="text-white">Execution Environment</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                    {!executionEnvironmentQuery.data ? (
+                    {!executionEnvironmentData ? (
                         <div className="rounded border border-dashed border-zinc-800 bg-zinc-950/40 p-6 text-sm text-zinc-500">
                             Execution environment details are still loading.
                         </div>
@@ -150,26 +234,26 @@ export default function AIToolsDashboard() {
                             <div className="grid grid-cols-1 md:grid-cols-4 gap-3 text-xs text-zinc-300">
                                 <div className="rounded border border-zinc-800 bg-zinc-950/50 p-3">
                                     <div className="text-zinc-500 uppercase tracking-wide text-[10px]">Preferred shell</div>
-                                    <div className="mt-2 text-sm text-white">{executionEnvironmentQuery.data.summary.preferredShellLabel ?? 'None verified'}</div>
+                                    <div className="mt-2 text-sm text-white">{executionEnvironmentData.summary.preferredShellLabel ?? 'None verified'}</div>
                                 </div>
                                 <div className="rounded border border-zinc-800 bg-zinc-950/50 p-3">
                                     <div className="text-zinc-500 uppercase tracking-wide text-[10px]">Verified shells</div>
-                                    <div className="mt-2 text-sm text-white">{executionEnvironmentQuery.data.summary.verifiedShellCount}/{executionEnvironmentQuery.data.summary.shellCount}</div>
+                                    <div className="mt-2 text-sm text-white">{executionEnvironmentData.summary.verifiedShellCount}/{executionEnvironmentData.summary.shellCount}</div>
                                 </div>
                                 <div className="rounded border border-zinc-800 bg-zinc-950/50 p-3">
                                     <div className="text-zinc-500 uppercase tracking-wide text-[10px]">Verified tools</div>
-                                    <div className="mt-2 text-sm text-white">{executionEnvironmentQuery.data.summary.verifiedToolCount}/{executionEnvironmentQuery.data.summary.toolCount}</div>
+                                    <div className="mt-2 text-sm text-white">{executionEnvironmentData.summary.verifiedToolCount}/{executionEnvironmentData.summary.toolCount}</div>
                                 </div>
                                 <div className="rounded border border-zinc-800 bg-zinc-950/50 p-3">
                                     <div className="text-zinc-500 uppercase tracking-wide text-[10px]">Execution posture</div>
-                                    <div className="mt-2 text-sm text-white">{executionEnvironmentQuery.data.summary.ready ? 'Ready' : 'Partial'}</div>
+                                    <div className="mt-2 text-sm text-white">{executionEnvironmentData.summary.ready ? 'Ready' : 'Partial'}</div>
                                 </div>
                             </div>
 
                             <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
                                 <div className="space-y-3">
                                     <div className="text-[10px] uppercase tracking-wide text-zinc-500">Detected shells</div>
-                                    {executionEnvironmentQuery.data.shells.map((shell: any) => (
+                                    {executionEnvironmentData.shells.map((shell: any) => (
                                         <div key={shell.id} className="rounded-lg border border-zinc-800 bg-zinc-950/50 p-4 space-y-2">
                                             <div className="flex items-center justify-between gap-3">
                                                 <div>
@@ -195,7 +279,7 @@ export default function AIToolsDashboard() {
 
                                 <div className="space-y-3">
                                     <div className="text-[10px] uppercase tracking-wide text-zinc-500">Common local tools</div>
-                                    {executionEnvironmentQuery.data.tools.map((tool: any) => (
+                                    {executionEnvironmentData.tools.map((tool: any) => (
                                         <div key={tool.id} className="rounded-lg border border-zinc-800 bg-zinc-950/50 p-4 space-y-2">
                                             <div className="flex items-center justify-between gap-3">
                                                 <div>

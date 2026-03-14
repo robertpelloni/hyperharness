@@ -60,6 +60,13 @@ export default function MCPTestingPage() {
                     accentClass="text-blue-400"
                 />
                 <TestingCard
+                    title="Server Probes"
+                    description="Interactive client-style probes for every downstream server and for the Borg router itself, with request/response transcripts."
+                    href="/dashboard/mcp/testing/servers"
+                    icon={Wrench}
+                    accentClass="text-cyan-400"
+                />
+                <TestingCard
                     title="Search"
                     description="Natural-language tool discovery and working-set control for progressive disclosure testing."
                     href="/dashboard/mcp/search"

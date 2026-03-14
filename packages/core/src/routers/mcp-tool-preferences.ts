@@ -1,11 +1,19 @@
 export type ToolPreferences = {
     importantTools: string[];
     alwaysLoadedTools: string[];
+    autoLoadMinConfidence: number;
+    /** Maximum number of tools the session working set will hold before LRU eviction. Range: 4..64. Default 16. */
+    maxLoadedTools: number;
+    /** Maximum number of hydrated schemas the session working set will hold before LRU eviction. Range: 2..32. Default 8. */
+    maxHydratedSchemas: number;
 };
 
 type ToolSelectionSettings = {
     importantTools?: unknown;
     alwaysLoadedTools?: unknown;
+    autoLoadMinConfidence?: unknown;
+    maxLoadedTools?: unknown;
+    maxHydratedSchemas?: unknown;
 };
 
 type ToolPreferenceDisplayFields = {
@@ -29,10 +37,37 @@ function normalizeToolNames(value: unknown): string[] {
         .filter(Boolean)));
 }
 
-export function normalizeToolPreferences(value: { importantTools?: unknown; alwaysLoadedTools?: unknown } | null | undefined): ToolPreferences {
+function normalizeAutoLoadMinConfidence(value: unknown): number {
+    if (typeof value !== 'number' || Number.isNaN(value)) {
+        return 0.85;
+    }
+
+    return Math.max(0.5, Math.min(0.99, value));
+}
+
+function normalizeMaxLoadedTools(value: unknown): number {
+    if (typeof value !== 'number' || Number.isNaN(value)) {
+        return 16;
+    }
+
+    return Math.max(4, Math.min(64, Math.round(value)));
+}
+
+function normalizeMaxHydratedSchemas(value: unknown): number {
+    if (typeof value !== 'number' || Number.isNaN(value)) {
+        return 8;
+    }
+
+    return Math.max(2, Math.min(32, Math.round(value)));
+}
+
+export function normalizeToolPreferences(value: { importantTools?: unknown; alwaysLoadedTools?: unknown; autoLoadMinConfidence?: unknown; maxLoadedTools?: unknown; maxHydratedSchemas?: unknown } | null | undefined): ToolPreferences {
     return {
         importantTools: normalizeToolNames(value?.importantTools),
         alwaysLoadedTools: normalizeToolNames(value?.alwaysLoadedTools),
+        autoLoadMinConfidence: normalizeAutoLoadMinConfidence(value?.autoLoadMinConfidence),
+        maxLoadedTools: normalizeMaxLoadedTools(value?.maxLoadedTools),
+        maxHydratedSchemas: normalizeMaxHydratedSchemas(value?.maxHydratedSchemas),
     };
 }
 
@@ -40,6 +75,9 @@ export function readToolPreferencesFromSettings(settings: ToolSelectionSettings 
     return normalizeToolPreferences({
         importantTools: settings?.importantTools,
         alwaysLoadedTools: settings?.alwaysLoadedTools,
+        autoLoadMinConfidence: settings?.autoLoadMinConfidence,
+        maxLoadedTools: settings?.maxLoadedTools,
+        maxHydratedSchemas: settings?.maxHydratedSchemas,
     });
 }
 
@@ -57,6 +95,9 @@ export function buildToolPreferenceSettings(
                 : {}),
             importantTools: normalized.importantTools,
             alwaysLoadedTools: normalized.alwaysLoadedTools,
+            autoLoadMinConfidence: normalized.autoLoadMinConfidence,
+            maxLoadedTools: normalized.maxLoadedTools,
+            maxHydratedSchemas: normalized.maxHydratedSchemas,
         },
     };
 }

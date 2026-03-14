@@ -1,14 +1,22 @@
 #!/usr/bin/env node
 
-import { spawn } from 'node:child_process';
+import { execFile, spawn } from 'node:child_process';
 
 import {
   detectBrowserExtensionArtifacts,
+  getBorgStartLockPath,
   getPreferredWebPorts,
   getWaitingReasons,
+  chooseStaleCoreRefreshTarget,
+  isCompatibleStartupStatusContract,
+  isLikelyBorgCoreCommand,
   isHttpProbeResponsive,
   isDirectExecution,
+  parseListeningPidFromLsof,
+  parseListeningPidFromNetstat,
+  readBorgStartLockRecord,
   summarizeBrowserExtensionArtifacts,
+  waitForCoreBridgeShutdown,
 } from './dev_tabby_ready_helpers.mjs';
 
 const WEB_PORT_CANDIDATES = [3000, 3010, 3020, 3030, 3040];
@@ -18,7 +26,12 @@ const READY_TIMEOUT_MS = Number(process.env.BORG_DEV_READY_TIMEOUT_MS || 600000)
 const WEB_DETECT_TIMEOUT_MS = Number(process.env.BORG_DEV_READY_WEB_TIMEOUT_MS || 15000);
 const TRPC_QUERY_TIMEOUT_MS = Number(process.env.BORG_DEV_READY_TRPC_TIMEOUT_MS || 12000);
 const AUTO_OPEN_DASHBOARD = process.env.BORG_DEV_READY_OPEN_BROWSER !== '0';
+const AUTO_REFRESH_STALE_CORE = process.env.BORG_DEV_READY_RESTART_STALE_CORE !== '0';
 const REPO_ROOT = process.cwd();
+const CORE_BRIDGE_PROBE_URLS = [
+  `${CORE_HTTP_BASE}/api/mesh/stream`,
+  `${CORE_HTTP_BASE}/health`,
+];
 
 function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -211,6 +224,19 @@ function getPnpmSpawnSpec(commandArgs, cwd = REPO_ROOT) {
   };
 }
 
+function execFileText(command, args) {
+  return new Promise((resolve) => {
+    execFile(command, args, { cwd: REPO_ROOT, windowsHide: true }, (error, stdout) => {
+      if (error) {
+        resolve('');
+        return;
+      }
+
+      resolve(stdout);
+    });
+  });
+}
+
 function runPnpmCommand(commandArgs, cwd = REPO_ROOT) {
   const { command, args } = getPnpmSpawnSpec(commandArgs, cwd);
 
@@ -265,10 +291,7 @@ async function warmMcpAndMemory(webPort) {
 
 async function evaluateReadiness() {
   const web = await detectWebPort();
-  const coreBridgeChecks = await Promise.all([
-    fetchStatus(`${CORE_HTTP_BASE}/api/mesh/stream`),
-    fetchStatus(`${CORE_HTTP_BASE}/health`),
-  ]);
+  const coreBridgeChecks = await Promise.all(CORE_BRIDGE_PROBE_URLS.map((url) => fetchStatus(url)));
   const coreBridge = coreBridgeChecks.find((check) => check.ok) ?? coreBridgeChecks[0] ?? { ok: false, status: null };
   const extensions = detectBrowserExtensionArtifacts(REPO_ROOT);
   const extension = summarizeBrowserExtensionArtifacts(extensions);
@@ -277,7 +300,7 @@ async function evaluateReadiness() {
   let memoryStatus = { ok: false, data: null, url: null };
   let browserStatus = { ok: false, data: null, url: null };
   let sessionStatus = { ok: false, data: null, url: null };
-  let startupStatus = { ok: false, data: null, url: null };
+  let startupStatus = { ok: false, compatible: false, data: null, url: null };
 
   if (web) {
     const [startupResult, mcpResult, memoryResult, browserResult, sessionResult] = await Promise.all([
@@ -290,6 +313,7 @@ async function evaluateReadiness() {
 
     startupStatus = {
       ok: startupResult.ok,
+      compatible: startupResult.ok && isCompatibleStartupStatusContract(startupResult.data),
       data: startupResult.data,
       url: startupResult.url,
     };
@@ -320,9 +344,11 @@ async function evaluateReadiness() {
   }
 
   const startupSnapshotReady = Boolean(startupStatus.data?.ready);
+  const startupContractCompatible = startupStatus.ok && startupStatus.compatible;
 
   const ready = Boolean(web)
     && coreBridge.ok
+    && startupContractCompatible
     && (startupSnapshotReady || (mcpStatus.ok
       && memoryStatus.ok
       && browserStatus.ok
@@ -350,11 +376,12 @@ function printReadySummary(state) {
   console.log('\n[Borg Dev Ready] ✅ stack is ready');
   console.log(`[Borg Dev Ready] Dashboard: ${dashboardUrl}`);
   console.log('[Borg Dev Ready] Core bridge: ws://127.0.0.1:3001 (HTTP probe: /api/mesh/stream or /health)');
-  console.log(`[Borg Dev Ready] Startup status API: ${state.startupStatus.url ?? 'unavailable'}`);
-  console.log(`[Borg Dev Ready] MCP status API: ${state.mcpStatus.url ?? 'unavailable'}`);
-  console.log(`[Borg Dev Ready] Memory status API: ${state.memoryStatus.url ?? 'unavailable'}`);
-  console.log(`[Borg Dev Ready] Browser status API: ${state.browserStatus.url ?? 'unavailable'}`);
-  console.log(`[Borg Dev Ready] Session status API: ${state.sessionStatus.url ?? 'unavailable'}`);
+  console.log(`[Borg Dev Ready] Startup telemetry API: ${state.startupStatus.url ?? 'unavailable'}`);
+  console.log(`[Borg Dev Ready] MCP telemetry API: ${state.mcpStatus.url ?? 'unavailable'}`);
+  console.log(`[Borg Dev Ready] Memory telemetry API: ${state.memoryStatus.url ?? 'unavailable'}`);
+  console.log(`[Borg Dev Ready] Browser telemetry API: ${state.browserStatus.url ?? 'unavailable'}`);
+  console.log(`[Borg Dev Ready] Session telemetry API: ${state.sessionStatus.url ?? 'unavailable'}`);
+  console.log(`[Borg Dev Ready] Extension artifacts: ${state.extension.summary ?? 'unavailable'}`);
   for (const artifact of state.extensions) {
     console.log(`[Borg Dev Ready] ${artifact.label}: ${artifact.artifactPath ?? 'unavailable'}`);
   }
@@ -363,7 +390,7 @@ function printReadySummary(state) {
 function printWaitingSummary(state, elapsedMs) {
   const missing = getWaitingReasons(state);
 
-  console.log(`[Borg Dev Ready] waiting ${Math.floor(elapsedMs / 1000)}s: ${missing.join(' | ')}`);
+  console.log(`[Borg Dev Ready] connecting ${Math.floor(elapsedMs / 1000)}s: ${missing.join(' | ')}`);
 }
 
 function spawnTurboDev() {
@@ -385,6 +412,8 @@ function spawnTurboDev() {
     '--filter=!opencode-autopilot',
     '--filter=!@borg/cli',
     '--filter=!@opencode-autopilot/cli',
+    '--filter=!@opencode-autopilot/server',
+    '--filter=!@opencode-autopilot/shared',
     '--filter=!backend',
     '--filter=!frontend',
     '--filter=!@repo/*',
@@ -425,12 +454,83 @@ function spawnCliDev() {
 }
 
 async function detectExistingCoreBridge() {
-  const checks = await Promise.all([
-    fetchStatus(`${CORE_HTTP_BASE}/api/mesh/stream`),
-    fetchStatus(`${CORE_HTTP_BASE}/health`),
-  ]);
+  const checks = await Promise.all(CORE_BRIDGE_PROBE_URLS.map((url) => fetchStatus(url)));
 
   return checks.some((check) => check.ok);
+}
+
+async function detectCoreBridgeOwnerPid() {
+  if (process.platform === 'win32') {
+    const output = await execFileText('netstat', ['-ano', '-p', 'tcp']);
+    return parseListeningPidFromNetstat(output, 3001);
+  }
+
+  const output = await execFileText('lsof', ['-nP', '-iTCP:3001', '-sTCP:LISTEN', '-t']);
+  return parseListeningPidFromLsof(output);
+}
+
+async function readProcessCommandLine(pid) {
+  if (typeof pid !== 'number' || pid <= 0) {
+    return '';
+  }
+
+  if (process.platform === 'win32') {
+    const output = await execFileText('powershell.exe', [
+      '-NoProfile',
+      '-Command',
+      `$p = Get-CimInstance Win32_Process -Filter "ProcessId = ${pid}" | Select-Object -ExpandProperty CommandLine; if ($p) { $p }`,
+    ]);
+
+    return output.trim();
+  }
+
+  const output = await execFileText('ps', ['-p', String(pid), '-o', 'args=']);
+  return output.trim();
+}
+
+async function detectCoreBridgeOwner() {
+  const pid = await detectCoreBridgeOwnerPid();
+  if (!pid) {
+    return null;
+  }
+
+  const commandLine = await readProcessCommandLine(pid);
+  return {
+    pid,
+    commandLine,
+    trusted: isLikelyBorgCoreCommand(commandLine),
+  };
+}
+
+async function stopExistingCoreBridge(pid, sourceLabel) {
+  if (typeof pid !== 'number' || pid <= 0 || pid === process.pid) {
+    return false;
+  }
+
+  try {
+    process.kill(pid, 'SIGTERM');
+  } catch (error) {
+    console.warn(`[Borg Dev Ready] could not terminate stale Borg core PID ${pid} from ${sourceLabel}: ${error instanceof Error ? error.message : String(error)}`);
+    return false;
+  }
+
+  const stopped = await waitForCoreBridgeShutdown(
+    CORE_BRIDGE_PROBE_URLS,
+    {
+      timeoutMs: TRPC_QUERY_TIMEOUT_MS,
+      pollIntervalMs: POLL_INTERVAL_MS,
+    },
+    {
+      probeImpl: fetchStatus,
+      waitImpl: sleep,
+    },
+  );
+
+  if (!stopped) {
+    console.warn(`[Borg Dev Ready] stale Borg core PID ${pid} from ${sourceLabel} did not release the bridge within ${Math.floor(TRPC_QUERY_TIMEOUT_MS / 1000)}s.`);
+  }
+
+  return stopped;
 }
 
 function waitForChildExit(label, child) {
@@ -453,14 +553,33 @@ function waitForChildExit(label, child) {
 
 async function main() {
   const child = spawnTurboDev();
-  const reuseExistingCoreBridge = await detectExistingCoreBridge();
-  const cliChild = reuseExistingCoreBridge ? null : spawnCliDev();
+  let reuseExistingCoreBridge = await detectExistingCoreBridge();
+  let cliChild = reuseExistingCoreBridge ? null : spawnCliDev();
   let childExit = null;
   let cliChildExit = null;
+  let attemptedStaleCoreRefresh = false;
 
   if (reuseExistingCoreBridge) {
     console.log('[Borg Dev Ready] reusing existing core bridge on port 3001; skipping duplicate CLI launch.');
   }
+
+  const attachCliChild = (nextCliChild) => {
+    cliChild = nextCliChild;
+    cliChildExit = null;
+
+    if (!nextCliChild) {
+      return;
+    }
+
+    nextCliChild.on('error', (error) => {
+      console.error(`[Borg Dev Ready] failed to start CLI server: ${error instanceof Error ? error.message : String(error)}`);
+      process.exit(1);
+    });
+
+    nextCliChild.on('exit', (code, signal) => {
+      cliChildExit = { code, signal };
+    });
+  };
 
   const terminateChild = (signal) => {
     if (!child.killed) {
@@ -484,16 +603,7 @@ async function main() {
     childExit = { code, signal };
   });
 
-  if (cliChild) {
-    cliChild.on('error', (error) => {
-      console.error(`[Borg Dev Ready] failed to start CLI server: ${error instanceof Error ? error.message : String(error)}`);
-      process.exit(1);
-    });
-
-    cliChild.on('exit', (code, signal) => {
-      cliChildExit = { code, signal };
-    });
-  }
+  attachCliChild(cliChild);
 
   const startedAt = Date.now();
   let warmed = false;
@@ -538,6 +648,56 @@ async function main() {
 
       printReadySummary(state);
       break;
+    }
+
+    if (
+      reuseExistingCoreBridge
+      && state.startupStatus.ok
+      && state.startupStatus.compatible === false
+    ) {
+      if (!attemptedStaleCoreRefresh && AUTO_REFRESH_STALE_CORE) {
+        attemptedStaleCoreRefresh = true;
+        const lockPath = getBorgStartLockPath();
+        const lockRecord = readBorgStartLockRecord(lockPath);
+        const owner = lockRecord ? null : await detectCoreBridgeOwner();
+        const refreshTarget = chooseStaleCoreRefreshTarget({
+          lockRecord,
+          owner,
+          currentPid: process.pid,
+        });
+
+        if (refreshTarget.kind === 'lock' && lockRecord) {
+          console.warn(`[Borg Dev Ready] existing core bridge is healthy but serving an older startup contract; stopping Borg core PID ${lockRecord.pid} from ${lockPath} and starting a fresh CLI instance.`);
+          const stopped = await stopExistingCoreBridge(refreshTarget.pid, lockPath);
+
+          if (stopped) {
+            reuseExistingCoreBridge = false;
+            attachCliChild(spawnCliDev());
+            await sleep(POLL_INTERVAL_MS);
+            continue;
+          }
+
+          console.warn('[Borg Dev Ready] existing core bridge is healthy but serving an older startup contract; the locked Borg core could not be stopped automatically.');
+        } else if (refreshTarget.kind === 'owner') {
+          console.warn(`[Borg Dev Ready] existing core bridge is healthy but serving an older startup contract; stopping Borg-owned bridge PID ${refreshTarget.pid} discovered from port 3001 and starting a fresh CLI instance.`);
+          const stopped = await stopExistingCoreBridge(refreshTarget.pid, refreshTarget.sourceLabel);
+
+          if (stopped) {
+            reuseExistingCoreBridge = false;
+            attachCliChild(spawnCliDev());
+            await sleep(POLL_INTERVAL_MS);
+            continue;
+          }
+
+          console.warn('[Borg Dev Ready] existing core bridge is healthy but serving an older startup contract; the Borg-owned port listener could not be stopped automatically.');
+        } else if (refreshTarget.kind === 'skip-untrusted-owner') {
+          console.warn(`[Borg Dev Ready] existing core bridge is healthy but serving an older startup contract; port 3001 is owned by PID ${refreshTarget.pid}, but its command line did not look Borg-owned, so automatic refresh was skipped.`);
+        } else {
+          console.warn('[Borg Dev Ready] existing core bridge is healthy but serving an older startup contract; no Borg startup lock or port owner PID was found, so automatic refresh was skipped.');
+        }
+      }
+
+      console.warn('[Borg Dev Ready] existing core bridge is healthy but serving an older startup contract; restart the Borg CLI/core bridge so `pnpm run dev` can validate the current readiness payload.');
     }
 
     printWaitingSummary(state, Date.now() - startedAt);

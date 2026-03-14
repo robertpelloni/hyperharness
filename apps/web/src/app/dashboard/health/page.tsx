@@ -7,28 +7,23 @@ import { Activity, Server, AlertTriangle, RefreshCcw, HardDrive, Cpu, Network, R
 import { trpc } from '@/utils/trpc';
 import { toast } from 'sonner';
 import { ComponentType, useState } from 'react';
-import { buildSystemStartupChecks } from '../mcp/system/system-status-helpers';
-
-function formatUptime(ms: number): string {
-    const seconds = Math.floor(ms / 1000);
-    const minutes = Math.floor(seconds / 60) % 60;
-    const hours = Math.floor(seconds / 3600) % 24;
-    const days = Math.floor(seconds / 86400);
-
-    const parts: string[] = [];
-    if (days > 0) parts.push(`${days}d`);
-    if (hours > 0) parts.push(`${hours}h`);
-    parts.push(`${minutes}m`);
-    return parts.join(' ');
-}
+import type { DashboardStartupStatus } from '../dashboard-home-view';
+import { buildSystemEnvironmentRows, buildSystemStartupNotice } from '../mcp/system/system-status-helpers';
+import { getEventBusMetric, getMcpRouterMetric } from './health-metrics';
+import { getConnectedServerKeys, normalizeHealthServers } from './health-server-list';
+import { buildHealthStartupViewModel } from './health-startup-view-model';
 
 export default function HealthDashboard() {
     const [isRefreshing, setIsRefreshing] = useState(false);
     const utils = trpc.useUtils();
+    const toolsClient = trpc.tools as any;
 
     const { data: mcpStatus, refetch: refetchMcpStatus } = trpc.mcp.getStatus.useQuery();
     const { data: startupStatus, refetch: refetchStartup } = trpc.startupStatus.useQuery(undefined, { refetchInterval: 5000 });
     const { data: servers, refetch: refetchServers } = trpc.mcpServers.list.useQuery();
+    const installArtifactsQuery = toolsClient?.detectInstallSurfaces?.useQuery
+        ? toolsClient.detectInstallSurfaces.useQuery(undefined, { refetchInterval: 10000 })
+        : ({ data: null, refetch: async () => undefined } as { data: null; refetch: () => Promise<unknown> });
     
     // We will query health for each server via a separate component or handle it manually if we need bulk
     // For simplicity, we just leverage TRPC queries directly where we render individual servers
@@ -40,6 +35,7 @@ export default function HealthDashboard() {
                 refetchMcpStatus(),
                 refetchStartup(),
                 refetchServers(),
+                installArtifactsQuery.refetch(),
                 utils.serverHealth.check.invalidate(),
             ]);
             toast.success("Health data refreshed");
@@ -48,8 +44,20 @@ export default function HealthDashboard() {
         }
     };
 
-    const startupChecks = startupStatus ? buildSystemStartupChecks(startupStatus) : [];
-    const connectedServers = mcpStatus?.servers ? Object.keys(mcpStatus.servers) : [];
+    const startupSnapshot = startupStatus as DashboardStartupStatus | undefined;
+    const startupViewModel = buildHealthStartupViewModel(
+        startupSnapshot,
+        Boolean(mcpStatus?.initialized),
+        installArtifactsQuery.data,
+    );
+    const startupChecks = startupViewModel.startupChecks;
+    const environmentRows = buildSystemEnvironmentRows(startupSnapshot);
+    const startupNotice = buildSystemStartupNotice(startupSnapshot);
+    const statusCards = startupViewModel.statusCards;
+    const eventBusMetric = getEventBusMetric(startupSnapshot);
+    const mcpRouterMetric = getMcpRouterMetric(startupSnapshot, Boolean(mcpStatus?.initialized));
+    const connectedServers = getConnectedServerKeys(mcpStatus);
+    const normalizedServers = normalizeHealthServers(servers);
 
     return (
         <div className="p-8 space-y-8 h-full overflow-y-auto">
@@ -78,9 +86,10 @@ export default function HealthDashboard() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <MetricCard
                     title="MCP Router"
-                    status={mcpStatus?.initialized ? 'Healthy' : 'Initializing'}
+                    status={mcpRouterMetric.status}
                     icon={Server}
-                    color={mcpStatus?.initialized ? 'text-green-500' : 'text-yellow-500'}
+                    color={mcpRouterMetric.color}
+                    detail={mcpRouterMetric.detail}
                 />
                 <MetricCard
                     title="Database"
@@ -91,19 +100,30 @@ export default function HealthDashboard() {
                 />
                 <MetricCard
                     title="Event Bus"
-                    status={startupStatus?.ready ? 'Active' : 'Starting'}
+                    status={eventBusMetric.status}
                     icon={Cpu}
-                    color={startupStatus?.ready ? 'text-green-500' : 'text-yellow-500'}
-                    detail="In-process pub/sub"
+                    color={eventBusMetric.color}
+                    detail={eventBusMetric.detail}
                 />
                 <MetricCard
                     title="Startup Readiness"
-                    status={startupStatus?.ready ? 'Ready' : 'Warming'}
+                    status={statusCards.startupReadiness.status}
                     icon={Radio}
-                    color={startupStatus?.ready ? 'text-green-500' : 'text-yellow-500'}
-                    detail={startupStatus ? `${startupChecks.filter((check) => check.status === 'Operational').length}/${startupChecks.length} phases` : 'Loading'}
+                    color={statusCards.startupReadiness.status === 'Ready' ? 'text-green-500' : statusCards.startupReadiness.status === 'Degraded' ? 'text-amber-500' : 'text-yellow-500'}
+                    detail={statusCards.startupReadiness.detail}
                 />
             </div>
+
+            {startupNotice ? (
+                <Card className={`border ${startupNotice.tone === 'warning' ? 'bg-amber-950/10 border-amber-900/30' : 'bg-cyan-950/10 border-cyan-900/30'}`}>
+                    <CardHeader className="pb-3">
+                        <CardTitle className={`text-base font-medium ${startupNotice.tone === 'warning' ? 'text-amber-300' : 'text-cyan-300'}`}>{startupNotice.title}</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <p className="text-sm text-zinc-300">{startupNotice.detail}</p>
+                    </CardContent>
+                </Card>
+            ) : null}
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 text-sm">
                 
@@ -121,12 +141,12 @@ export default function HealthDashboard() {
                         </CardHeader>
                         <CardContent>
                             <div className="space-y-3">
-                                {!servers || servers.length === 0 ? (
+                                {normalizedServers.length === 0 ? (
                                     <div className="text-zinc-500 text-center py-8 bg-zinc-950/50 rounded border border-zinc-800/50 border-dashed">
                                         No MCP servers configured or detected.
                                     </div>
                                 ) : (
-                                    servers.map(server => (
+                                    normalizedServers.map((server) => (
                                         <ServerHealthRow 
                                             key={server.uuid} 
                                             server={server} 
@@ -147,22 +167,15 @@ export default function HealthDashboard() {
                         </CardHeader>
                         <CardContent>
                              <div className="space-y-2 font-mono text-xs text-zinc-400">
-                                <div className="flex justify-between border-b border-zinc-800 pb-2">
-                                    <span>NODE_ENV</span>
-                                    <span className="text-white">development</span>
-                                </div>
-                                <div className="flex justify-between border-b border-zinc-800 pb-2 pt-2">
-                                    <span>PLATFORM</span>
-                                    <span className="text-white">win32</span>
-                                </div>
-                                <div className="flex justify-between border-b border-zinc-800 pb-2 pt-2">
-                                    <span>UPTIME</span>
-                                    <span className="text-white">{startupStatus?.uptime ? formatUptime(startupStatus.uptime) : '—'}</span>
-                                </div>
-                                <div className="flex justify-between pt-2">
-                                    <span>VERSION</span>
-                                    <span className="text-blue-400">v0.9.0-beta</span>
-                                </div>
+                                {environmentRows.map((row, index) => (
+                                    <div
+                                        key={row.label}
+                                        className={`flex justify-between ${index < environmentRows.length - 1 ? 'border-b border-zinc-800 pb-2' : 'pt-2'} ${index > 0 && index < environmentRows.length - 1 ? 'pt-2' : ''}`}
+                                    >
+                                        <span>{row.label}</span>
+                                        <span className={row.accent ? 'text-blue-400' : 'text-white'}>{row.value}</span>
+                                    </div>
+                                ))}
                             </div>
                         </CardContent>
                     </Card>

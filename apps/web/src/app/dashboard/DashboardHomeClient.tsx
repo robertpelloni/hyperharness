@@ -40,6 +40,7 @@ function sortServers(servers: DashboardServerSummary[]) {
 
 export function DashboardHomeClient() {
     const utils = trpc.useUtils();
+    const toolsClient = trpc.tools as any;
     const [pendingSessionActionId, setPendingSessionActionId] = useState<string | null>(null);
     const [currentTimestamp, setCurrentTimestamp] = useState<number | null>(null);
 
@@ -58,6 +59,10 @@ export function DashboardHomeClient() {
     const providerQuotasQuery = trpc.billing.getProviderQuotas.useQuery(undefined, { refetchInterval: 10000 });
     const fallbackChainQuery = trpc.billing.getFallbackChain.useQuery(undefined, { refetchInterval: 10000 });
     const sessionsQuery = trpc.session.list.useQuery(undefined, { refetchInterval: 3000 });
+    const installArtifactsQuery = toolsClient?.detectInstallSurfaces?.useQuery
+        ? toolsClient.detectInstallSurfaces.useQuery(undefined, { refetchInterval: 10000 })
+        : ({ data: null, refetch: async () => undefined } as { data: null; refetch: () => Promise<unknown> });
+    const isBootstrapping = !startupStatusQuery.data && !mcpStatusQuery.data;
 
     const refreshDashboard = async () => {
         await Promise.all([
@@ -68,6 +73,7 @@ export function DashboardHomeClient() {
             utils.billing.getProviderQuotas.invalidate(),
             utils.billing.getFallbackChain.invalidate(),
             utils.session.list.invalidate(),
+            installArtifactsQuery.refetch(),
         ]);
     };
 
@@ -191,6 +197,7 @@ export function DashboardHomeClient() {
         <DashboardHomeView
             generatedAtLabel={currentTimestamp ? new Date(currentTimestamp).toLocaleTimeString() : 'just now'}
             currentTimestamp={currentTimestamp}
+            isBootstrapping={isBootstrapping}
             mcpStatus={mcpStatus}
             startupStatus={startupStatus}
             servers={servers}
@@ -198,6 +205,7 @@ export function DashboardHomeClient() {
             providers={providers}
             fallbackChain={fallbackChain}
             sessions={sessions}
+            installSurfaceArtifacts={installArtifactsQuery.data ?? null}
             onStartSession={(sessionId) => {
                 setPendingSessionActionId(sessionId);
                 startSessionMutation.mutate({ id: sessionId });

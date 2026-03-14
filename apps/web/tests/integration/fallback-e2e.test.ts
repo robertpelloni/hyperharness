@@ -8,7 +8,7 @@ let capturedProps: CapturedProps = null;
 let providerQuotasData: unknown[] = [];
 let fallbackChainData: { chain: unknown[] } = { chain: [] };
 
-vi.mock('@/utils/trpc', () => {
+vi.mock('../../src/utils/trpc', () => {
   const createUseQuery = <T,>(getData: () => T) => () => ({ data: getData() });
 
   return {
@@ -112,6 +112,8 @@ vi.mock('../../src/app/dashboard/dashboard-home-view', () => ({
   },
 }));
 
+import { DashboardHomeClient } from '../../src/app/dashboard/DashboardHomeClient';
+
 describe('dashboard provider fallback integration', () => {
   afterEach(() => {
     capturedProps = null;
@@ -154,7 +156,6 @@ describe('dashboard provider fallback integration', () => {
       ],
     };
 
-    const { DashboardHomeClient } = await import('../../src/app/dashboard/DashboardHomeClient');
     renderToStaticMarkup(createElement(DashboardHomeClient));
 
     expect(capturedProps).not.toBeNull();

@@ -100,6 +100,12 @@ This milestone remains the release gate. Borg 1.0 is not “more dashboards”; 
 
 This milestone starts only after Borg 1.0 is trustworthy. Several 1.5 ingredients already exist in partial form, but they are not yet a coherent product.
 
+The canonical consolidation map for post-1.0 capability planning now lives in `tasks/completed/015-ecosystem-assimilation-consolidation.md`, especially:
+
+- **Track C** — browser extension platform
+- **Track D** — IDE / CLI / hook-based memory capture
+- **Track E** — portable session fabric across tools and models
+
 ### 1.5 target outcomes
 
 - [ ] Borg-native memory model with one clearly supported long-term backend
@@ -122,6 +128,8 @@ This milestone starts only after Borg 1.0 is trustworthy. Several 1.5 ingredient
 ## Borg 2.0 — The Swarm Awakens
 
 This remains explicitly post-1.x. The repository contains substantial swarm/council/debate/autonomy material already, but much of it is either experimental, partially surfaced, or broader than the 1.0 promise.
+
+The same consolidation brief maps 2.0 work primarily to **Track F — Advanced autonomy and marketplace**, with spillover from the more mature end of **Track E** once supervised sessions are trustworthy.
 
 ### 2.0 target outcomes
 

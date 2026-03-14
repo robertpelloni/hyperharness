@@ -3,6 +3,7 @@ export interface MCPServerConfig {
     args: string[];
     enabled: boolean;
     env?: Record<string, string>;
+    alwaysOn?: boolean;
 }
 
 export interface MCPToolDefinition {
@@ -35,11 +36,18 @@ export interface MCPClientLike {
 
 export type MCPServerStatus = 'stopped' | 'connecting' | 'connected' | 'error' | 'restarting';
 
+export type MCPServerWarmupStatus = 'idle' | 'scheduled' | 'warming' | 'ready' | 'failed';
+
 export interface MCPServerState {
     name: string;
     config: MCPServerConfig;
     status: MCPServerStatus;
     toolCount: number;
+    advertisedToolCount?: number;
+    advertisedAlwaysOn?: boolean;
+    advertisedSource?: 'database' | 'config' | 'empty';
+    warmupStatus?: MCPServerWarmupStatus;
+    lastConnectedAt?: number;
     lastError?: string;
     restartCount: number;
 }

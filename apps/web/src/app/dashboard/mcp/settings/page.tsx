@@ -6,6 +6,7 @@ import { Button } from "@borg/ui";
 import { CheckCircle2, Download, FileJson, Loader2, RefreshCcw, Save, RotateCcw } from "lucide-react";
 import { trpc } from '@/utils/trpc';
 import { toast } from 'sonner';
+import { normalizeConfigItems, normalizeSyncTargets } from './settings-page-normalizers';
 
 type ConfigItem = { key: string; value: string; description?: string };
 type SupportedClient = 'claude-desktop' | 'cursor' | 'vscode';
@@ -41,8 +42,8 @@ export default function MCPSettings() {
         isLoading: areTargetsLoading,
         refetch: refetchTargets,
     } = mcpServersClient.syncTargets.useQuery();
-    const config = rawConfig as ConfigItem[] | undefined;
-    const syncTargets = rawSyncTargets as SyncTarget[] | undefined;
+    const config = normalizeConfigItems(rawConfig);
+    const syncTargets = normalizeSyncTargets(rawSyncTargets);
     const [editing, setEditing] = useState<Record<string, string>>({});
     const [selectedClient, setSelectedClient] = useState<SupportedClient>('claude-desktop');
 
@@ -99,7 +100,7 @@ export default function MCPSettings() {
         syncMutation.mutate({ client: selectedClient });
     }
 
-    const activeTarget = syncTargets?.find((target) => target.client === selectedClient);
+    const activeTarget = syncTargets.find((target) => target.client === selectedClient);
     const previewDocument = previewQuery.data;
     const serverCount = previewDocument?.serverCount ?? 0;
     const isPreviewLoading = previewQuery.isLoading || previewQuery.isRefetching;
@@ -127,7 +128,7 @@ export default function MCPSettings() {
                 </CardHeader>
                 <CardContent className="space-y-6">
                     <div className="grid gap-3 md:grid-cols-3">
-                        {(syncTargets ?? []).map((target) => {
+                        {syncTargets.map((target) => {
                             const isSelected = target.client === selectedClient;
 
                             return (
@@ -163,7 +164,7 @@ export default function MCPSettings() {
                         <div className="flex justify-center p-8">
                             <Loader2 className="h-6 w-6 animate-spin text-zinc-500" />
                         </div>
-                    ) : syncTargets?.length === 0 ? (
+                    ) : syncTargets.length === 0 ? (
                         <div className="rounded-lg border border-zinc-800 bg-zinc-950 p-4 text-sm text-zinc-500">
                             No supported MCP client targets were detected.
                         </div>
@@ -264,13 +265,13 @@ export default function MCPSettings() {
                         <div className="flex justify-center p-12">
                             <Loader2 className="h-8 w-8 animate-spin text-zinc-500" />
                         </div>
-                    ) : (config?.length ?? 0) === 0 ? (
+                    ) : config.length === 0 ? (
                         <div className="text-center p-8 text-zinc-500">
                             No configuration parameters defined.
                         </div>
                     ) : (
                         <div className="divide-y divide-zinc-800">
-                            {config?.map((item: any) => (
+                            {config.map((item) => (
                                 <div key={item.key} className="py-4 flex items-center justify-between group">
                                     <div className="flex-1 pr-8">
                                         <div className="font-mono text-sm text-blue-400 font-medium mb-1">{item.key}</div>

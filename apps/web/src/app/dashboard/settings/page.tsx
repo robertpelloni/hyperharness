@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react';
 import { Card } from '@borg/ui';
 import { Button } from '@borg/ui';
 import { Textarea } from '@borg/ui';
+import { formatSettingsConfig, getSettingsSaveErrorMessage } from './settings-page-normalizers';
 
 export default function SettingsDashboard() {
     const [configJson, setConfigJson] = useState('');
@@ -15,8 +16,8 @@ export default function SettingsDashboard() {
     const updateMutation = trpc.settings.update.useMutation();
 
     useEffect(() => {
-        if (settingsQuery.data) {
-            setConfigJson(JSON.stringify(settingsQuery.data, null, 2));
+        if (settingsQuery.data !== undefined) {
+            setConfigJson(formatSettingsConfig(settingsQuery.data));
         }
     }, [settingsQuery.data]);
 
@@ -26,8 +27,8 @@ export default function SettingsDashboard() {
             await updateMutation.mutateAsync({ config });
             setLog('✅ Configuration saved successfully.');
             settingsQuery.refetch();
-        } catch (e: any) {
-            setLog(`❌ Error saving config: ${e.message}`);
+        } catch (error) {
+            setLog(`❌ Error saving config: ${getSettingsSaveErrorMessage(error)}`);
         }
     };
 

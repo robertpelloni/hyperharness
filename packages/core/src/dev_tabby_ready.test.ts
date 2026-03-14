@@ -19,7 +19,7 @@ describe('dev_tabby_ready startup summaries', () => {
       }),
     ).toEqual([
       'cached MCP inventory',
-      'live MCP runtime',
+      'resident MCP runtime',
       'session restore',
       'memory initialization',
       'extension bridge listener',
@@ -39,9 +39,9 @@ describe('dev_tabby_ready startup summaries', () => {
         extension: { ready: true, missing: [] },
       }),
     ).toEqual([
-      'MCP status query',
-      'browser status query',
-      'session status query',
+      'MCP telemetry query',
+      'browser telemetry query',
+      'session telemetry query',
     ]);
   });
 

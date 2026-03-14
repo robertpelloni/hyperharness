@@ -6,6 +6,7 @@ export interface ToolSelectionTelemetryEvent {
     timestamp: number;
     sessionId?: string;
     query?: string;
+    profile?: string;
     source?: 'runtime-search' | 'cached-ranking' | 'live-aggregator';
     resultCount?: number;
     topResultName?: string;

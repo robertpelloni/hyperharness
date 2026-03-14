@@ -6,20 +6,15 @@ import { ScrollArea } from "@borg/ui";
 import { useState, useEffect } from "react";
 import { BrainCircuit, GitBranch, Shield, Zap } from "lucide-react";
 import { trpc } from '@/utils/trpc';
+import { normalizeDirectorAutonomyLevel, normalizeDirectorPlan } from './director-page-normalizers';
 
 export default function DirectorPage() {
     const { data: config } = trpc.directorConfig.get.useQuery();
     const { data: taskStatus } = trpc.getTaskStatus.useQuery({});
     const { data: autonomyLevel } = trpc.autonomy.getLevel.useQuery();
 
-    // Construct plan view from real data
-    const plan = {
-        goal: (config as any)?.defaultTopic || "Defining Mission...",
-        status: taskStatus?.status === 'processing' || taskStatus?.status === 'busy' ? 'IN_PROGRESS' : 'IDLE',
-        steps: taskStatus?.taskId ? [
-            { id: 1, action: taskStatus.taskId, status: 'RUNNING', result: `Progress: ${taskStatus.progress || 0}%` }
-        ] : []
-    };
+    const plan = normalizeDirectorPlan(config, taskStatus);
+    const normalizedAutonomyLevel = normalizeDirectorAutonomyLevel(autonomyLevel);
 
     return (
         <div className="container mx-auto p-6 space-y-6 max-w-7xl">
@@ -55,7 +50,7 @@ export default function DirectorPage() {
                         </div>
 
                         <div className="relative border-l-2 border-muted ml-4 space-y-8 pl-8 py-2">
-                            {plan.steps.length > 0 ? plan.steps.map((step: any) => (
+                            {plan.steps.length > 0 ? plan.steps.map((step) => (
                                 <div key={step.id} className="relative">
                                     <div className={`absolute -left-[41px] h-4 w-4 rounded-full border-2 ${step.status === 'DONE' ? 'bg-green-500 border-green-500' :
                                         step.status === 'RUNNING' ? 'bg-amber-500 border-amber-500 animate-ping' :
@@ -95,9 +90,9 @@ export default function DirectorPage() {
                             <CardTitle className="text-sm uppercase text-muted-foreground">Autonomy Level</CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <div className={`flex items-center gap-2 ${autonomyLevel === 'high' ? 'text-green-400' : 'text-yellow-400'}`}>
+                            <div className={`flex items-center gap-2 ${normalizedAutonomyLevel === 'high' ? 'text-green-400' : 'text-yellow-400'}`}>
                                 <Shield className="h-5 w-5" />
-                                <span className="font-bold uppercase">{autonomyLevel || 'UNKNOWN'}</span>
+                                <span className="font-bold uppercase">{normalizedAutonomyLevel}</span>
                             </div>
                             <p className="text-xs text-muted-foreground mt-2">
                                 Director is authorized to recruit squads and perform deep research without explicit approval.

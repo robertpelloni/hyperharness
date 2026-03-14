@@ -7,7 +7,10 @@ import {
 } from '../services/memory/MemoryExportImportService.js';
 import { readClaudeMemStoreStatus } from './memoryRouter.claude-mem.js';
 import { 
+    getCrossSessionMemoryLinksInputSchema,
     memoryInterchangeFormatSchema, 
+    getMemoryTimelineWindowInputSchema,
+    searchMemoryPivotInputSchema,
     observationTypeSchema, 
     userPromptRoleSchema, 
     structuredObservationSchema, 
@@ -143,6 +146,24 @@ export const memoryRouter = t.router({
             limit: input.limit,
             role: input.role,
         });
+    }),
+
+    searchMemoryPivot: publicProcedure.input(searchMemoryPivotInputSchema).query(async ({ input }) => {
+        const service = getAgentMemoryService();
+        if (!service?.searchByPivot) return [];
+        return service.searchByPivot(input);
+    }),
+
+    getMemoryTimelineWindow: publicProcedure.input(getMemoryTimelineWindowInputSchema).query(async ({ input }) => {
+        const service = getAgentMemoryService();
+        if (!service?.getTimelineWindow) return [];
+        return service.getTimelineWindow(input);
+    }),
+
+    getCrossSessionMemoryLinks: publicProcedure.input(getCrossSessionMemoryLinksInputSchema).query(async ({ input }) => {
+        const service = getAgentMemoryService();
+        if (!service?.getCrossSessionLinks) return [];
+        return service.getCrossSessionLinks(input);
     }),
 
     captureSessionSummary: publicProcedure.input(z.object({

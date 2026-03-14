@@ -2,29 +2,33 @@
 
 import { Card, CardContent } from "@borg/ui";
 import { Button } from "@borg/ui";
-import { Activity, Server, Cpu, HardDrive, Network, Globe, Radio } from "lucide-react";
+import { Activity, Server, Cpu, HardDrive, Network, Globe, Radio, Puzzle } from "lucide-react";
 import { trpc } from '@/utils/trpc';
 import { toast } from 'sonner';
 import type { ComponentType } from 'react';
-import { buildSystemStartupChecks } from './system-status-helpers';
+import type { DashboardStartupStatus } from '../../dashboard-home-view';
+import { buildSystemComponentHealthRows, buildSystemEnvironmentRows, buildSystemStartupChecks, buildSystemStartupNotice, buildSystemStatusCards } from './system-status-helpers';
 
-function formatUptime(ms: number): string {
-    const seconds = Math.floor(ms / 1000);
-    const minutes = Math.floor(seconds / 60) % 60;
-    const hours = Math.floor(seconds / 3600) % 24;
-    const days = Math.floor(seconds / 86400);
+function getStatusCardColor(status: string): string {
+    if (status === 'Healthy' || status === 'Ready' || status === 'Listening') {
+        return 'text-green-500';
+    }
 
-    const parts: string[] = [];
-    if (days > 0) parts.push(`${days}d`);
-    if (hours > 0) parts.push(`${hours}h`);
-    parts.push(`${minutes}m`);
-    return parts.join(' ');
+    if (status === 'Connecting') {
+        return 'text-cyan-400';
+    }
+
+    return 'text-yellow-500';
 }
 
 export default function SystemStatusDashboard() {
     const { data: status, refetch } = trpc.mcp.getStatus.useQuery();
+    const toolsClient = trpc.tools as any;
     const { data: startupStatus, refetch: refetchStartup } = trpc.startupStatus.useQuery(undefined, { refetchInterval: 5000 });
     const { data: browserStatus, refetch: refetchBrowser } = trpc.browser.status.useQuery(undefined, { refetchInterval: 5000 });
+    const installArtifactsQuery = toolsClient?.detectInstallSurfaces?.useQuery
+        ? toolsClient.detectInstallSurfaces.useQuery(undefined, { refetchInterval: 10000 })
+        : ({ data: null, refetch: async () => undefined } as { data: null; refetch: () => Promise<unknown> });
 
     const closeAllPages = trpc.browser.closeAll.useMutation({
         onSuccess: () => {
@@ -38,9 +42,15 @@ export default function SystemStatusDashboard() {
         void refetch();
         void refetchStartup();
         void refetchBrowser();
+        void installArtifactsQuery.refetch();
     };
 
-    const startupChecks = startupStatus ? buildSystemStartupChecks(startupStatus) : [];
+    const startupSnapshot = startupStatus as DashboardStartupStatus | undefined;
+    const startupChecks = startupSnapshot ? buildSystemStartupChecks(startupSnapshot, installArtifactsQuery.data) : [];
+    const componentHealthRows = buildSystemComponentHealthRows(startupSnapshot, browserStatus ?? undefined, installArtifactsQuery.data);
+    const environmentRows = buildSystemEnvironmentRows(startupSnapshot);
+    const startupNotice = buildSystemStartupNotice(startupSnapshot);
+    const statusCards = buildSystemStatusCards(startupSnapshot, Boolean(status?.initialized), installArtifactsQuery.data);
 
     return (
         <div className="p-8 space-y-8 h-full overflow-y-auto">
@@ -59,23 +69,31 @@ export default function SystemStatusDashboard() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <StatusCard
                     title="MCP Server"
-                    status={status?.initialized ? 'Healthy' : 'Initializing'}
+                    status={statusCards.mcpServer.status}
                     icon={Server}
-                    color={status?.initialized ? 'text-green-500' : 'text-yellow-500'}
+                    color={getStatusCardColor(statusCards.mcpServer.status)}
+                    detail={statusCards.mcpServer.detail}
                 />
                 <StatusCard
-                    title="Database"
-                    status="Connected"
+                    title="Cached inventory"
+                    status={statusCards.cachedInventory.status}
                     icon={HardDrive}
-                    color="text-green-500"
-                    detail="SQLite (local)"
+                    color={getStatusCardColor(statusCards.cachedInventory.status)}
+                    detail={statusCards.cachedInventory.detail}
                 />
                 <StatusCard
-                    title="Event Bus"
-                    status={startupStatus?.ready ? 'Active' : 'Starting'}
+                    title="Extension bridge"
+                    status={statusCards.extensionBridge.status}
                     icon={Cpu}
-                    color={startupStatus?.ready ? 'text-green-500' : 'text-yellow-500'}
-                    detail="In-process pub/sub"
+                    color={getStatusCardColor(statusCards.extensionBridge.status)}
+                    detail={statusCards.extensionBridge.detail}
+                />
+                <StatusCard
+                    title="Extension artifacts"
+                    status={statusCards.extensionArtifacts.status}
+                    icon={Puzzle}
+                    color={getStatusCardColor(statusCards.extensionArtifacts.status)}
+                    detail={statusCards.extensionArtifacts.detail}
                 />
                 <StatusCard
                     title="Network"
@@ -86,14 +104,23 @@ export default function SystemStatusDashboard() {
                 />
                 <StatusCard
                     title="Startup Readiness"
-                    status={startupStatus?.ready ? 'Ready' : 'Warming'}
+                    status={statusCards.startupReadiness.status}
                     icon={Radio}
-                    color={startupStatus?.ready ? 'text-green-500' : 'text-yellow-500'}
-                    detail={startupStatus ? `${startupChecks.filter((check) => check.status === 'Operational').length}/${startupChecks.length} phases ready` : 'Loading startup state'}
+                    color={getStatusCardColor(statusCards.startupReadiness.status)}
+                    detail={statusCards.startupReadiness.detail}
                 />
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {startupNotice ? (
+                    <Card className={`md:col-span-2 border ${startupNotice.tone === 'warning' ? 'border-amber-900/30 bg-amber-950/10' : 'border-cyan-900/30 bg-cyan-950/10'}`}>
+                        <CardContent className="p-6">
+                            <div className={`text-sm font-semibold ${startupNotice.tone === 'warning' ? 'text-amber-300' : 'text-cyan-300'}`}>{startupNotice.title}</div>
+                            <p className="mt-2 text-sm text-zinc-300">{startupNotice.detail}</p>
+                        </CardContent>
+                    </Card>
+                ) : null}
+
                 <Card className="bg-zinc-900 border-zinc-800">
                     <CardContent className="p-6 space-y-4">
                         <div className="flex items-center justify-between">
@@ -138,22 +165,26 @@ export default function SystemStatusDashboard() {
                     <CardContent className="p-6">
                         <h3 className="text-lg font-medium text-white mb-4">Component Health</h3>
                         <div className="space-y-4">
-                            <HealthRow name="Core API" status="Operational" latency="12ms" />
-                            <HealthRow name="MCP Aggregator" status="Operational" latency="4ms" />
-                            <HealthRow name="Browser Runtime" status={browserStatus?.available ? 'Operational' : 'Unavailable'} latency="-" />
-                            <HealthRow name="Vector Store" status="Operational" latency="45ms" />
-                            <HealthRow name="Task Queue" status="Idle" latency="-" />
+                            {componentHealthRows.map((row) => (
+                                <HealthRow
+                                    key={row.name}
+                                    name={row.name}
+                                    status={row.status}
+                                    latency={row.latency}
+                                    detail={row.detail}
+                                />
+                            ))}
                         </div>
                     </CardContent>
                 </Card>
 
                 <Card className="bg-zinc-900 border-zinc-800">
                     <CardContent className="p-6">
-                        <h3 className="text-lg font-medium text-white mb-4">Startup Phases</h3>
+                        <h3 className="text-lg font-medium text-white mb-4">Startup Checks</h3>
                         <div className="space-y-4">
                             {startupChecks.length === 0 ? (
                                 <div className="rounded border border-zinc-800 bg-zinc-950 p-4 text-sm text-zinc-500">
-                                    Loading startup status from Borg Core…
+                                    Connecting to live startup telemetry from Borg Core…
                                 </div>
                             ) : startupChecks.map((check) => (
                                 <HealthRow key={check.name} name={check.name} status={check.status} latency={check.latency} detail={check.detail} />
@@ -166,22 +197,15 @@ export default function SystemStatusDashboard() {
                     <CardContent className="p-6">
                         <h3 className="text-lg font-medium text-white mb-4">Environment</h3>
                         <div className="space-y-2 font-mono text-sm text-zinc-400">
-                            <div className="flex justify-between border-b border-zinc-800 pb-2">
-                                <span>NODE_ENV</span>
-                                <span className="text-white">development</span>
-                            </div>
-                            <div className="flex justify-between border-b border-zinc-800 pb-2 pt-2">
-                                <span>PLATFORM</span>
-                                <span className="text-white">win32</span>
-                            </div>
-                            <div className="flex justify-between border-b border-zinc-800 pb-2 pt-2">
-                                <span>UPTIME</span>
-                                <span className="text-white">{startupStatus?.uptime ? formatUptime(startupStatus.uptime) : '—'}</span>
-                            </div>
-                            <div className="flex justify-between pt-2">
-                                <span>VERSION</span>
-                                <span className="text-blue-400">v0.9.0-beta</span>
-                            </div>
+                            {environmentRows.map((row, index) => (
+                                <div
+                                    key={row.label}
+                                    className={`flex justify-between ${index < environmentRows.length - 1 ? 'border-b border-zinc-800 pb-2' : 'pt-2'} ${index > 0 && index < environmentRows.length - 1 ? 'pt-2' : ''}`}
+                                >
+                                    <span>{row.label}</span>
+                                    <span className={row.accent ? 'text-blue-400' : 'text-white'}>{row.value}</span>
+                                </div>
+                            ))}
                         </div>
                     </CardContent>
                 </Card>

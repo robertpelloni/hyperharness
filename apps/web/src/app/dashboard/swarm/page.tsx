@@ -2,9 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { PageHeader } from '@/components/PageHeader';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, Button, Input } from '@borg/ui';
 import { Textarea } from '@/components/ui/textarea';
 import { trpc } from '@/utils/trpc';
 import {

@@ -6,10 +6,12 @@ import { Button } from "@borg/ui";
 import { Loader2, Plus, Key, Trash2, Copy, Check } from "lucide-react";
 import { trpc } from '@/utils/trpc';
 import { toast } from 'sonner';
+import { normalizeApiKeyList } from './api-keys-page-normalizers';
 
 export default function ApiKeysDashboard() {
     const { data: apiKeys, isLoading, refetch } = trpc.apiKeys.list.useQuery();
     const [isCreateOpen, setIsCreateOpen] = useState(false);
+    const normalizedApiKeys = normalizeApiKeyList(apiKeys);
 
     return (
         <div className="p-8 space-y-8">
@@ -36,13 +38,13 @@ export default function ApiKeysDashboard() {
                     <div className="col-span-3 flex justify-center p-12">
                         <Loader2 className="h-8 w-8 animate-spin text-zinc-500" />
                     </div>
-                ) : (apiKeys?.length ?? 0) === 0 ? (
+                ) : normalizedApiKeys.length === 0 ? (
                     <div className="col-span-3 text-center p-12 text-zinc-500 bg-zinc-900/50 rounded-lg border border-zinc-800 border-dashed">
                         <Key className="h-12 w-12 mx-auto mb-4 opacity-30" />
                         <p className="text-lg font-medium">No API Keys Found</p>
                         <p className="text-sm mt-1">Generate a key to authenticate external requests.</p>
                     </div>
-                ) : apiKeys?.map((key: any) => (
+                ) : normalizedApiKeys.map((key) => (
                     <ApiKeyCard key={key.uuid} apiKey={key} onUpdate={refetch} />
                 ))}
             </div>

@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { t, publicProcedure, getAgentMemoryService, getSessionManager, getSessionSupervisor } from '../lib/trpc-core.js';
+import { t, publicProcedure, getAgentMemoryService, getSessionManager, getSessionSupervisor, getShellService } from '../lib/trpc-core.js';
 import { detectCliHarnesses } from '../services/cli-harness-detection.js';
 
 const sessionExecutionProfileSchema = z.enum(['auto', 'powershell', 'posix', 'compatibility']);

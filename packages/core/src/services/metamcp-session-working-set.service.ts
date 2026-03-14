@@ -10,19 +10,49 @@ export interface LoadedToolState {
     lastHydratedAt: number | null;
 }
 
+/** A single eviction event recorded in the bounded history ring buffer. */
+export interface WorkingSetEvictionEvent {
+    toolName: string;
+    /** Unix ms when the eviction occurred. */
+    timestamp: number;
+    /** Which tier was evicted — 'loaded' means both loaded+hydrated status lost;
+     *  'hydrated' means only the full schema cache was dropped while metadata stays loaded. */
+    tier: 'loaded' | 'hydrated';
+}
+
 const DEFAULT_MAX_LOADED_TOOLS = 16;
 const DEFAULT_MAX_HYDRATED_SCHEMAS = 8;
 
+/** Maximum number of eviction events kept in the in-memory history ring. */
+const MAX_EVICTION_HISTORY = 20;
+
 export class SessionToolWorkingSet {
-    private readonly maxLoadedTools: number;
-    private readonly maxHydratedSchemas: number;
+    private maxLoadedTools: number;
+    private maxHydratedSchemas: number;
     private readonly loadedTools = new Map<string, number>();
     private readonly hydratedTools = new Map<string, number>();
     private readonly alwaysLoadedTools = new Set<string>();
+    /** Bounded ring buffer of the most recent eviction events. */
+    private readonly evictionHistory: WorkingSetEvictionEvent[] = [];
 
     constructor(options: SessionToolWorkingSetOptions = {}) {
         this.maxLoadedTools = options.maxLoadedTools ?? DEFAULT_MAX_LOADED_TOOLS;
         this.maxHydratedSchemas = options.maxHydratedSchemas ?? DEFAULT_MAX_HYDRATED_SCHEMAS;
+    }
+
+    /**
+     * Update capacity limits at runtime without clearing the current working set.
+     * Tools already loaded beyond the new cap are not immediately evicted — eviction
+     * happens naturally on the next load/hydrate call that exceeds the new limit.
+     */
+    reconfigure(options: SessionToolWorkingSetOptions): void {
+        if (typeof options.maxLoadedTools === 'number') {
+            this.maxLoadedTools = Math.max(4, Math.min(64, options.maxLoadedTools));
+        }
+
+        if (typeof options.maxHydratedSchemas === 'number') {
+            this.maxHydratedSchemas = Math.max(2, Math.min(32, options.maxHydratedSchemas));
+        }
     }
 
     private touch(map: Map<string, number>, name: string, timestamp: number): boolean {
@@ -33,6 +63,15 @@ export class SessionToolWorkingSet {
         map.delete(name);
         map.set(name, timestamp);
         return true;
+    }
+
+    private recordEviction(toolName: string, tier: WorkingSetEvictionEvent['tier']): void {
+        this.evictionHistory.push({ toolName, timestamp: Date.now(), tier });
+
+        // Keep the ring buffer bounded.
+        while (this.evictionHistory.length > MAX_EVICTION_HISTORY) {
+            this.evictionHistory.shift();
+        }
     }
 
     loadTool(name: string): string[] {
@@ -57,6 +96,7 @@ export class SessionToolWorkingSet {
             this.loadedTools.delete(oldest);
             this.hydratedTools.delete(oldest);
             evicted.push(oldest);
+            this.recordEviction(oldest, 'loaded');
         }
 
         this.loadedTools.set(name, timestamp);
@@ -81,6 +121,7 @@ export class SessionToolWorkingSet {
 
             this.hydratedTools.delete(oldest);
             evicted.push(oldest);
+            this.recordEviction(oldest, 'hydrated');
         }
 
         this.hydratedTools.set(name, timestamp);
@@ -135,6 +176,16 @@ export class SessionToolWorkingSet {
             maxLoadedTools: this.maxLoadedTools,
             maxHydratedSchemas: this.maxHydratedSchemas,
         };
+    }
+
+    /** Return the bounded eviction history, most recent first. */
+    getEvictionHistory(): WorkingSetEvictionEvent[] {
+        return [...this.evictionHistory].reverse();
+    }
+
+    /** Clear the eviction history ring buffer. */
+    clearEvictionHistory(): void {
+        this.evictionHistory.length = 0;
     }
 
     setAlwaysLoadedTools(names: string[]): void {

@@ -32,6 +32,9 @@ import {
     type UserPromptInput,
     type UserPromptRole,
 } from './sessionPromptMemory.js';
+import { searchMemoryRecordsByPivot } from './agentMemoryPivot.js';
+import { getMemoryTimelineWindow } from './agentMemoryTimeline.js';
+import { getCrossSessionMemoryLinks, type CrossSessionMemoryLink } from './agentMemoryConnections.js';
 
 // Memory types
 export type MemoryType = 'session' | 'working' | 'long_term';
@@ -136,6 +139,26 @@ export interface ToolContextInput {
 
 export interface UserPromptSearchOptions {
     role?: UserPromptRole;
+    limit?: number;
+}
+
+export type MemoryPivotKind = 'session' | 'tool' | 'concept' | 'file' | 'goal' | 'objective';
+
+export interface MemoryPivotSearchInput {
+    pivot: MemoryPivotKind;
+    value: string;
+    limit?: number;
+}
+
+export interface MemoryTimelineWindowInput {
+    sessionId: string;
+    anchorTimestamp: number;
+    before?: number;
+    after?: number;
+}
+
+export interface CrossSessionMemoryLinksInput {
+    memoryId: string;
     limit?: number;
 }
 
@@ -964,6 +987,24 @@ export class AgentMemoryService {
             .slice(0, limit);
     }
 
+    searchByPivot(input: MemoryPivotSearchInput): Memory[] {
+        return searchMemoryRecordsByPivot(Array.from(this.memories.values()), input.pivot, input.value, input.limit ?? 20);
+    }
+
+    getTimelineWindow(input: MemoryTimelineWindowInput): Memory[] {
+        return getMemoryTimelineWindow(
+            Array.from(this.memories.values()),
+            input.sessionId,
+            input.anchorTimestamp,
+            input.before ?? 3,
+            input.after ?? 3,
+        );
+    }
+
+    getCrossSessionLinks(input: CrossSessionMemoryLinksInput): Array<CrossSessionMemoryLink<Memory>> {
+        return getCrossSessionMemoryLinks(Array.from(this.memories.values()), input.memoryId, input.limit ?? 5);
+    }
+
     /**
      * Check if memory should be consolidated to long-term
      */
@@ -1056,6 +1097,7 @@ export class AgentMemoryService {
         };
         let observationCount = 0;
         let promptCount = 0;
+        let sessionSummaryCount = 0;
         const observationHashes = new Set<string>();
 
         for (const memory of this.memories.values()) {
@@ -1072,15 +1114,23 @@ export class AgentMemoryService {
             if (getStructuredUserPrompt(memory.metadata)) {
                 promptCount++;
             }
+
+            if (getStructuredSessionSummary(memory.metadata)) {
+                sessionSummaryCount++;
+            }
         }
 
         // We could also mix in stats from memoryManager if needed
 
         return {
-            sessionCount: this.memories.size,
+            totalCount: this.memories.size,
+            sessionCount: byType.session,
+            workingCount: byType.working,
+            longTermCount: byType.long_term,
             observationCount,
             uniqueObservationCount: observationHashes.size,
             promptCount,
+            sessionSummaryCount,
             ...byType,
             ...byNamespace,
             ...byObservationType,

@@ -11,58 +11,11 @@ import { Input } from "@borg/ui";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@borg/ui";
 import { trpc } from "@/utils/trpc";
 import { DebateVisualizer } from "@/components/council/DebateVisualizer";
-
-// Local Interface matching backend CouncilService types
-interface CouncilSession {
-    id: string;
-    topic: string;
-    status: 'active' | 'concluded';
-    round: number;
-    opinions: Opinion[];
-    votes: Vote[];
-    createdAt: number;
-}
-
-interface Opinion {
-    agentId: string;
-    content: string;
-    timestamp: number;
-    round: number;
-}
-
-interface Vote {
-    agentId: string;
-    choice: string;
-    reason: string;
-    timestamp: number;
-}
-
-/**
- * Reason: shared trpc client typing can degrade some payloads to `unknown[]` in web builds.
- * What: runtime-normalizes session payloads to the local `CouncilSession` shape.
- * Why: keeps strict React state typing without `@ts-ignore` or unsafe casts.
- */
-function normalizeSessions(value: unknown): CouncilSession[] {
-    if (!Array.isArray(value)) return [];
-
-    return value.filter((item): item is CouncilSession => {
-        if (!item || typeof item !== 'object') return false;
-        const session = item as Partial<CouncilSession>;
-        return (
-            typeof session.id === 'string' &&
-            typeof session.topic === 'string' &&
-            (session.status === 'active' || session.status === 'concluded') &&
-            typeof session.round === 'number' &&
-            Array.isArray(session.opinions) &&
-            Array.isArray(session.votes) &&
-            typeof session.createdAt === 'number'
-        );
-    });
-}
+import { normalizeCouncilSessions, type CouncilSessionRow } from './council-page-normalizers';
 
 export default function CouncilPage() {
-    const [sessions, setSessions] = useState<CouncilSession[]>([]);
-    const [selectedSession, setSelectedSession] = useState<CouncilSession | null>(null);
+    const [sessions, setSessions] = useState<CouncilSessionRow[]>([]);
+    const [selectedSession, setSelectedSession] = useState<CouncilSessionRow | null>(null);
     const [newTopic, setNewTopic] = useState("");
 
     // TRPC Queries
@@ -73,7 +26,7 @@ export default function CouncilPage() {
 
     useEffect(() => {
         if (listQuery.data) {
-            const data = normalizeSessions(listQuery.data);
+            const data = normalizeCouncilSessions(listQuery.data);
             setSessions(data);
             // Auto-select most recent if none selected
             if (!selectedSession && data.length > 0) {

@@ -12,6 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@borg/ui";
 import { ScrollArea } from '@borg/ui';
 import { RefreshCcw, Dna, FlaskConical, Play, CheckCircle, XCircle } from 'lucide-react';
 import { useToast } from "@borg/ui";
+import { normalizeEvolutionExperiments, normalizeEvolutionMutations } from './evolution-page-normalizers';
 
 export default function EvolutionPage() {
     const { toast } = useToast();
@@ -21,6 +22,8 @@ export default function EvolutionPage() {
     const [selectedMutation, setSelectedMutation] = useState<string | null>(null);
 
     const { data: status, refetch } = trpc.darwin.getStatus.useQuery();
+    const mutations = React.useMemo(() => normalizeEvolutionMutations((status as any)?.mutations), [status]);
+    const experiments = React.useMemo(() => normalizeEvolutionExperiments((status as any)?.experiments), [status]);
 
     const { mutate: mutateIdea, isPending: isMutating } = trpc.darwin.evolve.useMutation({
         onSuccess: (data: any) => {
@@ -116,7 +119,7 @@ export default function EvolutionPage() {
                         </CardHeader>
                         <CardContent>
                             <ScrollArea className="h-[400px]">
-                                {(status as any)?.mutations?.map((m: any) => (
+                                {mutations.map((m) => (
                                     <div key={m.id} className="border-b p-4 last:border-0 hover:bg-muted/50 cursor-pointer" onClick={() => setSelectedMutation(m.id)}>
                                         <div className="flex justify-between items-center mb-2">
                                             <Badge variant="outline" className="font-mono">{m.id}</Badge>
@@ -178,7 +181,7 @@ export default function EvolutionPage() {
                         </CardHeader>
                         <CardContent>
                             <ScrollArea className="h-[400px]">
-                                {(status as any)?.experiments?.map((e: any) => (
+                                {experiments.map((e) => (
                                     <div key={e.id} className="border-b p-4 last:border-0">
                                         <div className="flex justify-between items-center mb-2">
                                             <div className="flex items-center gap-2">

@@ -10,39 +10,25 @@ import { Button } from '@borg/ui';
 import { ScrollArea } from '@borg/ui';
 import { Shield, Lock, Rocket, RefreshCw } from 'lucide-react';
 import { toast } from 'sonner';
-
-interface AuditLogEntry {
-    timestamp: number;
-    action: string;
-    params: unknown;
-    level: string;
-}
-
-function normalizeAuditLogs(value: unknown): AuditLogEntry[] {
-    if (!Array.isArray(value)) return [];
-
-    return value.filter((entry): entry is AuditLogEntry => {
-        if (!entry || typeof entry !== 'object') return false;
-        const log = entry as Partial<AuditLogEntry>;
-        return (
-            typeof log.timestamp === 'number' &&
-            typeof log.action === 'string' &&
-            typeof log.level === 'string'
-        );
-    });
-}
+import {
+    filterSecurityAuditLogs,
+    normalizeSecurityAuditLogs,
+    normalizeSecurityAutonomyLevel,
+    type SecurityLevelFilter,
+} from './security-page-normalizers';
 
 export default function SecurityPage() {
     const [auditLimit] = useState(50);
-    const [levelFilter, setLevelFilter] = useState<'ALL' | 'INFO' | 'WARN' | 'ERROR'>('ALL');
+    const [levelFilter, setLevelFilter] = useState<SecurityLevelFilter>('ALL');
     const [searchTerm, setSearchTerm] = useState('');
     const utils = trpc.useUtils();
     const { data: rawAuditLogs, isLoading: loadingLogs, error: logsError, refetch: refetchLogs } = trpc.audit.list.useQuery(
         { limit: auditLimit },
         { refetchInterval: 5000 }
     );
-    const auditLogs = normalizeAuditLogs(rawAuditLogs);
-    const { data: autonomyLevel } = trpc.autonomy.getLevel.useQuery();
+    const auditLogs = normalizeSecurityAuditLogs(rawAuditLogs);
+    const { data: rawAutonomyLevel } = trpc.autonomy.getLevel.useQuery();
+    const autonomyLevel = normalizeSecurityAutonomyLevel(rawAutonomyLevel);
     const setLevelMutation = trpc.autonomy.setLevel.useMutation({
         onSuccess: async () => {
             toast.success('Autonomy level updated.');
@@ -63,16 +49,7 @@ export default function SecurityPage() {
     });
 
     const filteredLogs = useMemo(() => {
-        return auditLogs.filter((log) => {
-            const levelMatch = levelFilter === 'ALL' || log.level.toUpperCase() === levelFilter;
-            const search = searchTerm.trim().toLowerCase();
-            const action = log.action.toLowerCase();
-            const paramsText = typeof log.params === 'string'
-                ? log.params.toLowerCase()
-                : JSON.stringify(log.params ?? {}).toLowerCase();
-            const textMatch = !search || action.includes(search) || paramsText.includes(search);
-            return levelMatch && textMatch;
-        });
+        return filterSecurityAuditLogs(auditLogs, levelFilter, searchTerm);
     }, [auditLogs, levelFilter, searchTerm]);
 
     const policies = [
@@ -100,7 +77,7 @@ export default function SecurityPage() {
                 </div>
                 <div className="flex items-center gap-4">
                     <Badge variant={autonomyLevel === 'high' ? 'destructive' : 'secondary'} className="text-md px-3 py-1">
-                        Autonomy: {autonomyLevel?.toUpperCase()}
+                        Autonomy: {autonomyLevel.toUpperCase()}
                     </Badge>
                     <Button
                         variant="outline"
@@ -156,7 +133,7 @@ export default function SecurityPage() {
                             <div className="flex gap-2 items-center">
                                 <select
                                     value={levelFilter}
-                                    onChange={(e) => setLevelFilter(e.target.value as 'ALL' | 'INFO' | 'WARN' | 'ERROR')}
+                                    onChange={(e) => setLevelFilter(e.target.value as SecurityLevelFilter)}
                                     className="h-9 rounded-md border bg-background px-2 text-xs"
                                 >
                                     <option value="ALL">All levels</option>

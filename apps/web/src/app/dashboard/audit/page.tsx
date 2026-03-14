@@ -35,7 +35,8 @@ export default function AuditDashboard() {
     };
 
     // Filter audit logs client-side
-    const filteredLogs = auditLogs?.filter((log: any) => {
+    const typedAuditLogs = (auditLogs as any[] | undefined) ?? [];
+    const filteredLogs = typedAuditLogs.filter((log: any) => {
         if (!searchQuery) return true;
         const query = searchQuery.toLowerCase();
         return (
@@ -44,7 +45,7 @@ export default function AuditDashboard() {
             (log.level && log.level.toLowerCase().includes(query)) ||
             (log.details && JSON.stringify(log.details).toLowerCase().includes(query))
         );
-    }) || [];
+    });
 
     return (
         <div className="p-8 space-y-8 h-full overflow-y-auto w-full max-w-[1200px] mx-auto">

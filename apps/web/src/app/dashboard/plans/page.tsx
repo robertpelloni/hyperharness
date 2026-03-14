@@ -9,6 +9,7 @@ import { ScrollArea } from '@borg/ui';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@borg/ui";
 import { GitBranch, GitCommit, Play, Rewind, CheckCircle, XCircle, AlertCircle, FileCode } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from "@borg/ui";
+import { normalizePlanCheckpoints, normalizePlanDiffs } from './plans-page-normalizers';
 
 export default function PlansDashboard() {
     const [activeTab, setActiveTab] = useState('diffs');
@@ -16,6 +17,8 @@ export default function PlansDashboard() {
     const { data: modeData, refetch: refetchMode } = trpc.planService.getMode.useQuery();
     const { data: diffs, refetch: refetchDiffs } = trpc.planService.getDiffs.useQuery();
     const { data: checkpoints, refetch: refetchCheckpoints } = trpc.planService.getCheckpoints.useQuery();
+    const normalizedDiffs = normalizePlanDiffs(diffs);
+    const normalizedCheckpoints = normalizePlanCheckpoints(checkpoints);
 
     const setModeMutation = trpc.planService.setMode.useMutation({
         onSuccess: () => refetchMode()
@@ -74,15 +77,15 @@ export default function PlansDashboard() {
 
             <Tabs defaultValue="diffs" className="space-y-4">
                 <TabsList>
-                    <TabsTrigger value="diffs">Pending Changes ({diffs?.length || 0})</TabsTrigger>
-                    <TabsTrigger value="checkpoints">Checkpoints ({checkpoints?.length || 0})</TabsTrigger>
+                    <TabsTrigger value="diffs">Pending Changes ({normalizedDiffs.length})</TabsTrigger>
+                    <TabsTrigger value="checkpoints">Checkpoints ({normalizedCheckpoints.length})</TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="diffs" className="space-y-4">
                     <div className="flex justify-end gap-2">
                         <Button
                             variant="default"
-                            disabled={currentMode !== 'BUILD' || !diffs?.length}
+                            disabled={currentMode !== 'BUILD' || normalizedDiffs.length === 0}
                             onClick={() => applyAllMutation.mutate()}
                         >
                             <Play className="w-4 h-4 mr-2" /> Apply All Approved
@@ -91,7 +94,7 @@ export default function PlansDashboard() {
 
                     <ScrollArea className="h-[600px]">
                         <div className="space-y-4">
-                            {diffs?.map((diff: any) => (
+                            {normalizedDiffs.map((diff) => (
                                 <Card key={diff.id} className="border-zinc-800 bg-zinc-950/50">
                                     <CardHeader className="py-3">
                                         <div className="flex justify-between items-start">
@@ -119,7 +122,7 @@ export default function PlansDashboard() {
                                     </CardContent>
                                 </Card>
                             ))}
-                            {diffs?.length === 0 && (
+                            {normalizedDiffs.length === 0 && (
                                 <div className="text-center p-12 text-zinc-500">
                                     No pending changes in sandbox.
                                 </div>
@@ -142,7 +145,7 @@ export default function PlansDashboard() {
                     </div>
                     <ScrollArea className="h-[600px]">
                         <div className="space-y-4">
-                            {checkpoints?.slice().reverse().map((cp: any) => (
+                            {normalizedCheckpoints.slice().reverse().map((cp) => (
                                 <Card key={cp.id} className="border-zinc-800 bg-zinc-950/50">
                                     <CardHeader className="py-3">
                                         <div className="flex justify-between items-center">

@@ -1,4 +1,5 @@
 import fs from 'node:fs';
+import { homedir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -11,6 +12,196 @@ const STARTUP_CHECK_LABELS = {
   memory: 'memory initialization',
   extensionBridge: 'extension bridge listener',
 };
+
+export function resolveBorgDataDir(dataDir = process.env.BORG_DEV_READY_DATA_DIR ?? process.env.BORG_DATA_DIR ?? '~/.borg') {
+  if (typeof dataDir !== 'string' || dataDir.length === 0) {
+    return path.join(homedir(), '.borg');
+  }
+
+  if (dataDir === '~') {
+    return homedir();
+  }
+
+  if (dataDir.startsWith('~/') || dataDir.startsWith('~\\')) {
+    return path.resolve(homedir(), dataDir.slice(2));
+  }
+
+  return path.resolve(dataDir);
+}
+
+export function getBorgStartLockPath(dataDir) {
+  return path.join(resolveBorgDataDir(dataDir), 'lock');
+}
+
+export function readBorgStartLockRecord(lockPath = getBorgStartLockPath()) {
+  try {
+    if (!fs.existsSync(lockPath)) {
+      return null;
+    }
+
+    const parsed = JSON.parse(fs.readFileSync(lockPath, 'utf8'));
+    if (
+      !parsed
+      || typeof parsed !== 'object'
+      || typeof parsed.instanceId !== 'string'
+      || typeof parsed.pid !== 'number'
+      || typeof parsed.port !== 'number'
+      || typeof parsed.host !== 'string'
+      || typeof parsed.createdAt !== 'string'
+    ) {
+      return null;
+    }
+
+    return parsed;
+  } catch {
+    return null;
+  }
+}
+
+export function parseListeningPidFromNetstat(output, port) {
+  if (typeof output !== 'string' || !Number.isInteger(port) || port <= 0) {
+    return null;
+  }
+
+  for (const rawLine of output.split(/\r?\n/u)) {
+    const line = rawLine.trim();
+    if (!line) {
+      continue;
+    }
+
+    const columns = line.split(/\s+/u);
+    if (columns.length < 5) {
+      continue;
+    }
+
+    const [protocol, localAddress, , stateOrPid, pidOrEmpty] = columns;
+    if (protocol.toUpperCase() !== 'TCP') {
+      continue;
+    }
+
+    const isListening = stateOrPid.toUpperCase() === 'LISTENING';
+    const pidText = isListening ? pidOrEmpty : stateOrPid;
+    if (!localAddress.endsWith(`:${port}`) || !/^\d+$/u.test(pidText ?? '')) {
+      continue;
+    }
+
+    return Number(pidText);
+  }
+
+  return null;
+}
+
+export function parseListeningPidFromLsof(output) {
+  if (typeof output !== 'string') {
+    return null;
+  }
+
+  const line = output
+    .split(/\r?\n/u)
+    .map((entry) => entry.trim())
+    .find((entry) => /^\d+$/u.test(entry));
+
+  return line ? Number(line) : null;
+}
+
+export function isLikelyBorgCoreCommand(commandLine) {
+  if (typeof commandLine !== 'string') {
+    return false;
+  }
+
+  const normalized = commandLine.trim().toLowerCase();
+  if (!normalized) {
+    return false;
+  }
+
+  const borgMarkers = [
+    '@borg/',
+    'packages/core',
+    'packages\\core',
+    'packages/cli',
+    'packages\\cli',
+    '/borg/',
+    '\\borg\\',
+    'tsx src/index.ts start',
+    'tsx src/server-stdio.ts',
+    'backgroundcorebootstrap',
+    'server-stdio',
+  ];
+
+  return borgMarkers.some((marker) => normalized.includes(marker));
+}
+
+export function chooseStaleCoreRefreshTarget({
+  lockRecord = null,
+  owner = null,
+  currentPid = process.pid,
+} = {}) {
+  const lockPid = typeof lockRecord?.pid === 'number' ? lockRecord.pid : null;
+  if (lockPid && lockPid > 0 && lockPid !== currentPid) {
+    return {
+      kind: 'lock',
+      pid: lockPid,
+      sourceLabel: 'lock',
+      trusted: true,
+    };
+  }
+
+  const ownerPid = typeof owner?.pid === 'number' ? owner.pid : null;
+  if (ownerPid && ownerPid > 0 && ownerPid !== currentPid && owner?.trusted === true) {
+    return {
+      kind: 'owner',
+      pid: ownerPid,
+      sourceLabel: 'port 3001',
+      trusted: true,
+    };
+  }
+
+  if (ownerPid && ownerPid > 0) {
+    return {
+      kind: 'skip-untrusted-owner',
+      pid: ownerPid,
+      sourceLabel: 'port 3001',
+      trusted: false,
+    };
+  }
+
+  return {
+    kind: 'skip-missing',
+    pid: null,
+    sourceLabel: null,
+    trusted: false,
+  };
+}
+
+export function isCompatibleStartupStatusContract(startupStatusData) {
+  if (!startupStatusData || typeof startupStatusData !== 'object') {
+    return false;
+  }
+
+  const checks = startupStatusData.checks;
+  if (!checks || typeof checks !== 'object') {
+    return false;
+  }
+
+  const aggregator = checks.mcpAggregator;
+  const memory = checks.memory;
+  const executionEnvironment = checks.executionEnvironment;
+
+  return Boolean(
+    aggregator
+      && typeof aggregator === 'object'
+      && Object.prototype.hasOwnProperty.call(aggregator, 'residentReady')
+      && Object.prototype.hasOwnProperty.call(aggregator, 'residentConnectedCount')
+      && Object.prototype.hasOwnProperty.call(aggregator, 'inventorySource')
+      && memory
+      && typeof memory === 'object'
+      && Object.prototype.hasOwnProperty.call(memory, 'claudeMem')
+      && executionEnvironment
+      && typeof executionEnvironment === 'object'
+      && Object.prototype.hasOwnProperty.call(executionEnvironment, 'harnessCount')
+      && Object.prototype.hasOwnProperty.call(executionEnvironment, 'verifiedHarnessCount')
+  );
+}
 
 function getPendingMcpStartupChecks(startupStatusData) {
   const aggregator = startupStatusData?.checks?.mcpAggregator;
@@ -27,8 +218,20 @@ function getPendingMcpStartupChecks(startupStatusData) {
     pending.push('cached MCP inventory');
   }
 
-  if ((aggregator.liveReady ?? aggregator.ready) === false) {
-    pending.push('live MCP runtime');
+  const residentTargetCount = Number(aggregator.advertisedAlwaysOnServerCount ?? 0);
+  const residentConnectedCount = Number(aggregator.residentConnectedCount ?? 0);
+  const residentReady = aggregator.residentReady
+    ?? ((aggregator.liveReady ?? aggregator.ready) && residentConnectedCount >= residentTargetCount);
+
+  if (residentReady === false) {
+    const warmingCount = Number(aggregator.warmingServerCount ?? 0);
+    const failedWarmupCount = Number(aggregator.failedWarmupServerCount ?? 0);
+    const posture = [
+      warmingCount > 0 ? `${warmingCount} warming` : null,
+      failedWarmupCount > 0 ? `${failedWarmupCount} failed` : null,
+    ].filter(Boolean).join(', ');
+
+    pending.push(posture ? `resident MCP runtime (${posture})` : 'resident MCP runtime');
   }
 
   return pending;
@@ -139,12 +342,29 @@ export function summarizeBrowserExtensionArtifacts(artifacts) {
     return {
       ready: false,
       items: [],
+      readyCount: 0,
+      totalCount: 0,
+      summary: 'no browser extension artifacts detected',
     };
   }
+
+  const readyCount = artifacts.filter((artifact) => artifact.ready).length;
+  const totalCount = artifacts.length;
+  const readyLabels = artifacts
+    .filter((artifact) => artifact.ready)
+    .map((artifact) => artifact.label.replace('browser extension ', ''));
+  const missingLabels = artifacts
+    .filter((artifact) => !artifact.ready)
+    .map((artifact) => artifact.label.replace('browser extension ', ''));
 
   return {
     ready: artifacts.every((artifact) => artifact.ready),
     items: artifacts,
+    readyCount,
+    totalCount,
+    summary: missingLabels.length === 0
+      ? `${readyCount}/${totalCount} ready (${readyLabels.join(', ')})`
+      : `${readyCount}/${totalCount} ready · missing ${missingLabels.join(', ')}`,
   };
 }
 
@@ -158,6 +378,39 @@ export function isHttpProbeResponsive(status) {
   }
 
   return Number.isInteger(status.status);
+}
+
+export async function waitForCoreBridgeShutdown(
+  probeUrls,
+  {
+    timeoutMs = 15000,
+    pollIntervalMs = 500,
+  } = {},
+  {
+    probeImpl,
+    waitImpl = (ms) => new Promise((resolve) => setTimeout(resolve, ms)),
+  } = {},
+) {
+  if (!Array.isArray(probeUrls) || probeUrls.length === 0 || typeof probeImpl !== 'function') {
+    return false;
+  }
+
+  const deadline = Date.now() + timeoutMs;
+
+  do {
+    const statuses = await Promise.all(probeUrls.map((url) => probeImpl(url)));
+    if (statuses.every((status) => !isHttpProbeResponsive(status))) {
+      return true;
+    }
+
+    if (Date.now() >= deadline) {
+      break;
+    }
+
+    await waitImpl(pollIntervalMs);
+  } while (true);
+
+  return false;
 }
 
 function getMissingExtensionReasons(artifacts) {
@@ -205,7 +458,11 @@ export function getWaitingReasons(state) {
   }
 
   if (!state.startupStatus.ok) {
-    missing.push('startup status query');
+    missing.push('startup telemetry query');
+  }
+
+  if (state.startupStatus.ok && state.startupStatus.compatible === false) {
+    missing.push('core bridge startup contract refresh');
   }
 
   const pendingStartupChecks = getPendingStartupChecks(state.startupStatus.data);
@@ -213,19 +470,19 @@ export function getWaitingReasons(state) {
     missing.push(...pendingStartupChecks);
   } else {
     if (!state.startupStatus.data?.ready && !state.mcpStatus.ok) {
-      missing.push('MCP status query');
+      missing.push('MCP telemetry query');
     }
 
     if (!state.startupStatus.data?.ready && !state.memoryStatus.ok) {
-      missing.push('memory status query');
+      missing.push('memory telemetry query');
     }
 
     if (!state.startupStatus.data?.ready && !state.browserStatus.ok) {
-      missing.push('browser status query');
+      missing.push('browser telemetry query');
     }
 
     if (!state.startupStatus.data?.ready && !state.sessionStatus.ok) {
-      missing.push('session status query');
+      missing.push('session telemetry query');
     }
   }
 

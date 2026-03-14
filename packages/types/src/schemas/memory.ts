@@ -15,6 +15,9 @@ export type MemoryNamespace = z.infer<typeof memoryNamespaceSchema>;
 export const userPromptRoleSchema = z.enum(['goal', 'objective', 'prompt']);
 export type UserPromptRole = z.infer<typeof userPromptRoleSchema>;
 
+export const memoryPivotKindSchema = z.enum(['session', 'tool', 'concept', 'file', 'goal', 'objective']);
+export type MemoryPivotKind = z.infer<typeof memoryPivotKindSchema>;
+
 export const structuredObservationSchema = z.object({
     toolName: z.string().optional(),
     title: z.string().optional(),
@@ -65,3 +68,24 @@ export const searchUserPromptsInputSchema = z.object({
     limit: z.number().optional().default(10),
     role: userPromptRoleSchema.optional(),
 });
+
+export const searchMemoryPivotInputSchema = z.object({
+    pivot: memoryPivotKindSchema,
+    value: z.string().min(1),
+    limit: z.number().optional().default(20),
+});
+export type SearchMemoryPivotInput = z.infer<typeof searchMemoryPivotInputSchema>;
+
+export const getMemoryTimelineWindowInputSchema = z.object({
+    sessionId: z.string().min(1),
+    anchorTimestamp: z.number(),
+    before: z.number().int().min(0).max(10).optional().default(3),
+    after: z.number().int().min(0).max(10).optional().default(3),
+});
+export type GetMemoryTimelineWindowInput = z.infer<typeof getMemoryTimelineWindowInputSchema>;
+
+export const getCrossSessionMemoryLinksInputSchema = z.object({
+    memoryId: z.string().min(1),
+    limit: z.number().int().min(1).max(10).optional().default(5),
+});
+export type GetCrossSessionMemoryLinksInput = z.infer<typeof getCrossSessionMemoryLinksInputSchema>;

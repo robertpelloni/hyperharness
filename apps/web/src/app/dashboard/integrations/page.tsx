@@ -56,8 +56,12 @@ export default function IntegrationsDashboard() {
     const startupStatusQuery = trpc.startupStatus.useQuery(undefined, { refetchInterval: 10000 });
     const browserStatusQuery = trpc.browser.status.useQuery(undefined, { refetchInterval: 5000 });
     const syncTargetsQuery = mcpServersClient.syncTargets.useQuery();
-    const cliDetectionsQuery = toolsClient.detectCliHarnesses.useQuery();
-    const installArtifactsQuery = toolsClient.detectInstallSurfaces.useQuery();
+    const cliDetectionsQuery = toolsClient?.detectCliHarnesses?.useQuery
+        ? toolsClient.detectCliHarnesses.useQuery()
+        : ({ data: [], isLoading: false } as { data: []; isLoading: boolean });
+    const installArtifactsQuery = toolsClient?.detectInstallSurfaces?.useQuery
+        ? toolsClient.detectInstallSurfaces.useQuery(undefined, { refetchInterval: 10000 })
+        : ({ data: [], isLoading: false } as { data: []; isLoading: boolean });
     const startupStatus: StartupStatusSummary | null = (startupStatusQuery.data ?? null) as StartupStatusSummary | null;
 
     const overview = getIntegrationOverview(

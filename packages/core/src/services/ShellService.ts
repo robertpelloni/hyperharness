@@ -46,6 +46,8 @@ export interface ShellExecutionResult {
     succeeded: boolean;
 }
 
+type ShellExecutionRuntimeResult = Omit<ShellExecutionResult, 'command' | 'cwd' | 'shellFamily' | 'shellPath'>;
+
 export function buildShellInvocation(command: string, policy?: ShellExecutionPolicyLike | null): ShellInvocation | null {
     if (!policy?.shellFamily) {
         return null;
@@ -236,7 +238,7 @@ export class ShellService {
         };
     }
 
-    private executeViaExec(command: string, cwd: string, env: NodeJS.ProcessEnv, timeoutMs: number): Promise<Omit<ShellExecutionResult, 'command' | 'cwd' | 'shellFamily' | 'shellPath' | 'durationMs'>> {
+    private executeViaExec(command: string, cwd: string, env: NodeJS.ProcessEnv, timeoutMs: number): Promise<ShellExecutionRuntimeResult> {
         return new Promise((resolve) => {
             const startedAt = Date.now();
             exec(command, { cwd, env, timeout: timeoutMs }, (error, stdout, stderr) => {
@@ -247,7 +249,7 @@ export class ShellService {
                     stdout: resolvedStdout,
                     stderr: resolvedStderr,
                     output,
-                    exitCode: error ? (typeof (error as NodeJS.ErrnoException).code === 'number' ? (error as NodeJS.ErrnoException).code as number : 1) : 0,
+                    exitCode: error ? 1 : 0,
                     durationMs: Date.now() - startedAt,
                     succeeded: !error,
                 });
@@ -260,7 +262,7 @@ export class ShellService {
         cwd: string,
         env: NodeJS.ProcessEnv,
         timeoutMs: number,
-    ): Promise<Omit<ShellExecutionResult, 'command' | 'cwd' | 'shellFamily' | 'shellPath' | 'durationMs'>> {
+    ): Promise<ShellExecutionRuntimeResult> {
         return new Promise((resolve) => {
             const startedAt = Date.now();
             let stdout = '';

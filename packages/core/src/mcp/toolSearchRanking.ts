@@ -16,6 +16,8 @@ export interface ToolSearchCandidate {
     deferred?: boolean;
 }
 
+export type ToolSearchProfile = 'web-research' | 'repo-coding' | 'browser-automation' | 'local-ops' | 'database';
+
 export interface RankedToolSearchResult {
     name: string;
     description: string;
@@ -45,6 +47,10 @@ export interface ToolSearchAutoLoadDecision {
     scoreGap: number;
     topScore: number;
     secondScore: number;
+}
+
+interface ToolSearchAutoLoadOptions {
+    minConfidence?: number;
 }
 
 function normalizeText(value: string | null | undefined): string {
@@ -79,13 +85,62 @@ function buildNoQueryScore(candidate: ToolSearchCandidate): number {
     return score;
 }
 
-function scoreCandidate(candidate: ToolSearchCandidate, normalizedQuery: string, queryTokens: string[]): { score: number; matchReason: string } | null {
+function buildProfileBoost(
+    candidate: ToolSearchCandidate,
+    profile: ToolSearchProfile | undefined,
+): { boost: number; reason?: string } {
+    if (!profile) {
+        return { boost: 0 };
+    }
+
+    const searchable = normalizeText([
+        candidate.name,
+        candidate.originalName,
+        candidate.advertisedName,
+        candidate.description,
+        candidate.serverName,
+        candidate.serverDisplayName,
+        candidate.semanticGroup,
+        candidate.semanticGroupLabel,
+        ...(candidate.serverTags ?? []),
+        ...(candidate.toolTags ?? []),
+        ...(candidate.keywords ?? []),
+    ].join(' '));
+
+    const profileKeywords: Record<ToolSearchProfile, string[]> = {
+        'web-research': ['web', 'search', 'crawl', 'scrape', 'http', 'url', 'browser', 'docs'],
+        'repo-coding': ['code', 'repo', 'git', 'lsp', 'symbol', 'test', 'build', 'diff'],
+        'browser-automation': ['browser', 'playwright', 'dom', 'click', 'navigate', 'screenshot', 'page'],
+        'local-ops': ['shell', 'terminal', 'process', 'filesystem', 'task', 'command', 'runtime'],
+        'database': ['db', 'database', 'sql', 'sqlite', 'postgres', 'query', 'schema'],
+    };
+
+    const matches = profileKeywords[profile].filter((keyword) => searchable.includes(keyword));
+    if (matches.length === 0) {
+        return { boost: 0 };
+    }
+
+    const boost = Math.min(18, matches.length * 4);
+    return {
+        boost,
+        reason: `${profile} profile boost (${matches.slice(0, 3).join(', ')})`,
+    };
+}
+
+function scoreCandidate(
+    candidate: ToolSearchCandidate,
+    normalizedQuery: string,
+    queryTokens: string[],
+    profile: ToolSearchProfile | undefined,
+): { score: number; matchReason: string } | null {
     if (!normalizedQuery) {
+        const profileBoost = buildProfileBoost(candidate, profile);
         return {
-            score: buildNoQueryScore(candidate),
-            matchReason: candidate.loaded
-                ? 'already loaded in the current session'
-                : 'available tool in the current catalog',
+            score: buildNoQueryScore(candidate) + profileBoost.boost,
+            matchReason: profileBoost.reason
+                ?? (candidate.loaded
+                    ? 'already loaded in the current session'
+                    : 'available tool in the current catalog'),
         };
     }
 
@@ -186,6 +241,13 @@ function scoreCandidate(candidate: ToolSearchCandidate, normalizedQuery: string,
         score += 3;
     }
 
+    const profileBoost = buildProfileBoost(candidate, profile);
+    score += profileBoost.boost;
+
+    if (profileBoost.reason && profile && !matchReason.includes(profile)) {
+        matchReason = `${matchReason}; ${profileBoost.reason}`;
+    }
+
     return { score, matchReason };
 }
 
@@ -205,13 +267,18 @@ function compareResults(left: RankedToolSearchResult, right: RankedToolSearchRes
     return left.name.localeCompare(right.name);
 }
 
-export function rankToolSearchCandidates(candidates: ToolSearchCandidate[], query: string, limit: number): RankedToolSearchResult[] {
+export function rankToolSearchCandidates(
+    candidates: ToolSearchCandidate[],
+    query: string,
+    limit: number,
+    profile?: ToolSearchProfile,
+): RankedToolSearchResult[] {
     const normalizedQuery = normalizeText(query);
     const queryTokens = tokenizeQuery(query);
     const safeLimit = Math.max(1, limit);
     const rankedCandidates: Array<RankedToolSearchResult | null> = candidates
         .map((candidate) => {
-            const ranking = scoreCandidate(candidate, normalizedQuery, queryTokens);
+            const ranking = scoreCandidate(candidate, normalizedQuery, queryTokens, profile);
             if (!ranking) {
                 return null;
             }
@@ -248,7 +315,11 @@ export function rankToolSearchCandidates(candidates: ToolSearchCandidate[], quer
         .slice(0, safeLimit);
 }
 
-export function pickAutoLoadCandidate(results: RankedToolSearchResult[], query: string): ToolSearchAutoLoadDecision | null {
+export function pickAutoLoadCandidate(
+    results: RankedToolSearchResult[],
+    query: string,
+    options?: ToolSearchAutoLoadOptions,
+): ToolSearchAutoLoadDecision | null {
     const normalizedQuery = normalizeText(query);
     if (!normalizedQuery || results.length === 0) {
         return null;
@@ -283,6 +354,11 @@ export function pickAutoLoadCandidate(results: RankedToolSearchResult[], query: 
             : 0.82;
 
     const confidence = Math.max(0, Math.min(0.99, baseConfidence + (scoreGap >= 20 ? 0.04 : scoreGap >= 12 ? 0.02 : 0)));
+    const minConfidence = Math.max(0, Math.min(0.99, options?.minConfidence ?? 0.85));
+
+    if (confidence < minConfidence) {
+        return null;
+    }
 
     return {
         toolName: topResult.name,

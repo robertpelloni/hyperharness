@@ -11,12 +11,26 @@ export interface DashboardStartupStatus {
     status: string;
     ready: boolean;
     uptime: number;
+    summary?: string;
+    blockingReasons?: Array<{
+        code: string;
+        detail: string;
+    }>;
+    runtime?: {
+        nodeEnv?: string | null;
+        platform?: string | null;
+        version?: string | null;
+    };
     checks: {
         mcpAggregator: {
             ready: boolean;
             liveReady?: boolean;
+            residentReady?: boolean;
             serverCount: number;
             connectedCount?: number;
+            residentConnectedCount?: number;
+            warmingServerCount?: number;
+            failedWarmupServerCount?: number;
             initialization: {
                 inProgress: boolean;
                 initialized: boolean;
@@ -35,6 +49,8 @@ export interface DashboardStartupStatus {
             advertisedAlwaysOnServerCount?: number;
             advertisedAlwaysOnToolCount?: number;
             inventoryReady: boolean;
+            inventorySource?: 'database' | 'config' | 'empty';
+            inventorySnapshotUpdatedAt?: string | null;
             warmupInProgress?: boolean;
         };
         configSync: {
@@ -53,6 +69,18 @@ export interface DashboardStartupStatus {
             ready: boolean;
             initialized: boolean;
             agentMemory: boolean;
+            claudeMem?: {
+                ready?: boolean;
+                enabled?: boolean;
+                storeExists?: boolean;
+                storePath?: string | null;
+                totalEntries?: number;
+                sectionCount?: number;
+                defaultSectionCount?: number;
+                presentDefaultSectionCount?: number;
+                missingSections?: string[];
+                lastUpdatedAt?: string | null;
+            };
         };
         browser: {
             ready: boolean;
@@ -158,9 +186,15 @@ export interface DashboardSessionSummary {
     logs: DashboardSessionLogSummary[];
 }
 
+export interface DashboardInstallSurfaceArtifact {
+    id: string;
+    status: 'ready' | 'partial' | 'missing';
+}
+
 export interface DashboardHomeViewProps {
     generatedAtLabel: string;
     currentTimestamp?: number | null;
+    isBootstrapping?: boolean;
     mcpStatus: DashboardStatusSummary;
     startupStatus: DashboardStartupStatus;
     servers: DashboardServerSummary[];
@@ -168,6 +202,7 @@ export interface DashboardHomeViewProps {
     providers: DashboardProviderSummary[];
     fallbackChain: DashboardFallbackSummary[];
     sessions: DashboardSessionSummary[];
+    installSurfaceArtifacts?: DashboardInstallSurfaceArtifact[] | null;
     onStartSession?: (sessionId: string) => void;
     onStopSession?: (sessionId: string) => void;
     onRestartSession?: (sessionId: string) => void;
@@ -186,6 +221,227 @@ export interface StartupChecklistItem {
     detail: string;
 }
 
+export interface StartupBlockingReasonView {
+    code: string;
+    detail: string;
+}
+
+export interface StartupBlockingReasonWithPriority extends StartupBlockingReasonView {
+    priority: number;
+}
+
+export interface StartupBlockingReasonAction {
+    href: string;
+    label: string;
+}
+
+export interface StartupBlockingReasonPriorityCounts {
+    high: number;
+    medium: number;
+    low: number;
+}
+
+export interface StartupBlockingReasonGroup {
+    key: string;
+    label: string;
+    reasons: StartupBlockingReasonWithPriority[];
+}
+
+export interface StartupBlockingReasonImpactedCheck {
+    key: string;
+    label: string;
+}
+
+const STARTUP_BLOCKING_REASON_GROUP_ORDER: Record<string, number> = {
+    mcp: 0,
+    memory: 1,
+    sessions: 2,
+    integrations: 3,
+    startup: 4,
+};
+
+type DashboardStartupChecks = DashboardStartupStatus['checks'];
+
+const DEFAULT_DASHBOARD_STARTUP_CHECKS: DashboardStartupChecks = {
+    mcpAggregator: {
+        ready: false,
+        liveReady: false,
+        residentReady: false,
+        serverCount: 0,
+        connectedCount: 0,
+        residentConnectedCount: 0,
+        initialization: null,
+        persistedServerCount: 0,
+        persistedToolCount: 0,
+        inventoryReady: false,
+        warmupInProgress: false,
+    },
+    configSync: {
+        ready: false,
+        status: null,
+    },
+    memory: {
+        ready: false,
+        initialized: false,
+        agentMemory: false,
+        claudeMem: {
+            ready: true,
+            enabled: false,
+            storeExists: false,
+            storePath: null,
+            totalEntries: 0,
+            sectionCount: 0,
+            defaultSectionCount: 0,
+            presentDefaultSectionCount: 0,
+            missingSections: [],
+            lastUpdatedAt: null,
+        },
+    },
+    browser: {
+        ready: false,
+        active: false,
+        pageCount: 0,
+    },
+    sessionSupervisor: {
+        ready: false,
+        sessionCount: 0,
+        restore: null,
+    },
+    extensionBridge: {
+        ready: false,
+        acceptingConnections: false,
+        clientCount: 0,
+        hasConnectedClients: false,
+    },
+    executionEnvironment: {
+        ready: false,
+        preferredShellId: null,
+        preferredShellLabel: null,
+        shellCount: 0,
+        verifiedShellCount: 0,
+        toolCount: 0,
+        verifiedToolCount: 0,
+        harnessCount: 0,
+        verifiedHarnessCount: 0,
+        supportsPowerShell: false,
+        supportsPosixShell: false,
+        notes: [],
+    },
+};
+
+const DASHBOARD_BROWSER_EXTENSION_SURFACE_IDS = [
+    'browser-extension-chromium',
+    'browser-extension-firefox',
+] as const;
+
+function getDashboardBrowserExtensionArtifactSummary(artifacts?: DashboardInstallSurfaceArtifact[] | null): {
+    readyCount: number;
+    totalCount: number;
+    missingFirefoxBundle: boolean;
+    missingChromiumBundle: boolean;
+    hasPartialFirefoxBundle: boolean;
+    isDetecting: boolean;
+    allReady: boolean;
+} {
+    const relevantArtifacts = (artifacts ?? []).filter((artifact) => DASHBOARD_BROWSER_EXTENSION_SURFACE_IDS.includes(artifact.id as (typeof DASHBOARD_BROWSER_EXTENSION_SURFACE_IDS)[number]));
+    const totalCount = DASHBOARD_BROWSER_EXTENSION_SURFACE_IDS.length;
+
+    if (relevantArtifacts.length === 0) {
+        return {
+            readyCount: 0,
+            totalCount,
+            missingFirefoxBundle: false,
+            missingChromiumBundle: false,
+            hasPartialFirefoxBundle: false,
+            isDetecting: true,
+            allReady: false,
+        };
+    }
+
+    const chromium = relevantArtifacts.find((artifact) => artifact.id === 'browser-extension-chromium');
+    const firefox = relevantArtifacts.find((artifact) => artifact.id === 'browser-extension-firefox');
+    const readyCount = relevantArtifacts.filter((artifact) => artifact.status === 'ready').length;
+
+    return {
+        readyCount,
+        totalCount,
+        missingFirefoxBundle: firefox?.status === 'missing',
+        missingChromiumBundle: chromium?.status === 'missing',
+        hasPartialFirefoxBundle: firefox?.status === 'partial',
+        isDetecting: false,
+        allReady: readyCount === totalCount,
+    };
+}
+
+function getDashboardBrowserExtensionArtifactDetail(artifacts?: DashboardInstallSurfaceArtifact[] | null): string {
+    const summary = getDashboardBrowserExtensionArtifactSummary(artifacts);
+
+    if (summary.isDetecting) {
+        return 'Detecting Chromium and Firefox extension install artifacts from the workspace.';
+    }
+
+    if (summary.allReady) {
+        return 'Chromium/Edge and Firefox extension bundles are ready to load.';
+    }
+
+    if (summary.hasPartialFirefoxBundle) {
+        return 'Chromium/Edge bundle is ready, but Firefox still needs its browser-specific build output.';
+    }
+
+    if (summary.missingChromiumBundle && summary.missingFirefoxBundle) {
+        return 'Neither browser extension bundle has been built yet.';
+    }
+
+    if (summary.missingChromiumBundle) {
+        return 'Firefox bundle is ready, but Chromium/Edge still needs its unpacked build output.';
+    }
+
+    if (summary.missingFirefoxBundle) {
+        return 'Chromium/Edge bundle is ready, but Firefox still needs its unpacked build output.';
+    }
+
+    return `${summary.readyCount}/${summary.totalCount} browser extension bundles are ready.`;
+}
+
+function getStartupChecks(startupStatus: DashboardStartupStatus): DashboardStartupChecks {
+    const checks = startupStatus?.checks as Partial<DashboardStartupChecks> | undefined;
+
+    return {
+        mcpAggregator: {
+            ...DEFAULT_DASHBOARD_STARTUP_CHECKS.mcpAggregator,
+            ...(checks?.mcpAggregator ?? {}),
+        },
+        configSync: {
+            ...DEFAULT_DASHBOARD_STARTUP_CHECKS.configSync,
+            ...(checks?.configSync ?? {}),
+        },
+        memory: {
+            ...DEFAULT_DASHBOARD_STARTUP_CHECKS.memory,
+            ...(checks?.memory ?? {}),
+            claudeMem: {
+                ...DEFAULT_DASHBOARD_STARTUP_CHECKS.memory.claudeMem,
+                ...(checks?.memory?.claudeMem ?? {}),
+            },
+        },
+        browser: {
+            ...DEFAULT_DASHBOARD_STARTUP_CHECKS.browser,
+            ...(checks?.browser ?? {}),
+        },
+        sessionSupervisor: {
+            ...DEFAULT_DASHBOARD_STARTUP_CHECKS.sessionSupervisor,
+            ...(checks?.sessionSupervisor ?? {}),
+        },
+        extensionBridge: {
+            ...DEFAULT_DASHBOARD_STARTUP_CHECKS.extensionBridge,
+            ...(checks?.extensionBridge ?? {}),
+        },
+        executionEnvironment: {
+            ...DEFAULT_DASHBOARD_STARTUP_CHECKS.executionEnvironment,
+            ...(checks?.executionEnvironment ?? {}),
+        },
+    };
+}
+
 function getAdvertisedServerCount(aggregator: DashboardStartupStatus['checks']['mcpAggregator']): number {
     return aggregator.advertisedServerCount ?? aggregator.persistedServerCount ?? aggregator.configuredServerCount ?? aggregator.serverCount;
 }
@@ -198,6 +454,11 @@ function getCachedInventoryDetail(aggregator: DashboardStartupStatus['checks']['
     const advertisedServerCount = getAdvertisedServerCount(aggregator);
     const advertisedToolCount = getAdvertisedToolCount(aggregator);
     const alwaysOnToolCount = aggregator.advertisedAlwaysOnToolCount ?? 0;
+    const snapshotSource = aggregator.inventorySource === 'config'
+        ? 'last-known-good config'
+        : aggregator.inventorySource === 'database'
+            ? 'cached database snapshot'
+            : 'cached snapshot';
 
     if (aggregator.inventoryReady && advertisedServerCount === 0 && advertisedToolCount === 0) {
         return 'No configured servers yet · empty cached inventory is ready';
@@ -207,34 +468,73 @@ function getCachedInventoryDetail(aggregator: DashboardStartupStatus['checks']['
         const alwaysOnSuffix = alwaysOnToolCount > 0
             ? ` · ${alwaysOnToolCount} always-on advertised immediately`
             : '';
-        return `${advertisedServerCount} cached servers · ${advertisedToolCount} advertised tools${alwaysOnSuffix}`;
+        return `${advertisedServerCount} cached servers · ${advertisedToolCount} advertised tools from ${snapshotSource}${alwaysOnSuffix}`;
     }
 
     return 'Waiting for the first cached MCP inventory snapshot';
 }
 
-function getLiveMcpDetail(aggregator: DashboardStartupStatus['checks']['mcpAggregator']): string {
-    const targetServerCount = Math.max(aggregator.configuredServerCount ?? 0, getAdvertisedServerCount(aggregator));
-    const connectedCount = aggregator.connectedCount ?? 0;
-    const liveReady = aggregator.liveReady ?? aggregator.ready;
+function getResidentMcpDetail(aggregator: DashboardStartupStatus['checks']['mcpAggregator']): string {
+    const residentTargetCount = aggregator.advertisedAlwaysOnServerCount ?? 0;
+    const residentConnectedCount = aggregator.residentConnectedCount ?? 0;
+    const totalServerCount = Math.max(aggregator.configuredServerCount ?? 0, getAdvertisedServerCount(aggregator));
+    const warmingCount = aggregator.warmingServerCount ?? 0;
+    const failedWarmupCount = aggregator.failedWarmupServerCount ?? 0;
+    const residentReady = aggregator.residentReady ?? ((aggregator.liveReady ?? aggregator.ready) && residentConnectedCount >= residentTargetCount);
 
-    if (liveReady && targetServerCount === 0) {
-        return 'No downstream servers configured · live MCP runtime is ready';
+    if (residentTargetCount === 0) {
+        return totalServerCount === 0
+            ? 'No downstream servers configured · on-demand MCP launches are ready when needed'
+            : `${totalServerCount} on-demand server${totalServerCount === 1 ? '' : 's'} can launch when needed · no resident MCP runtime is required`;
     }
 
-    if (liveReady) {
-        if (targetServerCount > 0 && connectedCount < targetServerCount) {
-            return `${connectedCount}/${targetServerCount} live server connections warmed · cached tools stay usable while the rest connect`;
-        }
-
-        return `${connectedCount}/${targetServerCount || connectedCount} live server connections ready`;
+    if (residentReady) {
+        return `${residentConnectedCount}/${residentTargetCount} resident server connection${residentTargetCount === 1 ? '' : 's'} ready · on-demand tools can still cold-start as needed`;
     }
 
     if (aggregator.inventoryReady) {
-        return 'Cached inventory is already advertised · live MCP runtime is still warming';
+        const suffixes = [
+            warmingCount > 0 ? `${warmingCount} warming` : null,
+            failedWarmupCount > 0 ? `${failedWarmupCount} failed` : null,
+        ].filter(Boolean);
+        const postureSuffix = suffixes.length > 0 ? ` · ${suffixes.join(' · ')}` : '';
+
+        return `Cached inventory is already advertised · resident always-on servers are still warming · on-demand tools remain launchable${postureSuffix}`;
     }
 
-    return 'Waiting for live MCP runtime initialization';
+    return 'Waiting for resident MCP runtime initialization';
+}
+
+function getMemoryContextDetail(memory: DashboardStartupStatus['checks']['memory']): string {
+    const claudeMem = memory.claudeMem;
+
+    if (memory.ready) {
+        if (claudeMem?.enabled) {
+            return 'Memory manager initialized and claude-mem default sections are ready';
+        }
+
+        return 'Memory manager initialized and agent context services are available';
+    }
+
+    if (!memory.initialized) {
+        return 'Waiting for memory initialization';
+    }
+
+    if (claudeMem?.enabled) {
+        if (!claudeMem.storeExists) {
+            return 'Memory manager is initialized, but claude-mem store has not been created yet';
+        }
+
+        const presentSectionCount = Number(claudeMem.presentDefaultSectionCount ?? 0);
+        const defaultSectionCount = Number(claudeMem.defaultSectionCount ?? 0);
+        if (defaultSectionCount > 0 && presentSectionCount < defaultSectionCount) {
+            return `Memory manager is initialized, but claude-mem is still seeding default sections (${presentSectionCount}/${defaultSectionCount} present)`;
+        }
+
+        return 'Memory manager is initialized, but claude-mem readiness is still pending';
+    }
+
+    return 'Memory manager is present, but agent context wiring is still finishing';
 }
 
 export interface DashboardAlert {
@@ -353,7 +653,28 @@ export function buildOverviewMetrics(
     mcpStatus: DashboardStatusSummary,
     sessions: DashboardSessionSummary[],
     providers: DashboardProviderSummary[],
+    isBootstrapping = false,
 ): OverviewMetric[] {
+    if (isBootstrapping) {
+        return [
+            {
+                label: 'MCP servers',
+                value: '—',
+                detail: 'Connecting to live router telemetry',
+            },
+            {
+                label: 'Supervised sessions',
+                value: '—',
+                detail: 'Waiting for the first session supervisor snapshot',
+            },
+            {
+                label: 'Configured providers',
+                value: '—',
+                detail: 'Waiting for the first provider routing snapshot',
+            },
+        ];
+    }
+
     const runningSessions = sessions.filter((session) => session.status === 'running').length;
     const actionableProviders = providers.filter((provider) => provider.configured).length;
     const degradedProviders = providers.filter((provider) => isProviderDegraded(provider)).length;
@@ -372,45 +693,97 @@ export function buildOverviewMetrics(
         {
             label: 'Configured providers',
             value: `${actionableProviders}`,
-            detail: degradedProviders > 0 ? `${degradedProviders} need attention` : 'all configured providers look healthy',
+            detail: actionableProviders === 0
+                ? 'configure your first provider'
+                : degradedProviders > 0
+                    ? `${degradedProviders} need attention`
+                    : 'all configured providers look healthy',
         },
     ];
 }
 
-export function buildStartupChecklist(startupStatus: DashboardStartupStatus): StartupChecklistItem[] {
-    const aggregator = startupStatus.checks.mcpAggregator;
-    const memory = startupStatus.checks.memory;
-    const restore = startupStatus.checks.sessionSupervisor.restore;
-    const extensionBridge = startupStatus.checks.extensionBridge;
-    const executionEnvironment = startupStatus.checks.executionEnvironment;
+export function buildStartupChecklist(
+    startupStatus: DashboardStartupStatus,
+    isBootstrapping = false,
+    installSurfaceArtifacts?: DashboardInstallSurfaceArtifact[] | null,
+): StartupChecklistItem[] {
+    const includeInstallArtifactsCheck = installSurfaceArtifacts !== undefined;
+
+    if (isBootstrapping) {
+        const checklistItems: StartupChecklistItem[] = [
+            {
+                label: 'Cached inventory',
+                ready: false,
+                detail: 'Waiting for the first live startup snapshot from core.',
+            },
+            {
+                label: 'Resident MCP runtime',
+                ready: false,
+                detail: 'Waiting for the first live startup snapshot from core.',
+            },
+            {
+                label: 'Memory / context',
+                ready: false,
+                detail: 'Waiting for the first live startup snapshot from core.',
+            },
+            {
+                label: 'Session restore',
+                ready: false,
+                detail: 'Waiting for the first live startup snapshot from core.',
+            },
+            {
+                label: 'Client bridge',
+                ready: false,
+                detail: 'Waiting for the first live startup snapshot from core.',
+            },
+            {
+                label: 'Execution environment',
+                ready: false,
+                detail: 'Waiting for the first live startup snapshot from core.',
+            },
+        ];
+
+        if (includeInstallArtifactsCheck) {
+            checklistItems.splice(5, 0, {
+                label: 'Extension install artifacts',
+                ready: false,
+                detail: 'Detecting Chromium and Firefox extension install artifacts from the workspace.',
+            });
+        }
+
+        return checklistItems;
+    }
+
+    const checks = getStartupChecks(startupStatus);
+    const aggregator = checks.mcpAggregator;
+    const memory = checks.memory;
+    const restore = checks.sessionSupervisor.restore;
+    const extensionBridge = checks.extensionBridge;
+    const executionEnvironment = checks.executionEnvironment;
     const bridgeClientLabel = `${extensionBridge.clientCount} connected bridge client${extensionBridge.clientCount === 1 ? '' : 's'}`;
     const executionDetail = executionEnvironment.preferredShellLabel
         ? `${executionEnvironment.preferredShellLabel} preferred · ${executionEnvironment.verifiedToolCount}/${executionEnvironment.toolCount} verified tools`
         : `${executionEnvironment.verifiedShellCount}/${executionEnvironment.shellCount} verified shells · ${executionEnvironment.verifiedToolCount}/${executionEnvironment.toolCount} verified tools`;
 
-    return [
+    const checklistItems: StartupChecklistItem[] = [
         {
             label: 'Cached inventory',
             ready: aggregator.inventoryReady,
             detail: getCachedInventoryDetail(aggregator),
         },
         {
-            label: 'Live MCP runtime',
-            ready: aggregator.liveReady ?? aggregator.ready,
-            detail: getLiveMcpDetail(aggregator),
+            label: 'Resident MCP runtime',
+            ready: aggregator.residentReady ?? (aggregator.liveReady ?? aggregator.ready),
+            detail: getResidentMcpDetail(aggregator),
         },
         {
             label: 'Memory / context',
             ready: memory.ready,
-            detail: memory.ready
-                ? 'Memory manager initialized and agent context services are available'
-                : memory.initialized
-                    ? 'Memory manager is present, but agent context wiring is still finishing'
-                    : 'Waiting for memory initialization',
+            detail: getMemoryContextDetail(memory),
         },
         {
             label: 'Session restore',
-            ready: startupStatus.checks.sessionSupervisor.ready,
+            ready: checks.sessionSupervisor.ready,
             detail: restore
                 ? `${restore.restoredSessionCount} restored · ${restore.autoResumeCount} auto-resumed`
                 : 'Waiting for supervisor restore',
@@ -428,6 +801,17 @@ export function buildStartupChecklist(startupStatus: DashboardStartupStatus): St
             detail: executionDetail,
         },
     ];
+
+    if (includeInstallArtifactsCheck) {
+        const artifactSummary = getDashboardBrowserExtensionArtifactSummary(installSurfaceArtifacts);
+        checklistItems.splice(5, 0, {
+            label: 'Extension install artifacts',
+            ready: artifactSummary.allReady,
+            detail: getDashboardBrowserExtensionArtifactDetail(installSurfaceArtifacts),
+        });
+    }
+
+    return checklistItems;
 }
 
 export function buildDashboardAlerts(
@@ -436,12 +820,20 @@ export function buildDashboardAlerts(
     servers: DashboardServerSummary[],
     providers: DashboardProviderSummary[],
     sessions: DashboardSessionSummary[],
+    isBootstrapping = false,
+    installSurfaceArtifacts?: DashboardInstallSurfaceArtifact[] | null,
 ): DashboardAlert[] {
+    if (isBootstrapping) {
+        return [];
+    }
+
+    const checks = getStartupChecks(startupStatus);
     const alerts: DashboardAlert[] = [];
-    const startupPendingCount = buildStartupChecklist(startupStatus).filter((item) => !item.ready).length;
+    const startupPendingCount = buildStartupChecklist(startupStatus, false, installSurfaceArtifacts).filter((item) => !item.ready).length;
     const disconnectedServers = servers.filter((server) => server.status !== 'connected').length;
     const degradedProviders = providers.filter((provider) => isProviderDegraded(provider)).length;
     const erroredSessions = sessions.filter((session) => session.status === 'error').length;
+    const startupSummary = startupStatus.summary?.trim();
 
     if (!mcpStatus.initialized) {
         alerts.push({
@@ -453,15 +845,15 @@ export function buildDashboardAlerts(
             hrefLabel: 'Inspect MCP router',
         });
     } else if (
-        mcpStatus.serverCount > 0
-        && mcpStatus.connectedCount === 0
-        && Boolean(startupStatus.checks.mcpAggregator.liveReady ?? startupStatus.checks.mcpAggregator.ready)
+        (checks.mcpAggregator.advertisedAlwaysOnServerCount ?? 0) > 0
+        && (checks.mcpAggregator.residentConnectedCount ?? 0) === 0
+        && Boolean(checks.mcpAggregator.liveReady ?? checks.mcpAggregator.ready)
     ) {
         alerts.push({
             id: 'router-disconnected',
             severity: 'critical',
-            title: 'All configured MCP servers are disconnected',
-            detail: `${mcpStatus.serverCount} registered servers exist, but none are currently connected to the router.`,
+            title: 'All resident MCP servers are disconnected',
+            detail: `${checks.mcpAggregator.advertisedAlwaysOnServerCount ?? 0} always-on server${(checks.mcpAggregator.advertisedAlwaysOnServerCount ?? 0) === 1 ? '' : 's'} should be warm, but none are currently connected.`,
             href: '/dashboard/mcp',
             hrefLabel: 'Inspect MCP router',
         });
@@ -476,7 +868,16 @@ export function buildDashboardAlerts(
         });
     }
 
-    if (startupPendingCount > 0) {
+    if (startupStatus.status === 'degraded') {
+        alerts.push({
+            id: 'startup-compat-fallback',
+            severity: 'warning',
+            title: 'Startup is using local compat fallback',
+            detail: startupSummary || 'Live startup telemetry is unavailable, so Borg is showing config-backed compatibility state instead of the full core startup contract.',
+            href: '/dashboard/mcp/system',
+            hrefLabel: 'Review startup status',
+        });
+    } else if (startupPendingCount > 0) {
         alerts.push({
             id: 'startup-pending',
             severity: startupStatus.ready ? 'info' : 'warning',
@@ -581,6 +982,7 @@ function getAlertTone(severity: DashboardAlert['severity']): string {
 export function DashboardHomeView({
     generatedAtLabel,
     currentTimestamp,
+    isBootstrapping = false,
     mcpStatus,
     startupStatus,
     servers,
@@ -588,14 +990,42 @@ export function DashboardHomeView({
     providers,
     fallbackChain,
     sessions,
+    installSurfaceArtifacts,
     onStartSession,
     onStopSession,
     onRestartSession,
     pendingSessionActionId,
 }: DashboardHomeViewProps) {
-    const overviewMetrics = buildOverviewMetrics(mcpStatus, sessions, providers);
-    const startupChecklist = buildStartupChecklist(startupStatus);
-    const dashboardAlerts = buildDashboardAlerts(mcpStatus, startupStatus, servers, providers, sessions);
+    const overviewMetrics = buildOverviewMetrics(mcpStatus, sessions, providers, isBootstrapping);
+    const startupChecklist = buildStartupChecklist(startupStatus, isBootstrapping, installSurfaceArtifacts);
+    const startupBlockingReasons = isBootstrapping
+        ? []
+        : getPrioritizedStartupBlockingReasons(getStartupBlockingReasons(startupStatus));
+    const startupBlockingReasonGroups = getGroupedStartupBlockingReasons(startupBlockingReasons);
+    const startupBlockingPriorityCounts = getStartupBlockingReasonPriorityCounts(startupBlockingReasons);
+    const startupBlockingActions = getStartupBlockingReasonActions(startupBlockingReasons);
+    const dashboardAlerts = buildDashboardAlerts(mcpStatus, startupStatus, servers, providers, sessions, isBootstrapping, installSurfaceArtifacts);
+    const startupSummary = isBootstrapping
+        ? 'Connecting to live startup telemetry from core. Initial placeholders stay neutral until the first snapshot arrives.'
+        : startupStatus.summary?.trim();
+    const startupToneClass = isBootstrapping
+        ? 'border-cyan-500/30 bg-cyan-500/10 text-cyan-200'
+        : startupStatus.status === 'degraded'
+        ? 'border-amber-500/30 bg-amber-500/10 text-amber-200'
+        : startupStatus.ready
+            ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-200'
+            : 'border-amber-500/30 bg-amber-500/10 text-amber-200';
+    const startupLabel = isBootstrapping
+        ? 'Connecting'
+        : startupStatus.status === 'degraded'
+        ? 'Compat fallback'
+        : startupStatus.ready
+            ? 'Ready'
+            : 'Warming up';
+    const routerStatusLabel = isBootstrapping ? 'Connecting' : (mcpStatus.initialized ? 'Initialized' : 'Offline');
+    const routerStatusTone = isBootstrapping
+        ? 'border-cyan-500/30 bg-cyan-500/10 text-cyan-200'
+        : (mcpStatus.initialized ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-200' : 'border-rose-500/30 bg-rose-500/10 text-rose-200');
 
     return (
         <div className="min-h-screen bg-slate-950 text-slate-100">
@@ -617,6 +1047,14 @@ export function DashboardHomeView({
                             <span className="rounded-full border border-slate-700 bg-slate-950/70 px-3 py-1.5">
                                 Refreshed {generatedAtLabel}
                             </span>
+                            <Link
+                                href="/dashboard/integrations"
+                                title="Open the Integration Hub for browser extension installs, VS Code packaging, and MCP client sync"
+                                aria-label="Open Integration Hub"
+                                className="rounded-full border border-slate-700 bg-slate-950/70 px-3 py-1.5 font-medium text-cyan-200 transition hover:border-slate-600 hover:text-cyan-100"
+                            >
+                                Integration Hub →
+                            </Link>
                         </div>
                     </div>
 
@@ -637,11 +1075,15 @@ export function DashboardHomeView({
                                 <p className="mt-1 text-sm text-slate-500">Cross-panel issues that deserve attention before you start driving the swarm.</p>
                             </div>
                             <span className="rounded-full border border-slate-700 bg-slate-900/70 px-3 py-1 text-xs font-medium text-slate-200">
-                                {dashboardAlerts.length === 0 ? 'All clear' : `${dashboardAlerts.length} active`}
+                                {isBootstrapping ? 'Connecting' : (dashboardAlerts.length === 0 ? 'All clear' : `${dashboardAlerts.length} active`)}
                             </span>
                         </div>
 
-                        {dashboardAlerts.length === 0 ? (
+                        {isBootstrapping ? (
+                            <div className="mt-4 rounded-2xl border border-cyan-500/30 bg-cyan-500/10 p-4 text-sm text-cyan-100">
+                                Connecting to live core telemetry. Borg will replace these neutral placeholders as soon as the first startup snapshot arrives.
+                            </div>
+                        ) : dashboardAlerts.length === 0 ? (
                             <div className="mt-4 rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-4 text-sm text-emerald-100">
                                 All major systems look healthy. Router, providers, and supervised sessions are not reporting any cross-panel alerts.
                             </div>
@@ -681,27 +1123,27 @@ export function DashboardHomeView({
                                 <h2 className="mt-2 text-xl font-semibold text-white">Router posture</h2>
                                 <p className="mt-2 text-sm text-slate-400">Quick health readout for first-time operators.</p>
                             </div>
-                            <div className={`rounded-full border px-3 py-1 text-xs font-medium ${mcpStatus.initialized ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-200' : 'border-rose-500/30 bg-rose-500/10 text-rose-200'}`}>
-                                {mcpStatus.initialized ? 'Initialized' : 'Offline'}
+                            <div className={`rounded-full border px-3 py-1 text-xs font-medium ${routerStatusTone}`}>
+                                {routerStatusLabel}
                             </div>
                         </div>
 
                         <dl className="mt-6 grid gap-4 sm:grid-cols-2">
                             <div className="rounded-2xl border border-slate-800 bg-slate-950/70 p-4">
                                 <dt className="text-sm text-slate-400">Connected servers</dt>
-                                <dd className="mt-2 text-2xl font-semibold text-white">{mcpStatus.connectedCount}</dd>
+                                <dd className="mt-2 text-2xl font-semibold text-white">{isBootstrapping ? '—' : mcpStatus.connectedCount}</dd>
                             </div>
                             <div className="rounded-2xl border border-slate-800 bg-slate-950/70 p-4">
                                 <dt className="text-sm text-slate-400">Indexed tools</dt>
-                                <dd className="mt-2 text-2xl font-semibold text-white">{mcpStatus.toolCount}</dd>
+                                <dd className="mt-2 text-2xl font-semibold text-white">{isBootstrapping ? '—' : mcpStatus.toolCount}</dd>
                             </div>
                             <div className="rounded-2xl border border-slate-800 bg-slate-950/70 p-4">
                                 <dt className="text-sm text-slate-400">Running sessions</dt>
-                                <dd className="mt-2 text-2xl font-semibold text-white">{sessions.filter((session) => session.status === 'running').length}</dd>
+                                <dd className="mt-2 text-2xl font-semibold text-white">{isBootstrapping ? '—' : sessions.filter((session) => session.status === 'running').length}</dd>
                             </div>
                             <div className="rounded-2xl border border-slate-800 bg-slate-950/70 p-4">
                                 <dt className="text-sm text-slate-400">Configured providers</dt>
-                                <dd className="mt-2 text-2xl font-semibold text-white">{providers.filter((provider) => provider.configured).length}</dd>
+                                <dd className="mt-2 text-2xl font-semibold text-white">{isBootstrapping ? '—' : providers.filter((provider) => provider.configured).length}</dd>
                             </div>
                         </dl>
 
@@ -709,10 +1151,10 @@ export function DashboardHomeView({
                             <div className="flex items-start justify-between gap-4">
                                 <div>
                                     <h3 className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-300">Startup readiness</h3>
-                                    <p className="mt-1 text-sm text-slate-500">Boot phases reported directly from core startup state.</p>
+                                    <p className="mt-1 text-sm text-slate-500">{startupSummary || 'Boot checks reported directly from core startup state.'}</p>
                                 </div>
-                                <span className={`rounded-full border px-3 py-1 text-xs font-medium ${startupStatus.ready ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-200' : 'border-amber-500/30 bg-amber-500/10 text-amber-200'}`}>
-                                    {startupStatus.ready ? 'Ready' : 'Warming up'}
+                                <span className={`rounded-full border px-3 py-1 text-xs font-medium ${startupToneClass}`}>
+                                    {startupLabel}
                                 </span>
                             </div>
 
@@ -728,6 +1170,149 @@ export function DashboardHomeView({
                                         <p className="mt-2 text-slate-400">{item.detail}</p>
                                     </div>
                                 ))}
+                            </div>
+
+                            {startupBlockingReasons.length > 0 ? (
+                                <div className="mt-4 rounded-2xl border border-amber-500/30 bg-amber-500/10 p-4">
+                                    <div className="flex items-start justify-between gap-3">
+                                        <div>
+                                            <h4 className="text-sm font-semibold uppercase tracking-[0.2em] text-amber-200">Blocking reasons</h4>
+                                            <p className="mt-1 text-xs text-amber-100/80">Live reasons reported by core startup checks.</p>
+                                        </div>
+                                        <span className="rounded-full border border-amber-500/40 px-2.5 py-1 text-xs font-medium text-amber-200">
+                                            {startupBlockingReasons.length} pending
+                                        </span>
+                                    </div>
+
+                                    {startupBlockingActions.length > 0 ? (
+                                        <div className="mt-3 flex flex-wrap gap-2">
+                                            <span className="text-xs uppercase tracking-[0.16em] text-amber-200">Suggested actions:</span>
+                                            {startupBlockingActions.map((action) => (
+                                                <Link
+                                                    key={`${action.href}-${action.label}`}
+                                                    href={action.href}
+                                                    className="inline-flex rounded-full border border-cyan-500/30 bg-cyan-500/10 px-2.5 py-1 text-xs font-medium text-cyan-200 transition hover:border-cyan-400 hover:bg-cyan-500/20"
+                                                >
+                                                    {action.label}
+                                                </Link>
+                                            ))}
+                                        </div>
+                                    ) : null}
+
+                                    <p className="mt-2 text-xs text-amber-100/80">
+                                        Priority mix: {startupBlockingPriorityCounts.high} high · {startupBlockingPriorityCounts.medium} medium · {startupBlockingPriorityCounts.low} low
+                                    </p>
+
+                                    <div className="mt-3 space-y-3">
+                                        {startupBlockingReasonGroups.map((group) => {
+                                            const groupSeverity = getStartupBlockingReasonGroupSeverity(group.reasons);
+                                            const groupSeverityTone = getStartupBlockingReasonPriorityTone(groupSeverity);
+                                            const groupTopAction = getStartupBlockingReasonGroupTopAction(group.reasons);
+                                            const groupImpactedChecks = getStartupBlockingReasonGroupImpactedChecks(group.reasons);
+                                            const groupPrimaryReason = getStartupBlockingReasonGroupPrimaryReason(group.reasons);
+                                            const groupPrimaryReasonTitle = groupPrimaryReason
+                                                ? getStartupBlockingReasonTitle(groupPrimaryReason.code)
+                                                : null;
+                                            const groupPriorityCounts = getStartupBlockingReasonGroupPriorityCounts(group.reasons);
+
+                                            return (
+                                            <section key={group.key} className="rounded-xl border border-amber-500/20 bg-slate-950/30 p-3">
+                                                <div className="flex items-center justify-between gap-2">
+                                                    <div className="text-[11px] font-semibold uppercase tracking-[0.16em] text-amber-200">{group.label}</div>
+                                                    <div className="flex items-center gap-2">
+                                                        <span className={`rounded-full border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.12em] ${groupSeverityTone}`}>
+                                                            {groupSeverity} group
+                                                        </span>
+                                                        <span className="rounded-full border border-amber-500/30 bg-amber-500/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-amber-100">
+                                                            {group.reasons.length} item{group.reasons.length === 1 ? '' : 's'}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                                {groupTopAction ? (
+                                                    <Link
+                                                        href={groupTopAction.href}
+                                                        className="mt-2 inline-flex text-xs font-medium text-cyan-300 underline transition hover:text-cyan-200"
+                                                    >
+                                                        Top action: {groupTopAction.label} →
+                                                    </Link>
+                                                ) : null}
+                                                {groupImpactedChecks.length > 0 ? (
+                                                    <div className="mt-2 text-xs text-amber-100/80">
+                                                        Impacts: {groupImpactedChecks.map((check) => check.label).join(' · ')}
+                                                    </div>
+                                                ) : null}
+                                                {groupPrimaryReasonTitle ? (
+                                                    <div className="mt-1 text-xs text-amber-100/80">
+                                                        Primary blocker: {groupPrimaryReasonTitle}
+                                                    </div>
+                                                ) : null}
+                                                <div className="mt-1 text-xs text-amber-100/80">
+                                                    Group mix: {groupPriorityCounts.high} high · {groupPriorityCounts.medium} medium · {groupPriorityCounts.low} low
+                                                </div>
+                                                <ul className="mt-2 space-y-2">
+                                                    {group.reasons.map((reason) => {
+                                                        const action = getStartupBlockingReasonAction(reason.code);
+                                                        const priorityLabel = getStartupBlockingReasonPriorityLabel(reason.priority);
+                                                        const priorityTone = getStartupBlockingReasonPriorityTone(priorityLabel);
+                                                        const reasonTitle = getStartupBlockingReasonTitle(reason.code);
+
+                                                        return (
+                                                            <li key={`${reason.code}-${reason.detail}`} className="rounded-xl border border-amber-500/20 bg-slate-950/40 p-3 text-sm text-amber-50">
+                                                                <div className="flex items-center justify-between gap-2">
+                                                                    <div className="text-sm font-medium text-amber-50">{reasonTitle}</div>
+                                                                    <span className={`rounded-full border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.12em] ${priorityTone}`}>
+                                                                        {priorityLabel} priority
+                                                                    </span>
+                                                                </div>
+                                                                <div className="mt-1 text-xs uppercase tracking-[0.16em] text-amber-200">{reason.code}</div>
+                                                                <div className="mt-1">{reason.detail}</div>
+                                                                <Link
+                                                                    href={action.href}
+                                                                    className="mt-2 inline-flex text-xs font-medium text-cyan-300 underline transition hover:text-cyan-200"
+                                                                >
+                                                                    {action.label} →
+                                                                </Link>
+                                                            </li>
+                                                        );
+                                                    })}
+                                                </ul>
+                                            </section>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+                            ) : null}
+                        </div>
+
+                        <div className="mt-6 rounded-2xl border border-slate-800 bg-slate-950/70 p-4">
+                            <div className="flex items-start justify-between gap-4">
+                                <div>
+                                    <h3 className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-300">Install &amp; connect Borg</h3>
+                                    <p className="mt-1 text-sm text-slate-500">Fast path for getting browser bridges, editor surfaces, and managed MCP configs into the tools you already use.</p>
+                                </div>
+                                <Link
+                                    href="/dashboard/integrations"
+                                    title="Open install surfaces, browser extension artifacts, VS Code packaging, and client sync targets"
+                                    aria-label="Open Integration Hub from router posture section"
+                                    className="text-sm font-medium text-cyan-200 transition hover:text-cyan-100"
+                                >
+                                    Open Integration Hub →
+                                </Link>
+                            </div>
+
+                            <div className="mt-4 grid gap-3 sm:grid-cols-3">
+                                <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-3 text-sm text-slate-300">
+                                    <div className="font-medium text-white">Browser extensions</div>
+                                    <p className="mt-2 text-slate-400">Load Chromium/Edge and Firefox bundles, then connect them to the live bridge listener.</p>
+                                </div>
+                                <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-3 text-sm text-slate-300">
+                                    <div className="font-medium text-white">Editor surfaces</div>
+                                    <p className="mt-2 text-slate-400">Package and install the VS Code extension, then verify connected bridge clients and hook phases.</p>
+                                </div>
+                                <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-3 text-sm text-slate-300">
+                                    <div className="font-medium text-white">Client config sync</div>
+                                    <p className="mt-2 text-slate-400">Push Borg-managed MCP endpoints into Claude Desktop, Cursor, and VS Code without manual JSON surgery.</p>
+                                </div>
                             </div>
                         </div>
                     </section>
@@ -935,7 +1520,7 @@ export function DashboardHomeView({
                         <div className="mt-6 space-y-3">
                             {providers.length === 0 ? (
                                 <div className="rounded-2xl border border-dashed border-slate-700 bg-slate-950/50 p-4 text-sm text-slate-400">
-                                    No provider data available yet.
+                                    No provider data available yet. Configure an API key or OAuth-backed provider in Billing to unlock fallback routing.
                                 </div>
                             ) : providers.map((provider) => {
                                 const usagePercent = getQuotaUsagePercent(provider);
@@ -983,7 +1568,7 @@ export function DashboardHomeView({
                             <h3 className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-300">Fallback chain</h3>
                             <div className="mt-4 space-y-2">
                                 {fallbackChain.length === 0 ? (
-                                    <p className="text-sm text-slate-400">No fallback chain is exposed yet.</p>
+                                    <p className="text-sm text-slate-400">No fallback chain is exposed yet. Configure providers to populate the routing order.</p>
                                 ) : fallbackChain.map((entry) => (
                                     <div key={`${entry.priority}-${entry.provider}-${entry.model ?? 'default'}`} className="flex items-center justify-between gap-4 rounded-2xl border border-slate-800 bg-slate-900/70 px-4 py-3 text-sm">
                                         <div>
@@ -1000,4 +1585,358 @@ export function DashboardHomeView({
             </div>
         </div>
     );
+}
+
+export function getStartupBlockingReasons(startupStatus: DashboardStartupStatus): StartupBlockingReasonView[] {
+    if (!Array.isArray(startupStatus.blockingReasons)) {
+        return [];
+    }
+
+    return startupStatus.blockingReasons
+        .filter((reason): reason is StartupBlockingReasonView => Boolean(reason && typeof reason.code === 'string' && typeof reason.detail === 'string'))
+        .map((reason) => ({
+            code: reason.code,
+            detail: reason.detail,
+        }));
+}
+
+export function getStartupBlockingReasonAction(code: string): StartupBlockingReasonAction {
+    switch (code) {
+        case 'mcp_aggregator_not_initialized':
+        case 'mcp_inventory_not_ready':
+        case 'mcp_resident_runtime_not_ready':
+        case 'mcp_config_sync_pending':
+            return {
+                href: '/dashboard/mcp/system',
+                label: 'Open MCP system',
+            };
+        case 'memory_not_ready':
+        case 'claude_mem_not_ready':
+            return {
+                href: '/dashboard/memory',
+                label: 'Open memory dashboard',
+            };
+        case 'browser_service_not_ready':
+        case 'extension_bridge_not_ready':
+        case 'execution_environment_not_ready':
+            return {
+                href: '/dashboard/integrations',
+                label: 'Open Integration Hub',
+            };
+        case 'session_restore_not_ready':
+            return {
+                href: '/dashboard/session',
+                label: 'Open sessions',
+            };
+        default:
+            return {
+                href: '/dashboard',
+                label: 'Open startup overview',
+            };
+    }
+}
+
+export function getStartupBlockingReasonImpactedChecks(code: string): StartupBlockingReasonImpactedCheck[] {
+    switch (code) {
+        case 'mcp_aggregator_not_initialized':
+        case 'mcp_inventory_not_ready':
+            return [
+                { key: 'cached-inventory', label: 'Cached inventory' },
+                { key: 'resident-runtime', label: 'Resident MCP runtime' },
+            ];
+        case 'mcp_resident_runtime_not_ready':
+            return [
+                { key: 'resident-runtime', label: 'Resident MCP runtime' },
+            ];
+        case 'mcp_config_sync_pending':
+            return [
+                { key: 'cached-inventory', label: 'Cached inventory' },
+            ];
+        case 'memory_not_ready':
+        case 'claude_mem_not_ready':
+            return [
+                { key: 'memory-context', label: 'Memory / context' },
+            ];
+        case 'session_restore_not_ready':
+            return [
+                { key: 'session-restore', label: 'Session restore' },
+            ];
+        case 'browser_service_not_ready':
+        case 'extension_bridge_not_ready':
+            return [
+                { key: 'client-bridge', label: 'Client bridge' },
+            ];
+        case 'execution_environment_not_ready':
+            return [
+                { key: 'execution-environment', label: 'Execution environment' },
+            ];
+        default:
+            return [];
+    }
+}
+
+export function getStartupBlockingReasonGroupImpactedChecks(
+    reasons: StartupBlockingReasonWithPriority[],
+): StartupBlockingReasonImpactedCheck[] {
+    const seen = new Set<string>();
+    const impactedChecks: StartupBlockingReasonImpactedCheck[] = [];
+
+    for (const reason of reasons) {
+        const checks = getStartupBlockingReasonImpactedChecks(reason.code);
+        for (const check of checks) {
+            if (seen.has(check.key)) {
+                continue;
+            }
+
+            seen.add(check.key);
+            impactedChecks.push(check);
+        }
+    }
+
+    return impactedChecks;
+}
+
+export function getStartupBlockingReasonSubsystem(code: string): { key: string; label: string } {
+    switch (code) {
+        case 'mcp_aggregator_not_initialized':
+        case 'mcp_inventory_not_ready':
+        case 'mcp_resident_runtime_not_ready':
+        case 'mcp_config_sync_pending':
+            return {
+                key: 'mcp',
+                label: 'MCP router',
+            };
+        case 'memory_not_ready':
+        case 'claude_mem_not_ready':
+            return {
+                key: 'memory',
+                label: 'Memory / context',
+            };
+        case 'session_restore_not_ready':
+            return {
+                key: 'sessions',
+                label: 'Session supervisor',
+            };
+        case 'browser_service_not_ready':
+        case 'extension_bridge_not_ready':
+        case 'execution_environment_not_ready':
+            return {
+                key: 'integrations',
+                label: 'Integrations',
+            };
+        default:
+            return {
+                key: 'startup',
+                label: 'Startup platform',
+            };
+    }
+}
+
+export function getStartupBlockingReasonTitle(code: string): string {
+    switch (code) {
+        case 'mcp_aggregator_not_initialized':
+            return 'MCP router is not initialized';
+        case 'mcp_inventory_not_ready':
+            return 'Cached MCP inventory is not ready';
+        case 'mcp_resident_runtime_not_ready':
+            return 'Resident MCP runtime is still warming';
+        case 'mcp_config_sync_pending':
+            return 'MCP config sync is still pending';
+        case 'memory_not_ready':
+            return 'Memory manager is still initializing';
+        case 'claude_mem_not_ready':
+            return 'Claude-mem default sections are not ready';
+        case 'browser_service_not_ready':
+            return 'Browser service bridge is not ready';
+        case 'extension_bridge_not_ready':
+            return 'Extension bridge listener is offline';
+        case 'execution_environment_not_ready':
+            return 'Execution environment verification is incomplete';
+        case 'session_restore_not_ready':
+            return 'Session restore has not completed yet';
+        default:
+            return 'Startup blocker requires operator attention';
+    }
+}
+
+export function getStartupBlockingReasonPriority(code: string): number {
+    switch (code) {
+        case 'mcp_aggregator_not_initialized':
+        case 'mcp_resident_runtime_not_ready':
+        case 'execution_environment_not_ready':
+            return 100;
+        case 'mcp_inventory_not_ready':
+        case 'mcp_config_sync_pending':
+        case 'extension_bridge_not_ready':
+            return 80;
+        case 'memory_not_ready':
+        case 'claude_mem_not_ready':
+        case 'session_restore_not_ready':
+            return 60;
+        case 'browser_service_not_ready':
+            return 40;
+        default:
+            return 20;
+    }
+}
+
+export function getStartupBlockingReasonPriorityLabel(priority: number): 'High' | 'Medium' | 'Low' {
+    if (priority >= 80) {
+        return 'High';
+    }
+
+    if (priority >= 50) {
+        return 'Medium';
+    }
+
+    return 'Low';
+}
+
+export function getStartupBlockingReasonPriorityTone(priorityLabel: 'High' | 'Medium' | 'Low'): string {
+    switch (priorityLabel) {
+        case 'High':
+            return 'border-rose-500/40 bg-rose-500/10 text-rose-100';
+        case 'Medium':
+            return 'border-amber-500/40 bg-amber-500/10 text-amber-100';
+        default:
+            return 'border-emerald-500/40 bg-emerald-500/10 text-emerald-100';
+    }
+}
+
+export function getStartupBlockingReasonPriorityCounts(
+    startupBlockingReasons: StartupBlockingReasonWithPriority[],
+): StartupBlockingReasonPriorityCounts {
+    return startupBlockingReasons.reduce<StartupBlockingReasonPriorityCounts>((counts, reason) => {
+        const label = getStartupBlockingReasonPriorityLabel(reason.priority);
+        if (label === 'High') {
+            counts.high += 1;
+        } else if (label === 'Medium') {
+            counts.medium += 1;
+        } else {
+            counts.low += 1;
+        }
+
+        return counts;
+    }, {
+        high: 0,
+        medium: 0,
+        low: 0,
+    });
+}
+
+export function getPrioritizedStartupBlockingReasons(
+    startupBlockingReasons: StartupBlockingReasonView[],
+): StartupBlockingReasonWithPriority[] {
+    return startupBlockingReasons
+        .map((reason, index) => ({
+            ...reason,
+            priority: getStartupBlockingReasonPriority(reason.code),
+            index,
+        }))
+        .sort((left, right) => {
+            if (right.priority !== left.priority) {
+                return right.priority - left.priority;
+            }
+
+            return left.index - right.index;
+        })
+        .map(({ index: _index, ...reason }) => reason);
+}
+
+export function getGroupedStartupBlockingReasons(
+    startupBlockingReasons: StartupBlockingReasonWithPriority[],
+): StartupBlockingReasonGroup[] {
+    const groups = new Map<string, StartupBlockingReasonGroup>();
+
+    for (const reason of startupBlockingReasons) {
+        const subsystem = getStartupBlockingReasonSubsystem(reason.code);
+        const existingGroup = groups.get(subsystem.key);
+        if (existingGroup) {
+            existingGroup.reasons.push(reason);
+            continue;
+        }
+
+        groups.set(subsystem.key, {
+            key: subsystem.key,
+            label: subsystem.label,
+            reasons: [reason],
+        });
+    }
+
+    return Array.from(groups.values()).sort((left, right) => {
+        const leftOrder = STARTUP_BLOCKING_REASON_GROUP_ORDER[left.key] ?? Number.MAX_SAFE_INTEGER;
+        const rightOrder = STARTUP_BLOCKING_REASON_GROUP_ORDER[right.key] ?? Number.MAX_SAFE_INTEGER;
+        if (leftOrder !== rightOrder) {
+            return leftOrder - rightOrder;
+        }
+
+        return left.label.localeCompare(right.label);
+    });
+}
+
+export function getStartupBlockingReasonGroupSeverity(
+    reasons: StartupBlockingReasonWithPriority[],
+): 'High' | 'Medium' | 'Low' {
+    const maxPriority = reasons.reduce((highest, reason) => Math.max(highest, reason.priority), 0);
+    return getStartupBlockingReasonPriorityLabel(maxPriority);
+}
+
+export function getStartupBlockingReasonGroupTopAction(
+    reasons: StartupBlockingReasonWithPriority[],
+): StartupBlockingReasonAction | null {
+    if (reasons.length === 0) {
+        return null;
+    }
+
+    const topReason = reasons.reduce((selected, reason) => {
+        if (!selected) {
+            return reason;
+        }
+
+        return reason.priority > selected.priority ? reason : selected;
+    }, null as StartupBlockingReasonWithPriority | null);
+
+    return topReason ? getStartupBlockingReasonAction(topReason.code) : null;
+}
+
+export function getStartupBlockingReasonGroupPrimaryReason(
+    reasons: StartupBlockingReasonWithPriority[],
+): StartupBlockingReasonWithPriority | null {
+    if (reasons.length === 0) {
+        return null;
+    }
+
+    return reasons.reduce((selected, reason) => {
+        if (!selected) {
+            return reason;
+        }
+
+        return reason.priority > selected.priority ? reason : selected;
+    }, null as StartupBlockingReasonWithPriority | null);
+}
+
+export function getStartupBlockingReasonGroupPriorityCounts(
+    reasons: StartupBlockingReasonWithPriority[],
+): StartupBlockingReasonPriorityCounts {
+    return getStartupBlockingReasonPriorityCounts(reasons);
+}
+
+export function getStartupBlockingReasonActions(
+    startupBlockingReasons: StartupBlockingReasonView[],
+): StartupBlockingReasonAction[] {
+    const seen = new Set<string>();
+    const actions: StartupBlockingReasonAction[] = [];
+
+    for (const reason of startupBlockingReasons) {
+        const action = getStartupBlockingReasonAction(reason.code);
+        const key = `${action.href}|${action.label}`;
+        if (seen.has(key)) {
+            continue;
+        }
+
+        seen.add(key);
+        actions.push(action);
+    }
+
+    return actions;
 }

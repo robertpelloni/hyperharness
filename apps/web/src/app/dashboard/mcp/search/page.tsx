@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { Button, Card, CardContent, CardHeader, CardTitle } from "@borg/ui";
-import { Loader2, Search, Zap, Code, Layers, ExternalLink, Activity, Database, ArrowDownToLine, Sparkles, Trash2 } from "lucide-react";
+import { Loader2, Search, Zap, Code, Layers, ExternalLink, Activity, Database, ArrowDownToLine, Sparkles, Trash2, SlidersHorizontal, History } from "lucide-react";
 import { trpc } from '@/utils/trpc';
 import { toast } from 'sonner';
 
@@ -40,11 +40,14 @@ type WorkingSetTool = {
     lastHydratedAt: number | null;
 };
 
+type ToolSearchProfile = 'web-research' | 'repo-coding' | 'browser-automation' | 'local-ops' | 'database';
+
 type ToolSelectionTelemetryEvent = {
     id: string;
     type: 'search' | 'load' | 'hydrate' | 'unload';
     timestamp: number;
     query?: string;
+    profile?: string;
     source?: 'runtime-search' | 'cached-ranking' | 'live-aggregator';
     resultCount?: number;
     topResultName?: string;
@@ -60,14 +63,26 @@ type ToolSelectionTelemetryEvent = {
     autoLoadConfidence?: number;
 };
 
+type WorkingSetEvictionEvent = {
+    toolName: string;
+    timestamp: number;
+    tier: 'loaded' | 'hydrated';
+};
+
 type ToolPreferences = {
     importantTools: string[];
     alwaysLoadedTools: string[];
+    autoLoadMinConfidence: number;
+    maxLoadedTools: number;
+    maxHydratedSchemas: number;
 };
 
 type ToolPreferenceMutationInput = {
     importantTools?: string[];
     alwaysLoadedTools?: string[];
+    autoLoadMinConfidence?: number;
+    maxLoadedTools?: number;
+    maxHydratedSchemas?: number;
 };
 
 function formatRelativeTimestamp(timestamp: number | null): string {
@@ -91,13 +106,18 @@ function formatRelativeTimestamp(timestamp: number | null): string {
 
 export default function SearchDashboard() {
     const [query, setQuery] = useState('');
+    const [profile, setProfile] = useState<ToolSearchProfile | 'default'>('default');
+    const [autoLoadMinConfidenceDraft, setAutoLoadMinConfidenceDraft] = useState(0.85);
+    const [maxLoadedToolsDraft, setMaxLoadedToolsDraft] = useState(16);
+    const [maxHydratedSchemasDraft, setMaxHydratedSchemasDraft] = useState(8);
     const [jsoncDraft, setJsoncDraft] = useState('');
     const utils = trpc.useUtils();
     const searchQuery = trpc.mcp.searchTools.useQuery(
-        { query },
+        { query, profile: profile === 'default' ? undefined : profile },
         { enabled: query.trim().length > 0 },
     );
     const workingSetQuery = trpc.mcp.getWorkingSet.useQuery(undefined, { refetchInterval: 4000 });
+    const evictionHistoryQuery = trpc.mcp.getWorkingSetEvictionHistory.useQuery(undefined, { refetchInterval: 8000 });
     const telemetryQuery = trpc.mcp.getToolSelectionTelemetry.useQuery(undefined, { refetchInterval: 4000 });
     const preferencesQuery = trpc.mcp.getToolPreferences.useQuery();
     const jsoncEditorQuery = trpc.mcp.getJsoncEditor.useQuery();
@@ -195,9 +215,13 @@ export default function SearchDashboard() {
     const allToolsQuery = trpc.mcp.listTools.useQuery(undefined, { refetchInterval: 15000 });
     const allKnownTools = (allToolsQuery.data as SearchResult[] | undefined) ?? [];
     const telemetry = ((telemetryQuery.data as ToolSelectionTelemetryEvent[] | undefined) ?? []).slice(0, 12);
+    const recentEvictions = (evictionHistoryQuery.data as WorkingSetEvictionEvent[] | undefined) ?? [];
     const preferences = (preferencesQuery.data as ToolPreferences | undefined) ?? {
         importantTools: [],
         alwaysLoadedTools: [],
+        autoLoadMinConfidence: 0.85,
+        maxLoadedTools: 16,
+        maxHydratedSchemas: 8,
     };
     const importantTools = new Set(preferences.importantTools);
     const alwaysLoadedTools = new Set(preferences.alwaysLoadedTools);
@@ -218,6 +242,16 @@ export default function SearchDashboard() {
         }
     }, [jsoncDraft.length, jsoncEditorQuery.data?.content]);
 
+    useEffect(() => {
+        const normalized = Math.max(0.5, Math.min(0.99, preferences.autoLoadMinConfidence ?? 0.85));
+        setAutoLoadMinConfidenceDraft(normalized);
+    }, [preferences.autoLoadMinConfidence]);
+
+    useEffect(() => {
+        setMaxLoadedToolsDraft(preferences.maxLoadedTools ?? 16);
+        setMaxHydratedSchemasDraft(preferences.maxHydratedSchemas ?? 8);
+    }, [preferences.maxLoadedTools, preferences.maxHydratedSchemas]);
+
     const updateToolPreferences = (next: ToolPreferenceMutationInput) => {
         setPreferencesMutation.mutate(next as never);
     };
@@ -233,6 +267,9 @@ export default function SearchDashboard() {
         updateToolPreferences({
             importantTools: Array.from(next),
             alwaysLoadedTools: Array.from(alwaysLoadedTools),
+            autoLoadMinConfidence: preferences.autoLoadMinConfidence,
+            maxLoadedTools: preferences.maxLoadedTools,
+            maxHydratedSchemas: preferences.maxHydratedSchemas,
         });
     };
 
@@ -247,6 +284,45 @@ export default function SearchDashboard() {
         updateToolPreferences({
             importantTools: Array.from(importantTools),
             alwaysLoadedTools: Array.from(next),
+            autoLoadMinConfidence: preferences.autoLoadMinConfidence,
+            maxLoadedTools: preferences.maxLoadedTools,
+            maxHydratedSchemas: preferences.maxHydratedSchemas,
+        });
+    };
+
+    const saveAutoLoadMinConfidence = () => {
+        const normalized = Math.max(0.5, Math.min(0.99, Number(autoLoadMinConfidenceDraft)));
+        setAutoLoadMinConfidenceDraft(normalized);
+
+        if (Math.abs(normalized - preferences.autoLoadMinConfidence) < 0.0001) {
+            return;
+        }
+
+        updateToolPreferences({
+            importantTools: Array.from(importantTools),
+            alwaysLoadedTools: Array.from(alwaysLoadedTools),
+            autoLoadMinConfidence: normalized,
+            maxLoadedTools: preferences.maxLoadedTools,
+            maxHydratedSchemas: preferences.maxHydratedSchemas,
+        });
+    };
+
+    const saveCapacity = () => {
+        const nextMax = Math.max(4, Math.min(64, Math.round(maxLoadedToolsDraft)));
+        const nextHydrated = Math.max(2, Math.min(32, Math.round(maxHydratedSchemasDraft)));
+        setMaxLoadedToolsDraft(nextMax);
+        setMaxHydratedSchemasDraft(nextHydrated);
+
+        if (nextMax === preferences.maxLoadedTools && nextHydrated === preferences.maxHydratedSchemas) {
+            return;
+        }
+
+        updateToolPreferences({
+            importantTools: Array.from(importantTools),
+            alwaysLoadedTools: Array.from(alwaysLoadedTools),
+            autoLoadMinConfidence: preferences.autoLoadMinConfidence,
+            maxLoadedTools: nextMax,
+            maxHydratedSchemas: nextHydrated,
         });
     };
 
@@ -287,9 +363,42 @@ export default function SearchDashboard() {
                                 />
                             </div>
 
+                            <div className="space-y-2">
+                                <div className="text-xs uppercase tracking-wider text-zinc-500">Task profile</div>
+                                <div className="flex flex-wrap gap-2">
+                                    {[
+                                        { value: 'default', label: 'Default' },
+                                        { value: 'repo-coding', label: 'Repo coding' },
+                                        { value: 'web-research', label: 'Web research' },
+                                        { value: 'browser-automation', label: 'Browser automation' },
+                                        { value: 'local-ops', label: 'Local ops' },
+                                        { value: 'database', label: 'Database' },
+                                    ].map((option) => {
+                                        const isActive = profile === option.value;
+
+                                        return (
+                                            <button
+                                                key={option.value}
+                                                type="button"
+                                                onClick={() => setProfile(option.value as ToolSearchProfile | 'default')}
+                                                className={`rounded-md border px-3 py-1.5 text-xs transition-colors ${isActive
+                                                    ? 'border-blue-500/50 bg-blue-500/15 text-blue-200'
+                                                    : 'border-zinc-700 bg-zinc-950/70 text-zinc-300 hover:bg-zinc-800'
+                                                    }`}
+                                                title={`Bias ranking toward ${option.label.toLowerCase()} workflows`}
+                                                aria-label={`Use ${option.label} task profile`}
+                                            >
+                                                {option.label}
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+
                             <p className="text-xs text-zinc-500">
                                 Tip: describe the outcome you want (for example, “sync issues from github repo” or “extract text from pdf”).
                                 Ranking uses match reason + metadata confidence so the best candidates surface first.
+                                {profile !== 'default' ? ` Active profile: ${profile}.` : ''}
                             </p>
 
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
@@ -309,6 +418,52 @@ export default function SearchDashboard() {
                                     <div className="text-xs uppercase tracking-wider text-zinc-500">Always-on tools</div>
                                     <div className="mt-1 text-2xl font-semibold text-white">{alwaysLoadedTools.size}</div>
                                     <div className="mt-1 text-xs text-zinc-500">Pinned warm tools auto-load into the session working set when MCP state refreshes.</div>
+                                </div>
+                                <div className="rounded-lg border border-zinc-800 bg-zinc-950/70 p-3 md:col-span-3 space-y-3">
+                                    <div className="flex items-center justify-between gap-3">
+                                        <div>
+                                            <div className="text-xs uppercase tracking-wider text-zinc-500">Auto-load confidence floor</div>
+                                            <div className="mt-1 text-2xl font-semibold text-white">{Math.round((preferences.autoLoadMinConfidence ?? 0.85) * 100)}%</div>
+                                        </div>
+                                        <div className="text-xs text-zinc-500 text-right max-w-xs">
+                                            Cached ranking auto-loads only when confidence is above this threshold.
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center gap-3">
+                                        <input
+                                            type="range"
+                                            min={0.5}
+                                            max={0.99}
+                                            step={0.01}
+                                            value={autoLoadMinConfidenceDraft}
+                                            onChange={(event) => setAutoLoadMinConfidenceDraft(Number(event.target.value))}
+                                            className="w-full"
+                                            title="Set minimum confidence required before Borg auto-loads the top ranked tool"
+                                            aria-label="Auto-load confidence threshold"
+                                        />
+                                        <input
+                                            type="number"
+                                            min={0.5}
+                                            max={0.99}
+                                            step={0.01}
+                                            value={autoLoadMinConfidenceDraft.toFixed(2)}
+                                            onChange={(event) => setAutoLoadMinConfidenceDraft(Number(event.target.value))}
+                                            className="w-24 rounded-md border border-zinc-700 bg-zinc-900 px-2 py-1 text-sm text-zinc-100"
+                                            title="Numeric confidence threshold between 0.50 and 0.99"
+                                            aria-label="Auto-load confidence threshold numeric input"
+                                        />
+                                        <Button
+                                            type="button"
+                                            variant="outline"
+                                            className="border-zinc-700 text-zinc-200 hover:bg-zinc-800"
+                                            onClick={saveAutoLoadMinConfidence}
+                                            disabled={setPreferencesMutation.isPending}
+                                            title="Save auto-load confidence threshold"
+                                            aria-label="Save auto-load confidence threshold"
+                                        >
+                                            Save
+                                        </Button>
+                                    </div>
                                 </div>
                             </div>
 
@@ -606,6 +761,123 @@ export default function SearchDashboard() {
                     </Card>
 
                     <Card className="bg-zinc-900 border-zinc-800">
+                        <CardHeader className="pb-3 border-b border-zinc-800">
+                            <CardTitle className="text-white flex items-center gap-2 text-base">
+                                <SlidersHorizontal className="h-4 w-4 text-violet-400" />
+                                Working-set capacity
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent className="p-4 space-y-4">
+                            <p className="text-xs text-zinc-500">
+                                Controls how many tools and schemas the session keeps warm before LRU eviction.
+                            </p>
+
+                            {/* maxLoadedTools slider */}
+                            <div className="space-y-2">
+                                <div className="flex items-center justify-between">
+                                    <span className="text-xs uppercase tracking-wider text-zinc-400">Loaded tools cap</span>
+                                    <span className="text-sm font-semibold text-white">{maxLoadedToolsDraft}</span>
+                                </div>
+                                <div className="flex items-center gap-3">
+                                    <input
+                                        type="range"
+                                        min={4}
+                                        max={64}
+                                        step={1}
+                                        value={maxLoadedToolsDraft}
+                                        onChange={(e) => setMaxLoadedToolsDraft(Number(e.target.value))}
+                                        className="w-full"
+                                        title="Maximum number of tools loaded simultaneously before LRU eviction (4–64)"
+                                        aria-label="Maximum loaded tools"
+                                    />
+                                    <input
+                                        type="number"
+                                        min={4}
+                                        max={64}
+                                        step={1}
+                                        value={maxLoadedToolsDraft}
+                                        onChange={(e) => setMaxLoadedToolsDraft(Number(e.target.value))}
+                                        className="w-16 rounded-md border border-zinc-700 bg-zinc-900 px-2 py-1 text-sm text-zinc-100"
+                                        title="Loaded tools cap (4–64)"
+                                        aria-label="Loaded tools cap numeric input"
+                                    />
+                                </div>
+                            </div>
+
+                            {/* maxHydratedSchemas slider */}
+                            <div className="space-y-2">
+                                <div className="flex items-center justify-between">
+                                    <span className="text-xs uppercase tracking-wider text-zinc-400">Hydrated schemas cap</span>
+                                    <span className="text-sm font-semibold text-white">{maxHydratedSchemasDraft}</span>
+                                </div>
+                                <div className="flex items-center gap-3">
+                                    <input
+                                        type="range"
+                                        min={2}
+                                        max={32}
+                                        step={1}
+                                        value={maxHydratedSchemasDraft}
+                                        onChange={(e) => setMaxHydratedSchemasDraft(Number(e.target.value))}
+                                        className="w-full"
+                                        title="Maximum number of hydrated schemas kept warm simultaneously before LRU eviction (2–32)"
+                                        aria-label="Maximum hydrated schemas"
+                                    />
+                                    <input
+                                        type="number"
+                                        min={2}
+                                        max={32}
+                                        step={1}
+                                        value={maxHydratedSchemasDraft}
+                                        onChange={(e) => setMaxHydratedSchemasDraft(Number(e.target.value))}
+                                        className="w-16 rounded-md border border-zinc-700 bg-zinc-900 px-2 py-1 text-sm text-zinc-100"
+                                        title="Hydrated schemas cap (2–32)"
+                                        aria-label="Hydrated schemas cap numeric input"
+                                    />
+                                </div>
+                            </div>
+
+                            <Button
+                                type="button"
+                                variant="outline"
+                                className="w-full border-zinc-700 text-zinc-200 hover:bg-zinc-800"
+                                onClick={saveCapacity}
+                                disabled={setPreferencesMutation.isPending}
+                                title="Save working-set capacity limits and apply them to the live session"
+                                aria-label="Save working-set capacity limits"
+                            >
+                                Apply capacity
+                            </Button>
+                        </CardContent>
+                    </Card>
+
+                    {recentEvictions.length > 0 && (
+                        <Card className="bg-zinc-900 border-zinc-800">
+                            <CardHeader className="pb-3 border-b border-zinc-800">
+                                <CardTitle className="text-white flex items-center gap-2 text-base">
+                                    <History className="h-4 w-4 text-amber-400" />
+                                    Recent evictions
+                                </CardTitle>
+                            </CardHeader>
+                            <CardContent className="p-4">
+                                <div className="space-y-2 max-h-[200px] overflow-y-auto">
+                                    {recentEvictions.slice(0, 10).map((event, index) => (
+                                        // eslint-disable-next-line react/no-array-index-key
+                                        <div key={`${event.toolName}-${event.timestamp}-${index}`} className="flex items-center justify-between gap-3 rounded-lg border border-zinc-800 bg-zinc-950/60 px-3 py-2">
+                                            <span className="font-mono text-xs text-zinc-200 break-all min-w-0">{event.toolName}</span>
+                                            <div className="flex items-center gap-2 shrink-0">
+                                                <span className={`text-[10px] px-1.5 py-0.5 rounded border ${event.tier === 'loaded' ? 'border-red-500/20 bg-red-500/10 text-red-300' : 'border-amber-500/20 bg-amber-500/10 text-amber-300'}`}>
+                                                    {event.tier}
+                                                </span>
+                                                <span className="text-[10px] text-zinc-500">{formatRelativeTimestamp(event.timestamp)}</span>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </CardContent>
+                        </Card>
+                    )}
+
+                    <Card className="bg-zinc-900 border-zinc-800">
                         <CardHeader className="pb-3 border-b border-zinc-800 flex flex-row items-center justify-between gap-3">
                             <CardTitle className="text-white flex items-center gap-2 text-base">
                                 <Activity className="h-4 w-4 text-emerald-400" />
@@ -645,6 +917,7 @@ export default function SearchDashboard() {
                                             </div>
 
                                             {event.query ? <div className="text-xs text-zinc-400 break-all">query: <span className="text-zinc-200">{event.query}</span></div> : null}
+                                            {event.profile ? <div className="text-xs text-zinc-400 break-all">profile: <span className="text-zinc-200">{event.profile}</span></div> : null}
                                             {event.toolName ? <div className="text-xs text-zinc-400 break-all">tool: <span className="font-mono text-zinc-200">{event.toolName}</span></div> : null}
                                             {typeof event.resultCount === 'number' ? <div className="text-xs text-zinc-400">results: <span className="text-zinc-200">{event.resultCount}</span></div> : null}
                                             {event.topResultName ? <div className="text-xs text-zinc-400 break-all">top result: <span className="font-mono text-zinc-200">{event.topResultName}</span></div> : null}

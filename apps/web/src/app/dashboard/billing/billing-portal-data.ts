@@ -37,9 +37,22 @@ export interface BillingTaskRoutingRuleSummary {
 
 export type BillingRoutingStrategy = BillingTaskRoutingRuleSummary['strategy'];
 
+type ProviderPortalActionKind =
+    | 'keys'
+    | 'usage'
+    | 'billing'
+    | 'plan'
+    | 'credits'
+    | 'console'
+    | 'cloud'
+    | 'workspace'
+    | 'token'
+    | 'docs';
+
 interface ProviderPortalAction {
     label: string;
     href: string;
+    kind: ProviderPortalActionKind;
 }
 
 interface ProviderPortalDefinition {
@@ -57,16 +70,44 @@ export interface ProviderPortalCard extends ProviderPortalDefinition {
     errorLabel: string | null;
 }
 
+interface ProviderQuickAccessLinkDefinition {
+    providerId: string;
+    preferredKinds: ProviderPortalActionKind[];
+}
+
+interface ProviderQuickAccessSectionDefinition {
+    id: string;
+    title: string;
+    description: string;
+    links: ProviderQuickAccessLinkDefinition[];
+}
+
+export interface ProviderQuickAccessLink {
+    providerId: string;
+    providerLabel: string;
+    actionLabel: string;
+    href: string;
+    statusLabel: ProviderPortalCard['statusLabel'];
+    statusTone: ProviderPortalCard['statusTone'];
+}
+
+export interface ProviderQuickAccessSection {
+    id: string;
+    title: string;
+    description: string;
+    links: ProviderQuickAccessLink[];
+}
+
 export const PROVIDER_PORTALS: ProviderPortalDefinition[] = [
     {
         id: 'openai',
         label: 'OpenAI',
         notes: 'Platform billing, usage, and API key controls for ChatGPT / Codex API workloads.',
         actions: [
-            { label: 'API keys', href: 'https://platform.openai.com/api-keys' },
-            { label: 'Usage', href: 'https://platform.openai.com/usage' },
-            { label: 'Billing', href: 'https://platform.openai.com/settings/organization/billing/overview' },
-            { label: 'Docs', href: 'https://platform.openai.com/docs/overview' },
+            { label: 'API keys', href: 'https://platform.openai.com/api-keys', kind: 'keys' },
+            { label: 'Usage', href: 'https://platform.openai.com/usage', kind: 'usage' },
+            { label: 'Billing', href: 'https://platform.openai.com/settings/organization/billing/overview', kind: 'billing' },
+            { label: 'Docs', href: 'https://platform.openai.com/docs/overview', kind: 'docs' },
         ],
     },
     {
@@ -74,10 +115,10 @@ export const PROVIDER_PORTALS: ProviderPortalDefinition[] = [
         label: 'Anthropic',
         notes: 'Claude API console, workspace usage, and plan management links.',
         actions: [
-            { label: 'API keys', href: 'https://console.anthropic.com/settings/keys' },
-            { label: 'Usage', href: 'https://console.anthropic.com/settings/usage' },
-            { label: 'Plans', href: 'https://console.anthropic.com/settings/plans' },
-            { label: 'Docs', href: 'https://docs.anthropic.com/' },
+            { label: 'API keys', href: 'https://console.anthropic.com/settings/keys', kind: 'keys' },
+            { label: 'Usage', href: 'https://console.anthropic.com/settings/usage', kind: 'usage' },
+            { label: 'Plans', href: 'https://console.anthropic.com/settings/plans', kind: 'plan' },
+            { label: 'Docs', href: 'https://docs.anthropic.com/', kind: 'docs' },
         ],
     },
     {
@@ -85,10 +126,10 @@ export const PROVIDER_PORTALS: ProviderPortalDefinition[] = [
         label: 'Google Gemini / AI Studio',
         notes: 'Gemini API keys, Google AI Studio, and Google Cloud / Vertex entry points.',
         actions: [
-            { label: 'AI Studio', href: 'https://aistudio.google.com/' },
-            { label: 'API keys', href: 'https://aistudio.google.com/app/apikey' },
-            { label: 'Vertex AI', href: 'https://console.cloud.google.com/vertex-ai' },
-            { label: 'Docs', href: 'https://ai.google.dev/' },
+            { label: 'AI Studio', href: 'https://aistudio.google.com/', kind: 'workspace' },
+            { label: 'API keys', href: 'https://aistudio.google.com/app/apikey', kind: 'keys' },
+            { label: 'Vertex AI', href: 'https://console.cloud.google.com/vertex-ai', kind: 'cloud' },
+            { label: 'Docs', href: 'https://ai.google.dev/', kind: 'docs' },
         ],
     },
     {
@@ -96,10 +137,10 @@ export const PROVIDER_PORTALS: ProviderPortalDefinition[] = [
         label: 'OpenRouter',
         notes: 'Centralized multi-model routing, credits, and usage controls.',
         actions: [
-            { label: 'API keys', href: 'https://openrouter.ai/keys' },
-            { label: 'Usage', href: 'https://openrouter.ai/activity' },
-            { label: 'Credits', href: 'https://openrouter.ai/settings/credits' },
-            { label: 'Docs', href: 'https://openrouter.ai/docs/quickstart' },
+            { label: 'API keys', href: 'https://openrouter.ai/keys', kind: 'keys' },
+            { label: 'Usage', href: 'https://openrouter.ai/activity', kind: 'usage' },
+            { label: 'Credits', href: 'https://openrouter.ai/settings/credits', kind: 'credits' },
+            { label: 'Docs', href: 'https://openrouter.ai/docs/quickstart', kind: 'docs' },
         ],
     },
     {
@@ -107,9 +148,9 @@ export const PROVIDER_PORTALS: ProviderPortalDefinition[] = [
         label: 'xAI / Grok',
         notes: 'xAI developer console, Grok model usage, and API onboarding.',
         actions: [
-            { label: 'Console', href: 'https://console.x.ai/' },
-            { label: 'Docs', href: 'https://docs.x.ai/' },
-            { label: 'API keys', href: 'https://console.x.ai/' },
+            { label: 'Console', href: 'https://console.x.ai/', kind: 'console' },
+            { label: 'Docs', href: 'https://docs.x.ai/', kind: 'docs' },
+            { label: 'API keys', href: 'https://console.x.ai/', kind: 'keys' },
         ],
     },
     {
@@ -117,9 +158,9 @@ export const PROVIDER_PORTALS: ProviderPortalDefinition[] = [
         label: 'DeepSeek',
         notes: 'DeepSeek platform entry point for API credentials and account usage.',
         actions: [
-            { label: 'Platform', href: 'https://platform.deepseek.com/' },
-            { label: 'API keys', href: 'https://platform.deepseek.com/api_keys' },
-            { label: 'Docs', href: 'https://api-docs.deepseek.com/' },
+            { label: 'Platform', href: 'https://platform.deepseek.com/', kind: 'console' },
+            { label: 'API keys', href: 'https://platform.deepseek.com/api_keys', kind: 'keys' },
+            { label: 'Docs', href: 'https://api-docs.deepseek.com/', kind: 'docs' },
         ],
     },
     {
@@ -127,9 +168,9 @@ export const PROVIDER_PORTALS: ProviderPortalDefinition[] = [
         label: 'Mistral',
         notes: 'Mistral console and API documentation for hosted models.',
         actions: [
-            { label: 'Console', href: 'https://console.mistral.ai/' },
-            { label: 'API keys', href: 'https://console.mistral.ai/' },
-            { label: 'Docs', href: 'https://docs.mistral.ai/' },
+            { label: 'Console', href: 'https://console.mistral.ai/', kind: 'console' },
+            { label: 'API keys', href: 'https://console.mistral.ai/', kind: 'keys' },
+            { label: 'Docs', href: 'https://docs.mistral.ai/', kind: 'docs' },
         ],
     },
     {
@@ -137,9 +178,9 @@ export const PROVIDER_PORTALS: ProviderPortalDefinition[] = [
         label: 'Groq',
         notes: 'GroqCloud keys, usage, and low-latency model docs.',
         actions: [
-            { label: 'Console', href: 'https://console.groq.com/' },
-            { label: 'API keys', href: 'https://console.groq.com/keys' },
-            { label: 'Docs', href: 'https://console.groq.com/docs/overview' },
+            { label: 'Console', href: 'https://console.groq.com/', kind: 'console' },
+            { label: 'API keys', href: 'https://console.groq.com/keys', kind: 'keys' },
+            { label: 'Docs', href: 'https://console.groq.com/docs/overview', kind: 'docs' },
         ],
     },
     {
@@ -147,9 +188,9 @@ export const PROVIDER_PORTALS: ProviderPortalDefinition[] = [
         label: 'Azure OpenAI',
         notes: 'Azure subscription, billing, and OpenAI deployment management.',
         actions: [
-            { label: 'Azure portal', href: 'https://portal.azure.com/' },
-            { label: 'Cost analysis', href: 'https://portal.azure.com/#view/Microsoft_Azure_CostManagement/Menu/~/overview' },
-            { label: 'Docs', href: 'https://learn.microsoft.com/azure/ai-services/openai/' },
+            { label: 'Azure portal', href: 'https://portal.azure.com/', kind: 'cloud' },
+            { label: 'Cost analysis', href: 'https://portal.azure.com/#view/Microsoft_Azure_CostManagement/Menu/~/overview', kind: 'billing' },
+            { label: 'Docs', href: 'https://learn.microsoft.com/azure/ai-services/openai/', kind: 'docs' },
         ],
     },
     {
@@ -157,10 +198,10 @@ export const PROVIDER_PORTALS: ProviderPortalDefinition[] = [
         label: 'GitHub Copilot',
         notes: 'Copilot subscription and GitHub personal access / billing surfaces.',
         actions: [
-            { label: 'Copilot settings', href: 'https://github.com/settings/copilot' },
-            { label: 'Billing', href: 'https://github.com/settings/billing' },
-            { label: 'PATs', href: 'https://github.com/settings/tokens' },
-            { label: 'Docs', href: 'https://docs.github.com/copilot' },
+            { label: 'Copilot settings', href: 'https://github.com/settings/copilot', kind: 'workspace' },
+            { label: 'Billing', href: 'https://github.com/settings/billing', kind: 'billing' },
+            { label: 'PATs', href: 'https://github.com/settings/tokens', kind: 'token' },
+            { label: 'Docs', href: 'https://docs.github.com/copilot', kind: 'docs' },
         ],
     },
     {
@@ -168,9 +209,9 @@ export const PROVIDER_PORTALS: ProviderPortalDefinition[] = [
         label: 'Antigravity',
         notes: 'Google Cloud Code Assist / Antigravity subscription and quota surfaces.',
         actions: [
-            { label: 'Code Assist', href: 'https://console.cloud.google.com/' },
-            { label: 'Google Cloud', href: 'https://console.cloud.google.com/' },
-            { label: 'Docs', href: 'https://cloud.google.com/code-assist/docs' },
+            { label: 'Code Assist', href: 'https://console.cloud.google.com/', kind: 'workspace' },
+            { label: 'Google Cloud', href: 'https://console.cloud.google.com/', kind: 'cloud' },
+            { label: 'Docs', href: 'https://cloud.google.com/code-assist/docs', kind: 'docs' },
         ],
     },
     {
@@ -178,9 +219,9 @@ export const PROVIDER_PORTALS: ProviderPortalDefinition[] = [
         label: 'Kiro',
         notes: 'Kiro / AWS CodeWhisperer subscription and quota management links.',
         actions: [
-            { label: 'Kiro', href: 'https://kiro.dev/' },
-            { label: 'AWS Builder ID', href: 'https://view.awsapps.com/start' },
-            { label: 'Docs', href: 'https://docs.aws.amazon.com/codewhisperer/' },
+            { label: 'Kiro', href: 'https://kiro.dev/', kind: 'plan' },
+            { label: 'AWS Builder ID', href: 'https://view.awsapps.com/start', kind: 'cloud' },
+            { label: 'Docs', href: 'https://docs.aws.amazon.com/codewhisperer/', kind: 'docs' },
         ],
     },
     {
@@ -188,9 +229,51 @@ export const PROVIDER_PORTALS: ProviderPortalDefinition[] = [
         label: 'Kimi Coding',
         notes: 'Kimi Coding membership and usage overview.',
         actions: [
-            { label: 'Kimi', href: 'https://kimi.com/' },
-            { label: 'Coding', href: 'https://kimi.com/' },
-            { label: 'Docs', href: 'https://platform.moonshot.ai/docs' },
+            { label: 'Kimi', href: 'https://kimi.com/', kind: 'plan' },
+            { label: 'Coding', href: 'https://kimi.com/', kind: 'workspace' },
+            { label: 'Docs', href: 'https://platform.moonshot.ai/docs', kind: 'docs' },
+        ],
+    },
+];
+
+const PROVIDER_QUICK_ACCESS_SECTIONS: ProviderQuickAccessSectionDefinition[] = [
+    {
+        id: 'api-keys',
+        title: 'API keys & tokens',
+        description: 'Fast path to the credentials most likely to block first-run setup in Borg.',
+        links: [
+            { providerId: 'openai', preferredKinds: ['keys'] },
+            { providerId: 'anthropic', preferredKinds: ['keys'] },
+            { providerId: 'gemini', preferredKinds: ['keys'] },
+            { providerId: 'openrouter', preferredKinds: ['keys'] },
+            { providerId: 'deepseek', preferredKinds: ['keys'] },
+            { providerId: 'github-copilot', preferredKinds: ['token'] },
+        ],
+    },
+    {
+        id: 'plans-billing',
+        title: 'Plans, billing & credits',
+        description: 'Keep spend, credits, and membership surfaces one click away when quotas or subscriptions need attention.',
+        links: [
+            { providerId: 'openai', preferredKinds: ['billing'] },
+            { providerId: 'anthropic', preferredKinds: ['plan'] },
+            { providerId: 'openrouter', preferredKinds: ['credits', 'billing'] },
+            { providerId: 'azure-openai', preferredKinds: ['billing'] },
+            { providerId: 'github-copilot', preferredKinds: ['billing'] },
+            { providerId: 'kiro', preferredKinds: ['plan'] },
+        ],
+    },
+    {
+        id: 'cloud-oauth',
+        title: 'Cloud & OAuth consoles',
+        description: 'Use these entry points for cloud-managed providers, OAuth-backed surfaces, and hosted console workflows.',
+        links: [
+            { providerId: 'gemini', preferredKinds: ['workspace', 'cloud'] },
+            { providerId: 'azure-openai', preferredKinds: ['cloud'] },
+            { providerId: 'github-copilot', preferredKinds: ['workspace'] },
+            { providerId: 'antigravity', preferredKinds: ['workspace', 'cloud'] },
+            { providerId: 'kiro', preferredKinds: ['cloud'] },
+            { providerId: 'kimi-coding', preferredKinds: ['workspace', 'plan'] },
         ],
     },
 ];
@@ -202,7 +285,9 @@ export const ROUTING_STRATEGY_OPTIONS: Array<{ value: BillingRoutingStrategy; la
 ];
 
 export function getProviderPortalCards(quotas: BillingProviderQuotaSummary[] | undefined): ProviderPortalCard[] {
-    const quotaMap = new Map((quotas ?? []).map((quota) => [quota.provider, quota]));
+    const normalizedQuotas = (Array.isArray(quotas) ? quotas : [])
+        .filter((quota): quota is BillingProviderQuotaSummary => Boolean(quota) && typeof quota === 'object' && typeof quota.provider === 'string');
+    const quotaMap = new Map(normalizedQuotas.map((quota) => [quota.provider, quota]));
 
     return PROVIDER_PORTALS.map((portal) => {
         const quota = quotaMap.get(portal.id);
@@ -222,6 +307,47 @@ export function getProviderPortalCards(quotas: BillingProviderQuotaSummary[] | u
             errorLabel: quota?.lastError ?? null,
         };
     });
+}
+
+export function getProviderQuickAccessSections(quotas: BillingProviderQuotaSummary[] | undefined): ProviderQuickAccessSection[] {
+    const portalCards = getProviderPortalCards(quotas);
+    const portalCardMap = new Map(portalCards.map((card) => [card.id, card]));
+    const portalDefinitionMap = new Map(PROVIDER_PORTALS.map((portal) => [portal.id, portal]));
+
+    return PROVIDER_QUICK_ACCESS_SECTIONS.map((section) => {
+        const links = section.links.flatMap((linkDefinition) => {
+            const portal = portalDefinitionMap.get(linkDefinition.providerId);
+            const portalCard = portalCardMap.get(linkDefinition.providerId);
+
+            if (!portal || !portalCard) {
+                return [];
+            }
+
+            const action = linkDefinition.preferredKinds
+                .map((kind) => portal.actions.find((candidate) => candidate.kind === kind))
+                .find((candidate): candidate is ProviderPortalAction => !!candidate);
+
+            if (!action) {
+                return [];
+            }
+
+            return [{
+                providerId: portal.id,
+                providerLabel: portal.label,
+                actionLabel: action.label,
+                href: action.href,
+                statusLabel: portalCard.statusLabel,
+                statusTone: portalCard.statusTone,
+            }];
+        });
+
+        return {
+            id: section.id,
+            title: section.title,
+            description: section.description,
+            links,
+        };
+    }).filter((section) => section.links.length > 0);
 }
 
 export function getPortalBadgeClasses(tone: ProviderPortalCard['statusTone']): string {

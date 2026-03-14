@@ -3,7 +3,7 @@ import fs from 'node:fs/promises';
 import { t, publicProcedure, adminProcedure, getMcpAggregator, getMcpServer } from '../lib/trpc-core.js';
 import { getCachedToolInventory } from '../mcp/cachedToolInventory.js';
 import { parseNamespacedToolName } from '../mcp/namespaces.js';
-import { pickAutoLoadCandidate, rankToolSearchCandidates } from '../mcp/toolSearchRanking.js';
+import { pickAutoLoadCandidate, rankToolSearchCandidates, type ToolSearchProfile } from '../mcp/toolSearchRanking.js';
 import { toolSelectionTelemetry } from '../mcp/toolSelectionTelemetry.js';
 import { getBorgMcpJsoncPath, loadBorgMcpConfig, stripJsonComments, writeBorgMcpConfig } from '../mcp/mcpJsonConfig.js';
 import {
@@ -165,13 +165,15 @@ function toLatencyMs(startedAt: number): number {
     return Math.max(0, Date.now() - startedAt);
 }
 
+const toolSearchProfileSchema = z.enum(['web-research', 'repo-coding', 'browser-automation', 'local-ops', 'database']);
+
 async function readToolPreferences(): Promise<ToolPreferences> {
     try {
         const config = await loadBorgMcpConfig();
-        const settings = config.settings as { toolSelection?: { importantTools?: unknown; alwaysLoadedTools?: unknown } } | undefined;
+        const settings = config.settings as { toolSelection?: { importantTools?: unknown; alwaysLoadedTools?: unknown; autoLoadMinConfidence?: unknown; maxLoadedTools?: unknown; maxHydratedSchemas?: unknown } } | undefined;
         return readToolPreferencesFromSettings(settings?.toolSelection);
     } catch {
-        return { importantTools: [], alwaysLoadedTools: [] };
+        return { importantTools: [], alwaysLoadedTools: [], autoLoadMinConfidence: 0.85, maxLoadedTools: 16, maxHydratedSchemas: 8 };
     }
 }
 
@@ -299,12 +301,14 @@ export const mcpRouter = t.router({
 
     searchTools: publicProcedure.input(z.object({
         query: z.string().default(''),
+        profile: toolSearchProfileSchema.optional(),
     })).query(async ({ input }) => {
         const searchStartedAt = Date.now();
         try {
             const { tools } = await getCachedToolInventory();
             const preferences = await readToolPreferences();
             const normalizedQuery = input.query.trim().toLowerCase();
+            const selectedProfile = input.profile as ToolSearchProfile | undefined;
             const server = getMcpServer();
 
             if (server) {
@@ -336,7 +340,7 @@ export const mcpRouter = t.router({
                     }>>(result, []);
 
                     if (rankedResults.length > 0) {
-                        const mappedResults = rankedResults.map((tool, index) => ({
+                        const runtimeMappedResults = rankedResults.map((tool, index) => ({
                             name: tool.name,
                             description: tool.description ?? '',
                             server: tool.serverName ?? 'unknown',
@@ -360,6 +364,53 @@ export const mcpRouter = t.router({
                             inputSchema: null,
                         }));
 
+                        const mappedResults = selectedProfile
+                            ? rankToolSearchCandidates(
+                                runtimeMappedResults.map((tool) => ({
+                                    name: tool.name,
+                                    description: tool.description,
+                                    serverName: tool.server,
+                                    serverDisplayName: tool.serverDisplayName,
+                                    advertisedName: tool.advertisedName,
+                                    originalName: tool.originalName ?? undefined,
+                                    serverTags: tool.serverTags,
+                                    toolTags: tool.toolTags,
+                                    semanticGroup: tool.semanticGroup,
+                                    semanticGroupLabel: tool.semanticGroupLabel,
+                                    keywords: tool.keywords,
+                                    alwaysOn: tool.alwaysOn,
+                                    loaded: tool.loaded,
+                                    hydrated: tool.hydrated,
+                                    deferred: tool.deferred,
+                                })),
+                                normalizedQuery,
+                                runtimeMappedResults.length,
+                                selectedProfile,
+                            ).map((tool, index) => ({
+                                name: tool.name,
+                                description: tool.description ?? '',
+                                server: tool.serverName ?? 'unknown',
+                                serverDisplayName: tool.serverDisplayName ?? tool.serverName ?? 'unknown',
+                                serverTags: tool.serverTags ?? [],
+                                toolTags: tool.toolTags ?? [],
+                                semanticGroup: tool.semanticGroup ?? 'general-utility',
+                                semanticGroupLabel: tool.semanticGroupLabel ?? 'general utility',
+                                advertisedName: tool.advertisedName ?? tool.name,
+                                keywords: tool.keywords ?? [],
+                                alwaysOn: Boolean(tool.alwaysOn),
+                                originalName: tool.originalName ?? null,
+                                loaded: Boolean(tool.loaded),
+                                hydrated: Boolean(tool.hydrated),
+                                deferred: Boolean(tool.deferred),
+                                requiresSchemaHydration: Boolean(tool.requiresSchemaHydration),
+                                matchReason: tool.matchReason ?? 'matched available metadata',
+                                score: tool.score ?? 0,
+                                rank: index + 1,
+                                autoLoaded: false,
+                                inputSchema: null,
+                            }))
+                            : runtimeMappedResults;
+
                         const autoLoadedResult = mappedResults.find((tool) => tool.autoLoaded);
                         if (autoLoadedResult) {
                             recordAutoLoadTelemetry(autoLoadedResult.name, `Tool '${autoLoadedResult.name}' auto-loaded from search.`);
@@ -372,6 +423,7 @@ export const mcpRouter = t.router({
                         toolSelectionTelemetry.record({
                             type: 'search',
                             query: input.query,
+                            profile: selectedProfile,
                             source: 'runtime-search',
                             resultCount: mappedResults.length,
                             topResultName: mappedResults[0]?.name,
@@ -409,10 +461,13 @@ export const mcpRouter = t.router({
                     })),
                     normalizedQuery,
                     normalizedQuery ? 10 : tools.length,
+                    selectedProfile,
                 );
 
                 const autoLoadDecision = server
-                    ? pickAutoLoadCandidate(rankedCandidateResults, normalizedQuery)
+                    ? pickAutoLoadCandidate(rankedCandidateResults, normalizedQuery, {
+                        minConfidence: preferences.autoLoadMinConfidence,
+                    })
                     : null;
 
                 if (server && autoLoadDecision) {
@@ -465,6 +520,7 @@ export const mcpRouter = t.router({
                 toolSelectionTelemetry.record({
                     type: 'search',
                     query: input.query,
+                    profile: selectedProfile,
                     source: 'cached-ranking',
                     resultCount: rankedResults.length,
                     topResultName: rankedResults[0]?.name,
@@ -482,11 +538,33 @@ export const mcpRouter = t.router({
 
             const aggregator = getMcpAggregator();
             const liveTools = await aggregator?.searchTools?.(input.query) ?? [];
-            const mappedLiveTools = liveTools.map((tool) => ({
+            const rankedLiveTools = rankToolSearchCandidates(
+                liveTools.map((tool) => ({
+                    name: tool.name,
+                    description: tool.description ?? '',
+                    serverName: tool.server ?? 'unknown',
+                    serverDisplayName: tool.serverDisplayName ?? tool.server ?? 'unknown',
+                    serverTags: tool.serverTags ?? [],
+                    toolTags: tool.toolTags ?? [],
+                    semanticGroup: tool.semanticGroup ?? 'general-utility',
+                    semanticGroupLabel: tool.semanticGroupLabel ?? 'general utility',
+                    advertisedName: tool.advertisedName ?? tool.name,
+                    keywords: tool.keywords ?? [],
+                    alwaysOn: Boolean(tool.alwaysOn),
+                    originalName: null,
+                    loaded: false,
+                    hydrated: tool.inputSchema != null,
+                    deferred: tool.inputSchema == null,
+                })),
+                normalizedQuery,
+                normalizedQuery ? 10 : liveTools.length,
+                selectedProfile,
+            );
+            const mappedLiveTools = rankedLiveTools.map((tool, index) => ({
                 name: tool.name,
                 description: tool.description ?? '',
-                server: tool.server ?? 'unknown',
-                serverDisplayName: tool.serverDisplayName ?? tool.server ?? 'unknown',
+                server: tool.serverName ?? 'unknown',
+                serverDisplayName: tool.serverDisplayName ?? tool.serverName ?? 'unknown',
                 serverTags: tool.serverTags ?? [],
                 toolTags: tool.toolTags ?? [],
                 semanticGroup: tool.semanticGroup ?? 'general-utility',
@@ -496,18 +574,19 @@ export const mcpRouter = t.router({
                 alwaysOn: Boolean(tool.alwaysOn),
                 originalName: null,
                 loaded: false,
-                hydrated: tool.inputSchema != null,
-                deferred: tool.inputSchema == null,
-                requiresSchemaHydration: tool.inputSchema == null,
-                matchReason: normalizedQuery ? 'matched live aggregated catalog' : 'available tool in the current catalog',
-                score: 0,
-                rank: 0,
-                inputSchema: tool.inputSchema ?? null,
+                hydrated: tool.hydrated,
+                deferred: tool.deferred,
+                requiresSchemaHydration: tool.requiresSchemaHydration,
+                matchReason: tool.matchReason,
+                score: tool.score,
+                rank: index + 1,
+                inputSchema: null,
             }));
 
             toolSelectionTelemetry.record({
                 type: 'search',
                 query: input.query,
+                profile: selectedProfile,
                 source: 'live-aggregator',
                 resultCount: mappedLiveTools.length,
                 topResultName: mappedLiveTools[0]?.name,
@@ -521,6 +600,7 @@ export const mcpRouter = t.router({
             toolSelectionTelemetry.record({
                 type: 'search',
                 query: input.query,
+                profile: input.profile,
                 latencyMs: toLatencyMs(searchStartedAt),
                 status: 'error',
                 message: 'search failed',
@@ -536,16 +616,46 @@ export const mcpRouter = t.router({
     setToolPreferences: adminProcedure.input(z.object({
         importantTools: z.array(z.string().min(1)).default([]),
         alwaysLoadedTools: z.array(z.string().min(1)).default([]),
+        autoLoadMinConfidence: z.number().min(0.5).max(0.99).default(0.85),
+        maxLoadedTools: z.number().int().min(4).max(64).default(16),
+        maxHydratedSchemas: z.number().int().min(2).max(32).default(8),
     })).mutation(async ({ input }) => {
         const next = await writeToolPreferences({
             importantTools: input.importantTools,
             alwaysLoadedTools: input.alwaysLoadedTools,
+            autoLoadMinConfidence: input.autoLoadMinConfidence,
+            maxLoadedTools: input.maxLoadedTools,
+            maxHydratedSchemas: input.maxHydratedSchemas,
         });
         const server = getMcpServer();
         if (server) {
             await ensureAlwaysLoadedTools(server, next);
+            // Apply the new capacity limits to the live working set immediately.
+            try {
+                await server.executeTool('set_capacity', {
+                    maxLoadedTools: next.maxLoadedTools,
+                    maxHydratedSchemas: next.maxHydratedSchemas,
+                });
+            } catch {
+                // Non-fatal: the working set will apply limits on the next load/hydrate call.
+            }
         }
         return { ok: true, ...next };
+    }),
+
+    /** Return the bounded recent eviction history for the session working set. */
+    getWorkingSetEvictionHistory: publicProcedure.query(async () => {
+        const server = getMcpServer();
+        if (!server) {
+            return [];
+        }
+
+        try {
+            const result = await server.executeTool('get_eviction_history', {});
+            return parseToolJson<Array<{ toolName: string; timestamp: number; tier: string }>>(result, []);
+        } catch {
+            return [];
+        }
     }),
 
     getJsoncEditor: publicProcedure.query(async () => {

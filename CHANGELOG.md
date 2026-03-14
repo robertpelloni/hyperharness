@@ -2,6 +2,30 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.7.118] — 2026-03-14
+
+- changed(mcp/working-set): added operator-configurable working-set capacity controls — `maxLoadedTools` (4..64, default 16) and `maxHydratedSchemas` (2..32, default 8) are now persisted in `mcp.jsonc` preferences.
+- changed(mcp/working-set): `SessionToolWorkingSet` gained a `reconfigure()` method so capacity changes take effect on the live session immediately after saving preferences, without a restart.
+- changed(mcp/working-set): added a bounded eviction-history ring buffer (last 20 events) with `getEvictionHistory()` / `clearEvictionHistory()` — each entry records the evicted tool name, timestamp, and tier (`loaded` | `hydrated`).
+- changed(mcp/meta-tools): added two new meta-tools — `set_capacity` (reconfigures the working-set limits at runtime) and `get_eviction_history` (returns the bounded recent eviction log). Registered in `toolLoadingDefinitions.ts` and handled in `metamcp-proxy.service.ts`.
+- changed(mcp/search): `/dashboard/mcp/search` now includes a "Working-set capacity" panel with sliders for `maxLoadedTools`/`maxHydratedSchemas` that save immediately to preferences and apply to the live session.
+- changed(mcp/search): `/dashboard/mcp/search` now shows a "Recent evictions" panel (conditionally visible) listing the last up to 10 evicted tools with their tier and relative timestamp, polling every 8 s.
+- test(core): updated `metamcp-session-working-set.service.test.ts` with focused coverage for `reconfigure()`, eviction history recording, and `clearEvictionHistory()`.
+
+## [2.7.117] — 2026-03-14
+
+- changed(mcp/search): added persisted `autoLoadMinConfidence` tool-selection preference (default `0.85`, bounded `0.50..0.99`) so auto-load behavior is explicitly operator-controlled instead of hardcoded.
+- changed(mcp/search): cached-ranking auto-load now respects the configured confidence floor before issuing `load_tool`, reducing unintended eager loads for ambiguous results.
+- changed(mcp/search): `/dashboard/mcp/search` now includes an auto-load confidence threshold control (slider + numeric input) and saves it with the existing important/keep-warm tool preferences.
+- changed(mcp/inspector): inspector always-on toggles now preserve the current auto-load confidence preference when updating tool-selection settings.
+- test(core): updated tool-preference and JSON-config provider tests for the new confidence field and stabilized the provider test import path to use source modules.
+
+## [2.7.116] — 2026-03-14
+
+- changed(mcp/search): added task-profile-aware search ranking (`web-research`, `repo-coding`, `browser-automation`, `local-ops`, `database`) so tool discovery can bias toward the current workflow instead of generic scoring alone.
+- changed(mcp/search): `/dashboard/mcp/search` now includes a task profile selector that threads profile context into search requests and surfaces the active profile in search guidance and telemetry entries.
+- changed(mcp/search): search telemetry now records the selected profile across runtime, cached, and live-aggregator search paths for clearer explainability of ranking behavior.
+
 ## [2.7.115] — 2026-03-14
 
 - changed(mcp/search): expanded decision telemetry to include search/load/hydrate/unload latency, top score, score gap, auto-load reason, and auto-load confidence so routing behavior is operator-explainable.

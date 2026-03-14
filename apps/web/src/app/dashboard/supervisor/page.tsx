@@ -6,10 +6,16 @@ import { Card } from '@borg/ui';
 import { Button } from '@borg/ui';
 import { Input } from '@borg/ui';
 import { Textarea } from '@borg/ui';
+import {
+    normalizeSupervisorAutonomyLevel,
+    normalizeSupervisorPlan,
+    type NormalizedSupervisorTask,
+    type SupervisorAutonomyLevel,
+} from './supervisor-page-normalizers';
 
 export default function SupervisorPage() {
     const [goal, setGoal] = useState('');
-    const [plan, setPlan] = useState<any[] | null>(null);
+    const [plan, setPlan] = useState<NormalizedSupervisorTask[] | null>(null);
     const [executionLog, setExecutionLog] = useState<string>('');
     const [isExecuting, setIsExecuting] = useState(false);
 
@@ -27,11 +33,13 @@ export default function SupervisorPage() {
         }
     });
 
+    const normalizedAutonomyLevel = normalizeSupervisorAutonomyLevel(autonomyLevel);
+
     const handleDecompose = async () => {
         if (!goal) return;
         try {
             const result = await decomposeMutation.mutateAsync({ goal });
-            setPlan(result);
+            setPlan(normalizeSupervisorPlan(result));
         } catch (e: any) {
             setExecutionLog(prev => prev + `\n[Error] Decomposition failed: ${e.message}`);
         }
@@ -65,12 +73,15 @@ export default function SupervisorPage() {
                 <div className="flex bg-zinc-900 border border-zinc-800 rounded-lg p-3 gap-4 items-center">
                     <div className="flex flex-col">
                         <span className="text-xs text-zinc-400 font-medium">Autonomy Level</span>
-                        <div className="text-sm font-bold text-white uppercase">{autonomyLevel || 'Loading...'}</div>
+                        <div className="text-sm font-bold text-white uppercase">{normalizedAutonomyLevel}</div>
                     </div>
                     <div className="flex gap-2">
                         <select
-                            value={autonomyLevel || 'low'}
-                            onChange={(e) => setAutonomyMutation.mutate({ level: e.target.value as any })}
+                            value={normalizedAutonomyLevel}
+                            onChange={(e) => {
+                                const selectedLevel = normalizeSupervisorAutonomyLevel(e.target.value) as SupervisorAutonomyLevel;
+                                setAutonomyMutation.mutate({ level: selectedLevel });
+                            }}
                             disabled={setAutonomyMutation.isPending}
                             className="bg-zinc-950 border border-zinc-700 text-xs rounded px-2 py-1 text-zinc-300"
                         >
@@ -81,7 +92,7 @@ export default function SupervisorPage() {
                         <Button
                             variant="destructive" size="sm" className="h-7 text-xs"
                             onClick={() => activateFullMutation.mutate()}
-                            disabled={activateFullMutation.isPending || autonomyLevel === 'high'}
+                            disabled={activateFullMutation.isPending || normalizedAutonomyLevel === 'high'}
                         >
                             Activate Full
                         </Button>
@@ -113,7 +124,7 @@ export default function SupervisorPage() {
                     <h3 className="font-semibold border-b pb-2">Proposed Plan</h3>
                     <div className="flex-1 overflow-y-auto space-y-4">
                         {!plan && <div className="text-muted-foreground italic">No plan generated yet.</div>}
-                        {plan?.map((task: any) => (
+                        {plan?.map((task) => (
                             <div key={task.id} className="border rounded p-3 bg-muted/20">
                                 <div className="flex justify-between items-start mb-2">
                                     <span className="font-mono text-xs bg-primary/10 text-primary px-2 py-1 rounded uppercase">

@@ -42,11 +42,13 @@ type ToolSelectionTelemetryEvent = {
 type ToolPreferences = {
     importantTools: string[];
     alwaysLoadedTools: string[];
+    autoLoadMinConfidence: number;
 };
 
 type ToolPreferenceMutationInput = {
     importantTools?: string[];
     alwaysLoadedTools?: string[];
+    autoLoadMinConfidence?: number;
 };
 
 type TelemetryFilter = 'all' | 'search' | 'load' | 'hydrate' | 'unload' | 'errors';
@@ -186,6 +188,7 @@ function InspectorDashboardContent() {
     const preferences = (preferencesQuery.data as ToolPreferences | undefined) ?? {
         importantTools: [],
         alwaysLoadedTools: [],
+        autoLoadMinConfidence: 0.85,
     };
     const dbTools = dbToolsQuery.data ?? [];
     const dbAlwaysOnTools = new Set(dbTools.filter((t: any) => t.always_on).map((t: any) => t.name));
@@ -335,6 +338,7 @@ function InspectorDashboardContent() {
         updateToolPreferences({
             importantTools: preferences.importantTools,
             alwaysLoadedTools: Array.from(next),
+            autoLoadMinConfidence: preferences.autoLoadMinConfidence,
         });
     };
 

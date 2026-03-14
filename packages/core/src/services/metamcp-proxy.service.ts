@@ -608,6 +608,29 @@ export const attachTo = async (
             return formatResult(await executeListLoadedToolsCompatibility(toolWorkingSet));
         }
 
+        if (name === "set_capacity") {
+            // Clamp inputs to safe bounds before forwarding to the working-set service.
+            const rawMax = typeof args?.maxLoadedTools === 'number' ? args.maxLoadedTools : undefined;
+            const rawHydrated = typeof args?.maxHydratedSchemas === 'number' ? args.maxHydratedSchemas : undefined;
+            const maxLoadedTools = rawMax !== undefined ? Math.max(4, Math.min(64, Math.round(rawMax))) : undefined;
+            const maxHydratedSchemas = rawHydrated !== undefined ? Math.max(2, Math.min(32, Math.round(rawHydrated))) : undefined;
+            toolWorkingSet.reconfigure({ maxLoadedTools, maxHydratedSchemas });
+            const updated = toolWorkingSet.getLimits();
+            return {
+                content: [{
+                    type: 'text',
+                    text: `Working-set capacity updated: maxLoadedTools=${updated.maxLoadedTools}, maxHydratedSchemas=${updated.maxHydratedSchemas}`,
+                }],
+            };
+        }
+
+        if (name === "get_eviction_history") {
+            const history = toolWorkingSet.getEvictionHistory();
+            return formatResult({
+                content: [{ type: 'text', text: JSON.stringify(history) }],
+            });
+        }
+
         if (name === "save_script") {
             return await executeCompatibleSaveScript(args, {
                 saveScript: async (script) => {

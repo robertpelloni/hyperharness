@@ -161,6 +161,9 @@ export type AgentMemoryServiceRuntime = {
     captureUserPrompt?: (input: Record<string, unknown>) => Promise<unknown>;
     getRecentUserPrompts?: (limit?: number, options?: Record<string, unknown>) => unknown[];
     searchUserPrompts?: (query: string, options?: Record<string, unknown>) => Promise<unknown[]>;
+    searchByPivot?: (input: Record<string, unknown>) => unknown[];
+    getTimelineWindow?: (input: Record<string, unknown>) => unknown[];
+    getCrossSessionLinks?: (input: Record<string, unknown>) => unknown[];
 };
 
 export type SymbolPinServiceRuntime = {
@@ -425,6 +428,12 @@ export type MCPSimpleServerRuntime = {
     name?: string;
     status?: string;
     toolCount?: number;
+    advertisedToolCount?: number;
+    advertisedAlwaysOn?: boolean;
+    advertisedSource?: 'database' | 'config' | 'empty';
+    warmupStatus?: 'idle' | 'scheduled' | 'warming' | 'ready' | 'failed';
+    lastConnectedAt?: number;
+    lastError?: string;
     tools?: unknown[];
     command?: string;
     args?: string[];

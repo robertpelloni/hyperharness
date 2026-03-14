@@ -9,6 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Activity, Trash2, Search, RefreshCcw, BarChart3, AlertTriangle, CheckCircle2, Clock } from "lucide-react";
 import { trpc } from '@/utils/trpc';
 import { toast } from 'sonner';
+import { filterLogEntries, normalizeLogEntries, normalizeLogSummary } from './logs-page-normalizers';
 
 function formatDuration(ms: number) {
     if (ms < 1000) return `${ms}ms`;
@@ -46,17 +47,13 @@ export default function LogsDashboard() {
     };
 
     const isRefreshing = isFetchingSummary || isFetchingLogs;
+    const normalizedSummary = normalizeLogSummary(summary);
+    const normalizedLogs = normalizeLogEntries(logs);
 
     // Filter logs client-side for immediate feedback
-    const filteredLogs = logs?.filter((log: any) => {
-        if (!searchQuery) return true;
-        const query = searchQuery.toLowerCase();
-        return (
-            (log.toolName && log.toolName.toLowerCase().includes(query)) ||
-            (log.serverName && log.serverName.toLowerCase().includes(query)) ||
-            (log.error && log.error.toLowerCase().includes(query))
-        );
-    }) || [];
+    const filteredLogs = filterLogEntries(normalizedLogs, searchQuery);
+    const topTools = normalizedSummary.topTools;
+    const topToolMaxCount = topTools[0]?.count ?? 0;
 
     return (
         <div className="p-8 space-y-8 h-full overflow-y-auto w-full max-w-[1600px] mx-auto">
@@ -83,7 +80,7 @@ export default function LogsDashboard() {
                     </Button>
                     <Button 
                         onClick={() => clearLogs.mutate()} 
-                        disabled={clearLogs.isPending || (summary?.totals?.totalCalls === 0)}
+                        disabled={clearLogs.isPending || normalizedSummary.totals.totalCalls === 0}
                         variant="destructive" 
                         className="bg-red-950/50 text-red-500 hover:bg-red-900/50 border border-red-900"
                     >
@@ -102,7 +99,7 @@ export default function LogsDashboard() {
                             <Activity className="h-4 w-4 text-blue-500" />
                         </div>
                         <div className="text-3xl font-bold text-white mb-1">
-                            {summary?.totals?.totalCalls ?? 0}
+                            {normalizedSummary.totals.totalCalls}
                         </div>
                     </CardContent>
                 </Card>
@@ -113,7 +110,7 @@ export default function LogsDashboard() {
                             <CheckCircle2 className="h-4 w-4 text-green-500" />
                         </div>
                         <div className="text-3xl font-bold text-white mb-1">
-                            {summary?.totals?.successRate ?? 100}%
+                            {normalizedSummary.totals.successRate}%
                         </div>
                     </CardContent>
                 </Card>
@@ -124,7 +121,7 @@ export default function LogsDashboard() {
                             <AlertTriangle className="h-4 w-4 text-red-500" />
                         </div>
                         <div className="text-3xl font-bold text-white mb-1">
-                            {summary?.totals?.errorCount ?? 0}
+                            {normalizedSummary.totals.errorCount}
                         </div>
                     </CardContent>
                 </Card>
@@ -135,7 +132,7 @@ export default function LogsDashboard() {
                             <Clock className="h-4 w-4 text-purple-500" />
                         </div>
                         <div className="text-3xl font-bold text-white mb-1">
-                            {summary?.totals?.avgDurationMs ? formatDuration(summary.totals.avgDurationMs) : '0ms'}
+                            {normalizedSummary.totals.avgDurationMs > 0 ? formatDuration(normalizedSummary.totals.avgDurationMs) : '0ms'}
                         </div>
                     </CardContent>
                 </Card>
@@ -192,7 +189,7 @@ export default function LogsDashboard() {
                                             </TableCell>
                                         </TableRow>
                                     ) : (
-                                        filteredLogs.map((log: any) => {
+                                        filteredLogs.map((log) => {
                                             const isError = log.level === 'error' || Boolean(log.error);
                                             return (
                                                 <TableRow key={log.id} className="border-zinc-800/50 hover:bg-zinc-800/30">
@@ -244,10 +241,10 @@ export default function LogsDashboard() {
                         </CardHeader>
                         <CardContent>
                             <div className="space-y-4">
-                                {!summary?.topTools || summary.topTools.length === 0 ? (
+                                {topTools.length === 0 ? (
                                     <div className="text-center text-sm text-zinc-600 py-4">No tool activity recorded yet.</div>
                                 ) : (
-                                    summary.topTools.map((tool: any) => (
+                                    topTools.map((tool) => (
                                         <div key={tool.name} className="flex flex-col gap-1">
                                             <div className="flex justify-between items-center">
                                                 <span className="text-xs font-mono text-zinc-300 truncate max-w-[180px]" title={tool.name}>
@@ -261,12 +258,12 @@ export default function LogsDashboard() {
                                             <div className="h-1.5 w-full bg-zinc-800 rounded-full overflow-hidden flex">
                                                 <div 
                                                     className="bg-blue-500 h-full" 
-                                                    style={{ width: `${Math.max(2, (tool.count / summary.topTools[0].count) * 100 * (1 - (tool.errors / tool.count)))}%` }} 
+                                                    style={{ width: `${topToolMaxCount > 0 && tool.count > 0 ? Math.max(2, (tool.count / topToolMaxCount) * 100 * (1 - (tool.errors / tool.count))) : 0}%` }} 
                                                 />
                                                 {tool.errors > 0 && (
                                                     <div 
                                                         className="bg-red-500 h-full opacity-60" 
-                                                        style={{ width: `${Math.max(2, (tool.errors / tool.count) * 100)}%` }} 
+                                                        style={{ width: `${tool.count > 0 ? Math.max(2, (tool.errors / tool.count) * 100) : 0}%` }} 
                                                         title={`${tool.errors} errors`}
                                                     />
                                                 )}

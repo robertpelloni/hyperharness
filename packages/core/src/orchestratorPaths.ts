@@ -37,3 +37,20 @@ export function resolveSupervisorEntryPath(startDir: string = process.cwd()): st
 
   return null;
 }
+
+export function resolveCliEntryPath(startDir: string = process.cwd()): string | null {
+  const candidateRoots = [
+    resolveMonorepoRoot(startDir),
+    resolveMonorepoRoot(MODULE_DIR),
+    path.resolve(MODULE_DIR, '../..'),
+  ].filter((value, index, array): value is string => Boolean(value) && array.indexOf(value) === index);
+
+  for (const root of candidateRoots) {
+    const candidate = path.join(root, 'packages', 'cli', 'dist', 'index.js');
+    if (fs.existsSync(candidate)) {
+      return candidate;
+    }
+  }
+
+  return null;
+}

@@ -40,14 +40,14 @@ When the user runs `pnpm run dev` inside Tabby, Borg should feel like a real loc
 8. The implementation must not rename executable tool IDs in a way that breaks invocation; semantic aliases remain display/advertising metadata only.
 
 ## Acceptance Criteria
-- [ ] Running `pnpm run dev` yields one truthful readiness contract for core, web, MCP, memory, sessions, and extension bridge
-- [ ] Cached MCP servers/tools are advertised before all live server connections finish warming
-- [ ] Dashboard startup cards explain cached-vs-live state without false alarms
-- [ ] Always-on tools are advertised during startup without requiring the full working set to be manually loaded first
-- [ ] Browser extension readiness remains visible for Chromium and Firefox bundles
-- [ ] Test files exist or are updated and pass
-- [ ] No `@ts-ignore` added
-- [ ] `CHANGELOG.md` updated
+- [x] Running `pnpm run dev` yields one truthful readiness contract for core, web, MCP, memory, sessions, and extension bridge
+- [x] Cached MCP servers/tools are advertised before all live server connections finish warming
+- [x] Dashboard startup cards explain cached-vs-live state without false alarms
+- [x] Always-on tools are advertised during startup without requiring the full working set to be manually loaded first
+- [x] Browser extension readiness remains visible for Chromium and Firefox bundles
+- [x] Test files exist or are updated and pass
+- [x] No `@ts-ignore` added
+- [x] `CHANGELOG.md` updated
 
 ## Out of Scope
 - Full MetaMCP / Claude-mem / MCP-SuperAssistant feature parity in this task

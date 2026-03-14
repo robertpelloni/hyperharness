@@ -12,9 +12,11 @@ describe('mcp tool preferences helpers', () => {
         expect(normalizeToolPreferences({
             importantTools: [' github__issues ', '', 'github__issues', 'browser__open'],
             alwaysLoadedTools: [' browser__open ', 'browser__open', ''],
+            autoLoadMinConfidence: 2,
         })).toEqual({
             importantTools: ['github__issues', 'browser__open'],
             alwaysLoadedTools: ['browser__open'],
+            autoLoadMinConfidence: 0.99,
         });
     });
 
@@ -22,9 +24,11 @@ describe('mcp tool preferences helpers', () => {
         expect(readToolPreferencesFromSettings({
             importantTools: ['github__issues'],
             alwaysLoadedTools: ['browser__open'],
+            autoLoadMinConfidence: 0.9,
         })).toEqual({
             importantTools: ['github__issues'],
             alwaysLoadedTools: ['browser__open'],
+            autoLoadMinConfidence: 0.9,
         });
     });
 
@@ -45,6 +49,7 @@ describe('mcp tool preferences helpers', () => {
         ], {
             importantTools: ['github__issues'],
             alwaysLoadedTools: ['browser__open'],
+            autoLoadMinConfidence: 0.85,
         }, [
             {
                 name: 'github__issues',
@@ -84,6 +89,7 @@ describe('mcp tool preferences helpers', () => {
         const merged = mergeToolPreferences([], {
             importantTools: [],
             alwaysLoadedTools: [],
+            autoLoadMinConfidence: 0.85,
         }, [
             {
                 name: 'memory__recall',
@@ -110,12 +116,14 @@ describe('mcp tool preferences helpers', () => {
         }, {
             importantTools: ['github__issues'],
             alwaysLoadedTools: ['browser__open'],
+            autoLoadMinConfidence: 0.9,
         })).toEqual({
             unrelated: true,
             toolSelection: {
                 previous: 'keep-me',
                 importantTools: ['github__issues'],
                 alwaysLoadedTools: ['browser__open'],
+                autoLoadMinConfidence: 0.9,
             },
         });
     });

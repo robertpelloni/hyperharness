@@ -5,6 +5,7 @@
  */
 
 import { logMessage } from '@src/utils/helpers';
+import { findBestActionButton, isButtonDisabled } from '@src/utils/dom';
 import { createLogger } from '@extension/shared/lib/logger';
 
 // Cache for the last found input element to improve reliability
@@ -306,18 +307,17 @@ export const submitChatInput = (maxWaitTime = 5000): Promise<boolean> => {
 
       // Define a function to find the submit button
       const findSubmitButton = (): HTMLButtonElement | null => {
-        const submitButton =
-          document.querySelector('button[aria-label="Send message"]') ||
-          document.querySelector('button[data-testid="send-button"]') ||
-          document.querySelector('button[aria-label="Send prompt"]') ||
-          // Try to find button with paper airplane icon (common pattern in OpenRouter)
-          document.querySelector('button svg[data-icon="paper-airplane"]')?.closest('button') ||
-          document.querySelector('button svg path[d*="M12 3.5"]')?.closest('button') ||
-          // Look for any button near the input area that looks like a submit button
-          chatInput.closest('form')?.querySelector('button[type="submit"]') ||
-          chatInput.closest('div')?.querySelector('button:last-child');
-
-        return submitButton as HTMLButtonElement | null;
+        return findBestActionButton({
+          actionLabels: ['Send message', 'Send prompt', 'Send', 'Submit'],
+          preferredSelectors: [
+            'button[aria-label="Send message"]',
+            'button[data-testid="send-button"]',
+            'button[aria-label="Send prompt"]',
+            'button[type="submit"]',
+          ],
+          near: chatInput,
+          iconPathHints: ['M12 3.5', 'M4.5 10.5'],
+        });
       };
 
       // Try to find and check the submit button
@@ -336,13 +336,7 @@ export const submitChatInput = (maxWaitTime = 5000): Promise<boolean> => {
           }
 
           // Check if the button is disabled
-          const isDisabled =
-            button.disabled ||
-            button.getAttribute('disabled') !== null ||
-            button.getAttribute('aria-disabled') === 'true' ||
-            button.classList.contains('disabled');
-
-          if (!isDisabled) {
+          if (!isButtonDisabled(button)) {
             logMessage('Submit button is enabled, clicking it');
             button.click();
             resolve(true);
@@ -430,7 +424,7 @@ export const submitChatInput = (maxWaitTime = 5000): Promise<boolean> => {
         tryClickingButton();
 
         // If the button is already enabled and clicked, clear the interval
-        if (submitButton && !submitButton.disabled) {
+        if (submitButton && !isButtonDisabled(submitButton)) {
           clearInterval(intervalId);
         }
       } else {

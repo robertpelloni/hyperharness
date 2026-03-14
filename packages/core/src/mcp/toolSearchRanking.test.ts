@@ -15,7 +15,7 @@ describe('toolSearchRanking auto-load decisions', () => {
             },
         ], 'browser__open_tab', 10);
 
-        expect(pickAutoLoadCandidate(rankedResults, 'browser__open_tab')).toEqual({
+        expect(pickAutoLoadCandidate(rankedResults, 'browser__open_tab')).toMatchObject({
             toolName: 'browser__open_tab',
             reason: 'auto-loaded after exact tool name match',
         });

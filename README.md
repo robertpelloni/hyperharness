@@ -11,12 +11,13 @@ Borg is being stabilized toward a focused `1.0` release around four core capabil
 
 ## Current status
 
-This repository is in an active cleanup/stabilization phase.
+This repository is in an active cleanup and stabilization phase.
 
 - Root `pnpm install` was verified successfully on Windows in this repo state.
 - `docker compose up -d --build` was verified successfully on Windows with Docker Desktop running.
-- The dashboard responded at `http://localhost:3001` and the current default route resolved to `http://localhost:3001/dashboard/mcp`.
-- The first full Docker build is substantial; on this Windows workstation it completed in about 8.6 minutes.
+- Dockerized dashboard access was verified at `http://localhost:3001`.
+- Root `pnpm run dev` now uses Borg's readiness launcher and may place the dashboard on a fallback web port if `3000` is already occupied; the core bridge remains on `http://127.0.0.1:3001`.
+- The web app root redirects from `/` to `/dashboard`.
 
 ## Quick start
 
@@ -47,8 +48,34 @@ Expected URLs once the stack is up:
 
 Notes:
 
-- The current app redirects into the dashboard experience, which presently lands on `http://localhost:3001/dashboard/mcp`.
+- Opening `http://localhost:3001/` redirects to `http://localhost:3001/dashboard`.
+- The MCP operator surface lives at `http://localhost:3001/dashboard/mcp`.
 - The first image build can take several minutes because it builds the core packages and the Next.js dashboard inside Docker.
+
+### 3) Start local development
+
+```bash
+pnpm run dev
+```
+
+What the launcher does:
+
+- starts or reuses the Borg core bridge on `http://127.0.0.1:3001`
+- waits for the authoritative `startupStatus` contract before reporting success
+- builds missing official browser-extension artifacts when needed
+- opens the dashboard after the web surface is actually ready
+
+The dashboard usually starts on `http://127.0.0.1:3000/dashboard`, but it may move to a fallback port if `3000` is already taken. To confirm the active URLs after startup, run:
+
+```bash
+node scripts/verify_dev_readiness.mjs
+```
+
+Useful local probes:
+
+- Core bridge / HTTP probe: `http://127.0.0.1:3001`
+- Startup status: `http://127.0.0.1:3001/api/trpc/startupStatus?input=%7B%7D`
+- MCP status: `http://127.0.0.1:3001/api/trpc/mcp.getStatus?input=%7B%7D`
 
 ### Windows note
 
@@ -69,8 +96,8 @@ Borg is an **orchestrator**, not a clone of every AI tool.
 It is intended to:
 
 - route MCP tools cleanly and safely
-- supervise external agent/CLI sessions
-- manage provider/model selection and fallback
+- supervise external agent and CLI sessions
+- manage provider and model selection with fallback
 - expose system state through a practical dashboard
 
 ## Borg 1.0 focus
@@ -89,28 +116,50 @@ If a change does not make those workflows more reliable, more testable, or easie
 ```text
 borg/
 ├── apps/web/              # Dashboard
-├── apps/extension/        # Browser extension
+├── apps/borg-extension/   # Official browser extension (Chrome/Edge + Firefox builds)
+├── apps/extension/        # Legacy/compat browser extension surface
 ├── packages/core/         # MCP routing, orchestration, services
 ├── packages/cli/          # CLI entrypoint
 ├── packages/types/        # Shared types/schemas
 ├── tasks/                 # Active, backlog, completed task briefs
-├── docs/                  # Architecture and archived planning docs
+├── docs/                  # Architecture docs plus archived planning material
 └── docker-compose.yml     # Containerized local stack
 ```
 
-## Important docs
+## Canonical docs
+
+These are the root-level documents contributors should trust first:
 
 - `AGENTS.md` — active repo operating directive
 - `ARCHITECTURE.md` — high-level system design
 - `ROADMAP.md` — current 1.0 / 1.5 / 2.0 milestones
-- `tasks/active/` — current implementation work
 - `CHANGELOG.md` — notable repo changes
+- `tasks/active/` — current implementation work
+
+Archive and compatibility material still exists for reference, but it is **not** the source of truth. Treat anything under `docs/archive/` as archive-only.
 
 ## Development notes
 
-- The repo still contains legacy/reference material outside the Borg 1.0 core path.
-- Current stabilization work is focused on making install, startup, and the core control-plane workflows reliable.
-- If you are contributing, prefer the active tasks in `tasks/active/` over legacy phase-based documents.
+- Current stabilization work is focused on install, startup, and the core control-plane workflows.
+- If you are contributing, prefer `tasks/active/` over older phase-based or parity-based planning artifacts.
+- The dashboard landing page is `/dashboard`; use `/dashboard/mcp` when you specifically want the MCP router view.
+
+### Optional startup debug logging
+
+Normal `pnpm run dev` startup is intentionally quiet. If you want verbose Borg core boot/import logging while diagnosing startup issues, enable either of these environment flags before launching dev:
+
+- `BORG_MCP_SERVER_DEBUG=1`
+- `DEBUG=borg:mcp-server`
+
+Windows PowerShell examples:
+
+```powershell
+$env:BORG_MCP_SERVER_DEBUG='1'; pnpm run dev
+```
+
+```powershell
+$env:DEBUG='borg:mcp-server'; pnpm run dev
+```
 
 ## License
 

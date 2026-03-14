@@ -40,6 +40,8 @@ describe('integration catalog helpers', () => {
                 [{ installed: true }, { installed: false }, { installed: true }],
             ),
         ).toEqual({
+            startupDegraded: false,
+            startupSummary: null,
             extensionBridgeReady: true,
             extensionBridgeAcceptingConnections: true,
             hasConnectedBridgeClients: true,
@@ -87,6 +89,8 @@ describe('integration catalog helpers', () => {
         );
 
         expect(overview).toEqual({
+            startupDegraded: false,
+            startupSummary: null,
             extensionBridgeReady: true,
             extensionBridgeAcceptingConnections: true,
             hasConnectedBridgeClients: false,
@@ -138,6 +142,44 @@ describe('integration catalog helpers', () => {
 
         expect(getBridgeClientStatDetail(overview)).toBe('Bridge has not finished coming online');
         expect(getBridgeClientEmptyStateMessage(overview)).toBe('No IDE or browser bridges have registered hook-capability metadata yet, and the listener is still coming online.');
+    });
+
+    it('surfaces compat fallback messaging when startup telemetry is degraded', () => {
+        const overview = getIntegrationOverview(
+            {
+                status: 'degraded',
+                summary: 'Using local MCP config fallback for 64 configured server(s); live startup telemetry is unavailable.',
+                checks: {
+                    extensionBridge: {
+                        ready: false,
+                        acceptingConnections: false,
+                        clientCount: 0,
+                        hasConnectedClients: false,
+                        supportedHookPhases: [],
+                    },
+                    executionEnvironment: {
+                        ready: false,
+                        preferredShellLabel: null,
+                        verifiedShellCount: 0,
+                        verifiedToolCount: 0,
+                        supportsPosixShell: false,
+                    },
+                },
+            },
+            {
+                available: false,
+                pageCount: 0,
+            },
+            [],
+            [],
+        );
+
+        expect(overview).toMatchObject({
+            startupDegraded: true,
+            startupSummary: 'Using local MCP config fallback for 64 configured server(s); live startup telemetry is unavailable.',
+        });
+        expect(getBridgeClientStatDetail(overview)).toBe('Using local MCP config fallback for 64 configured server(s); live startup telemetry is unavailable.');
+        expect(getBridgeClientEmptyStateMessage(overview)).toBe('Using local MCP config fallback for 64 configured server(s); live startup telemetry is unavailable.');
     });
 
     it('merges detected sync targets into known client rows', () => {

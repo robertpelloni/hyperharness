@@ -61,8 +61,10 @@ vi.mock('../../utils/trpc', () => {
             mcpAggregator: {
               ready: true,
               liveReady: true,
+              residentReady: true,
               serverCount: 2,
               connectedCount: 1,
+              residentConnectedCount: 0,
               initialization: {
                 inProgress: false,
                 initialized: true,
@@ -252,7 +254,7 @@ describe('DashboardHomeClient', () => {
     expect(html).toContain('Quota and fallback posture');
     expect(html).toContain('Startup readiness');
     expect(html).toContain('Cached inventory');
-    expect(html).toContain('Live MCP runtime');
+    expect(html).toContain('Resident MCP runtime');
     expect(html).toContain('Healthy workspace');
     expect(html).toContain('Manual restart only');
     expect(html).toContain('Anthropic');
