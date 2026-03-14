@@ -97,6 +97,8 @@ type ToolPreferenceMutationInput = {
 type TelemetryWindowPreset = 'all' | '5m' | '15m' | '1h' | '24h';
 type TelemetrySourceFilter = 'all' | 'runtime-search' | 'cached-ranking' | 'live-aggregator';
 
+const TELEMETRY_FILTERS_STORAGE_KEY = 'borg.mcp.search.telemetryFilters.v1';
+
 type TelemetryTrendBucket = {
     start: number;
     end: number;
@@ -401,6 +403,56 @@ export default function SearchDashboard() {
         setMaxHydratedSchemasDraft(preferences.maxHydratedSchemas ?? 8);
     }, [preferences.maxLoadedTools, preferences.maxHydratedSchemas]);
 
+    useEffect(() => {
+        try {
+            const raw = window.localStorage.getItem(TELEMETRY_FILTERS_STORAGE_KEY);
+            if (!raw) {
+                return;
+            }
+
+            const parsed = JSON.parse(raw) as {
+                type?: string;
+                status?: string;
+                window?: string;
+                source?: string;
+            };
+
+            if (parsed.type && ['all', 'search', 'load', 'hydrate', 'unload'].includes(parsed.type)) {
+                setTelemetryTypeFilter(parsed.type as 'all' | ToolSelectionTelemetryEvent['type']);
+            }
+
+            if (parsed.status && ['all', 'success', 'error'].includes(parsed.status)) {
+                setTelemetryStatusFilter(parsed.status as 'all' | ToolSelectionTelemetryEvent['status']);
+            }
+
+            if (parsed.window && ['all', '5m', '15m', '1h', '24h'].includes(parsed.window)) {
+                setTelemetryWindowFilter(parsed.window as TelemetryWindowPreset);
+            }
+
+            if (parsed.source && ['all', 'runtime-search', 'cached-ranking', 'live-aggregator'].includes(parsed.source)) {
+                setTelemetrySourceFilter(parsed.source as TelemetrySourceFilter);
+            }
+        } catch {
+            // Ignore invalid persisted filter payloads and continue with defaults.
+        }
+    }, []);
+
+    useEffect(() => {
+        try {
+            window.localStorage.setItem(
+                TELEMETRY_FILTERS_STORAGE_KEY,
+                JSON.stringify({
+                    type: telemetryTypeFilter,
+                    status: telemetryStatusFilter,
+                    window: telemetryWindowFilter,
+                    source: telemetrySourceFilter,
+                }),
+            );
+        } catch {
+            // Ignore storage write failures (private mode/quota) and keep UI functional.
+        }
+    }, [telemetrySourceFilter, telemetryStatusFilter, telemetryTypeFilter, telemetryWindowFilter]);
+
     const updateToolPreferences = (next: ToolPreferenceMutationInput) => {
         setPreferencesMutation.mutate(next as never);
     };
@@ -473,6 +525,19 @@ export default function SearchDashboard() {
             maxLoadedTools: nextMax,
             maxHydratedSchemas: nextHydrated,
         });
+    };
+
+    const resetTelemetryFilters = () => {
+        setTelemetryTypeFilter('all');
+        setTelemetryStatusFilter('all');
+        setTelemetryWindowFilter('15m');
+        setTelemetrySourceFilter('all');
+
+        try {
+            window.localStorage.removeItem(TELEMETRY_FILTERS_STORAGE_KEY);
+        } catch {
+            // Ignore local storage cleanup errors.
+        }
     };
 
     return (
@@ -1170,6 +1235,16 @@ export default function SearchDashboard() {
                                             </button>
                                         );
                                     })}
+
+                                    <button
+                                        type="button"
+                                        onClick={resetTelemetryFilters}
+                                        className="ml-auto rounded-md border border-zinc-700 bg-zinc-950/70 px-2 py-1 text-zinc-300 transition-colors hover:bg-zinc-800"
+                                        title="Reset telemetry type/status/window/source filters to defaults"
+                                        aria-label="Reset telemetry filters"
+                                    >
+                                        Reset filters
+                                    </button>
                                 </div>
                             </div>
 

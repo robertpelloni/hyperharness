@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.7.127] — 2026-03-14
+
+- changed(mcp/search-ui): persisted telemetry triage filters (`type`, `status`, `window`, `source`) in local browser storage so `/dashboard/mcp/search` keeps operator context across reloads.
+- changed(mcp/search-ui): added one-click `Reset filters` action that restores default telemetry scope (`all` + `15m`) and clears persisted filter state.
+- changed(mcp/search-ui): strengthened filter-state resilience by ignoring invalid persisted payloads and falling back to safe defaults.
+
 ## [2.7.126] — 2026-03-14
 
 - changed(mcp/search-ui): added telemetry source filtering (`all`, `runtime-search`, `cached-ranking`, `live-aggregator`) in `/dashboard/mcp/search` so operators can isolate source-specific behavior without leaving the panel.
