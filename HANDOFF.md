@@ -23,6 +23,10 @@ _Last updated: 2026-03-11_
   - Added a "Labs" dropdown to the top navigation.
   - Reorganized the multi-page sidebar navigation into "Borg 1.0 Core" and "Labs & Experimental" sections.
   - Added explicit "Labs" and "Beta" badges to in-development surfaces like the Director, Council, and Super Assistant pages.
+- ✅ **Health, Logs & Operator Surfaces (Task 009):** Exposed existing backend capabilities from the `core` tRPC routers to new dedicated dashboard sections within the Borg 1.0 Core.
+  - `/dashboard/health`: Displays real-time overall system status and detailed tracking per MCP Server (uptime, crash attempts, error states) with manual health-reset capabilities.
+  - `/dashboard/logs`: Real-time searchable and filterable execution history powered by the `logsRouter`. Provides aggregate success/error rates, top tools, and a latency summary.
+  - `/dashboard/audit`: A centralized ledger driven by `auditRouter` exposing cryptographically relevant system config changes and agent actions.
 - Provider routing improvements
 - Session supervisor improvements
 - README quickstart update

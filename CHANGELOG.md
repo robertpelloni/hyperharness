@@ -9,6 +9,10 @@ All notable changes to this project will be documented in this file.
 ## [0.9.0-beta] - 2026-03-11
 
 ### ✨ Features & Parity Updates
+- **Health, Logs & Operator Surfaces**: Exposed real-time tRPC-driven dashboards under the "Borg 1.0 Core" section.
+  - `Health Dashboard`: Tracks system startup readiness, event bus/DB status, and instance-level MCP server crash counts/error states.
+  - `Logs Dashboard`: Live searchable view of tool executions, error rates, average latency, and top requested tools.
+  - `System Audit Dashboard`: Centralized timeline of security, configuration, and agent-driven events.
 - **Dashboard Honesty Pass**: Restructured application navigation (Top Nav & Sidebar) to clearly separate "Borg 1.0 Core" features from "Labs & Experimental" pages.
 - **Experimental Guardrails**: Added explicit "Labs" and "Beta" UI badges to developmental surfaces including the Director, Council, and Super Assistant dashboards.
 

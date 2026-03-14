@@ -243,6 +243,9 @@ export const CORE_DASHBOARD_NAV: NavItem[] = [
     { title: "Mission Control", href: "/", icon: LayoutDashboard, variant: "ghost" },
     { title: "Supervisor", href: "/dashboard/supervisor", icon: Eye, variant: "ghost" },
     { title: "Providers", href: "/dashboard/billing", icon: Key, variant: "ghost" },
+    { title: "Health", href: "/dashboard/health", icon: Activity, variant: "ghost" },
+    { title: "Logs", href: "/dashboard/logs", icon: Terminal, variant: "ghost" },
+    { title: "Audit", href: "/dashboard/audit", icon: FileText, variant: "ghost" },
     { title: "Documentation", href: "/docs", icon: BookOpen, variant: "ghost" },
     { title: "Settings", href: "/dashboard/settings", icon: Settings2, variant: "ghost" },
 ];
