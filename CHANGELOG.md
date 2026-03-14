@@ -2,8 +2,73 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.7.111] — 2026-03-14
+
+- feat(dashboard): added `/dashboard/command` — Command Center page with live slash-command list, REPL execution via `commands` tRPC namespace, and arrow-key history navigation.
+- feat(dashboard): added `/dashboard/chronicle` — Git Chronicle page with configurable commit log and working-tree status via `git` tRPC namespace.
+- feat(dashboard): added `/dashboard/library` — Resource Library hub linking to scripts, skills, tool sets, memory, plans, manual, chronicle, and architecture with live item counts from `savedScripts` and `skills` tRPC namespaces.
+- feat(dashboard): added `/dashboard/context` — Context Manager page for add/remove/clear of context files and assembled context prompt viewer via `borgContext` tRPC namespace.
+- changed(nav): added "Sessions" link to `CORE_DASHBOARD_NAV` pointing to `/dashboard/session` so the session supervisor is reachable from the main nav section.
+- changed(nav): added "Context Manager" entry to `LABS_DASHBOARD_NAV` pointing to `/dashboard/context`.
+- changed(nav): added inline descriptions for `Command`, `Symbols`, `Code`, `Chronicle`, and `Library` nav items.
+- changed(nav): imported `MonitorPlay` and `FolderOpen` icons for new Session and Context nav entries.
+- task(tracking): seeded `tasks/backlog/` with three new implementation-ready task briefs: stub-debt reduction, MCP working-set hydration UX, and session detail/worktree reliability.
+
 ## [Unreleased]
 
+- changed(health): `/dashboard/health` now treats degraded `startupStatus` compat-fallback snapshots as a first-class state in the top-level MCP Router metric, showing degraded router telemetry instead of implying the router is merely still initializing.
+
+- changed(health): `/dashboard/health` now treats degraded `startupStatus` compat-fallback snapshots as a first-class state in the top-level Event Bus metric, showing degraded telemetry instead of implying the service is merely still starting.
+
+- changed(integrations): `/dashboard/integrations` now treats degraded `startupStatus` compat-fallback snapshots as unavailable live bridge telemetry, showing the live fallback summary instead of claiming the extension bridge is still simply booting.
+
+- changed(memory): `/dashboard/memory/claude-mem` now treats degraded `startupStatus` compat-fallback snapshots as a first-class operator state, surfacing the live fallback summary instead of collapsing that payload into generic "Core warming up" copy.
+
+- changed(dashboard): startup surfaces now recognize the local compat-fallback startup contract, showing degraded startup status and the live fallback summary on `/dashboard`, `/dashboard/health`, and `/dashboard/mcp/system` instead of collapsing that state into generic warmup copy.
+
+- changed(dashboard): `/dashboard/health` and `/dashboard/mcp/system` now read `NODE_ENV`, platform, uptime, and version from the live `startupStatus` runtime metadata instead of hardcoded placeholders, and the shared uptime formatter now treats core uptime as seconds rather than milliseconds.
+
+- changed(dashboard): retired the remaining startup "phases" wording on the health, system, and home dashboard surfaces so operator copy now consistently reflects the current startup-check contract.
+
+- changed(billing): added curated quick-access sections to `/dashboard/billing` so operators can jump straight to API keys/tokens, plans/billing/credits, and cloud/OAuth consoles before drilling into the full provider portal matrix.
+
+- changed(dashboard): improved the `/dashboard` first-run zero-provider experience so the overview metric, provider panel, and fallback panel now tell operators to configure their first provider instead of showing passive empty-state copy.
+
+- docs(readme): aligned `README.md` with the current local `pnpm run dev` readiness launcher, clarified that Docker still exposes the dashboard on `localhost:3001`, documented dynamic dashboard port fallback for local dev, and pointed the repo layout at `apps/borg-extension` as the official browser-extension workspace.
+
+- docs(deploy): aligned `DEPLOY.md` with the verified `0.9.0-beta` control-plane workflow, including the root `pnpm run dev` readiness launcher, dashboard port fallback behavior, core bridge probes on `3001`, and startup troubleshooting for dynamic dashboard ports.
+
+- fix(startup): gate verbose `packages/core/src/MCPServer.ts` import/boot progress logs behind `BORG_MCP_SERVER_DEBUG=1` or `DEBUG=borg:mcp-server`, keeping normal `pnpm run dev` output quiet while preserving real errors and fallback warnings.
+
+- fix(startup): `pnpm run dev` now best-effort replaces a reused Borg core bridge that is healthy but serving an older `startupStatus` contract by stopping the stale owner via the Borg startup lock when available, or via the current port-3001 listener PID only when that listener's command line still looks Borg-owned, before launching a fresh CLI/core instance.
+
+- fix(startup): `pnpm run dev` now requires the live `startupStatus` payload to expose the current readiness-contract fields before declaring the stack ready, so reusing an older core bridge no longer produces a false green boot summary and instead surfaces a specific startup-contract refresh warning.
+
+- test(validation): re-ran the current startup, memory, MCP probe, and billing fallback slices directly after noisy task-terminal output, confirming the live workspace is green (`33` focused core tests, `43` focused web tests, focused fallback rerun, `CORE_TSC_OK`, and `WEB_TSC_OK`) without additional code fixes.
+
+- test(validation): stabilized the focused dashboard fallback integration mock so `DashboardHomeClient` can be rendered under Vitest without leaking into the real tRPC hook context, then re-verified the startup, memory, MCP probe, and dashboard slices with focused core/web tests plus a clean `apps/web` typecheck.
+
+- docs(cleanup): removed the duplicated stale root README content, aligned the documented web landing route with the real `/ -> /dashboard` redirect, added an explicit `docs/archive/README.md` marker for archive-only material, restored the task-file flow by moving completed slices out of `tasks/active/`, and pruned unused service stubs from `packages/core/src/services/stubs/`.
+
+- fixed(dashboard): the MCP system status page now reuses the shared startup readiness helpers for cached-vs-live/runtime cards, so on-demand-only router postures no longer show false resident-runtime warnings while cached inventory is already operational.
+- fixed(startup): startup readiness now derives advertised cached server/tool counts and always-on posture from the same selected inventory source (`database`, `config`, or `empty`), so last-known-good config snapshots no longer report stale DB-backed MCP counts during non-blocking warmup.
+- changed(memory): refined backend cross-session memory links so sessions with similarly worded goals/objectives can correlate even when the intent anchor text is not an exact string match, improving related-record recall for `/dashboard/memory`.
+- changed(memory): extended backend `/dashboard/memory` pivots to understand prompt/session-summary goal and objective anchors, so inspector pivot chips can now re-query related intent-driven records instead of only session/tool/concept/file links.
+- changed(memory): grouped the `/dashboard/memory` session window around the selected anchor into explicit `Earlier in session` and `Later in session` sections, making same-session chronology clearer without changing the underlying backend timeline query.
+- changed(memory): added a backend `getCrossSessionMemoryLinks` path and a new `/dashboard/memory` inspector card for related records from other sessions, so selected observations can surface recurring concepts, files, tools, and sources across session boundaries instead of only within the active session timeline.
+- changed(memory): refined cross-session memory correlation so prompt and session-summary goals/objectives propagate at the session level, allowing selected observations to surface related work from other sessions even when the observation itself does not store explicit goal metadata.
+- changed(memory): added a backend `getMemoryTimelineWindow` path plus a pure session-window helper so `/dashboard/memory` can show nearby same-session records around the selected memory anchor instead of relying only on generic related-record heuristics.
+- changed(memory): added a backend `searchMemoryPivot` path and service-level structured pivot matching for session/tool/concept/file metadata, then wired `/dashboard/memory` to use those backend results so inspector pivots return real related records instead of only steering local UI state.
+- changed(memory): added one-click inspector search pivots to `/dashboard/memory` so selected records can immediately re-query by session, tool, concept, or file metadata, and made `All Records` aggregate generic facts with observation/prompt/session-summary searches instead of only hitting the generic memory path.
+- changed(memory): added related-record pivots to the `/dashboard/memory` inspector so selected observations, prompts, and session summaries can jump to correlated records from the same session, tool, source, concepts, or files without leaving the native Borg memory timeline.
+- changed(memory): turned `/dashboard/memory` search results into a structured timeline plus detail inspector, grouping records by day and rendering observation/prompt/session-summary sections so operators can drill into Borg-native memory provenance instead of scanning a flat blob list.
+- changed(memory): upgraded `/dashboard/memory` from a generic full-text list into a Borg-native record explorer with explicit search modes for facts, observations, prompts, and session summaries, added a visible memory-model explainer, and extracted tested helper logic for coherent record titles, previews, timestamps, and provenance tokens.
+- changed(memory): aligned the primary memory dashboard and claude-mem parity surface around Borg's actual native memory model, including typed observations, captured prompts, session summaries, clearer provenance, and corrected tier/stat reporting instead of framing claude-mem as the whole runtime story.
+- docs(tasking): completed the ecosystem assimilation consolidation brief, promoted the memory-story follow-up into `tasks/active/`, and anchored the Borg-native Track A-F capability map in the roadmap, TODO, and handoff docs so future work references scoped Borg tracks instead of repo-wide parity demands.
+- fixed(startup): aligned the Tabby dev launcher waiting logic with resident/always-on MCP runtime semantics, so Borg no longer reports startup complete before resident servers warm or waits on the wrong live-runtime label.
+- changed(startup): Borg's stdio MCP entrypoint now best-effort boots the long-running Borg core as a detached background process when an MCP client launches the router before the control plane is already up, so the interactive MCP client can proceed while the dashboard/bridge warm in parallel.
+- changed(mcp): always-on downstream MCP servers now warm in the background from cached advertised inventory, keeping startup non-blocking while exposing live runtime state, warmup posture, and latest runtime errors more truthfully in the MCP dashboard and inspection panel.
+- fixed(startup): `startupStatus` now counts only actually connected downstream MCP servers as live, while separately surfacing warming and failed warmup counts so the dashboard no longer overstates live runtime readiness during non-blocking startup.
 - changed(startup): split Borg startup readiness into cached MCP inventory vs live MCP runtime semantics, including advertised cached server/tool counts and always-on tool counts so operators can see what is available immediately while live connections continue warming.
 - changed(dashboard): updated the home dashboard, MCP system status helpers, and launcher waiting labels to explain cached-vs-live MCP posture, memory/context readiness, and non-blocking warmup behavior more truthfully.
 - test(startup): added focused regression coverage for always-on cached tool advertisement, cached-vs-live startup checklist copy, system status rows, and launcher wait-label semantics.
