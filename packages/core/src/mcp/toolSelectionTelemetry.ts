@@ -10,10 +10,15 @@ export interface ToolSelectionTelemetryEvent {
     resultCount?: number;
     topResultName?: string;
     topMatchReason?: string;
+    topScore?: number;
+    scoreGap?: number;
     toolName?: string;
     status: 'success' | 'error';
     message?: string;
     evictedTools?: string[];
+    latencyMs?: number;
+    autoLoadReason?: string;
+    autoLoadConfidence?: number;
 }
 
 const MAX_TELEMETRY_EVENTS = 100;

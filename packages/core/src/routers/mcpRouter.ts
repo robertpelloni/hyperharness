@@ -1,9 +1,8 @@
 import { z } from 'zod';
 import fs from 'node:fs/promises';
-import { mcpServersRepository, toolsRepository } from '../db/repositories/index.js';
 import { t, publicProcedure, adminProcedure, getMcpAggregator, getMcpServer } from '../lib/trpc-core.js';
-import { deriveSemanticCatalogForServer } from '../mcp/catalogMetadata.js';
-import { namespaceToolName } from '../mcp/namespaces.js';
+import { getCachedToolInventory } from '../mcp/cachedToolInventory.js';
+import { parseNamespacedToolName } from '../mcp/namespaces.js';
 import { pickAutoLoadCandidate, rankToolSearchCandidates } from '../mcp/toolSearchRanking.js';
 import { toolSelectionTelemetry } from '../mcp/toolSelectionTelemetry.js';
 import { getBorgMcpJsoncPath, loadBorgMcpConfig, stripJsonComments, writeBorgMcpConfig } from '../mcp/mcpJsonConfig.js';
@@ -16,6 +15,17 @@ import {
 
 type McpToolCallResult = {
     content?: Array<{ type?: string; text?: string }>;
+};
+
+type ServerProbeTrafficEvent = {
+    server: string;
+    method: 'tools/list' | 'tools/call';
+    paramsSummary: string;
+    latencyMs: number;
+    success: boolean;
+    timestamp: number;
+    toolName?: string;
+    error?: string;
 };
 
 function getToolTextContent(result: unknown): string {
@@ -48,6 +58,99 @@ function parseEvictedToolsFromMessage(message: string): string[] {
         .filter(Boolean);
 }
 
+function toSerializablePayload(value: unknown): unknown {
+    try {
+        return JSON.parse(JSON.stringify(value, (_key, current) => {
+            if (typeof current === 'bigint') {
+                return current.toString();
+            }
+
+            if (current instanceof Error) {
+                return {
+                    name: current.name,
+                    message: current.message,
+                    stack: current.stack,
+                };
+            }
+
+            if (typeof current === 'undefined') {
+                return null;
+            }
+
+            return current;
+        }));
+    } catch {
+        return String(value);
+    }
+}
+
+function summarizeProbePayload(value: unknown): string {
+    const textContent = getToolTextContent(value);
+    if (textContent) {
+        return textContent.length > 180 ? `${textContent.slice(0, 177)}...` : textContent;
+    }
+
+    if (Array.isArray(value)) {
+        return `Array(${value.length})`;
+    }
+
+    if (value && typeof value === 'object') {
+        const record = value as Record<string, unknown>;
+        if (Array.isArray(record.tools)) {
+            return `Returned ${record.tools.length} tool${record.tools.length === 1 ? '' : 's'}`;
+        }
+
+        const keys = Object.keys(record);
+        return keys.length > 0
+            ? `Object with keys: ${keys.slice(0, 6).join(', ')}`
+            : 'Empty object';
+    }
+
+    if (typeof value === 'string') {
+        return value.length > 180 ? `${value.slice(0, 177)}...` : value;
+    }
+
+    if (value === null || typeof value === 'undefined') {
+        return 'No payload returned';
+    }
+
+    return String(value);
+}
+
+function collectServerProbeTrafficEvents(options: {
+    startedAt: number;
+    targetKind: 'router' | 'server';
+    operation: 'tools/list' | 'tools/call';
+    serverName?: string;
+    toolName?: string;
+}): ServerProbeTrafficEvent[] {
+    const aggregator = getMcpAggregator() as { getTrafficEvents?: () => ServerProbeTrafficEvent[] } | null;
+    const events = aggregator?.getTrafficEvents?.() ?? [];
+    const normalizedToolName = options.toolName
+        ? (parseNamespacedToolName(options.toolName)?.toolName ?? options.toolName)
+        : undefined;
+
+    return events.filter((event) => {
+        if (event.timestamp < options.startedAt) {
+            return false;
+        }
+
+        if (event.method !== options.operation) {
+            return false;
+        }
+
+        if (options.targetKind === 'server' && options.serverName && event.server !== options.serverName) {
+            return false;
+        }
+
+        if (normalizedToolName && event.toolName && event.toolName !== normalizedToolName && event.toolName !== options.toolName) {
+            return false;
+        }
+
+        return true;
+    });
+}
+
 function recordAutoLoadTelemetry(toolName: string, message: string): void {
     toolSelectionTelemetry.record({
         type: 'load',
@@ -58,71 +161,8 @@ function recordAutoLoadTelemetry(toolName: string, message: string): void {
     });
 }
 
-async function getCachedToolInventory() {
-    const [servers, tools] = await Promise.all([
-        mcpServersRepository.findAll(),
-        toolsRepository.findAll(),
-    ]);
-
-    const serverNames = new Map(servers.map((server) => [server.uuid, server.name]));
-    const toolsByServerUuid = new Map<string, typeof tools>();
-    const toolCounts = new Map<string, number>();
-
-    for (const tool of tools) {
-        toolCounts.set(tool.mcp_server_uuid, (toolCounts.get(tool.mcp_server_uuid) ?? 0) + 1);
-        const bucket = toolsByServerUuid.get(tool.mcp_server_uuid) ?? [];
-        bucket.push(tool);
-        toolsByServerUuid.set(tool.mcp_server_uuid, bucket);
-    }
-
-    const derivedByServerUuid = new Map(servers.map((server) => [
-        server.uuid,
-        deriveSemanticCatalogForServer({
-            serverName: server.name,
-            description: server.description ?? null,
-            alwaysOn: server.always_on ?? false,
-            tools: (toolsByServerUuid.get(server.uuid) ?? []).map((tool) => ({
-                name: tool.name,
-                title: tool.title ?? null,
-                description: tool.description ?? null,
-                inputSchema: tool.toolSchema ?? null,
-                alwaysOn: tool.always_on ?? false,
-            })),
-        }),
-    ]));
-
-    return {
-        servers: servers.map((server) => {
-            const derived = derivedByServerUuid.get(server.uuid);
-            return {
-                ...server,
-                displayName: derived?.serverDisplayName ?? server.name,
-                tags: derived?.serverTags ?? [],
-                alwaysOnAdvertised: Boolean(server.always_on),
-            };
-        }),
-        toolCounts,
-        tools: tools.map((tool) => {
-            const serverName = serverNames.get(tool.mcp_server_uuid) ?? 'unknown';
-            const derivedServer = derivedByServerUuid.get(tool.mcp_server_uuid);
-            const derivedTool = derivedServer?.tools.find((candidate) => candidate.name === tool.name);
-            return {
-                name: namespaceToolName(serverName, tool.name),
-                description: tool.description ?? '',
-                server: serverName,
-                serverDisplayName: derivedTool?.serverDisplayName ?? serverName,
-                serverTags: derivedTool?.serverTags ?? [],
-                toolTags: derivedTool?.toolTags ?? [],
-                semanticGroup: derivedTool?.semanticGroup ?? 'general-utility',
-                semanticGroupLabel: derivedTool?.semanticGroupLabel ?? 'general utility',
-                advertisedName: derivedTool?.advertisedName ?? namespaceToolName(serverName, tool.name),
-                keywords: derivedTool?.keywords ?? [],
-                alwaysOn: Boolean(tool.always_on ?? false) || Boolean(derivedServer?.alwaysOn),
-                originalName: tool.name,
-                inputSchema: tool.toolSchema ?? null,
-            };
-        }),
-    };
+function toLatencyMs(startedAt: number): number {
+    return Math.max(0, Date.now() - startedAt);
 }
 
 async function readToolPreferences(): Promise<ToolPreferences> {
@@ -190,12 +230,20 @@ export const mcpRouter = t.router({
 
             return servers.map((server) => {
                 const runtime = runtimeStates.get(server.name);
+                const cachedToolCount = toolCounts.get(server.uuid) ?? 0;
                 return {
                     name: server.name ?? 'unknown',
                     displayName: server.displayName ?? server.name ?? 'unknown',
                     tags: server.tags ?? [],
                     status: runtime?.status ?? (server.error_status === 'NONE' ? 'cached' : server.error_status.toLowerCase()),
-                    toolCount: runtime?.toolCount ?? toolCounts.get(server.uuid) ?? 0,
+                    runtimeState: runtime?.status ?? 'stopped',
+                    warmupState: runtime?.warmupStatus ?? (server.alwaysOnAdvertised ? 'scheduled' : 'idle'),
+                    runtimeConnected: runtime?.status === 'connected',
+                    toolCount: runtime?.toolCount ?? cachedToolCount,
+                    advertisedToolCount: runtime?.advertisedToolCount ?? cachedToolCount,
+                    advertisedSource: runtime?.advertisedSource ?? 'empty',
+                    lastConnectedAt: runtime?.lastConnectedAt ? new Date(runtime.lastConnectedAt).toISOString() : null,
+                    lastError: runtime?.lastError ?? null,
                     alwaysOn: Boolean(server.alwaysOnAdvertised),
                     config: {
                         command: runtime?.config?.command ?? server.command ?? '',
@@ -252,6 +300,7 @@ export const mcpRouter = t.router({
     searchTools: publicProcedure.input(z.object({
         query: z.string().default(''),
     })).query(async ({ input }) => {
+        const searchStartedAt = Date.now();
         try {
             const { tools } = await getCachedToolInventory();
             const preferences = await readToolPreferences();
@@ -316,6 +365,10 @@ export const mcpRouter = t.router({
                             recordAutoLoadTelemetry(autoLoadedResult.name, `Tool '${autoLoadedResult.name}' auto-loaded from search.`);
                         }
 
+                        const topScore = typeof mappedResults[0]?.score === 'number' ? mappedResults[0].score : undefined;
+                        const secondScore = typeof mappedResults[1]?.score === 'number' ? mappedResults[1].score : 0;
+                        const scoreGap = typeof topScore === 'number' ? topScore - secondScore : undefined;
+
                         toolSelectionTelemetry.record({
                             type: 'search',
                             query: input.query,
@@ -323,6 +376,9 @@ export const mcpRouter = t.router({
                             resultCount: mappedResults.length,
                             topResultName: mappedResults[0]?.name,
                             topMatchReason: mappedResults[0]?.matchReason,
+                            topScore,
+                            scoreGap,
+                            latencyMs: toLatencyMs(searchStartedAt),
                             status: 'success',
                         });
 
@@ -360,9 +416,21 @@ export const mcpRouter = t.router({
                     : null;
 
                 if (server && autoLoadDecision) {
+                    const autoLoadStartedAt = Date.now();
                     try {
                         const loadResult = await server.executeTool('load_tool', { name: autoLoadDecision.toolName });
-                        recordAutoLoadTelemetry(autoLoadDecision.toolName, getToolTextContent(loadResult));
+                        toolSelectionTelemetry.record({
+                            type: 'load',
+                            toolName: autoLoadDecision.toolName,
+                            status: 'success',
+                            message: getToolTextContent(loadResult),
+                            evictedTools: parseEvictedToolsFromMessage(getToolTextContent(loadResult)),
+                            latencyMs: toLatencyMs(autoLoadStartedAt),
+                            autoLoadReason: autoLoadDecision.reason,
+                            autoLoadConfidence: autoLoadDecision.confidence,
+                            scoreGap: autoLoadDecision.scoreGap,
+                            topScore: autoLoadDecision.topScore,
+                        });
                     } catch {
                         // Ignore auto-load failures here and still return ranked search results.
                     }
@@ -401,6 +469,11 @@ export const mcpRouter = t.router({
                     resultCount: rankedResults.length,
                     topResultName: rankedResults[0]?.name,
                     topMatchReason: rankedResults[0]?.matchReason,
+                    topScore: rankedResults[0]?.score,
+                    scoreGap: rankedResults.length > 1 ? (rankedResults[0]?.score ?? 0) - (rankedResults[1]?.score ?? 0) : undefined,
+                    latencyMs: toLatencyMs(searchStartedAt),
+                    autoLoadReason: autoLoadDecision?.reason,
+                    autoLoadConfidence: autoLoadDecision?.confidence,
                     status: 'success',
                 });
 
@@ -439,6 +512,7 @@ export const mcpRouter = t.router({
                 resultCount: mappedLiveTools.length,
                 topResultName: mappedLiveTools[0]?.name,
                 topMatchReason: mappedLiveTools[0]?.matchReason,
+                latencyMs: toLatencyMs(searchStartedAt),
                 status: 'success',
             });
 
@@ -447,6 +521,7 @@ export const mcpRouter = t.router({
             toolSelectionTelemetry.record({
                 type: 'search',
                 query: input.query,
+                latencyMs: toLatencyMs(searchStartedAt),
                 status: 'error',
                 message: 'search failed',
             });
@@ -515,6 +590,182 @@ export const mcpRouter = t.router({
         };
     }),
 
+    runServerTest: publicProcedure.input(z.object({
+        targetKind: z.enum(['router', 'server']),
+        serverName: z.string().optional(),
+        operation: z.enum(['tools/list', 'tools/call']),
+        toolName: z.string().optional(),
+        args: z.record(z.unknown()).optional().default({}),
+    })).mutation(async ({ input }) => {
+        const startedAt = Date.now();
+        const requestId = `probe-${startedAt}`;
+        const normalizedToolName = input.toolName
+            ? (parseNamespacedToolName(input.toolName)?.toolName ?? input.toolName)
+            : undefined;
+
+        const requestPayload = {
+            jsonrpc: '2.0',
+            id: requestId,
+            method: input.operation,
+            params: input.operation === 'tools/call'
+                ? {
+                    name: input.targetKind === 'server' ? normalizedToolName : input.toolName,
+                    arguments: input.args,
+                }
+                : {},
+            target: input.targetKind === 'router'
+                ? 'borg-router'
+                : input.serverName ?? 'unknown-server',
+            via: input.targetKind === 'router' ? 'borg-router' : 'direct-downstream',
+        };
+
+        if (input.targetKind === 'server' && !input.serverName) {
+            return {
+                success: false,
+                target: {
+                    kind: 'server' as const,
+                    displayName: 'Unknown downstream server',
+                    serverName: null,
+                    via: 'direct-downstream',
+                },
+                operation: input.operation,
+                startedAt,
+                endedAt: Date.now(),
+                latencyMs: Date.now() - startedAt,
+                request: requestPayload,
+                response: {
+                    summary: 'Downstream probe requires a server name.',
+                    payload: { error: 'Downstream probe requires a server name.' },
+                },
+                trafficEvents: [],
+            };
+        }
+
+        if (input.operation === 'tools/call' && !input.toolName) {
+            return {
+                success: false,
+                target: {
+                    kind: input.targetKind,
+                    displayName: input.targetKind === 'router' ? 'Borg router' : input.serverName ?? 'Unknown downstream server',
+                    serverName: input.serverName ?? null,
+                    via: input.targetKind === 'router' ? 'borg-router' : 'direct-downstream',
+                },
+                operation: input.operation,
+                startedAt,
+                endedAt: Date.now(),
+                latencyMs: Date.now() - startedAt,
+                request: requestPayload,
+                response: {
+                    summary: 'Tool call probe requires a tool name.',
+                    payload: { error: 'Tool call probe requires a tool name.' },
+                },
+                trafficEvents: [],
+            };
+        }
+
+        try {
+            let responsePayload: unknown;
+
+            if (input.targetKind === 'router') {
+                const aggregator = getMcpAggregator() as {
+                    listAggregatedTools?: () => Promise<unknown[]>;
+                    executeTool?: (name: string, args: unknown) => Promise<unknown>;
+                } | null;
+
+                if (!aggregator) {
+                    throw new Error('Borg MCP router is not initialized.');
+                }
+
+                if (input.operation === 'tools/list') {
+                    const tools = await aggregator.listAggregatedTools?.() ?? [];
+                    responsePayload = {
+                        toolCount: tools.length,
+                        tools: toSerializablePayload(tools),
+                    };
+                } else {
+                    responsePayload = await aggregator.executeTool?.(input.toolName!, input.args);
+                }
+            } else {
+                const aggregator = getMcpAggregator() as {
+                    clients?: Map<string, {
+                        listTools: () => Promise<unknown[]>;
+                        callTool: (toolName: string, args: unknown) => Promise<unknown>;
+                    }>;
+                } | null;
+
+                const directClient = aggregator?.clients?.get(input.serverName!);
+                if (!directClient) {
+                    throw new Error(`Downstream server '${input.serverName}' is not currently connected.`);
+                }
+
+                if (input.operation === 'tools/list') {
+                    const tools = await directClient.listTools();
+                    responsePayload = {
+                        toolCount: tools.length,
+                        tools: toSerializablePayload(tools),
+                    };
+                } else {
+                    responsePayload = await directClient.callTool(normalizedToolName!, input.args);
+                }
+            }
+
+            const endedAt = Date.now();
+            return {
+                success: true,
+                target: {
+                    kind: input.targetKind,
+                    displayName: input.targetKind === 'router' ? 'Borg router' : input.serverName!,
+                    serverName: input.serverName ?? null,
+                    via: input.targetKind === 'router' ? 'borg-router' : 'direct-downstream',
+                },
+                operation: input.operation,
+                startedAt,
+                endedAt,
+                latencyMs: endedAt - startedAt,
+                request: requestPayload,
+                response: {
+                    summary: summarizeProbePayload(responsePayload),
+                    payload: toSerializablePayload(responsePayload),
+                },
+                trafficEvents: collectServerProbeTrafficEvents({
+                    startedAt,
+                    targetKind: input.targetKind,
+                    operation: input.operation,
+                    serverName: input.serverName,
+                    toolName: input.toolName,
+                }),
+            };
+        } catch (error) {
+            const endedAt = Date.now();
+            const message = error instanceof Error ? error.message : String(error);
+            return {
+                success: false,
+                target: {
+                    kind: input.targetKind,
+                    displayName: input.targetKind === 'router' ? 'Borg router' : input.serverName ?? 'Unknown downstream server',
+                    serverName: input.serverName ?? null,
+                    via: input.targetKind === 'router' ? 'borg-router' : 'direct-downstream',
+                },
+                operation: input.operation,
+                startedAt,
+                endedAt,
+                latencyMs: endedAt - startedAt,
+                request: requestPayload,
+                response: {
+                    summary: message,
+                    payload: { error: message },
+                },
+                trafficEvents: collectServerProbeTrafficEvents({
+                    startedAt,
+                    targetKind: input.targetKind,
+                    operation: input.operation,
+                    serverName: input.serverName,
+                    toolName: input.toolName,
+                }),
+            };
+        }
+    }),
+
     clearToolSelectionTelemetry: adminProcedure.mutation(() => {
         toolSelectionTelemetry.clear();
         return { ok: true };
@@ -552,6 +803,7 @@ export const mcpRouter = t.router({
             throw new Error('MCP Server not initialized');
         }
 
+        const startedAt = Date.now();
         const result = await server.executeTool('load_tool', { name: input.name });
         const message = getToolTextContent(result);
         const evictedTools = parseEvictedToolsFromMessage(message);
@@ -561,6 +813,7 @@ export const mcpRouter = t.router({
             status: 'success',
             message,
             evictedTools,
+            latencyMs: toLatencyMs(startedAt),
         });
         return {
             ok: true,
@@ -576,6 +829,7 @@ export const mcpRouter = t.router({
             throw new Error('MCP Server not initialized');
         }
 
+        const startedAt = Date.now();
         const result = await server.executeTool('unload_tool', { name: input.name });
         const message = getToolTextContent(result);
         toolSelectionTelemetry.record({
@@ -583,6 +837,7 @@ export const mcpRouter = t.router({
             toolName: input.name,
             status: 'success',
             message,
+            latencyMs: toLatencyMs(startedAt),
         });
         return {
             ok: true,
@@ -598,6 +853,7 @@ export const mcpRouter = t.router({
             throw new Error('MCP Server not initialized');
         }
 
+        const startedAt = Date.now();
         const result = await server.executeTool('get_tool_schema', { name: input.name });
         const parsed = parseToolJson(result, {
             inputSchema: null,
@@ -609,6 +865,7 @@ export const mcpRouter = t.router({
             status: 'success',
             message: 'schema hydrated',
             evictedTools: Array.isArray(parsed.evictedHydratedTools) ? parsed.evictedHydratedTools : [],
+            latencyMs: toLatencyMs(startedAt),
         });
         return parsed;
     }),
@@ -618,15 +875,23 @@ export const mcpRouter = t.router({
         const aggregator = getMcpAggregator();
 
         try {
-            const [{ servers, tools }, liveServers] = await Promise.all([
+            const [{ servers, tools }, liveServers, liveTools] = await Promise.all([
                 getCachedToolInventory(),
                 aggregator?.listServers?.() ?? Promise.resolve([]),
+                aggregator?.listAggregatedTools?.() ?? Promise.resolve([]),
             ]);
+
+            const effectiveServerCount = liveServers.length > 0
+                ? liveServers.length
+                : servers.length;
+            const effectiveToolCount = liveTools.length > 0
+                ? liveTools.length
+                : tools.length;
 
             return {
                 initialized: Boolean(aggregator),
-                serverCount: servers.length,
-                toolCount: tools.length,
+                serverCount: effectiveServerCount,
+                toolCount: effectiveToolCount,
                 connectedCount: liveServers.filter((s) => s.status === 'connected').length,
             };
         } catch {

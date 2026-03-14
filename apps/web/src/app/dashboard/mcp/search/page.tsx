@@ -49,10 +49,15 @@ type ToolSelectionTelemetryEvent = {
     resultCount?: number;
     topResultName?: string;
     topMatchReason?: string;
+    topScore?: number;
+    scoreGap?: number;
     toolName?: string;
     status: 'success' | 'error';
     message?: string;
     evictedTools?: string[];
+    latencyMs?: number;
+    autoLoadReason?: string;
+    autoLoadConfidence?: number;
 };
 
 type ToolPreferences = {
@@ -644,6 +649,13 @@ export default function SearchDashboard() {
                                             {typeof event.resultCount === 'number' ? <div className="text-xs text-zinc-400">results: <span className="text-zinc-200">{event.resultCount}</span></div> : null}
                                             {event.topResultName ? <div className="text-xs text-zinc-400 break-all">top result: <span className="font-mono text-zinc-200">{event.topResultName}</span></div> : null}
                                             {event.topMatchReason ? <div className="text-xs text-zinc-400">why: <span className="text-zinc-200">{event.topMatchReason}</span></div> : null}
+                                            {typeof event.topScore === 'number' ? <div className="text-xs text-zinc-400">top score: <span className="text-zinc-200">{event.topScore.toFixed(1)}</span></div> : null}
+                                            {typeof event.scoreGap === 'number' ? <div className="text-xs text-zinc-400">score gap: <span className="text-zinc-200">{event.scoreGap.toFixed(1)}</span></div> : null}
+                                            {typeof event.autoLoadConfidence === 'number' ? (
+                                                <div className="text-xs text-cyan-300">confidence: {(event.autoLoadConfidence * 100).toFixed(0)}%</div>
+                                            ) : null}
+                                            {event.autoLoadReason ? <div className="text-xs text-cyan-300 break-all">auto-load: {event.autoLoadReason}</div> : null}
+                                            {typeof event.latencyMs === 'number' ? <div className="text-xs text-zinc-500">latency: {event.latencyMs}ms</div> : null}
                                             {event.source ? <div className="text-xs text-zinc-500">source: {event.source}</div> : null}
                                             {event.evictedTools && event.evictedTools.length > 0 ? (
                                                 <div className="text-xs text-amber-300 break-all">evicted: {event.evictedTools.join(', ')}</div>

@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.7.115] — 2026-03-14
+
+- changed(mcp/search): expanded decision telemetry to include search/load/hydrate/unload latency, top score, score gap, auto-load reason, and auto-load confidence so routing behavior is operator-explainable.
+- changed(mcp/search): telemetry panel now renders score-gap/confidence/latency fields, making it easier to diagnose ambiguity vs latency as the root cause of poor tool selection outcomes.
+
 ## [2.7.114] — 2026-03-14
 
 - changed(policies): `/dashboard/mcp/policies` now shows an explicit audit/preview-mode banner clarifying that policy rules are editable but runtime allow/deny enforcement is currently pass-through in this build.

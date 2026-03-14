@@ -41,6 +41,10 @@ export interface RankedToolSearchResult {
 export interface ToolSearchAutoLoadDecision {
     toolName: string;
     reason: string;
+    confidence: number;
+    scoreGap: number;
+    topScore: number;
+    secondScore: number;
 }
 
 function normalizeText(value: string | null | undefined): string {
@@ -272,8 +276,20 @@ export function pickAutoLoadCandidate(results: RankedToolSearchResult[], query: 
         return null;
     }
 
+    const baseConfidence = hasExactMatch
+        ? 0.95
+        : hasPrefixMatch
+            ? 0.87
+            : 0.82;
+
+    const confidence = Math.max(0, Math.min(0.99, baseConfidence + (scoreGap >= 20 ? 0.04 : scoreGap >= 12 ? 0.02 : 0)));
+
     return {
         toolName: topResult.name,
         reason: `auto-loaded after ${topResult.matchReason}`,
+        confidence,
+        scoreGap,
+        topScore: topResult.score,
+        secondScore: secondResult?.score ?? 0,
     };
 }
