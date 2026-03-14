@@ -310,6 +310,7 @@ export const attachTo = async (
                     get_tool_context: "Fetch compact Borg memory context before calling a downstream tool so the model can reuse recent observations, summaries, and file-specific learnings.",
                     unload_tool: "Remove a previously loaded tool from the current session working set so it no longer appears in the exposed tool list.",
                     list_loaded_tools: "List tools currently loaded into the session working set, including whether their full schemas are hydrated.",
+                    clear_eviction_history: "Clear the bounded recent eviction-history buffer for the current session working set.",
                 },
             }),
             ...getCompatibilityToolDefinitions(),
@@ -628,6 +629,17 @@ export const attachTo = async (
             const history = toolWorkingSet.getEvictionHistory();
             return formatResult({
                 content: [{ type: 'text', text: JSON.stringify(history) }],
+            });
+        }
+
+        if (name === "clear_eviction_history") {
+            const clearedCount = toolWorkingSet.getEvictionHistory().length;
+            toolWorkingSet.clearEvictionHistory();
+            return formatResult({
+                content: [{
+                    type: 'text',
+                    text: `Cleared ${clearedCount} eviction history entr${clearedCount === 1 ? 'y' : 'ies'}.`,
+                }],
             });
         }
 

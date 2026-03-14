@@ -669,6 +669,27 @@ export const mcpRouter = t.router({
         }
     }),
 
+    /** Clear the bounded recent eviction history for the current session working set. */
+    clearWorkingSetEvictionHistory: adminProcedure.mutation(async () => {
+        const server = getMcpServer();
+        if (!server) {
+            return { ok: true, message: 'MCP server unavailable; eviction history already empty.' };
+        }
+
+        try {
+            const result = await server.executeTool('clear_eviction_history', {});
+            return {
+                ok: true,
+                message: getToolTextContent(result) || 'Eviction history cleared.',
+            };
+        } catch {
+            return {
+                ok: false,
+                message: 'Failed to clear eviction history.',
+            };
+        }
+    }),
+
     getJsoncEditor: publicProcedure.query(async () => {
         const jsoncPath = getBorgMcpJsoncPath();
         try {

@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.7.120] — 2026-03-14
+
+- changed(mcp/working-set): added new `clear_eviction_history` meta-tool so operators can reset recent working-set eviction events without restarting the session.
+- changed(mcp/router): added `mcp.clearWorkingSetEvictionHistory` mutation that calls the new meta-tool and returns a user-facing clear confirmation message.
+- changed(mcp/search-ui): added a `Clear` action in the `/dashboard/mcp/search` **Recent evictions** panel to clear eviction history in-place and refresh the panel immediately.
+- test(core): updated `compatibility-tool-definitions.test.ts` expected tool-loading order to include `clear_eviction_history`.
+
 ## [2.7.119] — 2026-03-14
 
 - changed(mcp/search): added explicit auto-load evaluation outcomes (`loaded`, `skipped`, `not-applicable`) so search telemetry now records whether an auto-load decision was actually evaluated and what happened.

@@ -1,6 +1,6 @@
 import type { Tool } from '@modelcontextprotocol/sdk/types.js';
 
-type ToolLoadingName = 'search_tools' | 'load_tool' | 'get_tool_schema' | 'get_tool_context' | 'unload_tool' | 'list_loaded_tools' | 'set_capacity' | 'get_eviction_history';
+type ToolLoadingName = 'search_tools' | 'load_tool' | 'get_tool_schema' | 'get_tool_context' | 'unload_tool' | 'list_loaded_tools' | 'set_capacity' | 'get_eviction_history' | 'clear_eviction_history';
 
 interface ToolLoadingDefinitionOverrides {
     descriptions?: Partial<Record<ToolLoadingName, string>>;
@@ -97,6 +97,14 @@ const baseDefinitions: Record<ToolLoadingName, Tool> = {
             properties: {},
         },
     },
+    clear_eviction_history: {
+        name: 'clear_eviction_history',
+        description: 'Clear the bounded eviction-history buffer for the current session working set.',
+        inputSchema: {
+            type: 'object',
+            properties: {},
+        },
+    },
 };
 
 const toolLoadingOrder: ToolLoadingName[] = [
@@ -108,6 +116,7 @@ const toolLoadingOrder: ToolLoadingName[] = [
     'list_loaded_tools',
     'set_capacity',
     'get_eviction_history',
+    'clear_eviction_history',
 ];
 
 export function getToolLoadingDefinitions(overrides: ToolLoadingDefinitionOverrides = {}): Tool[] {

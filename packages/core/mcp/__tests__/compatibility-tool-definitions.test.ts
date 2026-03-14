@@ -55,6 +55,7 @@ describe('compatibilityToolDefinitions', () => {
             'list_loaded_tools',
             'set_capacity',
             'get_eviction_history',
+            'clear_eviction_history',
         ]);
     });
 

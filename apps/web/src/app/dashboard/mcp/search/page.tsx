@@ -135,6 +135,16 @@ export default function SearchDashboard() {
         },
     });
 
+    const clearEvictionHistoryMutation = trpc.mcp.clearWorkingSetEvictionHistory.useMutation({
+        onSuccess: async (data) => {
+            toast.success(data?.message || 'Eviction history cleared');
+            await evictionHistoryQuery.refetch();
+        },
+        onError: (error) => {
+            toast.error(error.message);
+        },
+    });
+
     const loadMutation = trpc.mcp.loadTool.useMutation({
         onSuccess: async (data) => {
             toast.success(data.message || 'Tool loaded');
@@ -856,11 +866,24 @@ export default function SearchDashboard() {
 
                     {recentEvictions.length > 0 && (
                         <Card className="bg-zinc-900 border-zinc-800">
-                            <CardHeader className="pb-3 border-b border-zinc-800">
+                            <CardHeader className="pb-3 border-b border-zinc-800 flex flex-row items-center justify-between gap-3">
                                 <CardTitle className="text-white flex items-center gap-2 text-base">
                                     <History className="h-4 w-4 text-amber-400" />
                                     Recent evictions
                                 </CardTitle>
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="sm"
+                                    disabled={clearEvictionHistoryMutation.isPending || recentEvictions.length === 0}
+                                    onClick={() => clearEvictionHistoryMutation.mutate()}
+                                    title="Clear the recent working-set eviction history"
+                                    aria-label="Clear working-set eviction history"
+                                    className="border-zinc-700 text-zinc-300 hover:bg-zinc-800"
+                                >
+                                    {clearEvictionHistoryMutation.isPending ? <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" /> : <Trash2 className="mr-2 h-3.5 w-3.5" />}
+                                    Clear
+                                </Button>
                             </CardHeader>
                             <CardContent className="p-4">
                                 <div className="space-y-2 max-h-[200px] overflow-y-auto">
