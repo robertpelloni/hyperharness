@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.7.114] — 2026-03-14
+
+- changed(policies): `/dashboard/mcp/policies` now shows an explicit audit/preview-mode banner clarifying that policy rules are editable but runtime allow/deny enforcement is currently pass-through in this build.
+- docs(core): `policy.service.stub.ts` now includes explicit compatibility comments documenting its non-enforcing placeholder behavior to reduce accidental assumptions in future UI/runtime work.
+
 ## [2.7.113] — 2026-03-14
 
 - changed(mcp/search): added direct `Hydrate schema` actions on both search-result cards and loaded working-set cards, so operators can hydrate metadata-only tools without leaving `/dashboard/mcp/search`.
