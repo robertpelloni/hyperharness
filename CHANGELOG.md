@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.7.123] — 2026-03-14
+
+- changed(mcp/search-ui): added telemetry summary chips (`total`, `success`, `errors`) to `/dashboard/mcp/search` for at-a-glance event health.
+- changed(mcp/search-ui): added in-panel telemetry filters by event type (`search`, `load`, `hydrate`, `unload`) and status (`success`, `error`) so operators can isolate decision and failure events faster.
+- changed(mcp/search-ui): telemetry list now applies the selected filters before rendering the latest entries, reducing noise during routing diagnostics.
+
 ## [2.7.122] — 2026-03-14
 
 - changed(mcp/search): cached-ranking telemetry now records auto-load execution state (`success`, `error`, `not-attempted`) so decision telemetry distinguishes selection from runtime load execution.

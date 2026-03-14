@@ -120,6 +120,8 @@ export default function SearchDashboard() {
     const [maxLoadedToolsDraft, setMaxLoadedToolsDraft] = useState(16);
     const [maxHydratedSchemasDraft, setMaxHydratedSchemasDraft] = useState(8);
     const [jsoncDraft, setJsoncDraft] = useState('');
+    const [telemetryTypeFilter, setTelemetryTypeFilter] = useState<'all' | ToolSelectionTelemetryEvent['type']>('all');
+    const [telemetryStatusFilter, setTelemetryStatusFilter] = useState<'all' | ToolSelectionTelemetryEvent['status']>('all');
     const utils = trpc.useUtils();
     const searchQuery = trpc.mcp.searchTools.useQuery(
         { query, profile: profile === 'default' ? undefined : profile },
@@ -233,7 +235,16 @@ export default function SearchDashboard() {
     const workingSet = ((workingSetQuery.data?.tools as WorkingSetTool[] | undefined) ?? []);
     const allToolsQuery = trpc.mcp.listTools.useQuery(undefined, { refetchInterval: 15000 });
     const allKnownTools = (allToolsQuery.data as SearchResult[] | undefined) ?? [];
-    const telemetry = ((telemetryQuery.data as ToolSelectionTelemetryEvent[] | undefined) ?? []).slice(0, 12);
+    const telemetryEvents = ((telemetryQuery.data as ToolSelectionTelemetryEvent[] | undefined) ?? []);
+    const telemetry = telemetryEvents
+        .filter((event) => telemetryTypeFilter === 'all' || event.type === telemetryTypeFilter)
+        .filter((event) => telemetryStatusFilter === 'all' || event.status === telemetryStatusFilter)
+        .slice(0, 12);
+    const telemetrySummary = {
+        total: telemetryEvents.length,
+        success: telemetryEvents.filter((event) => event.status === 'success').length,
+        error: telemetryEvents.filter((event) => event.status === 'error').length,
+    };
     const recentEvictions = (evictionHistoryQuery.data as WorkingSetEvictionEvent[] | undefined) ?? [];
     const preferences = (preferencesQuery.data as ToolPreferences | undefined) ?? {
         importantTools: [],
@@ -930,6 +941,64 @@ export default function SearchDashboard() {
                             </Button>
                         </CardHeader>
                         <CardContent className="p-4">
+                            <div className="mb-3 grid gap-2">
+                                <div className="flex flex-wrap items-center gap-2 text-xs">
+                                    <span className="rounded-md border border-zinc-700 bg-zinc-950/70 px-2 py-1 text-zinc-300">
+                                        total: {telemetrySummary.total}
+                                    </span>
+                                    <span className="rounded-md border border-emerald-500/30 bg-emerald-500/10 px-2 py-1 text-emerald-300">
+                                        success: {telemetrySummary.success}
+                                    </span>
+                                    <span className="rounded-md border border-red-500/30 bg-red-500/10 px-2 py-1 text-red-300">
+                                        errors: {telemetrySummary.error}
+                                    </span>
+                                </div>
+
+                                <div className="flex flex-wrap items-center gap-2 text-xs">
+                                    <span className="text-zinc-500 uppercase tracking-wider">Type</span>
+                                    {(['all', 'search', 'load', 'hydrate', 'unload'] as const).map((option) => {
+                                        const active = telemetryTypeFilter === option;
+                                        return (
+                                            <button
+                                                key={`telemetry-type-${option}`}
+                                                type="button"
+                                                onClick={() => setTelemetryTypeFilter(option)}
+                                                className={`rounded-md border px-2 py-1 transition-colors ${active
+                                                    ? 'border-blue-500/50 bg-blue-500/15 text-blue-200'
+                                                    : 'border-zinc-700 bg-zinc-950/70 text-zinc-300 hover:bg-zinc-800'
+                                                    }`}
+                                                title={`Filter telemetry by ${option} events`}
+                                                aria-label={`Filter telemetry by ${option} events`}
+                                            >
+                                                {option}
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+
+                                <div className="flex flex-wrap items-center gap-2 text-xs">
+                                    <span className="text-zinc-500 uppercase tracking-wider">Status</span>
+                                    {(['all', 'success', 'error'] as const).map((option) => {
+                                        const active = telemetryStatusFilter === option;
+                                        return (
+                                            <button
+                                                key={`telemetry-status-${option}`}
+                                                type="button"
+                                                onClick={() => setTelemetryStatusFilter(option)}
+                                                className={`rounded-md border px-2 py-1 transition-colors ${active
+                                                    ? 'border-cyan-500/50 bg-cyan-500/15 text-cyan-200'
+                                                    : 'border-zinc-700 bg-zinc-950/70 text-zinc-300 hover:bg-zinc-800'
+                                                    }`}
+                                                title={`Filter telemetry by ${option} status`}
+                                                aria-label={`Filter telemetry by ${option} status`}
+                                            >
+                                                {option}
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+
                             <div className="space-y-3 max-h-[420px] overflow-y-auto">
                                 {telemetry.length > 0 ? (
                                     telemetry.map((event) => (
