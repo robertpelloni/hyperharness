@@ -162,6 +162,7 @@ export function Sidebar({ className }: SidebarProps) {
     const normalizedQuery = query.trim().toLowerCase();
 
     const navDiagnostics = useMemo(() => validateSidebarSections(SIDEBAR_SECTIONS), []);
+    const sectionTitles = useMemo(() => new Set(SIDEBAR_SECTIONS.map((section) => section.title)), []);
 
     const allItemsByHref = useMemo(() => buildNavItemsByNormalizedHref(SIDEBAR_SECTIONS), []);
 
@@ -235,11 +236,11 @@ export function Sidebar({ className }: SidebarProps) {
                 return true;
             }
             return `${item.title} ${item.description ?? ''}`.toLowerCase().includes(q);
-        });
+            setCollapsedSections(sanitizeCollapsedSections(parsed, sectionTitles));
 
         const rows = Array.from(routeMeta.values()).filter((item) => {
             return matchesNavQuery(q, item, item.section);
-        });
+    }, [sectionTitles]);
 
         rows.sort((a, b) => {
             const aFav = favoriteSet.has(a.href) ? 1 : 0;
@@ -457,6 +458,7 @@ export function Sidebar({ className }: SidebarProps) {
             const sanitized = sanitizeNavPreferences(
                 parsed,
                 new Set(allItemsByHref.keys()),
+                sectionTitles,
                 MAX_RECENT_ROUTES,
                 MAX_RECENT_SEARCHES,
             );

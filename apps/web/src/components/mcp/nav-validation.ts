@@ -120,14 +120,17 @@ export function sanitizeRecentSearches(values: unknown, limit: number): string[]
     return sanitized;
 }
 
-export function sanitizeCollapsedSections(value: unknown): Record<string, boolean> {
+export function sanitizeCollapsedSections(
+    value: unknown,
+    allowedSections?: ReadonlySet<string>,
+): Record<string, boolean> {
     if (!value || typeof value !== 'object' || Array.isArray(value)) {
         return {};
     }
 
     const sanitized: Record<string, boolean> = {};
     for (const [key, entry] of Object.entries(value)) {
-        if (typeof entry === 'boolean') {
+        if (typeof entry === 'boolean' && (!allowedSections || allowedSections.has(key))) {
             sanitized[key] = entry;
         }
     }
@@ -143,6 +146,7 @@ export function sanitizeNavPreferences(
         recentSearches?: unknown;
     },
     allowedHrefs: ReadonlySet<string>,
+    allowedSections: ReadonlySet<string>,
     routeLimit: number,
     searchLimit: number,
 ): SanitizedNavPreferences {
@@ -150,7 +154,7 @@ export function sanitizeNavPreferences(
     const recentRoutes = sanitizeRecentRoutes(value.recentRoutes, allowedHrefs, routeLimit);
 
     return {
-        collapsedSections: sanitizeCollapsedSections(value.collapsedSections),
+        collapsedSections: sanitizeCollapsedSections(value.collapsedSections, allowedSections),
         favorites,
         recentRoutes,
         recentSearches: sanitizeRecentSearches(value.recentSearches, searchLimit),

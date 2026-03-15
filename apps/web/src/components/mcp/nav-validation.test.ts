@@ -126,6 +126,15 @@ describe('sanitizeCollapsedSections', () => {
         });
     });
 
+    it('drops collapse-state entries for sections no longer present in the nav config', () => {
+        expect(sanitizeCollapsedSections({
+            Favorites: true,
+            Legacy: false,
+        }, new Set(['Favorites', 'Recent']))).toEqual({
+            Favorites: true,
+        });
+    });
+
     it('returns an empty object for non-object values', () => {
         expect(sanitizeCollapsedSections(null)).toEqual({});
         expect(sanitizeCollapsedSections(['Favorites'])).toEqual({});
@@ -140,11 +149,12 @@ describe('sanitizeNavPreferences', () => {
             collapsedSections: {
                 Favorites: true,
                 Invalid: 'yes',
+                Legacy: false,
             },
             favorites: ['/dashboard/library/?tab=overview', '/dashboard/unknown', '/dashboard/library/'],
             recentRoutes: ['/dashboard/tools#top', '/dashboard/unknown', '/dashboard/library/'],
             recentSearches: [' tools ', '', 'library', 'tools'],
-        }, allowed, 2, 3)).toEqual({
+        }, allowed, new Set(['Favorites', 'Recent']), 2, 3)).toEqual({
             collapsedSections: {
                 Favorites: true,
             },
@@ -155,7 +165,7 @@ describe('sanitizeNavPreferences', () => {
     });
 
     it('falls back to empty safe defaults for malformed payloads', () => {
-        expect(sanitizeNavPreferences({}, new Set(['/dashboard/library']), 8, 6)).toEqual({
+        expect(sanitizeNavPreferences({}, new Set(['/dashboard/library']), new Set(['Favorites']), 8, 6)).toEqual({
             collapsedSections: {},
             favorites: [],
             recentRoutes: [],
