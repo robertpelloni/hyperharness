@@ -115,8 +115,9 @@ function appendLog(
 ): LogEntry {
     const entry: LogEntry = { id: mkId('log'), level, message, timestamp: nowIso(), meta };
     session.logs.push(entry);
-    // Keep at most 500 log lines to avoid unbounded memory growth
-    if (session.logs.length > 500) session.logs.splice(0, session.logs.length - 500);
+    // Keep at most 2000 log lines to avoid unbounded memory growth while
+    // preserving substantially more operator-visible history.
+    if (session.logs.length > 2000) session.logs.splice(0, session.logs.length - 2000);
     return entry;
 }
 
@@ -131,8 +132,9 @@ function appendMessage(
 ): ChatMessage {
     const msg: ChatMessage = { id: mkId('msg'), role, content, timestamp: nowIso(), forceSent: forceSent || undefined };
     session.messages.push(msg);
-    // Keep at most 200 messages per session
-    if (session.messages.length > 200) session.messages.splice(0, session.messages.length - 200);
+    // Keep at most 1000 messages per session so long-running sessions don't
+    // silently hide too much chat history.
+    if (session.messages.length > 1000) session.messages.splice(0, session.messages.length - 1000);
     session.updatedAt = nowIso();
     return msg;
 }
@@ -429,7 +431,7 @@ export const cloudDevRouter = t.router({
      * `limit` defaults to 50; max 200.
      */
     getMessages: publicProcedure
-        .input(z.object({ sessionId: z.string(), limit: z.number().int().min(1).max(200).default(50) }))
+        .input(z.object({ sessionId: z.string(), limit: z.number().int().min(1).max(1000).default(100) }))
         .query(({ input }) => {
             const session = sessions.find(s => s.id === input.sessionId);
             if (!session) return [];
@@ -441,7 +443,7 @@ export const cloudDevRouter = t.router({
      * `limit` defaults to 100; max 500.
      */
     getLogs: publicProcedure
-        .input(z.object({ sessionId: z.string(), limit: z.number().int().min(1).max(500).default(100) }))
+        .input(z.object({ sessionId: z.string(), limit: z.number().int().min(1).max(2000).default(200) }))
         .query(({ input }) => {
             const session = sessions.find(s => s.id === input.sessionId);
             if (!session) return [];

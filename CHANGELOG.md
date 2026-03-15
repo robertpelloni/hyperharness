@@ -4,6 +4,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.7.175] — 2026-03-15
+
+- feat(web/cloud-dev): added a direct session-row `Open logs` action in `/dashboard/cloud-dev` so operators can jump straight into the logs pane without first opening chat.
+- changed(web/cloud-dev): session detail tabs now show loaded/total message and log counts, plus one-click `Load older messages` / `Load older logs` controls to surface deeper history during long-running sessions.
+- changed(core/cloud-dev): increased in-memory retention and query limits for session history (`messages` up to 1000, `logs` up to 2000) so cloud-dev chat/log timelines remain visible for longer investigations.
+
 ## [2.7.174] — 2026-03-15
 
 - changed(web/mcp): `/dashboard/mcp/inspector` now shows a scoped `Top auto-load skip reasons` leaderboard so operators can immediately see why cached-ranking search events were skipped.

@@ -8,7 +8,7 @@
  * broadcast, force-send, accept-plan, auto-accept-plan, tRPC-backed.
  */
 
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
     Activity,
     AlertCircle,
@@ -99,18 +99,32 @@ const PROVIDER_LABELS: Record<CloudDevProvider, string> = {
 
 const TERMINAL: Set<SessionStatus> = new Set(["completed", "failed", "cancelled"]);
 
-function SessionPanel({ session, onClose }: { session: SessionSummary; onClose: () => void }) {
-    const [activeTab, setActiveTab] = useState<"chat" | "logs">("chat");
+function SessionPanel({
+    session,
+    onClose,
+    initialTab,
+}: {
+    session: SessionSummary;
+    onClose: () => void;
+    initialTab: "chat" | "logs";
+}) {
+    const [activeTab, setActiveTab] = useState<"chat" | "logs">(initialTab);
     const [msgInput, setMsgInput] = useState("");
     const [forceFlag, setForceFlag] = useState(false);
+    const [messageLimit, setMessageLimit] = useState(100);
+    const [logLimit, setLogLimit] = useState(200);
     const chatEndRef = useRef<HTMLDivElement>(null);
 
+    useEffect(() => {
+        setActiveTab(initialTab);
+    }, [initialTab, session.id]);
+
     const messagesQuery = trpc.cloudDev.getMessages.useQuery(
-        { sessionId: session.id, limit: 100 },
+        { sessionId: session.id, limit: messageLimit },
         { refetchInterval: 3000 }
     );
     const logsQuery = trpc.cloudDev.getLogs.useQuery(
-        { sessionId: session.id, limit: 200 },
+        { sessionId: session.id, limit: logLimit },
         { refetchInterval: 3000 }
     );
     const sendMutation = trpc.cloudDev.sendMessage.useMutation({
@@ -155,11 +169,11 @@ function SessionPanel({ session, onClose }: { session: SessionSummary; onClose: 
                     )}
                     <button onClick={() => setActiveTab("chat")}
                         className={`px-2 py-1 rounded text-[11px] flex items-center gap-1 ${activeTab === "chat" ? "bg-zinc-700 text-white" : "text-zinc-500 hover:text-zinc-300"}`}>
-                        <MessageSquare className="h-3 w-3" /> Chat ({session.messageCount})
+                        <MessageSquare className="h-3 w-3" /> Chat ({messages.length}/{session.messageCount})
                     </button>
                     <button onClick={() => setActiveTab("logs")}
                         className={`px-2 py-1 rounded text-[11px] flex items-center gap-1 ${activeTab === "logs" ? "bg-zinc-700 text-white" : "text-zinc-500 hover:text-zinc-300"}`}>
-                        <FileText className="h-3 w-3" /> Logs ({session.logCount})
+                        <FileText className="h-3 w-3" /> Logs ({logs.length}/{session.logCount})
                     </button>
                     <button onClick={onClose} className="p-1 hover:bg-zinc-700 rounded text-zinc-500 hover:text-zinc-300">
                         <ChevronDown className="h-3.5 w-3.5" />
@@ -171,6 +185,17 @@ function SessionPanel({ session, onClose }: { session: SessionSummary; onClose: 
                     messages.length === 0
                         ? <p className="text-zinc-600 text-center pt-8">No messages yet.</p>
                         : <>
+                            {session.messageCount > messages.length && (
+                                <div className="pb-2">
+                                    <button
+                                        type="button"
+                                        onClick={() => setMessageLimit((prev) => Math.min(prev + 100, 1000))}
+                                        className="rounded border border-zinc-700 bg-zinc-900 px-2 py-1 text-[10px] text-zinc-300 hover:bg-zinc-800"
+                                    >
+                                        Load older messages
+                                    </button>
+                                </div>
+                            )}
                             {messages.map((m) => (
                                 <div key={m.id} className="flex gap-1.5">
                                     <span className={`shrink-0 ${ROLE_COLORS[m.role]}`}>[{m.role}]</span>
@@ -187,13 +212,26 @@ function SessionPanel({ session, onClose }: { session: SessionSummary; onClose: 
                 {activeTab === "logs" && (
                     logs.length === 0
                         ? <p className="text-zinc-600 text-center pt-8">No log entries.</p>
-                        : logs.map((l) => (
-                            <div key={l.id} className="flex gap-1.5">
-                                <span className={`shrink-0 uppercase ${LOG_LEVEL_COLORS[l.level]}`}>[{l.level}]</span>
-                                <span className="text-zinc-200">{l.message}</span>
-                                <span className="ml-auto shrink-0 text-zinc-600 text-[10px]">{new Date(l.timestamp).toLocaleTimeString()}</span>
-                            </div>
-                        ))
+                        : <>
+                            {session.logCount > logs.length && (
+                                <div className="pb-2">
+                                    <button
+                                        type="button"
+                                        onClick={() => setLogLimit((prev) => Math.min(prev + 200, 2000))}
+                                        className="rounded border border-zinc-700 bg-zinc-900 px-2 py-1 text-[10px] text-zinc-300 hover:bg-zinc-800"
+                                    >
+                                        Load older logs
+                                    </button>
+                                </div>
+                            )}
+                            {logs.map((l) => (
+                                <div key={l.id} className="flex gap-1.5">
+                                    <span className={`shrink-0 uppercase ${LOG_LEVEL_COLORS[l.level]}`}>[{l.level}]</span>
+                                    <span className="text-zinc-200">{l.message}</span>
+                                    <span className="ml-auto shrink-0 text-zinc-600 text-[10px]">{new Date(l.timestamp).toLocaleTimeString()}</span>
+                                </div>
+                            ))}
+                        </>
                 )}
             </div>
             {activeTab === "chat" && (
@@ -222,7 +260,7 @@ export default function CloudDevDashboardPage() {
     const [newSession, setNewSession] = useState<{
         provider: CloudDevProvider; projectName: string; task: string; autoAcceptPlan: boolean;
     }>({ provider: "jules", projectName: "", task: "", autoAcceptPlan: false });
-    const [expandedSession, setExpandedSession] = useState<string | null>(null);
+    const [expandedSession, setExpandedSession] = useState<{ id: string; tab: "chat" | "logs" } | null>(null);
     const [showBroadcast, setShowBroadcast] = useState(false);
     const [broadcastMsg, setBroadcastMsg] = useState("");
     const [broadcastForce, setBroadcastForce] = useState(false);
@@ -442,9 +480,16 @@ export default function CloudDevDashboardPage() {
                                     </div>
                                     <div className="flex items-center gap-1 shrink-0">
                                         <button
-                                            onClick={() => setExpandedSession(expandedSession === session.id ? null : session.id)}
+                                            onClick={() => setExpandedSession(expandedSession?.id === session.id ? null : { id: session.id, tab: "chat" })}
                                             className="p-1.5 hover:bg-zinc-700/40 rounded" title="Toggle chat / logs">
-                                            {expandedSession === session.id ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}
+                                            {expandedSession?.id === session.id ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}
+                                        </button>
+                                        <button
+                                            onClick={() => setExpandedSession({ id: session.id, tab: "logs" })}
+                                            className="p-1.5 hover:bg-zinc-700/40 rounded"
+                                            title="Open logs"
+                                        >
+                                            <FileText className="h-3.5 w-3.5" />
                                         </button>
                                         {session.status === "awaiting_approval" && (
                                             <button onClick={() => updateStatusMutation.mutate({ sessionId: session.id, status: "active" })}
@@ -490,8 +535,12 @@ export default function CloudDevDashboardPage() {
                                     </div>
                                 </div>
                             </div>
-                            {expandedSession === session.id && (
-                                <SessionPanel session={session} onClose={() => setExpandedSession(null)} />
+                            {expandedSession?.id === session.id && (
+                                <SessionPanel
+                                    session={session}
+                                    onClose={() => setExpandedSession(null)}
+                                    initialTab={expandedSession.tab}
+                                />
                             )}
                         </div>
                     ))
