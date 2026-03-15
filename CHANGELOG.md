@@ -4,6 +4,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.7.199] — 2026-03-15
+
+- test(web/navigation): added `apps/web/src/components/mcp/nav-config.test.ts` to assert each `SIDEBAR_SECTIONS` section has unique `href` values, preventing duplicate-route regressions.
+- changed(web/navigation): codified section-level nav uniqueness as a fast unit guard so duplicate sidebar entries fail in CI before runtime.
+- changed(web/navigation): this protects against future duplicate-key warnings and repeated route rows even when nav config is edited rapidly across slices.
+
 ## [2.7.198] — 2026-03-15
 
 - fix(web/navigation): removed duplicate `Chronicle` and `Library` entries from `LABS_DASHBOARD_NAV` so sidebar route lists no longer render repeated links for the same dashboard destinations.
