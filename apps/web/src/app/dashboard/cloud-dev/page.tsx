@@ -35,6 +35,7 @@ type CloudDevProvider = "jules" | "codex" | "copilot-workspace" | "devin" | "cus
 type SessionStatus = "pending" | "active" | "paused" | "completed" | "failed" | "awaiting_approval" | "cancelled";
 type ChatRole = "user" | "agent" | "system" | "plan";
 type LogLevel = "debug" | "info" | "warn" | "error";
+type BroadcastSkipReason = "status_filter_mismatch" | "terminal_requires_force" | "other";
 
 interface SessionSummary {
     id: string;
@@ -73,6 +74,14 @@ interface BroadcastPreviewRecipient {
     updatedAt: string;
 }
 
+interface BroadcastSkippedSession {
+    id: string;
+    provider: CloudDevProvider;
+    projectName: string;
+    status: SessionStatus;
+    reason: BroadcastSkipReason;
+}
+
 interface BroadcastPreview {
     totalSessions: number;
     targeted: number;
@@ -80,7 +89,15 @@ interface BroadcastPreview {
     byStatus: Partial<Record<SessionStatus, number>>;
     sessionIds: string[];
     recipients: BroadcastPreviewRecipient[];
+    skippedByReason: Partial<Record<BroadcastSkipReason, number>>;
+    skippedSessions: BroadcastSkippedSession[];
 }
+
+const BROADCAST_SKIP_REASON_LABELS: Record<BroadcastSkipReason, string> = {
+    status_filter_mismatch: "status mismatch",
+    terminal_requires_force: "terminal requires Force",
+    other: "other",
+};
 
 const STATUS_COLORS: Record<SessionStatus, string> = {
     pending: "text-yellow-300 border-yellow-700/50 bg-yellow-950/20",
@@ -315,6 +332,7 @@ export default function CloudDevDashboardPage() {
         delivered: number;
         skipped: number;
         statuses: SessionStatus[];
+        skippedByReason: Partial<Record<BroadcastSkipReason, number>>;
     } | null>(null);
     const [showAllPreviewRecipients, setShowAllPreviewRecipients] = useState(false);
 
@@ -341,6 +359,7 @@ export default function CloudDevDashboardPage() {
                 delivered: result.delivered,
                 skipped: result.skipped,
                 statuses: Array.from(new Set((result.results ?? []).map((entry) => entry.status as SessionStatus))),
+                skippedByReason: (result.skippedByReason ?? {}) as Partial<Record<BroadcastSkipReason, number>>,
             });
             setBroadcastMsg("");
         },
@@ -564,6 +583,40 @@ export default function CloudDevDashboardPage() {
                                         )}
                                     </div>
                                 )}
+                                {(broadcastPreview.skippedByReason.terminal_requires_force || broadcastPreview.skippedByReason.status_filter_mismatch || broadcastPreview.skippedByReason.other) && (
+                                    <div className="space-y-1">
+                                        <div className="text-[10px] uppercase tracking-wide text-purple-300/80">Skip diagnostics</div>
+                                        <div className="flex flex-wrap items-center gap-1.5">
+                                            {(Object.entries(broadcastPreview.skippedByReason) as Array<[BroadcastSkipReason, number]>).map(([reason, count]) => (
+                                                <span
+                                                    key={`preview-skip-reason-${reason}`}
+                                                    className="rounded border border-zinc-700/80 bg-zinc-900 px-1.5 py-0.5 text-[10px] text-zinc-300"
+                                                >
+                                                    {BROADCAST_SKIP_REASON_LABELS[reason]}: {count}
+                                                </span>
+                                            ))}
+                                        </div>
+                                        {broadcastPreview.skippedSessions.length > 0 && (
+                                            <div className="space-y-1">
+                                                {broadcastPreview.skippedSessions.slice(0, 6).map((session) => (
+                                                    <div
+                                                        key={`preview-skipped-session-${session.id}`}
+                                                        className="flex flex-wrap items-center gap-1.5 rounded border border-zinc-800/80 bg-black/30 px-2 py-1 text-[10px] text-zinc-300"
+                                                    >
+                                                        <span className="rounded border border-zinc-700/70 bg-zinc-900 px-1.5 py-0.5 text-zinc-300">
+                                                            {PROVIDER_LABELS[session.provider]}
+                                                        </span>
+                                                        <span>{session.projectName}</span>
+                                                        <span className="rounded border border-zinc-700/60 bg-zinc-900/70 px-1.5 py-0.5 text-zinc-300">
+                                                            {session.status.replace("_", " ")}
+                                                        </span>
+                                                        <span className="text-zinc-500">{BROADCAST_SKIP_REASON_LABELS[session.reason]}</span>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
                             </div>
                         ) : (
                             <span className="text-zinc-500">No preview available.</span>
@@ -574,6 +627,9 @@ export default function CloudDevDashboardPage() {
                             Delivered to {broadcastResult.delivered} session{broadcastResult.delivered !== 1 ? "s" : ""}
                             {broadcastResult.skipped > 0 ? `, skipped ${broadcastResult.skipped}` : ""}
                             {broadcastResult.statuses.length > 0 ? ` (${broadcastResult.statuses.join(", ")})` : ""}.
+                            {Object.keys(broadcastResult.skippedByReason).length > 0
+                                ? ` Skip reasons: ${(Object.entries(broadcastResult.skippedByReason) as Array<[BroadcastSkipReason, number]>).map(([reason, count]) => `${BROADCAST_SKIP_REASON_LABELS[reason]}=${count}`).join(", ")}.`
+                                : ""}
                         </p>
                     )}
                 </div>

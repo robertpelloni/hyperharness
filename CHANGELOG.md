@@ -4,6 +4,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.7.180] — 2026-03-15
+
+- feat(core/cloud-dev): broadcast preview and send responses now include structured skip diagnostics (`skippedByReason` plus sampled skipped session summaries) so operators can audit why sessions were excluded.
+- changed(web/cloud-dev): `/dashboard/cloud-dev` broadcast preview now shows skip-reason chips and sampled skipped sessions alongside recipient previews.
+- changed(web/cloud-dev): broadcast result summary now includes skip-reason breakdown text to improve operator trust after dispatch.
+
 ## [2.7.179] — 2026-03-15
 
 - feat(core/cloud-dev): `previewBroadcastRecipients` now returns recipient summary records (id, provider, project name, status, updated time) so operator UIs can show who will receive a broadcast before sending.

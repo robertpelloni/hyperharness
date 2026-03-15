@@ -112,6 +112,24 @@ function selectBroadcastTargets(options: {
     });
 }
 
+function classifyBroadcastSkipReason(options: {
+    force: boolean;
+    statusFilter?: CloudDevSession['status'][];
+    session: CloudDevSession;
+}) {
+    const { force, statusFilter, session } = options;
+
+    if (statusFilter && statusFilter.length > 0 && !statusFilter.includes(session.status)) {
+        return 'status_filter_mismatch' as const;
+    }
+
+    if (!force && TERMINAL_STATUSES.has(session.status)) {
+        return 'terminal_requires_force' as const;
+    }
+
+    return 'other' as const;
+}
+
 function mkId(prefix: string) {
     return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 }
@@ -385,6 +403,18 @@ export const cloudDevRouter = t.router({
                 force: input.force,
                 statusFilter: input.statusFilter,
             });
+            const targetIds = new Set(targets.map((session) => session.id));
+            const skippedSessions = sessions.filter((session) => !targetIds.has(session.id));
+            const skippedByReason: Record<string, number> = {};
+
+            skippedSessions.forEach((session) => {
+                const reason = classifyBroadcastSkipReason({
+                    force: input.force,
+                    statusFilter: input.statusFilter,
+                    session,
+                });
+                skippedByReason[reason] = (skippedByReason[reason] ?? 0) + 1;
+            });
 
             const results = targets.map(session => {
                 const msg = appendMessage(session, 'user', input.content, input.force && TERMINAL_STATUSES.has(session.status));
@@ -396,6 +426,18 @@ export const cloudDevRouter = t.router({
                 delivered: results.length,
                 skipped: sessions.length - results.length,
                 results,
+                skippedByReason,
+                skippedSessions: skippedSessions.slice(0, 25).map((session) => ({
+                    id: session.id,
+                    provider: session.provider,
+                    projectName: session.projectName,
+                    status: session.status,
+                    reason: classifyBroadcastSkipReason({
+                        force: input.force,
+                        statusFilter: input.statusFilter,
+                        session,
+                    }),
+                })),
             };
         }),
 
@@ -415,6 +457,18 @@ export const cloudDevRouter = t.router({
                 force: input.force,
                 statusFilter: input.statusFilter,
             });
+            const targetIds = new Set(targets.map((session) => session.id));
+            const skippedSessions = sessions.filter((session) => !targetIds.has(session.id));
+            const skippedByReason: Record<string, number> = {};
+
+            skippedSessions.forEach((session) => {
+                const reason = classifyBroadcastSkipReason({
+                    force: input.force,
+                    statusFilter: input.statusFilter,
+                    session,
+                });
+                skippedByReason[reason] = (skippedByReason[reason] ?? 0) + 1;
+            });
 
             const byStatus: Partial<Record<CloudDevSession['status'], number>> = {};
             targets.forEach((session) => {
@@ -433,6 +487,18 @@ export const cloudDevRouter = t.router({
                     projectName: session.projectName,
                     status: session.status,
                     updatedAt: session.updatedAt,
+                })),
+                skippedByReason,
+                skippedSessions: skippedSessions.slice(0, 25).map((session) => ({
+                    id: session.id,
+                    provider: session.provider,
+                    projectName: session.projectName,
+                    status: session.status,
+                    reason: classifyBroadcastSkipReason({
+                        force: input.force,
+                        statusFilter: input.statusFilter,
+                        session,
+                    }),
                 })),
             };
         }),
