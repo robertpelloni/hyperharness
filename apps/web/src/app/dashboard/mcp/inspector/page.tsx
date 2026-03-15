@@ -96,6 +96,7 @@ const INSPECTOR_TELEMETRY_STATUS_QUERY_KEY = 'telemetryStatus';
 const INSPECTOR_TELEMETRY_WINDOW_QUERY_KEY = 'telemetryWindow';
 const INSPECTOR_TELEMETRY_SOURCE_QUERY_KEY = 'telemetrySource';
 const INSPECTOR_TELEMETRY_TOOL_QUERY_KEY = 'telemetryTool';
+const INSPECTOR_TELEMETRY_SEARCH_QUERY_KEY = 'telemetrySearch';
 const INSPECTOR_TELEMETRY_SOURCES: Array<{ value: Exclude<TelemetrySourceFilter, 'all'>; label: string }> = [
     { value: 'runtime-search', label: 'Runtime' },
     { value: 'cached-ranking', label: 'Cached' },
@@ -195,6 +196,8 @@ function InspectorDashboardContent() {
     const [telemetryToolFilter, setTelemetryToolFilter] = useState<string | null>(null);
     // Pagination for the event card list (12 cards per page)
     const [telemetryPage, setTelemetryPage] = useState(0);
+    // Free-text search within the scoped event list (toolName, query, message, source, profile…)
+    const [telemetrySearchQuery, setTelemetrySearchQuery] = useState('');
     const [selectedTool, setSelectedTool] = useState<InspectorTool | null>(null);
     const [argsJson, setArgsJson] = useState('{}');
     const [result, setResult] = useState<any | null>(null);
@@ -376,9 +379,26 @@ function InspectorDashboardContent() {
         .filter((event) => telemetrySourceFilter === 'all' || event.source === telemetrySourceFilter);
     const scopedTelemetryEvents = baselineScopedEvents
         .filter((event) => telemetryToolFilter == null || event.toolName === telemetryToolFilter || event.topResultName === telemetryToolFilter);
+    // Free-text search applied last — searches across toolName, query, message, source, profile, topResultName, autoLoadSkipReason
+    const searchedTelemetryEvents = (() => {
+        const q = telemetrySearchQuery.trim().toLowerCase();
+        if (!q) return scopedTelemetryEvents;
+        return scopedTelemetryEvents.filter((event) => {
+            return (
+                (event.toolName?.toLowerCase().includes(q)) ||
+                (event.topResultName?.toLowerCase().includes(q)) ||
+                (event.query?.toLowerCase().includes(q)) ||
+                (event.message?.toLowerCase().includes(q)) ||
+                (event.source?.toLowerCase().includes(q)) ||
+                (event.profile?.toLowerCase().includes(q)) ||
+                (event.autoLoadSkipReason?.toLowerCase().includes(q)) ||
+                (event.topMatchReason?.toLowerCase().includes(q))
+            );
+        });
+    })();
     const TELEMETRY_PAGE_SIZE = 12;
-    const telemetryTotalPages = Math.ceil(scopedTelemetryEvents.length / TELEMETRY_PAGE_SIZE);
-    const filteredTelemetry = scopedTelemetryEvents.slice(
+    const telemetryTotalPages = Math.ceil(searchedTelemetryEvents.length / TELEMETRY_PAGE_SIZE);
+    const filteredTelemetry = searchedTelemetryEvents.slice(
         telemetryPage * TELEMETRY_PAGE_SIZE,
         (telemetryPage + 1) * TELEMETRY_PAGE_SIZE,
     );
@@ -509,7 +529,8 @@ function InspectorDashboardContent() {
         && telemetryStatusFilter === 'all'
         && telemetryWindowFilter === '15m'
         && telemetrySourceFilter === 'all'
-        && telemetryToolFilter == null;
+        && telemetryToolFilter == null
+        && telemetrySearchQuery === '';
 
     useEffect(() => {
         const requestedServer = searchParams.get('server');
@@ -595,6 +616,12 @@ function InspectorDashboardContent() {
             hasHydratedFromUrl = true;
         }
 
+        const urlSearch = searchParams.get(INSPECTOR_TELEMETRY_SEARCH_QUERY_KEY);
+        if (urlSearch) {
+            setTelemetrySearchQuery(urlSearch);
+            hasHydratedFromUrl = true;
+        }
+
         if (hasHydratedFromUrl) {
             return;
         }
@@ -611,6 +638,7 @@ function InspectorDashboardContent() {
                 window?: string;
                 source?: string;
                 tool?: string;
+                search?: string;
             };
 
             if (parsed.type && ['all', 'search', 'load', 'hydrate', 'unload'].includes(parsed.type)) {
@@ -632,6 +660,10 @@ function InspectorDashboardContent() {
             if (parsed.tool) {
                 setTelemetryToolFilter(parsed.tool);
             }
+
+            if (parsed.search) {
+                setTelemetrySearchQuery(parsed.search);
+            }
         } catch {
             // Ignore invalid persisted payloads and continue with defaults.
         }
@@ -647,12 +679,13 @@ function InspectorDashboardContent() {
                     window: telemetryWindowFilter,
                     source: telemetrySourceFilter,
                     tool: telemetryToolFilter ?? undefined,
+                    search: telemetrySearchQuery || undefined,
                 }),
             );
         } catch {
             // Ignore local storage write failures.
         }
-    }, [telemetryTypeFilter, telemetryStatusFilter, telemetryWindowFilter, telemetrySourceFilter, telemetryToolFilter]);
+    }, [telemetryTypeFilter, telemetryStatusFilter, telemetryWindowFilter, telemetrySourceFilter, telemetryToolFilter, telemetrySearchQuery]);
 
     useEffect(() => {
         const nextParams = new URLSearchParams(searchParams.toString());
@@ -687,6 +720,12 @@ function InspectorDashboardContent() {
             nextParams.set(INSPECTOR_TELEMETRY_TOOL_QUERY_KEY, telemetryToolFilter);
         }
 
+        if (!telemetrySearchQuery) {
+            nextParams.delete(INSPECTOR_TELEMETRY_SEARCH_QUERY_KEY);
+        } else {
+            nextParams.set(INSPECTOR_TELEMETRY_SEARCH_QUERY_KEY, telemetrySearchQuery);
+        }
+
         const currentQuery = searchParams.toString();
         const nextQuery = nextParams.toString();
         if (currentQuery === nextQuery) {
@@ -694,12 +733,12 @@ function InspectorDashboardContent() {
         }
 
         router.replace(nextQuery ? `${pathname}?${nextQuery}` : pathname, { scroll: false });
-    }, [pathname, router, searchParams, telemetryTypeFilter, telemetryStatusFilter, telemetryWindowFilter, telemetrySourceFilter, telemetryToolFilter]);
+    }, [pathname, router, searchParams, telemetryTypeFilter, telemetryStatusFilter, telemetryWindowFilter, telemetrySourceFilter, telemetryToolFilter, telemetrySearchQuery]);
 
     // Reset pagination to page 0 whenever any filter changes so stale page offsets are avoided.
     useEffect(() => {
         setTelemetryPage(0);
-    }, [telemetryTypeFilter, telemetryStatusFilter, telemetryWindowFilter, telemetrySourceFilter, telemetryToolFilter]);
+    }, [telemetryTypeFilter, telemetryStatusFilter, telemetryWindowFilter, telemetrySourceFilter, telemetryToolFilter, telemetrySearchQuery]);
 
     const handleRun = () => {
         if (!selectedTool) return;
@@ -787,6 +826,7 @@ function InspectorDashboardContent() {
         setTelemetryWindowFilter('15m');
         setTelemetrySourceFilter('all');
         setTelemetryToolFilter(null);
+        setTelemetrySearchQuery('');
 
         try {
             window.localStorage.removeItem(INSPECTOR_TELEMETRY_FILTERS_STORAGE_KEY);
@@ -1528,6 +1568,29 @@ function InspectorDashboardContent() {
                             </div>
                         )}
 
+                        <div className="relative flex items-center">
+                            <Search className="absolute left-2.5 h-3.5 w-3.5 text-zinc-500 pointer-events-none" />
+                            <input
+                                type="text"
+                                value={telemetrySearchQuery}
+                                onChange={(e) => setTelemetrySearchQuery(e.target.value)}
+                                placeholder="Search events — tool name, query, message, source…"
+                                className="w-full rounded-md border border-zinc-700 bg-zinc-950/70 pl-8 pr-8 py-1.5 text-xs text-zinc-200 placeholder:text-zinc-600 focus:outline-none focus:border-zinc-500"
+                                aria-label="Search telemetry events by free text"
+                            />
+                            {telemetrySearchQuery && (
+                                <button
+                                    type="button"
+                                    onClick={() => setTelemetrySearchQuery('')}
+                                    className="absolute right-2.5 text-zinc-500 hover:text-zinc-300 transition-colors"
+                                    aria-label="Clear event search query"
+                                    title="Clear search"
+                                >
+                                    ✕
+                                </button>
+                            )}
+                        </div>
+
                         <div className="flex flex-wrap items-center gap-2 text-xs">
                             <span className="text-zinc-500 uppercase tracking-wider">Type</span>
                             {(['all', 'search', 'load', 'hydrate', 'unload'] as const).map((option) => {
@@ -1697,7 +1760,7 @@ function InspectorDashboardContent() {
                     {telemetryTotalPages > 1 && (
                         <div className="flex items-center justify-between text-xs text-zinc-500 mt-1">
                             <span>
-                                Showing {telemetryPage * TELEMETRY_PAGE_SIZE + 1}–{Math.min((telemetryPage + 1) * TELEMETRY_PAGE_SIZE, scopedTelemetryEvents.length)} of {scopedTelemetryEvents.length} events
+                                Showing {telemetryPage * TELEMETRY_PAGE_SIZE + 1}–{Math.min((telemetryPage + 1) * TELEMETRY_PAGE_SIZE, searchedTelemetryEvents.length)} of {searchedTelemetryEvents.length} events
                             </span>
                             <div className="flex items-center gap-2">
                                 <button

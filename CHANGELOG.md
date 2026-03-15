@@ -4,6 +4,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.7.150] — 2026-03-14
+
+- feat(web/mcp): added free-text search input for telemetry events in `/dashboard/mcp/inspector`
+- changed(web/mcp): `telemetrySearchQuery` state filters `scopedTelemetryEvents` across toolName, topResultName, query, message, source, profile, autoLoadSkipReason, topMatchReason
+- changed(web/mcp): search query synced to URL param `telemetrySearch` and persisted in localStorage `search` field
+- changed(web/mcp): `telemetryFiltersAtDefault` includes search query check; `resetTelemetryFilters` clears search; pagination resets on search change
+- feat(web/mcp): search input has inline clear (✕) button and magnifying glass icon; placeholder text guides usage
+
 ## [2.7.149] — 2026-03-14
 
 - feat(web/mcp): added auto-load outcome aggregate panel in `/dashboard/mcp/inspector` telemetry section
