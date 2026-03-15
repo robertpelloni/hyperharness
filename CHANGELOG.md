@@ -1,6 +1,23 @@
+
+
 ## Borg Changelog
 
 All notable changes to this project will be documented in this file.
+
+## [2.7.133] — 2026-03-14
+
+- feat(cloud-dev): rewrote `/dashboard/cloud-dev` page to use tRPC instead of localStorage
+- feat(cloud-dev): expanded session panel with tabbed chat history + structured logs pane (auto-refresh every 3s)
+- feat(cloud-dev): `sendMessage` — deliver a chat message to any session; Force toggle allows delivery to completed/failed sessions
+- feat(cloud-dev): `broadcastMessage` — broadcast to all active sessions at once; Force flag reaches terminal sessions too
+- feat(cloud-dev): `acceptPlan` — one-click button to approve a plan when session is in `awaiting_approval` state
+- feat(cloud-dev): `autoAcceptPlan` — per-session toggle; server automatically transitions `awaiting_approval` → `active` without user interaction
+- feat(cloud-dev): message count + log count now visible on each session row; pulse badge when sessions are awaiting approval
+- feat(cloud-dev): total message/log aggregate counts shown in stats bar
+- feat(cloudDevRouter): added `sendMessage`, `broadcastMessage`, `acceptPlan`, `setAutoAcceptPlan`, `getMessages`, `getLogs` procedures
+- feat(cloudDevRouter): sessions now store `messages[]` and `logs[]` server-side; ring-buffer capped at 200 messages / 500 logs per session
+- feat(cloudDevRouter): `autoAcceptPlan` flag on sessions; `maybeAutoAccept()` helper auto-resolves plan approval
+- fixed(VERSION): bumped VERSION file from 2.7.130 to 2.7.132 (was out of sync with prior commits)
 
 ## [2.7.130] — 2026-03-14
 

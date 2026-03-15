@@ -1,31 +1,42 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+/**
+ * cloud-dev/page.tsx - Cloud Dev Environments Dashboard
+ *
+ * Unified dashboard for managing cloud dev agents across providers.
+ * Features: session list, per-session chat history + logs pane,
+ * broadcast, force-send, accept-plan, auto-accept-plan, tRPC-backed.
+ */
+
+import { useCallback, useMemo, useRef, useState } from "react";
 import {
-    Cloud,
-    Plus,
-    RefreshCw,
-    Play,
-    Pause,
-    XCircle,
+    Activity,
+    AlertCircle,
     CheckCircle2,
+    ChevronDown,
+    ChevronRight,
+    Cloud,
+    FileText,
+    MessageSquare,
+    Pause,
+    Play,
+    Plus,
+    Radio,
+    RefreshCw,
+    Send,
     Server,
     Trash2,
-    Activity,
+    XCircle,
+    Zap,
 } from "lucide-react";
+import { trpc } from "@/utils/trpc";
 
-// Types mirroring the cloudDevRouter schemas
 type CloudDevProvider = "jules" | "codex" | "copilot-workspace" | "devin" | "custom";
-type SessionStatus =
-    | "pending"
-    | "active"
-    | "paused"
-    | "completed"
-    | "failed"
-    | "awaiting_approval"
-    | "cancelled";
+type SessionStatus = "pending" | "active" | "paused" | "completed" | "failed" | "awaiting_approval" | "cancelled";
+type ChatRole = "user" | "agent" | "system" | "plan";
+type LogLevel = "debug" | "info" | "warn" | "error";
 
-interface CloudDevSession {
+interface SessionSummary {
     id: string;
     provider: CloudDevProvider;
     projectName: string;
@@ -34,13 +45,24 @@ interface CloudDevSession {
     createdAt: string;
     updatedAt: string;
     metadata?: Record<string, unknown>;
+    autoAcceptPlan: boolean;
+    messageCount: number;
+    logCount: number;
 }
 
-interface ProviderInfo {
-    name: string;
-    provider: CloudDevProvider;
-    enabled: boolean;
-    hasApiKey: boolean;
+interface ChatMessage {
+    id: string;
+    role: ChatRole;
+    content: string;
+    timestamp: string;
+    forceSent?: boolean;
+}
+
+interface LogEntry {
+    id: string;
+    level: LogLevel;
+    message: string;
+    timestamp: string;
 }
 
 const STATUS_COLORS: Record<SessionStatus, string> = {
@@ -53,6 +75,20 @@ const STATUS_COLORS: Record<SessionStatus, string> = {
     cancelled: "text-zinc-400 border-zinc-600/50 bg-zinc-900/20",
 };
 
+const LOG_LEVEL_COLORS: Record<LogLevel, string> = {
+    debug: "text-zinc-500",
+    info: "text-zinc-300",
+    warn: "text-yellow-400",
+    error: "text-red-400",
+};
+
+const ROLE_COLORS: Record<ChatRole, string> = {
+    user: "text-cyan-300",
+    agent: "text-emerald-300",
+    system: "text-zinc-400 italic",
+    plan: "text-amber-300",
+};
+
 const PROVIDER_LABELS: Record<CloudDevProvider, string> = {
     jules: "Jules (Google)",
     codex: "Codex (OpenAI)",
@@ -61,162 +97,205 @@ const PROVIDER_LABELS: Record<CloudDevProvider, string> = {
     custom: "Custom",
 };
 
-function getSafeLocalStorage(): Storage | null {
-    if (typeof window === 'undefined') {
-        return null;
-    }
+const TERMINAL: Set<SessionStatus> = new Set(["completed", "failed", "cancelled"]);
 
-    try {
-        const storage = window.localStorage;
-        void storage.length;
-        return storage;
-    } catch {
-        return null;
-    }
-}
+function SessionPanel({ session, onClose }: { session: SessionSummary; onClose: () => void }) {
+    const [activeTab, setActiveTab] = useState<"chat" | "logs">("chat");
+    const [msgInput, setMsgInput] = useState("");
+    const [forceFlag, setForceFlag] = useState(false);
+    const chatEndRef = useRef<HTMLDivElement>(null);
 
-function safeStorageGet(key: string): string | null {
-    const storage = getSafeLocalStorage();
-    if (!storage) {
-        return null;
-    }
+    const messagesQuery = trpc.cloudDev.getMessages.useQuery(
+        { sessionId: session.id, limit: 100 },
+        { refetchInterval: 3000 }
+    );
+    const logsQuery = trpc.cloudDev.getLogs.useQuery(
+        { sessionId: session.id, limit: 200 },
+        { refetchInterval: 3000 }
+    );
+    const sendMutation = trpc.cloudDev.sendMessage.useMutation({
+        onSuccess: () => { setMsgInput(""); void messagesQuery.refetch(); },
+    });
+    const acceptPlanMutation = trpc.cloudDev.acceptPlan.useMutation();
+    const autoAcceptMutation = trpc.cloudDev.setAutoAcceptPlan.useMutation();
 
-    try {
-        return storage.getItem(key);
-    } catch {
-        return null;
-    }
-}
+    const handleSend = useCallback(() => {
+        if (!msgInput.trim()) return;
+        sendMutation.mutate({ sessionId: session.id, content: msgInput.trim(), force: forceFlag });
+    }, [msgInput, forceFlag, sendMutation, session.id]);
 
-function safeStorageSet(key: string, value: string): void {
-    const storage = getSafeLocalStorage();
-    if (!storage) {
-        return;
-    }
+    const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
+        if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSend(); }
+    }, [handleSend]);
 
-    try {
-        storage.setItem(key, value);
-    } catch {
-        // Ignore storage access errors in restricted contexts.
-    }
+    const messages: ChatMessage[] = (messagesQuery.data ?? []) as ChatMessage[];
+    const logs: LogEntry[] = (logsQuery.data ?? []) as LogEntry[];
+    const isTerminal = TERMINAL.has(session.status);
+
+    return (
+        <div className="border border-zinc-700 rounded-lg bg-zinc-950 overflow-hidden">
+            <div className="flex items-center justify-between px-3 py-2 bg-zinc-900 border-b border-zinc-800">
+                <div className="flex items-center gap-2">
+                    <span className="text-xs font-semibold text-zinc-200">{session.projectName}</span>
+                    <span className={`text-[10px] px-1.5 py-0.5 rounded border ${STATUS_COLORS[session.status]}`}>
+                        {session.status.replace("_", " ")}
+                    </span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                    <label className="flex items-center gap-1 cursor-pointer text-[11px] text-zinc-400 select-none">
+                        <input type="checkbox" className="accent-amber-500" checked={session.autoAcceptPlan}
+                            onChange={(e) => autoAcceptMutation.mutate({ sessionId: session.id, enabled: e.target.checked })} />
+                        Auto-accept plan
+                    </label>
+                    {session.status === "awaiting_approval" && (
+                        <button onClick={() => acceptPlanMutation.mutate({ sessionId: session.id })}
+                            className="px-2 py-1 bg-amber-700 hover:bg-amber-600 text-white rounded text-[11px] flex items-center gap-1">
+                            <CheckCircle2 className="h-3 w-3" /> Accept Plan
+                        </button>
+                    )}
+                    <button onClick={() => setActiveTab("chat")}
+                        className={`px-2 py-1 rounded text-[11px] flex items-center gap-1 ${activeTab === "chat" ? "bg-zinc-700 text-white" : "text-zinc-500 hover:text-zinc-300"}`}>
+                        <MessageSquare className="h-3 w-3" /> Chat ({session.messageCount})
+                    </button>
+                    <button onClick={() => setActiveTab("logs")}
+                        className={`px-2 py-1 rounded text-[11px] flex items-center gap-1 ${activeTab === "logs" ? "bg-zinc-700 text-white" : "text-zinc-500 hover:text-zinc-300"}`}>
+                        <FileText className="h-3 w-3" /> Logs ({session.logCount})
+                    </button>
+                    <button onClick={onClose} className="p-1 hover:bg-zinc-700 rounded text-zinc-500 hover:text-zinc-300">
+                        <ChevronDown className="h-3.5 w-3.5" />
+                    </button>
+                </div>
+            </div>
+            <div className="h-52 overflow-auto px-3 py-2 text-xs font-mono space-y-1">
+                {activeTab === "chat" && (
+                    messages.length === 0
+                        ? <p className="text-zinc-600 text-center pt-8">No messages yet.</p>
+                        : <>
+                            {messages.map((m) => (
+                                <div key={m.id} className="flex gap-1.5">
+                                    <span className={`shrink-0 ${ROLE_COLORS[m.role]}`}>[{m.role}]</span>
+                                    <span className={m.forceSent ? "text-amber-200" : "text-zinc-200"}>
+                                        {m.content}
+                                        {m.forceSent && <span className="ml-1.5 text-[9px] text-amber-500 not-italic">(forced)</span>}
+                                    </span>
+                                    <span className="ml-auto shrink-0 text-zinc-600 text-[10px]">{new Date(m.timestamp).toLocaleTimeString()}</span>
+                                </div>
+                            ))}
+                            <div ref={chatEndRef} />
+                        </>
+                )}
+                {activeTab === "logs" && (
+                    logs.length === 0
+                        ? <p className="text-zinc-600 text-center pt-8">No log entries.</p>
+                        : logs.map((l) => (
+                            <div key={l.id} className="flex gap-1.5">
+                                <span className={`shrink-0 uppercase ${LOG_LEVEL_COLORS[l.level]}`}>[{l.level}]</span>
+                                <span className="text-zinc-200">{l.message}</span>
+                                <span className="ml-auto shrink-0 text-zinc-600 text-[10px]">{new Date(l.timestamp).toLocaleTimeString()}</span>
+                            </div>
+                        ))
+                )}
+            </div>
+            {activeTab === "chat" && (
+                <div className="px-3 py-2 border-t border-zinc-800 flex items-center gap-2">
+                    <textarea rows={1} value={msgInput} onChange={(e) => setMsgInput(e.target.value)}
+                        onKeyDown={handleKeyDown}
+                        placeholder={isTerminal && !forceFlag ? "Session is terminal — enable Force to send" : "Send a message (Enter to send)"}
+                        className="flex-1 bg-zinc-900 border border-zinc-700 rounded px-2 py-1.5 text-xs text-white outline-none focus:border-cyan-500 resize-none" />
+                    <label className="flex items-center gap-1 text-[11px] text-zinc-400 cursor-pointer select-none shrink-0">
+                        <input type="checkbox" className="accent-amber-500" checked={forceFlag}
+                            onChange={(e) => setForceFlag(e.target.checked)} />
+                        Force
+                    </label>
+                    <button onClick={handleSend} disabled={sendMutation.isPending || (!forceFlag && isTerminal)}
+                        className="p-1.5 bg-cyan-700 hover:bg-cyan-600 disabled:opacity-40 rounded" title="Send">
+                        <Send className="h-3.5 w-3.5 text-white" />
+                    </button>
+                </div>
+            )}
+        </div>
+    );
 }
 
 export default function CloudDevDashboardPage() {
-    const [sessions, setSessions] = useState<CloudDevSession[]>([]);
-    const [providers] = useState<ProviderInfo[]>([
-        { name: "Jules (Google)", provider: "jules", enabled: true, hasApiKey: false },
-        { name: "Codex (OpenAI)", provider: "codex", enabled: false, hasApiKey: false },
-        { name: "Copilot Workspace", provider: "copilot-workspace", enabled: false, hasApiKey: false },
-        { name: "Devin", provider: "devin", enabled: false, hasApiKey: false },
-    ]);
-    const [loading, setLoading] = useState(false);
     const [showCreateForm, setShowCreateForm] = useState(false);
-    const [newSession, setNewSession] = useState({
-        provider: "jules" as CloudDevProvider,
-        projectName: "",
-        task: "",
+    const [newSession, setNewSession] = useState<{
+        provider: CloudDevProvider; projectName: string; task: string; autoAcceptPlan: boolean;
+    }>({ provider: "jules", projectName: "", task: "", autoAcceptPlan: false });
+    const [expandedSession, setExpandedSession] = useState<string | null>(null);
+    const [showBroadcast, setShowBroadcast] = useState(false);
+    const [broadcastMsg, setBroadcastMsg] = useState("");
+    const [broadcastForce, setBroadcastForce] = useState(false);
+    const [broadcastResult, setBroadcastResult] = useState<{ delivered: number; skipped: number } | null>(null);
+
+    const sessionsQuery = trpc.cloudDev.listSessions.useQuery(undefined, { refetchInterval: 5000 });
+    const statsQuery = trpc.cloudDev.stats.useQuery(undefined, { refetchInterval: 5000 });
+    const providersQuery = trpc.cloudDev.listProviders.useQuery();
+
+    const createMutation = trpc.cloudDev.createSession.useMutation({
+        onSuccess: () => {
+            void sessionsQuery.refetch();
+            setShowCreateForm(false);
+            setNewSession({ provider: "jules", projectName: "", task: "", autoAcceptPlan: false });
+        },
+    });
+    const updateStatusMutation = trpc.cloudDev.updateSessionStatus.useMutation({
+        onSuccess: () => void sessionsQuery.refetch(),
+    });
+    const deleteMutation = trpc.cloudDev.deleteSession.useMutation({
+        onSuccess: () => void sessionsQuery.refetch(),
+    });
+    const broadcastMutation = trpc.cloudDev.broadcastMessage.useMutation({
+        onSuccess: (result) => {
+            setBroadcastResult({ delivered: result.delivered, skipped: result.skipped });
+            setBroadcastMsg("");
+        },
     });
 
-    const refreshSessions = useCallback(() => {
-        // In production, this would call the tRPC endpoint.
-        // For now, load from localStorage as a client-side store.
-        setLoading(true);
-        try {
-            const stored = safeStorageGet("borg-cloud-dev-sessions");
-            if (stored) {
-                setSessions(JSON.parse(stored));
-            }
-        } catch {
-            // ignore
-        }
-        setLoading(false);
-    }, []);
-
-    useEffect(() => {
-        refreshSessions();
-    }, [refreshSessions]);
-
-    const persistSessions = useCallback((updated: CloudDevSession[]) => {
-        setSessions(updated);
-        safeStorageSet("borg-cloud-dev-sessions", JSON.stringify(updated));
-    }, []);
-
-    const createSession = useCallback(() => {
+    const handleCreate = useCallback(() => {
         if (!newSession.projectName.trim() || !newSession.task.trim()) return;
+        createMutation.mutate(newSession);
+    }, [newSession, createMutation]);
 
-        const now = new Date().toISOString();
-        const session: CloudDevSession = {
-            id: `cds-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-            provider: newSession.provider,
-            projectName: newSession.projectName.trim(),
-            task: newSession.task.trim(),
-            status: "pending",
-            createdAt: now,
-            updatedAt: now,
-        };
+    const handleBroadcast = useCallback(() => {
+        if (!broadcastMsg.trim()) return;
+        broadcastMutation.mutate({ content: broadcastMsg.trim(), force: broadcastForce });
+    }, [broadcastMsg, broadcastForce, broadcastMutation]);
 
-        const updated = [session, ...sessions];
-        persistSessions(updated);
-        setNewSession({ provider: "jules", projectName: "", task: "" });
-        setShowCreateForm(false);
-    }, [newSession, sessions, persistSessions]);
+    const sessions: SessionSummary[] = (sessionsQuery.data ?? []) as SessionSummary[];
+    const stats = statsQuery.data;
+    const providers = providersQuery.data ?? [];
 
-    const updateStatus = useCallback(
-        (sessionId: string, status: SessionStatus) => {
-            const updated = sessions.map((s) =>
-                s.id === sessionId
-                    ? { ...s, status, updatedAt: new Date().toISOString() }
-                    : s
-            );
-            persistSessions(updated);
-        },
-        [sessions, persistSessions]
-    );
-
-    const deleteSession = useCallback(
-        (sessionId: string) => {
-            const updated = sessions.filter((s) => s.id !== sessionId);
-            persistSessions(updated);
-        },
-        [sessions, persistSessions]
-    );
-
-    const activeSessions = sessions.filter((s) => s.status === "active").length;
-    const pendingSessions = sessions.filter((s) => s.status === "pending").length;
+    const activeSessions = useMemo(() => sessions.filter((s) => s.status === "active").length, [sessions]);
+    const pendingSessions = useMemo(() => sessions.filter((s) => s.status === "pending").length, [sessions]);
+    const awaitingApproval = useMemo(() => sessions.filter((s) => s.status === "awaiting_approval").length, [sessions]);
 
     return (
-        <div className="w-full h-full flex flex-col bg-black text-white">
-            {/* Header */}
-            <div className="p-4 border-b border-zinc-800 flex flex-wrap items-center justify-between gap-3 bg-zinc-900">
+        <div className="w-full h-full flex flex-col bg-black text-white overflow-auto">
+            <div className="p-4 border-b border-zinc-800 flex flex-wrap items-center justify-between gap-3 bg-zinc-900 sticky top-0 z-10">
                 <div>
                     <h1 className="text-xl font-bold flex items-center gap-2">
-                        <Cloud className="h-5 w-5 text-cyan-400" />
-                        Cloud Dev Environments
+                        <Cloud className="h-5 w-5 text-cyan-400" /> Cloud Dev Environments
                     </h1>
-                    <p className="text-zinc-400 text-sm">
-                        Manage cloud development agents across all providers from one place.
-                    </p>
+                    <p className="text-zinc-400 text-sm">Manage cloud dev agents across all providers from one place.</p>
                 </div>
                 <div className="flex items-center gap-2">
-                    <button
-                        onClick={refreshSessions}
-                        className="px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 rounded text-xs flex items-center gap-1.5"
-                    >
-                        <RefreshCw className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`} />
-                        Refresh
+                    <button onClick={() => void sessionsQuery.refetch()}
+                        className="px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 rounded text-xs flex items-center gap-1.5">
+                        <RefreshCw className={`h-3.5 w-3.5 ${sessionsQuery.isFetching ? "animate-spin" : ""}`} /> Refresh
                     </button>
-                    <button
-                        onClick={() => setShowCreateForm(!showCreateForm)}
-                        className="px-3 py-1.5 bg-cyan-700 hover:bg-cyan-600 rounded text-xs flex items-center gap-1.5"
-                    >
-                        <Plus className="h-3.5 w-3.5" />
-                        New Session
+                    <button onClick={() => setShowBroadcast(!showBroadcast)}
+                        className="px-3 py-1.5 bg-purple-700 hover:bg-purple-600 rounded text-xs flex items-center gap-1.5">
+                        <Radio className="h-3.5 w-3.5" /> Broadcast
+                    </button>
+                    <button onClick={() => setShowCreateForm(!showCreateForm)}
+                        className="px-3 py-1.5 bg-cyan-700 hover:bg-cyan-600 rounded text-xs flex items-center gap-1.5">
+                        <Plus className="h-3.5 w-3.5" /> New Session
                     </button>
                 </div>
             </div>
 
-            {/* Stats Bar */}
-            <div className="px-4 py-2 border-b border-zinc-800 bg-zinc-950 flex items-center gap-6 text-xs">
+            <div className="px-4 py-2 border-b border-zinc-800 bg-zinc-950 flex flex-wrap items-center gap-6 text-xs">
                 <div className="flex items-center gap-1.5">
                     <Activity className="h-3.5 w-3.5 text-emerald-400" />
                     <span className="text-zinc-400">Active:</span>
@@ -227,169 +306,195 @@ export default function CloudDevDashboardPage() {
                     <span className="text-zinc-400">Pending:</span>
                     <span className="text-yellow-300 font-semibold">{pendingSessions}</span>
                 </div>
+                {awaitingApproval > 0 && (
+                    <div className="flex items-center gap-1.5">
+                        <Zap className="h-3.5 w-3.5 text-amber-400 animate-pulse" />
+                        <span className="text-zinc-400">Awaiting Approval:</span>
+                        <span className="text-amber-300 font-semibold">{awaitingApproval}</span>
+                    </div>
+                )}
                 <div className="flex items-center gap-1.5">
                     <Cloud className="h-3.5 w-3.5 text-blue-400" />
                     <span className="text-zinc-400">Total:</span>
                     <span className="text-blue-300 font-semibold">{sessions.length}</span>
                 </div>
+                {stats && (
+                    <div className="flex items-center gap-1.5">
+                        <MessageSquare className="h-3 w-3 text-zinc-500" />
+                        <span className="text-zinc-500">{stats.totalMessages} msgs / {stats.totalLogs} logs</span>
+                    </div>
+                )}
                 <div className="flex items-center gap-1.5 ml-auto">
-                    <span className="text-zinc-500">Providers:</span>
                     {providers.map((p) => (
-                        <span
-                            key={p.provider}
-                            className={`px-1.5 py-0.5 rounded text-[10px] ${p.enabled
-                                    ? "bg-emerald-900/40 text-emerald-300 border border-emerald-700/40"
-                                    : "bg-zinc-800 text-zinc-500 border border-zinc-700/40"
-                                }`}
-                        >
-                            {p.name}
+                        <span key={p.provider} className={`px-1.5 py-0.5 rounded text-[10px] border ${
+                            p.enabled ? "bg-emerald-900/40 text-emerald-300 border-emerald-700/40" : "bg-zinc-800 text-zinc-500 border-zinc-700/40"
+                        }`}>
+                            {p.name}{p.hasApiKey ? " \u2713" : ""}
                         </span>
                     ))}
                 </div>
             </div>
 
-            {/* Create Session Form */}
+            {showBroadcast && (
+                <div className="px-4 py-3 border-b border-zinc-800 bg-purple-950/20">
+                    <h2 className="text-sm font-semibold mb-2 flex items-center gap-2">
+                        <Radio className="h-4 w-4 text-purple-400" /> Broadcast Message
+                        <span className="text-xs text-zinc-500 font-normal">
+                            - sends to all active sessions; Force delivers to completed/failed too
+                        </span>
+                    </h2>
+                    <div className="flex flex-wrap items-end gap-2">
+                        <textarea rows={2} value={broadcastMsg} onChange={(e) => setBroadcastMsg(e.target.value)}
+                            placeholder="Enter message to broadcast to all sessions..."
+                            className="flex-1 min-w-[280px] bg-zinc-900 border border-zinc-700 rounded px-3 py-1.5 text-sm text-white outline-none focus:border-purple-500 resize-none" />
+                        <div className="flex flex-col gap-1.5">
+                            <label className="flex items-center gap-1.5 text-xs text-zinc-400 cursor-pointer select-none">
+                                <input type="checkbox" className="accent-amber-500" checked={broadcastForce}
+                                    onChange={(e) => setBroadcastForce(e.target.checked)} />
+                                Force (include terminal sessions)
+                            </label>
+                            <button onClick={handleBroadcast} disabled={broadcastMutation.isPending || !broadcastMsg.trim()}
+                                className="px-3 py-1.5 bg-purple-700 hover:bg-purple-600 disabled:opacity-40 rounded text-xs flex items-center gap-1.5">
+                                {broadcastMutation.isPending ? <RefreshCw className="h-3.5 w-3.5 animate-spin" /> : <Radio className="h-3.5 w-3.5" />}
+                                Broadcast
+                            </button>
+                        </div>
+                    </div>
+                    {broadcastResult && (
+                        <p className="mt-2 text-xs text-emerald-400">
+                            Delivered to {broadcastResult.delivered} session{broadcastResult.delivered !== 1 ? "s" : ""}
+                            {broadcastResult.skipped > 0 ? `, skipped ${broadcastResult.skipped}` : ""}.
+                        </p>
+                    )}
+                </div>
+            )}
+
             {showCreateForm && (
                 <div className="px-4 py-3 border-b border-zinc-800 bg-zinc-950/80">
                     <h2 className="text-sm font-semibold mb-2">Create Cloud Dev Session</h2>
                     <div className="flex flex-wrap gap-2">
-                        <select
-                            value={newSession.provider}
-                            onChange={(e) =>
-                                setNewSession({ ...newSession, provider: e.target.value as CloudDevProvider })
-                            }
-                            className="bg-zinc-900 border border-zinc-700 rounded px-2 py-1.5 text-sm text-white"
-                        >
-                            {providers.map((p) => (
-                                <option key={p.provider} value={p.provider}>
-                                    {p.name}
-                                </option>
+                        <select value={newSession.provider}
+                            onChange={(e) => setNewSession({ ...newSession, provider: e.target.value as CloudDevProvider })}
+                            className="bg-zinc-900 border border-zinc-700 rounded px-2 py-1.5 text-sm text-white">
+                            {Object.entries(PROVIDER_LABELS).map(([val, label]) => (
+                                <option key={val} value={val}>{label}</option>
                             ))}
                         </select>
-                        <input
-                            type="text"
-                            value={newSession.projectName}
+                        <input type="text" value={newSession.projectName}
                             onChange={(e) => setNewSession({ ...newSession, projectName: e.target.value })}
                             placeholder="Project name"
-                            className="flex-1 min-w-[180px] bg-zinc-900 border border-zinc-700 rounded px-2 py-1.5 text-sm text-white outline-none focus:border-cyan-500"
-                        />
-                        <input
-                            type="text"
-                            value={newSession.task}
+                            className="flex-1 min-w-[160px] bg-zinc-900 border border-zinc-700 rounded px-2 py-1.5 text-sm text-white outline-none focus:border-cyan-500" />
+                        <input type="text" value={newSession.task}
                             onChange={(e) => setNewSession({ ...newSession, task: e.target.value })}
                             placeholder="Task description"
-                            className="flex-[2] min-w-[240px] bg-zinc-900 border border-zinc-700 rounded px-2 py-1.5 text-sm text-white outline-none focus:border-cyan-500"
-                        />
-                        <button
-                            onClick={createSession}
-                            className="px-3 py-1.5 bg-cyan-700 hover:bg-cyan-600 rounded text-xs"
-                        >
+                            className="flex-[2] min-w-[220px] bg-zinc-900 border border-zinc-700 rounded px-2 py-1.5 text-sm text-white outline-none focus:border-cyan-500" />
+                        <label className="flex items-center gap-1.5 text-xs text-zinc-400 cursor-pointer select-none">
+                            <input type="checkbox" className="accent-amber-500" checked={newSession.autoAcceptPlan}
+                                onChange={(e) => setNewSession({ ...newSession, autoAcceptPlan: e.target.checked })} />
+                            Auto-accept plan
+                        </label>
+                        <button onClick={handleCreate} disabled={createMutation.isPending}
+                            className="px-3 py-1.5 bg-cyan-700 hover:bg-cyan-600 disabled:opacity-40 rounded text-xs">
                             Create
                         </button>
-                        <button
-                            onClick={() => setShowCreateForm(false)}
-                            className="px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 rounded text-xs"
-                        >
+                        <button onClick={() => setShowCreateForm(false)}
+                            className="px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 rounded text-xs">
                             Cancel
                         </button>
                     </div>
                 </div>
             )}
 
-            {/* Sessions List */}
-            <div className="flex-1 overflow-auto p-4">
+            <div className="flex-1 p-4 space-y-3">
                 {sessions.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center h-full text-zinc-500">
+                    <div className="flex flex-col items-center justify-center py-20 text-zinc-500">
                         <Cloud className="h-12 w-12 mb-3 opacity-30" />
                         <p className="text-sm">No cloud dev sessions yet.</p>
-                        <p className="text-xs mt-1">
-                            Click &quot;New Session&quot; to assign a project to a cloud dev agent.
-                        </p>
+                        <p className="text-xs mt-1">Click &quot;New Session&quot; to assign a project to a cloud dev agent.</p>
                     </div>
                 ) : (
-                    <div className="space-y-2">
-                        {sessions.map((session) => (
-                            <div
-                                key={session.id}
-                                className={`border rounded-lg px-4 py-3 ${STATUS_COLORS[session.status]}`}
-                            >
+                    sessions.map((session) => (
+                        <div key={session.id} className="space-y-1">
+                            <div className={`border rounded-lg px-4 py-3 ${STATUS_COLORS[session.status]}`}>
                                 <div className="flex items-center justify-between gap-3">
                                     <div className="flex-1 min-w-0">
                                         <div className="flex items-center gap-2 mb-1">
                                             <span className="text-[10px] px-1.5 py-0.5 rounded bg-zinc-800/80 text-zinc-300 border border-zinc-600/40">
                                                 {PROVIDER_LABELS[session.provider]}
                                             </span>
-                                            <span className="font-semibold text-sm truncate">
-                                                {session.projectName}
-                                            </span>
+                                            <span className="font-semibold text-sm truncate">{session.projectName}</span>
                                             <span className="text-[10px] px-1.5 py-0.5 rounded uppercase font-medium">
                                                 {session.status.replace("_", " ")}
                                             </span>
+                                            {session.autoAcceptPlan && (
+                                                <span className="text-[9px] px-1 py-0.5 rounded bg-amber-900/40 text-amber-400 border border-amber-700/30">
+                                                    auto-accept
+                                                </span>
+                                            )}
                                         </div>
                                         <p className="text-xs text-zinc-300 truncate">{session.task}</p>
-                                        <p className="text-[10px] text-zinc-500 mt-1">
-                                            Created {new Date(session.createdAt).toLocaleString()} · Updated{" "}
-                                            {new Date(session.updatedAt).toLocaleString()}
+                                        <p className="text-[10px] text-zinc-500 mt-0.5">
+                                            Updated {new Date(session.updatedAt).toLocaleString()} &middot;{" "}
+                                            <span className="text-zinc-600">
+                                                {session.messageCount} msg{session.messageCount !== 1 ? "s" : ""} / {session.logCount} log{session.logCount !== 1 ? "s" : ""}
+                                            </span>
                                         </p>
                                     </div>
-                                    <div className="flex items-center gap-1">
+                                    <div className="flex items-center gap-1 shrink-0">
+                                        <button
+                                            onClick={() => setExpandedSession(expandedSession === session.id ? null : session.id)}
+                                            className="p-1.5 hover:bg-zinc-700/40 rounded" title="Toggle chat / logs">
+                                            {expandedSession === session.id ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}
+                                        </button>
+                                        {session.status === "awaiting_approval" && (
+                                            <button onClick={() => updateStatusMutation.mutate({ sessionId: session.id, status: "active" })}
+                                                className="p-1.5 hover:bg-amber-800/40 rounded" title="Accept Plan">
+                                                <CheckCircle2 className="h-3.5 w-3.5 text-amber-400" />
+                                            </button>
+                                        )}
                                         {session.status === "pending" && (
-                                            <button
-                                                onClick={() => updateStatus(session.id, "active")}
-                                                className="p-1.5 hover:bg-emerald-800/40 rounded"
-                                                title="Start"
-                                            >
+                                            <button onClick={() => updateStatusMutation.mutate({ sessionId: session.id, status: "active" })}
+                                                className="p-1.5 hover:bg-emerald-800/40 rounded" title="Start">
                                                 <Play className="h-3.5 w-3.5" />
                                             </button>
                                         )}
                                         {session.status === "active" && (
-                                            <button
-                                                onClick={() => updateStatus(session.id, "paused")}
-                                                className="p-1.5 hover:bg-blue-800/40 rounded"
-                                                title="Pause"
-                                            >
+                                            <button onClick={() => updateStatusMutation.mutate({ sessionId: session.id, status: "paused" })}
+                                                className="p-1.5 hover:bg-blue-800/40 rounded" title="Pause">
                                                 <Pause className="h-3.5 w-3.5" />
                                             </button>
                                         )}
                                         {session.status === "paused" && (
-                                            <button
-                                                onClick={() => updateStatus(session.id, "active")}
-                                                className="p-1.5 hover:bg-emerald-800/40 rounded"
-                                                title="Resume"
-                                            >
+                                            <button onClick={() => updateStatusMutation.mutate({ sessionId: session.id, status: "active" })}
+                                                className="p-1.5 hover:bg-emerald-800/40 rounded" title="Resume">
                                                 <Play className="h-3.5 w-3.5" />
                                             </button>
                                         )}
                                         {(session.status === "active" || session.status === "paused") && (
-                                            <button
-                                                onClick={() => updateStatus(session.id, "completed")}
-                                                className="p-1.5 hover:bg-green-800/40 rounded"
-                                                title="Mark Complete"
-                                            >
+                                            <button onClick={() => updateStatusMutation.mutate({ sessionId: session.id, status: "completed" })}
+                                                className="p-1.5 hover:bg-green-800/40 rounded" title="Mark Complete">
                                                 <CheckCircle2 className="h-3.5 w-3.5" />
                                             </button>
                                         )}
-                                        {session.status !== "cancelled" && session.status !== "completed" && (
-                                            <button
-                                                onClick={() => updateStatus(session.id, "cancelled")}
-                                                className="p-1.5 hover:bg-red-800/40 rounded"
-                                                title="Cancel"
-                                            >
+                                        {!TERMINAL.has(session.status) && (
+                                            <button onClick={() => updateStatusMutation.mutate({ sessionId: session.id, status: "cancelled" })}
+                                                className="p-1.5 hover:bg-red-800/40 rounded" title="Cancel">
                                                 <XCircle className="h-3.5 w-3.5" />
                                             </button>
                                         )}
-                                        <button
-                                            onClick={() => deleteSession(session.id)}
-                                            className="p-1.5 hover:bg-zinc-700/40 rounded"
-                                            title="Delete"
-                                        >
+                                        {session.status === "failed" && <AlertCircle className="h-3.5 w-3.5 text-red-400" />}
+                                        <button onClick={() => deleteMutation.mutate({ sessionId: session.id })}
+                                            className="p-1.5 hover:bg-zinc-700/40 rounded" title="Delete">
                                             <Trash2 className="h-3.5 w-3.5" />
                                         </button>
                                     </div>
                                 </div>
                             </div>
-                        ))}
-                    </div>
+                            {expandedSession === session.id && (
+                                <SessionPanel session={session} onClose={() => setExpandedSession(null)} />
+                            )}
+                        </div>
+                    ))
                 )}
             </div>
         </div>
