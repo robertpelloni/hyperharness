@@ -100,10 +100,18 @@ const BROADCAST_SKIPPED_SAMPLE_LIMIT = 25;
 function selectBroadcastTargets(options: {
     force: boolean;
     statusFilter?: CloudDevSession['status'][];
+    sessionIdFilter?: string[];
 }) {
-    const { force, statusFilter } = options;
+    const { force, statusFilter, sessionIdFilter } = options;
+    const sessionIdSet = sessionIdFilter && sessionIdFilter.length > 0
+        ? new Set(sessionIdFilter)
+        : null;
 
     return sessions.filter((session) => {
+        if (sessionIdSet && !sessionIdSet.has(session.id)) {
+            return false;
+        }
+
         if (statusFilter && statusFilter.length > 0) {
             return statusFilter.includes(session.status);
         }
@@ -116,9 +124,14 @@ function selectBroadcastTargets(options: {
 function classifyBroadcastSkipReason(options: {
     force: boolean;
     statusFilter?: CloudDevSession['status'][];
+    sessionIdFilter?: string[];
     session: CloudDevSession;
 }) {
-    const { force, statusFilter, session } = options;
+    const { force, statusFilter, sessionIdFilter, session } = options;
+
+    if (sessionIdFilter && sessionIdFilter.length > 0 && !sessionIdFilter.includes(session.id)) {
+        return 'session_filter_mismatch' as const;
+    }
 
     if (statusFilter && statusFilter.length > 0 && !statusFilter.includes(session.status)) {
         return 'status_filter_mismatch' as const;
@@ -388,6 +401,7 @@ export const cloudDevRouter = t.router({
      *
      * - `force: true` delivers to terminal sessions (completed/failed/cancelled).
      * - `statusFilter` limits delivery to sessions whose status is in the list.
+     * - `sessionIds` limits delivery to explicit session IDs.
      * - Returns a per-session delivery report.
      */
     broadcastMessage: publicProcedure
@@ -397,12 +411,15 @@ export const cloudDevRouter = t.router({
                 force: z.boolean().default(false),
                 // If provided, only sessions with one of these statuses receive the message
                 statusFilter: z.array(CloudDevSessionStatusSchema).optional(),
+                // If provided, only these session IDs are eligible to receive the message
+                sessionIds: z.array(z.string()).optional(),
             })
         )
         .mutation(({ input }) => {
             const targets = selectBroadcastTargets({
                 force: input.force,
                 statusFilter: input.statusFilter,
+                sessionIdFilter: input.sessionIds,
             });
             const targetIds = new Set(targets.map((session) => session.id));
             const skippedSessions = sessions.filter((session) => !targetIds.has(session.id));
@@ -412,6 +429,7 @@ export const cloudDevRouter = t.router({
                 const reason = classifyBroadcastSkipReason({
                     force: input.force,
                     statusFilter: input.statusFilter,
+                    sessionIdFilter: input.sessionIds,
                     session,
                 });
                 skippedByReason[reason] = (skippedByReason[reason] ?? 0) + 1;
@@ -428,6 +446,7 @@ export const cloudDevRouter = t.router({
                 skipped: sessions.length - results.length,
                 results,
                 skippedByReason,
+                skippedSessionIds: skippedSessions.map((session) => session.id),
                 skippedSessions: skippedSessions.slice(0, BROADCAST_SKIPPED_SAMPLE_LIMIT).map((session) => ({
                     id: session.id,
                     provider: session.provider,
@@ -436,6 +455,7 @@ export const cloudDevRouter = t.router({
                     reason: classifyBroadcastSkipReason({
                         force: input.force,
                         statusFilter: input.statusFilter,
+                        sessionIdFilter: input.sessionIds,
                         session,
                     }),
                 })),
@@ -452,12 +472,14 @@ export const cloudDevRouter = t.router({
             z.object({
                 force: z.boolean().default(false),
                 statusFilter: z.array(CloudDevSessionStatusSchema).optional(),
+                sessionIds: z.array(z.string()).optional(),
             })
         )
         .query(({ input }) => {
             const targets = selectBroadcastTargets({
                 force: input.force,
                 statusFilter: input.statusFilter,
+                sessionIdFilter: input.sessionIds,
             });
             const targetIds = new Set(targets.map((session) => session.id));
             const skippedSessions = sessions.filter((session) => !targetIds.has(session.id));
@@ -467,6 +489,7 @@ export const cloudDevRouter = t.router({
                 const reason = classifyBroadcastSkipReason({
                     force: input.force,
                     statusFilter: input.statusFilter,
+                    sessionIdFilter: input.sessionIds,
                     session,
                 });
                 skippedByReason[reason] = (skippedByReason[reason] ?? 0) + 1;
@@ -491,6 +514,7 @@ export const cloudDevRouter = t.router({
                     updatedAt: session.updatedAt,
                 })),
                 skippedByReason,
+                skippedSessionIds: skippedSessions.map((session) => session.id),
                 skippedSessions: skippedSessions.slice(0, BROADCAST_SKIPPED_SAMPLE_LIMIT).map((session) => ({
                     id: session.id,
                     provider: session.provider,
@@ -499,6 +523,7 @@ export const cloudDevRouter = t.router({
                     reason: classifyBroadcastSkipReason({
                         force: input.force,
                         statusFilter: input.statusFilter,
+                        sessionIdFilter: input.sessionIds,
                         session,
                     }),
                 })),

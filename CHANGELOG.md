@@ -4,6 +4,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.7.189] — 2026-03-15
+
+- feat(core/cloud-dev): `broadcastMessage` and `previewBroadcastRecipients` now accept optional `sessionIds` targeting and return full `skippedSessionIds` arrays for precise follow-up retries.
+- changed(core/cloud-dev): broadcast skip diagnostics now classify explicit session-scope exclusions via `session_filter_mismatch`, improving reason-code fidelity when operators target subsets.
+- feat(web/cloud-dev): added one-click `Retry last to skipped only` and `Retry skipped only + Force` actions in post-send diagnostics, preventing duplicate sends to sessions that already received the broadcast.
+
 ## [2.7.188] — 2026-03-15
 
 - feat(web/cloud-dev): added one-click `Use only suggested` targeting controls in both preview and post-send skip diagnostics, replacing broad status filters with mismatch-derived suggested statuses.

@@ -35,7 +35,7 @@ type CloudDevProvider = "jules" | "codex" | "copilot-workspace" | "devin" | "cus
 type SessionStatus = "pending" | "active" | "paused" | "completed" | "failed" | "awaiting_approval" | "cancelled";
 type ChatRole = "user" | "agent" | "system" | "plan";
 type LogLevel = "debug" | "info" | "warn" | "error";
-type BroadcastSkipReason = "status_filter_mismatch" | "terminal_requires_force" | "other";
+type BroadcastSkipReason = "session_filter_mismatch" | "status_filter_mismatch" | "terminal_requires_force" | "other";
 
 interface SessionSummary {
     id: string;
@@ -90,11 +90,13 @@ interface BroadcastPreview {
     sessionIds: string[];
     recipients: BroadcastPreviewRecipient[];
     skippedByReason: Partial<Record<BroadcastSkipReason, number>>;
+    skippedSessionIds: string[];
     skippedSessions: BroadcastSkippedSession[];
     skippedSessionsSampled: boolean;
 }
 
 const BROADCAST_SKIP_REASON_LABELS: Record<BroadcastSkipReason, string> = {
+    session_filter_mismatch: "session mismatch",
     status_filter_mismatch: "status mismatch",
     terminal_requires_force: "terminal requires Force",
     other: "other",
@@ -343,12 +345,14 @@ export default function CloudDevDashboardPage() {
         content: string;
         force: boolean;
         statusFilter?: SessionStatus[];
+        sessionIds?: string[];
     } | null>(null);
     const [broadcastResult, setBroadcastResult] = useState<{
         delivered: number;
         skipped: number;
         statuses: SessionStatus[];
         skippedByReason: Partial<Record<BroadcastSkipReason, number>>;
+        skippedSessionIds: string[];
         skippedSessions: BroadcastSkippedSession[];
         skippedSessionsSampled: boolean;
     } | null>(null);
@@ -379,6 +383,7 @@ export default function CloudDevDashboardPage() {
                 skipped: result.skipped,
                 statuses: Array.from(new Set((result.results ?? []).map((entry) => entry.status as SessionStatus))),
                 skippedByReason: (result.skippedByReason ?? {}) as Partial<Record<BroadcastSkipReason, number>>,
+                skippedSessionIds: (result.skippedSessionIds ?? []) as string[],
                 skippedSessions: (result.skippedSessions ?? []) as BroadcastSkippedSession[],
                 skippedSessionsSampled: Boolean(result.skippedSessionsSampled),
             });
@@ -406,12 +411,14 @@ export default function CloudDevDashboardPage() {
             content: broadcastMsg.trim(),
             force: broadcastForce,
             statusFilter: broadcastStatusFilter.length > 0 ? [...broadcastStatusFilter] : undefined,
+            sessionIds: undefined,
         };
         setLastBroadcastPayload(payload);
         broadcastMutation.mutate({
             content: payload.content,
             force: payload.force,
             statusFilter: payload.statusFilter,
+            sessionIds: payload.sessionIds,
         });
     }, [broadcastMsg, broadcastForce, broadcastMutation, broadcastStatusFilter]);
 
@@ -474,12 +481,39 @@ export default function CloudDevDashboardPage() {
         const statusFilter = mergeStatusFilter(baseFilter, statuses);
         setBroadcastStatusFilter(statusFilter);
         setBroadcastForce(force);
-        broadcastMutation.mutate({
+        const payload = {
             content: lastBroadcastPayload.content,
             force,
             statusFilter: statusFilter.length > 0 ? statusFilter : undefined,
+            sessionIds: lastBroadcastPayload.sessionIds,
+        };
+        setLastBroadcastPayload(payload);
+        broadcastMutation.mutate({
+            content: payload.content,
+            force: payload.force,
+            statusFilter: payload.statusFilter,
+            sessionIds: payload.sessionIds,
         });
     }, [broadcastMutation, broadcastStatusFilter, lastBroadcastPayload, mergeStatusFilter]);
+
+    const retryLastBroadcastToSessionIds = useCallback((sessionIds: string[], force: boolean) => {
+        if (!lastBroadcastPayload?.content || sessionIds.length === 0) return;
+        setBroadcastForce(force);
+        setBroadcastStatusFilter([]);
+        const payload = {
+            content: lastBroadcastPayload.content,
+            force,
+            statusFilter: undefined,
+            sessionIds,
+        };
+        setLastBroadcastPayload(payload);
+        broadcastMutation.mutate({
+            content: payload.content,
+            force: payload.force,
+            statusFilter: payload.statusFilter,
+            sessionIds: payload.sessionIds,
+        });
+    }, [broadcastMutation, lastBroadcastPayload]);
 
     const resultSkippedStatusSuggestions = useMemo(() => {
         if (!broadcastResult) return [] as SessionStatus[];
@@ -664,7 +698,7 @@ export default function CloudDevDashboardPage() {
                                         )}
                                     </div>
                                 )}
-                                {(broadcastPreview.skippedByReason.terminal_requires_force || broadcastPreview.skippedByReason.status_filter_mismatch || broadcastPreview.skippedByReason.other) && (
+                                {(broadcastPreview.skippedByReason.session_filter_mismatch || broadcastPreview.skippedByReason.terminal_requires_force || broadcastPreview.skippedByReason.status_filter_mismatch || broadcastPreview.skippedByReason.other) && (
                                     <div className="space-y-1">
                                         <div className="text-[10px] uppercase tracking-wide text-purple-300/80">Skip diagnostics</div>
                                         <div className="flex flex-wrap items-center gap-1.5">
@@ -887,6 +921,31 @@ export default function CloudDevDashboardPage() {
                                                     </button>
                                                 )}
                                             </div>
+                                        </div>
+                                    )}
+                                    {broadcastResult.skippedSessionIds.length > 0 && lastBroadcastPayload?.content && (
+                                        <div className="flex flex-wrap items-center gap-1.5">
+                                            <button
+                                                type="button"
+                                                disabled={broadcastMutation.isPending}
+                                                onClick={() => retryLastBroadcastToSessionIds(broadcastResult.skippedSessionIds, false)}
+                                                className="rounded border border-cyan-500/60 bg-cyan-700/35 px-2 py-0.5 text-[10px] text-cyan-100 hover:bg-cyan-700/55 disabled:opacity-50"
+                                            >
+                                                Retry last to skipped only
+                                            </button>
+                                            <button
+                                                type="button"
+                                                disabled={broadcastMutation.isPending}
+                                                onClick={() => retryLastBroadcastToSessionIds(broadcastResult.skippedSessionIds, true)}
+                                                className="rounded border border-amber-500/60 bg-amber-700/35 px-2 py-0.5 text-[10px] text-amber-100 hover:bg-amber-700/55 disabled:opacity-50"
+                                            >
+                                                Retry skipped only + Force
+                                            </button>
+                                            {broadcastResult.skippedSessionsSampled && (
+                                                <span className="text-[10px] text-zinc-500">
+                                                    Skipped rows are sampled, but retry targets full skipped ID set.
+                                                </span>
+                                            )}
                                         </div>
                                     )}
                                 </div>
