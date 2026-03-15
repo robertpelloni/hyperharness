@@ -10,7 +10,7 @@ import { SortableContext, arrayMove, rectSortingStrategy, useSortable } from "@d
 import { CSS } from "@dnd-kit/utilities";
 import { cn } from "@/lib/utils";
 import { SIDEBAR_SECTIONS } from "./mcp/nav-config";
-import { buildNavItemsByNormalizedHref, hasNavValidationIssues, isNavHrefActive, matchesNavQuery, normalizeNavHref, normalizeNavHrefList, validateSidebarSections } from "./mcp/nav-validation";
+import { buildNavItemsByNormalizedHref, extractStringArray, hasNavValidationIssues, isNavHrefActive, matchesNavQuery, normalizeNavHref, normalizeNavHrefList, sanitizeCollapsedSections, sanitizeRecentSearches, validateSidebarSections } from "./mcp/nav-validation";
 
 interface SidebarProps extends React.HTMLAttributes<HTMLDivElement> { }
 
@@ -129,8 +129,8 @@ export function Sidebar({ className }: SidebarProps) {
             if (!raw) {
                 return;
             }
-            const parsed = JSON.parse(raw) as Record<string, boolean>;
-            setCollapsedSections(parsed ?? {});
+            const parsed = JSON.parse(raw);
+            setCollapsedSections(sanitizeCollapsedSections(parsed));
         } catch {
             // ignore invalid stored state
         }
@@ -143,9 +143,7 @@ export function Sidebar({ className }: SidebarProps) {
                 return;
             }
             const parsed = JSON.parse(raw);
-            if (Array.isArray(parsed)) {
-                setFavorites(normalizeNavHrefList(parsed.filter((value): value is string => typeof value === 'string')));
-            }
+            setFavorites(normalizeNavHrefList(extractStringArray(parsed)));
         } catch {
             // ignore invalid stored state
         }
@@ -158,9 +156,7 @@ export function Sidebar({ className }: SidebarProps) {
                 return;
             }
             const parsed = JSON.parse(raw);
-            if (Array.isArray(parsed)) {
-                setRecentRoutes(normalizeNavHrefList(parsed.filter((value): value is string => typeof value === 'string')).slice(0, MAX_RECENT_ROUTES));
-            }
+            setRecentRoutes(normalizeNavHrefList(extractStringArray(parsed)).slice(0, MAX_RECENT_ROUTES));
         } catch {
             // ignore invalid stored state
         }
@@ -173,9 +169,7 @@ export function Sidebar({ className }: SidebarProps) {
                 return;
             }
             const parsed = JSON.parse(raw);
-            if (Array.isArray(parsed)) {
-                setRecentSearches(parsed.filter((value): value is string => typeof value === 'string'));
-            }
+            setRecentSearches(sanitizeRecentSearches(parsed, MAX_RECENT_SEARCHES));
         } catch {
             // ignore invalid stored state
         }
@@ -362,8 +356,9 @@ export function Sidebar({ className }: SidebarProps) {
     };
 
     const persistRecentSearches = (next: string[]) => {
-        setRecentSearches(next);
-        safeStorageSet(SIDEBAR_RECENT_SEARCHES_STORAGE_KEY, JSON.stringify(next));
+        const sanitized = sanitizeRecentSearches(next, MAX_RECENT_SEARCHES);
+        setRecentSearches(sanitized);
+        safeStorageSet(SIDEBAR_RECENT_SEARCHES_STORAGE_KEY, JSON.stringify(sanitized));
     };
 
     const rememberPaletteSearch = (value: string) => {
@@ -371,7 +366,7 @@ export function Sidebar({ className }: SidebarProps) {
         if (!trimmed) {
             return;
         }
-        const next = [trimmed, ...recentSearches.filter((entry) => entry !== trimmed)].slice(0, MAX_RECENT_SEARCHES);
+        const next = [trimmed, ...recentSearches];
         persistRecentSearches(next);
     };
 
@@ -481,23 +476,16 @@ export function Sidebar({ className }: SidebarProps) {
                 recentSearches?: string[];
             };
 
-            const nextCollapsed = parsed.collapsedSections ?? {};
-            const nextFavoritesRaw = Array.isArray(parsed.favorites) ? parsed.favorites : [];
+            const nextCollapsed = sanitizeCollapsedSections(parsed.collapsedSections);
             const nextFavorites = normalizeNavHrefList(
-                nextFavoritesRaw.filter((href): href is string => typeof href === 'string')
+                extractStringArray(parsed.favorites)
             ).filter((href) => allItemsByHref.has(href));
-            const nextRecentRaw = Array.isArray(parsed.recentRoutes) ? parsed.recentRoutes : [];
             const nextRecent = normalizeNavHrefList(
-                nextRecentRaw.filter((href): href is string => typeof href === 'string')
+                extractStringArray(parsed.recentRoutes)
             )
                 .filter((href) => allItemsByHref.has(href))
                 .slice(0, MAX_RECENT_ROUTES);
-            const nextSearchesRaw = Array.isArray(parsed.recentSearches) ? parsed.recentSearches : [];
-            const nextSearches = nextSearchesRaw
-                .filter((value): value is string => typeof value === 'string')
-                .map((value) => value.trim())
-                .filter(Boolean)
-                .slice(0, MAX_RECENT_SEARCHES);
+            const nextSearches = sanitizeRecentSearches(parsed.recentSearches, MAX_RECENT_SEARCHES);
 
             setCollapsedSections(nextCollapsed);
             setFavorites(nextFavorites);

@@ -4,11 +4,14 @@ import type { NavSection } from './nav-config';
 import {
     buildNavItemsByHref,
     buildNavItemsByNormalizedHref,
+    extractStringArray,
     hasNavValidationIssues,
     isNavHrefActive,
     matchesNavQuery,
     normalizeNavHref,
     normalizeNavHrefList,
+    sanitizeCollapsedSections,
+    sanitizeRecentSearches,
     validateSidebarSections,
 } from './nav-validation';
 
@@ -43,6 +46,49 @@ describe('normalizeNavHrefList', () => {
         const rawHref = '/dashboard/library/?tab=overview#top';
 
         expect(normalizeNavHrefList([rawHref])).toEqual([normalizeNavHref(rawHref)]);
+    });
+});
+
+describe('extractStringArray', () => {
+    it('returns only string entries from unknown input arrays', () => {
+        expect(extractStringArray(['one', 2, null, 'two', false])).toEqual(['one', 'two']);
+        expect(extractStringArray('not-an-array')).toEqual([]);
+    });
+});
+
+describe('sanitizeRecentSearches', () => {
+    it('trims, deduplicates, and limits recent search history', () => {
+        expect(sanitizeRecentSearches([
+            '  tools  ',
+            'tools',
+            '',
+            ' billing ',
+            'sessions',
+            'logs',
+        ], 3)).toEqual(['tools', 'billing', 'sessions']);
+    });
+
+    it('ignores non-string recent search values', () => {
+        expect(sanitizeRecentSearches(['valid', 42, null, ' next '], 5)).toEqual(['valid', 'next']);
+    });
+});
+
+describe('sanitizeCollapsedSections', () => {
+    it('keeps only boolean collapse-state entries from plain objects', () => {
+        expect(sanitizeCollapsedSections({
+            Favorites: true,
+            Recent: false,
+            Broken: 'yes',
+            Count: 1,
+        })).toEqual({
+            Favorites: true,
+            Recent: false,
+        });
+    });
+
+    it('returns an empty object for non-object values', () => {
+        expect(sanitizeCollapsedSections(null)).toEqual({});
+        expect(sanitizeCollapsedSections(['Favorites'])).toEqual({});
     });
 });
 

@@ -26,6 +26,14 @@ export interface NavValidationResult {
     }>;
 }
 
+export function extractStringArray(values: unknown): string[] {
+    if (!Array.isArray(values)) {
+        return [];
+    }
+
+    return values.filter((value): value is string => typeof value === 'string');
+}
+
 export function hasNavValidationIssues(result: NavValidationResult): boolean {
     return result.duplicateWithinSection.length > 0
         || result.duplicateAcrossSections.length > 0
@@ -64,6 +72,42 @@ export function normalizeNavHrefList(values: string[]): string[] {
     }
 
     return normalized;
+}
+
+export function sanitizeRecentSearches(values: unknown, limit: number): string[] {
+    const seen = new Set<string>();
+    const sanitized: string[] = [];
+
+    for (const value of extractStringArray(values)) {
+        const trimmed = value.trim();
+        if (!trimmed || seen.has(trimmed)) {
+            continue;
+        }
+
+        seen.add(trimmed);
+        sanitized.push(trimmed);
+
+        if (sanitized.length >= limit) {
+            break;
+        }
+    }
+
+    return sanitized;
+}
+
+export function sanitizeCollapsedSections(value: unknown): Record<string, boolean> {
+    if (!value || typeof value !== 'object' || Array.isArray(value)) {
+        return {};
+    }
+
+    const sanitized: Record<string, boolean> = {};
+    for (const [key, entry] of Object.entries(value)) {
+        if (typeof entry === 'boolean') {
+            sanitized[key] = entry;
+        }
+    }
+
+    return sanitized;
 }
 
 export function isNavHrefActive(currentPathname: string, href: string): boolean {
