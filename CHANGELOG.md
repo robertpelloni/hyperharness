@@ -4,6 +4,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.7.193] — 2026-03-15
+
+- fix(web/cloud-dev): broadcast preview now honors active session-ID scope targeting, so recipient/skip diagnostics match scoped retry/send behavior.
+- changed(web/cloud-dev): introduced dedicated session-scope state for broadcast targeting and wired it through preview, send, and scoped retry/draft actions.
+- changed(web/cloud-dev): status-filter actions now clear session-ID scope explicitly, preventing mixed-scope ambiguity between status and session-targeted dispatch.
+
 ## [2.7.192] — 2026-03-15
 
 - feat(web/cloud-dev): preview diagnostics now offer one-click `Broadcast draft to preview skipped only` and `Broadcast draft to skipped only + Force` actions when a draft message is present.

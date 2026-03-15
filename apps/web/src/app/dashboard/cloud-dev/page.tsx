@@ -341,6 +341,7 @@ export default function CloudDevDashboardPage() {
     const [broadcastMsg, setBroadcastMsg] = useState("");
     const [broadcastForce, setBroadcastForce] = useState(false);
     const [broadcastStatusFilter, setBroadcastStatusFilter] = useState<SessionStatus[]>([]);
+    const [broadcastSessionScopeIds, setBroadcastSessionScopeIds] = useState<string[] | null>(null);
     const [lastBroadcastPayload, setLastBroadcastPayload] = useState<{
         content: string;
         force: boolean;
@@ -394,6 +395,7 @@ export default function CloudDevDashboardPage() {
         {
             force: broadcastForce,
             statusFilter: broadcastStatusFilter.length > 0 ? broadcastStatusFilter : undefined,
+            sessionIds: broadcastSessionScopeIds && broadcastSessionScopeIds.length > 0 ? broadcastSessionScopeIds : undefined,
         },
         {
             refetchInterval: 5000,
@@ -411,7 +413,7 @@ export default function CloudDevDashboardPage() {
             content: broadcastMsg.trim(),
             force: broadcastForce,
             statusFilter: broadcastStatusFilter.length > 0 ? [...broadcastStatusFilter] : undefined,
-            sessionIds: undefined,
+            sessionIds: broadcastSessionScopeIds && broadcastSessionScopeIds.length > 0 ? [...broadcastSessionScopeIds] : undefined,
         };
         setLastBroadcastPayload(payload);
         broadcastMutation.mutate({
@@ -420,9 +422,10 @@ export default function CloudDevDashboardPage() {
             statusFilter: payload.statusFilter,
             sessionIds: payload.sessionIds,
         });
-    }, [broadcastMsg, broadcastForce, broadcastMutation, broadcastStatusFilter]);
+    }, [broadcastMsg, broadcastForce, broadcastMutation, broadcastSessionScopeIds, broadcastStatusFilter]);
 
     const toggleBroadcastStatusFilter = useCallback((status: SessionStatus) => {
+        setBroadcastSessionScopeIds(null);
         setBroadcastStatusFilter((current) =>
             current.includes(status) ? current.filter((value) => value !== status) : [...current, status]
         );
@@ -434,6 +437,7 @@ export default function CloudDevDashboardPage() {
     }, []);
 
     const addBroadcastStatuses = useCallback((statuses: SessionStatus[]) => {
+        setBroadcastSessionScopeIds(null);
         setBroadcastStatusFilter((current) => {
             return mergeStatusFilter(current, statuses);
         });
@@ -441,6 +445,7 @@ export default function CloudDevDashboardPage() {
 
     const setBroadcastStatuses = useCallback((statuses: SessionStatus[]) => {
         const normalized = BROADCAST_STATUS_ORDER.filter((status) => statuses.includes(status));
+        setBroadcastSessionScopeIds(null);
         setBroadcastStatusFilter(normalized);
     }, []);
 
@@ -480,12 +485,13 @@ export default function CloudDevDashboardPage() {
         const baseFilter = lastBroadcastPayload.statusFilter ?? broadcastStatusFilter;
         const statusFilter = mergeStatusFilter(baseFilter, statuses);
         setBroadcastStatusFilter(statusFilter);
+        setBroadcastSessionScopeIds(null);
         setBroadcastForce(force);
         const payload = {
             content: lastBroadcastPayload.content,
             force,
             statusFilter: statusFilter.length > 0 ? statusFilter : undefined,
-            sessionIds: lastBroadcastPayload.sessionIds,
+            sessionIds: undefined,
         };
         setLastBroadcastPayload(payload);
         broadcastMutation.mutate({
@@ -500,6 +506,7 @@ export default function CloudDevDashboardPage() {
         if (!lastBroadcastPayload?.content || sessionIds.length === 0) return;
         setBroadcastForce(force);
         setBroadcastStatusFilter([]);
+        setBroadcastSessionScopeIds(sessionIds);
         const payload = {
             content: lastBroadcastPayload.content,
             force,
@@ -520,6 +527,7 @@ export default function CloudDevDashboardPage() {
         if (!content || sessionIds.length === 0) return;
         setBroadcastForce(force);
         setBroadcastStatusFilter([]);
+        setBroadcastSessionScopeIds(sessionIds);
         const payload = {
             content,
             force,
@@ -644,26 +652,23 @@ export default function CloudDevDashboardPage() {
                         {broadcastStatusFilter.length > 0 && (
                             <button
                                 type="button"
-                                onClick={() => setBroadcastStatusFilter([])}
+                                onClick={() => {
+                                    setBroadcastStatusFilter([]);
+                                    setBroadcastSessionScopeIds(null);
+                                }}
                                 className="rounded border border-zinc-700 bg-zinc-900 px-2 py-0.5 text-zinc-400 hover:bg-zinc-800"
                             >
                                 clear
                             </button>
                         )}
-                        {lastBroadcastPayload?.sessionIds && lastBroadcastPayload.sessionIds.length > 0 && (
+                        {broadcastSessionScopeIds && broadcastSessionScopeIds.length > 0 && (
                             <button
                                 type="button"
-                                onClick={() => setLastBroadcastPayload((current) => {
-                                    if (!current) return current;
-                                    return {
-                                        ...current,
-                                        sessionIds: undefined,
-                                    };
-                                })}
+                                onClick={() => setBroadcastSessionScopeIds(null)}
                                 className="rounded border border-cyan-700/60 bg-cyan-900/30 px-2 py-0.5 text-cyan-200 hover:bg-cyan-900/50"
                                 title="Clear session-scoped retry targeting"
                             >
-                                Session scope: {lastBroadcastPayload.sessionIds.length} IDs (clear)
+                                Session scope: {broadcastSessionScopeIds.length} IDs (clear)
                             </button>
                         )}
                     </div>
@@ -885,8 +890,8 @@ export default function CloudDevDashboardPage() {
                                 {Object.keys(broadcastResult.skippedByReason).length > 0
                                     ? ` Skip reasons: ${(Object.entries(broadcastResult.skippedByReason) as Array<[BroadcastSkipReason, number]>).map(([reason, count]) => `${BROADCAST_SKIP_REASON_LABELS[reason]}=${count}`).join(", ")}.`
                                     : ""}
-                                {lastBroadcastPayload?.sessionIds && lastBroadcastPayload.sessionIds.length > 0
-                                    ? ` Session scope: ${lastBroadcastPayload.sessionIds.length} IDs.`
+                                {broadcastSessionScopeIds && broadcastSessionScopeIds.length > 0
+                                    ? ` Session scope: ${broadcastSessionScopeIds.length} IDs.`
                                     : ""}
                             </p>
                             {(broadcastResult.skippedByReason.terminal_requires_force ?? 0) > 0 && !broadcastForce && (
