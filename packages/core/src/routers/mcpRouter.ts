@@ -1080,6 +1080,8 @@ export const mcpRouter = t.router({
                     idle: poolStatus.idle,
                     active: poolStatus.active,
                     activeSessionCount: poolStatus.activeSessionIds.length,
+                    currentActiveServerUuid: poolStatus.currentActiveServerUuid,
+                    lastActiveServerSwitchAt: poolStatus.lastActiveServerSwitchAt,
                 },
                 lifecycle: {
                     lazySessionMode: lifecycleModes.lazySessionMode,
@@ -1097,6 +1099,8 @@ export const mcpRouter = t.router({
                     idle: poolStatus.idle,
                     active: poolStatus.active,
                     activeSessionCount: poolStatus.activeSessionIds.length,
+                    currentActiveServerUuid: poolStatus.currentActiveServerUuid,
+                    lastActiveServerSwitchAt: poolStatus.lastActiveServerSwitchAt,
                 },
                 lifecycle: {
                     lazySessionMode: lifecycleModes.lazySessionMode,

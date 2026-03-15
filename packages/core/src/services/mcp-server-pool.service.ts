@@ -10,6 +10,8 @@ export interface McpServerPoolStatus {
     active: number;
     activeSessionIds: string[];
     idleServerUuids: string[];
+    currentActiveServerUuid: string | null;
+    lastActiveServerSwitchAt: number | null;
 }
 
 export interface McpServerPoolLifecycleModes {
@@ -26,7 +28,8 @@ export interface McpServerPoolLifecycleEvent {
         | 'session-cleanup'
         | 'mode-updated'
         | 'single-active-prune'
-        | 'server-crash';
+        | 'server-crash'
+        | 'active-server-switch';
     message: string;
     sessionId?: string;
     serverUuid?: string;
@@ -67,6 +70,8 @@ export class McpServerPool {
     private lifecycleEvents: McpServerPoolLifecycleEvent[] = [];
     private lifecycleEventSequence = 0;
     private readonly maxLifecycleEvents = 200;
+    private currentActiveServerUuid: string | null = null;
+    private lastActiveServerSwitchAt: number | null = null;
 
     private constructor(defaultIdleCount: number = 1) {
         this.defaultIdleCount = defaultIdleCount;
@@ -90,6 +95,40 @@ export class McpServerPool {
         if (this.lifecycleEvents.length > this.maxLifecycleEvents) {
             this.lifecycleEvents.splice(0, this.lifecycleEvents.length - this.maxLifecycleEvents);
         }
+    }
+
+    private markActiveServer(serverUuid: string, sessionId: string): void {
+        if (this.currentActiveServerUuid === serverUuid) {
+            return;
+        }
+
+        this.currentActiveServerUuid = serverUuid;
+        this.lastActiveServerSwitchAt = Date.now();
+        this.recordLifecycleEvent({
+            type: 'active-server-switch',
+            serverUuid,
+            sessionId,
+            message: `Active downstream focus switched to ${serverUuid} (session ${sessionId})`,
+        });
+    }
+
+    private recomputeActiveServerFocus(): void {
+        const activeServerUuids = new Set<string>();
+        Object.values(this.activeSessions).forEach((sessionServers) => {
+            Object.keys(sessionServers).forEach((serverUuid) => activeServerUuids.add(serverUuid));
+        });
+
+        if (activeServerUuids.size === 0) {
+            this.currentActiveServerUuid = null;
+            return;
+        }
+
+        if (this.currentActiveServerUuid && activeServerUuids.has(this.currentActiveServerUuid)) {
+            return;
+        }
+
+        const next = activeServerUuids.values().next().value ?? null;
+        this.currentActiveServerUuid = next;
     }
 
     /**
@@ -116,6 +155,7 @@ export class McpServerPool {
 
         // Check if we already have an active session for this sessionId and server
         if (this.activeSessions[sessionId]?.[serverUuid]) {
+            this.markActiveServer(serverUuid, sessionId);
             this.recordLifecycleEvent({
                 type: 'session-converted',
                 sessionId,
@@ -143,6 +183,7 @@ export class McpServerPool {
             delete this.idleSessions[serverUuid];
             this.activeSessions[sessionId][serverUuid] = idleClient;
             this.sessionToServers[sessionId].add(serverUuid);
+            this.markActiveServer(serverUuid, sessionId);
             this.recordLifecycleEvent({
                 type: 'session-converted',
                 sessionId,
@@ -170,6 +211,7 @@ export class McpServerPool {
 
         this.activeSessions[sessionId][serverUuid] = newClient;
         this.sessionToServers[sessionId].add(serverUuid);
+        this.markActiveServer(serverUuid, sessionId);
         this.recordLifecycleEvent({
             type: 'session-created',
             sessionId,
@@ -236,6 +278,7 @@ export class McpServerPool {
                 serverUuid: keepServerUuid,
                 message: `Pruned stale downstream sessions for single-active policy (kept=${keepServerUuid}, activePruned=${cleanedActive}, idlePruned=${cleanedIdle})`,
             });
+            this.recomputeActiveServerFocus();
         }
     }
 
@@ -433,6 +476,7 @@ export class McpServerPool {
             sessionId,
             message: `Cleaned up downstream session ${sessionId}`,
         });
+        this.recomputeActiveServerFocus();
 
         console.log(`Cleaned up MCP server pool session ${sessionId}`);
     }
@@ -461,6 +505,7 @@ export class McpServerPool {
         this.sessionTimestamps = {};
         this.serverParamsCache = {};
         this.creatingIdleSessions.clear();
+        this.currentActiveServerUuid = null;
 
         // Clear cleanup timer
         if (this.cleanupTimer) {
@@ -487,6 +532,8 @@ export class McpServerPool {
             active,
             activeSessionIds: Object.keys(this.activeSessions),
             idleServerUuids: Object.keys(this.idleSessions),
+            currentActiveServerUuid: this.currentActiveServerUuid,
+            lastActiveServerSwitchAt: this.lastActiveServerSwitchAt,
         };
     }
 
@@ -753,6 +800,7 @@ export class McpServerPool {
 
         // Remove from creating set
         this.creatingIdleSessions.delete(serverUuid);
+        this.recomputeActiveServerFocus();
     }
 
     /**

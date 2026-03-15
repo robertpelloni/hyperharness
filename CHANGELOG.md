@@ -4,6 +4,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.7.156] — 2026-03-15
+
+- feat(core/mcp): `McpServerPool` now tracks active downstream focus (`currentActiveServerUuid`, `lastActiveServerSwitchAt`) and emits `active-server-switch` lifecycle events when focus changes.
+- feat(core/mcp): `mcp.getStatus.pool` now includes active-focus fields so operators can identify which downstream server currently holds the single-active slot.
+- feat(web/mcp): router status card in `/dashboard/mcp` now shows active downstream server UUID and last switch time alongside existing pool/lifecycle telemetry.
+
 ## [2.7.155] — 2026-03-15
 
 - feat(core/mcp): added a bounded lifecycle event timeline in `McpServerPool` (session create/promote/cleanup, single-active pruning, mode updates, crash events) for operator-grade observability.
