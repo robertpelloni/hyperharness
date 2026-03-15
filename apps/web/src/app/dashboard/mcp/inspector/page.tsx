@@ -80,7 +80,31 @@ type ToolPreferenceMutationInput = {
     idleEvictionThresholdMs?: number;
 };
 
-type TelemetryFilter = 'all' | 'search' | 'load' | 'hydrate' | 'unload' | 'errors';
+type TelemetryWindowPreset = 'all' | '5m' | '15m' | '1h' | '24h';
+type TelemetrySourceFilter = 'all' | 'runtime-search' | 'cached-ranking' | 'live-aggregator';
+type TelemetryTriagePreset = 'errors-now' | 'runtime-failures' | 'load-incidents' | 'hydration-failures' | 'live-aggregator-focus';
+
+function resolveTelemetryWindowStart(windowPreset: TelemetryWindowPreset): number | null {
+    const now = Date.now();
+
+    if (windowPreset === '5m') {
+        return now - (5 * 60 * 1000);
+    }
+
+    if (windowPreset === '15m') {
+        return now - (15 * 60 * 1000);
+    }
+
+    if (windowPreset === '1h') {
+        return now - (60 * 60 * 1000);
+    }
+
+    if (windowPreset === '24h') {
+        return now - (24 * 60 * 60 * 1000);
+    }
+
+    return null;
+}
 
 function formatRelativeTimestamp(timestamp: number | null): string {
     if (!timestamp) {
@@ -114,7 +138,10 @@ function InspectorDashboardContent() {
     const dbToolsQuery = trpc.tools.list.useQuery();
 
     const [toolFilter, setToolFilter] = useState('');
-    const [telemetryFilter, setTelemetryFilter] = useState<TelemetryFilter>('all');
+    const [telemetryTypeFilter, setTelemetryTypeFilter] = useState<'all' | ToolSelectionTelemetryEvent['type']>('all');
+    const [telemetryStatusFilter, setTelemetryStatusFilter] = useState<'all' | ToolSelectionTelemetryEvent['status']>('all');
+    const [telemetryWindowFilter, setTelemetryWindowFilter] = useState<TelemetryWindowPreset>('15m');
+    const [telemetrySourceFilter, setTelemetrySourceFilter] = useState<TelemetrySourceFilter>('all');
     const [selectedTool, setSelectedTool] = useState<InspectorTool | null>(null);
     const [argsJson, setArgsJson] = useState('{}');
     const [result, setResult] = useState<any | null>(null);
@@ -287,17 +314,36 @@ function InspectorDashboardContent() {
             String(tool.server || '').toLowerCase().includes(q);
     });
 
-    const filteredTelemetry = telemetry.filter((event) => {
-        if (telemetryFilter === 'all') {
-            return true;
-        }
-
-        if (telemetryFilter === 'errors') {
-            return event.status === 'error';
-        }
-
-        return event.type === telemetryFilter;
-    }).slice(0, 12);
+    const telemetryWindowStart = resolveTelemetryWindowStart(telemetryWindowFilter);
+    const filteredTelemetry = telemetry
+        .filter((event) => telemetryWindowStart == null || event.timestamp >= telemetryWindowStart)
+        .filter((event) => telemetryTypeFilter === 'all' || event.type === telemetryTypeFilter)
+        .filter((event) => telemetryStatusFilter === 'all' || event.status === telemetryStatusFilter)
+        .filter((event) => telemetrySourceFilter === 'all' || event.source === telemetrySourceFilter)
+        .slice(0, 12);
+    const telemetrySummary = {
+        total: telemetry
+            .filter((event) => telemetryWindowStart == null || event.timestamp >= telemetryWindowStart)
+            .filter((event) => telemetryTypeFilter === 'all' || event.type === telemetryTypeFilter)
+            .filter((event) => telemetryStatusFilter === 'all' || event.status === telemetryStatusFilter)
+            .filter((event) => telemetrySourceFilter === 'all' || event.source === telemetrySourceFilter).length,
+        success: telemetry
+            .filter((event) => telemetryWindowStart == null || event.timestamp >= telemetryWindowStart)
+            .filter((event) => telemetryTypeFilter === 'all' || event.type === telemetryTypeFilter)
+            .filter((event) => telemetryStatusFilter === 'all' || event.status === telemetryStatusFilter)
+            .filter((event) => telemetrySourceFilter === 'all' || event.source === telemetrySourceFilter)
+            .filter((event) => event.status === 'success').length,
+        error: telemetry
+            .filter((event) => telemetryWindowStart == null || event.timestamp >= telemetryWindowStart)
+            .filter((event) => telemetryTypeFilter === 'all' || event.type === telemetryTypeFilter)
+            .filter((event) => telemetryStatusFilter === 'all' || event.status === telemetryStatusFilter)
+            .filter((event) => telemetrySourceFilter === 'all' || event.source === telemetrySourceFilter)
+            .filter((event) => event.status === 'error').length,
+    };
+    const telemetryFiltersAtDefault = telemetryTypeFilter === 'all'
+        && telemetryStatusFilter === 'all'
+        && telemetryWindowFilter === '15m'
+        && telemetrySourceFilter === 'all';
 
     useEffect(() => {
         const requestedServer = searchParams.get('server');
@@ -428,6 +474,52 @@ function InspectorDashboardContent() {
         setMaxHydratedSchemasDraft(preferences.maxHydratedSchemas ?? 8);
         setIdleEvictionThresholdDraftMs(preferences.idleEvictionThresholdMs ?? (5 * 60 * 1000));
     }, [preferences.maxLoadedTools, preferences.maxHydratedSchemas, preferences.idleEvictionThresholdMs]);
+
+    const resetTelemetryFilters = () => {
+        setTelemetryTypeFilter('all');
+        setTelemetryStatusFilter('all');
+        setTelemetryWindowFilter('15m');
+        setTelemetrySourceFilter('all');
+    };
+
+    const applyTelemetryPreset = (preset: TelemetryTriagePreset) => {
+        if (preset === 'errors-now') {
+            setTelemetryTypeFilter('all');
+            setTelemetryStatusFilter('error');
+            setTelemetryWindowFilter('15m');
+            setTelemetrySourceFilter('all');
+            return;
+        }
+
+        if (preset === 'runtime-failures') {
+            setTelemetryTypeFilter('all');
+            setTelemetryStatusFilter('error');
+            setTelemetryWindowFilter('1h');
+            setTelemetrySourceFilter('runtime-search');
+            return;
+        }
+
+        if (preset === 'load-incidents') {
+            setTelemetryTypeFilter('load');
+            setTelemetryStatusFilter('error');
+            setTelemetryWindowFilter('1h');
+            setTelemetrySourceFilter('all');
+            return;
+        }
+
+        if (preset === 'hydration-failures') {
+            setTelemetryTypeFilter('hydrate');
+            setTelemetryStatusFilter('error');
+            setTelemetryWindowFilter('24h');
+            setTelemetrySourceFilter('all');
+            return;
+        }
+
+        setTelemetryTypeFilter('all');
+        setTelemetryStatusFilter('all');
+        setTelemetryWindowFilter('15m');
+        setTelemetrySourceFilter('live-aggregator');
+    };
 
     return (
         <div className="p-8 space-y-8 h-full flex flex-col">
@@ -834,20 +926,6 @@ function InspectorDashboardContent() {
                         <p className="text-xs text-zinc-500 mt-1">Correlate discovery, loads, schema hydration, and evictions without leaving the execution surface.</p>
                     </div>
                     <div className="flex items-center gap-2">
-                        <select
-                            value={telemetryFilter}
-                            onChange={(event) => setTelemetryFilter(event.target.value as TelemetryFilter)}
-                            title="Filter telemetry to specific event types or errors"
-                            aria-label="Telemetry event filter"
-                            className="bg-zinc-950 border border-zinc-800 rounded-md px-3 py-2 text-xs text-zinc-300 outline-none"
-                        >
-                            <option value="all">All events</option>
-                            <option value="search">Searches</option>
-                            <option value="load">Loads</option>
-                            <option value="hydrate">Hydrations</option>
-                            <option value="unload">Unloads</option>
-                            <option value="errors">Errors</option>
-                        </select>
                         <Button
                             type="button"
                             variant="outline"
@@ -864,6 +942,146 @@ function InspectorDashboardContent() {
                     </div>
                 </CardHeader>
                 <CardContent className="p-4">
+                    <div className="mb-4 space-y-2">
+                        <div className="flex flex-wrap items-center gap-2 text-xs">
+                            <span className="text-zinc-500 uppercase tracking-wider">Presets</span>
+                            {([
+                                { value: 'errors-now', label: 'Errors now' },
+                                { value: 'runtime-failures', label: 'Runtime failures' },
+                                { value: 'load-incidents', label: 'Load incidents' },
+                                { value: 'hydration-failures', label: 'Hydration failures' },
+                                { value: 'live-aggregator-focus', label: 'Live aggregator' },
+                            ] as const).map((preset) => (
+                                <button
+                                    key={`inspector-telemetry-preset-${preset.value}`}
+                                    type="button"
+                                    onClick={() => applyTelemetryPreset(preset.value)}
+                                    className="rounded-md border border-zinc-700 bg-zinc-950/70 px-2 py-1 text-zinc-300 transition-colors hover:bg-zinc-800"
+                                    title={`Apply ${preset.label.toLowerCase()} telemetry triage preset`}
+                                    aria-label={`Apply ${preset.label} telemetry triage preset`}
+                                >
+                                    {preset.label}
+                                </button>
+                            ))}
+                        </div>
+
+                        <div className="flex flex-wrap items-center gap-2 text-xs">
+                            <span className="rounded-md border border-zinc-700 bg-zinc-950/70 px-2 py-1 text-zinc-300">total: {telemetrySummary.total}</span>
+                            <span className="rounded-md border border-emerald-500/30 bg-emerald-500/10 px-2 py-1 text-emerald-300">success: {telemetrySummary.success}</span>
+                            <span className="rounded-md border border-red-500/30 bg-red-500/10 px-2 py-1 text-red-300">errors: {telemetrySummary.error}</span>
+                        </div>
+
+                        <div className="flex flex-wrap items-center gap-2 text-xs">
+                            <span className="text-zinc-500 uppercase tracking-wider">Type</span>
+                            {(['all', 'search', 'load', 'hydrate', 'unload'] as const).map((option) => {
+                                const active = telemetryTypeFilter === option;
+                                return (
+                                    <button
+                                        key={`inspector-telemetry-type-${option}`}
+                                        type="button"
+                                        onClick={() => setTelemetryTypeFilter(option)}
+                                        className={`rounded-md border px-2 py-1 transition-colors ${active
+                                            ? 'border-blue-500/50 bg-blue-500/15 text-blue-200'
+                                            : 'border-zinc-700 bg-zinc-950/70 text-zinc-300 hover:bg-zinc-800'
+                                            }`}
+                                        title={`Filter telemetry by ${option} events`}
+                                        aria-label={`Filter telemetry by ${option} events`}
+                                    >
+                                        {option}
+                                    </button>
+                                );
+                            })}
+                        </div>
+
+                        <div className="flex flex-wrap items-center gap-2 text-xs">
+                            <span className="text-zinc-500 uppercase tracking-wider">Status</span>
+                            {(['all', 'success', 'error'] as const).map((option) => {
+                                const active = telemetryStatusFilter === option;
+                                return (
+                                    <button
+                                        key={`inspector-telemetry-status-${option}`}
+                                        type="button"
+                                        onClick={() => setTelemetryStatusFilter(option)}
+                                        className={`rounded-md border px-2 py-1 transition-colors ${active
+                                            ? 'border-cyan-500/50 bg-cyan-500/15 text-cyan-200'
+                                            : 'border-zinc-700 bg-zinc-950/70 text-zinc-300 hover:bg-zinc-800'
+                                            }`}
+                                        title={`Filter telemetry by ${option} status`}
+                                        aria-label={`Filter telemetry by ${option} status`}
+                                    >
+                                        {option}
+                                    </button>
+                                );
+                            })}
+                        </div>
+
+                        <div className="flex flex-wrap items-center gap-2 text-xs">
+                            <span className="text-zinc-500 uppercase tracking-wider">Window</span>
+                            {([
+                                { value: 'all', label: 'All' },
+                                { value: '5m', label: '5m' },
+                                { value: '15m', label: '15m' },
+                                { value: '1h', label: '1h' },
+                                { value: '24h', label: '24h' },
+                            ] as const).map((option) => {
+                                const active = telemetryWindowFilter === option.value;
+                                return (
+                                    <button
+                                        key={`inspector-telemetry-window-${option.value}`}
+                                        type="button"
+                                        onClick={() => setTelemetryWindowFilter(option.value)}
+                                        className={`rounded-md border px-2 py-1 transition-colors ${active
+                                            ? 'border-violet-500/50 bg-violet-500/15 text-violet-200'
+                                            : 'border-zinc-700 bg-zinc-950/70 text-zinc-300 hover:bg-zinc-800'
+                                            }`}
+                                        title={`Filter telemetry to ${option.label} window`}
+                                        aria-label={`Filter telemetry to ${option.label} window`}
+                                    >
+                                        {option.label}
+                                    </button>
+                                );
+                            })}
+                        </div>
+
+                        <div className="flex flex-wrap items-center gap-2 text-xs">
+                            <span className="text-zinc-500 uppercase tracking-wider">Source</span>
+                            {([
+                                { value: 'all', label: 'All' },
+                                { value: 'runtime-search', label: 'Runtime' },
+                                { value: 'cached-ranking', label: 'Cached' },
+                                { value: 'live-aggregator', label: 'Live' },
+                            ] as const).map((option) => {
+                                const active = telemetrySourceFilter === option.value;
+                                return (
+                                    <button
+                                        key={`inspector-telemetry-source-${option.value}`}
+                                        type="button"
+                                        onClick={() => setTelemetrySourceFilter(option.value)}
+                                        className={`rounded-md border px-2 py-1 transition-colors ${active
+                                            ? 'border-amber-500/50 bg-amber-500/15 text-amber-200'
+                                            : 'border-zinc-700 bg-zinc-950/70 text-zinc-300 hover:bg-zinc-800'
+                                            }`}
+                                        title={`Filter telemetry to ${option.label} source`}
+                                        aria-label={`Filter telemetry to ${option.label} source`}
+                                    >
+                                        {option.label}
+                                    </button>
+                                );
+                            })}
+
+                            <button
+                                type="button"
+                                onClick={resetTelemetryFilters}
+                                disabled={telemetryFiltersAtDefault}
+                                className="ml-auto rounded-md border border-zinc-700 bg-zinc-950/70 px-2 py-1 text-zinc-300 transition-colors hover:bg-zinc-800 disabled:opacity-50"
+                                title="Reset telemetry filters to defaults"
+                                aria-label="Reset telemetry filters"
+                            >
+                                Reset filters
+                            </button>
+                        </div>
+                    </div>
+
                     <div className="grid gap-3 lg:grid-cols-2">
                         {filteredTelemetry.length > 0 ? (
                             filteredTelemetry.map((event) => (

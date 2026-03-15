@@ -4,6 +4,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.7.139] — 2026-03-14
+
+- feat(web/mcp): expanded `/dashboard/mcp/inspector` telemetry panel with multi-axis triage filters (`type`, `status`, `window`, `source`) to match operator workflow parity with `/dashboard/mcp/search`.
+- feat(web/mcp): added one-click telemetry triage presets in inspector (`Errors now`, `Runtime failures`, `Load incidents`, `Hydration failures`, `Live aggregator`) for faster incident narrowing.
+- feat(web/mcp): added telemetry summary chips (`total`, `success`, `errors`) and reset-to-default filter action in inspector for clearer scoped diagnostics.
+
 ## [2.7.138] — 2026-03-14
 
 - feat(web/mcp): added working-set limits visibility in `/dashboard/mcp/inspector` (`maxLoadedTools`, `maxHydratedSchemas`, and `idleEvictionThresholdMs`) so operators can see live capacity posture without switching pages.
