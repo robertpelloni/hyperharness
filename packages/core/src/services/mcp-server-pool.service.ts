@@ -102,13 +102,17 @@ export class McpServerPool {
             return;
         }
 
+        const serverLabel = this.serverParamsCache[serverUuid]?.name
+            ? `${this.serverParamsCache[serverUuid].name} (${serverUuid})`
+            : serverUuid;
+
         this.currentActiveServerUuid = serverUuid;
         this.lastActiveServerSwitchAt = Date.now();
         this.recordLifecycleEvent({
             type: 'active-server-switch',
             serverUuid,
             sessionId,
-            message: `Active downstream focus switched to ${serverUuid} (session ${sessionId})`,
+            message: `Active downstream focus switched to ${serverLabel} (session ${sessionId})`,
         });
     }
 

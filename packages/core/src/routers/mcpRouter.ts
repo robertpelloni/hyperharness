@@ -1070,6 +1070,10 @@ export const mcpRouter = t.router({
             const effectiveToolCount = liveTools.length > 0
                 ? liveTools.length
                 : tools.length;
+            const activeServerRecord = poolStatus.currentActiveServerUuid
+                ? servers.find((server) => server.uuid === poolStatus.currentActiveServerUuid)
+                : undefined;
+            const currentActiveServerName = activeServerRecord?.displayName ?? activeServerRecord?.name ?? null;
 
             return {
                 initialized: Boolean(aggregator),
@@ -1081,6 +1085,7 @@ export const mcpRouter = t.router({
                     active: poolStatus.active,
                     activeSessionCount: poolStatus.activeSessionIds.length,
                     currentActiveServerUuid: poolStatus.currentActiveServerUuid,
+                    currentActiveServerName,
                     lastActiveServerSwitchAt: poolStatus.lastActiveServerSwitchAt,
                 },
                 lifecycle: {
@@ -1100,6 +1105,7 @@ export const mcpRouter = t.router({
                     active: poolStatus.active,
                     activeSessionCount: poolStatus.activeSessionIds.length,
                     currentActiveServerUuid: poolStatus.currentActiveServerUuid,
+                    currentActiveServerName: null,
                     lastActiveServerSwitchAt: poolStatus.lastActiveServerSwitchAt,
                 },
                 lifecycle: {

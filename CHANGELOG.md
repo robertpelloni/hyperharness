@@ -4,6 +4,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.7.157] — 2026-03-15
+
+- feat(core/mcp): `mcp.getStatus.pool` now resolves `currentActiveServerName` from cached server inventory for more readable single-active status reporting.
+- changed(core/mcp): active-server-switch lifecycle events now include server display context (`name + uuid`) when available from pool server params cache.
+- changed(web/mcp): `/dashboard/mcp` router status now prioritizes active server name with UUID fallback/annotation, preserving operator precision while improving scanability.
+
 ## [2.7.156] — 2026-03-15
 
 - feat(core/mcp): `McpServerPool` now tracks active downstream focus (`currentActiveServerUuid`, `lastActiveServerSwitchAt`) and emits `active-server-switch` lifecycle events when focus changes.

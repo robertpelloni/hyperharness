@@ -97,6 +97,7 @@ type StatusSummary = {
         active?: number;
         activeSessionCount?: number;
         currentActiveServerUuid?: string | null;
+        currentActiveServerName?: string | null;
         lastActiveServerSwitchAt?: number | null;
     };
     lifecycle?: {
@@ -1073,7 +1074,10 @@ export default function MCPDashboard(): React.JSX.Element {
                                         sessions <span className="font-semibold text-white">{summary.pool?.activeSessionCount ?? 0}</span> • lazy <span className="font-semibold text-white">{summary.lifecycle?.lazySessionMode === false ? 'off' : 'on'}</span> • single-active <span className="font-semibold text-white">{summary.lifecycle?.singleActiveServerMode === false ? 'off' : 'on'}</span>
                                     </div>
                                     <div>
-                                        active server <span className="font-semibold text-white">{summary.pool?.currentActiveServerUuid ?? 'none'}</span>
+                                        active server <span className="font-semibold text-white">{summary.pool?.currentActiveServerName ?? summary.pool?.currentActiveServerUuid ?? 'none'}</span>
+                                        {summary.pool?.currentActiveServerName && summary.pool?.currentActiveServerUuid
+                                            ? <> <span className="text-zinc-500">({summary.pool.currentActiveServerUuid})</span></>
+                                            : null}
                                         {summary.pool?.lastActiveServerSwitchAt
                                             ? <> • switched <span className="font-semibold text-white">{new Date(summary.pool.lastActiveServerSwitchAt).toLocaleTimeString()}</span></>
                                             : null}
