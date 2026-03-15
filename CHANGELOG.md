@@ -4,6 +4,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.7.213] — 2026-03-15
+
+- changed(web/navigation): added shared `normalizeNavHrefList(...)` in `apps/web/src/components/mcp/nav-validation.ts` so canonical href-list deduplication now lives beside the other reusable nav normalization helpers.
+- refactor(web/sidebar): `Sidebar.tsx` now uses the shared href-list normalizer for favorites, recents, persistence, and preference import flows, removing a component-local duplicate canonicalization path.
+- test(web/navigation): expanded `apps/web/src/components/mcp/nav-validation.test.ts` with href-list normalization coverage and revalidated focused nav suites (`17` tests passing).
+
 ## [2.7.212] — 2026-03-15
 
 - refactor(web/sidebar): centralized quick-switch palette activation in `Sidebar.tsx` so keyboard and click selection now share one execution path for remembering searches and triggering route/action behavior.

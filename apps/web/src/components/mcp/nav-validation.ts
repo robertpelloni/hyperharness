@@ -49,6 +49,23 @@ export function normalizeNavHref(href: string): string {
     return withoutTrailingSlash === '' ? '/' : withoutTrailingSlash;
 }
 
+export function normalizeNavHrefList(values: string[]): string[] {
+    const seen = new Set<string>();
+    const normalized: string[] = [];
+
+    for (const value of values) {
+        const href = normalizeNavHref(value);
+        if (seen.has(href)) {
+            continue;
+        }
+
+        seen.add(href);
+        normalized.push(href);
+    }
+
+    return normalized;
+}
+
 export function isNavHrefActive(currentPathname: string, href: string): boolean {
     const normalizedPathname = normalizeNavHref(currentPathname);
     const normalizedHref = normalizeNavHref(href);

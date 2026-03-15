@@ -8,6 +8,7 @@ import {
     isNavHrefActive,
     matchesNavQuery,
     normalizeNavHref,
+    normalizeNavHrefList,
     validateSidebarSections,
 } from './nav-validation';
 
@@ -22,6 +23,26 @@ describe('normalizeNavHref', () => {
         expect(normalizeNavHref(' /dashboard/library/?tab=overview#top ')).toBe('/dashboard/library');
         expect(normalizeNavHref('/dashboard/library?tab=overview')).toBe('/dashboard/library');
         expect(normalizeNavHref('/dashboard/library#summary')).toBe('/dashboard/library');
+    });
+});
+
+describe('normalizeNavHrefList', () => {
+    it('deduplicates semantic aliases while preserving first-seen order', () => {
+        expect(normalizeNavHrefList([
+            '/dashboard/library/?tab=overview',
+            '/dashboard/library/',
+            '/dashboard/library#top',
+            '/dashboard/tools',
+        ])).toEqual([
+            '/dashboard/library',
+            '/dashboard/tools',
+        ]);
+    });
+
+    it('matches the canonical href produced by a pre-normalized toggle path', () => {
+        const rawHref = '/dashboard/library/?tab=overview#top';
+
+        expect(normalizeNavHrefList([rawHref])).toEqual([normalizeNavHref(rawHref)]);
     });
 });
 
