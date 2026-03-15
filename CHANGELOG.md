@@ -4,6 +4,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.7.170] — 2026-03-15
+
+- changed(web/mcp): lifecycle timeline now keeps contextual recent events visible when both `reason` and `server` filters are active, while visually highlighting exact reason+server pair matches for faster incident scanning.
+- feat(web/mcp): added pair-match telemetry in lifecycle header (`pair matches in view`) and focused-row badges so operators can quickly separate target-pair events from nearby same-server lifecycle noise.
+- changed(web/mcp): lifecycle `Copy summary` output now includes top reason+server pair facets, focused pair identity, and highlighted pair count for stronger operator handoff context.
+
 ## [2.7.169] — 2026-03-15
 
 - feat(web/mcp): added lifecycle `Server` filter axis in `/dashboard/mcp` timeline controls so incident triage can be narrowed to a specific downstream server UUID/name without switching dashboards.

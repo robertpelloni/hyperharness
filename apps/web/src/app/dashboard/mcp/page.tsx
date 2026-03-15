@@ -1004,6 +1004,23 @@ export default function MCPDashboard(): React.JSX.Element {
             return true;
         });
     }, [lifecycleReasonFilter, scopedLifecycleEvents]);
+    const hasFocusedLifecyclePair = lifecycleReasonFilter !== 'all' && lifecycleServerFilter !== 'all';
+    const timelineLifecycleEvents = useMemo(() => {
+        if (hasFocusedLifecyclePair) {
+            return scopedLifecycleEvents.slice(0, 8);
+        }
+
+        return filteredLifecycleEvents.slice(0, 8);
+    }, [filteredLifecycleEvents, hasFocusedLifecyclePair, scopedLifecycleEvents]);
+    const highlightedTimelinePairMatches = useMemo(() => {
+        if (!hasFocusedLifecyclePair) {
+            return 0;
+        }
+
+        return timelineLifecycleEvents.filter((event) => {
+            return event.reasonCode === lifecycleReasonFilter && event.serverUuid === lifecycleServerFilter;
+        }).length;
+    }, [hasFocusedLifecyclePair, lifecycleReasonFilter, lifecycleServerFilter, timelineLifecycleEvents]);
     const lifecycleReasonTrendBuckets = useMemo(() => {
         if (scopedLifecycleEvents.length === 0) {
             return [] as Array<{
@@ -1078,7 +1095,7 @@ export default function MCPDashboard(): React.JSX.Element {
     const lifecycleReasonTrendMaxBucketCount = useMemo(() => {
         return lifecycleReasonTrendBuckets.reduce((max, bucket) => Math.max(max, bucket.totalCount), 0);
     }, [lifecycleReasonTrendBuckets]);
-    const recentLifecycleEvents = filteredLifecycleEvents.slice(0, 8);
+    const recentLifecycleEvents = timelineLifecycleEvents;
     const bulkActionsDisabled = bulkRefreshState !== null || reloadMetadataMutation.isPending || clearMetadataCacheMutation.isPending;
     const unresolvedActionableCount = unresolvedDiscoveryTargetUuids.length;
     const allActionableCount = allDiscoveryTargetUuids.length;
@@ -1361,6 +1378,15 @@ export default function MCPDashboard(): React.JSX.Element {
         const topReasonsLine = lifecycleReasonFacetCounts.length > 0
             ? lifecycleReasonFacetCounts.map((facet) => `${facet.reasonCode}: ${facet.count}`).join(', ')
             : 'none';
+        const topReasonServerPairsLine = lifecycleReasonServerFacetCounts.length > 0
+            ? lifecycleReasonServerFacetCounts
+                .slice(0, 3)
+                .map((facet) => `${facet.reasonCode}@${facet.serverLabel}: ${facet.count}`)
+                .join(', ')
+            : 'none';
+        const focusedPairLine = hasFocusedLifecyclePair
+            ? `${lifecycleReasonFilter}@${lifecycleServerFilter}`
+            : 'none';
 
         const summaryText = [
             'MCP lifecycle triage summary',
@@ -1372,7 +1398,10 @@ export default function MCPDashboard(): React.JSX.Element {
             `activeServer=${activeServerLabel}`,
             `matchingEvents=${filteredLifecycleEvents.length}`,
             `visibleEvents=${recentLifecycleEvents.length}`,
+            `highlightedPairEvents=${highlightedTimelinePairMatches}`,
+            `focusedPair=${focusedPairLine}`,
             `topReasons=${topReasonsLine}`,
+            `topReasonServerPairs=${topReasonServerPairsLine}`,
         ].join('\n');
 
         try {
@@ -1568,6 +1597,11 @@ export default function MCPDashboard(): React.JSX.Element {
                                         <div className="text-[11px] uppercase tracking-wider text-zinc-500">Lifecycle timeline</div>
                                         <div className="text-[11px] text-zinc-500">
                                             showing <span className="font-semibold text-white">{recentLifecycleEvents.length}</span> of <span className="font-semibold text-white">{filteredLifecycleEvents.length}</span>
+                                            {hasFocusedLifecyclePair ? (
+                                                <>
+                                                    {' '}• pair matches in view <span className="font-semibold text-emerald-200">{highlightedTimelinePairMatches}</span>
+                                                </>
+                                            ) : null}
                                         </div>
                                     </div>
                                     <div className="mt-2 grid gap-2 sm:grid-cols-5">
@@ -1830,28 +1864,42 @@ export default function MCPDashboard(): React.JSX.Element {
                                     ) : null}
                                     {recentLifecycleEvents.length > 0 ? (
                                         <div className="mt-2 space-y-1.5 text-[11px] text-zinc-400">
-                                            {recentLifecycleEvents.map((event) => (
-                                                <div key={event.id} className="rounded border border-zinc-800 bg-zinc-900/60 px-2 py-1.5">
-                                                    <div className="flex items-center justify-between gap-2">
-                                                        <div className="flex items-center gap-1.5">
-                                                            <span className="font-semibold text-zinc-300">{event.type}</span>
-                                                            {event.reasonCode ? (
-                                                                <span className="rounded border border-cyan-500/20 bg-cyan-500/10 px-1.5 py-0.5 text-[10px] uppercase tracking-wider text-cyan-200">
-                                                                    {event.reasonCode}
-                                                                </span>
-                                                            ) : null}
+                                            {recentLifecycleEvents.map((event) => {
+                                                const isPairMatch = hasFocusedLifecyclePair
+                                                    && event.reasonCode === lifecycleReasonFilter
+                                                    && event.serverUuid === lifecycleServerFilter;
+
+                                                return (
+                                                    <div
+                                                        key={event.id}
+                                                        className={`rounded border px-2 py-1.5 ${isPairMatch ? 'border-emerald-500/40 bg-emerald-500/10' : hasFocusedLifecyclePair ? 'border-zinc-800/80 bg-zinc-900/40 opacity-80' : 'border-zinc-800 bg-zinc-900/60'}`}
+                                                    >
+                                                        <div className="flex items-center justify-between gap-2">
+                                                            <div className="flex items-center gap-1.5">
+                                                                <span className="font-semibold text-zinc-300">{event.type}</span>
+                                                                {event.reasonCode ? (
+                                                                    <span className="rounded border border-cyan-500/20 bg-cyan-500/10 px-1.5 py-0.5 text-[10px] uppercase tracking-wider text-cyan-200">
+                                                                        {event.reasonCode}
+                                                                    </span>
+                                                                ) : null}
+                                                                {isPairMatch ? (
+                                                                    <span className="rounded border border-emerald-500/30 bg-emerald-500/10 px-1.5 py-0.5 text-[10px] uppercase tracking-wider text-emerald-200">
+                                                                        focused pair
+                                                                    </span>
+                                                                ) : null}
+                                                            </div>
+                                                            <span className="text-zinc-500">{new Date(event.timestamp).toLocaleTimeString()}</span>
                                                         </div>
-                                                        <span className="text-zinc-500">{new Date(event.timestamp).toLocaleTimeString()}</span>
+                                                        {event.serverName || event.serverUuid ? (
+                                                            <div className="mt-1 text-[10px] uppercase tracking-wider text-zinc-500">
+                                                                server {event.serverName ?? event.serverUuid}
+                                                                {event.serverName && event.serverUuid ? ` (${event.serverUuid})` : ''}
+                                                            </div>
+                                                        ) : null}
+                                                        <div className="mt-1 text-zinc-400">{event.message}</div>
                                                     </div>
-                                                    {event.serverName || event.serverUuid ? (
-                                                        <div className="mt-1 text-[10px] uppercase tracking-wider text-zinc-500">
-                                                            server {event.serverName ?? event.serverUuid}
-                                                            {event.serverName && event.serverUuid ? ` (${event.serverUuid})` : ''}
-                                                        </div>
-                                                    ) : null}
-                                                    <div className="mt-1 text-zinc-400">{event.message}</div>
-                                                </div>
-                                            ))}
+                                                );
+                                            })}
                                         </div>
                                     ) : (
                                         <div className="mt-2 text-[11px] text-zinc-500">No lifecycle events match the active filters.</div>
