@@ -4,6 +4,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.7.149] — 2026-03-14
+
+- feat(web/mcp): added auto-load outcome aggregate panel in `/dashboard/mcp/inspector` telemetry section
+- changed(web/mcp): `telemetryAutoLoadStats` IIFE computes loaded / skipped / not-applicable counts + mean confidence per outcome from `scopedTelemetryEvents`
+- feat(web/mcp): compact 3-column panel shows per-outcome count + mean confidence badge; load-rate progress bar displays `loaded / total evaluated` percentage at a glance
+- changed(web/mcp): panel is hidden when no auto-load-evaluated events exist in the current scope
+
 ## [2.7.148] — 2026-03-14
 
 - feat(web/mcp): added latency statistics panel in `/dashboard/mcp/inspector` telemetry section displaying min/p50/mean/p90/p99/max computed from `latencyMs` values across scoped events; values are color-coded green (<500ms) / amber (<1s) / red (≥1s).

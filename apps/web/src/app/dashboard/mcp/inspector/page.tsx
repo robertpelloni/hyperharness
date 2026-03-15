@@ -482,6 +482,29 @@ function InspectorDashboardContent() {
             .sort((a, b) => b.errorCount - a.errorCount || b.errorRatePercent - a.errorRatePercent)
             .slice(0, 10);
     })();
+    // Auto-load decision aggregate stats over the current scope — null when no auto-load events
+    const telemetryAutoLoadStats = (() => {
+        const evaluated = scopedTelemetryEvents.filter((e) => e.autoLoadEvaluated);
+        if (evaluated.length === 0) return null;
+        const loaded = evaluated.filter((e) => e.autoLoadOutcome === 'loaded');
+        const skipped = evaluated.filter((e) => e.autoLoadOutcome === 'skipped');
+        const na = evaluated.filter((e) => e.autoLoadOutcome === 'not-applicable');
+        const meanConfPct = (arr: ToolSelectionTelemetryEvent[]) => {
+            const withConf = arr.filter((e) => typeof e.autoLoadConfidence === 'number');
+            if (withConf.length === 0) return null;
+            return Math.round((withConf.reduce((sum, e) => sum + (e.autoLoadConfidence ?? 0), 0) / withConf.length) * 100);
+        };
+        return {
+            total: evaluated.length,
+            loadedCount: loaded.length,
+            skippedCount: skipped.length,
+            naCount: na.length,
+            loadedMeanConfPct: meanConfPct(loaded),
+            skippedMeanConfPct: meanConfPct(skipped),
+            loadRate: Math.round((loaded.length / evaluated.length) * 100),
+        };
+    })();
+
     const telemetryFiltersAtDefault = telemetryTypeFilter === 'all'
         && telemetryStatusFilter === 'all'
         && telemetryWindowFilter === '15m'
@@ -1467,6 +1490,40 @@ function InspectorDashboardContent() {
                                             </div>
                                         </div>
                                     ))}
+                                </div>
+                            </div>
+                        )}
+
+                        {telemetryAutoLoadStats && (
+                            <div className="rounded-lg border border-zinc-800 bg-zinc-950/60 p-3 space-y-2">
+                                <div className="text-[10px] uppercase tracking-wider text-zinc-500">
+                                    Auto-load decisions ({telemetryAutoLoadStats.total} evaluated)
+                                </div>
+                                <div className="grid grid-cols-3 gap-2">
+                                    <div className="flex flex-col items-center rounded border border-emerald-500/20 bg-emerald-500/8 p-2 gap-0.5">
+                                        <span className="font-mono text-sm font-semibold text-emerald-300">{telemetryAutoLoadStats.loadedCount}</span>
+                                        <span className="text-[10px] text-zinc-500">loaded</span>
+                                        {telemetryAutoLoadStats.loadedMeanConfPct !== null && (
+                                            <span className="text-[10px] text-emerald-400">{telemetryAutoLoadStats.loadedMeanConfPct}% conf</span>
+                                        )}
+                                    </div>
+                                    <div className="flex flex-col items-center rounded border border-amber-500/20 bg-amber-500/8 p-2 gap-0.5">
+                                        <span className="font-mono text-sm font-semibold text-amber-300">{telemetryAutoLoadStats.skippedCount}</span>
+                                        <span className="text-[10px] text-zinc-500">skipped</span>
+                                        {telemetryAutoLoadStats.skippedMeanConfPct !== null && (
+                                            <span className="text-[10px] text-amber-400">{telemetryAutoLoadStats.skippedMeanConfPct}% conf</span>
+                                        )}
+                                    </div>
+                                    <div className="flex flex-col items-center rounded border border-zinc-700 bg-zinc-800/50 p-2 gap-0.5">
+                                        <span className="font-mono text-sm font-semibold text-zinc-400">{telemetryAutoLoadStats.naCount}</span>
+                                        <span className="text-[10px] text-zinc-500">n/a</span>
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <div className="flex-1 h-1.5 rounded-full bg-zinc-800 overflow-hidden">
+                                        <div className="h-full rounded-full bg-emerald-500/70" style={{ width: `${telemetryAutoLoadStats.loadRate}%` }} />
+                                    </div>
+                                    <span className="text-[10px] text-zinc-500 shrink-0">{telemetryAutoLoadStats.loadRate}% load rate</span>
                                 </div>
                             </div>
                         )}
