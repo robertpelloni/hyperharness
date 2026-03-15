@@ -4,6 +4,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.7.203] — 2026-03-15
+
+- changed(web/navigation): `validateSidebarSections(...)` now reports `normalizedHrefCollisions` to catch semantic route duplicates (for example `/dashboard/library` vs `/dashboard/library/`) before they surface as confusing UI behavior.
+- changed(web/navigation): added `normalizeNavHref(...)` utility to canonicalize nav href comparisons for trailing-slash stability while preserving root route semantics.
+- test(web/navigation): expanded `nav-validation.test.ts` and `nav-config.test.ts` to assert normalized-collision detection and enforce no canonical route collisions in real sidebar config.
+
 ## [2.7.202] — 2026-03-15
 
 - changed(web/navigation): extracted shared `buildNavItemsByHref(...)` helper in `apps/web/src/components/mcp/nav-validation.ts` so deterministic first-seen `href` metadata behavior is reusable beyond `Sidebar.tsx`.

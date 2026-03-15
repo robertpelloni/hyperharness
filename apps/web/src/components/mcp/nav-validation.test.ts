@@ -1,7 +1,15 @@
 import { describe, expect, it } from 'vitest';
 
 import type { NavSection } from './nav-config';
-import { buildNavItemsByHref, validateSidebarSections } from './nav-validation';
+import { buildNavItemsByHref, normalizeNavHref, validateSidebarSections } from './nav-validation';
+
+describe('normalizeNavHref', () => {
+    it('normalizes trailing slashes while preserving root', () => {
+        expect(normalizeNavHref('/dashboard/library')).toBe('/dashboard/library');
+        expect(normalizeNavHref('/dashboard/library/')).toBe('/dashboard/library');
+        expect(normalizeNavHref('/')).toBe('/');
+    });
+});
 
 describe('validateSidebarSections', () => {
     it('returns empty diagnostics when hrefs are unique', () => {
@@ -26,6 +34,7 @@ describe('validateSidebarSections', () => {
 
         expect(diagnostics.duplicateWithinSection).toEqual([]);
         expect(diagnostics.duplicateAcrossSections).toEqual([]);
+        expect(diagnostics.normalizedHrefCollisions).toEqual([]);
     });
 
     it('detects duplicates within and across sections', () => {
@@ -59,6 +68,35 @@ describe('validateSidebarSections', () => {
         expect(diagnostics.duplicateAcrossSections).toEqual([
             {
                 href: '/x',
+                sections: ['One', 'Two'],
+            },
+        ]);
+
+        expect(diagnostics.normalizedHrefCollisions).toEqual([]);
+    });
+
+    it('detects normalized href collisions such as trailing slash variants', () => {
+        const sections: NavSection[] = [
+            {
+                title: 'One',
+                items: [
+                    { title: 'A', href: '/dashboard/library', icon: null, variant: 'ghost' },
+                ],
+            },
+            {
+                title: 'Two',
+                items: [
+                    { title: 'B', href: '/dashboard/library/', icon: null, variant: 'ghost' },
+                ],
+            },
+        ];
+
+        const diagnostics = validateSidebarSections(sections);
+
+        expect(diagnostics.normalizedHrefCollisions).toEqual([
+            {
+                normalizedHref: '/dashboard/library',
+                hrefs: ['/dashboard/library', '/dashboard/library/'],
                 sections: ['One', 'Two'],
             },
         ]);

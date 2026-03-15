@@ -21,4 +21,13 @@ describe('SIDEBAR_SECTIONS', () => {
             `Duplicate navigation hrefs found across sections: ${JSON.stringify(diagnostics.duplicateAcrossSections)}`,
         ).toEqual([]);
     });
+
+    it('avoids normalized href collisions (e.g. trailing slash variants)', () => {
+        const diagnostics = validateSidebarSections(SIDEBAR_SECTIONS);
+
+        expect(
+            diagnostics.normalizedHrefCollisions,
+            `Normalized href collisions found in sidebar config: ${JSON.stringify(diagnostics.normalizedHrefCollisions)}`,
+        ).toEqual([]);
+    });
 });

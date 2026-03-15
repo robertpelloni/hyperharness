@@ -13,6 +13,21 @@ export interface NavValidationResult {
         duplicates: string[];
     }>;
     duplicateAcrossSections: NavDuplicateIssue[];
+    normalizedHrefCollisions: Array<{
+        normalizedHref: string;
+        hrefs: string[];
+        sections: string[];
+    }>;
+}
+
+export function normalizeNavHref(href: string): string {
+    const trimmed = href.trim();
+    if (trimmed === '' || trimmed === '/') {
+        return '/';
+    }
+
+    const withoutTrailingSlash = trimmed.endsWith('/') ? trimmed.replace(/\/+$/, '') : trimmed;
+    return withoutTrailingSlash === '' ? '/' : withoutTrailingSlash;
 }
 
 export function buildNavItemsByHref(sections: NavSection[]): Map<string, NavItem> {
@@ -33,6 +48,7 @@ export function buildNavItemsByHref(sections: NavSection[]): Map<string, NavItem
 export function validateSidebarSections(sections: NavSection[]): NavValidationResult {
     const duplicateWithinSection: NavValidationResult['duplicateWithinSection'] = [];
     const hrefToSections = new Map<string, Set<string>>();
+    const normalizedHrefMap = new Map<string, { hrefs: Set<string>; sections: Set<string> }>();
 
     for (const section of sections) {
         const seen = new Set<string>();
@@ -48,6 +64,15 @@ export function validateSidebarSections(sections: NavSection[]): NavValidationRe
             const sectionsWithHref = hrefToSections.get(item.href) ?? new Set<string>();
             sectionsWithHref.add(section.title);
             hrefToSections.set(item.href, sectionsWithHref);
+
+            const normalizedHref = normalizeNavHref(item.href);
+            const normalizedEntry = normalizedHrefMap.get(normalizedHref) ?? {
+                hrefs: new Set<string>(),
+                sections: new Set<string>(),
+            };
+            normalizedEntry.hrefs.add(item.href);
+            normalizedEntry.sections.add(section.title);
+            normalizedHrefMap.set(normalizedHref, normalizedEntry);
         }
 
         if (duplicates.size > 0) {
@@ -70,8 +95,21 @@ export function validateSidebarSections(sections: NavSection[]): NavValidationRe
 
     duplicateAcrossSections.sort((a, b) => a.href.localeCompare(b.href));
 
+    const normalizedHrefCollisions: NavValidationResult['normalizedHrefCollisions'] = [];
+    for (const [normalizedHref, entry] of normalizedHrefMap.entries()) {
+        if (entry.hrefs.size > 1) {
+            normalizedHrefCollisions.push({
+                normalizedHref,
+                hrefs: Array.from(entry.hrefs).sort(),
+                sections: Array.from(entry.sections).sort(),
+            });
+        }
+    }
+    normalizedHrefCollisions.sort((a, b) => a.normalizedHref.localeCompare(b.normalizedHref));
+
     return {
         duplicateWithinSection,
         duplicateAcrossSections,
+        normalizedHrefCollisions,
     };
 }
