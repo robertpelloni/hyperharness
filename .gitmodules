@@ -1,21 +1,24 @@
 [submodule "packages/MCP-SuperAssistant"]
-	path = packages/MCP-SuperAssistant
-	url = https://github.com/robertpelloni/MCP-SuperAssistant
+        path = packages/MCP-SuperAssistant
+        url = https://github.com/robertpelloni/MCP-SuperAssistant
 [submodule "packages/opencode-autopilot"]
-	path = packages/opencode-autopilot
-	url = https://github.com/robertpelloni/opencode-autopilot
+        path = packages/opencode-autopilot
+        url = https://github.com/robertpelloni/opencode-autopilot
 [submodule "external/MetaMCP"]
-	path = external/MetaMCP
-	url = https://github.com/robertpelloni/MetaMCP
+        path = external/MetaMCP
+        url = https://github.com/robertpelloni/MetaMCP
 [submodule "submodules/mcpproxy"]
-	path = submodules/mcpproxy
-	url = https://github.com/Dumbris/mcpproxy
+        path = submodules/mcpproxy
+        url = https://github.com/Dumbris/mcpproxy
 [submodule "submodules/litellm"]
-	path = submodules/litellm
-	url = https://github.com/BerriAI/litellm
+        path = submodules/litellm
+        url = https://github.com/BerriAI/litellm
 [submodule "external/claude-mem"]
-	path = external/claude-mem
-	url = https://github.com/robertpelloni/claude-mem
+        path = external/claude-mem
+        url = https://github.com/robertpelloni/claude-mem
 [submodule "external/OmniRoute"]
-	path = external/OmniRoute
-	url = https://github.com/diegosouzapw/OmniRoute
+        path = external/OmniRoute
+        url = https://github.com/diegosouzapw/OmniRoute
+[submodule "packages/claude-mem"]
+        path = packages/claude-mem
+        url = https://github.com/robertpelloni/claude-mem
