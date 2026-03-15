@@ -4,6 +4,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.7.204] — 2026-03-15
+
+- changed(web/navigation): added `hasNavValidationIssues(...)` helper in `nav-validation.ts` so all nav issue classes (within-section duplicates, cross-section duplicates, normalized collisions) are evaluated through one shared gate.
+- changed(web/sidebar): `Sidebar.tsx` dev diagnostics warning now uses `hasNavValidationIssues(...)`, ensuring trailing-slash semantic route collisions also trigger operator-visible warnings during development.
+- test(web/navigation): updated `nav-validation.test.ts` to assert helper behavior for both clean and issue-bearing nav diagnostics payloads.
+
 ## [2.7.203] — 2026-03-15
 
 - changed(web/navigation): `validateSidebarSections(...)` now reports `normalizedHrefCollisions` to catch semantic route duplicates (for example `/dashboard/library` vs `/dashboard/library/`) before they surface as confusing UI behavior.

@@ -10,7 +10,7 @@ import { SortableContext, arrayMove, rectSortingStrategy, useSortable } from "@d
 import { CSS } from "@dnd-kit/utilities";
 import { cn } from "@/lib/utils";
 import { SIDEBAR_SECTIONS } from "./mcp/nav-config";
-import { buildNavItemsByHref, validateSidebarSections } from "./mcp/nav-validation";
+import { buildNavItemsByHref, hasNavValidationIssues, validateSidebarSections } from "./mcp/nav-validation";
 
 interface SidebarProps extends React.HTMLAttributes<HTMLDivElement> { }
 
@@ -536,7 +536,7 @@ export function Sidebar({ className }: SidebarProps) {
             return;
         }
 
-        if (navDiagnostics.duplicateWithinSection.length === 0 && navDiagnostics.duplicateAcrossSections.length === 0) {
+        if (!hasNavValidationIssues(navDiagnostics)) {
             return;
         }
 

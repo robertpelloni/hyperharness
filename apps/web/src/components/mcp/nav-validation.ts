@@ -20,6 +20,12 @@ export interface NavValidationResult {
     }>;
 }
 
+export function hasNavValidationIssues(result: NavValidationResult): boolean {
+    return result.duplicateWithinSection.length > 0
+        || result.duplicateAcrossSections.length > 0
+        || result.normalizedHrefCollisions.length > 0;
+}
+
 export function normalizeNavHref(href: string): string {
     const trimmed = href.trim();
     if (trimmed === '' || trimmed === '/') {

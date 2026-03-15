@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import type { NavSection } from './nav-config';
-import { buildNavItemsByHref, normalizeNavHref, validateSidebarSections } from './nav-validation';
+import { buildNavItemsByHref, hasNavValidationIssues, normalizeNavHref, validateSidebarSections } from './nav-validation';
 
 describe('normalizeNavHref', () => {
     it('normalizes trailing slashes while preserving root', () => {
@@ -35,6 +35,7 @@ describe('validateSidebarSections', () => {
         expect(diagnostics.duplicateWithinSection).toEqual([]);
         expect(diagnostics.duplicateAcrossSections).toEqual([]);
         expect(diagnostics.normalizedHrefCollisions).toEqual([]);
+        expect(hasNavValidationIssues(diagnostics)).toBe(false);
     });
 
     it('detects duplicates within and across sections', () => {
@@ -73,6 +74,7 @@ describe('validateSidebarSections', () => {
         ]);
 
         expect(diagnostics.normalizedHrefCollisions).toEqual([]);
+        expect(hasNavValidationIssues(diagnostics)).toBe(true);
     });
 
     it('detects normalized href collisions such as trailing slash variants', () => {
@@ -100,6 +102,7 @@ describe('validateSidebarSections', () => {
                 sections: ['One', 'Two'],
             },
         ]);
+        expect(hasNavValidationIssues(diagnostics)).toBe(true);
     });
 
     it('builds href map with first-seen metadata when duplicates exist', () => {
