@@ -4,6 +4,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.7.159] — 2026-03-15
+
+- feat(web/mcp): added lifecycle timeline filter controls in `/dashboard/mcp` Router Status card for event type and scope (`all servers` vs `current active server only`).
+- changed(web/mcp): lifecycle timeline now reports filtered result counts and displays up to 8 matching events for denser on-page triage.
+- changed(web/mcp): empty-state messaging now reflects active filter scope (`No lifecycle events match the active filters.`) to reduce operator ambiguity.
+
 ## [2.7.158] — 2026-03-15
 
 - feat(core/mcp): enriched pool lifecycle events with `serverName` metadata so timeline records carry human-readable server identity in addition to UUID/session context.

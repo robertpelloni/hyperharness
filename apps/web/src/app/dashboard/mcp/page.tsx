@@ -744,6 +744,8 @@ export default function MCPDashboard(): React.JSX.Element {
     const [resettingServerUuid, setResettingServerUuid] = useState<string | null>(null);
     const [isAddOpen, setIsAddOpen] = useState(false);
     const [isImportOpen, setIsImportOpen] = useState(false);
+    const [lifecycleTypeFilter, setLifecycleTypeFilter] = useState<string>('all');
+    const [lifecycleScopeFilter, setLifecycleScopeFilter] = useState<'all' | 'active-server'>('all');
     const [bulkRefreshState, setBulkRefreshState] = useState<BulkDiscoveryOperationState | null>(null);
     const reloadMetadataMutation = mcpServersClient.reloadMetadata.useMutation();
     const clearMetadataCacheMutation = mcpServersClient.clearMetadataCache.useMutation();
@@ -783,7 +785,30 @@ export default function MCPDashboard(): React.JSX.Element {
     }) as StatusSummary;
 
     const topTools = toolList.slice(0, 8);
-    const recentLifecycleEvents = (summary.lifecycle?.events ?? []).slice(0, 5);
+    const lifecycleEvents = summary.lifecycle?.events ?? [];
+    const lifecycleEventTypes = useMemo(() => {
+        return Array.from(new Set(lifecycleEvents.map((event) => event.type))).sort();
+    }, [lifecycleEvents]);
+    const filteredLifecycleEvents = useMemo(() => {
+        const activeServerUuid = summary.pool?.currentActiveServerUuid ?? null;
+
+        return lifecycleEvents.filter((event) => {
+            if (lifecycleTypeFilter !== 'all' && event.type !== lifecycleTypeFilter) {
+                return false;
+            }
+
+            if (lifecycleScopeFilter === 'active-server') {
+                if (!activeServerUuid) {
+                    return false;
+                }
+
+                return event.serverUuid === activeServerUuid;
+            }
+
+            return true;
+        });
+    }, [lifecycleEvents, lifecycleScopeFilter, lifecycleTypeFilter, summary.pool?.currentActiveServerUuid]);
+    const recentLifecycleEvents = filteredLifecycleEvents.slice(0, 8);
     const bulkActionsDisabled = bulkRefreshState !== null || reloadMetadataMutation.isPending || clearMetadataCacheMutation.isPending;
     const unresolvedActionableCount = unresolvedDiscoveryTargetUuids.length;
     const allActionableCount = allDiscoveryTargetUuids.length;
@@ -1111,7 +1136,44 @@ export default function MCPDashboard(): React.JSX.Element {
                                     </Button>
                                 </div>
                                 <div className="mt-3 rounded-md border border-zinc-800 bg-zinc-950/60 p-2.5">
-                                    <div className="text-[11px] uppercase tracking-wider text-zinc-500">Lifecycle timeline</div>
+                                    <div className="flex flex-wrap items-center justify-between gap-2">
+                                        <div className="text-[11px] uppercase tracking-wider text-zinc-500">Lifecycle timeline</div>
+                                        <div className="text-[11px] text-zinc-500">
+                                            showing <span className="font-semibold text-white">{recentLifecycleEvents.length}</span> of <span className="font-semibold text-white">{filteredLifecycleEvents.length}</span>
+                                        </div>
+                                    </div>
+                                    <div className="mt-2 grid gap-2 sm:grid-cols-2">
+                                        <label className="flex flex-col gap-1 text-[10px] uppercase tracking-wider text-zinc-500">
+                                            Event type
+                                            <select
+                                                value={lifecycleTypeFilter}
+                                                onChange={(event) => setLifecycleTypeFilter(event.target.value)}
+                                                title="Filter lifecycle timeline by event type"
+                                                aria-label="Filter lifecycle timeline by event type"
+                                                className="rounded border border-zinc-700 bg-zinc-900 px-2 py-1.5 text-[11px] text-zinc-200 outline-none focus:ring-1 focus:ring-blue-500"
+                                            >
+                                                <option value="all">All event types</option>
+                                                {lifecycleEventTypes.map((eventType) => (
+                                                    <option key={eventType} value={eventType}>{eventType}</option>
+                                                ))}
+                                            </select>
+                                        </label>
+                                        <label className="flex flex-col gap-1 text-[10px] uppercase tracking-wider text-zinc-500">
+                                            Scope
+                                            <select
+                                                value={lifecycleScopeFilter}
+                                                onChange={(event) => setLifecycleScopeFilter(event.target.value as 'all' | 'active-server')}
+                                                title="Filter lifecycle timeline scope"
+                                                aria-label="Filter lifecycle timeline scope"
+                                                className="rounded border border-zinc-700 bg-zinc-900 px-2 py-1.5 text-[11px] text-zinc-200 outline-none focus:ring-1 focus:ring-blue-500"
+                                            >
+                                                <option value="all">All servers</option>
+                                                <option value="active-server" disabled={!summary.pool?.currentActiveServerUuid}>
+                                                    Current active server only
+                                                </option>
+                                            </select>
+                                        </label>
+                                    </div>
                                     {recentLifecycleEvents.length > 0 ? (
                                         <div className="mt-2 space-y-1.5 text-[11px] text-zinc-400">
                                             {recentLifecycleEvents.map((event) => (
@@ -1131,7 +1193,7 @@ export default function MCPDashboard(): React.JSX.Element {
                                             ))}
                                         </div>
                                     ) : (
-                                        <div className="mt-2 text-[11px] text-zinc-500">No lifecycle events captured yet.</div>
+                                        <div className="mt-2 text-[11px] text-zinc-500">No lifecycle events match the active filters.</div>
                                     )}
                                 </div>
                             </div>
