@@ -4,6 +4,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.7.209] — 2026-03-15
+
+- changed(web/navigation): added shared `isNavHrefActive(...)` in `nav-validation.ts` to centralize canonical active-route decisions using normalized pathname/href comparisons.
+- changed(web/sidebar): `Sidebar.tsx` now delegates active-row checks to `isNavHrefActive(...)`, keeping runtime highlight behavior aligned with shared nav canonicalization utilities.
+- test(web/navigation): expanded `nav-validation.test.ts` with active-route coverage (semantic aliases, nested-route activation, and root non-overmatch), then revalidated focused nav suites (`13` tests passing).
+
 ## [2.7.208] — 2026-03-15
 
 - changed(web/sidebar): active-route highlighting in `Sidebar.tsx` now compares canonicalized pathname and href values, so query/hash/trailing-slash aliases resolve to one consistent active state.

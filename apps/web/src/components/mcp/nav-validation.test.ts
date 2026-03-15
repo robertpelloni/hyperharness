@@ -5,6 +5,7 @@ import {
     buildNavItemsByHref,
     buildNavItemsByNormalizedHref,
     hasNavValidationIssues,
+    isNavHrefActive,
     normalizeNavHref,
     validateSidebarSections,
 } from './nav-validation';
@@ -20,6 +21,18 @@ describe('normalizeNavHref', () => {
         expect(normalizeNavHref(' /dashboard/library/?tab=overview#top ')).toBe('/dashboard/library');
         expect(normalizeNavHref('/dashboard/library?tab=overview')).toBe('/dashboard/library');
         expect(normalizeNavHref('/dashboard/library#summary')).toBe('/dashboard/library');
+    });
+});
+
+describe('isNavHrefActive', () => {
+    it('treats semantic aliases as active matches', () => {
+        expect(isNavHrefActive('/dashboard/library?tab=overview', '/dashboard/library/')).toBe(true);
+        expect(isNavHrefActive('/dashboard/library/#top', '/dashboard/library')).toBe(true);
+    });
+
+    it('supports nested-route activation but does not over-match root', () => {
+        expect(isNavHrefActive('/dashboard/tools/detail', '/dashboard/tools')).toBe(true);
+        expect(isNavHrefActive('/dashboard/tools', '/')).toBe(false);
     });
 });
 

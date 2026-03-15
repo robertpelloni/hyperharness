@@ -10,7 +10,7 @@ import { SortableContext, arrayMove, rectSortingStrategy, useSortable } from "@d
 import { CSS } from "@dnd-kit/utilities";
 import { cn } from "@/lib/utils";
 import { SIDEBAR_SECTIONS } from "./mcp/nav-config";
-import { buildNavItemsByNormalizedHref, hasNavValidationIssues, normalizeNavHref, validateSidebarSections } from "./mcp/nav-validation";
+import { buildNavItemsByNormalizedHref, hasNavValidationIssues, isNavHrefActive, normalizeNavHref, validateSidebarSections } from "./mcp/nav-validation";
 
 interface SidebarProps extends React.HTMLAttributes<HTMLDivElement> { }
 
@@ -200,11 +200,7 @@ export function Sidebar({ className }: SidebarProps) {
     const normalizedPathname = normalizeNavHref(pathname);
 
     const isActive = (href: string) => {
-        const normalizedHref = normalizeNavHref(href);
-        if (normalizedPathname === normalizedHref) {
-            return true;
-        }
-        return normalizedHref !== '/dashboard' && normalizedPathname.startsWith(`${normalizedHref}/`);
+        return isNavHrefActive(normalizedPathname, href);
     };
 
     const normalizedQuery = query.trim().toLowerCase();

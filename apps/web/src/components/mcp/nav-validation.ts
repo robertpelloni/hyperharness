@@ -43,6 +43,17 @@ export function normalizeNavHref(href: string): string {
     return withoutTrailingSlash === '' ? '/' : withoutTrailingSlash;
 }
 
+export function isNavHrefActive(currentPathname: string, href: string): boolean {
+    const normalizedPathname = normalizeNavHref(currentPathname);
+    const normalizedHref = normalizeNavHref(href);
+
+    if (normalizedPathname === normalizedHref) {
+        return true;
+    }
+
+    return normalizedHref !== '/' && normalizedPathname.startsWith(`${normalizedHref}/`);
+}
+
 export function buildNavItemsByHref(sections: NavSection[]): Map<string, NavItem> {
     const map = new Map<string, NavItem>();
 
