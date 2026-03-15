@@ -459,7 +459,7 @@ export default function CloudDevDashboardPage() {
 
     useEffect(() => {
         setShowAllPreviewRecipients(false);
-    }, [broadcastForce, broadcastStatusFilter]);
+    }, [broadcastForce, broadcastSessionScopeIds, broadcastStatusFilter]);
 
     useEffect(() => {
         setShowAllResultSkippedSessions(false);
@@ -869,22 +869,24 @@ export default function CloudDevDashboardPage() {
                                             <div className="flex flex-wrap items-center gap-1.5">
                                                 <button
                                                     type="button"
+                                                    disabled={broadcastMutation.isPending}
                                                     onClick={() => {
                                                         setBroadcastSessionScopeIds(broadcastPreview.skippedSessionIds);
                                                         setBroadcastStatusFilter([]);
                                                     }}
-                                                    className="rounded border border-cyan-700/60 bg-cyan-900/30 px-2 py-0.5 text-[10px] text-cyan-200 hover:bg-cyan-900/50"
+                                                    className="rounded border border-cyan-700/60 bg-cyan-900/30 px-2 py-0.5 text-[10px] text-cyan-200 hover:bg-cyan-900/50 disabled:opacity-50"
                                                 >
                                                     Use preview skipped as scope
                                                 </button>
                                                 <button
                                                     type="button"
+                                                    disabled={broadcastMutation.isPending}
                                                     onClick={() => {
                                                         setBroadcastSessionScopeIds(broadcastPreview.skippedSessionIds);
                                                         setBroadcastStatusFilter([]);
                                                         setBroadcastForce(true);
                                                     }}
-                                                    className="rounded border border-amber-700/60 bg-amber-900/30 px-2 py-0.5 text-[10px] text-amber-200 hover:bg-amber-900/50"
+                                                    className="rounded border border-amber-700/60 bg-amber-900/30 px-2 py-0.5 text-[10px] text-amber-200 hover:bg-amber-900/50 disabled:opacity-50"
                                                 >
                                                     Use skipped scope + Force
                                                 </button>

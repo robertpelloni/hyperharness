@@ -4,6 +4,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.7.196] — 2026-03-15
+
+- fix(web/cloud-dev): preview scope-staging actions (`Use preview skipped as scope`, `Use skipped scope + Force`) are now disabled while a broadcast mutation is pending, preventing in-flight target drift.
+- changed(web/cloud-dev): broadcast preview recipient expansion now resets when session-ID scope changes, keeping preview disclosure state coherent with the active targeting slice.
+- changed(web/cloud-dev): pending-send hardening aligns scope-staging controls with other disabled broadcast controls for clearer operator feedback during dispatch.
+
 ## [2.7.195] — 2026-03-15
 
 - fix(web/cloud-dev): post-send broadcast summaries now capture session-ID scope from dispatch time, preventing scope-count drift when operators change targeting state after a send.
