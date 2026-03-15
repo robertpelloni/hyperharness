@@ -4,6 +4,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.7.183] — 2026-03-15
+
+- changed(core/cloud-dev): `previewBroadcastRecipients` and `broadcastMessage` now include `skippedSessionsSampled` metadata so UIs can distinguish full vs sampled skip diagnostics.
+- changed(web/cloud-dev): broadcast preview/result skip-diagnostics panels now show explicit sampled-data hints when skipped-session lists are truncated for payload safety.
+- changed(web/cloud-dev): skip diagnostics messaging now better communicates when operators are seeing representative subsets rather than exhaustive skipped-session rows.
+
 ## [2.7.182] — 2026-03-15
 
 - changed(web/cloud-dev): broadcast composer now stores the last submitted payload (message + status filter), enabling result-panel quick retry actions without retyping.

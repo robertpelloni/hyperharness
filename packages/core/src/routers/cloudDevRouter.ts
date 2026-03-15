@@ -95,6 +95,7 @@ const sessions: CloudDevSession[] = [];
  * `force:true` bypasses this check.
  */
 const TERMINAL_STATUSES = new Set<CloudDevSession['status']>(['completed', 'failed', 'cancelled']);
+const BROADCAST_SKIPPED_SAMPLE_LIMIT = 25;
 
 function selectBroadcastTargets(options: {
     force: boolean;
@@ -427,7 +428,7 @@ export const cloudDevRouter = t.router({
                 skipped: sessions.length - results.length,
                 results,
                 skippedByReason,
-                skippedSessions: skippedSessions.slice(0, 25).map((session) => ({
+                skippedSessions: skippedSessions.slice(0, BROADCAST_SKIPPED_SAMPLE_LIMIT).map((session) => ({
                     id: session.id,
                     provider: session.provider,
                     projectName: session.projectName,
@@ -438,6 +439,7 @@ export const cloudDevRouter = t.router({
                         session,
                     }),
                 })),
+                skippedSessionsSampled: skippedSessions.length > BROADCAST_SKIPPED_SAMPLE_LIMIT,
             };
         }),
 
@@ -489,7 +491,7 @@ export const cloudDevRouter = t.router({
                     updatedAt: session.updatedAt,
                 })),
                 skippedByReason,
-                skippedSessions: skippedSessions.slice(0, 25).map((session) => ({
+                skippedSessions: skippedSessions.slice(0, BROADCAST_SKIPPED_SAMPLE_LIMIT).map((session) => ({
                     id: session.id,
                     provider: session.provider,
                     projectName: session.projectName,
@@ -500,6 +502,7 @@ export const cloudDevRouter = t.router({
                         session,
                     }),
                 })),
+                skippedSessionsSampled: skippedSessions.length > BROADCAST_SKIPPED_SAMPLE_LIMIT,
             };
         }),
 

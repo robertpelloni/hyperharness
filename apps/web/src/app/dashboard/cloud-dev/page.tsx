@@ -91,6 +91,7 @@ interface BroadcastPreview {
     recipients: BroadcastPreviewRecipient[];
     skippedByReason: Partial<Record<BroadcastSkipReason, number>>;
     skippedSessions: BroadcastSkippedSession[];
+    skippedSessionsSampled: boolean;
 }
 
 const BROADCAST_SKIP_REASON_LABELS: Record<BroadcastSkipReason, string> = {
@@ -339,6 +340,7 @@ export default function CloudDevDashboardPage() {
         statuses: SessionStatus[];
         skippedByReason: Partial<Record<BroadcastSkipReason, number>>;
         skippedSessions: BroadcastSkippedSession[];
+        skippedSessionsSampled: boolean;
     } | null>(null);
     const [showAllPreviewRecipients, setShowAllPreviewRecipients] = useState(false);
     const [showAllResultSkippedSessions, setShowAllResultSkippedSessions] = useState(false);
@@ -368,6 +370,7 @@ export default function CloudDevDashboardPage() {
                 statuses: Array.from(new Set((result.results ?? []).map((entry) => entry.status as SessionStatus))),
                 skippedByReason: (result.skippedByReason ?? {}) as Partial<Record<BroadcastSkipReason, number>>,
                 skippedSessions: (result.skippedSessions ?? []) as BroadcastSkippedSession[],
+                skippedSessionsSampled: Boolean(result.skippedSessionsSampled),
             });
             setBroadcastMsg("");
         },
@@ -631,6 +634,11 @@ export default function CloudDevDashboardPage() {
                                                         <span className="text-zinc-500">{BROADCAST_SKIP_REASON_LABELS[session.reason]}</span>
                                                     </div>
                                                 ))}
+                                                {broadcastPreview.skippedSessionsSampled && (
+                                                    <div className="text-[10px] text-zinc-500">
+                                                        Showing sampled skipped sessions. Expand filters or retry with Force for full coverage.
+                                                    </div>
+                                                )}
                                             </div>
                                         )}
                                     </div>
@@ -709,6 +717,11 @@ export default function CloudDevDashboardPage() {
                                                 ? "Show fewer skipped sessions"
                                                 : `Show all ${broadcastResult.skippedSessions.length} skipped sessions`}
                                         </button>
+                                    )}
+                                    {broadcastResult.skippedSessionsSampled && (
+                                        <div className="text-[10px] text-zinc-500">
+                                            Result includes a sampled subset of skipped sessions.
+                                        </div>
                                     )}
                                 </div>
                             )}
