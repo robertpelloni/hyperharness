@@ -4,6 +4,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.7.219] — 2026-03-15
+
+- changed(web/navigation): added shared `filterNavHrefsByAllowedSet(...)` in `apps/web/src/components/mcp/nav-validation.ts` so canonical href normalization and config-aware route filtering now reuse one helper.
+- refactor(web/sidebar): `Sidebar.tsx` now filters stored/persisted favorites against the current nav config, preventing orphaned pinned routes from surviving after nav entries are removed or renamed.
+- changed(web/navigation): `sanitizeNavPreferences(...)` now reuses the shared allowed-href filter helper for imported favorites and recents, aligning import behavior with runtime favorites validation.
+- test(web/navigation): expanded `apps/web/src/components/mcp/nav-validation.test.ts` with config-aware href filtering coverage and revalidated focused nav suites (`30` tests passing).
+
 ## [2.7.218] — 2026-03-15
 
 - changed(web/navigation): added shared `buildRecentSearchHistory(...)` in `apps/web/src/components/mcp/nav-validation.ts` so recent-search recency shaping now reuses one canonical helper for newest-first ordering, trimming, deduplication, and length capping.

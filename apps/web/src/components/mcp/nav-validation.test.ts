@@ -8,6 +8,7 @@ import {
     buildRecentRouteHistory,
     buildRecentSearchHistory,
     extractStringArray,
+    filterNavHrefsByAllowedSet,
     getNavDescription,
     hasNavValidationIssues,
     isNavHrefActive,
@@ -58,6 +59,20 @@ describe('extractStringArray', () => {
     it('returns only string entries from unknown input arrays', () => {
         expect(extractStringArray(['one', 2, null, 'two', false])).toEqual(['one', 'two']);
         expect(extractStringArray('not-an-array')).toEqual([]);
+    });
+});
+
+describe('filterNavHrefsByAllowedSet', () => {
+    it('keeps only canonical hrefs present in the allowed set', () => {
+        expect(filterNavHrefsByAllowedSet([
+            '/dashboard/library/?tab=overview',
+            '/dashboard/unknown',
+            '/dashboard/library/',
+            '/dashboard/tools#top',
+        ], new Set(['/dashboard/library', '/dashboard/tools']))).toEqual([
+            '/dashboard/library',
+            '/dashboard/tools',
+        ]);
     });
 });
 

@@ -10,7 +10,7 @@ import { SortableContext, arrayMove, rectSortingStrategy, useSortable } from "@d
 import { CSS } from "@dnd-kit/utilities";
 import { cn } from "@/lib/utils";
 import { SIDEBAR_SECTIONS } from "./mcp/nav-config";
-import { buildNavItemsByNormalizedHref, buildRecentRouteHistory, buildRecentSearchHistory, extractStringArray, getNavDescription, hasNavValidationIssues, isNavHrefActive, matchesNavQuery, normalizeNavHref, normalizeNavHrefList, sanitizeCollapsedSections, sanitizeNavPreferences, sanitizeRecentSearches, validateSidebarSections } from "./mcp/nav-validation";
+import { buildNavItemsByNormalizedHref, buildRecentRouteHistory, buildRecentSearchHistory, extractStringArray, filterNavHrefsByAllowedSet, getNavDescription, hasNavValidationIssues, isNavHrefActive, matchesNavQuery, normalizeNavHref, normalizeNavHrefList, sanitizeCollapsedSections, sanitizeNavPreferences, sanitizeRecentSearches, validateSidebarSections } from "./mcp/nav-validation";
 
 interface SidebarProps extends React.HTMLAttributes<HTMLDivElement> { }
 
@@ -121,11 +121,11 @@ export function Sidebar({ className }: SidebarProps) {
                 return;
             }
             const parsed = JSON.parse(raw);
-            setFavorites(normalizeNavHrefList(extractStringArray(parsed)));
+            setFavorites(filterNavHrefsByAllowedSet(extractStringArray(parsed), new Set(allItemsByHref.keys())));
         } catch {
             // ignore invalid stored state
         }
-    }, []);
+    }, [allItemsByHref]);
 
     useEffect(() => {
         try {
@@ -284,7 +284,7 @@ export function Sidebar({ className }: SidebarProps) {
     }, [allItemsByHref, normalizedQuery, recentRoutes]);
 
     const persistFavorites = (next: string[]) => {
-        const normalized = normalizeNavHrefList(next);
+        const normalized = filterNavHrefsByAllowedSet(next, new Set(allItemsByHref.keys()));
         setFavorites(normalized);
         safeStorageSet(SIDEBAR_FAVORITES_STORAGE_KEY, JSON.stringify(normalized));
     };
