@@ -528,6 +528,21 @@ function InspectorDashboardContent() {
             loadRate: Math.round((loaded.length / evaluated.length) * 100),
         };
     })();
+    const telemetryAutoLoadSkipReasonBreakdown = (() => {
+        const skipReasonMap = new Map<string, number>();
+        scopedTelemetryEvents.forEach((event) => {
+            if (event.autoLoadOutcome !== 'skipped' || !event.autoLoadSkipReason) {
+                return;
+            }
+
+            skipReasonMap.set(event.autoLoadSkipReason, (skipReasonMap.get(event.autoLoadSkipReason) ?? 0) + 1);
+        });
+
+        return Array.from(skipReasonMap.entries())
+            .map(([reason, count]) => ({ reason, count }))
+            .sort((left, right) => right.count - left.count || left.reason.localeCompare(right.reason))
+            .slice(0, 5);
+    })();
 
     const telemetryFiltersAtDefault = telemetryTypeFilter === 'all'
         && telemetryStatusFilter === 'all'
@@ -1579,6 +1594,37 @@ function InspectorDashboardContent() {
                                     </div>
                                     <span className="text-[10px] text-zinc-500 shrink-0">{telemetryAutoLoadStats.loadRate}% load rate</span>
                                 </div>
+
+                                {telemetryAutoLoadSkipReasonBreakdown.length > 0 ? (
+                                    <div className="space-y-1">
+                                        <div className="text-[10px] uppercase tracking-wider text-zinc-500">Top skip reasons</div>
+                                        <div className="space-y-1">
+                                            {telemetryAutoLoadSkipReasonBreakdown.map((entry) => (
+                                                <div key={`skip-reason-${entry.reason}`} className="flex items-center justify-between gap-2 rounded border border-zinc-800/70 bg-zinc-900/60 px-2 py-1 text-[10px]">
+                                                    <span className="truncate text-zinc-300" title={entry.reason}>{entry.reason}</span>
+                                                    <div className="flex shrink-0 items-center gap-2">
+                                                        <span className="rounded border border-zinc-700 bg-zinc-900 px-1.5 py-0.5 text-zinc-300">{entry.count}</span>
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => {
+                                                                setTelemetryTypeFilter('search');
+                                                                setTelemetrySourceFilter('cached-ranking');
+                                                                setTelemetryWindowFilter('1h');
+                                                                setTelemetryStatusFilter('all');
+                                                                setTelemetrySearchQuery(entry.reason);
+                                                            }}
+                                                            className="rounded border border-amber-500/30 bg-amber-500/10 px-1.5 py-0.5 text-amber-200 transition-colors hover:bg-amber-500/20"
+                                                            title={`Focus telemetry events with skip reason: ${entry.reason}`}
+                                                            aria-label={`Focus telemetry skip reason ${entry.reason}`}
+                                                        >
+                                                            Focus
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                ) : null}
                             </div>
                         )}
 

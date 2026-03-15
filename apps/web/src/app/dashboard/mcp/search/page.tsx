@@ -341,6 +341,19 @@ export default function SearchDashboard() {
         error: filteredTelemetryEvents.filter((event) => event.status === 'error').length,
         ignoredResults: filteredTelemetryEvents.reduce((sum, event) => sum + (event.ignoredResultCount ?? 0), 0),
     };
+    const telemetryAutoLoadSkipReasonBreakdown = filteredTelemetryEvents
+        .reduce((accumulator, event) => {
+            if (event.autoLoadOutcome !== 'skipped' || !event.autoLoadSkipReason) {
+                return accumulator;
+            }
+
+            accumulator.set(event.autoLoadSkipReason, (accumulator.get(event.autoLoadSkipReason) ?? 0) + 1);
+            return accumulator;
+        }, new Map<string, number>());
+    const telemetryAutoLoadSkipReasonRows = Array.from(telemetryAutoLoadSkipReasonBreakdown.entries())
+        .map(([reason, count]) => ({ reason, count }))
+        .sort((left, right) => right.count - left.count || left.reason.localeCompare(right.reason))
+        .slice(0, 5);
     const telemetryTrendBuckets = buildTelemetryTrendBuckets({
         windowPreset: telemetryWindowFilter,
         windowStart: telemetryWindowStart,
@@ -1652,6 +1665,20 @@ export default function SearchDashboard() {
                                     </div>
                                 )}
                             </div>
+
+                            {telemetryAutoLoadSkipReasonRows.length > 0 ? (
+                                <div className="mb-4 space-y-2 rounded-lg border border-zinc-800 bg-zinc-950/50 p-3">
+                                    <div className="text-[10px] uppercase tracking-wider text-zinc-500">Top auto-load skip reasons</div>
+                                    <div className="space-y-1">
+                                        {telemetryAutoLoadSkipReasonRows.map((row) => (
+                                            <div key={`search-skip-reason-${row.reason}`} className="flex items-center justify-between gap-2 rounded border border-zinc-800/70 bg-zinc-900/60 px-2 py-1 text-[10px]">
+                                                <span className="truncate text-zinc-300" title={row.reason}>{row.reason}</span>
+                                                <span className="rounded border border-zinc-700 bg-zinc-900 px-1.5 py-0.5 text-zinc-300">{row.count}</span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            ) : null}
 
                             <div className="space-y-3 max-h-[420px] overflow-y-auto">
                                 {telemetry.length > 0 ? (

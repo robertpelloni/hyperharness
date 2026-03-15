@@ -4,6 +4,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.7.174] — 2026-03-15
+
+- changed(web/mcp): `/dashboard/mcp/inspector` now shows a scoped `Top auto-load skip reasons` leaderboard so operators can immediately see why cached-ranking search events were skipped.
+- feat(web/mcp): added one-click `Focus` actions per skip reason in inspector telemetry to pivot directly into event cards with that `autoLoadSkipReason`.
+- changed(web/mcp): `/dashboard/mcp/search` now surfaces a compact top skip-reason aggregate strip beside existing auto-load outcome metrics for parity with inspector triage workflows.
+
 ## [2.7.173] — 2026-03-15
 
 - changed(web/mcp): `/dashboard/mcp/inspector` telemetry now mirrors search-page decision observability by surfacing ignored-result counts and ignored top-choice names per event.
