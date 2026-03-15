@@ -4,6 +4,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.7.162] — 2026-03-15
+
+- feat(web/mcp): added lifecycle timeline **reason-code** filter in `/dashboard/mcp`, enabling direct isolation of normalized causes like `process-exit`, `single-active-policy`, and `focus-shift`.
+- changed(web/mcp): lifecycle filter pipeline now supports combined filtering across `type + reason + window + scope`, improving high-signal operator triage during incident response.
+
 ## [2.7.161] — 2026-03-15
 
 - feat(web/mcp): added lifecycle timeline recency window filter in `/dashboard/mcp` (`Last 5m`, `Last 15m`, `Last 1h`, `All events`) for faster incident-focused triage.
