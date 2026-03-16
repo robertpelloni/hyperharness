@@ -4,6 +4,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.7.286] — 2026-03-16
+
+- feat(web/mcp/inspector): Added per-tool lane-card hydration in-flight state tracking so active schema hydration shows row-level `Hydrating...` feedback.
+- feat(web/mcp/inspector): Hydration actions in `Tool visibility lanes` now disable specifically for the active tool row while preserving clear progress indication.
+- test(validation): `WEB_TSC_OK`; focused fallback/billing slice tests passed (`packages/core/src/routers/billingRouter.test.ts`, `apps/web/src/app/dashboard/billing/page.test.tsx`, `apps/web/src/app/dashboard/DashboardHomeClient.test.tsx`, `apps/web/tests/integration/fallback-e2e.test.ts`).
+
 ## [2.7.285] — 2026-03-16
 
 - feat(web/mcp/inspector): Added per-tool lifecycle actions to lane cards in `Tool visibility lanes` (`Load`, `Hydrate`, `Unload`) so operators can complete working-set prep and cleanup without leaving lane context.

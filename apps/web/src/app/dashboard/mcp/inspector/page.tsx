@@ -247,6 +247,7 @@ function InspectorDashboardContent() {
     const [maxHydratedSchemasDraft, setMaxHydratedSchemasDraft] = useState(8);
     const [idleEvictionThresholdDraftMs, setIdleEvictionThresholdDraftMs] = useState(5 * 60 * 1000);
     const [activeLaneAction, setActiveLaneAction] = useState<string | null>(null);
+    const [activeHydrationToolName, setActiveHydrationToolName] = useState<string | null>(null);
 
     const toolList = useMemo(() => ((tools || []) as InspectorTool[]), [tools]);
 
@@ -990,6 +991,8 @@ function InspectorDashboardContent() {
     const idleEvictionThresholdMinutes = Math.max(0.17, Number((idleEvictionThresholdDraftMs / 60000).toFixed(2)));
 
     const hydrateToolSchema = async (toolName: string, isLoaded: boolean) => {
+        setActiveHydrationToolName(toolName);
+
         try {
             if (!isLoaded) {
                 await loadMutation.mutateAsync({ name: toolName });
@@ -1000,6 +1003,8 @@ function InspectorDashboardContent() {
         } catch {
             // Mutation callbacks already emit actionable toasts.
             return false;
+        } finally {
+            setActiveHydrationToolName((current) => (current === toolName ? null : current));
         }
     };
 
@@ -1828,12 +1833,17 @@ function InspectorDashboardContent() {
                                                                     onClick={() => {
                                                                         void hydrateToolSchema(tool.name, loaded);
                                                                     }}
-                                                                    disabled={loadMutation.isPending || schemaMutation.isPending || unloadMutation.isPending || hydrated || activeLaneAction != null}
+                                                                    disabled={loadMutation.isPending || schemaMutation.isPending || unloadMutation.isPending || hydrated || activeLaneAction != null || activeHydrationToolName === tool.name}
                                                                     title={hydrated ? `${tool.name} schema is already hydrated` : loaded ? `Hydrate ${tool.name} schema` : `Load then hydrate ${tool.name} schema`}
                                                                     aria-label={`Hydrate schema for ${tool.name}`}
                                                                     className="h-7 border-purple-700 px-2 text-[10px] text-purple-200 hover:bg-purple-950/30"
                                                                 >
-                                                                    {loaded ? 'Hydrate' : 'Load + hydrate'}
+                                                                    {activeHydrationToolName === tool.name ? (
+                                                                        <>
+                                                                            <Loader2 className="mr-1 h-3 w-3 animate-spin" />
+                                                                            Hydrating...
+                                                                        </>
+                                                                    ) : loaded ? 'Hydrate' : 'Load + hydrate'}
                                                                 </Button>
                                                                 <Button
                                                                     type="button"
