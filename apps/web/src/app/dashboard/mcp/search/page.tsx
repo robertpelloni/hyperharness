@@ -499,11 +499,19 @@ export default function SearchDashboard() {
                 trend: telemetryTrendBuckets.map((bucket) => {
                     const bucketEvents = sourceEvents.filter((event) => event.timestamp >= bucket.start && event.timestamp < bucket.end);
                     const bucketErrors = bucketEvents.filter((event) => event.status === 'error').length;
+                    const toolCounts: Record<string, number> = {};
+                    bucketEvents.forEach((event) => {
+                        if (event.status === 'error' && event.toolName) {
+                            toolCounts[event.toolName] = (toolCounts[event.toolName] ?? 0) + 1;
+                        }
+                    });
+                    const topFailingTool = Object.entries(toolCounts).sort((left, right) => right[1] - left[1])[0]?.[0];
 
                     return {
                         label: bucket.label,
                         count: bucketEvents.length,
                         errorCount: bucketErrors,
+                        topFailingTool,
                     };
                 }),
             };
@@ -1896,12 +1904,34 @@ export default function SearchDashboard() {
                                                                     const errorRatio = bucket.count > 0
                                                                         ? bucket.errorCount / bucket.count
                                                                         : 0;
+                                                                    const bucketErrorRatePercent = bucket.count > 0
+                                                                        ? Math.round((bucket.errorCount / bucket.count) * 100)
+                                                                        : 0;
+                                                                    const drilldownDisabled = bucket.count === 0;
 
                                                                     return (
-                                                                        <div
+                                                                        <button
+                                                                            type="button"
                                                                             key={`${item.source}-${bucket.label}`}
-                                                                            className="space-y-1"
-                                                                            title={`${bucket.label} • ${bucket.count} events • ${bucket.errorCount} errors`}
+                                                                            disabled={drilldownDisabled}
+                                                                            className="space-y-1 disabled:cursor-not-allowed disabled:opacity-40"
+                                                                            onClick={() => {
+                                                                                setTelemetrySourceFilter(item.source);
+                                                                                setTelemetryStatusFilter('error');
+                                                                                if (bucket.topFailingTool) {
+                                                                                    setTelemetryToolFilter(bucket.topFailingTool);
+                                                                                }
+                                                                            }}
+                                                                            title={[
+                                                                                `${item.source} • ${bucket.label}`,
+                                                                                `${bucket.count} events • ${bucket.errorCount} errors`,
+                                                                                `Error rate: ${bucketErrorRatePercent}%`,
+                                                                                bucket.topFailingTool ? `Top failing tool: ${bucket.topFailingTool}` : null,
+                                                                                drilldownDisabled ? 'No events in this bucket' : 'Click to focus this source bucket',
+                                                                            ].filter(Boolean).join('\n')}
+                                                                            aria-label={drilldownDisabled
+                                                                                ? `${item.source} ${bucket.label} has no events`
+                                                                                : `Focus ${item.source} ${bucket.label} failures`}
                                                                         >
                                                                             <div className="h-2 rounded border border-zinc-800/80 bg-zinc-900/80 overflow-hidden">
                                                                                 <div
@@ -1916,7 +1946,7 @@ export default function SearchDashboard() {
                                                                                 ) : null}
                                                                             </div>
                                                                             <div className="text-[9px] text-zinc-500 text-center">{bucket.label}</div>
-                                                                        </div>
+                                                                        </button>
                                                                     );
                                                                 })}
                                                             </div>
