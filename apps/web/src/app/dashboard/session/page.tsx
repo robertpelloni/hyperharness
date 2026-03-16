@@ -6,6 +6,7 @@ import { Card, CardHeader, CardTitle, CardContent, Button, Badge } from "@borg/u
 import { Loader2, Activity, Play, Square, Target, Crosshair, HelpCircle, ActivitySquare, RotateCcw } from "lucide-react";
 import { trpc } from '@/utils/trpc';
 import { toast } from 'sonner';
+import { PageStatusBanner } from '@/components/PageStatusBanner';
 
 import { SessionCreateDialog } from './session-create-dialog';
 import { SessionDetailsDialog, type SessionDetailsDialogSession } from './session-details-dialog';
@@ -120,6 +121,14 @@ export default function SessionDashboard() {
     const catalog = normalizeSessionCatalog(catalogQuery.data);
     const installedHarnessCount = catalog.filter((entry) => entry.installed).length;
     const runningSessionCount = sessions.filter((session) => session.status === 'running').length;
+    const autoRestartSessionCount = sessions.filter((session) => session.autoRestart !== false).length;
+    const manualRestartSessionCount = sessions.filter((session) => session.autoRestart === false).length;
+    const pendingAutoRestartCount = sessions.filter((session) => session.autoRestart !== false && session.status === 'restarting').length;
+    const exhaustedAutoRestartCount = sessions.filter((session) => {
+        const restartCount = session.restartCount ?? 0;
+        const maxRestartAttempts = Math.max(0, session.maxRestartAttempts ?? 0);
+        return session.autoRestart !== false && session.status === 'error' && restartCount >= maxRestartAttempts;
+    }).length;
 
     if (isLoading) {
         return <div className="p-8 flex items-center justify-center h-full"><Loader2 className="w-8 h-8 animate-spin text-zinc-500" /></div>;
@@ -127,6 +136,11 @@ export default function SessionDashboard() {
 
     return (
         <div className="p-8 max-w-5xl mx-auto space-y-8">
+            <PageStatusBanner
+                status="beta"
+                message="Session Supervisor"
+                note="Session lifecycle supervision is active. Terminal attach passthrough and some recovery ergonomics are still being refined."
+            />
             <div className="flex justify-between items-center">
                 <div>
                     <h1 className="text-3xl font-bold tracking-tight text-white flex items-center gap-3">
@@ -240,10 +254,28 @@ export default function SessionDashboard() {
                             <div className="flex items-center gap-2 text-xs text-zinc-400">
                                 <Badge variant="secondary">{runningSessionCount}/{sessions.length} running</Badge>
                                 <Badge variant="secondary">{installedHarnessCount}/{catalog.length} harnesses detected</Badge>
+                                <Badge variant="secondary">{autoRestartSessionCount} auto</Badge>
+                                <Badge variant="secondary">{manualRestartSessionCount} manual</Badge>
+                                {pendingAutoRestartCount > 0 ? (
+                                    <Badge variant="secondary" className="bg-amber-950 text-amber-300 border border-amber-800/60">
+                                        {pendingAutoRestartCount} restart queued
+                                    </Badge>
+                                ) : null}
+                                {exhaustedAutoRestartCount > 0 ? (
+                                    <Badge variant="secondary" className="bg-red-950 text-red-300 border border-red-800/60">
+                                        {exhaustedAutoRestartCount} auto budget exhausted
+                                    </Badge>
+                                ) : null}
                             </div>
                         </CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-4 pt-4">
+                        {sessions.length > 0 ? (
+                            <div className="rounded-lg border border-zinc-800 bg-zinc-950/60 p-3 text-xs text-zinc-400">
+                                <span className="text-zinc-200 font-medium">Restart policy:</span> sessions tagged <span className="text-emerald-300">Auto Restart</span> retry up to their configured limit with backoff.
+                                Sessions tagged <span className="text-amber-300">Manual Restart</span> never auto-restart. If a session crashes after consuming its auto budget, it remains in <span className="text-red-300">error</span> until an operator restarts it.
+                            </div>
+                        ) : null}
                         {sessions.length === 0 ? (
                             <div className="rounded-lg border border-dashed border-zinc-800 bg-black/40 p-6 text-sm text-zinc-400">
                                 No supervised sessions exist yet. Create one to launch Aider, Claude Code, Gemini CLI, Codex, or OpenCode under Borg supervision.
@@ -253,6 +285,9 @@ export default function SessionDashboard() {
                             const isPending = pendingSessionActionId === session.id;
                             const canStart = session.status === 'created' || session.status === 'stopped' || session.status === 'error';
                             const canStop = session.status === 'starting' || session.status === 'running' || session.status === 'restarting';
+                            const restartBudgetExhausted = session.autoRestart !== false
+                                && session.status === 'error'
+                                && (session.restartCount ?? 0) >= Math.max(0, session.maxRestartAttempts ?? 0);
                             const sessionDetails: SessionDetailsDialogSession = {
                                 id: session.id ?? '',
                                 name: session.name ?? 'Unnamed session',
@@ -296,9 +331,12 @@ export default function SessionDashboard() {
                                                 {session.status === 'error' && (
                                                     <Badge className="bg-red-950 text-red-400 border border-red-800">Crashed</Badge>
                                                 )}
-                                                   {session.isolateWorktree && (
-                                                       <Badge variant="outline" className="border-violet-500/30 text-violet-300 bg-violet-950/20">Worktree</Badge>
-                                                   )}
+                                                {restartBudgetExhausted && (
+                                                    <Badge variant="outline" className="border-red-700/70 text-red-300 bg-red-950/40">Auto Budget Exhausted</Badge>
+                                                )}
+                                                {session.isolateWorktree && (
+                                                    <Badge variant="outline" className="border-violet-500/30 text-violet-300 bg-violet-950/20">Worktree</Badge>
+                                                )}
                                             </div>
                                             <p className="break-all font-mono text-xs text-zinc-500">{session.worktreePath ?? session.workingDirectory}</p>
                                             <p className="text-xs text-zinc-500">
@@ -330,8 +368,18 @@ export default function SessionDashboard() {
                                                             {session.lastExitSignal && (
                                                                 <span className="font-mono text-xs text-red-300/70">({session.lastExitSignal})</span>
                                                             )}
+                                                            {restartBudgetExhausted ? (
+                                                                <span className="font-mono text-xs text-amber-300 bg-amber-950/50 border border-amber-800/60 px-1.5 py-0.5 rounded">
+                                                                    auto-restart limit reached
+                                                                </span>
+                                                            ) : null}
                                                         </div>
                                                     <p className="text-xs text-red-300/80 break-words">{session.lastError}</p>
+                                                    {restartBudgetExhausted ? (
+                                                        <p className="text-xs text-amber-300 mt-2">
+                                                            Operator action required: use <span className="font-semibold">Restart</span> after inspecting logs.
+                                                        </p>
+                                                    ) : null}
                                                 </div>
                                             ) : null}
                                         </div>

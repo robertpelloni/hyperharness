@@ -4,8 +4,13 @@
 
 All notable changes to this project will be documented in this file.
 
-## [2.7.252] — 2026-03-16
-## [2.7.253] — 2026-03-16
+## [2.7.255] — 2026-03-16
+
+- feat(web/session): Added `PageStatusBanner` (beta) to `dashboard/session/page.tsx` clarifying that lifecycle supervision is live while attach/recovery ergonomics continue to mature.
+- feat(web/session): Added operator-visible restart policy summary badges (`auto`, `manual`, `restart queued`, `auto budget exhausted`) in supervised session header stats.
+- feat(web/session): Added per-session `Auto Budget Exhausted` state and explicit crash-panel guidance when auto-restart attempts are consumed.
+- test(validation): `WEB_TSC_OK` — no TypeScript errors.
+
 ## [2.7.254] — 2026-03-16
 
 - feat(web/nav): Added `Agents` entry to `LABS_DASHBOARD_NAV` with `experimental` badge, linking to `/dashboard/agents`.
