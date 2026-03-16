@@ -4,6 +4,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.7.258] — 2026-03-16
+
+- feat(web/mcp/search): Added confidence-band telemetry aggregation in `dashboard/mcp/search/page.tsx` (below-floor, near-floor, high-confidence) with average confidence and average score-gap context.
+- feat(web/mcp/search): Added one-click focus actions from confidence bands to quickly pivot into cached-ranking ambiguity triage windows.
+- feat(web/mcp/inspector): Added parity confidence-band telemetry surfacing in `dashboard/mcp/inspector/page.tsx` with the same ambiguity segmentation and focus controls.
+- test(validation): `WEB_TSC_OK` — no TypeScript errors.
+
 ## [2.7.257] — 2026-03-16
 
 - feat(web/labs): Added `PageStatusBanner` (beta) to `dashboard/symbols/page.tsx` to clarify current maturity and remaining indexing depth work.

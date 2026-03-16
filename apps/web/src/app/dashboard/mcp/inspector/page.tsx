@@ -412,6 +412,50 @@ function InspectorDashboardContent() {
         error: scopedTelemetryEvents.filter((event) => event.status === 'error').length,
         ignoredResults: scopedTelemetryEvents.reduce((sum, event) => sum + (event.ignoredResultCount ?? 0), 0),
     };
+    const telemetryConfidenceStats = scopedTelemetryEvents.reduce((accumulator, event) => {
+        if (typeof event.autoLoadConfidence !== 'number') {
+            return accumulator;
+        }
+
+        const confidence = Math.max(0, Math.min(1, event.autoLoadConfidence));
+        const floor = Math.max(0.5, Math.min(0.99, event.autoLoadMinConfidence ?? 0.85));
+        const nearFloorUpperBound = Math.max(floor, Math.min(0.99, floor + 0.08));
+
+        accumulator.total += 1;
+        accumulator.confidenceSum += confidence;
+
+        if (typeof event.scoreGap === 'number') {
+            accumulator.scoreGapCount += 1;
+            accumulator.scoreGapSum += event.scoreGap;
+        }
+
+        if (confidence < floor) {
+            accumulator.belowFloor += 1;
+            return accumulator;
+        }
+
+        if (confidence < nearFloorUpperBound) {
+            accumulator.nearFloor += 1;
+            return accumulator;
+        }
+
+        accumulator.highConfidence += 1;
+        return accumulator;
+    }, {
+        total: 0,
+        belowFloor: 0,
+        nearFloor: 0,
+        highConfidence: 0,
+        confidenceSum: 0,
+        scoreGapSum: 0,
+        scoreGapCount: 0,
+    });
+    const telemetryMeanConfidencePct = telemetryConfidenceStats.total > 0
+        ? Math.round((telemetryConfidenceStats.confidenceSum / telemetryConfidenceStats.total) * 100)
+        : null;
+    const telemetryMeanScoreGap = telemetryConfidenceStats.scoreGapCount > 0
+        ? Number((telemetryConfidenceStats.scoreGapSum / telemetryConfidenceStats.scoreGapCount).toFixed(1))
+        : null;
     const telemetryTrendBuckets = buildTelemetryTrendBuckets({
         windowPreset: telemetryWindowFilter,
         windowStart: telemetryWindowStart,
@@ -1643,6 +1687,65 @@ function InspectorDashboardContent() {
                                 ) : null}
                             </div>
                         )}
+
+                        {telemetryConfidenceStats.total > 0 ? (
+                            <div className="rounded-lg border border-zinc-800 bg-zinc-950/60 p-3 space-y-2">
+                                <div className="flex items-center justify-between gap-2">
+                                    <div className="text-[10px] uppercase tracking-wider text-zinc-500">Confidence bands</div>
+                                    <div className="text-[10px] text-zinc-500">
+                                        avg confidence {telemetryMeanConfidencePct ?? 0}%
+                                        {telemetryMeanScoreGap !== null ? ` • avg score gap ${telemetryMeanScoreGap}` : ''}
+                                    </div>
+                                </div>
+                                <div className="grid grid-cols-1 gap-1.5">
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            setTelemetryTypeFilter('search');
+                                            setTelemetrySourceFilter('cached-ranking');
+                                            setTelemetryStatusFilter('all');
+                                            setTelemetryWindowFilter('1h');
+                                        }}
+                                        className="flex items-center justify-between gap-2 rounded border border-red-500/30 bg-red-500/10 px-2 py-1 text-[10px] text-left text-red-200 hover:bg-red-500/20"
+                                        title="Focus auto-load confidence events below the active confidence floor"
+                                        aria-label="Focus below-floor auto-load confidence events"
+                                    >
+                                        <span>Below floor (high ambiguity)</span>
+                                        <span>{telemetryConfidenceStats.belowFloor}</span>
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            setTelemetryTypeFilter('search');
+                                            setTelemetrySourceFilter('cached-ranking');
+                                            setTelemetryStatusFilter('all');
+                                            setTelemetryWindowFilter('1h');
+                                        }}
+                                        className="flex items-center justify-between gap-2 rounded border border-amber-500/30 bg-amber-500/10 px-2 py-1 text-[10px] text-left text-amber-200 hover:bg-amber-500/20"
+                                        title="Focus near-threshold confidence events"
+                                        aria-label="Focus near-floor auto-load confidence events"
+                                    >
+                                        <span>Near floor (borderline)</span>
+                                        <span>{telemetryConfidenceStats.nearFloor}</span>
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            setTelemetryTypeFilter('search');
+                                            setTelemetrySourceFilter('cached-ranking');
+                                            setTelemetryStatusFilter('success');
+                                            setTelemetryWindowFilter('1h');
+                                        }}
+                                        className="flex items-center justify-between gap-2 rounded border border-emerald-500/30 bg-emerald-500/10 px-2 py-1 text-[10px] text-left text-emerald-200 hover:bg-emerald-500/20"
+                                        title="Focus high-confidence search outcomes"
+                                        aria-label="Focus high-confidence auto-load events"
+                                    >
+                                        <span>High confidence</span>
+                                        <span>{telemetryConfidenceStats.highConfidence}</span>
+                                    </button>
+                                </div>
+                            </div>
+                        ) : null}
 
                         {telemetryErrorToolRows.length > 0 ? (
                             <div className="space-y-2 rounded-lg border border-zinc-800 bg-zinc-950/50 p-3">
