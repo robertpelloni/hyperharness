@@ -4,6 +4,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.7.284] — 2026-03-16
+
+- feat(web/mcp/search): Added per-tool `Unload` action to lane cards in `Tool visibility lanes` (`Always-on advertised`, `Keep warm profile`) so operators can complete load/hydrate/unload lifecycle without leaving lane context.
+- feat(web/mcp/search): Lane card action layout expanded to direct three-action control (`Load`, `Hydrate`, `Unload`) with unload-aware disabled states and contextual button titles.
+- test(validation): `WEB_TSC_OK`; focused fallback/billing slice tests passed (`packages/core/src/routers/billingRouter.test.ts`, `apps/web/src/app/dashboard/billing/page.test.tsx`, `apps/web/src/app/dashboard/DashboardHomeClient.test.tsx`, `apps/web/tests/integration/fallback-e2e.test.ts`).
+
 ## [2.7.283] — 2026-03-16
 
 - feat(web/mcp/inspector): `Tool visibility lanes` now display per-lane readiness counters (`loaded/schema`) for faster operator triage.

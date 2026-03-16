@@ -1908,7 +1908,7 @@ export default function SearchDashboard() {
                                                             </div>
                                                         </div>
 
-                                                        <div className="grid grid-cols-2 gap-2">
+                                                        <div className="grid grid-cols-3 gap-2">
                                                             <Button
                                                                 type="button"
                                                                 variant="outline"
@@ -1937,6 +1937,17 @@ export default function SearchDashboard() {
                                                                         Hydrating...
                                                                     </>
                                                                 ) : loaded ? 'Hydrate' : 'Load + hydrate'}
+                                                            </Button>
+                                                            <Button
+                                                                type="button"
+                                                                variant="outline"
+                                                                onClick={() => unloadMutation.mutate({ name: tool.name })}
+                                                                disabled={unloadMutation.isPending || !loaded}
+                                                                title={loaded ? 'Unload this lane tool from working set' : 'Tool is already unloaded'}
+                                                                aria-label={`Unload ${tool.name} from ${lane.label}`}
+                                                                className="border-zinc-700 text-zinc-300 hover:bg-zinc-800"
+                                                            >
+                                                                {loaded ? 'Unload' : 'Unloaded'}
                                                             </Button>
                                                         </div>
                                                     </div>
