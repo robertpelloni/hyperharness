@@ -107,6 +107,18 @@ describe('session page normalizers', () => {
       lastExitSignal: undefined,
       logs: [],
     });
+
+    const stopping = normalizeSessionList([
+      {
+        id: 'ses-stopping',
+        name: 'Stopping Session',
+        cliType: 'claude',
+        workingDirectory: 'C:/repo',
+        status: 'stopping',
+      },
+    ] as any);
+
+    expect(stopping[0]?.status).toBe('stopping');
   });
 
   it('normalizes worktree and exit metadata for crash visibility cards', () => {

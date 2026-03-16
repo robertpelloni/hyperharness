@@ -4,6 +4,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.7.234] — 2026-03-15
+
+- fix(web/session): `apps/web/src/app/dashboard/session/session-page-normalizers.ts` now preserves supervisor status `stopping` instead of collapsing it to `created`, so in-flight stop operations render truthfully in the dashboard.
+- changed(web/session): `apps/web/src/app/dashboard/session/page.tsx` now passes `isolateWorktree`, `lastExitCode`, and `lastExitSignal` into the details dialog contract and adds explicit restart-policy badges for both manual and auto-restart sessions.
+- changed(web/session): `apps/web/src/app/dashboard/session/session-details-dialog.tsx` overview now surfaces worktree isolation state and last-exit metadata directly in runtime details for faster crash triage.
+- test(web/session): expanded session normalizer regression coverage for `stopping` status handling while retaining crash/worktree field assertions.
+- test(web): reran focused session+navigation suites (`session-page-normalizers`, `session-dashboard-utils`, `mcp/nav-validation`) with `44` tests passing; web `tsc --noEmit` passes.
+
 ## [2.7.233] — 2026-03-15
 
 - test(web/session): expanded `apps/web/src/app/dashboard/session/session-page-normalizers.test.ts` with explicit regression coverage for `isolateWorktree`, `lastExitCode`, and `lastExitSignal` normalization to protect crash/worktree visibility cards in the session dashboard.

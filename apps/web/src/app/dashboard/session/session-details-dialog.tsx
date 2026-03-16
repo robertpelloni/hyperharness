@@ -59,12 +59,15 @@ export type SessionDetailsDialogSession = {
         reason?: string;
     } | null;
     autoRestart?: boolean;
+    isolateWorktree?: boolean;
     status?: string;
     restartCount?: number;
     maxRestartAttempts?: number;
     scheduledRestartAt?: number;
     lastActivityAt?: number;
     lastError?: string;
+    lastExitCode?: number;
+    lastExitSignal?: string;
     metadata?: {
         memoryBootstrap?: {
             prompt?: string;
@@ -253,6 +256,7 @@ export function SessionDetailsDialog({ session, currentTimestamp }: SessionDetai
                                 <div className="space-y-2">
                                     <p>Status: <span className="text-white">{session.status ?? 'unknown'}</span></p>
                                     <p>Restart policy: <span className="text-white">{session.autoRestart === false ? 'Manual only' : 'Automatic'}</span></p>
+                                    <p>Worktree isolation: <span className="text-white">{session.isolateWorktree ? 'Enabled' : 'Disabled'}</span></p>
                                     <p>Execution profile: <span className="text-white">{session.executionProfile ?? 'auto'}</span></p>
                                     {session.executionPolicy?.shellLabel ? (
                                         <p>Selected shell: <span className="text-white">{session.executionPolicy.shellLabel}</span></p>
@@ -262,6 +266,12 @@ export function SessionDetailsDialog({ session, currentTimestamp }: SessionDetai
                                     ) : null}
                                     <p>Last activity: <span className="text-white">{session.lastActivityAt ? formatRelativeTimestamp(session.lastActivityAt, currentTimestamp) : 'unknown'}</span></p>
                                     <p>Restarts: <span className="text-white">{session.restartCount ?? 0}/{session.maxRestartAttempts ?? 0}</span></p>
+                                    {typeof session.lastExitCode === 'number' || session.lastExitSignal ? (
+                                        <p>
+                                            Last exit: <span className="text-white">{typeof session.lastExitCode === 'number' ? `code ${session.lastExitCode}` : 'code unknown'}</span>
+                                            {session.lastExitSignal ? <span className="text-zinc-400"> ({session.lastExitSignal})</span> : null}
+                                        </p>
+                                    ) : null}
                                     {session.scheduledRestartAt ? (
                                         <p>Queued restart: <span className="text-amber-300">{formatRestartCountdown(session.scheduledRestartAt, currentTimestamp)}</span></p>
                                     ) : null}

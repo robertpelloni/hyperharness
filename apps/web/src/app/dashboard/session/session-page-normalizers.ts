@@ -1,11 +1,12 @@
 type ExecutionProfile = 'auto' | 'powershell' | 'posix' | 'compatibility';
 
-type SessionStatus = 'created' | 'starting' | 'running' | 'stopped' | 'restarting' | 'error';
+type SessionStatus = 'created' | 'starting' | 'running' | 'stopping' | 'stopped' | 'restarting' | 'error';
 
 const SESSION_STATUSES = new Set<SessionStatus>([
     'created',
     'starting',
     'running',
+    'stopping',
     'stopped',
     'restarting',
     'error',

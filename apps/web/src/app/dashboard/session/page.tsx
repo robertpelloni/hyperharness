@@ -262,12 +262,15 @@ export default function SessionDashboard() {
                                 executionProfile: session.executionProfile,
                                 executionPolicy: session.executionPolicy,
                                 autoRestart: session.autoRestart,
+                                isolateWorktree: session.isolateWorktree,
                                 status: session.status ?? 'created',
                                 restartCount: session.restartCount ?? 0,
                                 maxRestartAttempts: session.maxRestartAttempts ?? 0,
                                 scheduledRestartAt: session.scheduledRestartAt,
                                 lastActivityAt: session.lastActivityAt ?? currentTimestamp,
                                 lastError: session.lastError,
+                                lastExitCode: session.lastExitCode,
+                                lastExitSignal: session.lastExitSignal,
                                 metadata: (session.metadata ?? {}) as SessionDetailsDialogSession['metadata'],
                             };
 
@@ -287,9 +290,15 @@ export default function SessionDashboard() {
                                                 {session.autoRestart === false && (
                                                     <Badge variant="outline" className="border-amber-700/50 text-amber-500 bg-amber-950/20">Manual Restart</Badge>
                                                 )}
+                                                {session.autoRestart !== false && (
+                                                    <Badge variant="outline" className="border-emerald-700/50 text-emerald-400 bg-emerald-950/20">Auto Restart</Badge>
+                                                )}
                                                 {session.status === 'error' && (
                                                     <Badge className="bg-red-950 text-red-400 border border-red-800">Crashed</Badge>
                                                 )}
+                                                   {session.isolateWorktree && (
+                                                       <Badge variant="outline" className="border-violet-500/30 text-violet-300 bg-violet-950/20">Worktree</Badge>
+                                                   )}
                                             </div>
                                             <p className="break-all font-mono text-xs text-zinc-500">{session.worktreePath ?? session.workingDirectory}</p>
                                             <p className="text-xs text-zinc-500">
@@ -311,7 +320,17 @@ export default function SessionDashboard() {
                                             ) : null}
                                             {session.lastError ? (
                                                 <div className="rounded-md border border-red-900/50 bg-red-950/30 p-3 mt-2">
-                                                    <p className="text-sm font-semibold text-red-400 mb-1">Session Crashed</p>
+                                                        <div className="flex flex-wrap items-center gap-2 mb-1">
+                                                            <p className="text-sm font-semibold text-red-400">Session Crashed</p>
+                                                            {typeof session.lastExitCode === 'number' && (
+                                                                <span className="font-mono text-xs text-red-300 bg-red-950/40 border border-red-900/40 px-1.5 py-0.5 rounded">
+                                                                    exit {session.lastExitCode}
+                                                                </span>
+                                                            )}
+                                                            {session.lastExitSignal && (
+                                                                <span className="font-mono text-xs text-red-300/70">({session.lastExitSignal})</span>
+                                                            )}
+                                                        </div>
                                                     <p className="text-xs text-red-300/80 break-words">{session.lastError}</p>
                                                 </div>
                                             ) : null}
