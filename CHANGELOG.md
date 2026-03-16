@@ -4,6 +4,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.7.260] — 2026-03-16
+
+- feat(web/mcp/search): Added `Copy summary` action in `dashboard/mcp/search/page.tsx` to copy a filter-scoped telemetry snapshot (counts, confidence bands, top failures, skip reasons, ambiguity highlights).
+- feat(web/mcp/inspector): Added parity `Copy summary` action in `dashboard/mcp/inspector/page.tsx` with inspector-scoped filters and telemetry context.
+- feat(web/mcp): Improved operator handoff flow by supporting both `Copy link` and `Copy summary` for telemetry triage.
+- test(validation): `WEB_TSC_OK` — no TypeScript errors.
+
 ## [2.7.259] — 2026-03-16
 
 - feat(web/mcp/search): Added `Most ambiguous search decisions` facet to telemetry in `dashboard/mcp/search/page.tsx`, ranking by smallest score-gap for faster ambiguity triage.

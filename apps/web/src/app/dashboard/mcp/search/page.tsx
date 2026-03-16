@@ -853,6 +853,46 @@ export default function SearchDashboard() {
         }
     };
 
+    const copyTelemetrySummary = async () => {
+        if (typeof window === 'undefined' || !navigator.clipboard) {
+            toast.error('Clipboard unavailable');
+            return;
+        }
+
+        const filterSummary = [
+            `type=${telemetryTypeFilter}`,
+            `status=${telemetryStatusFilter}`,
+            `window=${telemetryWindowFilter}`,
+            `source=${telemetrySourceFilter}`,
+            `tool=${telemetryToolFilter}`,
+        ].join(', ');
+        const topFailingTools = telemetryErrorToolRows.length > 0
+            ? telemetryErrorToolRows.map((row) => `${row.toolName}:${row.count}`).join(', ')
+            : 'none';
+        const topSkipReasons = telemetryAutoLoadSkipReasonRows.length > 0
+            ? telemetryAutoLoadSkipReasonRows.map((row) => `${row.reason}:${row.count}`).join(', ')
+            : 'none';
+        const ambiguousSearchRows = telemetryAmbiguousSearchRows.length > 0
+            ? telemetryAmbiguousSearchRows.slice(0, 3).map((row) => `${row.topResultName} vs ${row.secondResultName} (gap ${row.scoreGap})`).join(' | ')
+            : 'none';
+        const summary = [
+            `MCP Search telemetry summary`,
+            `Filters: ${filterSummary}`,
+            `Events: total=${telemetrySummary.total}, success=${telemetrySummary.success}, error=${telemetrySummary.error}, ignored=${telemetrySummary.ignoredResults}`,
+            `Confidence: belowFloor=${telemetryConfidenceStats.belowFloor}, nearFloor=${telemetryConfidenceStats.nearFloor}, high=${telemetryConfidenceStats.highConfidence}, mean=${telemetryMeanConfidencePct ?? 'n/a'}%, meanGap=${telemetryMeanScoreGap ?? 'n/a'}`,
+            `Top failing tools: ${topFailingTools}`,
+            `Top skip reasons: ${topSkipReasons}`,
+            `Most ambiguous searches: ${ambiguousSearchRows}`,
+        ].join('\n');
+
+        try {
+            await navigator.clipboard.writeText(summary);
+            toast.success('Telemetry summary copied');
+        } catch {
+            toast.error('Failed to copy telemetry summary');
+        }
+    };
+
     return (
         <div className="p-8 space-y-8 h-full flex flex-col">
             <PageStatusBanner status="beta" message="MCP Semantic Search" note="Tool discovery and ranking are functional. Schema hydration depth and score tuning are ongoing." />
@@ -1722,6 +1762,16 @@ export default function SearchDashboard() {
                                         aria-label="Copy telemetry share link"
                                     >
                                         Copy link
+                                    </button>
+
+                                    <button
+                                        type="button"
+                                        onClick={copyTelemetrySummary}
+                                        className="rounded-md border border-zinc-700 bg-zinc-950/70 px-2 py-1 text-zinc-300 transition-colors hover:bg-zinc-800"
+                                        title="Copy a concise telemetry summary for handoff"
+                                        aria-label="Copy telemetry summary"
+                                    >
+                                        Copy summary
                                     </button>
                                 </div>
                             </div>
