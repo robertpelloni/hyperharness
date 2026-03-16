@@ -4,6 +4,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.7.280] — 2026-03-16
+
+- feat(web/mcp/inspector): Extended `Tool visibility lanes` bulk operations with `Unload all` so operators can clear lane tools from the active working set in one action.
+- feat(web/mcp/inspector): Lane bulk action engine now supports `load`, `hydrate`, and `unload` with action-specific skip messaging and progress states.
+- feat(web/mcp/inspector): Added unload-aware lane action locking/disable guards to prevent overlapping bulk operations.
+- test(validation): `WEB_TSC_OK`; focused fallback/billing slice tests passed (`packages/core/src/routers/billingRouter.test.ts`, `apps/web/src/app/dashboard/billing/page.test.tsx`, `apps/web/src/app/dashboard/DashboardHomeClient.test.tsx`, `apps/web/tests/integration/fallback-e2e.test.ts`).
+
 ## [2.7.279] — 2026-03-16
 
 - feat(web/mcp/inspector): Added `Tool visibility lanes` operator panel inside Session Working Set with explicit `Always-on advertised` and `Keep warm profile` sections.

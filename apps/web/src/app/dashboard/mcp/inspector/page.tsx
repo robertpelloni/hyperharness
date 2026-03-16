@@ -1005,7 +1005,7 @@ function InspectorDashboardContent() {
 
     const runLaneAction = async (
         laneId: 'always-on-lane' | 'keep-warm-lane',
-        action: 'load' | 'hydrate',
+        action: 'load' | 'hydrate' | 'unload',
         laneTools: InspectorTool[],
     ) => {
         const actionKey = `${laneId}:${action}`;
@@ -1020,11 +1020,19 @@ function InspectorDashboardContent() {
                     return !loadedNames.has(tool.name);
                 }
 
+                if (action === 'unload') {
+                    return loadedNames.has(tool.name);
+                }
+
                 return !hydratedNames.has(tool.name) && !Boolean(workingSetByName.get(tool.name)?.hydrated);
             });
 
             if (candidates.length === 0) {
-                toast.info(action === 'load' ? 'All lane tools are already loaded' : 'All lane tools are already hydrated');
+                toast.info(action === 'load'
+                    ? 'All lane tools are already loaded'
+                    : action === 'unload'
+                        ? 'All lane tools are already unloaded'
+                        : 'All lane tools are already hydrated');
                 return;
             }
 
@@ -1035,6 +1043,18 @@ function InspectorDashboardContent() {
                     try {
                         await loadMutation.mutateAsync({ name: tool.name });
                         loadedNames.add(tool.name);
+                        succeeded += 1;
+                    } catch {
+                        // Per-tool mutation callback already surfaced the error.
+                    }
+                    continue;
+                }
+
+                if (action === 'unload') {
+                    try {
+                        await unloadMutation.mutateAsync({ name: tool.name });
+                        loadedNames.delete(tool.name);
+                        hydratedNames.delete(tool.name);
                         succeeded += 1;
                     } catch {
                         // Per-tool mutation callback already surfaced the error.
@@ -1054,7 +1074,9 @@ function InspectorDashboardContent() {
             if (succeeded > 0) {
                 toast.success(action === 'load'
                     ? `Loaded ${succeeded} lane tool${succeeded === 1 ? '' : 's'}`
-                    : `Hydrated ${succeeded} lane tool${succeeded === 1 ? '' : 's'}`);
+                    : action === 'unload'
+                        ? `Unloaded ${succeeded} lane tool${succeeded === 1 ? '' : 's'}`
+                        : `Hydrated ${succeeded} lane tool${succeeded === 1 ? '' : 's'}`);
             }
         } finally {
             setActiveLaneAction((current) => (current === actionKey ? null : current));
@@ -1721,7 +1743,7 @@ function InspectorDashboardContent() {
                                                     onClick={() => {
                                                         void runLaneAction(lane.id, 'hydrate', lane.tools as InspectorTool[]);
                                                     }}
-                                                    disabled={loadMutation.isPending || schemaMutation.isPending || activeLaneAction != null || lane.tools.length === 0}
+                                                    disabled={loadMutation.isPending || schemaMutation.isPending || unloadMutation.isPending || activeLaneAction != null || lane.tools.length === 0}
                                                     title={`Hydrate all ${lane.label.toLowerCase()} tools`}
                                                     aria-label={`Hydrate all ${lane.label.toLowerCase()} tools`}
                                                     className="h-7 border-purple-700 px-2 text-[10px] text-purple-200 hover:bg-purple-950/30"
@@ -1732,6 +1754,25 @@ function InspectorDashboardContent() {
                                                             Hydrating...
                                                         </>
                                                     ) : 'Hydrate all'}
+                                                </Button>
+                                                <Button
+                                                    type="button"
+                                                    variant="outline"
+                                                    size="sm"
+                                                    onClick={() => {
+                                                        void runLaneAction(lane.id, 'unload', lane.tools as InspectorTool[]);
+                                                    }}
+                                                    disabled={loadMutation.isPending || schemaMutation.isPending || unloadMutation.isPending || activeLaneAction != null || lane.tools.length === 0}
+                                                    title={`Unload all ${lane.label.toLowerCase()} tools from the active working set`}
+                                                    aria-label={`Unload all ${lane.label.toLowerCase()} tools`}
+                                                    className="h-7 border-zinc-700 px-2 text-[10px] text-zinc-300 hover:bg-zinc-800"
+                                                >
+                                                    {activeLaneAction === `${lane.id}:unload` ? (
+                                                        <>
+                                                            <Loader2 className="mr-1 h-3 w-3 animate-spin" />
+                                                            Unloading...
+                                                        </>
+                                                    ) : 'Unload all'}
                                                 </Button>
                                             </div>
                                         </div>
