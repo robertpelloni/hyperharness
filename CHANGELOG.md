@@ -4,6 +4,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.7.236] — 2026-03-15
+
+- feat(core/mcp): `packages/core/src/routers/mcpRouter.ts` now applies confidence-based auto-load evaluation telemetry for runtime `search_tools` responses too (not just cached ranking), including outcome, skip reason, execution status, and threshold fields in emitted search events.
+- fix(core/mcp-search): runtime search profile reranking now preserves runtime `autoLoaded` state by tool name so operator telemetry and loaded-state badges no longer silently drop auto-load attribution when profile ranking is active.
+- feat(core/mcp): auto-load `load` telemetry emitted from both runtime-search and cached-ranking paths now records working-set pressure snapshots when available (`loaded/hydrated` counts, caps, utilization, idle threshold), improving triage under capacity pressure.
+- test(validation): reran focused MCP suites (`toolSearchRanking`, `metamcp-session-working-set`) with `16` tests passing and revalidated web TypeScript gate with explicit `WEB_TSC_OK`.
+
 ## [2.7.235] — 2026-03-15
 
 - feat(core/mcp): `packages/core/src/routers/mcpRouter.ts` now records working-set pressure snapshot fields (`loadedToolCount`, `hydratedSchemaCount`, configured caps, utilization percentages, idle-eviction threshold) on load/unload/hydrate telemetry events.

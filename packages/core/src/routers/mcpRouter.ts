@@ -196,16 +196,6 @@ function collectServerProbeTrafficEvents(options: {
     });
 }
 
-function recordAutoLoadTelemetry(toolName: string, message: string): void {
-    toolSelectionTelemetry.record({
-        type: 'load',
-        toolName,
-        status: 'success',
-        message,
-        evictedTools: parseEvictedToolsFromMessage(message),
-    });
-}
-
 function toLatencyMs(startedAt: number): number {
     return Math.max(0, Date.now() - startedAt);
 }
@@ -424,6 +414,8 @@ export const mcpRouter = t.router({
                             inputSchema: null,
                         }));
 
+                        const runtimeAutoLoadedToolName = runtimeMappedResults.find((tool) => tool.autoLoaded)?.name;
+
                         const mappedResults = selectedProfile
                             ? rankToolSearchCandidates(
                                 runtimeMappedResults.map((tool) => ({
@@ -466,20 +458,122 @@ export const mcpRouter = t.router({
                                 matchReason: tool.matchReason ?? 'matched available metadata',
                                 score: tool.score ?? 0,
                                 rank: index + 1,
-                                autoLoaded: false,
+                                autoLoaded: tool.name === runtimeAutoLoadedToolName,
+                                loaded: Boolean(tool.loaded) || tool.name === runtimeAutoLoadedToolName,
                                 inputSchema: null,
                             }))
                             : runtimeMappedResults;
 
-                        const autoLoadedResult = mappedResults.find((tool) => tool.autoLoaded);
-                        if (autoLoadedResult) {
-                            recordAutoLoadTelemetry(autoLoadedResult.name, `Tool '${autoLoadedResult.name}' auto-loaded from search.`);
+                        const autoLoadEvaluation = evaluateAutoLoadCandidate(
+                            mappedResults.map((tool) => ({
+                                name: tool.name,
+                                description: tool.description,
+                                serverName: tool.server,
+                                serverDisplayName: tool.serverDisplayName,
+                                advertisedName: tool.advertisedName,
+                                originalName: tool.originalName ?? undefined,
+                                serverTags: tool.serverTags,
+                                toolTags: tool.toolTags,
+                                semanticGroup: tool.semanticGroup,
+                                semanticGroupLabel: tool.semanticGroupLabel,
+                                keywords: tool.keywords,
+                                alwaysOn: tool.alwaysOn,
+                                loaded: tool.loaded,
+                                hydrated: tool.hydrated,
+                                deferred: tool.deferred,
+                            })),
+                            normalizedQuery,
+                            {
+                                minConfidence: preferences.autoLoadMinConfidence,
+                            },
+                        );
+
+                        const runtimeAutoLoadedResult = mappedResults.find((tool) => tool.autoLoaded);
+                        let autoLoadDecision = runtimeAutoLoadedResult
+                            ? {
+                                toolName: runtimeAutoLoadedResult.name,
+                                reason: 'runtime search_tools returned auto-loaded result',
+                                confidence: 0,
+                                scoreGap: 0,
+                                topScore: runtimeAutoLoadedResult.score ?? 0,
+                                secondScore: mappedResults[1]?.score ?? 0,
+                            }
+                            : autoLoadEvaluation.decision;
+                        let autoLoadExecutionStatus: 'success' | 'error' | 'not-attempted' = runtimeAutoLoadedResult
+                            ? 'success'
+                            : 'not-attempted';
+                        let autoLoadExecutionError: string | undefined;
+
+                        if (runtimeAutoLoadedResult && server) {
+                            let pressure: Awaited<ReturnType<typeof readWorkingSetSnapshot>> | undefined;
+                            try {
+                                pressure = await readWorkingSetSnapshot(server);
+                            } catch {
+                                pressure = undefined;
+                            }
+
+                            toolSelectionTelemetry.record({
+                                type: 'load',
+                                toolName: runtimeAutoLoadedResult.name,
+                                status: 'success',
+                                message: `Tool '${runtimeAutoLoadedResult.name}' auto-loaded by runtime search.`,
+                                autoLoadReason: autoLoadDecision.reason,
+                                autoLoadConfidence: autoLoadDecision.confidence,
+                                scoreGap: autoLoadDecision.scoreGap,
+                                topScore: autoLoadDecision.topScore,
+                                ...pressure,
+                            });
+                        } else if (!runtimeAutoLoadedResult && autoLoadDecision && server) {
+                            const autoLoadStartedAt = Date.now();
+                            try {
+                                const loadResult = await server.executeTool('load_tool', { name: autoLoadDecision.toolName });
+                                autoLoadExecutionStatus = 'success';
+                                const loadMessage = getToolTextContent(loadResult);
+                                const pressure = await readWorkingSetSnapshot(server);
+                                toolSelectionTelemetry.record({
+                                    type: 'load',
+                                    toolName: autoLoadDecision.toolName,
+                                    status: 'success',
+                                    message: loadMessage,
+                                    evictedTools: parseEvictedToolsFromMessage(loadMessage),
+                                    latencyMs: toLatencyMs(autoLoadStartedAt),
+                                    autoLoadReason: autoLoadDecision.reason,
+                                    autoLoadConfidence: autoLoadDecision.confidence,
+                                    scoreGap: autoLoadDecision.scoreGap,
+                                    topScore: autoLoadDecision.topScore,
+                                    ...pressure,
+                                });
+                            } catch (error) {
+                                autoLoadExecutionStatus = 'error';
+                                autoLoadExecutionError = error instanceof Error ? error.message : String(error);
+                                toolSelectionTelemetry.record({
+                                    type: 'load',
+                                    toolName: autoLoadDecision.toolName,
+                                    status: 'error',
+                                    message: autoLoadExecutionError,
+                                    latencyMs: toLatencyMs(autoLoadStartedAt),
+                                    autoLoadReason: autoLoadDecision.reason,
+                                    autoLoadConfidence: autoLoadDecision.confidence,
+                                    scoreGap: autoLoadDecision.scoreGap,
+                                    topScore: autoLoadDecision.topScore,
+                                });
+                            }
+                        }
+
+                        if (!runtimeAutoLoadedResult && autoLoadExecutionStatus === 'success' && autoLoadDecision) {
+                            mappedResults.forEach((tool) => {
+                                if (tool.name === autoLoadDecision?.toolName) {
+                                    tool.autoLoaded = true;
+                                    tool.loaded = true;
+                                    tool.matchReason = `${tool.matchReason}; ${autoLoadDecision.reason}`;
+                                }
+                            });
                         }
 
                         const topScore = typeof mappedResults[0]?.score === 'number' ? mappedResults[0].score : undefined;
                         const secondScore = typeof mappedResults[1]?.score === 'number' ? mappedResults[1].score : 0;
                         const scoreGap = typeof topScore === 'number' ? topScore - secondScore : undefined;
-                        const ignoredSearchTelemetry = buildIgnoredSearchResultTelemetry(mappedResults, autoLoadedResult?.name);
+                        const ignoredSearchTelemetry = buildIgnoredSearchResultTelemetry(mappedResults, autoLoadDecision?.toolName);
 
                         toolSelectionTelemetry.record({
                             type: 'search',
@@ -497,6 +591,14 @@ export const mcpRouter = t.router({
                             ignoredResultCount: ignoredSearchTelemetry.ignoredResultCount,
                             ignoredResultNames: ignoredSearchTelemetry.ignoredResultNames,
                             latencyMs: toLatencyMs(searchStartedAt),
+                            autoLoadReason: autoLoadDecision?.reason,
+                            autoLoadConfidence: autoLoadDecision?.confidence || undefined,
+                            autoLoadEvaluated: runtimeAutoLoadedResult ? true : autoLoadEvaluation.evaluated,
+                            autoLoadOutcome: runtimeAutoLoadedResult ? 'loaded' : autoLoadEvaluation.outcome,
+                            autoLoadSkipReason: runtimeAutoLoadedResult ? undefined : autoLoadEvaluation.skipReason,
+                            autoLoadMinConfidence: runtimeAutoLoadedResult ? preferences.autoLoadMinConfidence : autoLoadEvaluation.minConfidence,
+                            autoLoadExecutionStatus,
+                            autoLoadExecutionError,
                             status: 'success',
                         });
 
@@ -550,6 +652,7 @@ export const mcpRouter = t.router({
                     try {
                         const loadResult = await server.executeTool('load_tool', { name: autoLoadDecision.toolName });
                         autoLoadExecutionStatus = 'success';
+                        const pressure = await readWorkingSetSnapshot(server);
                         toolSelectionTelemetry.record({
                             type: 'load',
                             toolName: autoLoadDecision.toolName,
@@ -561,6 +664,7 @@ export const mcpRouter = t.router({
                             autoLoadConfidence: autoLoadDecision.confidence,
                             scoreGap: autoLoadDecision.scoreGap,
                             topScore: autoLoadDecision.topScore,
+                            ...pressure,
                         });
                     } catch (error) {
                         autoLoadExecutionStatus = 'error';
