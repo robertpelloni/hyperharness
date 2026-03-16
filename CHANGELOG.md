@@ -4,6 +4,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.7.288] — 2026-03-16
+
+- feat(web/mcp/search): Added per-tool in-flight action tracking so Search cards and lane cards now show row-level `Loading...` / `Unloading...` feedback for load/unload actions.
+- feat(web/mcp/search): Added row-scoped load/unload action guards in `Tool visibility lanes` and working-set actions to reduce ambiguous global-pending behavior during rapid operator interaction.
+- test(validation): `WEB_TSC_OK`; focused fallback/billing slice tests passed (`packages/core/src/routers/billingRouter.test.ts`, `apps/web/src/app/dashboard/billing/page.test.tsx`, `apps/web/src/app/dashboard/DashboardHomeClient.test.tsx`, `apps/web/tests/integration/fallback-e2e.test.ts`).
+
 ## [2.7.287] — 2026-03-16
 
 - feat(web/mcp/inspector): Added per-tool in-flight action tracking for lane-card and inspector actions so `Load`/`Unload` now show row-specific `Loading...`/`Unloading...` feedback.

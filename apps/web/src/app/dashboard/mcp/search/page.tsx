@@ -255,7 +255,9 @@ export default function SearchDashboard() {
         end: number;
         source?: TelemetrySourceFilter;
     } | null>(null);
+    const [activeLoadToolName, setActiveLoadToolName] = useState<string | null>(null);
     const [activeHydrationToolName, setActiveHydrationToolName] = useState<string | null>(null);
+    const [activeUnloadToolName, setActiveUnloadToolName] = useState<string | null>(null);
     const [activeLaneAction, setActiveLaneAction] = useState<string | null>(null);
     const utils = trpc.useUtils();
     const searchQuery = trpc.mcp.searchTools.useQuery(
@@ -1129,6 +1131,34 @@ export default function SearchDashboard() {
         }
     };
 
+    const loadTool = async (toolName: string) => {
+        setActiveLoadToolName(toolName);
+
+        try {
+            await loadMutation.mutateAsync({ name: toolName });
+            return true;
+        } catch {
+            // Mutation callbacks already emit actionable toasts.
+            return false;
+        } finally {
+            setActiveLoadToolName((current) => (current === toolName ? null : current));
+        }
+    };
+
+    const unloadTool = async (toolName: string) => {
+        setActiveUnloadToolName(toolName);
+
+        try {
+            await unloadMutation.mutateAsync({ name: toolName });
+            return true;
+        } catch {
+            // Mutation callbacks already emit actionable toasts.
+            return false;
+        } finally {
+            setActiveUnloadToolName((current) => (current === toolName ? null : current));
+        }
+    };
+
     const runLaneAction = async (
         laneId: 'always-on-lane' | 'keep-warm-lane',
         action: 'load' | 'hydrate' | 'unload',
@@ -1162,26 +1192,38 @@ export default function SearchDashboard() {
                 return;
             }
 
+            let succeeded = 0;
+
             for (const tool of candidateTools) {
                 if (action === 'load') {
-                    await loadMutation.mutateAsync({ name: tool.name });
+                    const loaded = await loadTool(tool.name);
+                    if (loaded) {
+                        succeeded += 1;
+                    }
                     continue;
                 }
 
                 if (action === 'unload') {
-                    await unloadMutation.mutateAsync({ name: tool.name });
+                    const unloaded = await unloadTool(tool.name);
+                    if (unloaded) {
+                        succeeded += 1;
+                    }
                     continue;
                 }
 
                 const loaded = loadedToolNames.has(tool.name);
+                const beforeHydrated = Boolean(workingSetByName.get(tool.name)?.hydrated || tool.hydrated);
                 await hydrateToolSchema(tool.name, loaded);
+                if (!beforeHydrated) {
+                    succeeded += 1;
+                }
             }
 
             toast.success(action === 'load'
-                ? `Loaded ${candidateTools.length} lane tool${candidateTools.length === 1 ? '' : 's'}`
+                ? `Loaded ${succeeded} lane tool${succeeded === 1 ? '' : 's'}`
                 : action === 'unload'
-                    ? `Unloaded ${candidateTools.length} lane tool${candidateTools.length === 1 ? '' : 's'}`
-                    : `Hydrated ${candidateTools.length} lane tool${candidateTools.length === 1 ? '' : 's'}`);
+                    ? `Unloaded ${succeeded} lane tool${succeeded === 1 ? '' : 's'}`
+                    : `Hydrated ${succeeded} lane tool${succeeded === 1 ? '' : 's'}`);
         } finally {
             setActiveLaneAction((current) => (current === actionKey ? null : current));
         }
@@ -1455,13 +1497,20 @@ export default function SearchDashboard() {
 
                                                 <div className="flex flex-wrap gap-2">
                                                     <Button
-                                                        onClick={() => loadMutation.mutate({ name: tool.name })}
-                                                        disabled={loadMutation.isPending}
+                                                        onClick={() => {
+                                                            void loadTool(tool.name);
+                                                        }}
+                                                        disabled={loadMutation.isPending || activeLoadToolName === tool.name}
                                                         title="Load this tool into the active working set so it is immediately callable"
                                                         aria-label={`Load tool ${tool.name}`}
                                                         className="bg-blue-600 hover:bg-blue-500 text-white"
                                                     >
-                                                        Load tool
+                                                        {activeLoadToolName === tool.name ? (
+                                                            <>
+                                                                <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />
+                                                                Loading...
+                                                            </>
+                                                        ) : 'Load tool'}
                                                     </Button>
                                                     <Button
                                                         onClick={() => toggleImportant(tool.name)}
@@ -1511,14 +1560,21 @@ export default function SearchDashboard() {
                                                         ) : isLoaded ? 'Hydrate schema' : 'Load + hydrate'}
                                                     </Button>
                                                     <Button
-                                                        onClick={() => unloadMutation.mutate({ name: tool.name })}
-                                                        disabled={unloadMutation.isPending || !isLoaded}
+                                                        onClick={() => {
+                                                            void unloadTool(tool.name);
+                                                        }}
+                                                        disabled={unloadMutation.isPending || !isLoaded || activeUnloadToolName === tool.name}
                                                         title="Unload this tool from the current working set"
                                                         aria-label={`Unload tool ${tool.name}`}
                                                         variant="outline"
                                                         className="border-zinc-700 text-zinc-300 hover:bg-zinc-800"
                                                     >
-                                                        Unload
+                                                        {activeUnloadToolName === tool.name ? (
+                                                            <>
+                                                                <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />
+                                                                Unloading...
+                                                            </>
+                                                        ) : 'Unload'}
                                                     </Button>
                                                 </div>
                                             </div>
@@ -1625,13 +1681,21 @@ export default function SearchDashboard() {
                                                                 Hydrate
                                                             </Button>
                                                             <Button
-                                                                onClick={() => unloadMutation.mutate({ name: tool.name })}
+                                                                onClick={() => {
+                                                                    void unloadTool(tool.name);
+                                                                }}
+                                                                disabled={activeUnloadToolName === tool.name}
                                                                 variant="outline"
                                                                 title="Remove this loaded tool from the active session"
                                                                 aria-label={`Unload loaded tool ${tool.name}`}
                                                                 className="w-full border-zinc-700 text-zinc-300 hover:bg-zinc-800"
                                                             >
-                                                                Unload
+                                                                {activeUnloadToolName === tool.name ? (
+                                                                    <>
+                                                                        <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />
+                                                                        Unloading...
+                                                                    </>
+                                                                ) : 'Unload'}
                                                             </Button>
                                                         </div>
                                                                 </>
@@ -1912,13 +1976,20 @@ export default function SearchDashboard() {
                                                             <Button
                                                                 type="button"
                                                                 variant="outline"
-                                                                onClick={() => loadMutation.mutate({ name: tool.name })}
-                                                                disabled={loadMutation.isPending || loaded}
+                                                                onClick={() => {
+                                                                    void loadTool(tool.name);
+                                                                }}
+                                                                disabled={loadMutation.isPending || loaded || activeLoadToolName === tool.name}
                                                                 title="Load this lane tool into working set"
                                                                 aria-label={`Load ${tool.name} from ${lane.label}`}
                                                                 className="border-blue-700 text-blue-200 hover:bg-blue-950/30"
                                                             >
-                                                                {loaded ? 'Loaded' : 'Load'}
+                                                                {activeLoadToolName === tool.name ? (
+                                                                    <>
+                                                                        <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />
+                                                                        Loading...
+                                                                    </>
+                                                                ) : loaded ? 'Loaded' : 'Load'}
                                                             </Button>
                                                             <Button
                                                                 type="button"
@@ -1941,13 +2012,20 @@ export default function SearchDashboard() {
                                                             <Button
                                                                 type="button"
                                                                 variant="outline"
-                                                                onClick={() => unloadMutation.mutate({ name: tool.name })}
-                                                                disabled={unloadMutation.isPending || !loaded}
+                                                                onClick={() => {
+                                                                    void unloadTool(tool.name);
+                                                                }}
+                                                                disabled={unloadMutation.isPending || !loaded || activeUnloadToolName === tool.name}
                                                                 title={loaded ? 'Unload this lane tool from working set' : 'Tool is already unloaded'}
                                                                 aria-label={`Unload ${tool.name} from ${lane.label}`}
                                                                 className="border-zinc-700 text-zinc-300 hover:bg-zinc-800"
                                                             >
-                                                                {loaded ? 'Unload' : 'Unloaded'}
+                                                                {activeUnloadToolName === tool.name ? (
+                                                                    <>
+                                                                        <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />
+                                                                        Unloading...
+                                                                    </>
+                                                                ) : loaded ? 'Unload' : 'Unloaded'}
                                                             </Button>
                                                         </div>
                                                     </div>
