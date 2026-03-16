@@ -58,6 +58,75 @@ describe('toolSearchRanking auto-load decisions', () => {
         });
     });
 
+    it('keeps runtime auto-loaded top results as loaded outcomes with computed confidence', () => {
+        const evaluation = evaluateAutoLoadCandidate([
+            {
+                name: 'browser__open_tab',
+                description: 'Open a browser tab',
+                loaded: true,
+                hydrated: false,
+                deferred: false,
+                requiresSchemaHydration: false,
+                matchReason: 'exact tool name match',
+                score: 140,
+                autoLoaded: true,
+            },
+            {
+                name: 'browser__close_tab',
+                description: 'Close a browser tab',
+                loaded: false,
+                hydrated: false,
+                deferred: false,
+                requiresSchemaHydration: false,
+                matchReason: 'tool name contains query',
+                score: 90,
+            },
+        ], 'browser__open_tab', { minConfidence: 0.85 });
+
+        expect(evaluation).toMatchObject({
+            evaluated: true,
+            outcome: 'loaded',
+            decision: {
+                toolName: 'browser__open_tab',
+            },
+            minConfidence: 0.85,
+        });
+        expect(evaluation.decision?.confidence ?? 0).toBeGreaterThanOrEqual(0.9);
+    });
+
+    it('keeps manually loaded top results as not-applicable outcomes', () => {
+        const evaluation = evaluateAutoLoadCandidate([
+            {
+                name: 'browser__open_tab',
+                description: 'Open a browser tab',
+                loaded: true,
+                hydrated: false,
+                deferred: false,
+                requiresSchemaHydration: false,
+                matchReason: 'exact tool name match',
+                score: 140,
+            },
+            {
+                name: 'browser__close_tab',
+                description: 'Close a browser tab',
+                loaded: false,
+                hydrated: false,
+                deferred: false,
+                requiresSchemaHydration: false,
+                matchReason: 'tool name contains query',
+                score: 90,
+            },
+        ], 'browser__open_tab', { minConfidence: 0.85 });
+
+        expect(evaluation).toMatchObject({
+            evaluated: false,
+            outcome: 'not-applicable',
+            decision: null,
+            skipReason: 'top result already loaded',
+            minConfidence: 0.85,
+        });
+    });
+
     it('matches semantic tags and group labels for intent-style queries', () => {
         const rankedResults = rankToolSearchCandidates([
             {

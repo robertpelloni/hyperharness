@@ -481,6 +481,7 @@ export const mcpRouter = t.router({
                                 loaded: tool.loaded,
                                 hydrated: tool.hydrated,
                                 deferred: tool.deferred,
+                                autoLoaded: tool.autoLoaded,
                             })),
                             normalizedQuery,
                             {
@@ -489,16 +490,7 @@ export const mcpRouter = t.router({
                         );
 
                         const runtimeAutoLoadedResult = mappedResults.find((tool) => tool.autoLoaded);
-                        let autoLoadDecision = runtimeAutoLoadedResult
-                            ? {
-                                toolName: runtimeAutoLoadedResult.name,
-                                reason: 'runtime search_tools returned auto-loaded result',
-                                confidence: 0,
-                                scoreGap: 0,
-                                topScore: runtimeAutoLoadedResult.score ?? 0,
-                                secondScore: mappedResults[1]?.score ?? 0,
-                            }
-                            : autoLoadEvaluation.decision;
+                        const autoLoadDecision = autoLoadEvaluation.decision;
                         let autoLoadExecutionStatus: 'success' | 'error' | 'not-attempted' = runtimeAutoLoadedResult
                             ? 'success'
                             : 'not-attempted';

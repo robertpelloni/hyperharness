@@ -4,6 +4,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.7.237] — 2026-03-15
+
+- feat(core/mcp): `packages/core/src/mcp/toolSearchRanking.ts` now treats runtime auto-loaded top results (`loaded + autoLoaded`) as a first-class evaluated `loaded` outcome, preserving confidence/score-gap/min-threshold context instead of collapsing to a non-applicable state.
+- changed(core/mcp): runtime `search_tools` telemetry in `packages/core/src/routers/mcpRouter.ts` now consumes evaluator decisions directly for runtime auto-loads, eliminating placeholder confidence values and aligning runtime/cached decision semantics.
+- test(core/mcp): expanded `packages/core/src/mcp/toolSearchRanking.test.ts` with regression coverage for runtime auto-loaded vs manually loaded top-result behavior.
+- test(validation): reran focused MCP suites (`toolSearchRanking`, `metamcp-session-working-set`) with `18` tests passing and revalidated web TypeScript gate (`WEB_TSC_OK`).
+
 ## [2.7.236] — 2026-03-15
 
 - feat(core/mcp): `packages/core/src/routers/mcpRouter.ts` now applies confidence-based auto-load evaluation telemetry for runtime `search_tools` responses too (not just cached ranking), including outcome, skip reason, execution status, and threshold fields in emitted search events.

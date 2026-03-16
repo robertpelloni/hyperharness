@@ -63,6 +63,20 @@ interface ToolSearchAutoLoadOptions {
     minConfidence?: number;
 }
 
+function computeAutoLoadConfidence(options: {
+    hasExactMatch: boolean;
+    hasPrefixMatch: boolean;
+    scoreGap: number;
+}): number {
+    const baseConfidence = options.hasExactMatch
+        ? 0.95
+        : options.hasPrefixMatch
+            ? 0.87
+            : 0.82;
+
+    return Math.max(0, Math.min(0.99, baseConfidence + (options.scoreGap >= 20 ? 0.04 : options.scoreGap >= 12 ? 0.02 : 0)));
+}
+
 function normalizeText(value: string | null | undefined): string {
     return value?.trim().toLowerCase() ?? '';
 }
@@ -349,14 +363,12 @@ export function evaluateAutoLoadCandidate(
     }
 
     const [topResult, secondResult] = results;
-    if (!topResult || topResult.loaded) {
+    if (!topResult) {
         return {
             evaluated: false,
             outcome: 'not-applicable',
             decision: null,
-            skipReason: topResult?.loaded
-                ? 'top result already loaded'
-                : 'no top-ranked result available',
+            skipReason: 'no top-ranked result available',
         };
     }
 
@@ -364,6 +376,38 @@ export function evaluateAutoLoadCandidate(
     const hasExactMatch = topResult.matchReason.includes('exact');
     const hasPrefixMatch = topResult.matchReason.includes('prefix');
     const hasStrongKeywordMatch = topResult.score >= 125 && scoreGap >= 18;
+    const confidence = computeAutoLoadConfidence({
+        hasExactMatch,
+        hasPrefixMatch,
+        scoreGap,
+    });
+    const minConfidence = Math.max(0, Math.min(0.99, options?.minConfidence ?? 0.85));
+
+    if (topResult.loaded) {
+        if (topResult.autoLoaded) {
+            return {
+                evaluated: true,
+                outcome: 'loaded',
+                decision: {
+                    toolName: topResult.name,
+                    reason: `runtime auto-loaded after ${topResult.matchReason}`,
+                    confidence,
+                    scoreGap,
+                    topScore: topResult.score,
+                    secondScore: secondResult?.score ?? 0,
+                },
+                minConfidence,
+            };
+        }
+
+        return {
+            evaluated: false,
+            outcome: 'not-applicable',
+            decision: null,
+            skipReason: 'top result already loaded',
+            minConfidence,
+        };
+    }
 
     if (!(hasExactMatch || hasPrefixMatch || hasStrongKeywordMatch)) {
         return {
@@ -371,6 +415,7 @@ export function evaluateAutoLoadCandidate(
             outcome: 'skipped',
             decision: null,
             skipReason: 'top result did not meet exact/prefix/strong-keyword auto-load criteria',
+            minConfidence,
         };
     }
 
@@ -380,6 +425,7 @@ export function evaluateAutoLoadCandidate(
             outcome: 'skipped',
             decision: null,
             skipReason: 'prefix match score below minimum threshold',
+            minConfidence,
         };
     }
 
@@ -389,17 +435,9 @@ export function evaluateAutoLoadCandidate(
             outcome: 'skipped',
             decision: null,
             skipReason: 'top result too ambiguous relative to second result',
+            minConfidence,
         };
     }
-
-    const baseConfidence = hasExactMatch
-        ? 0.95
-        : hasPrefixMatch
-            ? 0.87
-            : 0.82;
-
-    const confidence = Math.max(0, Math.min(0.99, baseConfidence + (scoreGap >= 20 ? 0.04 : scoreGap >= 12 ? 0.02 : 0)));
-    const minConfidence = Math.max(0, Math.min(0.99, options?.minConfidence ?? 0.85));
 
     if (confidence < minConfidence) {
         return {
