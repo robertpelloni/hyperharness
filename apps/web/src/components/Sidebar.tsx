@@ -106,6 +106,7 @@ type PaletteItem = {
     href?: string;
     id?: string;
     description?: string;
+    badge?: NavBadge;
 };
 
 type NavBadge = NonNullable<NavItem['badge']>;
@@ -237,7 +238,7 @@ export function Sidebar({ className }: SidebarProps) {
     }, [normalizedQuery]);
 
     const paletteItems = useMemo<PaletteItem[]>(() => {
-        const routeMeta = new Map<string, { title: string; href: string; icon: any; description?: string; section: string }>();
+        const routeMeta = new Map<string, { title: string; href: string; icon: any; description?: string; section: string; badge?: NavBadge }>();
         for (const section of SIDEBAR_SECTIONS) {
             for (const item of section.items) {
                 const normalizedHref = normalizeNavHref(item.href);
@@ -246,6 +247,7 @@ export function Sidebar({ className }: SidebarProps) {
                         ...item,
                         href: normalizedHref,
                         section: section.title,
+                        badge: item.badge,
                     });
                 }
             }
@@ -958,6 +960,7 @@ export function Sidebar({ className }: SidebarProps) {
                                                         <Icon className="h-4 w-4 text-zinc-400" />
                                                         <span className="truncate">{item.title}</span>
                                                         {item.kind === 'action' ? <span className="text-[10px] text-violet-300 border border-violet-600/40 px-1.5 py-0.5 rounded">Action</span> : null}
+                                                        {item.kind === 'route' ? <NavMaturityBadge badge={item.badge} /> : null}
                                                         {isFav ? <span className="text-[10px] text-amber-300 border border-amber-600/40 px-1.5 py-0.5 rounded">Fav</span> : null}
                                                         {isRecent ? <span className="text-[10px] text-cyan-300 border border-cyan-600/40 px-1.5 py-0.5 rounded">Recent</span> : null}
                                                     </div>

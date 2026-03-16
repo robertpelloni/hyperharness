@@ -4,6 +4,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.7.275] — 2026-03-16
+
+- feat(web/nav): Command palette route results now surface the same maturity badges as the sidebar, so search-based navigation no longer hides `beta`, `experimental`, or `embed` status.
+- feat(web/nav): Palette route metadata now carries badge state end to end, keeping sidebar, favorites, recent routes, and jump-search status signals aligned.
+- test(validation): `WEB_TSC_OK` — no TypeScript errors.
+
 ## [2.7.274] — 2026-03-16
 
 - feat(web/nav): Sidebar now renders maturity badges (`beta`, `experimental`, `embed`) consistently in section links, favorites, and recent routes so operators can spot non-stable surfaces at a glance.
