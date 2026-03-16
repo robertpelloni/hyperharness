@@ -49,8 +49,21 @@ export default function ProviderAuthBillingMatrix() {
     const { data: pricing, isLoading: isPricingLoading } = trpc.billing.getModelPricing.useQuery();
     const { data: fallback, isLoading: isFallbackLoading } = trpc.billing.getFallbackChain.useQuery({ taskType: fallbackTaskType });
     const { data: taskRouting, isLoading: isTaskRoutingLoading } = trpc.billing.getTaskRoutingRules.useQuery();
-        const { data: depletedModels } = trpc.billing.getDepletedModels.useQuery(undefined, { refetchInterval: 15000 });
+    const { data: depletedModels } = trpc.billing.getDepletedModels.useQuery(undefined, { refetchInterval: 15000 });
     const { data: fallbackHistory } = trpc.billing.getFallbackHistory.useQuery({ limit: 20 }, { refetchInterval: 10000 });
+    const clearFallbackHistoryMutation = trpc.billing.clearFallbackHistory.useMutation({
+        onSuccess: async (result) => {
+            if (result?.ok) {
+                toast.success('Fallback history cleared');
+                await utils.billing.getFallbackHistory.invalidate();
+            } else {
+                toast.error('Failed to clear fallback history');
+            }
+        },
+        onError: (error) => {
+            toast.error(error.message || 'Failed to clear fallback history');
+        },
+    });
     const setRoutingStrategyMutation = trpc.billing.setRoutingStrategy.useMutation({
         onSuccess: async () => {
             toast.success('Default provider routing updated');
@@ -261,11 +274,23 @@ export default function ProviderAuthBillingMatrix() {
                     {/* Recent Fallback Decisions — ring-buffer from CoreModelSelector showing provider substitutions */}
                     {fallbackHistory && fallbackHistory.length > 0 && (
                         <Card className="bg-zinc-900 border-amber-900/30 shadow-xl">
-                            <CardHeader className="pb-2">
+                            <CardHeader className="pb-2 flex flex-row items-center justify-between gap-3">
                                 <CardTitle className="text-sm font-bold text-amber-400 uppercase tracking-widest flex items-center gap-2">
                                     <Zap className="h-4 w-4 text-amber-400" />
                                     Recent Fallback Decisions
                                 </CardTitle>
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => clearFallbackHistoryMutation.mutate()}
+                                    disabled={clearFallbackHistoryMutation.isPending}
+                                    title="Clear the in-memory fallback decision history"
+                                    aria-label="Clear fallback decision history"
+                                    className="border-zinc-700 text-zinc-300 hover:bg-zinc-800"
+                                >
+                                    {clearFallbackHistoryMutation.isPending ? <Loader2 className="mr-1 h-3 w-3 animate-spin" /> : null}
+                                    Clear
+                                </Button>
                             </CardHeader>
                             <CardContent className="pt-2 space-y-1.5 max-h-64 overflow-y-auto">
                                 {fallbackHistory.map((event) => {

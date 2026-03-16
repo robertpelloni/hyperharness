@@ -350,5 +350,20 @@ export const billingRouter = t.router({
                 return [];
             }
         }),
+
+    /** Clear in-memory provider fallback history ring buffer. */
+    clearFallbackHistory: adminProcedure
+        .mutation(async () => {
+            const llm = getLLMService();
+            try {
+                const selector = llm.modelSelector as unknown as {
+                    clearFallbackHistory?: () => void;
+                };
+                selector.clearFallbackHistory?.();
+                return { ok: true };
+            } catch {
+                return { ok: false };
+            }
+        }),
 });
 

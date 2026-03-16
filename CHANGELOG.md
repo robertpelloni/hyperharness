@@ -4,6 +4,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.7.244] — 2026-03-16
+
+- feat(core/billing): `packages/core/src/routers/billingRouter.ts` now exposes `billing.clearFallbackHistory` to reset the in-memory provider fallback decision ring buffer.
+- changed(web/billing): `apps/web/src/app/dashboard/billing/page.tsx` adds a **Clear** action to the **Recent Fallback Decisions** panel so operators can reset triage state without restarting core services.
+- test(validation): revalidated strict TypeScript gates for core and web after fallback-history clear wiring (`CORE_TSC_OK`, `WEB_TSC_OK`).
+
 ## [2.7.243] — 2026-03-16
 
 - feat(core/billing): `packages/core/src/providers/CoreModelSelector.ts` now records a bounded in-process fallback decision ring buffer (`MAX_FALLBACK_EVENTS=50`) covering provider-substitution, budget-forced-local, and emergency fallback paths.
