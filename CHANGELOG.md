@@ -4,6 +4,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.7.292] — 2026-03-16
+
+- feat(web/mcp/search): Telemetry triage presets now clear stale tool-focused scope (`telemetryToolFilter='all'`) before applying preset filters, making one-click presets deterministic.
+- feat(web/mcp/inspector): Telemetry triage presets now clear stale tool + text search scopes (`telemetryToolFilter=null`, `telemetrySearchQuery=''`) before applying preset filters, preventing hidden residual narrowing.
+- test(validation): `WEB_TSC_OK`; focused fallback/billing slice tests passed (`packages/core/src/routers/billingRouter.test.ts`, `apps/web/src/app/dashboard/billing/page.test.tsx`, `apps/web/src/app/dashboard/DashboardHomeClient.test.tsx`, `apps/web/tests/integration/fallback-e2e.test.ts`).
+
 ## [2.7.291] — 2026-03-16
 
 - feat(web/mcp/inspector): Added missing `manual-failures` telemetry triage preset so Inspector now matches Search preset coverage for source-focused incident filtering.

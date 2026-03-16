@@ -1340,6 +1340,8 @@ function InspectorDashboardContent() {
 
     const applyTelemetryPreset = (preset: TelemetryTriagePreset) => {
         setTelemetryBucketTimeFilter(null);
+        setTelemetryToolFilter(null);
+        setTelemetrySearchQuery('');
 
         if (preset === 'errors-now') {
             setTelemetryTypeFilter('all');

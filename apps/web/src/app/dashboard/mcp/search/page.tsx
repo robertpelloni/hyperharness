@@ -891,6 +891,7 @@ export default function SearchDashboard() {
 
     const applyTelemetryPreset = (preset: TelemetryTriagePreset) => {
         setTelemetryBucketTimeFilter(null);
+        setTelemetryToolFilter('all');
 
         if (preset === 'errors-now') {
             setTelemetryTypeFilter('all');
