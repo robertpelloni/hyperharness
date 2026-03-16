@@ -18,6 +18,7 @@ import { detectLocalExecutionEnvironment } from '../services/execution-environme
 import { getCachedToolInventory } from '../mcp/cachedToolInventory.js';
 import { readClaudeMemStoreStatus } from './memoryRouter.claude-mem.js';
 import { summarizeCachedInventory } from './startupInventorySummary.js';
+import { mcpServerPool } from '../services/mcp-server-pool.service.js';
 import type { MemoryPipelineSummary } from '../services/memory/MemoryManager.js';
 
 const EXECUTION_ENV_CACHE_TTL_MS = Number(process.env.BORG_EXECUTION_ENV_CACHE_TTL_MS ?? 30_000);
@@ -98,6 +99,7 @@ export const systemProcedures = {
         ).length;
         const warmingServerCount = runtimeServers.filter((server) => server.warmupStatus === 'scheduled' || server.warmupStatus === 'warming').length;
         const failedWarmupServerCount = runtimeServers.filter((server) => server.warmupStatus === 'failed').length;
+        const lifecycleModes = mcpServerPool.getLifecycleModes();
 
         const cachedInventorySummary = summarizeCachedInventory(cachedInventory);
 
@@ -132,6 +134,7 @@ export const systemProcedures = {
             residentLiveServerCount,
             warmingServerCount,
             failedWarmupServerCount,
+            lazySessionMode: lifecycleModes.lazySessionMode,
             persistedServerCount,
             persistedToolCount,
             persistedAlwaysOnServerCount,

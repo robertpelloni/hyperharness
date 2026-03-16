@@ -159,6 +159,7 @@ import { createCouncilTools } from "./mcp/tools/council_tools.js";
 import { NativeSessionMetaTools } from "./mcp/NativeSessionMetaTools.js";
 import { jsonConfigProvider } from './services/config/JsonConfigProvider.js';
 import { configImportService } from './services/config-import.service.js';
+import { mcpServerPool } from './services/mcp-server-pool.service.js';
 import {
     applyBridgeClientHello,
     buildBridgeManifest,
@@ -3138,7 +3139,12 @@ export class MCPServer {
                     })),
                     source: inventory.source,
                 });
-                this.mcpAggregator.warmAdvertisedServers();
+                const { lazySessionMode } = mcpServerPool.getLifecycleModes();
+                if (lazySessionMode) {
+                    mcpServerDebugLog('[MCPServer] Lazy MCP session mode enabled; skipping eager advertised-server warmup.');
+                } else {
+                    this.mcpAggregator.warmAdvertisedServers();
+                }
             })
             .catch(e => console.error("[MCPServer] Aggregator Init Failed:", e));
 

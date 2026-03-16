@@ -79,6 +79,7 @@ type StartupStatusInput = {
     residentLiveServerCount?: number;
     warmingServerCount?: number;
     failedWarmupServerCount?: number;
+    lazySessionMode?: boolean;
     persistedServerCount: number;
     persistedToolCount: number;
     persistedAlwaysOnServerCount: number;
@@ -130,6 +131,7 @@ export async function buildStartupStatusSnapshot(input: StartupStatusInput) {
         residentLiveServerCount = 0,
         warmingServerCount = 0,
         failedWarmupServerCount = 0,
+        lazySessionMode = false,
         persistedServerCount,
         persistedToolCount,
         persistedAlwaysOnServerCount,
@@ -190,12 +192,14 @@ export async function buildStartupStatusSnapshot(input: StartupStatusInput) {
     );
     const aggregatorReady = Boolean(aggregatorStatus?.initialized);
     const liveReady = mcpReady && aggregatorReady;
-    const residentReady = liveReady && residentLiveServerCount >= advertisedAlwaysOnServerCount;
+    const residentReady = lazySessionMode
+        ? liveReady
+        : liveReady && residentLiveServerCount >= advertisedAlwaysOnServerCount;
     const mcpWarmupInProgress = Boolean(
         aggregatorStatus?.inProgress
         || configSyncStatus?.inProgress
         || warmingServerCount > 0
-        || (inventoryReady && configuredServerCount > 0 && liveServerCount < configuredServerCount),
+        || (!lazySessionMode && inventoryReady && configuredServerCount > 0 && liveServerCount < configuredServerCount),
     );
     const executionReady = Boolean(executionEnvironment?.ready);
     const claudeMemEnabled = Boolean(claudeMem?.enabled);
@@ -221,7 +225,7 @@ export async function buildStartupStatusSnapshot(input: StartupStatusInput) {
         });
     }
 
-    if (!residentReady) {
+    if (!residentReady && !lazySessionMode) {
         const residentTarget = persistedAlwaysOnServerCount;
         const residentConnected = residentLiveServerCount;
         blockingReasons.push({

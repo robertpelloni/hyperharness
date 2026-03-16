@@ -4,6 +4,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.7.246] — 2026-03-16
+
+- changed(core/mcp): `packages/core/src/MCPServer.ts` now honors lifecycle lazy-session mode during startup and skips eager `warmAdvertisedServers()` preconnects when lazy mode is enabled, preventing downstream MCP binaries from auto-spawning at boot.
+- changed(core/startup-status): `packages/core/src/routers/startupStatus.ts` + `packages/core/src/routers/systemProcedures.ts` now treat resident always-on warmup as optional in lazy mode, so startup readiness reflects deferred-on-demand MCP behavior instead of requiring preconnected always-on runtimes.
+- test(core/startup-status): `packages/core/src/routers/startupStatus.test.ts` adds regression coverage for lazy-mode readiness semantics.
+- test(validation): revalidated targeted startup-status suite and strict TypeScript gates (`vitest startupStatus`, `CORE_TSC_OK`, `WEB_TSC_OK`).
+
 ## [2.7.245] — 2026-03-16
 
 - changed(web/billing): `apps/web/src/app/dashboard/billing/page.tsx` adds fallback-history triage controls for **cause** and **task** filtering, including dynamic facet counts and scoped-result rendering.

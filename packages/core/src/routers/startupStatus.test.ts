@@ -767,4 +767,80 @@ describe('buildStartupStatusSnapshot', () => {
             ready: false,
         }));
     });
+
+    it('treats resident always-on warmup as optional when lazy MCP sessions are enabled', async () => {
+        const snapshot = await buildStartupStatusSnapshot({
+            mcpServer: {
+                memoryManager: {},
+                isMemoryInitialized: true,
+                getBridgeStatus: () => ({
+                    ready: true,
+                    clientCount: 0,
+                    clients: [],
+                    supportedCapabilities: [],
+                    supportedHookPhases: [],
+                }),
+            },
+            aggregator: {
+                getInitializationStatus: () => ({
+                    inProgress: false,
+                    initialized: true,
+                    connectedClientCount: 0,
+                    configuredServerCount: 4,
+                }),
+            },
+            agentMemory: {},
+            browserService: {},
+            browserStatus: { active: false, pageCount: 0, pageIds: [] },
+            sessionSupervisor: {
+                getRestoreStatus: () => ({
+                    lastRestoreAt: 1_700_000_000_000,
+                    restoredSessionCount: 0,
+                    autoResumeCount: 0,
+                }),
+            },
+            sessionCount: 0,
+            mcpConfigService: {
+                getStatus: () => ({
+                    inProgress: false,
+                    lastCompletedAt: 1_700_000_000_000,
+                    lastSuccessAt: 1_700_000_000_000,
+                    lastServerCount: 4,
+                    lastToolCount: 16,
+                }),
+            },
+            liveServerCount: 0,
+            residentLiveServerCount: 0,
+            warmingServerCount: 0,
+            failedWarmupServerCount: 0,
+            lazySessionMode: true,
+            persistedServerCount: 4,
+            persistedToolCount: 16,
+            persistedAlwaysOnServerCount: 2,
+            persistedAlwaysOnToolCount: 6,
+            executionEnvironment: {
+                ready: true,
+                preferredShellId: 'pwsh',
+                preferredShellLabel: 'PowerShell 7',
+                shellCount: 1,
+                verifiedShellCount: 1,
+                toolCount: 2,
+                verifiedToolCount: 2,
+                harnessCount: 1,
+                verifiedHarnessCount: 1,
+                supportsPowerShell: true,
+                supportsPosixShell: false,
+                notes: ['Prefer PowerShell 7.'],
+            },
+        });
+
+        expect(snapshot.ready).toBe(true);
+        expect(snapshot.checks.mcpAggregator.liveReady).toBe(true);
+        expect(snapshot.checks.mcpAggregator.residentReady).toBe(true);
+        expect(snapshot.blockingReasons).not.toEqual(
+            expect.arrayContaining([
+                expect.objectContaining({ code: 'mcp_resident_runtime_not_ready' }),
+            ]),
+        );
+    });
 });
