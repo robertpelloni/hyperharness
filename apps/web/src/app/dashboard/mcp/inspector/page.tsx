@@ -1683,37 +1683,93 @@ function InspectorDashboardContent() {
                                         const successWidth = bucket.total > 0 ? Math.round((bucket.successCount / bucket.total) * 100) : 0;
                                         const errorWidth = bucket.total > 0 ? Math.round((bucket.errorCount / bucket.total) * 100) : 0;
                                         const drilldownDisabled = bucket.total === 0;
+                                        const successDrilldownDisabled = drilldownDisabled || bucket.successCount === 0;
+                                        const errorDrilldownDisabled = drilldownDisabled || bucket.errorCount === 0;
 
                                         return (
-                                            <button
-                                                type="button"
+                                            <div
                                                 key={`inspector-status-trend-${bucket.label}`}
-                                                disabled={drilldownDisabled}
-                                                onClick={() => {
-                                                    setTelemetryBucketTimeFilter({
-                                                        start: bucket.start,
-                                                        end: bucket.end,
-                                                        source: telemetrySourceFilter !== 'all' ? telemetrySourceFilter : undefined,
-                                                    });
-                                                }}
-                                                className={`space-y-1 rounded-sm border px-0.5 py-0.5 transition-colors disabled:cursor-not-allowed disabled:opacity-40 ${bucketSelected
+                                                className={`space-y-1 rounded-sm border px-0.5 py-0.5 transition-colors ${drilldownDisabled
+                                                    ? 'opacity-40'
+                                                    : ''
+                                                    } ${bucketSelected
                                                     ? 'border-teal-500/50 bg-teal-500/10'
                                                     : 'border-transparent hover:border-zinc-700/80'
                                                     }`}
                                                 title={[
                                                     `${bucket.label} • ${bucket.successCount} ok / ${bucket.errorCount} err`,
-                                                    drilldownDisabled ? 'No events in this bucket' : 'Click to focus this status bucket window',
+                                                    drilldownDisabled ? 'No events in this bucket' : 'Click bar background to focus bucket window. Click green/red segments for success/error drilldown.',
                                                 ].join('\n')}
-                                                aria-label={drilldownDisabled
-                                                    ? `${bucket.label} has no status telemetry events`
-                                                    : `Focus status trend bucket ${bucket.label}`}
                                             >
-                                                <div className="h-2 rounded border border-zinc-800/80 bg-zinc-900/80 overflow-hidden flex">
-                                                    <div className="h-full bg-emerald-500/70" style={{ width: `${successWidth}%` }} />
-                                                    <div className="h-full bg-red-500/75" style={{ width: `${errorWidth}%` }} />
+                                                <div
+                                                    role="button"
+                                                    tabIndex={drilldownDisabled ? -1 : 0}
+                                                    onClick={() => {
+                                                        if (drilldownDisabled) {
+                                                            return;
+                                                        }
+
+                                                        setTelemetryBucketTimeFilter({
+                                                            start: bucket.start,
+                                                            end: bucket.end,
+                                                            source: telemetrySourceFilter !== 'all' ? telemetrySourceFilter : undefined,
+                                                        });
+                                                    }}
+                                                    onKeyDown={(event) => {
+                                                        if (drilldownDisabled) {
+                                                            return;
+                                                        }
+
+                                                        if (event.key === 'Enter' || event.key === ' ') {
+                                                            event.preventDefault();
+                                                            setTelemetryBucketTimeFilter({
+                                                                start: bucket.start,
+                                                                end: bucket.end,
+                                                                source: telemetrySourceFilter !== 'all' ? telemetrySourceFilter : undefined,
+                                                            });
+                                                        }
+                                                    }}
+                                                    className={`h-2 w-full rounded border border-zinc-800/80 bg-zinc-900/80 overflow-hidden flex ${drilldownDisabled ? 'cursor-not-allowed' : 'cursor-pointer'}`}
+                                                    title={drilldownDisabled ? 'No events in this bucket' : 'Focus bucket time range'}
+                                                    aria-label={drilldownDisabled ? `${bucket.label} has no events` : `Focus bucket ${bucket.label} time range`}
+                                                >
+                                                    <button
+                                                        type="button"
+                                                        disabled={successDrilldownDisabled}
+                                                        onClick={(event) => {
+                                                            event.stopPropagation();
+                                                            setTelemetryBucketTimeFilter({
+                                                                start: bucket.start,
+                                                                end: bucket.end,
+                                                                source: telemetrySourceFilter !== 'all' ? telemetrySourceFilter : undefined,
+                                                            });
+                                                            setTelemetryStatusFilter('success');
+                                                        }}
+                                                        className="h-full bg-emerald-500/70 hover:bg-emerald-500/85 disabled:cursor-not-allowed"
+                                                        style={{ width: `${successWidth}%` }}
+                                                        title={successDrilldownDisabled ? 'No success events in this bucket' : `Focus success events for ${bucket.label}`}
+                                                        aria-label={successDrilldownDisabled ? `${bucket.label} has no success events` : `Focus success events for ${bucket.label}`}
+                                                    />
+                                                    <button
+                                                        type="button"
+                                                        disabled={errorDrilldownDisabled}
+                                                        onClick={(event) => {
+                                                            event.stopPropagation();
+                                                            setTelemetryBucketTimeFilter({
+                                                                start: bucket.start,
+                                                                end: bucket.end,
+                                                                source: telemetrySourceFilter !== 'all' ? telemetrySourceFilter : undefined,
+                                                            });
+                                                            setTelemetryStatusFilter('error');
+                                                        }}
+                                                        className="h-full bg-red-500/75 hover:bg-red-500/90 disabled:cursor-not-allowed"
+                                                        style={{ width: `${errorWidth}%` }}
+                                                        title={errorDrilldownDisabled ? 'No error events in this bucket' : `Focus error events for ${bucket.label}`}
+                                                        aria-label={errorDrilldownDisabled ? `${bucket.label} has no error events` : `Focus error events for ${bucket.label}`}
+                                                    />
                                                 </div>
                                                 <div className="text-[9px] text-zinc-500 text-center">{bucket.label}</div>
-                                            </button>
+                                            </div>
                                         );
                                     })}
                                 </div>

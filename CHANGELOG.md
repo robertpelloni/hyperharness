@@ -4,6 +4,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.7.272] — 2026-03-16
+
+- feat(web/mcp/search): Status trend buckets now support segment-level drilldown — clicking green/red segments applies the selected bucket time-range plus `status=success|error` scope.
+- feat(web/mcp/inspector): Added parity segment drilldown for status trend buckets with accessible keyboard interaction and empty-segment disabled handling.
+- feat(web/mcp): Bucket background click still focuses pure time-window scope, while segment clicks provide direct status-scoped incident narrowing.
+- test(validation): `WEB_TSC_OK` — no TypeScript errors.
+
 ## [2.7.271] — 2026-03-16
 
 - feat(web/mcp/search): Status trend buckets are now clickable drilldown actions that apply the selected bucket time-range filter and highlight active bucket scope.
