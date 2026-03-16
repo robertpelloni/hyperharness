@@ -2141,6 +2141,7 @@ function InspectorDashboardContent() {
                             <span className="rounded-md border border-emerald-500/30 bg-emerald-500/10 px-2 py-1 text-emerald-300">success: {telemetrySummary.success}</span>
                             <span className="rounded-md border border-red-500/30 bg-red-500/10 px-2 py-1 text-red-300">errors: {telemetrySummary.error}</span>
                             <span className="rounded-md border border-amber-500/30 bg-amber-500/10 px-2 py-1 text-amber-200">ignored results: {telemetrySummary.ignoredResults}</span>
+                            <span className="text-zinc-500 uppercase tracking-wider">Active filters</span>
                             {telemetryTypeFilter !== 'all' ? (
                                 <button
                                     type="button"

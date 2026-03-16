@@ -4,6 +4,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.7.297] — 2026-03-16
+
+- feat(web/mcp/inspector): Added explicit `Active filters` label to telemetry summary chip row so Inspector matches Search filter terminology and improves triage scannability.
+- test(validation): `WEB_TSC_OK`; focused fallback/billing slice tests passed (`packages/core/src/routers/billingRouter.test.ts`, `apps/web/src/app/dashboard/billing/page.test.tsx`, `apps/web/src/app/dashboard/DashboardHomeClient.test.tsx`, `apps/web/tests/integration/fallback-e2e.test.ts`).
+
 ## [2.7.296] — 2026-03-16
 
 - feat(web/mcp/inspector): Expanded telemetry summary chip row with explicit active-filter chips for `type`, `status`, `window`, `source`, and text `search`, each with one-click clear actions.
