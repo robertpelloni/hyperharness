@@ -1787,7 +1787,7 @@ export default function SearchDashboard() {
                         <CardContent className="p-4 space-y-4">
                             <p className="text-xs text-zinc-500">
                                 Always-on tools are advertised immediately by always-on servers, while keep-warm tools are your pinned preload set.
-                                Both lanes expose direct load/hydrate actions so you can prepare working-set depth before the next call.
+                                Both lanes expose direct load/hydrate/unload actions so you can prepare working-set depth before the next call.
                             </p>
 
                             {([
@@ -1805,11 +1805,21 @@ export default function SearchDashboard() {
                                     tools: sortedKeepWarmCatalog,
                                     empty: 'No keep-warm profile tools configured yet.',
                                 },
-                            ] as const).map((lane) => (
+                            ] as const).map((lane) => {
+                                const laneLoadedCount = lane.tools.filter((tool) => loadedToolNames.has(tool.name)).length;
+                                const laneHydratedCount = lane.tools.filter((tool) => Boolean(workingSetByName.get(tool.name)?.hydrated || tool.hydrated)).length;
+                                const hasLoadCandidates = laneLoadedCount < lane.tools.length;
+                                const hasHydrateCandidates = laneHydratedCount < lane.tools.length;
+                                const hasUnloadCandidates = laneLoadedCount > 0;
+
+                                return (
                                 <div key={lane.id} className="space-y-2">
                                     <div className="flex items-center justify-between gap-2">
                                         <div className={`text-[10px] uppercase tracking-wider ${lane.tone}`}>
                                             {lane.label} ({lane.tools.length})
+                                        </div>
+                                        <div className="text-[10px] text-zinc-500">
+                                            {laneLoadedCount}/{lane.tools.length} loaded • {laneHydratedCount}/{lane.tools.length} schema
                                         </div>
                                         <div className="flex items-center gap-2">
                                             <Button
@@ -1819,8 +1829,8 @@ export default function SearchDashboard() {
                                                 onClick={() => {
                                                     void runLaneAction(lane.id, 'load', lane.tools as SearchResult[]);
                                                 }}
-                                                disabled={loadMutation.isPending || hydrateMutation.isPending || unloadMutation.isPending || activeLaneAction != null || lane.tools.length === 0}
-                                                title={`Load all ${lane.label.toLowerCase()} tools into working set`}
+                                                disabled={loadMutation.isPending || hydrateMutation.isPending || unloadMutation.isPending || activeLaneAction != null || lane.tools.length === 0 || !hasLoadCandidates}
+                                                title={hasLoadCandidates ? `Load all ${lane.label.toLowerCase()} tools into working set` : `All ${lane.label.toLowerCase()} tools are already loaded`}
                                                 aria-label={`Load all ${lane.label.toLowerCase()} tools`}
                                                 className="border-blue-700 text-blue-200 hover:bg-blue-950/30"
                                             >
@@ -1838,8 +1848,8 @@ export default function SearchDashboard() {
                                                 onClick={() => {
                                                     void runLaneAction(lane.id, 'hydrate', lane.tools as SearchResult[]);
                                                 }}
-                                                disabled={loadMutation.isPending || hydrateMutation.isPending || unloadMutation.isPending || activeLaneAction != null || lane.tools.length === 0}
-                                                title={`Hydrate all ${lane.label.toLowerCase()} tools`}
+                                                disabled={loadMutation.isPending || hydrateMutation.isPending || unloadMutation.isPending || activeLaneAction != null || lane.tools.length === 0 || !hasHydrateCandidates}
+                                                title={hasHydrateCandidates ? `Hydrate all ${lane.label.toLowerCase()} tools` : `All ${lane.label.toLowerCase()} tools are already hydrated`}
                                                 aria-label={`Hydrate all ${lane.label.toLowerCase()} tools`}
                                                 className="border-purple-700 text-purple-200 hover:bg-purple-950/30"
                                             >
@@ -1857,8 +1867,8 @@ export default function SearchDashboard() {
                                                 onClick={() => {
                                                     void runLaneAction(lane.id, 'unload', lane.tools as SearchResult[]);
                                                 }}
-                                                disabled={loadMutation.isPending || hydrateMutation.isPending || unloadMutation.isPending || activeLaneAction != null || lane.tools.length === 0}
-                                                title={`Unload all ${lane.label.toLowerCase()} tools`}
+                                                disabled={loadMutation.isPending || hydrateMutation.isPending || unloadMutation.isPending || activeLaneAction != null || lane.tools.length === 0 || !hasUnloadCandidates}
+                                                title={hasUnloadCandidates ? `Unload all ${lane.label.toLowerCase()} tools` : `All ${lane.label.toLowerCase()} tools are already unloaded`}
                                                 aria-label={`Unload all ${lane.label.toLowerCase()} tools`}
                                                 className="border-zinc-700 text-zinc-300 hover:bg-zinc-800"
                                             >
@@ -1939,7 +1949,8 @@ export default function SearchDashboard() {
                                         </div>
                                     )}
                                 </div>
-                            ))}
+                                );
+                            })}
                         </CardContent>
                     </Card>
 

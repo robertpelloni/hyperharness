@@ -4,6 +4,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.7.282] — 2026-03-16
+
+- feat(web/mcp/search): `Tool visibility lanes` now display per-lane readiness counters (`loaded/schema`) for faster operator triage.
+- feat(web/mcp/search): Bulk lane actions now disable when no eligible candidates remain (`Load all`, `Hydrate all`, `Unload all`) to avoid no-op clicks.
+- feat(web/mcp/search): Lane action button titles now explain why actions are disabled (already loaded/hydrated/unloaded).
+- test(validation): `WEB_TSC_OK`; focused fallback/billing slice tests passed (`packages/core/src/routers/billingRouter.test.ts`, `apps/web/src/app/dashboard/billing/page.test.tsx`, `apps/web/src/app/dashboard/DashboardHomeClient.test.tsx`, `apps/web/tests/integration/fallback-e2e.test.ts`).
+
 ## [2.7.281] — 2026-03-16
 
 - feat(web/mcp/search): Extended `Tool visibility lanes` bulk operations with `Unload all` so operators can clear lane tools from the active working set directly from Search.
