@@ -1,6 +1,7 @@
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@borg/ui";
+import { PageStatusBanner } from '@/components/PageStatusBanner';
 import { Badge } from "@borg/ui";
 import { Button } from "@borg/ui";
 import { Activity, Server, AlertTriangle, RefreshCcw, HardDrive, Cpu, Network, Radio } from "lucide-react";
@@ -61,6 +62,7 @@ export default function HealthDashboard() {
 
     return (
         <div className="p-8 space-y-8 h-full overflow-y-auto">
+            <PageStatusBanner status="beta" message="Health monitoring is functional. Resource-usage charts and advanced alerting are planned." />
             <div className="flex justify-between items-center">
                 <div>
                     <h1 className="text-3xl font-bold tracking-tight text-white flex items-center gap-3">

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from 'react';
+import { PageStatusBanner } from '@/components/PageStatusBanner';
 import { Badge, Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Input, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@borg/ui";
 import { Activity, Trash2, Search, RefreshCcw, BarChart3, AlertTriangle, CheckCircle2, Clock } from "lucide-react";
 import { trpc } from '@/utils/trpc';
@@ -62,6 +63,7 @@ export default function LogsDashboard() {
 
     return (
         <div className="p-8 space-y-8 h-full overflow-y-auto w-full max-w-[1600px] mx-auto">
+            <PageStatusBanner status="beta" message="Execution logs are filterable and searchable. Log streaming and advanced querying are planned." />
             <div className="flex justify-between items-center">
                 <div>
                     <h1 className="text-3xl font-bold tracking-tight text-white flex items-center gap-3">

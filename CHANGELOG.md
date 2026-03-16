@@ -4,6 +4,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.7.251] — 2026-03-16
+
+- feat(web/dashboard): New `system/page.tsx` — operator console showing Borg uptime, subsystem readiness checks (from `startupStatus` contract), blocking boot reasons, and navigation cards to Health, Logs, and Audit.
+- feat(web/dashboard): `health/page.tsx` — added `PageStatusBanner` (beta) for maturity labeling.
+- feat(web/dashboard): `logs/page.tsx` — added `PageStatusBanner` (beta) for maturity labeling.
+- feat(web/dashboard): `audit/page.tsx` — added `PageStatusBanner` (beta) for maturity labeling.
+- test(validation): `WEB_TSC_OK` — no TypeScript errors.
+
 ## [2.7.250] — 2026-03-16
 
 - fix(core/startup): `buildStartupStatusSnapshot` no longer blocks a **zero-server fresh install** on `mcp_config_sync_pending`. When `configuredServerCount === 0 && persistedServerCount === 0`, config sync is trivially satisfied — waiting for `lastCompletedAt` would stall the boot indefinitely with no MCP servers to sync.

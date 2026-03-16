@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from 'react';
+import { PageStatusBanner } from '@/components/PageStatusBanner';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@borg/ui";
 import { Button } from "@borg/ui";
 import { Input } from "@borg/ui";
@@ -50,6 +51,7 @@ export default function AuditDashboard() {
     return (
         <div className="p-8 space-y-8 h-full overflow-y-auto w-full max-w-[1200px] mx-auto">
             {/* Header */}
+            <PageStatusBanner status="beta" message="Audit trail captures system events. Export and retention-policy settings are planned." />
             <div className="flex justify-between items-center">
                 <div>
                     <h1 className="text-3xl font-bold tracking-tight text-white flex items-center gap-3">
