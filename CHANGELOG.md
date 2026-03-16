@@ -4,6 +4,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.7.295] — 2026-03-16
+
+- feat(web/mcp/search): Added explicit active-preset summary chip (`preset: ...`) in telemetry filter state so triage context is visible at a glance instead of relying only on highlighted preset buttons.
+- feat(web/mcp/inspector): Added matching active-preset summary chip in telemetry overview metrics for Search/Inspector parity in operator triage context.
+- refactor(web/mcp): Centralized telemetry preset definitions per page into shared local arrays used for both rendering and active-preset derivation.
+- test(validation): `WEB_TSC_OK`; focused fallback/billing slice tests passed (`packages/core/src/routers/billingRouter.test.ts`, `apps/web/src/app/dashboard/billing/page.test.tsx`, `apps/web/src/app/dashboard/DashboardHomeClient.test.tsx`, `apps/web/tests/integration/fallback-e2e.test.ts`).
+
 ## [2.7.294] — 2026-03-16
 
 - feat(web/mcp/search): Telemetry preset chips now expose explicit pressed-state semantics (`aria-pressed`) and active-state tooltip text, improving keyboard/screen-reader clarity while preserving existing visual highlight behavior.

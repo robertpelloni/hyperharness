@@ -1450,6 +1450,17 @@ function InspectorDashboardContent() {
             && telemetrySourceFilter === 'live-aggregator';
     };
 
+    const telemetryTriagePresets = [
+        { value: 'errors-now', label: 'Errors now' },
+        { value: 'runtime-failures', label: 'Runtime failures' },
+        { value: 'manual-failures', label: 'Manual failures' },
+        { value: 'load-incidents', label: 'Load incidents' },
+        { value: 'hydration-failures', label: 'Hydration failures' },
+        { value: 'auto-load-skips', label: 'Auto-load skips' },
+        { value: 'live-aggregator-focus', label: 'Live aggregator' },
+    ] as const satisfies ReadonlyArray<{ value: TelemetryTriagePreset; label: string }>;
+    const activeTelemetryPreset = telemetryTriagePresets.find((preset) => isTelemetryPresetActive(preset.value)) ?? null;
+
     return (
         <div className="p-8 space-y-8 h-full flex flex-col">
             <PageStatusBanner status="beta" message="MCP Tool Inspector" note="Working-set management, schema inspection, and traffic tracing are active. Some telemetry columns are still being wired." />
@@ -2099,15 +2110,7 @@ function InspectorDashboardContent() {
                     <div className="mb-4 space-y-2">
                         <div className="flex flex-wrap items-center gap-2 text-xs">
                             <span className="text-zinc-500 uppercase tracking-wider">Presets</span>
-                            {([
-                                { value: 'errors-now', label: 'Errors now' },
-                                { value: 'runtime-failures', label: 'Runtime failures' },
-                                { value: 'manual-failures', label: 'Manual failures' },
-                                { value: 'load-incidents', label: 'Load incidents' },
-                                { value: 'hydration-failures', label: 'Hydration failures' },
-                                { value: 'auto-load-skips', label: 'Auto-load skips' },
-                                { value: 'live-aggregator-focus', label: 'Live aggregator' },
-                            ] as const).map((preset) => (
+                            {telemetryTriagePresets.map((preset) => (
                                 (() => {
                                     const isActive = isTelemetryPresetActive(preset.value);
 
@@ -2138,6 +2141,14 @@ function InspectorDashboardContent() {
                             <span className="rounded-md border border-emerald-500/30 bg-emerald-500/10 px-2 py-1 text-emerald-300">success: {telemetrySummary.success}</span>
                             <span className="rounded-md border border-red-500/30 bg-red-500/10 px-2 py-1 text-red-300">errors: {telemetrySummary.error}</span>
                             <span className="rounded-md border border-amber-500/30 bg-amber-500/10 px-2 py-1 text-amber-200">ignored results: {telemetrySummary.ignoredResults}</span>
+                            {activeTelemetryPreset ? (
+                                <span
+                                    className="rounded-md border border-emerald-500/30 bg-emerald-500/10 px-2 py-1 text-emerald-200"
+                                    title="Currently matched telemetry triage preset"
+                                >
+                                    preset: {activeTelemetryPreset.label}
+                                </span>
+                            ) : null}
                             {telemetryToolFilter != null && (
                                 <button
                                     type="button"

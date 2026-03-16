@@ -1000,6 +1000,17 @@ export default function SearchDashboard() {
             && telemetrySourceFilter === 'live-aggregator';
     };
 
+    const telemetryTriagePresets = [
+        { value: 'errors-now', label: 'Errors now' },
+        { value: 'runtime-failures', label: 'Runtime failures' },
+        { value: 'manual-failures', label: 'Manual failures' },
+        { value: 'load-incidents', label: 'Load incidents' },
+        { value: 'hydration-failures', label: 'Hydration failures' },
+        { value: 'auto-load-skips', label: 'Auto-load skips' },
+        { value: 'live-aggregator-focus', label: 'Live aggregator' },
+    ] as const satisfies ReadonlyArray<{ value: TelemetryTriagePreset; label: string }>;
+    const activeTelemetryPreset = telemetryTriagePresets.find((preset) => isTelemetryPresetActive(preset.value)) ?? null;
+
     const copyTelemetryShareLink = async () => {
         const nextParams = new URLSearchParams();
 
@@ -2177,15 +2188,7 @@ export default function SearchDashboard() {
                             <div className="mb-3 grid gap-2">
                                 <div className="flex flex-wrap items-center gap-2 text-xs">
                                     <span className="text-zinc-500 uppercase tracking-wider">Presets</span>
-                                    {([
-                                        { value: 'errors-now', label: 'Errors now' },
-                                        { value: 'runtime-failures', label: 'Runtime failures' },
-                                        { value: 'manual-failures', label: 'Manual failures' },
-                                        { value: 'load-incidents', label: 'Load incidents' },
-                                        { value: 'hydration-failures', label: 'Hydration failures' },
-                                        { value: 'auto-load-skips', label: 'Auto-load skips' },
-                                        { value: 'live-aggregator-focus', label: 'Live aggregator' },
-                                    ] as const).map((preset) => (
+                                    {telemetryTriagePresets.map((preset) => (
                                         (() => {
                                             const isActive = isTelemetryPresetActive(preset.value);
 
@@ -2278,6 +2281,14 @@ export default function SearchDashboard() {
                                         >
                                             bucket: {formatTelemetryBucketRange(telemetryBucketTimeFilter.start, telemetryBucketTimeFilter.end)} ×
                                         </button>
+                                    ) : null}
+                                    {activeTelemetryPreset ? (
+                                        <span
+                                            className="rounded-md border border-emerald-500/30 bg-emerald-500/10 px-2 py-1 text-emerald-200"
+                                            title="Currently matched telemetry triage preset"
+                                        >
+                                            preset: {activeTelemetryPreset.label}
+                                        </span>
                                     ) : null}
                                     {telemetryFiltersAtDefault ? (
                                         <span className="rounded-md border border-zinc-700 bg-zinc-950/70 px-2 py-1 text-zinc-500">
