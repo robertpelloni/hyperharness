@@ -1712,9 +1712,20 @@ function InspectorDashboardContent() {
                                     },
                                 ] as const).map((lane) => (
                                     <div key={lane.id} className="space-y-2 rounded border border-zinc-800 bg-zinc-950/50 p-2">
+                                        {(() => {
+                                            const laneLoadedCount = lane.tools.filter((tool) => loadedToolNames.has(tool.name)).length;
+                                            const laneHydratedCount = lane.tools.filter((tool) => Boolean(workingSetByName.get(tool.name)?.hydrated)).length;
+                                            const hasLoadCandidates = laneLoadedCount < lane.tools.length;
+                                            const hasHydrateCandidates = laneHydratedCount < lane.tools.length;
+                                            const hasUnloadCandidates = laneLoadedCount > 0;
+
+                                            return (
                                         <div className="flex items-center justify-between gap-2">
                                             <div className={`text-[10px] uppercase tracking-wider ${lane.tone}`}>
                                                 {lane.label} ({lane.tools.length})
+                                            </div>
+                                            <div className="text-[10px] text-zinc-500">
+                                                {laneLoadedCount}/{lane.tools.length} loaded • {laneHydratedCount}/{lane.tools.length} schema
                                             </div>
                                             <div className="flex items-center gap-1">
                                                 <Button
@@ -1724,8 +1735,8 @@ function InspectorDashboardContent() {
                                                     onClick={() => {
                                                         void runLaneAction(lane.id, 'load', lane.tools as InspectorTool[]);
                                                     }}
-                                                    disabled={loadMutation.isPending || schemaMutation.isPending || activeLaneAction != null || lane.tools.length === 0}
-                                                    title={`Load all ${lane.label.toLowerCase()} tools into the active working set`}
+                                                    disabled={loadMutation.isPending || schemaMutation.isPending || unloadMutation.isPending || activeLaneAction != null || lane.tools.length === 0 || !hasLoadCandidates}
+                                                    title={hasLoadCandidates ? `Load all ${lane.label.toLowerCase()} tools into the active working set` : `All ${lane.label.toLowerCase()} tools are already loaded`}
                                                     aria-label={`Load all ${lane.label.toLowerCase()} tools`}
                                                     className="h-7 border-blue-700 px-2 text-[10px] text-blue-200 hover:bg-blue-950/30"
                                                 >
@@ -1743,8 +1754,8 @@ function InspectorDashboardContent() {
                                                     onClick={() => {
                                                         void runLaneAction(lane.id, 'hydrate', lane.tools as InspectorTool[]);
                                                     }}
-                                                    disabled={loadMutation.isPending || schemaMutation.isPending || unloadMutation.isPending || activeLaneAction != null || lane.tools.length === 0}
-                                                    title={`Hydrate all ${lane.label.toLowerCase()} tools`}
+                                                    disabled={loadMutation.isPending || schemaMutation.isPending || unloadMutation.isPending || activeLaneAction != null || lane.tools.length === 0 || !hasHydrateCandidates}
+                                                    title={hasHydrateCandidates ? `Hydrate all ${lane.label.toLowerCase()} tools` : `All ${lane.label.toLowerCase()} tools are already hydrated`}
                                                     aria-label={`Hydrate all ${lane.label.toLowerCase()} tools`}
                                                     className="h-7 border-purple-700 px-2 text-[10px] text-purple-200 hover:bg-purple-950/30"
                                                 >
@@ -1762,8 +1773,8 @@ function InspectorDashboardContent() {
                                                     onClick={() => {
                                                         void runLaneAction(lane.id, 'unload', lane.tools as InspectorTool[]);
                                                     }}
-                                                    disabled={loadMutation.isPending || schemaMutation.isPending || unloadMutation.isPending || activeLaneAction != null || lane.tools.length === 0}
-                                                    title={`Unload all ${lane.label.toLowerCase()} tools from the active working set`}
+                                                    disabled={loadMutation.isPending || schemaMutation.isPending || unloadMutation.isPending || activeLaneAction != null || lane.tools.length === 0 || !hasUnloadCandidates}
+                                                    title={hasUnloadCandidates ? `Unload all ${lane.label.toLowerCase()} tools from the active working set` : `All ${lane.label.toLowerCase()} tools are already unloaded`}
                                                     aria-label={`Unload all ${lane.label.toLowerCase()} tools`}
                                                     className="h-7 border-zinc-700 px-2 text-[10px] text-zinc-300 hover:bg-zinc-800"
                                                 >
@@ -1776,6 +1787,8 @@ function InspectorDashboardContent() {
                                                 </Button>
                                             </div>
                                         </div>
+                                            );
+                                        })()}
 
                                         {lane.tools.length > 0 ? (
                                             <div className="space-y-1.5 max-h-[140px] overflow-y-auto pr-1">
