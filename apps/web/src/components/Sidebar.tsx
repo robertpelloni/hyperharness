@@ -746,6 +746,15 @@ export function Sidebar({ className }: SidebarProps) {
                                     >
                                         <item.icon className="mr-2 h-4 w-4" />
                                         {item.title}
+                                                    {item.badge === 'experimental' && (
+                                                        <span className="ml-1.5 px-1 py-0.5 rounded text-[9px] font-semibold uppercase bg-amber-900/60 text-amber-300 leading-none">exp</span>
+                                                    )}
+                                                    {item.badge === 'beta' && (
+                                                        <span className="ml-1.5 px-1 py-0.5 rounded text-[9px] font-semibold uppercase bg-blue-900/60 text-blue-300 leading-none">beta</span>
+                                                    )}
+                                                    {item.badge === 'embed' && (
+                                                        <span className="ml-1.5 px-1 py-0.5 rounded text-[9px] font-semibold uppercase bg-zinc-700/80 text-zinc-400 leading-none">embed</span>
+                                                    )}
                                     </Link>
                                 ))}
                             </div>

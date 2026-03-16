@@ -52,6 +52,8 @@ export interface NavItem {
     icon: any;
     description?: string;
     variant: "default" | "ghost";
+    /** Optional maturity badge shown in the sidebar nav. */
+    badge?: 'beta' | 'experimental' | 'embed';
 }
 
 export interface NavSection {
@@ -210,6 +212,7 @@ export const INTEGRATIONS_NAV: NavItem[] = [
         icon: Bot,
         description: "Integration status and controls for Open-WebUI connections.",
         variant: "default",
+        badge: "embed",
     },
     {
         title: "OpenCode Autopilot",
@@ -217,6 +220,7 @@ export const INTEGRATIONS_NAV: NavItem[] = [
         icon: Sparkles,
         description: "Legacy autopilot integration panel (migration in progress).",
         variant: "ghost",
+        badge: "embed",
     },
     {
         title: "Jules",
@@ -231,6 +235,7 @@ export const INTEGRATIONS_NAV: NavItem[] = [
         icon: Network,
         description: "Harness view for DeerFlow-compatible execution paths.",
         variant: "ghost",
+        badge: "experimental",
     },
     {
         title: "Memory Explorer",
@@ -249,6 +254,7 @@ export const CORE_DASHBOARD_NAV: NavItem[] = [
     { title: "Health", href: "/dashboard/health", icon: Activity, variant: "ghost" },
     { title: "Logs", href: "/dashboard/logs", icon: Terminal, variant: "ghost" },
     { title: "Audit", href: "/dashboard/audit", icon: FileText, variant: "ghost" },
+    { title: "System", href: "/dashboard/system", icon: Server, description: "Operator console: uptime, subsystem health, boot status.", variant: "ghost" },
     { title: "Documentation", href: "/docs", icon: BookOpen, variant: "ghost" },
     { title: "Settings", href: "/dashboard/settings", icon: Settings2, variant: "ghost" },
 ];
@@ -270,7 +276,8 @@ export const LABS_DASHBOARD_NAV: NavItem[] = [
     { title: "Command", href: "/dashboard/command", icon: Terminal, description: "Execute slash commands and explore registered command handlers via a live REPL.", variant: "ghost" },
     { title: "Tests", href: "/dashboard/tests", icon: FlaskConical, description: "Auto-test watcher: start/stop file-watch mode, view per-file pass/fail results.", variant: "ghost" },
     { title: "Traffic Inspector", href: "/dashboard/inspector", icon: FileSearch, variant: "ghost" },
-    { title: "Workflows", href: "/dashboard/workflows", icon: Workflow, variant: "ghost" },
+    { title: "Workflows", href: "/dashboard/workflows", icon: Workflow, variant: "ghost", badge: "beta" },
+    { title: "Swarm", href: "/dashboard/swarm", icon: Users, description: "Horizontal multi-model delegation, adversarial debates, and consensus voting.", variant: "ghost", badge: "experimental" },
     { title: "Library", href: "/dashboard/library", icon: Library, description: "Resource hub for scripts, skills, tool sets, memory, plans, and documentation.", variant: "ghost" },
     { title: "Manual", href: "/dashboard/manual", icon: BookOpenText, variant: "ghost" },
     { title: "Plans", href: "/dashboard/plans", icon: Lightbulb, variant: "ghost" },

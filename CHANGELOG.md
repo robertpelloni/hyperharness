@@ -4,6 +4,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.7.252] — 2026-03-16
+
+- feat(web/nav): `NavItem` interface gains optional `badge?: 'beta' | 'experimental' | 'embed'` field for sidebar-level maturity labels.
+- feat(web/nav): `Sidebar.tsx` renders colored pill badges (`exp` amber, `beta` blue, `embed` zinc) inline with nav item titles when `badge` is set.
+- feat(web/nav): Tagged nav items: `Open-WebUI` → embed, `OpenCode Autopilot` → embed, `DeerFlow Harness` → experimental, `Workflows` → beta, `Swarm` → experimental.
+- feat(web/nav): Added `System` entry to `CORE_DASHBOARD_NAV` linking to `/dashboard/system` (operator overview console created in v2.7.251).
+- test(validation): `WEB_TSC_OK` — no TypeScript errors.
+
 ## [2.7.251] — 2026-03-16
 
 - feat(web/dashboard): New `system/page.tsx` — operator console showing Borg uptime, subsystem readiness checks (from `startupStatus` contract), blocking boot reasons, and navigation cards to Health, Logs, and Audit.
