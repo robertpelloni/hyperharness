@@ -5,6 +5,15 @@
 All notable changes to this project will be documented in this file.
 
 ## [2.7.252] — 2026-03-16
+## [2.7.253] — 2026-03-16
+
+- feat(web/nav): Tagged `Super Assistant` → beta badge in `LABS_DASHBOARD_NAV`.
+- feat(web/nav): Tagged `MCP Search` → beta, `MCP Inspector` → beta, `Agent Playground` → experimental, `AI Tools` → experimental in `MCP_TESTING_NAV`.
+- feat(web/mcp): Added `PageStatusBanner` (beta) to `mcp/search/page.tsx` — communicates that tool discovery ranking and score tuning are ongoing.
+- feat(web/mcp): Added `PageStatusBanner` (beta) to `mcp/inspector/page.tsx` — communicates that some telemetry columns are still being wired.
+- test(validation): `WEB_TSC_OK` — no TypeScript errors.
+
+## [2.7.252] — 2026-03-16
 
 - feat(web/nav): `NavItem` interface gains optional `badge?: 'beta' | 'experimental' | 'embed'` field for sidebar-level maturity labels.
 - feat(web/nav): `Sidebar.tsx` renders colored pill badges (`exp` amber, `beta` blue, `embed` zinc) inline with nav item titles when `badge` is set.

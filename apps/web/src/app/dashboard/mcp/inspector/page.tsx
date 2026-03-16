@@ -8,6 +8,7 @@ import { Loader2, Play, Wrench, Search, ChevronRight, Layers, Database, External
 import { TrafficInspector } from '@/components/TrafficInspector';
 import { trpc } from '@/utils/trpc';
 import { toast } from 'sonner';
+import { PageStatusBanner } from '@/components/PageStatusBanner';
 
 type InspectorTool = {
     name: string;
@@ -934,6 +935,7 @@ function InspectorDashboardContent() {
 
     return (
         <div className="p-8 space-y-8 h-full flex flex-col">
+            <PageStatusBanner status="beta" message="MCP Tool Inspector" note="Working-set management, schema inspection, and traffic tracing are active. Some telemetry columns are still being wired." />
             <div className="flex justify-between items-center shrink-0">
                 <div>
                     <h1 className="text-3xl font-bold tracking-tight text-white">Inspector</h1>

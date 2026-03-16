@@ -162,6 +162,7 @@ export const MCP_TESTING_NAV: NavItem[] = [
         icon: Search,
         description: "Semantic tool discovery with ranking, loading, and telemetry.",
         variant: "ghost",
+        badge: "beta",
     },
     {
         title: "Inspector",
@@ -169,6 +170,7 @@ export const MCP_TESTING_NAV: NavItem[] = [
         icon: Wrench,
         description: "Interactive inspector for tool schemas, args, responses, and traces.",
         variant: "ghost",
+        badge: "beta",
     },
     {
         title: "Agent Playground",
@@ -176,6 +178,7 @@ export const MCP_TESTING_NAV: NavItem[] = [
         icon: Bot,
         description: "Experiment with agent-assisted MCP execution and orchestration flows.",
         variant: "ghost",
+        badge: "experimental",
     },
     {
         title: "AI Tools",
@@ -183,6 +186,7 @@ export const MCP_TESTING_NAV: NavItem[] = [
         icon: Sparkles,
         description: "AI-enhanced tooling utilities and automation helpers for MCP workflows.",
         variant: "ghost",
+        badge: "experimental",
     },
     {
         title: "Tool Catalog",
@@ -296,7 +300,7 @@ export const LABS_DASHBOARD_NAV: NavItem[] = [
     { title: "Submodules", href: "/dashboard/submodules", icon: FileCode, variant: "ghost" },
     { title: "Workshop", href: "/dashboard/workshop", icon: Wrench, variant: "ghost" },
     { title: "Auto-Dev", href: "/dashboard/workshop/auto-dev", icon: Bot, variant: "ghost" },
-    { title: "Super Assistant", href: "/dashboard/super-assistant", icon: Bot, variant: "ghost" },
+    { title: "Super Assistant", href: "/dashboard/super-assistant", icon: Bot, variant: "ghost", badge: "beta" },
 ];
 
 export const SIDEBAR_SECTIONS: NavSection[] = [

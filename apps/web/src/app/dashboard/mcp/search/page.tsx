@@ -7,6 +7,7 @@ import { Button, Card, CardContent, CardHeader, CardTitle } from "@borg/ui";
 import { Loader2, Search, Zap, Code, Layers, ExternalLink, Activity, Database, ArrowDownToLine, Sparkles, Trash2, SlidersHorizontal, History } from "lucide-react";
 import { trpc } from '@/utils/trpc';
 import { toast } from 'sonner';
+import { PageStatusBanner } from '@/components/PageStatusBanner';
 
 type SearchResult = {
     name: string;
@@ -797,6 +798,7 @@ export default function SearchDashboard() {
 
     return (
         <div className="p-8 space-y-8 h-full flex flex-col">
+            <PageStatusBanner status="beta" message="MCP Semantic Search" note="Tool discovery and ranking are functional. Schema hydration depth and score tuning are ongoing." />
             <div className="flex justify-between items-center shrink-0">
                 <div>
                     <h1 className="text-3xl font-bold tracking-tight text-white">Semantic Search</h1>
