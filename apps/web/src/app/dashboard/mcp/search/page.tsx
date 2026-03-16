@@ -1131,7 +1131,7 @@ export default function SearchDashboard() {
 
     const runLaneAction = async (
         laneId: 'always-on-lane' | 'keep-warm-lane',
-        action: 'load' | 'hydrate',
+        action: 'load' | 'hydrate' | 'unload',
         tools: SearchResult[],
     ) => {
         const actionKey = `${laneId}:${action}`;
@@ -1146,11 +1146,19 @@ export default function SearchDashboard() {
                     return !loaded;
                 }
 
+                if (action === 'unload') {
+                    return loaded;
+                }
+
                 return !hydrated;
             });
 
             if (candidateTools.length === 0) {
-                toast.info(action === 'load' ? 'All lane tools are already loaded' : 'All lane tools are already hydrated');
+                toast.info(action === 'load'
+                    ? 'All lane tools are already loaded'
+                    : action === 'unload'
+                        ? 'All lane tools are already unloaded'
+                        : 'All lane tools are already hydrated');
                 return;
             }
 
@@ -1160,13 +1168,20 @@ export default function SearchDashboard() {
                     continue;
                 }
 
+                if (action === 'unload') {
+                    await unloadMutation.mutateAsync({ name: tool.name });
+                    continue;
+                }
+
                 const loaded = loadedToolNames.has(tool.name);
                 await hydrateToolSchema(tool.name, loaded);
             }
 
             toast.success(action === 'load'
                 ? `Loaded ${candidateTools.length} lane tool${candidateTools.length === 1 ? '' : 's'}`
-                : `Hydrated ${candidateTools.length} lane tool${candidateTools.length === 1 ? '' : 's'}`);
+                : action === 'unload'
+                    ? `Unloaded ${candidateTools.length} lane tool${candidateTools.length === 1 ? '' : 's'}`
+                    : `Hydrated ${candidateTools.length} lane tool${candidateTools.length === 1 ? '' : 's'}`);
         } finally {
             setActiveLaneAction((current) => (current === actionKey ? null : current));
         }
@@ -1804,7 +1819,7 @@ export default function SearchDashboard() {
                                                 onClick={() => {
                                                     void runLaneAction(lane.id, 'load', lane.tools as SearchResult[]);
                                                 }}
-                                                disabled={loadMutation.isPending || hydrateMutation.isPending || activeLaneAction != null || lane.tools.length === 0}
+                                                disabled={loadMutation.isPending || hydrateMutation.isPending || unloadMutation.isPending || activeLaneAction != null || lane.tools.length === 0}
                                                 title={`Load all ${lane.label.toLowerCase()} tools into working set`}
                                                 aria-label={`Load all ${lane.label.toLowerCase()} tools`}
                                                 className="border-blue-700 text-blue-200 hover:bg-blue-950/30"
@@ -1823,7 +1838,7 @@ export default function SearchDashboard() {
                                                 onClick={() => {
                                                     void runLaneAction(lane.id, 'hydrate', lane.tools as SearchResult[]);
                                                 }}
-                                                disabled={loadMutation.isPending || hydrateMutation.isPending || activeLaneAction != null || lane.tools.length === 0}
+                                                disabled={loadMutation.isPending || hydrateMutation.isPending || unloadMutation.isPending || activeLaneAction != null || lane.tools.length === 0}
                                                 title={`Hydrate all ${lane.label.toLowerCase()} tools`}
                                                 aria-label={`Hydrate all ${lane.label.toLowerCase()} tools`}
                                                 className="border-purple-700 text-purple-200 hover:bg-purple-950/30"
@@ -1834,6 +1849,25 @@ export default function SearchDashboard() {
                                                         Hydrating...
                                                     </>
                                                 ) : 'Hydrate all'}
+                                            </Button>
+                                            <Button
+                                                type="button"
+                                                variant="outline"
+                                                size="sm"
+                                                onClick={() => {
+                                                    void runLaneAction(lane.id, 'unload', lane.tools as SearchResult[]);
+                                                }}
+                                                disabled={loadMutation.isPending || hydrateMutation.isPending || unloadMutation.isPending || activeLaneAction != null || lane.tools.length === 0}
+                                                title={`Unload all ${lane.label.toLowerCase()} tools`}
+                                                aria-label={`Unload all ${lane.label.toLowerCase()} tools`}
+                                                className="border-zinc-700 text-zinc-300 hover:bg-zinc-800"
+                                            >
+                                                {activeLaneAction === `${lane.id}:unload` ? (
+                                                    <>
+                                                        <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+                                                        Unloading...
+                                                    </>
+                                                ) : 'Unload all'}
                                             </Button>
                                         </div>
                                     </div>
