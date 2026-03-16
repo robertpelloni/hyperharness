@@ -5,6 +5,7 @@ import { Card, CardHeader, CardTitle, CardContent, Button, Badge } from "@borg/u
 import { Loader2, ExternalLink, Activity, BrainCircuit, Box, Workflow, Network, Cable, ShieldAlert } from "lucide-react";
 import { trpc } from '@/utils/trpc';
 import { toast } from 'sonner';
+import { PageStatusBanner } from "@/components/PageStatusBanner";
 
 export default function DeerFlowDashboard() {
     const { data: status, isLoading: isStatusLoading } = trpc.deerFlow.status.useQuery(undefined, { refetchInterval: 10000 });
@@ -67,6 +68,12 @@ export default function DeerFlowDashboard() {
                             <><ShieldAlert className="w-4 h-4 mr-2" /> Gateway Offline</>
                         )}
                     </Badge>
+
+                            <PageStatusBanner
+                                status="experimental"
+                                message="DeerFlow is an external LangGraph agent harness. This page requires the DeerFlow service to be running independently."
+                                note="Full Borg-native orchestration is planned for a future release."
+                            />
                 </div>
             </div>
 

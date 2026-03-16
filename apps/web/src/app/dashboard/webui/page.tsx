@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import { Bot, ExternalLink, Shield } from "lucide-react";
+import { PageStatusBanner } from "@/components/PageStatusBanner";
 
 export default function OpenWebUIDashboardPage() {
     // Assuming Open-WebUI serves its front-end on port 8080 by default
@@ -9,7 +10,8 @@ export default function OpenWebUIDashboardPage() {
 
     return (
         <div className="w-full h-full flex flex-col bg-black text-white">
-            <div className="p-4 border-b border-zinc-800 flex justify-between items-center bg-zinc-900">
+            <div className="p-4 border-b border-zinc-800 bg-zinc-900">
+                <div className="flex justify-between items-center mb-2">
                 <div>
                     <h1 className="text-xl font-bold flex items-center gap-2">
                         <Bot className="h-5 w-5 text-blue-400" />
@@ -32,6 +34,12 @@ export default function OpenWebUIDashboardPage() {
                         Open Standalone
                     </a>
                 </div>
+                </div>
+                <PageStatusBanner
+                    status="external-embed"
+                    message="Embeds the Open-WebUI service running at the configured URL. Start Open-WebUI before using this page."
+                    note={`Configured URL: ${webuiUrl}`}
+                />
             </div>
             <div className="flex-1 relative bg-black">
                 <iframe

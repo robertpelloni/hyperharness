@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { PageStatusBanner } from '@/components/PageStatusBanner';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@borg/ui";
 import { Button } from "@borg/ui";
 import { Badge } from "@borg/ui";
@@ -131,6 +132,10 @@ export default function WorkflowsPage() {
 
     return (
         <div className="p-6 space-y-6">
+            <PageStatusBanner
+                status="beta"
+                message="Workflow execution UI is functional but under active development. Some features may be incomplete."
+            />
             <div className="flex justify-between items-center">
                 <div>
                     <h1 className="text-3xl font-bold tracking-tight">Workflows</h1>

@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { PageHeader } from '@/components/PageHeader';
+import { PageStatusBanner } from '@/components/PageStatusBanner';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, Button, Input } from '@borg/ui';
 import { Textarea } from '@/components/ui/textarea';
 import { trpc } from '@/utils/trpc';
@@ -357,6 +358,10 @@ export default function SwarmDashboard() {
                 title="Swarm Orchestration"
                 description="Horizontal multi-model delegation, adversarial debates, and consensus voting."
             />
+                <PageStatusBanner
+                    status="experimental"
+                    message="Swarm multi-agent orchestration is experimental. Consensus, slashing, and adversarial debate features are under active development."
+                />
 
             <div className="flex flex-wrap gap-2 border-b border-slate-800 pb-2">
                 <Button

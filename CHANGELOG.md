@@ -4,6 +4,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.7.249] — 2026-03-16
+
+- feat(web/dashboard): New `PageStatusBanner` component (`apps/web/src/components/PageStatusBanner.tsx`) provides reusable `experimental` (amber), `beta` (blue), and `external-embed` (gray) status labels for dashboard pages.
+- feat(web/dashboard): `autopilot/page.tsx` — marked **external-embed**: embeds OpenCode Autopilot dashboard via iframe; URL visible in banner note.
+- feat(web/dashboard): `webui/page.tsx` — marked **external-embed**: embeds Open-WebUI via iframe; URL visible in banner note.
+- feat(web/dashboard): `deer-flow/page.tsx` — marked **experimental**: DeerFlow is an external LangGraph agent harness; Borg-native orchestration planned for a future release.
+- feat(web/dashboard): `workflows/page.tsx` — marked **beta**: workflow execution UI is functional but under active development.
+- feat(web/dashboard): `swarm/page.tsx` — marked **experimental**: swarm multi-agent orchestration (consensus, slashing, adversarial debate) is under active development.
+- test(validation): `WEB_TSC_OK` — no TypeScript errors.
+
 ## [2.7.248] — 2026-03-16
 
 - changed(core/mcp): `packages/core/src/mcp/MCPAggregator.ts` is now **lazy-mode aware** — `listAggregatedTools()` skips unconnected servers when `lazyMode` is enabled, ensuring no server binary is spawned during tool-listing. Only `executeTool()` triggers on-demand connection. This completes the deferred-startup story end-to-end.

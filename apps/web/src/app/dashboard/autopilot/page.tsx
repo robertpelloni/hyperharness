@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { PageStatusBanner } from "@/components/PageStatusBanner";
 
 export default function AutopilotDashboardPage() {
     const [loading, setLoading] = useState(false);
@@ -11,21 +12,28 @@ export default function AutopilotDashboardPage() {
 
     return (
         <div className="w-full h-full flex flex-col">
-            <div className="p-4 border-b border-gray-800 flex justify-between items-center bg-gray-900">
-                <div>
-                    <h1 className="text-xl font-bold text-white">OpenCode Autopilot</h1>
-                    <p className="text-gray-400 text-sm">Multi-Model AI Council & Governance</p>
+            <div className="p-4 border-b border-gray-800 bg-gray-900">
+                <div className="flex justify-between items-center mb-2">
+                    <div>
+                        <h1 className="text-xl font-bold text-white">OpenCode Autopilot</h1>
+                        <p className="text-gray-400 text-sm">Multi-Model AI Council & Governance</p>
+                    </div>
+                    <div className="flex gap-2">
+                        <a
+                            href={autopilotUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="px-3 py-1.5 bg-purple-600 hover:bg-purple-700 text-white rounded text-sm transition-colors"
+                        >
+                            Open Standalone
+                        </a>
+                    </div>
                 </div>
-                <div className="flex gap-2">
-                    <a
-                        href={autopilotUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="px-3 py-1.5 bg-purple-600 hover:bg-purple-700 text-white rounded text-sm transition-colors"
-                    >
-                        Open Standalone
-                    </a>
-                </div>
+                <PageStatusBanner
+                    status="external-embed"
+                    message="Embeds the OpenCode Autopilot dashboard running at the configured URL. Start the Autopilot server before using this page."
+                    note={`Configured URL: ${autopilotUrl}`}
+                />
             </div>
             <div className="flex-1 relative bg-black">
                 <iframe
