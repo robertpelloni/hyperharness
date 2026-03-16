@@ -947,6 +947,59 @@ export default function SearchDashboard() {
         setTelemetrySourceFilter('live-aggregator');
     };
 
+    const isTelemetryPresetActive = (preset: TelemetryTriagePreset): boolean => {
+        if (telemetryBucketTimeFilter != null || telemetryToolFilter !== 'all') {
+            return false;
+        }
+
+        if (preset === 'errors-now') {
+            return telemetryTypeFilter === 'all'
+                && telemetryStatusFilter === 'error'
+                && telemetryWindowFilter === '15m'
+                && telemetrySourceFilter === 'all';
+        }
+
+        if (preset === 'runtime-failures') {
+            return telemetryTypeFilter === 'all'
+                && telemetryStatusFilter === 'error'
+                && telemetryWindowFilter === '1h'
+                && telemetrySourceFilter === 'runtime-search';
+        }
+
+        if (preset === 'manual-failures') {
+            return telemetryTypeFilter === 'all'
+                && telemetryStatusFilter === 'error'
+                && telemetryWindowFilter === '1h'
+                && telemetrySourceFilter === 'manual-action';
+        }
+
+        if (preset === 'load-incidents') {
+            return telemetryTypeFilter === 'load'
+                && telemetryStatusFilter === 'error'
+                && telemetryWindowFilter === '1h'
+                && telemetrySourceFilter === 'all';
+        }
+
+        if (preset === 'hydration-failures') {
+            return telemetryTypeFilter === 'hydrate'
+                && telemetryStatusFilter === 'error'
+                && telemetryWindowFilter === '24h'
+                && telemetrySourceFilter === 'all';
+        }
+
+        if (preset === 'auto-load-skips') {
+            return telemetryTypeFilter === 'search'
+                && telemetryStatusFilter === 'all'
+                && telemetryWindowFilter === '1h'
+                && telemetrySourceFilter === 'cached-ranking';
+        }
+
+        return telemetryTypeFilter === 'all'
+            && telemetryStatusFilter === 'all'
+            && telemetryWindowFilter === '15m'
+            && telemetrySourceFilter === 'live-aggregator';
+    };
+
     const copyTelemetryShareLink = async () => {
         const nextParams = new URLSearchParams();
 
@@ -2137,7 +2190,10 @@ export default function SearchDashboard() {
                                             key={`telemetry-preset-${preset.value}`}
                                             type="button"
                                             onClick={() => applyTelemetryPreset(preset.value)}
-                                            className="rounded-md border border-zinc-700 bg-zinc-950/70 px-2 py-1 text-zinc-300 transition-colors hover:bg-zinc-800"
+                                            className={`rounded-md border px-2 py-1 transition-colors ${isTelemetryPresetActive(preset.value)
+                                                ? 'border-emerald-500/40 bg-emerald-500/15 text-emerald-200'
+                                                : 'border-zinc-700 bg-zinc-950/70 text-zinc-300 hover:bg-zinc-800'
+                                                }`}
                                             title={`Apply ${preset.label.toLowerCase()} telemetry triage preset`}
                                             aria-label={`Apply ${preset.label} telemetry triage preset`}
                                         >
