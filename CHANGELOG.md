@@ -4,6 +4,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.7.294] — 2026-03-16
+
+- feat(web/mcp/search): Telemetry preset chips now expose explicit pressed-state semantics (`aria-pressed`) and active-state tooltip text, improving keyboard/screen-reader clarity while preserving existing visual highlight behavior.
+- feat(web/mcp/inspector): Added matching preset-chip accessibility/tooltip parity so active telemetry presets are explicit across both Search and Inspector surfaces.
+- test(validation): `WEB_TSC_OK`; focused fallback/billing slice tests passed (`packages/core/src/routers/billingRouter.test.ts`, `apps/web/src/app/dashboard/billing/page.test.tsx`, `apps/web/src/app/dashboard/DashboardHomeClient.test.tsx`, `apps/web/tests/integration/fallback-e2e.test.ts`).
+
 ## [2.7.293] — 2026-03-16
 
 - feat(web/mcp/search): Added active-state detection for telemetry triage presets and visual highlighting of the currently matched preset state.

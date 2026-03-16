@@ -2108,19 +2108,28 @@ function InspectorDashboardContent() {
                                 { value: 'auto-load-skips', label: 'Auto-load skips' },
                                 { value: 'live-aggregator-focus', label: 'Live aggregator' },
                             ] as const).map((preset) => (
+                                (() => {
+                                    const isActive = isTelemetryPresetActive(preset.value);
+
+                                    return (
                                 <button
                                     key={`inspector-telemetry-preset-${preset.value}`}
                                     type="button"
                                     onClick={() => applyTelemetryPreset(preset.value)}
-                                    className={`rounded-md border px-2 py-1 transition-colors ${isTelemetryPresetActive(preset.value)
+                                    className={`rounded-md border px-2 py-1 transition-colors ${isActive
                                         ? 'border-emerald-500/40 bg-emerald-500/15 text-emerald-200'
                                         : 'border-zinc-700 bg-zinc-950/70 text-zinc-300 hover:bg-zinc-800'
                                         }`}
-                                    title={`Apply ${preset.label.toLowerCase()} telemetry triage preset`}
+                                    title={isActive
+                                        ? `${preset.label} telemetry triage preset is active`
+                                        : `Apply ${preset.label.toLowerCase()} telemetry triage preset`}
                                     aria-label={`Apply ${preset.label} telemetry triage preset`}
+                                    aria-pressed={isActive}
                                 >
                                     {preset.label}
                                 </button>
+                                    );
+                                })()
                             ))}
                         </div>
 
