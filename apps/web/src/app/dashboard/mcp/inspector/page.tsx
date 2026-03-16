@@ -1797,14 +1797,56 @@ function InspectorDashboardContent() {
                                                     const hydrated = Boolean(workingSetByName.get(tool.name)?.hydrated);
 
                                                     return (
-                                                        <div key={`${lane.id}-${tool.name}`} className="flex items-center justify-between gap-2 rounded border border-zinc-800/80 bg-zinc-900/50 px-2 py-1.5">
-                                                            <div className="min-w-0">
-                                                                <div className="font-mono text-[11px] text-zinc-200 truncate" title={tool.name}>{tool.name}</div>
-                                                                <div className="text-[10px] text-zinc-500 truncate" title={tool.server}>{tool.server || 'unknown server'}</div>
+                                                        <div key={`${lane.id}-${tool.name}`} className="rounded border border-zinc-800/80 bg-zinc-900/50 px-2 py-2 space-y-2">
+                                                            <div className="flex items-center justify-between gap-2">
+                                                                <div className="min-w-0">
+                                                                    <div className="font-mono text-[11px] text-zinc-200 truncate" title={tool.name}>{tool.name}</div>
+                                                                    <div className="text-[10px] text-zinc-500 truncate" title={tool.server}>{tool.server || 'unknown server'}</div>
+                                                                </div>
+                                                                <div className="flex items-center gap-1">
+                                                                    {loaded ? <span className="rounded bg-emerald-500/10 px-1.5 py-0.5 text-[9px] uppercase tracking-wider text-emerald-300">loaded</span> : null}
+                                                                    {hydrated ? <span className="rounded bg-purple-500/10 px-1.5 py-0.5 text-[9px] uppercase tracking-wider text-purple-300">schema</span> : null}
+                                                                </div>
                                                             </div>
-                                                            <div className="flex items-center gap-1">
-                                                                {loaded ? <span className="rounded bg-emerald-500/10 px-1.5 py-0.5 text-[9px] uppercase tracking-wider text-emerald-300">loaded</span> : null}
-                                                                {hydrated ? <span className="rounded bg-purple-500/10 px-1.5 py-0.5 text-[9px] uppercase tracking-wider text-purple-300">schema</span> : null}
+                                                            <div className="grid grid-cols-3 gap-2">
+                                                                <Button
+                                                                    type="button"
+                                                                    variant="outline"
+                                                                    size="sm"
+                                                                    onClick={() => loadMutation.mutate({ name: tool.name })}
+                                                                    disabled={loadMutation.isPending || loaded || activeLaneAction != null}
+                                                                    title={loaded ? `${tool.name} is already loaded` : `Load ${tool.name} into the active working set`}
+                                                                    aria-label={`Load ${tool.name}`}
+                                                                    className="h-7 border-blue-700 px-2 text-[10px] text-blue-200 hover:bg-blue-950/30"
+                                                                >
+                                                                    {loaded ? 'Loaded' : 'Load'}
+                                                                </Button>
+                                                                <Button
+                                                                    type="button"
+                                                                    variant="outline"
+                                                                    size="sm"
+                                                                    onClick={() => {
+                                                                        void hydrateToolSchema(tool.name, loaded);
+                                                                    }}
+                                                                    disabled={loadMutation.isPending || schemaMutation.isPending || unloadMutation.isPending || hydrated || activeLaneAction != null}
+                                                                    title={hydrated ? `${tool.name} schema is already hydrated` : loaded ? `Hydrate ${tool.name} schema` : `Load then hydrate ${tool.name} schema`}
+                                                                    aria-label={`Hydrate schema for ${tool.name}`}
+                                                                    className="h-7 border-purple-700 px-2 text-[10px] text-purple-200 hover:bg-purple-950/30"
+                                                                >
+                                                                    {loaded ? 'Hydrate' : 'Load + hydrate'}
+                                                                </Button>
+                                                                <Button
+                                                                    type="button"
+                                                                    variant="outline"
+                                                                    size="sm"
+                                                                    onClick={() => unloadMutation.mutate({ name: tool.name })}
+                                                                    disabled={unloadMutation.isPending || !loaded || activeLaneAction != null}
+                                                                    title={loaded ? `Unload ${tool.name} from the active working set` : `${tool.name} is already unloaded`}
+                                                                    aria-label={`Unload ${tool.name}`}
+                                                                    className="h-7 border-zinc-700 px-2 text-[10px] text-zinc-300 hover:bg-zinc-800"
+                                                                >
+                                                                    {loaded ? 'Unload' : 'Unloaded'}
+                                                                </Button>
                                                             </div>
                                                         </div>
                                                     );
