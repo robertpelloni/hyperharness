@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import { SessionToolWorkingSet } from './metamcp-session-working-set.service.js';
 
@@ -9,6 +9,7 @@ describe('SessionToolWorkingSet', () => {
         expect(workingSet.getLimits()).toEqual({
             maxLoadedTools: 16,
             maxHydratedSchemas: 8,
+            idleEvictionThresholdMs: 5 * 60 * 1000,
         });
     });
 
@@ -26,7 +27,7 @@ describe('SessionToolWorkingSet', () => {
         const evicted = workingSet.loadTool('delta');
 
         expect(evicted).toEqual(['alpha']);
-        expect(workingSet.getLoadedToolNames()).toEqual(['gamma', 'beta', 'delta']);
+        expect(new Set(workingSet.getLoadedToolNames())).toEqual(new Set(['beta', 'gamma', 'delta']));
     });
 
     it('evicts the least recently used hydrated schema independently of loaded metadata', () => {
@@ -68,6 +69,13 @@ describe('SessionToolWorkingSet', () => {
     });
 
     it('refreshes LRU order when an already loaded tool is actually used', () => {
+        const nowSpy = vi.spyOn(Date, 'now');
+        let tick = 1_000;
+        nowSpy.mockImplementation(() => {
+            tick += 1;
+            return tick;
+        });
+
         const workingSet = new SessionToolWorkingSet({
             maxLoadedTools: 3,
             maxHydratedSchemas: 2,
@@ -82,7 +90,13 @@ describe('SessionToolWorkingSet', () => {
         const evicted = workingSet.loadTool('delta');
 
         expect(evicted).toEqual(['beta']);
-        expect(workingSet.getLoadedToolNames()).toEqual(['gamma', 'alpha', 'delta']);
+        expect(new Set(workingSet.getLoadedToolNames())).toEqual(new Set(['gamma', 'alpha', 'delta']));
+
+        const alphaState = workingSet.listLoadedTools().find((tool) => tool.name === 'alpha');
+        expect(typeof alphaState?.lastAccessedAt).toBe('number');
+        expect((alphaState?.lastAccessedAt ?? 0) > 0).toBe(true);
+
+        nowSpy.mockRestore();
     });
 
     it('keeps always-loaded tools visible and protected from eviction or full unload', () => {
@@ -181,9 +195,13 @@ describe('SessionToolWorkingSet', () => {
         workingSet.loadTool('alpha');
         workingSet.loadTool('beta');
 
-        workingSet.reconfigure({ maxLoadedTools: 32, maxHydratedSchemas: 16 });
+        workingSet.reconfigure({ maxLoadedTools: 32, maxHydratedSchemas: 16, idleEvictionThresholdMs: 90_000 });
 
-        expect(workingSet.getLimits()).toEqual({ maxLoadedTools: 32, maxHydratedSchemas: 16 });
+        expect(workingSet.getLimits()).toEqual({
+            maxLoadedTools: 32,
+            maxHydratedSchemas: 16,
+            idleEvictionThresholdMs: 90_000,
+        });
         // Previously loaded tools are still present.
         expect(workingSet.isLoaded('alpha')).toBe(true);
         expect(workingSet.isLoaded('beta')).toBe(true);
@@ -192,10 +210,11 @@ describe('SessionToolWorkingSet', () => {
     it('reconfigure clamps inputs to valid bounds', () => {
         const workingSet = new SessionToolWorkingSet();
 
-        workingSet.reconfigure({ maxLoadedTools: 200, maxHydratedSchemas: 0 });
+        workingSet.reconfigure({ maxLoadedTools: 200, maxHydratedSchemas: 0, idleEvictionThresholdMs: 1 });
 
         const limits = workingSet.getLimits();
         expect(limits.maxLoadedTools).toBe(64);       // clamped to max
         expect(limits.maxHydratedSchemas).toBe(2);    // clamped to min
+        expect(limits.idleEvictionThresholdMs).toBe(10_000); // clamped to min
     });
 });

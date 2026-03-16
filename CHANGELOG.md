@@ -4,6 +4,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.7.235] — 2026-03-15
+
+- feat(core/mcp): `packages/core/src/routers/mcpRouter.ts` now records working-set pressure snapshot fields (`loadedToolCount`, `hydratedSchemaCount`, configured caps, utilization percentages, idle-eviction threshold) on load/unload/hydrate telemetry events.
+- feat(core/mcp): `packages/core/src/mcp/toolSelectionTelemetry.ts` extends the telemetry contract with explicit working-set pressure/limit fields so dashboard consumers can reason about routing behavior under capacity pressure.
+- changed(web/mcp-search): `apps/web/src/app/dashboard/mcp/search/page.tsx` now surfaces pressure context in telemetry cards (loaded/hydrated utilization and idle-eviction threshold), sorts loaded-tool sections by recency, and highlights high idle-eviction risk in the working-set panel.
+- test(core/mcp): expanded `packages/core/src/services/metamcp-session-working-set.service.test.ts` for idle-threshold limit defaults/reconfiguration/clamping and stronger LRU-use assertions.
+- test(validation): reran focused core suites (`metamcp-session-working-set`, `CoreModelSelector`) with `23` tests passing; reran web `tsc --noEmit` with explicit `WEB_TSC_OK`.
+
 ## [2.7.234] — 2026-03-15
 
 - fix(web/session): `apps/web/src/app/dashboard/session/session-page-normalizers.ts` now preserves supervisor status `stopping` instead of collapsing it to `created`, so in-flight stop operations render truthfully in the dashboard.

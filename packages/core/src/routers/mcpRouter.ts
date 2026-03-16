@@ -59,6 +59,50 @@ function parseEvictedToolsFromMessage(message: string): string[] {
         .filter(Boolean);
 }
 
+type WorkingSetSnapshot = {
+    limits?: {
+        maxLoadedTools?: number;
+        maxHydratedSchemas?: number;
+        idleEvictionThresholdMs?: number;
+    };
+    tools?: Array<{ hydrated?: boolean }>;
+};
+
+async function readWorkingSetSnapshot(
+    server: NonNullable<ReturnType<typeof getMcpServer>>,
+): Promise<{
+    loadedToolCount: number;
+    hydratedSchemaCount: number;
+    maxLoadedTools: number;
+    maxHydratedSchemas: number;
+    idleEvictionThresholdMs: number;
+    loadedUtilizationPct: number;
+    hydratedUtilizationPct: number;
+}> {
+    const snapshot = parseToolJson<WorkingSetSnapshot>(
+        await server.executeTool('list_loaded_tools', {}),
+        { limits: {}, tools: [] },
+    );
+
+    const loadedToolCount = Array.isArray(snapshot.tools) ? snapshot.tools.length : 0;
+    const hydratedSchemaCount = Array.isArray(snapshot.tools)
+        ? snapshot.tools.filter((tool) => Boolean(tool?.hydrated)).length
+        : 0;
+    const maxLoadedTools = Math.max(1, snapshot.limits?.maxLoadedTools ?? 0);
+    const maxHydratedSchemas = Math.max(1, snapshot.limits?.maxHydratedSchemas ?? 0);
+    const idleEvictionThresholdMs = Math.max(0, snapshot.limits?.idleEvictionThresholdMs ?? 0);
+
+    return {
+        loadedToolCount,
+        hydratedSchemaCount,
+        maxLoadedTools,
+        maxHydratedSchemas,
+        idleEvictionThresholdMs,
+        loadedUtilizationPct: Math.min(100, Math.round((loadedToolCount / maxLoadedTools) * 100)),
+        hydratedUtilizationPct: Math.min(100, Math.round((hydratedSchemaCount / maxHydratedSchemas) * 100)),
+    };
+}
+
 function toSerializablePayload(value: unknown): unknown {
     try {
         return JSON.parse(JSON.stringify(value, (_key, current) => {
@@ -1011,6 +1055,7 @@ export const mcpRouter = t.router({
         const result = await server.executeTool('load_tool', { name: input.name });
         const message = getToolTextContent(result);
         const evictedTools = parseEvictedToolsFromMessage(message);
+        const pressure = await readWorkingSetSnapshot(server);
         toolSelectionTelemetry.record({
             type: 'load',
             toolName: input.name,
@@ -1018,6 +1063,7 @@ export const mcpRouter = t.router({
             message,
             evictedTools,
             latencyMs: toLatencyMs(startedAt),
+            ...pressure,
         });
         return {
             ok: true,
@@ -1036,12 +1082,14 @@ export const mcpRouter = t.router({
         const startedAt = Date.now();
         const result = await server.executeTool('unload_tool', { name: input.name });
         const message = getToolTextContent(result);
+        const pressure = await readWorkingSetSnapshot(server);
         toolSelectionTelemetry.record({
             type: 'unload',
             toolName: input.name,
             status: 'success',
             message,
             latencyMs: toLatencyMs(startedAt),
+            ...pressure,
         });
         return {
             ok: true,
@@ -1063,6 +1111,7 @@ export const mcpRouter = t.router({
             inputSchema: null,
             evictedHydratedTools: [],
         });
+        const pressure = await readWorkingSetSnapshot(server);
         toolSelectionTelemetry.record({
             type: 'hydrate',
             toolName: input.name,
@@ -1070,6 +1119,7 @@ export const mcpRouter = t.router({
             message: 'schema hydrated',
             evictedTools: Array.isArray(parsed.evictedHydratedTools) ? parsed.evictedHydratedTools : [],
             latencyMs: toLatencyMs(startedAt),
+            ...pressure,
         });
         return parsed;
     }),

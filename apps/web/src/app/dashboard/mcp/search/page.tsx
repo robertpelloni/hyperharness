@@ -74,6 +74,13 @@ type ToolSelectionTelemetryEvent = {
     autoLoadMinConfidence?: number;
     autoLoadExecutionStatus?: 'success' | 'error' | 'not-attempted';
     autoLoadExecutionError?: string;
+    loadedToolCount?: number;
+    hydratedSchemaCount?: number;
+    maxLoadedTools?: number;
+    maxHydratedSchemas?: number;
+    idleEvictionThresholdMs?: number;
+    loadedUtilizationPct?: number;
+    hydratedUtilizationPct?: number;
 };
 
 type WorkingSetEvictionEvent = {
@@ -192,6 +199,23 @@ function formatRelativeTimestamp(timestamp: number | null): string {
 
     const deltaHours = Math.round(deltaMinutes / 60);
     return `${deltaHours}h ago`;
+}
+
+function formatDurationCompact(durationMs: number): string {
+    const clamped = Math.max(0, Math.round(durationMs));
+    const seconds = Math.round(clamped / 1000);
+
+    if (seconds < 60) {
+        return `${seconds}s`;
+    }
+
+    const minutes = Math.round(seconds / 60);
+    if (minutes < 60) {
+        return `${minutes}m`;
+    }
+
+    const hours = Math.round(minutes / 60);
+    return `${hours}h`;
 }
 
 export default function SearchDashboard() {
@@ -421,7 +445,14 @@ export default function SearchDashboard() {
     const alwaysOnWorkingSet = workingSet.filter((tool) => alwaysOnAdvertisedNames.has(tool.name));
     const keepWarmWorkingSet = workingSet.filter((tool) => alwaysLoadedTools.has(tool.name) && !alwaysOnAdvertisedNames.has(tool.name));
     const dynamicWorkingSet = workingSet.filter((tool) => !alwaysLoadedTools.has(tool.name) && !alwaysOnAdvertisedNames.has(tool.name));
+    const sortedAlwaysOnWorkingSet = [...alwaysOnWorkingSet].sort((left, right) => left.lastAccessedAt - right.lastAccessedAt);
+    const sortedKeepWarmWorkingSet = [...keepWarmWorkingSet].sort((left, right) => left.lastAccessedAt - right.lastAccessedAt);
+    const sortedDynamicWorkingSet = [...dynamicWorkingSet].sort((left, right) => left.lastAccessedAt - right.lastAccessedAt);
     const hydratedCount = workingSet.filter((tool) => tool.hydrated).length;
+    const idleEvictionThresholdMs = Math.max(
+        0,
+        ((workingSetQuery.data?.limits as { idleEvictionThresholdMs?: number } | undefined)?.idleEvictionThresholdMs ?? 0),
+    );
 
     useEffect(() => {
         if (jsoncEditorQuery.data?.content && jsoncDraft.length === 0) {
@@ -1083,9 +1114,9 @@ export default function SearchDashboard() {
                                 {workingSet.length > 0 ? (
                                     <>
                                         {[
-                                            { label: 'Server always-on', tone: 'text-sky-300', tools: alwaysOnWorkingSet },
-                                            { label: 'Keep warm profile', tone: 'text-cyan-300', tools: keepWarmWorkingSet },
-                                            { label: 'Dynamic loaded', tone: 'text-zinc-300', tools: dynamicWorkingSet },
+                                            { label: 'Server always-on', tone: 'text-sky-300', tools: sortedAlwaysOnWorkingSet },
+                                            { label: 'Keep warm profile', tone: 'text-cyan-300', tools: sortedKeepWarmWorkingSet },
+                                            { label: 'Dynamic loaded', tone: 'text-zinc-300', tools: sortedDynamicWorkingSet },
                                         ].map((section) => (
                                             <div key={section.label} className="space-y-2">
                                                 <div className={`text-[10px] uppercase tracking-wider ${section.tone}`}>
@@ -1093,11 +1124,16 @@ export default function SearchDashboard() {
                                                 </div>
                                                 {section.tools.length > 0 ? section.tools.map((tool) => (
                                                     <div key={tool.name} className="rounded-lg border border-zinc-800 bg-zinc-950/60 p-3 space-y-2">
+                                                        {(() => {
+                                                            const idleMs = tool.lastAccessedAt > 0 ? Math.max(0, Date.now() - tool.lastAccessedAt) : 0;
+                                                            const nearingIdleEviction = idleEvictionThresholdMs > 0 && idleMs >= idleEvictionThresholdMs;
+                                                            return (
+                                                                <>
                                                         <div className="flex items-start justify-between gap-3">
                                                             <div className="min-w-0">
                                                                 <div className="font-mono text-sm text-zinc-100 break-all">{tool.name}</div>
                                                                 <div className="text-xs text-zinc-500 mt-1">
-                                                                    loaded {formatRelativeTimestamp(tool.lastLoadedAt)}
+                                                                    loaded {formatRelativeTimestamp(tool.lastLoadedAt)} • touched {formatRelativeTimestamp(tool.lastAccessedAt)} • idle {formatDurationCompact(idleMs)}
                                                                 </div>
                                                             </div>
                                                             {tool.hydrated ? (
@@ -1110,6 +1146,11 @@ export default function SearchDashboard() {
                                                                 </span>
                                                             )}
                                                         </div>
+                                                        {nearingIdleEviction ? (
+                                                            <div className="text-[10px] rounded border border-amber-500/30 bg-amber-500/10 px-2 py-1 text-amber-200 uppercase tracking-wider">
+                                                                High eviction risk: idle beyond threshold ({formatDurationCompact(idleEvictionThresholdMs)})
+                                                            </div>
+                                                        ) : null}
                                                         <div className="grid grid-cols-3 gap-2">
                                                             <Link
                                                                 href={`/dashboard/mcp/inspector?tool=${encodeURIComponent(tool.name)}`}
@@ -1139,6 +1180,9 @@ export default function SearchDashboard() {
                                                                 Unload
                                                             </Button>
                                                         </div>
+                                                                </>
+                                                            );
+                                                        })()}
                                                     </div>
                                                 )) : (
                                                     <div className="rounded-lg border border-dashed border-zinc-800 p-3 text-xs text-zinc-500 text-center">
@@ -1735,6 +1779,23 @@ export default function SearchDashboard() {
                                             {event.autoLoadSkipReason ? <div className="text-xs text-amber-300 break-all">auto-load skipped: {event.autoLoadSkipReason}</div> : null}
                                             {event.autoLoadExecutionError ? <div className="text-xs text-red-300 break-all">auto-load failed: {event.autoLoadExecutionError}</div> : null}
                                             {typeof event.latencyMs === 'number' ? <div className="text-xs text-zinc-500">latency: {event.latencyMs}ms</div> : null}
+                                            {typeof event.loadedToolCount === 'number' && typeof event.maxLoadedTools === 'number' ? (
+                                                <div className="text-xs text-zinc-500">
+                                                    loaded working set: <span className="text-zinc-200">{event.loadedToolCount}/{event.maxLoadedTools}</span>
+                                                    {typeof event.loadedUtilizationPct === 'number' ? ` (${event.loadedUtilizationPct}%)` : ''}
+                                                </div>
+                                            ) : null}
+                                            {typeof event.hydratedSchemaCount === 'number' && typeof event.maxHydratedSchemas === 'number' ? (
+                                                <div className="text-xs text-zinc-500">
+                                                    hydrated schemas: <span className="text-zinc-200">{event.hydratedSchemaCount}/{event.maxHydratedSchemas}</span>
+                                                    {typeof event.hydratedUtilizationPct === 'number' ? ` (${event.hydratedUtilizationPct}%)` : ''}
+                                                </div>
+                                            ) : null}
+                                            {typeof event.idleEvictionThresholdMs === 'number' ? (
+                                                <div className="text-xs text-zinc-500">
+                                                    idle eviction threshold: <span className="text-zinc-200">{formatDurationCompact(event.idleEvictionThresholdMs)}</span>
+                                                </div>
+                                            ) : null}
                                             {event.source ? <div className="text-xs text-zinc-500">source: {event.source}</div> : null}
                                             {event.evictedTools && event.evictedTools.length > 0 ? (
                                                 <div className="text-xs text-amber-300 break-all">evicted: {event.evictedTools.join(', ')}</div>

@@ -31,6 +31,13 @@ export interface ToolSelectionTelemetryEvent {
     autoLoadMinConfidence?: number;
     autoLoadExecutionStatus?: 'success' | 'error' | 'not-attempted';
     autoLoadExecutionError?: string;
+    loadedToolCount?: number;
+    hydratedSchemaCount?: number;
+    maxLoadedTools?: number;
+    maxHydratedSchemas?: number;
+    idleEvictionThresholdMs?: number;
+    loadedUtilizationPct?: number;
+    hydratedUtilizationPct?: number;
 }
 
 const MAX_TELEMETRY_EVENTS = 100;
