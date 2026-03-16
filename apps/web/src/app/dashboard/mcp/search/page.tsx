@@ -481,15 +481,20 @@ export default function SearchDashboard() {
     const telemetrySourceStats = (['runtime-search', 'cached-ranking', 'live-aggregator', 'manual-action'] as const)
         .map((source) => {
             const sourceEvents = filteredTelemetryEvents.filter((event) => event.source === source);
+            const errorCount = sourceEvents.filter((event) => event.status === 'error').length;
             const avgLatencyMs = sourceEvents.length > 0
                 ? Math.round(sourceEvents.reduce((sum, event) => sum + (event.latencyMs ?? 0), 0) / sourceEvents.length)
+                : 0;
+            const errorRatePercent = sourceEvents.length > 0
+                ? Math.round((errorCount / sourceEvents.length) * 100)
                 : 0;
 
             return {
                 source,
                 count: sourceEvents.length,
                 success: sourceEvents.filter((event) => event.status === 'success').length,
-                error: sourceEvents.filter((event) => event.status === 'error').length,
+                error: errorCount,
+                errorRatePercent,
                 avgLatencyMs,
                 trend: telemetryTrendBuckets.map((bucket) => {
                     const bucketEvents = sourceEvents.filter((event) => event.timestamp >= bucket.start && event.timestamp < bucket.end);
@@ -1831,7 +1836,17 @@ export default function SearchDashboard() {
                                             return (
                                                 <div key={`telemetry-source-${item.source}`} className="space-y-2">
                                                     <div className="flex items-center justify-between gap-3 text-xs">
-                                                        <span className="font-mono text-zinc-300">{item.source}</span>
+                                                        <div className="flex items-center gap-2">
+                                                            <span className="font-mono text-zinc-300">{item.source}</span>
+                                                            <span className={`rounded border px-1.5 py-0.5 text-[10px] ${item.errorRatePercent >= 50
+                                                                ? 'border-red-500/30 bg-red-500/10 text-red-300'
+                                                                : item.errorRatePercent >= 20
+                                                                    ? 'border-amber-500/30 bg-amber-500/10 text-amber-300'
+                                                                    : 'border-emerald-500/30 bg-emerald-500/10 text-emerald-300'
+                                                                }`}>
+                                                                err {item.errorRatePercent}%
+                                                            </span>
+                                                        </div>
                                                         <div className="flex items-center gap-2">
                                                             <span className="text-zinc-500">
                                                                 {item.count} events • {item.success} ok / {item.error} err • avg {item.avgLatencyMs}ms
