@@ -5,6 +5,19 @@
 All notable changes to this project will be documented in this file.
 
 ## [2.7.323] — 2026-03-18
+## [2.7.324] — 2026-03-18
+
+- chore(tasks): Completed backlog audit — tasks 002, 003, 010, 011, 012, 013, 014 all confirmed done and moved from backlog/active to tasks/completed/. Tasks 001 also moved to completed.
+- chore(stubs): Removed 5 fully orphaned stub files (`agent.service.stub.ts`, `code-executor.service.stub.ts`, `saved-script.service.stub.ts`, `tool-search.service.stub.ts`, `tools.impl.stub.ts`) from `packages/core/src/services/stubs/`. None were imported by any TypeScript source. Remaining stubs (`toon.serializer.stub.ts`, `policy.service.stub.ts`) still actively imported.
+- verified(mcp/search): Always-on tool visual separation in distinct lanes, hydrate button for unhydrated tools, and search ranking regression tests confirmed present.
+- verified(mcp/inspector): Inspector distinguishes `loaded` vs `hydrated` tier with colored badges.
+- verified(session/detail): Session detail page distinguishes auto-restart vs manual-restart, shows worktree path, last error, shell executor.
+- verified(memory): Memory dashboard has search modes, structured observation schema, claude-mem sub-page, vector memory sub-page.
+- verified(billing): Billing page exposes fallback chain with per-entry reasons, cost history, provider quota windows, task-type routing rules.
+- chore(version): Bumped VERSION to 2.7.324.
+- validation: `pnpm -C packages/core exec tsc --noEmit` exit 0 after stub removal.
+
+## [2.7.323] — 2026-03-18
 
 - docs(core/supervisor): Documented `WorktreeManagerLike` interface with full inline notes explaining which paths have real implementations vs. fallback behaviour: `createTaskEnvironment`/`cleanupTaskEnvironment` are real via `GitWorktreeManager` (git worktree add/remove), wired into `MCPServer` on every normal boot. Fallback path (no `worktreeManager`) is documented so operators know `isolateWorktree: true` degrades gracefully rather than erroring.
 - feat(web/session): Confirmed `/dashboard/session/[id]` detail page exists and is feature-complete: live log polling (3 s), shell executor, start/stop/force-kill/restart controls, attach info with PID display, session health, restart history, auto-restart vs manual distinction. Linked from session list.
