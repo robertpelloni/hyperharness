@@ -1,6 +1,6 @@
 import type { Tool } from '@modelcontextprotocol/sdk/types.js';
 
-type ToolLoadingName = 'search_tools' | 'load_tool' | 'get_tool_schema' | 'get_tool_context' | 'unload_tool' | 'list_loaded_tools' | 'set_capacity' | 'get_eviction_history' | 'clear_eviction_history';
+type ToolLoadingName = 'search_tools' | 'load_tool' | 'get_tool_schema' | 'get_tool_context' | 'unload_tool' | 'list_loaded_tools' | 'set_capacity' | 'get_eviction_history' | 'clear_eviction_history' | 'auto_call_tool';
 
 interface ToolLoadingDefinitionOverrides {
     descriptions?: Partial<Record<ToolLoadingName, string>>;
@@ -28,6 +28,24 @@ const baseDefinitions: Record<ToolLoadingName, Tool> = {
                 name: { type: 'string', description: 'Full tool name, for example github__create_issue.' },
             },
             required: ['name'],
+        },
+    },
+    auto_call_tool: {
+        name: 'auto_call_tool',
+        description: 'One-shot discovery and execution. Automatically searches for the best tool to accomplish an objective, maps the parameters using an LLM, and executes it immediately. Use this when you know what you want to do but don\'t have the exact tool schema loaded.',
+        inputSchema: {
+            type: 'object',
+            properties: {
+                objective: {
+                    type: 'string',
+                    description: 'The objective or task you want to accomplish using a tool.',
+                },
+                context: {
+                    type: 'string',
+                    description: 'Any necessary variables, file paths, or text snippets required to fill the tool arguments.',
+                },
+            },
+            required: ['objective', 'context'],
         },
     },
     get_tool_schema: {
@@ -110,6 +128,7 @@ const baseDefinitions: Record<ToolLoadingName, Tool> = {
 const toolLoadingOrder: ToolLoadingName[] = [
     'search_tools',
     'load_tool',
+    'auto_call_tool',
     'get_tool_schema',
     'get_tool_context',
     'unload_tool',

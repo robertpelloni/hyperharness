@@ -16,6 +16,9 @@ import {
 } from './toolSearchRanking.js';
 import type { ToolContextPayload } from '../services/toolContextMemory.js';
 
+import { executeSemanticAutoCall } from './compatibilityToolRuntime.js';
+import type { LLMService } from '../services/LLMService.js';
+
 type SearchableTool = Tool & {
     server?: string;
     serverDisplayName?: string;
@@ -40,15 +43,29 @@ export class NativeSessionMetaTools {
     private readonly workingSet: SessionToolWorkingSet;
     private readonly catalog = new Map<string, Tool>();
     private toolContextResolver?: (input: { toolName: string; args?: Record<string, unknown> }) => ToolContextPayload | null;
+    private llmService?: LLMService;
+    private delegatedToolCaller?: (name: string, args: any, meta?: any) => Promise<CallToolResult>;
 
     constructor(
         workingSet: SessionToolWorkingSet = new SessionToolWorkingSet(),
         options: {
             toolContextResolver?: (input: { toolName: string; args?: Record<string, unknown> }) => ToolContextPayload | null;
+            llmService?: LLMService;
+            delegatedToolCaller?: (name: string, args: any, meta?: any) => Promise<CallToolResult>;
         } = {},
     ) {
         this.workingSet = workingSet;
         this.toolContextResolver = options.toolContextResolver;
+        this.llmService = options.llmService;
+        this.delegatedToolCaller = options.delegatedToolCaller;
+    }
+
+    public setLLMService(llmService: LLMService): void {
+        this.llmService = llmService;
+    }
+
+    public setDelegatedToolCaller(caller: (name: string, args: any, meta?: any) => Promise<CallToolResult>): void {
+        this.delegatedToolCaller = caller;
     }
 
     public setToolContextResolver(
@@ -195,6 +212,19 @@ export class NativeSessionMetaTools {
             const clearedCount = this.workingSet.getEvictionHistory().length;
             this.workingSet.clearEvictionHistory();
             return createTextResult(`Cleared ${clearedCount} eviction history entr${clearedCount === 1 ? 'y' : 'ies'}.`);
+        }
+
+        if (name === 'auto_call_tool') {
+            if (!this.llmService || !this.delegatedToolCaller) {
+                return createTextResult('Auto-execution is not available in this Borg session.', true);
+            }
+
+            return await executeSemanticAutoCall(
+                args,
+                this.llmService,
+                (query, limit) => this.searchTools(query, limit),
+                this.delegatedToolCaller
+            );
         }
 
         return null;

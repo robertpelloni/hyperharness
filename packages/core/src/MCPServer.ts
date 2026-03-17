@@ -503,7 +503,15 @@ export class MCPServer {
         this.spawnerService = SpawnerService.getInstance();
         this.configManager = new ConfigManager();
         this.mcpConfigService = new McpConfigService();
-        this.nativeSessionMetaTools = new NativeSessionMetaTools();
+        this.nativeSessionMetaTools = new NativeSessionMetaTools(undefined, {
+            llmService: this.llmService,
+            delegatedToolCaller: async (name, args, meta) => {
+                return await this.handleDirectModeToolCall(name, args, meta) ?? {
+                    content: [{ type: 'text', text: `Tool ${name} returned null or was not handled.` }],
+                    isError: true,
+                };
+            },
+        });
         // Fire and forget config sync
         this.mcpConfigService.syncWithDatabase().catch(err => console.error("[MCPServer] Config Sync Failed:", err));
 
