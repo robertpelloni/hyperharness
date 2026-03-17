@@ -20,13 +20,63 @@ function shouldIgnoreInternalDiagnostic(message: string): boolean {
     return internalPrefixes.some((prefix) => trimmed.startsWith(prefix));
 }
 
+export function splitTerminalSensorBuffer(buffer: string, force: boolean = false): { lines: string[]; remaining: string } {
+    const normalized = buffer.replace(/\r\n/g, '\n');
+    const parts = normalized.split('\n');
+    const trailing = parts.pop() ?? '';
+
+    if (force) {
+        return {
+            lines: trailing ? [...parts, trailing] : parts,
+            remaining: '',
+        };
+    }
+
+    return {
+        lines: parts,
+        remaining: trailing,
+    };
+}
+
 export class TerminalSensor {
     private eventBus: EventBus;
     private originalStderrWrite: typeof process.stderr.write | null = null;
     private isInterceptingStderr = false;
+    private stderrBuffer = '';
 
     constructor(eventBus: EventBus) {
         this.eventBus = eventBus;
+    }
+
+    private emitBufferedErrorLine(line: string): void {
+        const normalizedLine = line.trim();
+        if (!normalizedLine) {
+            return;
+        }
+
+        const lowered = normalizedLine.toLowerCase();
+        if (!shouldIgnoreInternalDiagnostic(normalizedLine) && (lowered.includes('error') || lowered.includes('exception') || normalizedLine.includes('❌'))) {
+            this.eventBus.emitEvent('terminal:error', 'TerminalSensor', { message: normalizedLine });
+        }
+    }
+
+    private flushStderrBuffer(force: boolean = false): void {
+        if (!this.stderrBuffer) {
+            return;
+        }
+
+        const { lines, remaining } = splitTerminalSensorBuffer(this.stderrBuffer, force);
+
+        for (const line of lines) {
+            this.emitBufferedErrorLine(line);
+        }
+
+        this.stderrBuffer = remaining;
+    }
+
+    private captureStderrChunk(chunk: string): void {
+        this.stderrBuffer += chunk;
+        this.flushStderrBuffer(false);
     }
 
     public start() {
@@ -53,10 +103,7 @@ export class TerminalSensor {
             this.isInterceptingStderr = true;
 
             try {
-                // Heuristic to detect ACTUAL errors vs warnings
-                if (!shouldIgnoreInternalDiagnostic(str) && (str.toLowerCase().includes('error') || str.toLowerCase().includes('exception') || str.includes('❌'))) {
-                    this.eventBus.emitEvent('terminal:error', 'TerminalSensor', { message: str });
-                }
+                this.captureStderrChunk(str);
 
                 // Pass through to original stderr
                 if (!this.originalStderrWrite) {
@@ -73,9 +120,11 @@ export class TerminalSensor {
     }
 
     public stop() {
+        this.flushStderrBuffer(true);
         if (this.originalStderrWrite) {
             process.stderr.write = this.originalStderrWrite;
             this.originalStderrWrite = null;
         }
+
     }
 }

@@ -4,7 +4,15 @@
 
 All notable changes to this project will be documented in this file.
 
-## [2.7.330] — 2026-03-17
+## [2.7.331] — 2026-03-17
+
+## [2.7.332] — 2026-03-17
+
+- fix(core): `TerminalSensor` now buffers stderr by complete lines before emitting `terminal:error`, preventing partial log fragments from triggering the healer on chopped-up quota / observation messages.
+- fix(core): `HealerReactor` now normalizes more payload shapes and ignores additional known-unrecoverable provider/rate-limit fragments (`too many requests`, `rate limit`, `retry in`, `fetch failed`) so provider fallback exhaustion does not start useless heal loops.
+- fix(core): `MemoryManager` now retries vector-store writes with scalar-safe metadata when LanceDB/Arrow schema inference fails, adding a defensive core-side backstop for structured observation metadata.
+- test(core): added `TerminalSensor` regression coverage for partial stderr chunk buffering.
+
 ## [2.7.331] — 2026-03-17
 
 - chore(release-prep): rewrite README for public HN/Reddit release — clear problem/solution framing,

@@ -60,6 +60,33 @@ interface VectorProviderWithList extends VectorProvider {
     list(where?: string, limit?: number): Promise<Document[]>;
 }
 
+function sanitizeMetadataForVectorStore(metadata: JsonRecord): JsonRecord {
+    const result: JsonRecord = {};
+
+    for (const [key, value] of Object.entries(metadata)) {
+        if (value === null || value === undefined) {
+            result[key] = null;
+        } else if (Array.isArray(value) || typeof value === 'object') {
+            result[key] = JSON.stringify(value);
+        } else {
+            result[key] = value;
+        }
+    }
+
+    return result;
+}
+
+function isArrowSchemaInferenceError(error: unknown): boolean {
+    const text = error instanceof Error
+        ? `${error.message}\n${error.stack ?? ''}`
+        : String(error ?? '');
+
+    const normalized = text.toLowerCase();
+    return normalized.includes('failed to infer data type')
+        || normalized.includes('consider providing an explicit schema')
+        || normalized.includes('structuredobservation.filesread');
+}
+
 export class MemoryManager {
     private provider: VectorProvider | null = null;
     private pruner: ContextPruner;
@@ -124,11 +151,23 @@ export class MemoryManager {
                 for (const d of docs) {
                     const metadata = (d.metadata ?? {}) as JsonRecord;
                     const pathValue = typeof metadata.path === 'string' ? metadata.path : d.id;
-                    await store.addMemory(d.content, {
+                    const vectorMetadata = {
                         ...metadata,
                         id: d.id,
                         path: pathValue
-                    });
+                    };
+
+                    try {
+                        await store.addMemory(d.content, vectorMetadata);
+                    } catch (error) {
+                        if (!useMemoryStore && isArrowSchemaInferenceError(error)) {
+                            console.warn('[MemoryManager] Retrying vector-store write with scalar-safe metadata after Arrow schema inference failure.');
+                            await store.addMemory(d.content, sanitizeMetadataForVectorStore(vectorMetadata));
+                            continue;
+                        }
+
+                        throw error;
+                    }
                 }
             },
             search: async (query: string, limit: number = 5) => {

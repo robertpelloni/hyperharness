@@ -19,6 +19,10 @@ function shouldIgnoreExpectedStartupError(errorLog: string): boolean {
         'credit balance is too low',
         'quota exceeded',
         'you exceeded your current quota',
+        'too many requests',
+        'rate limit',
+        'retry in ',
+        'fetch failed',
         'failed to capture tool observation',
         'failed to infer data type',
     ];
@@ -34,7 +38,14 @@ function getErrorLog(payload: unknown): string {
     const record = payload as Record<string, unknown>;
     const message = typeof record.message === 'string' ? record.message : '';
     const error = typeof record.error === 'string' ? record.error : '';
-    return message || error;
+    const nestedErrorMessage = record.error && typeof record.error === 'object' && typeof (record.error as Record<string, unknown>).message === 'string'
+        ? String((record.error as Record<string, unknown>).message)
+        : '';
+    const stack = typeof record.stack === 'string' ? record.stack : '';
+
+    return [message, error, nestedErrorMessage, stack]
+        .filter((value) => typeof value === 'string' && value.trim().length > 0)
+        .join('\n');
 }
 
 export class HealerReactor {
