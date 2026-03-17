@@ -4,7 +4,36 @@
 
 All notable changes to this project will be documented in this file.
 
-## [2.7.323] — 2026-03-18
+## [2.7.328] — 2026-03-18
+
+- validation(startup): Ran focused startup/readiness suites and confirmed alignment between startup contract and dashboard readiness surfaces:
+  - `packages/core/src/routers/startupStatus.test.ts`
+  - `apps/web/src/app/dashboard/dashboard-home-view.test.tsx`
+  - `apps/web/src/app/dashboard/DashboardHomeClient.test.tsx`
+  - result: **52/52 passing**
+- docs(tasks): Updated `tasks/active/024-startup-readiness-smoke-contract.md` with focused test evidence and marked readiness consistency + focused-tests acceptance criteria complete.
+- chore(version): Bumped canonical version to `2.7.328` (`VERSION`, `VERSION.md`).
+
+## [2.7.327] — 2026-03-18
+
+- validation(startup): Ran `node scripts/verify_dev_readiness.mjs --json --soft` and confirmed a passing live readiness contract (web startup status, core bridge, MCP status, and memory status probes all up).
+- validation(artifacts): Confirmed browser-extension artifact readiness remained green for Chromium and Firefox bundles.
+- docs(tasks): Updated `tasks/active/024-startup-readiness-smoke-contract.md` with concrete smoke evidence and checked the clean smoke criterion.
+- chore(version): Bumped canonical version to `2.7.327` (`VERSION`, `VERSION.md`).
+
+## [2.7.326] — 2026-03-18
+
+- test(web/mcp-route): Added realistic bulk-import regression coverage in `apps/web/src/app/api/trpc/[trpc]/route.test.ts` for mixed transport/auth payloads (`STDIO`, `STREAMABLE_HTTP`, `SSE`) and ensured batched proxy normalization preserves env/header/bearer-token fields.
+- test(web/mcp-route): Added local compat bulk-import fallback coverage for realistic server payloads and verified imported server detail retrieval (`mcpServers.get`) keeps normalized transport typing and metadata expectations.
+- validation: `pnpm exec vitest run apps/web/src/app/api/trpc/[trpc]/route.test.ts apps/web/tests/integration/mcp-to-dashboard.test.ts` (12/12 passing).
+- chore(version): Bumped canonical version to `2.7.326` (`VERSION`, `VERSION.md`).
+
+## [2.7.325] — 2026-03-18
+
+- docs(tasks): Restored actionable implementation flow by seeding `tasks/active/` with three 1.0 blocker briefs: startup-readiness smoke contract, MCP dashboard runtime/import robustness, and session supervisor worktree/attach reliability.
+- docs(governance): Re-aligned root workflow promises (`README.md` + canonical docs model) with actual task structure by ensuring active task files exist and are scoped to current release blockers.
+- chore(version): Bumped canonical `VERSION` to `2.7.325` and synchronized `VERSION.md`.
+
 ## [2.7.324] — 2026-03-18
 
 - chore(tasks): Completed backlog audit — tasks 002, 003, 010, 011, 012, 013, 014 all confirmed done and moved from backlog/active to tasks/completed/. Tasks 001 also moved to completed.

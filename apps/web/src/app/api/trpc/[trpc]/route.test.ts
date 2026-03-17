@@ -385,6 +385,184 @@ describe('legacy MCP dashboard compatibility bridge', () => {
     expect(global.fetch).toHaveBeenCalledTimes(1);
   });
 
+  it('preserves realistic mixed transport/auth fields when normalizing batched bulk imports', async () => {
+    process.env.BORG_TRPC_UPSTREAM = 'http://127.0.0.1:3100/trpc';
+    const upstreamResponse = [
+      {
+        result: {
+          data: {
+            imported: 3,
+            errors: [],
+          },
+        },
+      },
+    ];
+
+    const realisticServers = [
+      {
+        name: 'filesystem_local',
+        type: 'STDIO',
+        command: 'npx',
+        args: ['-y', '@modelcontextprotocol/server-filesystem'],
+        env: { ROOT_PATH: 'C:/Users/hyper/workspace/borg' },
+        metadataStrategy: 'auto',
+      },
+      {
+        name: 'github_http',
+        type: 'STREAMABLE_HTTP',
+        url: 'https://api.githubcopilot.com/mcp/',
+        bearerToken: 'ghp_mock_token',
+        headers: { 'x-org': 'borg-dev', 'x-env': 'test' },
+        metadataStrategy: 'auto',
+      },
+      {
+        name: 'wordpress_sse',
+        type: 'SSE',
+        url: 'https://example.com/wp-json/mcp/v1/sse',
+        headers: { authorization: 'Bearer mock-sse-token' },
+        metadataStrategy: 'auto',
+      },
+    ];
+
+    global.fetch = vi.fn(async (_input, init) => {
+      expect(String(_input)).toBe('http://127.0.0.1:3100/trpc/mcpServers.bulkImport');
+      expect(init?.body).toBe(JSON.stringify(realisticServers));
+
+      return new Response(JSON.stringify(upstreamResponse), {
+        status: 200,
+        headers: { 'content-type': 'application/json' },
+      });
+    }) as typeof fetch;
+
+    const request = new Request(
+      'http://localhost:3010/api/trpc/mcpServers.bulkImport?batch=1',
+      {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          0: {
+            json: realisticServers,
+          },
+        }),
+      },
+    );
+
+    const response = await POST(request);
+    const payload = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(payload).toEqual(upstreamResponse);
+    expect(global.fetch).toHaveBeenCalledTimes(1);
+  });
+
+  it('imports realistic mixed transport servers via local bulk import fallback', async () => {
+    process.env.BORG_TRPC_UPSTREAM = 'http://127.0.0.1:59999/trpc';
+    global.fetch = vi.fn(async () => {
+      throw new Error('connect ECONNREFUSED');
+    }) as typeof fetch;
+
+    const realisticServers = [
+      {
+        name: 'local_stdio_runtime',
+        type: 'STDIO',
+        command: 'npx',
+        args: ['-y', '@modelcontextprotocol/server-memory'],
+        env: { NODE_ENV: 'development' },
+      },
+      {
+        name: 'remote_http_runtime',
+        type: 'http',
+        url: 'https://api.githubcopilot.com/mcp/',
+        bearerToken: 'ghp_mock_token',
+        headers: { 'x-org': 'borg-dev' },
+      },
+      {
+        name: 'remote_sse_runtime',
+        url: 'https://example.com/mcp/sse',
+      },
+    ];
+
+    const importResponse = await POST(new Request('http://localhost:3010/api/trpc/mcpServers.bulkImport?batch=1', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        0: {
+          json: realisticServers,
+        },
+      }),
+    }));
+
+    const importPayload = await importResponse.json();
+
+    expect(importResponse.status).toBe(200);
+    expect(importResponse.headers.get('x-borg-trpc-compat')).toBe('local-mcp-config-bulk-import');
+    expect(importPayload?.[0]?.result?.data).toEqual({ imported: 3, errors: [] });
+
+    const listResponse = await POST(new Request('http://localhost:3010/api/trpc/mcpServers.list', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ json: null }),
+    }));
+    const listPayload = await listResponse.json();
+    const listedServers = listPayload?.result?.data as Array<{ uuid: string; name: string; _meta?: { status?: string } }>;
+
+    expect(listResponse.status).toBe(200);
+    expect(Array.isArray(listedServers)).toBe(true);
+    const listedNames = new Set(listedServers.map((server) => server.name));
+    expect(listedNames.has('local_stdio_runtime')).toBe(true);
+    expect(listedNames.has('remote_http_runtime')).toBe(true);
+    expect(listedNames.has('remote_sse_runtime')).toBe(true);
+
+    const localStdioDetail = await POST(new Request('http://localhost:3010/api/trpc/mcpServers.get', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        json: { uuid: listedServers.find((server) => server.name === 'local_stdio_runtime')?.uuid },
+      }),
+    }));
+    const localStdioPayload = await localStdioDetail.json();
+
+    expect(localStdioPayload?.result?.data).toEqual(expect.objectContaining({
+      name: 'local_stdio_runtime',
+      type: 'STDIO',
+      command: 'npx',
+      args: ['-y', '@modelcontextprotocol/server-memory'],
+      env: { NODE_ENV: 'development' },
+    }));
+
+    const remoteHttpDetail = await POST(new Request('http://localhost:3010/api/trpc/mcpServers.get', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        json: { uuid: listedServers.find((server) => server.name === 'remote_http_runtime')?.uuid },
+      }),
+    }));
+    const remoteHttpPayload = await remoteHttpDetail.json();
+
+    expect(remoteHttpPayload?.result?.data).toEqual(expect.objectContaining({
+      name: 'remote_http_runtime',
+      type: 'STREAMABLE_HTTP',
+      url: 'https://api.githubcopilot.com/mcp/',
+      bearerToken: 'ghp_mock_token',
+      headers: { 'x-org': 'borg-dev' },
+    }));
+
+    const remoteSseDetail = await POST(new Request('http://localhost:3010/api/trpc/mcpServers.get', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        json: { uuid: listedServers.find((server) => server.name === 'remote_sse_runtime')?.uuid },
+      }),
+    }));
+    const remoteSsePayload = await remoteSseDetail.json();
+
+    expect(remoteSsePayload?.result?.data).toEqual(expect.objectContaining({
+      name: 'remote_sse_runtime',
+      type: 'SSE',
+      url: 'https://example.com/mcp/sse',
+    }));
+  });
+
   it('supports local pseudo-managed MCP server actions when upstreams are unavailable', async () => {
     process.env.BORG_TRPC_UPSTREAM = 'http://127.0.0.1:59999/trpc';
     global.fetch = vi.fn(async () => {
