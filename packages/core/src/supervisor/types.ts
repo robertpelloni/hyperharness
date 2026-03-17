@@ -33,6 +33,24 @@ export interface SchedulerLike {
     clearTimeout(handle: unknown): void;
 }
 
+/**
+ * Contract for an optional worktree isolation backend wired to the {@link SessionSupervisor}.
+ *
+ * Runtime availability:
+ * - `createTaskEnvironment` — Real implementation via `GitWorktreeManager` (uses `git worktree
+ *   add` internally). Requires the repository to be a Git working tree and Git to be present on
+ *   PATH. The `MCPServer` passes a real `GitWorktreeManager` instance whenever the supervisor is
+ *   initialised through the normal boot path, so sessions created with `isolateWorktree: true`
+ *   WILL get a separate Git worktree directory at runtime.
+ *
+ * - `cleanupTaskEnvironment` — Called by the supervisor on session stop/error. Uses `git worktree
+ *   remove --force` internally. This is real but requires Git to be accessible; errors are logged
+ *   and swallowed so a cleanup failure does NOT block the session lifecycle.
+ *
+ * If the supervisor is constructed without a `worktreeManager` (e.g. in unit tests or when the
+ * runtime boot path skips the manager), `isolateWorktree: true` sessions log a warning and fall
+ * back to the session's requested working directory without true isolation.
+ */
 export interface WorktreeManagerLike {
     createTaskEnvironment(taskId: string): Promise<string>;
     cleanupTaskEnvironment(taskId: string): Promise<void>;

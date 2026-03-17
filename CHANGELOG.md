@@ -4,6 +4,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.7.323] — 2026-03-18
+
+- docs(core/supervisor): Documented `WorktreeManagerLike` interface with full inline notes explaining which paths have real implementations vs. fallback behaviour: `createTaskEnvironment`/`cleanupTaskEnvironment` are real via `GitWorktreeManager` (git worktree add/remove), wired into `MCPServer` on every normal boot. Fallback path (no `worktreeManager`) is documented so operators know `isolateWorktree: true` degrades gracefully rather than erroring.
+- feat(web/session): Confirmed `/dashboard/session/[id]` detail page exists and is feature-complete: live log polling (3 s), shell executor, start/stop/force-kill/restart controls, attach info with PID display, session health, restart history, auto-restart vs manual distinction. Linked from session list.
+- chore(version): Bumped VERSION to 2.7.323.
+- validation: `pnpm -C apps/web exec tsc --noEmit`, `pnpm -C packages/core exec tsc --noEmit` both exit 0.
+
 ## [2.7.322] — 2026-03-18
 
 - chore(tasks): Move completed active tasks 007/008/009 to `tasks/completed/`; they were fully satisfied by existing implementations (startupStatus tests=13, health/logs/audit pages live, dashboard pages properly labeled).
