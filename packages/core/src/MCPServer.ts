@@ -3076,13 +3076,17 @@ export class MCPServer {
         const baseTools = allNativeTools.filter((tool) => !aggregatedToolNames.has(tool.name));
         const savedScriptTools = await getDirectModeSavedScriptTools(jsonConfigProvider);
 
-        return [
+        const allVisibleTools = [
             ...this.nativeSessionMetaTools.listToolDefinitions(),
             ...getDirectModeCompatibilityTools(),
             ...baseTools,
             ...savedScriptTools,
             ...this.nativeSessionMetaTools.getVisibleLoadedTools(),
         ];
+
+        // Safety limit for LLMs (e.g. Gemini has a 512 function declaration limit)
+        const MAX_TOOLS = 500;
+        return allVisibleTools.slice(0, MAX_TOOLS);
     }
 
     private async handleDirectMetaTool(

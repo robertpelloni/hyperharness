@@ -158,10 +158,14 @@ export function buildCachedLoaderCatalog(config: BorgMcpJsonConfig): CachedLoade
         }
     }
 
-    const tools = [
+    const allTools = [
         buildLoaderStatusToolDefinition(),
         ...Array.from(toolMap.values()).sort((left, right) => left.name.localeCompare(right.name)),
     ];
+
+    // Safety limit for LLMs (e.g. Gemini has a 512 function declaration limit)
+    const MAX_TOOLS = 500;
+    const tools = allTools.slice(0, MAX_TOOLS);
 
     return {
         tools,

@@ -549,7 +549,9 @@ export const attachTo = async (
             }
         });
 
-        return { tools: resultTools };
+        // Safety limit for LLMs (e.g. Gemini has a 512 function declaration limit)
+        const MAX_TOOLS = 500;
+        return { tools: resultTools.slice(0, MAX_TOOLS) };
     };
 
     // ----------------------------------------------------------------------
