@@ -531,6 +531,10 @@ export const attachTo = async (
 
         const resultTools = [...metaTools];
         const alwaysVisibleTools = new Set(await getAlwaysVisibleTools());
+        
+        // Filter available tools to ONLY those that should be visible:
+        // 1. Explicitly "always on" tools from the catalog
+        // 2. Tools already loaded in the session working set
         toolWorkingSet.setAlwaysLoadedTools(
             allAvailableTools
                 .filter((tool) => alwaysVisibleTools.has(tool.name))
@@ -538,7 +542,10 @@ export const attachTo = async (
         );
 
         allAvailableTools.forEach(tool => {
-            if (toolWorkingSet.isLoaded(tool.name)) {
+            const isAlwaysOn = alwaysVisibleTools.has(tool.name);
+            const isLoaded = toolWorkingSet.isLoaded(tool.name);
+
+            if (isAlwaysOn || isLoaded) {
                 if (deferredSchemaMode && toolWorkingSet.isHydrated(tool.name)) {
                     const cachedSchema = deferredLoadingService.getCachedSchema(tool.name);
                     resultTools.push(cachedSchema ?? tool);

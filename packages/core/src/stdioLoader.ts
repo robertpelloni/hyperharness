@@ -153,6 +153,12 @@ export function buildCachedLoaderCatalog(config: BorgMcpJsonConfig): CachedLoade
                 continue;
             }
 
+            // ONLY advertise tools that are marked as always on in the config/metadata
+            const isAlwaysOn = rawTool.alwaysOn || serverEntry?.alwaysOn;
+            if (!isAlwaysOn) {
+                continue;
+            }
+
             const definition = toToolDefinition(serverName, rawTool);
             toolMap.set(definition.name, definition);
         }

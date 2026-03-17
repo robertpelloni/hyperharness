@@ -3064,7 +3064,14 @@ export class MCPServer {
     }
 
     private async getDirectModeTools(): Promise<Tool[]> {
-        const cachedAdvertisedDownstreamTools = await this.getCachedAdvertisedDownstreamTools();
+        const cachedInventory = await getCachedToolInventory();
+        const cachedAdvertisedDownstreamTools = cachedInventory.tools.map((tool) => ({
+            ...tool,
+            inputSchema: typeof tool.inputSchema === 'object' && tool.inputSchema !== null
+                ? tool.inputSchema
+                : { type: 'object', properties: {} },
+        })) as (Tool & { alwaysOn: boolean })[];
+
         this.nativeSessionMetaTools.refreshCatalog(cachedAdvertisedDownstreamTools);
         await this.syncNativeToolPreferences();
 
@@ -3076,10 +3083,15 @@ export class MCPServer {
         const baseTools = allNativeTools.filter((tool) => !aggregatedToolNames.has(tool.name));
         const savedScriptTools = await getDirectModeSavedScriptTools(jsonConfigProvider);
 
+        // Streamlined advertising: Only show meta tools and "always on" tools by default.
+        // baseTools (standard lib) are considered always on for the core Borg experience.
+        const alwaysOnDownstreamTools = cachedAdvertisedDownstreamTools.filter(t => t.alwaysOn);
+
         const allVisibleTools = [
             ...this.nativeSessionMetaTools.listToolDefinitions(),
             ...getDirectModeCompatibilityTools(),
             ...baseTools,
+            ...alwaysOnDownstreamTools,
             ...savedScriptTools,
             ...this.nativeSessionMetaTools.getVisibleLoadedTools(),
         ];
