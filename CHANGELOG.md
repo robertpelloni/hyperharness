@@ -4,6 +4,20 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.7.321] — 2026-03-18
+
+- feat(web/autopilot): Replaced placeholder iframe with a full native React dashboard for the OpenCode Autopilot multi-model AI council server. Connects directly to the Autopilot REST API (port 3847) with 8 s live polling. Shows server health, council supervisor roster, consensus-mode selector, active sessions (start/stop/resume/guidance), veto queue (approve/reject), CLI tools grid, and debate-history log.
+- feat(web/providers): New AI Providers Hub page (`/dashboard/providers`). Centralises API-key portals for 13 providers (OpenAI, Anthropic, Gemini, Azure, OpenRouter, xAI, DeepSeek, Mistral, Groq, GitHub Copilot, Antigravity, Kiro, Kimi), quick-access usage/billing links, 8 pro subscription management links, and 12 cloud coding environment cards (Jules, Copilot Workspace, Claude, Codex, Gemini, Devin, Cursor, Windsurf, Replit, Kiro, Antigravity, Bolt.new). Supports full-text search across all sections.
+- chore(version): Bumped VERSION to 2.7.321.
+- validation: `pnpm -C apps/web exec tsc --noEmit --pretty false` exit 0, 0 errors.
+
+## [2.7.320] — 2026-03-18
+
+- fix(web/cloud-dev): Chat panel now auto-scrolls to the latest message whenever new messages arrive (via 3 s polling or after a manual send) or when the chat tab is activated, so fresh messages are always visible without manual scrolling.
+- fix(web/cloud-dev): `sendMessage` mutation now also triggers a `sessionsQuery` refetch on success so the `messageCount` badge in the session row updates immediately instead of lagging up to 5 s.
+- fix(web/cloud-dev): Broadcast Force flag now defaults to `true`, meaning broadcasts reach every session (including completed/failed/cancelled) by default. The Force checkbox remains visible so operators can disable it when targeting only active sessions.
+- chore(version): Bumped VERSION to 2.7.320.
+
 ## [2.7.319] — 2026-03-17
 
 - chore(version): Updated `.vibe-config.json` version from "1.0.0" to canonical "2.7.318" for consistency across all version sources.
