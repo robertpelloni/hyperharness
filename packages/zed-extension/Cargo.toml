@@ -1,9 +1,9 @@
 [package]
-name = "aios-zed-extension"
+name = "Borg-zed-extension"
 version = "0.1.0"
 edition = "2021"
 license = "MIT"
-description = "AIOS integration for Zed editor"
+description = "Borg integration for Zed editor"
 
 [lib]
 crate-type = ["cdylib"]

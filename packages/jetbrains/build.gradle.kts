@@ -3,7 +3,7 @@ plugins {
     id("org.jetbrains.intellij") version "1.16.1"
 }
 
-group = "com.aios"
+group = "com.Borg"
 version = "0.1.0"
 
 repositories {

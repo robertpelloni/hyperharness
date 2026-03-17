@@ -1,4 +1,4 @@
-package com.aios.plugin
+package com.Borg.plugin
 
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.wm.ToolWindow
@@ -12,15 +12,15 @@ import com.intellij.ui.content.ContentFactory
 import java.awt.BorderLayout
 import javax.swing.*
 
-class AiosToolWindowFactory : ToolWindowFactory {
+class BorgToolWindowFactory : ToolWindowFactory {
 <<<<<<< HEAD
     
     override fun createToolWindowContent(project: Project, toolWindow: ToolWindow) {
-        val panel = AiosToolWindowPanel(project)
+        val panel = BorgToolWindowPanel(project)
 =======
     override fun createToolWindowContent(project: Project, toolWindow: ToolWindow) {
         val panel = JPanel(BorderLayout())
-        val textArea = JTextArea("AIOS Hub Status: Connected\n\nWaiting for activity...")
+        val textArea = JTextArea("Borg Hub Status: Connected\n\nWaiting for activity...")
         textArea.isEditable = false
         
         val scrollPane = JScrollPane(textArea)
@@ -41,9 +41,9 @@ class AiosToolWindowFactory : ToolWindowFactory {
 }
 <<<<<<< HEAD
 
-class AiosToolWindowPanel(private val project: Project) : JPanel(BorderLayout()) {
+class BorgToolWindowPanel(private val project: Project) : JPanel(BorderLayout()) {
     
-    private val service = project.getService(AiosService::class.java)
+    private val service = project.getService(BorgService::class.java)
     private val statusLabel = JBLabel("Disconnected")
     private val outputArea = JTextArea().apply {
         isEditable = false
@@ -54,7 +54,7 @@ class AiosToolWindowPanel(private val project: Project) : JPanel(BorderLayout())
     init {
         val topPanel = JPanel().apply {
             layout = BoxLayout(this, BoxLayout.X_AXIS)
-            add(JBLabel("AIOS Hub: "))
+            add(JBLabel("Borg Hub: "))
             add(statusLabel)
             add(Box.createHorizontalGlue())
             add(JButton("Connect").apply {
@@ -83,11 +83,11 @@ class AiosToolWindowPanel(private val project: Project) : JPanel(BorderLayout())
     private fun connect() {
         if (service.connect()) {
             statusLabel.text = "Connected"
-            appendOutput("Connected to AIOS Hub")
+            appendOutput("Connected to Borg Hub")
             refreshAnalytics()
         } else {
             statusLabel.text = "Connection Failed"
-            appendOutput("Failed to connect to AIOS Hub")
+            appendOutput("Failed to connect to Borg Hub")
         }
     }
     
@@ -113,7 +113,7 @@ class AiosToolWindowPanel(private val project: Project) : JPanel(BorderLayout())
         if (templates.isNotEmpty()) {
             appendOutput("\n=== Debate Templates ===")
             templates.forEach { t ->
-                appendOutput("• ${t.name} (${t.id}): ${t.description ?: "No description"}")
+                appendOutput("â€¢ ${t.name} (${t.id}): ${t.description ?: "No description"}")
             }
         } else {
             appendOutput("No templates available or failed to fetch")

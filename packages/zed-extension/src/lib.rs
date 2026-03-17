@@ -1,9 +1,9 @@
 use zed_extension_api::{self as zed, Result, Command, CodeLabel, Worktree};
 use serde::{Deserialize, Serialize};
 
-/// AIOS Extension for Zed Editor
+/// Borg Extension for Zed Editor
 /// Provides AI Council integration via slash commands and context providers
-struct AiosExtension {
+struct BorgExtension {
     hub_url: String,
 }
 
@@ -125,10 +125,10 @@ struct HealthResponse {
 // Extension Implementation
 // ============================================================================
 
-impl AiosExtension {
+impl BorgExtension {
     fn new() -> Self {
         Self {
-            hub_url: std::env::var("AIOS_HUB_URL")
+            hub_url: std::env::var("Borg_HUB_URL")
                 .unwrap_or_else(|_| "http://localhost:3000".to_string()),
         }
     }
@@ -161,7 +161,7 @@ impl AiosExtension {
             .map_err(|e| format!("Failed to read response: {}", e))
     }
 
-    /// Check connection to AIOS hub
+    /// Check connection to Borg hub
     fn check_health(&self) -> Result<HealthResponse> {
         let response = self.http_get("/api/health")?;
         serde_json::from_str(&response)
@@ -253,7 +253,7 @@ impl AiosExtension {
                 output.push_str(&format!("{}. {}\n", i + 1, step));
             }
             output.push_str(&format!(
-                "\n> To approve this plan, use `/aios-approve {}`\n",
+                "\n> To approve this plan, use `/Borg-approve {}`\n",
                 session.session_id
             ));
         }
@@ -364,7 +364,7 @@ impl AiosExtension {
                     "| {} | {} | {} | `{}` |\n",
                     wt.name,
                     wt.branch,
-                    if wt.is_main { "✓" } else { "" },
+                    if wt.is_main { "âœ“" } else { "" },
                     wt.path
                 ));
             }
@@ -378,7 +378,7 @@ impl AiosExtension {
 // Zed Extension Trait Implementation
 // ============================================================================
 
-impl zed::Extension for AiosExtension {
+impl zed::Extension for BorgExtension {
     fn new() -> Self {
         Self::new()
     }
@@ -388,13 +388,13 @@ impl zed::Extension for AiosExtension {
         _language_server_id: &zed::LanguageServerId,
         _worktree: &Worktree,
     ) -> Result<Command> {
-        // AIOS doesn't provide a language server, return error to skip
-        Err("AIOS does not provide a language server".into())
+        // Borg doesn't provide a language server, return error to skip
+        Err("Borg does not provide a language server".into())
     }
 }
 
 // Register the extension
-zed::register_extension!(AiosExtension);
+zed::register_extension!(BorgExtension);
 
 // ============================================================================
 // Utility Functions
@@ -412,62 +412,62 @@ fn timestamp_millis() -> u64 {
 // Command Handlers (for future slash command support)
 // ============================================================================
 
-/// Command registry for AIOS slash commands
+/// Command registry for Borg slash commands
 /// These will be registered when Zed adds slash command support to the extension API
 pub mod commands {
     use super::*;
 
-    /// /aios-debate <description>
+    /// /Borg-debate <description>
     /// Start a council debate on the given topic
-    pub fn debate(ext: &AiosExtension, args: &str, context: &str) -> Result<String> {
+    pub fn debate(ext: &BorgExtension, args: &str, context: &str) -> Result<String> {
         if args.is_empty() {
-            return Err("Usage: /aios-debate <description>".into());
+            return Err("Usage: /Borg-debate <description>".into());
         }
         ext.start_debate(args, context, vec![])
     }
 
-    /// /aios-architect <task>
+    /// /Borg-architect <task>
     /// Start an architect session for complex implementations
-    pub fn architect(ext: &AiosExtension, args: &str) -> Result<String> {
+    pub fn architect(ext: &BorgExtension, args: &str) -> Result<String> {
         if args.is_empty() {
-            return Err("Usage: /aios-architect <task description>".into());
+            return Err("Usage: /Borg-architect <task description>".into());
         }
         ext.start_architect(args, None, None)
     }
 
-    /// /aios-approve <session_id>
+    /// /Borg-approve <session_id>
     /// Approve an architect plan
-    pub fn approve(ext: &AiosExtension, args: &str) -> Result<String> {
+    pub fn approve(ext: &BorgExtension, args: &str) -> Result<String> {
         if args.is_empty() {
-            return Err("Usage: /aios-approve <session_id>".into());
+            return Err("Usage: /Borg-approve <session_id>".into());
         }
         ext.approve_plan(args.trim())
     }
 
-    /// /aios-analytics
+    /// /Borg-analytics
     /// Show supervisor analytics summary
-    pub fn analytics(ext: &AiosExtension) -> Result<String> {
+    pub fn analytics(ext: &BorgExtension) -> Result<String> {
         ext.get_analytics()
     }
 
-    /// /aios-templates
+    /// /Borg-templates
     /// List available debate templates
-    pub fn templates(ext: &AiosExtension) -> Result<String> {
+    pub fn templates(ext: &BorgExtension) -> Result<String> {
         ext.get_templates()
     }
 
-    /// /aios-worktrees
+    /// /Borg-worktrees
     /// List git worktrees
-    pub fn worktrees(ext: &AiosExtension) -> Result<String> {
+    pub fn worktrees(ext: &BorgExtension) -> Result<String> {
         ext.list_worktrees()
     }
 
-    /// /aios-health
-    /// Check AIOS hub connection
-    pub fn health(ext: &AiosExtension) -> Result<String> {
+    /// /Borg-health
+    /// Check Borg hub connection
+    pub fn health(ext: &BorgExtension) -> Result<String> {
         match ext.check_health() {
             Ok(h) => Ok(format!(
-                "## AIOS Health\n\n\
+                "## Borg Health\n\n\
                 **Status:** {}\n\
                 **Version:** {}\n\
                 **Uptime:** {}s",
@@ -476,10 +476,10 @@ pub mod commands {
                 h.uptime.unwrap_or(0)
             )),
             Err(e) => Ok(format!(
-                "## AIOS Health\n\n\
+                "## Borg Health\n\n\
                 **Status:** Disconnected\n\
                 **Error:** {}\n\n\
-                Make sure AIOS hub is running at `{}`",
+                Make sure Borg hub is running at `{}`",
                 e,
                 ext.hub_url
             )),
@@ -499,7 +499,7 @@ mod tests {
 
     #[test]
     fn test_extension_creation() {
-        let ext = AiosExtension::new();
+        let ext = BorgExtension::new();
         assert!(!ext.hub_url.is_empty());
     }
 }

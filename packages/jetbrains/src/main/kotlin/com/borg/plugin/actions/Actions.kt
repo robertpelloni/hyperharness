@@ -1,6 +1,6 @@
-package com.aios.plugin.actions
+package com.Borg.plugin.actions
 
-import com.aios.plugin.AiosService
+import com.Borg.plugin.BorgService
 <<<<<<< HEAD
 import com.intellij.notification.NotificationGroupManager
 import com.intellij.notification.NotificationType
@@ -15,12 +15,12 @@ import com.intellij.openapi.ui.Messages
 class ConnectAction : AnAction() {
     override fun actionPerformed(e: AnActionEvent) {
         val project = e.project ?: return
-        val service = project.getService(AiosService::class.java)
+        val service = project.getService(BorgService::class.java)
         
         val url = Messages.showInputDialog(
             project,
-            "Enter AIOS Hub URL:",
-            "Connect to AIOS Hub",
+            "Enter Borg Hub URL:",
+            "Connect to Borg Hub",
             null,
             "http://localhost:3000",
             null
@@ -28,15 +28,15 @@ class ConnectAction : AnAction() {
         
         service.setHubUrl(url)
         if (service.connect()) {
-            notify(project, "Connected to AIOS Hub", NotificationType.INFORMATION)
+            notify(project, "Connected to Borg Hub", NotificationType.INFORMATION)
         } else {
-            notify(project, "Failed to connect to AIOS Hub", NotificationType.ERROR)
+            notify(project, "Failed to connect to Borg Hub", NotificationType.ERROR)
         }
     }
     
     private fun notify(project: com.intellij.openapi.project.Project, message: String, type: NotificationType) {
         NotificationGroupManager.getInstance()
-            .getNotificationGroup("AIOS Notifications")
+            .getNotificationGroup("Borg Notifications")
             .createNotification(message, type)
             .notify(project)
     }
@@ -45,12 +45,12 @@ class ConnectAction : AnAction() {
 class DisconnectAction : AnAction() {
     override fun actionPerformed(e: AnActionEvent) {
         val project = e.project ?: return
-        val service = project.getService(AiosService::class.java)
+        val service = project.getService(BorgService::class.java)
         service.disconnect()
         
         NotificationGroupManager.getInstance()
-            .getNotificationGroup("AIOS Notifications")
-            .createNotification("Disconnected from AIOS Hub", NotificationType.INFORMATION)
+            .getNotificationGroup("Borg Notifications")
+            .createNotification("Disconnected from Borg Hub", NotificationType.INFORMATION)
             .notify(project)
     }
 }
@@ -60,10 +60,10 @@ class StartDebateAction : AnAction() {
         val project = e.project ?: return
         val editor = e.getData(CommonDataKeys.EDITOR) ?: return
         val file = e.getData(CommonDataKeys.VIRTUAL_FILE) ?: return
-        val service = project.getService(AiosService::class.java)
+        val service = project.getService(BorgService::class.java)
         
         if (!service.isConnected()) {
-            Messages.showErrorDialog(project, "Not connected to AIOS Hub", "AIOS")
+            Messages.showErrorDialog(project, "Not connected to Borg Hub", "Borg")
             return
         }
         
@@ -90,7 +90,7 @@ class StartDebateAction : AnAction() {
                 "Council Debate Result"
             )
         } else {
-            Messages.showErrorDialog(project, "Debate failed", "AIOS")
+            Messages.showErrorDialog(project, "Debate failed", "Borg")
 =======
 class StartDebateAction : AnAction() {
     override fun actionPerformed(e: AnActionEvent) {
@@ -100,7 +100,7 @@ class StartDebateAction : AnAction() {
         
         val topic = Messages.showInputDialog(project, "Enter debate topic:", "Council Debate", null)
         if (topic != null) {
-            val service = project.getService(AiosService::class.java)
+            val service = project.getService(BorgService::class.java)
             service.startDebate(topic, selectedText) { result ->
                 Messages.showInfoMessage(project, result, "Debate Result")
             }
@@ -113,10 +113,10 @@ class ArchitectModeAction : AnAction() {
     override fun actionPerformed(e: AnActionEvent) {
         val project = e.project ?: return
 <<<<<<< HEAD
-        val service = project.getService(AiosService::class.java)
+        val service = project.getService(BorgService::class.java)
         
         if (!service.isConnected()) {
-            Messages.showErrorDialog(project, "Not connected to AIOS Hub", "AIOS")
+            Messages.showErrorDialog(project, "Not connected to Borg Hub", "Borg")
             return
         }
         
@@ -140,12 +140,12 @@ class ArchitectModeAction : AnAction() {
             if (approve == Messages.YES) {
                 service.approveArchitectPlan(session.sessionId)
                 NotificationGroupManager.getInstance()
-                    .getNotificationGroup("AIOS Notifications")
+                    .getNotificationGroup("Borg Notifications")
                     .createNotification("Plan approved", NotificationType.INFORMATION)
                     .notify(project)
             }
         } else {
-            Messages.showErrorDialog(project, "Failed to start architect session", "AIOS")
+            Messages.showErrorDialog(project, "Failed to start architect session", "Borg")
         }
     }
 }
@@ -153,10 +153,10 @@ class ArchitectModeAction : AnAction() {
 class ViewAnalyticsAction : AnAction() {
     override fun actionPerformed(e: AnActionEvent) {
         val project = e.project ?: return
-        val service = project.getService(AiosService::class.java)
+        val service = project.getService(BorgService::class.java)
         
         if (!service.isConnected()) {
-            Messages.showErrorDialog(project, "Not connected to AIOS Hub", "AIOS")
+            Messages.showErrorDialog(project, "Not connected to Borg Hub", "Borg")
             return
         }
         
@@ -176,7 +176,7 @@ class ViewAnalyticsAction : AnAction() {
                 "Supervisor Analytics"
             )
         } else {
-            Messages.showErrorDialog(project, "Failed to fetch analytics", "AIOS")
+            Messages.showErrorDialog(project, "Failed to fetch analytics", "Borg")
         }
     }
 }
@@ -184,20 +184,20 @@ class ViewAnalyticsAction : AnAction() {
 class RunAgentAction : AnAction() {
     override fun actionPerformed(e: AnActionEvent) {
         val project = e.project ?: return
-        Messages.showInfoMessage(project, "Run Agent feature coming soon", "AIOS")
+        Messages.showInfoMessage(project, "Run Agent feature coming soon", "Borg")
     }
 }
 
 class SearchMemoryAction : AnAction() {
     override fun actionPerformed(e: AnActionEvent) {
         val project = e.project ?: return
-        Messages.showInfoMessage(project, "Search Memory feature coming soon", "AIOS")
+        Messages.showInfoMessage(project, "Search Memory feature coming soon", "Borg")
     }
 }
 =======
         val task = Messages.showInputDialog(project, "Enter task for Architect:", "Architect Mode", null)
         if (task != null) {
-            val service = project.getService(AiosService::class.java)
+            val service = project.getService(BorgService::class.java)
             service.startArchitectSession(task) { result ->
                 Messages.showInfoMessage(project, result, "Architect Session Started")
             }

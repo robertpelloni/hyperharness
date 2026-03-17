@@ -1,11 +1,11 @@
 <idea-plugin>
-    <id>com.aios.plugin</id>
+    <id>com.Borg.plugin</id>
 <<<<<<< HEAD
-    <name>AIOS - AI Orchestration System</name>
-    <vendor email="support@aios.dev" url="https://aios.dev">AIOS Team</vendor>
+    <name>Borg - AI Orchestration System</name>
+    <vendor email="support@Borg.dev" url="https://Borg.dev">Borg Team</vendor>
 
     <description><![CDATA[
-    Connect your JetBrains IDE to AIOS Hub for AI-powered development assistance.
+    Connect your JetBrains IDE to Borg Hub for AI-powered development assistance.
     
     Features:
     <ul>
@@ -23,7 +23,7 @@
     </ul>
     ]]></change-notes>
 =======
-    <name>AIOS</name>
+    <name>Borg</name>
     <vendor>OhMyOpenCode</vendor>
 >>>>>>> a3fab027fd172b66d6a0ec76e91f86354afa48e0
 
@@ -31,52 +31,52 @@
 
     <extensions defaultExtensionNs="com.intellij">
 <<<<<<< HEAD
-        <toolWindow id="AIOS" secondary="true" icon="AllIcons.Toolwindows.ToolWindowMessages"
-                    anchor="right" factoryClass="com.aios.plugin.AiosToolWindowFactory"/>
-        <projectService serviceImplementation="com.aios.plugin.AiosService"/>
-        <notificationGroup id="AIOS Notifications" displayType="BALLOON"/>
+        <toolWindow id="Borg" secondary="true" icon="AllIcons.Toolwindows.ToolWindowMessages"
+                    anchor="right" factoryClass="com.Borg.plugin.BorgToolWindowFactory"/>
+        <projectService serviceImplementation="com.Borg.plugin.BorgService"/>
+        <notificationGroup id="Borg Notifications" displayType="BALLOON"/>
     </extensions>
 
     <actions>
-        <group id="AiosActionGroup" text="AIOS" description="AIOS Actions" popup="true">
+        <group id="BorgActionGroup" text="Borg" description="Borg Actions" popup="true">
             <add-to-group group-id="ToolsMenu" anchor="last"/>
             
-            <action id="Aios.Connect" class="com.aios.plugin.actions.ConnectAction"
-                    text="Connect to Hub" description="Connect to AIOS Hub"/>
-            <action id="Aios.Disconnect" class="com.aios.plugin.actions.DisconnectAction"
-                    text="Disconnect" description="Disconnect from AIOS Hub"/>
+            <action id="Borg.Connect" class="com.Borg.plugin.actions.ConnectAction"
+                    text="Connect to Hub" description="Connect to Borg Hub"/>
+            <action id="Borg.Disconnect" class="com.Borg.plugin.actions.DisconnectAction"
+                    text="Disconnect" description="Disconnect from Borg Hub"/>
             <separator/>
-            <action id="Aios.StartDebate" class="com.aios.plugin.actions.StartDebateAction"
+            <action id="Borg.StartDebate" class="com.Borg.plugin.actions.StartDebateAction"
                     text="Start Council Debate" description="Start a council debate on selected code"/>
-            <action id="Aios.ArchitectMode" class="com.aios.plugin.actions.ArchitectModeAction"
+            <action id="Borg.ArchitectMode" class="com.Borg.plugin.actions.ArchitectModeAction"
                     text="Architect Mode" description="Start two-model reasoning session"/>
-            <action id="Aios.ViewAnalytics" class="com.aios.plugin.actions.ViewAnalyticsAction"
+            <action id="Borg.ViewAnalytics" class="com.Borg.plugin.actions.ViewAnalyticsAction"
                     text="View Analytics" description="View supervisor analytics"/>
             <separator/>
-            <action id="Aios.RunAgent" class="com.aios.plugin.actions.RunAgentAction"
+            <action id="Borg.RunAgent" class="com.Borg.plugin.actions.RunAgentAction"
                     text="Run Agent" description="Run an AI agent on current file"/>
-            <action id="Aios.SearchMemory" class="com.aios.plugin.actions.SearchMemoryAction"
-                    text="Search Memory" description="Search AIOS memory"/>
+            <action id="Borg.SearchMemory" class="com.Borg.plugin.actions.SearchMemoryAction"
+                    text="Search Memory" description="Search Borg memory"/>
         </group>
         
-        <action id="Aios.QuickDebate" class="com.aios.plugin.actions.StartDebateAction"
-                text="AIOS: Quick Debate" description="Start council debate on selection">
+        <action id="Borg.QuickDebate" class="com.Borg.plugin.actions.StartDebateAction"
+                text="Borg: Quick Debate" description="Start council debate on selection">
             <keyboard-shortcut keymap="$default" first-keystroke="ctrl alt D"/>
             <add-to-group group-id="EditorPopupMenu" anchor="last"/>
         </action>
 =======
-        <toolWindow id="AIOS" secondary="true" icon="AllIcons.General.Information" anchor="right"
-                    factoryClass="com.aios.plugin.AiosToolWindowFactory"/>
+        <toolWindow id="Borg" secondary="true" icon="AllIcons.General.Information" anchor="right"
+                    factoryClass="com.Borg.plugin.BorgToolWindowFactory"/>
     </extensions>
 
     <actions>
-        <group id="AIOS.Menu" text="AIOS" description="AIOS Actions">
+        <group id="Borg.Menu" text="Borg" description="Borg Actions">
             <add-to-group group-id="MainMenu" anchor="last"/>
-            <action id="AIOS.StartDebate" class="com.aios.plugin.actions.StartDebateAction" text="Start Council Debate"
+            <action id="Borg.StartDebate" class="com.Borg.plugin.actions.StartDebateAction" text="Start Council Debate"
                     description="Starts a new AI Council debate">
                 <keyboard-shortcut keymap="$default" first-keystroke="control alt D"/>
             </action>
-            <action id="AIOS.ArchitectMode" class="com.aios.plugin.actions.ArchitectModeAction" text="Open Architect Mode"
+            <action id="Borg.ArchitectMode" class="com.Borg.plugin.actions.ArchitectModeAction" text="Open Architect Mode"
                     description="Opens Architect Mode for complex tasks"/>
         </group>
 >>>>>>> a3fab027fd172b66d6a0ec76e91f86354afa48e0
