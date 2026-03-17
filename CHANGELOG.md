@@ -4,6 +4,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.7.308] — 2026-03-17
+
+- fix(core/mcp): Fixed `recordEviction()` function calls in `metamcp-session-working-set.service.ts` to use correct 3-parameter signature instead of object parameter (lines 93, 110).
+- fix(web/next): Added Suspense boundaries to client components using `useSearchParams()` CSR bailout at `/dashboard/mcp/search` and `/dashboard/mcp/testing/servers` pages to comply with Next.js 16.1 rendering requirements.
+- test(validation): Full web app build validated successfully with webpack backend; all dashboard routes prerendered without errors.
+
 ## [2.7.307] — 2026-03-17
 
 - feat(core/mcp): Upgraded `SessionToolWorkingSet` with explicit runtime `reconfigure(...)` support and bounded eviction history (`getEvictionHistory` / `clearEvictionHistory`) so capacity and eviction telemetry remain observable through Borg-native meta-tools.
