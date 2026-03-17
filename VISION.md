@@ -1,6 +1,6 @@
 # VISION.md - Borg Long-Term Direction
 
-> **Current release track**: `0.9.0-beta`
+> **Current release track**: `2.7.317`
 > **Near-term mission**: Ship a trustworthy Borg `1.0`
 > **Long-term ambition**: Become the best local AI operations control plane for builders who want one place to run, supervise, and route their AI tooling.
 
@@ -188,7 +188,7 @@ Everything else is garnish.
 ```markdown
 # VISION.md — Borg Long-Term Direction
 
-> **Current version:** `1.0.0-alpha.1`
+> **Current version:** `2.7.317`
 > **Near-term mission:** Ship a trustworthy Borg 1.0
 > **Long-term ambition:** The best local AI operations control plane for builders.
 

@@ -2,6 +2,43 @@
 
 _Last updated: 2026-03-17 (continuation session)_
 
+## Latest continuation slice — Cloud-dev force-send regression coverage (v2.7.316 → v2.7.317)
+
+- Added `packages/core/src/routers/cloudDevRouter.test.ts` to lock cloud-dev terminal-delivery behavior at the router layer.
+- Covered single-session send semantics:
+  - terminal sessions (`completed`/`failed`/`cancelled`) reject `sendMessage` when `force:false`
+  - terminal sessions accept `sendMessage` when `force:true`
+  - forced terminal sends persist `forceSent: true` in message history.
+- Covered broadcast semantics:
+  - `broadcastMessage` skips terminal sessions by default and reports `terminal_requires_force`
+  - `broadcastMessage` includes terminal sessions when `force:true`
+  - forced terminal broadcast entries persist `forceSent: true`.
+- Validation completed:
+  - ✅ `pnpm -C packages/core exec vitest run src/routers/cloudDevRouter.test.ts --reporter=basic`
+
+## Latest continuation slice — Version/branding standardization pass (v2.7.315 → v2.7.316)
+
+- Standardized active CLI startup/version presentation by removing hardcoded fallback `0.0.1` in `packages/cli/src/ui/components/Header.tsx`.
+- Updated `cli/mcp-router-cli` TypeScript entrypoints to user-facing `borg-mcp-router` naming (including examples/help output), replacing active `aios-mcp-router` branding in those files.
+- Added compatibility-safe export format normalization so `export-configs borg` maps to existing legacy `aios` internal format handling instead of breaking current config export behavior.
+- Extended MCP router core config parsing/export to prefer `borg`/`.borg.json` while retaining legacy `aios`/`.aios.json` compatibility.
+- Updated MCP router DB bootstrap to prefer `borg.db` with automatic fallback to legacy `aios.db`, and switched newly generated API key prefixes to `borg_`.
+- Updated stale alpha version labels in canonical docs (`VISION.md` and `TODO.md`) to align with current release tracking.
+- Validation completed:
+  - ✅ touched-file diagnostics clean (CLI TS + docs)
+  - ✅ targeted grep confirms no remaining `AIOS/aios` or alpha fallback strings in this active touched scope (`packages/cli/src/**`, `cli/mcp-router-cli/**/*.ts`, `VISION.md`, `TODO.md`).
+
+## Latest continuation slice — Cloud-dev history truthfulness and filtering (v2.7.314 → v2.7.315)
+
+- Upgraded `/dashboard/cloud-dev` session panels with explicit loaded-versus-total history coverage badges for both chat and logs so operators can immediately tell when only a partial window is loaded.
+- Added one-click `Load older` and `Load all loaded history` actions in the panel header area to reduce the “messages are missing” feeling on long-running Jules/cloud-dev sessions.
+- Added a local text filter for loaded message/log history so operators can search dense timelines in place instead of manually scanning the monospace stream.
+- Added terminal-session chat guidance reminding operators that `Force` is required when sending follow-up messages to completed/failed/cancelled sessions.
+- Extracted the new history coverage/filter logic into `apps/web/src/app/dashboard/cloud-dev/page-helpers.ts` and added focused Vitest coverage in `apps/web/src/app/dashboard/cloud-dev/page.test.ts`.
+- Validation completed:
+  - ✅ `pnpm exec vitest run apps/web/src/app/dashboard/cloud-dev/page.test.ts`
+  - ✅ `pnpm -C apps/web exec tsc --noEmit --pretty false`
+
 ## Latest continuation slice — Policy/TOON placeholder truthfulness (v2.7.313 → v2.7.314)
 
 - Added a top-level `PageStatusBanner` to `/dashboard/mcp/policies` marking the surface as `experimental` and explicitly stating that runtime enforcement remains preview-only.

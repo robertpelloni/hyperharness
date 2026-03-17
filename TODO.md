@@ -327,7 +327,7 @@ Evidence used for this queue:
 
 # TODO.md — Borg Task List
 
-> Version: 1.0.0-alpha.1
+> Version: 2.7.317
 > Updated: 2026-07-15
 > Priority: 🔴 Critical | 🟠 High | 🟡 Medium | ⚪ Low
 

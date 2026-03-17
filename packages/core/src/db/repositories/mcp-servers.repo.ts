@@ -40,6 +40,7 @@ import {
 import {
     buildBaseServerMetadata,
     buildBinaryDiscoveryMetadata,
+    buildServerConfigFingerprint,
     buildFailureDiscoveryMetadata,
     hasReusableMetadataCache,
     hydrateMetadataFromCache,
@@ -52,6 +53,21 @@ import { toolsRepository } from "./tools.repo.js";
 // Keep console-backed logger until centralized logger wiring is introduced in this package.
 const logger = console;
 
+const DEFAULT_BINARY_DISCOVERY_COOLDOWN_MS = 30_000;
+
+function parseBinaryDiscoveryCooldownMs(raw: string | undefined): number {
+    if (!raw) {
+        return DEFAULT_BINARY_DISCOVERY_COOLDOWN_MS;
+    }
+
+    const parsed = Number.parseInt(raw, 10);
+    if (!Number.isFinite(parsed) || parsed < 0) {
+        return DEFAULT_BINARY_DISCOVERY_COOLDOWN_MS;
+    }
+
+    return parsed;
+}
+
 import { db } from "../index.js";
 import { mcpServersTable } from "../mcp-admin-schema.js";
 
@@ -61,6 +77,7 @@ type McpServerInsert = typeof mcpServersTable.$inferInsert;
 type DiscoveryResult = {
     metadata: BorgMcpServerDiscoveryMetadata;
     tools: BorgMcpToolMetadata[];
+    decision: 'cache-forced' | 'cache-reusable' | 'cache-cooldown' | 'binary-fresh' | 'binary-coalesced';
 };
 
 type MetadataResolutionOptions = {
@@ -105,6 +122,9 @@ function handleDatabaseError(
 }
 
 export class McpServersRepository {
+    private readonly inFlightDiscoveries = new Map<string, Promise<DiscoveryResult>>();
+    private readonly binaryDiscoveryCooldownMs = parseBinaryDiscoveryCooldownMs(process.env.BORG_MCP_BINARY_DISCOVERY_COOLDOWN_MS);
+
     async create(input: McpServerCreateInput, options?: { skipSync?: boolean; skipDiscovery?: boolean; metadataStrategy?: MetadataReloadStrategy }): Promise<DatabaseMcpServer> {
         try {
             const payload: McpServerInsert = {
@@ -300,7 +320,12 @@ export class McpServersRepository {
     async reloadMetadata(
         serverUuid: string,
         strategy: Exclude<MetadataReloadStrategy, 'skip'> = 'binary',
-    ): Promise<{ server: DatabaseMcpServer; metadata: BorgMcpServerDiscoveryMetadata; toolCount: number }> {
+    ): Promise<{
+        server: DatabaseMcpServer;
+        metadata: BorgMcpServerDiscoveryMetadata;
+        toolCount: number;
+        reloadDecision: DiscoveryResult['decision'];
+    }> {
         const server = await this.findByUuid(serverUuid);
         if (!server) {
             throw new Error(`MCP Server with UUID ${serverUuid} not found.`);
@@ -321,6 +346,7 @@ export class McpServersRepository {
             server,
             metadata: discovery.metadata,
             toolCount: discovery.metadata.toolCount,
+            reloadDecision: discovery.decision,
         };
     }
 
@@ -561,6 +587,7 @@ export class McpServersRepository {
             return {
                 metadata: hydratedMetadata,
                 tools: hydratedMetadata.tools,
+                decision: 'cache-forced',
             };
         }
 
@@ -569,10 +596,99 @@ export class McpServersRepository {
             return {
                 metadata: hydratedMetadata,
                 tools: hydratedMetadata.tools,
+                decision: 'cache-reusable',
             };
         }
 
-        return await this.discoverServerTools(server);
+        if (this.shouldThrottleBinaryReload(strategy, cachedMetadata, server)) {
+            logger.info(
+                '[mcpServers.reloadMetadata] Reusing recent metadata cache due to cooldown',
+                {
+                    serverUuid: server.uuid,
+                    serverName: server.name,
+                    strategy,
+                    cooldownMs: this.binaryDiscoveryCooldownMs,
+                    lastAttemptedBinaryLoadAt: cachedMetadata?.lastAttemptedBinaryLoadAt ?? cachedMetadata?.discoveredAt ?? null,
+                },
+            );
+            const hydratedMetadata = hydrateMetadataFromCache(cachedMetadata!, server, new Date().toISOString());
+            return {
+                metadata: hydratedMetadata,
+                tools: hydratedMetadata.tools,
+                decision: 'cache-cooldown',
+            };
+        }
+
+        return await this.discoverServerToolsCoalesced(server);
+    }
+
+    private shouldThrottleBinaryReload(
+        strategy: MetadataReloadStrategy,
+        cachedMetadata: BorgMcpServerDiscoveryMetadata | undefined,
+        server: DatabaseMcpServer,
+    ): boolean {
+        if (strategy !== 'auto' && strategy !== 'binary') {
+            return false;
+        }
+
+        if (!cachedMetadata || this.binaryDiscoveryCooldownMs <= 0) {
+            return false;
+        }
+
+        const cachedFingerprint = cachedMetadata.configFingerprint;
+        if (cachedFingerprint) {
+            const currentFingerprint = buildServerConfigFingerprint(server);
+            if (cachedFingerprint !== currentFingerprint) {
+                return false;
+            }
+        }
+
+        const lastAttemptIso = cachedMetadata.lastAttemptedBinaryLoadAt ?? cachedMetadata.discoveredAt;
+        if (!lastAttemptIso) {
+            return false;
+        }
+
+        const lastAttemptAtMs = Date.parse(lastAttemptIso);
+        if (!Number.isFinite(lastAttemptAtMs)) {
+            return false;
+        }
+
+        const nowMs = Date.now();
+        return nowMs - lastAttemptAtMs < this.binaryDiscoveryCooldownMs;
+    }
+
+    private async discoverServerToolsCoalesced(server: DatabaseMcpServer): Promise<DiscoveryResult> {
+        const existingDiscovery = this.inFlightDiscoveries.get(server.uuid);
+        if (existingDiscovery) {
+            logger.info(
+                '[mcpServers.reloadMetadata] Joining in-flight discovery request',
+                {
+                    serverUuid: server.uuid,
+                    serverName: server.name,
+                },
+            );
+            const sharedResult = await existingDiscovery;
+            return {
+                ...sharedResult,
+                decision: 'binary-coalesced',
+            };
+        }
+
+        logger.info(
+            '[mcpServers.reloadMetadata] Starting fresh discovery request',
+            {
+                serverUuid: server.uuid,
+                serverName: server.name,
+            },
+        );
+
+        const discoveryPromise = this.discoverServerTools(server)
+            .finally(() => {
+                this.inFlightDiscoveries.delete(server.uuid);
+            });
+
+        this.inFlightDiscoveries.set(server.uuid, discoveryPromise);
+        return await discoveryPromise;
     }
 
     private async discoverServerTools(server: DatabaseMcpServer): Promise<DiscoveryResult> {
@@ -589,6 +705,7 @@ export class McpServersRepository {
                         'STDIO server is missing a command, so Borg could not discover tools.',
                     ),
                     tools: [],
+                    decision: 'binary-fresh',
                 };
             }
         } else if (server.type === 'SSE' || server.type === 'STREAMABLE_HTTP') {
@@ -601,6 +718,7 @@ export class McpServersRepository {
                         `${server.type} server is missing a URL, so Borg could not discover tools.`,
                     ),
                     tools: [],
+                    decision: 'binary-fresh',
                 };
             }
         } else {
@@ -612,6 +730,7 @@ export class McpServersRepository {
                     `Discovery is not implemented for server type '${server.type}'.`,
                 ),
                 tools: [],
+                decision: 'binary-fresh',
             };
         }
 
@@ -643,6 +762,7 @@ export class McpServersRepository {
                 return {
                     metadata,
                     tools: metadata.tools,
+                    decision: 'binary-fresh',
                 };
             } catch (error) {
                 return {
@@ -653,6 +773,7 @@ export class McpServersRepository {
                         error instanceof Error ? error.message : String(error),
                     ),
                     tools: [],
+                    decision: 'binary-fresh',
                 };
             } finally {
                 await stdioClient.close().catch(() => undefined);
@@ -734,6 +855,7 @@ export class McpServersRepository {
             return {
                 metadata,
                 tools: metadata.tools,
+                decision: 'binary-fresh',
             };
         } catch (error) {
             return {
@@ -744,6 +866,7 @@ export class McpServersRepository {
                     error instanceof Error ? error.message : String(error),
                 ),
                 tools: [],
+                decision: 'binary-fresh',
             };
         } finally {
             try {

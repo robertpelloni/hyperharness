@@ -14,6 +14,20 @@ export class StdioClient {
         this.config = config;
     }
 
+    private isExpectedConnectionClose(error: unknown): boolean {
+        if (!(error instanceof Error)) {
+            return false;
+        }
+
+        const maybeCode = (error as NodeJS.ErrnoException).code;
+        if (maybeCode === "ABORT_ERR" || maybeCode === "ECONNRESET") {
+            return true;
+        }
+
+        const message = error.message.toLowerCase();
+        return message.includes("connection closed") || message.includes("transport closed");
+    }
+
     public async connect(): Promise<void> {
         if (!this.config.enabled) {
             console.log(`[StdioClient:${this.name}] Disabled in config.`);
@@ -74,7 +88,9 @@ export class StdioClient {
             await this.client.connect(this.transport);
             console.log(`[StdioClient:${this.name}] Connected!`);
         } catch (error) {
-            console.error(`[StdioClient:${this.name}] Connection failed:`, error);
+            if (!this.isExpectedConnectionClose(error)) {
+                console.error(`[StdioClient:${this.name}] Connection failed:`, error);
+            }
             throw error;
         }
     }
@@ -85,7 +101,9 @@ export class StdioClient {
             const result = await this.client.listTools();
             return result.tools;
         } catch (error) {
-            console.error(`[StdioClient:${this.name}] Failed to list tools:`, error);
+            if (!this.isExpectedConnectionClose(error)) {
+                console.error(`[StdioClient:${this.name}] Failed to list tools:`, error);
+            }
             if (options?.throwOnError) {
                 throw error;
             }
@@ -102,11 +120,11 @@ export class StdioClient {
     }
 
     public async close(): Promise<void> {
-        if (this.transport) {
-            await this.transport.close();
-        }
         if (this.client) {
-            await this.client.close();
+            await this.client.close().catch(() => undefined);
+        }
+        if (this.transport) {
+            await this.transport.close().catch(() => undefined);
         }
     }
 }

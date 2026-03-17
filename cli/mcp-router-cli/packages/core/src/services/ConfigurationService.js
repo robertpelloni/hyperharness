@@ -2,7 +2,7 @@
  * borg MCP Configuration Service
  *
  * Manages MCP server configurations:
- * - Auto-detection of .mcp.json, .aios.json config files
+ * - Auto-detection of .mcp.json, .borg.json (legacy .aios.json) config files
  * - Environment variable expansion
  * - Secrets management
  * - Multi-format support (Claude, OpenAI, Google)
@@ -69,6 +69,7 @@ export class ConfigurationService extends EventEmitter {
         const cwd = process.cwd();
         return [
             path.join(cwd, '.mcp.json'),
+            path.join(cwd, '.borg.json'),
             path.join(cwd, '.aios.json'),
             path.join(cwd, 'config', 'mcp.json'),
             path.join(cwd, '.config', 'mcp.json'),
@@ -111,7 +112,7 @@ export class ConfigurationService extends EventEmitter {
      * Check if file is a MCP config file
      */
     isConfigFile(filename) {
-        return ['.mcp.json', '.aios.json', 'mcp.json'].includes(filename);
+        return ['.mcp.json', '.borg.json', '.aios.json', 'mcp.json'].includes(filename);
     }
     /**
      * Load and parse a config file
@@ -132,8 +133,10 @@ export class ConfigurationService extends EventEmitter {
      * Detect config format from file content
      */
     detectConfigFormat(filePath, parsed) {
+        if (filePath.includes('.borg.json'))
+            return 'borg';
         if (filePath.includes('.aios.json'))
-            return 'aios';
+            return 'borg';
         if (parsed.mcpServers)
             return 'claude';
         if (parsed.tools)
@@ -161,6 +164,7 @@ export class ConfigurationService extends EventEmitter {
             case 'google':
                 rawServers = parsed.servers || [];
                 break;
+            case 'borg':
             case 'aios':
                 rawServers = parsed.servers || [];
                 break;
@@ -189,8 +193,9 @@ export class ConfigurationService extends EventEmitter {
                 case 'google':
                     server = this.normalizeGoogleServer(raw);
                     break;
+                case 'borg':
                 case 'aios':
-                    server = this.normalizeAIOSServer(raw);
+                    server = this.normalizeBorgServer(raw);
                     break;
             }
             if (server) {
@@ -265,7 +270,7 @@ export class ConfigurationService extends EventEmitter {
     /**
      * Normalize borg format server
      */
-    normalizeAIOSServer(raw) {
+    normalizeBorgServer(raw) {
         return {
             id: this.generateServerId(raw.name),
             name: raw.name,
@@ -282,6 +287,9 @@ export class ConfigurationService extends EventEmitter {
             createdAt: Date.now(),
             updatedAt: Date.now()
         };
+    }
+    normalizeAIOSServer(raw) {
+        return this.normalizeBorgServer(raw);
     }
     /**
      * Generate unique server ID
@@ -394,7 +402,7 @@ export class ConfigurationService extends EventEmitter {
     /**
      * Export all configurations to file
      */
-    async exportConfigs(format = 'aios') {
+    async exportConfigs(format = 'borg') {
         const servers = this.db.getAllMcpServers();
         let output;
         switch (format) {
@@ -412,6 +420,7 @@ export class ConfigurationService extends EventEmitter {
             case 'google':
                 output = { servers: servers };
                 break;
+            case 'borg':
             case 'aios':
                 output = { servers };
                 break;
@@ -421,7 +430,7 @@ export class ConfigurationService extends EventEmitter {
     /**
      * Write configuration to file
      */
-    async writeConfig(filePath, format = 'aios') {
+    async writeConfig(filePath, format = 'borg') {
         const content = await this.exportConfigs(format);
         const dir = path.dirname(filePath);
         await fs.mkdir(dir, { recursive: true });

@@ -23,6 +23,7 @@ import {
     Plus,
     Radio,
     RefreshCw,
+    Search,
     Send,
     Server,
     Trash2,
@@ -30,6 +31,7 @@ import {
     Zap,
 } from "lucide-react";
 import { trpc } from "@/utils/trpc";
+import { filterHistoryEntries, getHistoryCoverage, getLoadAllLimit } from "./page-helpers";
 
 type CloudDevProvider = "jules" | "codex" | "copilot-workspace" | "devin" | "custom";
 type SessionStatus = "pending" | "active" | "paused" | "completed" | "failed" | "awaiting_approval" | "cancelled";
@@ -162,6 +164,7 @@ function SessionPanel({
     const [forceFlag, setForceFlag] = useState(false);
     const [messageLimit, setMessageLimit] = useState(100);
     const [logLimit, setLogLimit] = useState(200);
+    const [historyQuery, setHistoryQuery] = useState("");
     const [localAutoAcceptPlan, setLocalAutoAcceptPlan] = useState(session.autoAcceptPlan);
     const chatEndRef = useRef<HTMLDivElement>(null);
 
@@ -172,6 +175,10 @@ function SessionPanel({
     useEffect(() => {
         setLocalAutoAcceptPlan(session.autoAcceptPlan);
     }, [session.autoAcceptPlan, session.id]);
+
+    useEffect(() => {
+        setHistoryQuery("");
+    }, [activeTab, session.id]);
 
     const messagesQuery = trpc.cloudDev.getMessages.useQuery(
         { sessionId: session.id, limit: messageLimit },
@@ -212,6 +219,31 @@ function SessionPanel({
     const messages: ChatMessage[] = (messagesQuery.data ?? []) as ChatMessage[];
     const logs: LogEntry[] = (logsQuery.data ?? []) as LogEntry[];
     const isTerminal = TERMINAL.has(session.status);
+    const messageCoverage = useMemo(
+        () => getHistoryCoverage({ loadedCount: messages.length, totalCount: session.messageCount, label: "messages" }),
+        [messages.length, session.messageCount]
+    );
+    const logCoverage = useMemo(
+        () => getHistoryCoverage({ loadedCount: logs.length, totalCount: session.logCount, label: "logs" }),
+        [logs.length, session.logCount]
+    );
+    const filteredMessages = useMemo(
+        () => filterHistoryEntries(messages.map((message) => ({
+            ...message,
+            message: message.content,
+        })), historyQuery),
+        [historyQuery, messages]
+    );
+    const filteredLogs = useMemo(
+        () => filterHistoryEntries(logs, historyQuery),
+        [historyQuery, logs]
+    );
+    const activeCoverage = activeTab === "chat" ? messageCoverage : logCoverage;
+    const activeLoadedCount = activeTab === "chat" ? messages.length : logs.length;
+    const activeFilteredCount = activeTab === "chat" ? filteredMessages.length : filteredLogs.length;
+    const canLoadAll = activeTab === "chat"
+        ? session.messageCount > messageLimit
+        : session.logCount > logLimit;
 
     return (
         <div className="border border-zinc-700 rounded-lg bg-zinc-950 overflow-hidden">
@@ -256,23 +288,87 @@ function SessionPanel({
                     </button>
                 </div>
             </div>
+            <div className="border-b border-zinc-800 bg-zinc-950/80 px-3 py-2">
+                <div className="flex flex-wrap items-center gap-2 text-[11px] text-zinc-400">
+                    <span className="rounded border border-zinc-700 bg-zinc-900 px-2 py-1 text-zinc-300">
+                        {activeCoverage.label}
+                    </span>
+                    {historyQuery.trim() && (
+                        <span className="rounded border border-cyan-700/50 bg-cyan-950/20 px-2 py-1 text-cyan-200">
+                            Filtered {activeFilteredCount} of {activeLoadedCount} loaded
+                        </span>
+                    )}
+                    {activeCoverage.hasMore && (
+                        <span className="text-zinc-500">
+                            {activeCoverage.remaining} older {activeTab === "chat" ? "messages" : "logs"} available
+                        </span>
+                    )}
+                    {isTerminal && activeTab === "chat" && !forceFlag && (
+                        <span className="rounded border border-amber-700/50 bg-amber-950/20 px-2 py-1 text-amber-200">
+                            Terminal session: enable Force to send follow-up
+                        </span>
+                    )}
+                </div>
+                <div className="mt-2 flex flex-wrap items-center gap-2">
+                    <label className="relative min-w-[240px] flex-1">
+                        <Search className="pointer-events-none absolute left-2 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-zinc-500" />
+                        <input
+                            type="text"
+                            value={historyQuery}
+                            onChange={(e) => setHistoryQuery(e.target.value)}
+                            placeholder={activeTab === "chat" ? "Filter loaded messages" : "Filter loaded logs"}
+                            className="w-full rounded border border-zinc-700 bg-zinc-900 py-1.5 pl-7 pr-2 text-xs text-white outline-none focus:border-cyan-500"
+                        />
+                    </label>
+                    {historyQuery.trim() && (
+                        <button
+                            type="button"
+                            onClick={() => setHistoryQuery("")}
+                            className="rounded border border-zinc-700 bg-zinc-900 px-2 py-1 text-[11px] text-zinc-300 hover:bg-zinc-800"
+                        >
+                            Clear filter
+                        </button>
+                    )}
+                    {activeCoverage.hasMore && (
+                        <button
+                            type="button"
+                            onClick={() => {
+                                if (activeTab === "chat") {
+                                    setMessageLimit((prev) => Math.min(prev + 100, 1000));
+                                    return;
+                                }
+
+                                setLogLimit((prev) => Math.min(prev + 200, 2000));
+                            }}
+                            className="rounded border border-zinc-700 bg-zinc-900 px-2 py-1 text-[11px] text-zinc-300 hover:bg-zinc-800"
+                        >
+                            Load older
+                        </button>
+                    )}
+                    {canLoadAll && (
+                        <button
+                            type="button"
+                            onClick={() => {
+                                if (activeTab === "chat") {
+                                    setMessageLimit(getLoadAllLimit(session.messageCount, 1000));
+                                    return;
+                                }
+
+                                setLogLimit(getLoadAllLimit(session.logCount, 2000));
+                            }}
+                            className="rounded border border-cyan-700/60 bg-cyan-950/20 px-2 py-1 text-[11px] text-cyan-200 hover:bg-cyan-950/35"
+                        >
+                            Load all loaded history
+                        </button>
+                    )}
+                </div>
+            </div>
             <div className="h-52 overflow-auto px-3 py-2 text-xs font-mono space-y-1">
                 {activeTab === "chat" && (
-                    messages.length === 0
+                    filteredMessages.length === 0
                         ? <p className="text-zinc-600 text-center pt-8">No messages yet.</p>
                         : <>
-                            {session.messageCount > messages.length && (
-                                <div className="pb-2">
-                                    <button
-                                        type="button"
-                                        onClick={() => setMessageLimit((prev) => Math.min(prev + 100, 1000))}
-                                        className="rounded border border-zinc-700 bg-zinc-900 px-2 py-1 text-[10px] text-zinc-300 hover:bg-zinc-800"
-                                    >
-                                        Load older messages
-                                    </button>
-                                </div>
-                            )}
-                            {messages.map((m) => (
+                            {filteredMessages.map((m) => (
                                 <div key={m.id} className="flex gap-1.5">
                                     <span className={`shrink-0 ${ROLE_COLORS[m.role]}`}>[{m.role}]</span>
                                     <span className={m.forceSent ? "text-amber-200" : "text-zinc-200"}>
@@ -286,21 +382,10 @@ function SessionPanel({
                         </>
                 )}
                 {activeTab === "logs" && (
-                    logs.length === 0
+                    filteredLogs.length === 0
                         ? <p className="text-zinc-600 text-center pt-8">No log entries.</p>
                         : <>
-                            {session.logCount > logs.length && (
-                                <div className="pb-2">
-                                    <button
-                                        type="button"
-                                        onClick={() => setLogLimit((prev) => Math.min(prev + 200, 2000))}
-                                        className="rounded border border-zinc-700 bg-zinc-900 px-2 py-1 text-[10px] text-zinc-300 hover:bg-zinc-800"
-                                    >
-                                        Load older logs
-                                    </button>
-                                </div>
-                            )}
-                            {logs.map((l) => (
+                            {filteredLogs.map((l) => (
                                 <div key={l.id} className="flex gap-1.5">
                                     <span className={`shrink-0 uppercase ${LOG_LEVEL_COLORS[l.level]}`}>[{l.level}]</span>
                                     <span className="text-zinc-200">{l.message}</span>

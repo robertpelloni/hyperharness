@@ -9,21 +9,51 @@
  */
 
 import { Command } from 'commander';
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { MCPRegistryService, type RegistryServerDefinition } from '../../packages/core/src/services/MCPRegistryService';
 import { ServerRegistryService, type ServerInstallationResult } from '../../packages/core/src/services/ServerRegistryService';
 import { ConfigurationService, type ConfigFile } from '../../packages/core/src/services/ConfigurationService';
 import { McpSessionService, type PerformanceMetrics } from '../../packages/core/src/services/McpSessionService';
+
+function readCanonicalVersion(): string {
+    const candidates = [
+        resolve(__dirname, '..', '..', 'VERSION'),
+        resolve(__dirname, '..', '..', 'VERSION.md'),
+    ];
+
+    for (const candidate of candidates) {
+        try {
+            const raw = readFileSync(candidate, 'utf-8').trim();
+            const parsed = raw.match(/\d+\.\d+\.\d+(?:[-+][\w.-]+)?/)?.[0];
+            if (parsed) {
+                return parsed;
+            }
+        } catch {
+            // Continue to next candidate.
+        }
+    }
+
+    return '0.0.0';
+}
+
+function normalizeExportFormat(format: string): string {
+    const normalized = format.trim().toLowerCase();
+    if (normalized === 'borg') return 'aios'; // compatibility alias inside ConfigurationService
+    return normalized;
+}
 
 // ============================================
 // CLI Implementation
 // ============================================
 
 const program = new Command();
+const routerVersion = readCanonicalVersion();
 
 program
-    .name('aios-mcp-router')
+    .name('borg-mcp-router')
     .description('Ultimate MCP Router - Manage MCP servers, configurations, and sessions')
-    .version('1.0.0')
+    .version(routerVersion)
     .option('--data-dir <path>', 'Data directory path', './data')
     .option('--format <type>', 'Output format (json, table)', 'json');
 
@@ -235,10 +265,11 @@ program
 program
     .command('export-configs <format>')
     .description('Export configurations')
-    .option('--format <type>', 'Export format (aios, claude, openai, google)', 'aios')
+    .option('--format <type>', 'Export format (borg, claude, openai, google)', 'borg')
     .action(async (options, command) => {
-        const format = command.args[0] || program.opts().format || 'aios';
-        console.log(`📤 Exporting to ${format} format...`);
+        const requestedFormat = command.args[0] || program.opts().format || 'borg';
+        const format = normalizeExportFormat(requestedFormat);
+        console.log(`📤 Exporting to ${requestedFormat} format...`);
 
         try {
             const content = await configService.exportConfigs(format);
@@ -406,11 +437,14 @@ program.parseAsync().then(async () => {
     console.log('    shutdown-sessions - Shutdown all sessions');
     console.log('');
     console.log('Examples:');
-    console.log('  aios-mcp-router discover          - Discover all servers');
-    console.log('  aios-mcp-router search "file"    - Search for file servers');
-    console.log('  aios-mcp-router install fs-server   - Install filesystem server');
-    console.log('  aios-mcp-router init-sessions       - Auto-start all servers');
-    console.log('  aios-mcp-router session-stats       - Get session statistics');
+    console.log('  borg-mcp-router discover          - Discover all servers');
+    console.log('  borg-mcp-router search "file"    - Search for file servers');
+    console.log('  borg-mcp-router install fs-server   - Install filesystem server');
+    console.log('  borg-mcp-router init-sessions       - Auto-start all servers');
+    console.log('  borg-mcp-router session-stats       - Get session statistics');
+    console.log('');
+    console.log('Legacy compatibility:');
+    console.log('  export-configs aios               - still supported as legacy alias');
 }).catch(err => {
     console.error('❌ Error:', err.message);
     process.exit(1);

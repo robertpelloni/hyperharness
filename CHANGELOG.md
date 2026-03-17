@@ -4,6 +4,38 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.7.318] — 2026-03-17
+
+- feat(web/mcp): Added persistent `reload: <decision>` status chip to each MCP server card in the dashboard. Decision chips are colour-coded (violet=binary-fresh, fuchsia=binary-coalesced, amber=cache-cooldown, teal=cache-reusable) and stay visible until the next reload, unlike the transient toast.
+- feat(web/mcp): Surfaced `lastReloadDecision` in the Server Inspection Panel's Metadata card so operators can see the cached reload decision alongside status, source, and tool count without needing to fire another scan.
+- feat(web/mcp): Added live Tool Working-Set Eviction History panel to the MCP dashboard, wired to the existing `getWorkingSetEvictionHistory` / `clearWorkingSetEvictionHistory` tRPC endpoints. Shows recent LRU and idle-eviction events with tier (loaded/hydrated), idle duration, and eviction reason, refreshed every 10 s.
+- chore(web/mcp): Introduced `serverReloadDecisions` React state (Map<uuid, decision>) to durably persist per-server reload outcomes across polled re-renders.
+- test(validation): `pnpm -C apps/web exec tsc --noEmit --pretty false` completed successfully.
+
+## [2.7.317] — 2026-03-17
+
+- test(core/cloud-dev): Added dedicated router regression coverage for terminal-session delivery rules in `packages/core/src/routers/cloudDevRouter.test.ts`.
+- test(core/cloud-dev): Verified that single-session `sendMessage` rejects terminal sessions unless `force:true`, and that forced sends are persisted with `forceSent` markers.
+- test(core/cloud-dev): Verified `broadcastMessage` skips terminal sessions by default, reports `terminal_requires_force`, and includes terminal sessions when `force:true`.
+- test(validation): `pnpm -C packages/core exec vitest run src/routers/cloudDevRouter.test.ts --reporter=basic` completed successfully.
+
+## [2.7.316] — 2026-03-17
+
+- chore(cli/version): Standardized active CLI-facing version drift by removing fallback `0.0.1` header default in `packages/cli/src/ui/components/Header.tsx` and keeping runtime version display tied to canonical version flow.
+- chore(cli/branding): Rebranded active MCP router CLI entrypoints from `aios-mcp-router` to `borg-mcp-router` in TypeScript sources (`cli/mcp-router-cli/mcp-router-cli.ts`, `cli/mcp-router-cli/mcp-router-cli-mock.ts`).
+- chore(cli/compat): Kept export-format compatibility by treating `borg` as a user-facing alias mapped to legacy `aios` format internals in `mcp-router-cli`, avoiding abrupt behavior breaks.
+- chore(core/config): Updated active MCP router core config handling to prefer `.borg.json` / `borg` while keeping legacy `.aios.json` / `aios` aliases for backward compatibility (`cli/mcp-router-cli/packages/core/src/services/ConfigurationService.js`).
+- chore(core/db): Switched MCP router DB startup to prefer `borg.db` while auto-falling back to legacy `aios.db`; new API keys now use `borg_` prefix (`cli/mcp-router-cli/packages/core/src/db/DatabaseManager.js`).
+- docs(version): Standardized stale alpha-track references in canonical docs (`VISION.md`, `TODO.md`) to the current release line.
+
+## [2.7.315] — 2026-03-17
+
+- feat(web/cloud-dev): Added explicit loaded-vs-total history coverage badges plus one-click `Load older` / `Load all loaded history` controls inside `/dashboard/cloud-dev` session panels so long chats/logs no longer look silently truncated.
+- feat(web/cloud-dev): Added local text filtering for loaded chat and log history, making dense Jules/cloud-dev session timelines easier to triage without leaving the panel.
+- feat(web/cloud-dev): Added terminal-session send guidance in the chat panel so operators are reminded when `Force` is required for follow-up on completed/failed/cancelled sessions.
+- test(web/cloud-dev): Added focused helper coverage for history coverage math, load-all limit clamping, and client-side history filtering (`apps/web/src/app/dashboard/cloud-dev/page.test.ts`).
+- test(validation): `pnpm exec vitest run apps/web/src/app/dashboard/cloud-dev/page.test.ts` and `pnpm -C apps/web exec tsc --noEmit --pretty false` completed successfully.
+
 ## [2.7.314] — 2026-03-17
 
 - feat(web/policies): Added an explicit `experimental` status banner to `/dashboard/mcp/policies` so editable policy definitions no longer read like enforced runtime governance.

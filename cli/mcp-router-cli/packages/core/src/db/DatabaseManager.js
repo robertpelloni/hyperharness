@@ -13,7 +13,9 @@ export class DatabaseManager extends EventEmitter {
         if (!fs.existsSync(dir)) {
             fs.mkdirSync(dir, { recursive: true });
         }
-        const dbPath = path.join(dir, 'aios.db');
+        const borgDbPath = path.join(dir, 'borg.db');
+        const legacyDbPath = path.join(dir, 'aios.db');
+        const dbPath = fs.existsSync(borgDbPath) ? borgDbPath : (fs.existsSync(legacyDbPath) ? legacyDbPath : borgDbPath);
         this.db = new Database(dbPath);
         // Enable foreign keys
         this.db.pragma('foreign_keys = ON');
@@ -444,7 +446,7 @@ export class DatabaseManager extends EventEmitter {
     // API Keys
     // ============================================
     createApiKey(name, scopes = ['read']) {
-        const plainKey = `aios_${crypto.randomBytes(32).toString('hex')}`;
+        const plainKey = `borg_${crypto.randomBytes(32).toString('hex')}`;
         const keyHash = crypto.createHash('sha256').update(plainKey).digest('hex');
         const keyPrefix = plainKey.substring(0, 12);
         const apiKey = {

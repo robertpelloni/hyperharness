@@ -76,7 +76,21 @@ function maxIsoTimestamp(current: string | null, candidate: string | undefined):
 
 function normalizeInputSchema(inputSchema: unknown): LoaderToolInputSchema {
     if (isRecord(inputSchema) && inputSchema.type === 'object') {
-        return inputSchema as LoaderToolInputSchema;
+        const properties = isRecord(inputSchema.properties)
+            ? Object.fromEntries(
+                Object.entries(inputSchema.properties).filter(([, value]) => isRecord(value)),
+            ) as Record<string, object>
+            : {};
+
+        const required = Array.isArray(inputSchema.required)
+            ? inputSchema.required.filter((value): value is string => typeof value === 'string')
+            : undefined;
+
+        return {
+            type: 'object',
+            properties,
+            ...(required && required.length > 0 ? { required } : {}),
+        };
     }
 
     return { type: 'object', properties: {} };

@@ -8,16 +8,40 @@
  */
 
 import { Command } from 'commander';
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { MockMCPRegistry, type RegistryServerDefinition } from './MockMCPRegistry.js';
+
+function readCanonicalVersion(): string {
+    const candidates = [
+        resolve(__dirname, '..', '..', 'VERSION'),
+        resolve(__dirname, '..', '..', 'VERSION.md'),
+    ];
+
+    for (const candidate of candidates) {
+        try {
+            const raw = readFileSync(candidate, 'utf-8').trim();
+            const parsed = raw.match(/\d+\.\d+\.\d+(?:[-+][\w.-]+)?/)?.[0];
+            if (parsed) {
+                return parsed;
+            }
+        } catch {
+            // Continue to next candidate.
+        }
+    }
+
+    return '0.0.0';
+}
 
 const registry = new MockMCPRegistry();
 
 const program = new Command();
+const routerVersion = readCanonicalVersion();
 
 program
-    .name('aios-mcp-router')
+    .name('borg-mcp-router')
     .description('Ultimate MCP Router - Manage MCP servers, configurations, and sessions')
-    .version('1.0.0-mock')
+    .version(`${routerVersion}-mock`)
     .option('--data-dir <path>', 'Data directory path', './data')
     .option('--format <type>', 'Output format (json, table)', 'json');
 
@@ -196,7 +220,7 @@ program
             detectedConfigs: 3,
             files: [
                 { path: '~/.config/claude/claude_desktop_config.json', format: 'claude' },
-                { path: '~/.aios/config.json', format: 'aios' },
+                { path: '~/.borg/config.json', format: 'borg' },
                 { path: './mcp-config.json', format: 'custom' }
             ]
         }, null, 2));

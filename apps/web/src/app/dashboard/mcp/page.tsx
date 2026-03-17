@@ -279,11 +279,14 @@ function ServerInspectionPanel(
         server,
         runtime,
         health,
+        lastReloadDecision,
         onClose,
     }: {
         server?: ManagedServerMetadata;
         runtime?: AggregatedServer;
         health?: ManagedServerHealth;
+        /** Last reload decision returned from the core reloadMetadata endpoint for this server. */
+        lastReloadDecision?: string;
         onClose: () => void;
     },
 ): React.JSX.Element {
@@ -352,6 +355,9 @@ function ServerInspectionPanel(
                                     <div>Source: <span className="font-semibold text-white">{String(server._meta?.metadataSource ?? 'none')}</span></div>
                                     <div>Cached tools: <span className="font-semibold text-white">{String(server._meta?.toolCount ?? 0)}</span></div>
                                     <div>Last binary load: <span className="font-semibold text-white">{String(server._meta?.lastSuccessfulBinaryLoadAt ?? 'never')}</span></div>
+                                    {lastReloadDecision ? (
+                                        <div>Last reload decision: <span className="font-semibold text-white">{lastReloadDecision}</span></div>
+                                    ) : null}
                                 </div>
                             </div>
                             <div className="rounded-lg border border-zinc-800 bg-zinc-950/60 p-4 text-sm">
@@ -821,12 +827,32 @@ export default function MCPDashboard(): React.JSX.Element {
     const [lifecycleServerFilter, setLifecycleServerFilter] = useState<string>('all');
     const [hasHydratedLifecycleFiltersFromUrl, setHasHydratedLifecycleFiltersFromUrl] = useState(false);
     const [bulkRefreshState, setBulkRefreshState] = useState<BulkDiscoveryOperationState | null>(null);
+    // Persistent per-server reload decision map — survives re-renders until the next explicit reload.
+    // Key: server UUID, value: last DiscoveryResult decision label (e.g. 'binary-fresh', 'cache-cooldown').
+    const [serverReloadDecisions, setServerReloadDecisions] = useState<Map<string, string>>(new Map());
     const reloadMetadataMutation = mcpServersClient.reloadMetadata.useMutation();
     const clearMetadataCacheMutation = mcpServersClient.clearMetadataCache.useMutation();
     const deleteServerMutation = mcpServersClient.delete.useMutation();
     const updateServerMutation = mcpServersClient.update.useMutation();
     const resetServerHealthMutation = trpc.serverHealth.reset.useMutation();
     const setLifecycleModesMutation = trpc.mcp.setLifecycleModes.useMutation();
+    // Tool working-set eviction history — shows recent LRU/idle eviction events so operators
+    // can observe memory-pressure patterns without digging into server logs.
+    const { data: evictionHistoryData, refetch: refetchEvictionHistory } = trpc.mcp.getWorkingSetEvictionHistory.useQuery(undefined, { refetchInterval: 10000 });
+    const clearEvictionHistoryMutation = trpc.mcp.clearWorkingSetEvictionHistory.useMutation({
+        onSuccess: () => {
+            void refetchEvictionHistory();
+            toast.success('Eviction history cleared.');
+        },
+        onError: (err: { message?: string }) => { toast.error(err.message ?? 'Failed to clear eviction history.'); },
+    });
+    const evictionHistory = (evictionHistoryData ?? []) as Array<{
+        toolName: string;
+        timestamp: number;
+        tier: 'loaded' | 'hydrated';
+        idleEvicted: boolean;
+        idleDurationMs: number;
+    }>;
     const { data: editingServer } = mcpServersClient.get.useQuery(
         { uuid: editingServerUuid ?? '' },
         { enabled: Boolean(editingServerUuid) },
@@ -1359,8 +1385,21 @@ export default function MCPDashboard(): React.JSX.Element {
                 await refreshDashboardQueries();
             }
 
+            // Persist the reload decision so the server card chip stays visible after the toast fades.
+            const decision = typeof (result as { reloadDecision?: string }).reloadDecision === 'string'
+                ? (result as { reloadDecision: string }).reloadDecision
+                : null;
+            if (decision && input.uuid) {
+                setServerReloadDecisions((prev) => {
+                    const next = new Map(prev);
+                    next.set(input.uuid, decision);
+                    return next;
+                });
+            }
+
             if (options?.notify !== false) {
-                toast.success(`Reloaded metadata for ${result.server.name} from ${result.metadata.metadataSource ?? 'metadata cache'}.`);
+                const decisionText = decision ? ` (${decision})` : '';
+                toast.success(`Reloaded metadata for ${result.server.name} from ${result.metadata.metadataSource ?? 'metadata cache'}${decisionText}.`);
             }
 
             return result;
@@ -1613,6 +1652,7 @@ export default function MCPDashboard(): React.JSX.Element {
                     server={inspectingServer}
                     runtime={inspectingRuntimeServer}
                     health={inspectingServerHealth}
+                    lastReloadDecision={serverReloadDecisions.get(inspectingServerUuid)}
                     onClose={() => setInspectingServerUuid(null)}
                 />
             ) : null}
@@ -2067,6 +2107,86 @@ export default function MCPDashboard(): React.JSX.Element {
                 </Card>
             </div>
 
+            {/* Tool working-set eviction history — shows when LRU/idle pressure evicted a tool from the
+                active session. Helps operators understand memory patterns and detect overloaded sessions. */}
+            <div>
+                <Card className="bg-zinc-900 border-zinc-800">
+                    <CardContent className="p-5">
+                        <div className="flex items-start justify-between gap-4">
+                            <div className="min-w-0 flex-1">
+                                <div className="flex items-center gap-2">
+                                    <div className="text-sm font-semibold text-white">Tool working-set eviction history</div>
+                                    {evictionHistory.length > 0 ? (
+                                        <span className="rounded-full border border-amber-500/30 bg-amber-500/10 px-2 py-0.5 text-[10px] uppercase tracking-wider text-amber-200">
+                                            {evictionHistory.length} event{evictionHistory.length === 1 ? '' : 's'}
+                                        </span>
+                                    ) : null}
+                                </div>
+                                <p className="mt-1 text-xs text-zinc-500">
+                                    Recent LRU and idle-eviction events from the active session working set (capped at 200). Idle evictions fire when a tool has not been accessed within the configured threshold.
+                                </p>
+                                {evictionHistory.length > 0 ? (
+                                    <div className="mt-3 space-y-1.5 text-[11px] text-zinc-400">
+                                        {evictionHistory.slice(0, 20).map((event, index) => (
+                                            <div
+                                                key={`${event.toolName}-${event.timestamp}-${index}`}
+                                                className={`rounded border px-2 py-1.5 ${event.idleEvicted ? 'border-amber-500/20 bg-amber-500/10' : 'border-zinc-800 bg-zinc-900/60'}`}
+                                            >
+                                                <div className="flex items-center justify-between gap-2">
+                                                    <div className="flex items-center gap-1.5">
+                                                        <span className="font-semibold text-zinc-300">{event.toolName}</span>
+                                                        <span className={`rounded border px-1.5 py-0.5 text-[10px] uppercase tracking-wider ${event.tier === 'hydrated' ? 'border-violet-500/20 bg-violet-500/10 text-violet-200' : 'border-zinc-700 bg-zinc-900/40 text-zinc-400'}`}>
+                                                            {event.tier}
+                                                        </span>
+                                                        {event.idleEvicted ? (
+                                                            <span className="rounded border border-amber-500/20 bg-amber-500/10 px-1.5 py-0.5 text-[10px] uppercase tracking-wider text-amber-200">
+                                                                idle
+                                                            </span>
+                                                        ) : (
+                                                            <span className="rounded border border-zinc-700 bg-zinc-900/40 px-1.5 py-0.5 text-[10px] uppercase tracking-wider text-zinc-400">
+                                                                lru
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                    <span className="text-zinc-500">{new Date(event.timestamp).toLocaleTimeString()}</span>
+                                                </div>
+                                                <div className="mt-1 text-[10px] text-zinc-500">
+                                                    idle for {event.idleDurationMs >= 60_000
+                                                        ? `${(event.idleDurationMs / 60_000).toFixed(1)}m`
+                                                        : `${(event.idleDurationMs / 1000).toFixed(1)}s`}
+                                                </div>
+                                            </div>
+                                        ))}
+                                        {evictionHistory.length > 20 ? (
+                                            <div className="text-[11px] text-zinc-500 text-center py-1">
+                                                …and {evictionHistory.length - 20} older events
+                                            </div>
+                                        ) : null}
+                                    </div>
+                                ) : (
+                                    <div className="mt-3 text-[11px] text-zinc-500">
+                                        No eviction events recorded yet. Evictions occur when the working-set tool cap is reached or a tool has been idle past the threshold.
+                                    </div>
+                                )}
+                            </div>
+                            <div className="flex flex-col items-end gap-2">
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => clearEvictionHistoryMutation.mutate(undefined)}
+                                    disabled={clearEvictionHistoryMutation.isPending || evictionHistory.length === 0}
+                                    className="border-zinc-700 bg-zinc-800 text-xs text-zinc-300 hover:bg-zinc-700 hover:text-white"
+                                    title="Clear all eviction history entries"
+                                >
+                                    {clearEvictionHistoryMutation.isPending ? <Loader2 className="h-3 w-3 animate-spin" /> : null}
+                                    Clear history
+                                </Button>
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+            </div>
+
             <div className="grid items-start gap-6 xl:grid-cols-[minmax(0,2fr)_minmax(320px,1fr)]">
                 <Card className="min-w-0 overflow-hidden bg-zinc-900 border-zinc-800">
                     <CardHeader>
@@ -2207,6 +2327,7 @@ export default function MCPDashboard(): React.JSX.Element {
                             serverList.map((server) => {
                                 const actionLinks = buildServerToolActionLinks(server.name);
                                 const serverUuid = server.uuid;
+                                const lastReloadDecision = serverUuid ? serverReloadDecisions.get(serverUuid) : undefined;
                                 const isLocalCompatServer = isLocalCompatMetadataSource(server.metadataSource);
                                 const hasStaleReadyCache = hasStaleReadyMetadata({
                                     name: server.name,
@@ -2252,6 +2373,17 @@ export default function MCPDashboard(): React.JSX.Element {
                                                 {isLocalCompatServer ? (
                                                     <span className="rounded border border-sky-500/20 bg-sky-500/10 px-2 py-1 text-sky-200">
                                                         local compat actions enabled
+                                                    </span>
+                                                ) : null}
+                                                {lastReloadDecision ? (
+                                                    <span className={`rounded border px-2 py-1 ${
+                                                        lastReloadDecision === 'binary-fresh' ? 'border-violet-500/20 bg-violet-500/10 text-violet-200'
+                                                        : lastReloadDecision === 'binary-coalesced' ? 'border-fuchsia-500/20 bg-fuchsia-500/10 text-fuchsia-200'
+                                                        : lastReloadDecision === 'cache-cooldown' ? 'border-amber-500/20 bg-amber-500/10 text-amber-200'
+                                                        : lastReloadDecision === 'cache-reusable' ? 'border-teal-500/20 bg-teal-500/10 text-teal-200'
+                                                        : 'border-zinc-700 bg-zinc-900/60 text-zinc-300'
+                                                    }`} title={`Last reload decision: ${lastReloadDecision}`}>
+                                                        reload: {lastReloadDecision}
                                                     </span>
                                                 ) : null}
                                             </div>

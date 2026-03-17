@@ -56,6 +56,15 @@ export class ProcessManagedStdioTransport implements Transport {
     private _stdoutStream: PassThrough = new PassThrough();
     private _isCleanup: boolean = false;
 
+    private isIgnorableKillError(error: unknown): boolean {
+        if (!(error instanceof Error)) {
+            return false;
+        }
+
+        const maybeCode = (error as NodeJS.ErrnoException).code;
+        return maybeCode === "ESRCH" || maybeCode === "EPERM";
+    }
+
     onclose?: () => void;
     onerror?: (error: Error) => void;
     onmessage?: (message: JSONRPCMessage) => void;
@@ -199,18 +208,27 @@ export class ProcessManagedStdioTransport implements Transport {
         this._isCleanup = true;
         this._abortController.abort();
 
-        // Kill the entire process group to ensure full cleanup
-        if (this._process?.pid) {
-            try {
-                process.kill(-this._process.pid, "SIGTERM");
-            } catch (error) {
-                // Process might already be terminated, ignore errors
-                console.warn("Failed to kill process group:", error);
-            }
-        }
-
+        const child = this._process;
         this._process = undefined;
         this._readBuffer.clear();
+
+        // AbortController above usually terminates the child. This explicit kill is a fallback only.
+        if (!child?.pid || child.killed || child.exitCode !== null || child.signalCode !== null) {
+            return;
+        }
+
+        try {
+            if (process.platform === "win32") {
+                child.kill("SIGTERM");
+            } else {
+                // On POSIX we can target the process group to avoid lingering grandchildren.
+                process.kill(-child.pid, "SIGTERM");
+            }
+        } catch (error) {
+            if (!this.isIgnorableKillError(error)) {
+                this.onerror?.(error as Error);
+            }
+        }
     }
 
     send(message: JSONRPCMessage): Promise<void> {
