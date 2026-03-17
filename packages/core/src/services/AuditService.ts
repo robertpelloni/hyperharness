@@ -12,7 +12,13 @@ export interface AuditLogEntry {
     durationMs?: number;
 }
 
+export interface AuditServiceOptions {
+    logDir?: string;
+    retentionDays?: number;
+}
+
 export class AuditService {
+    private static instance: AuditService;
     private logPath: string;
     private buffer: AuditLogEntry[] = [];
     private flushInterval: NodeJS.Timeout;
@@ -27,6 +33,19 @@ export class AuditService {
 
         // Auto-flush every 5 seconds
         this.flushInterval = setInterval(() => this.flush(), 5000);
+    }
+
+    public static getInstance(options?: AuditServiceOptions): AuditService {
+        if (!AuditService.instance) {
+            AuditService.instance = new AuditService(options?.logDir);
+        }
+        return AuditService.instance;
+    }
+
+    public dispose(): void {
+        if (this.flushInterval) {
+            clearInterval(this.flushInterval);
+        }
     }
 
     public log(entry: Omit<AuditLogEntry, 'timestamp'>) {
