@@ -3,6 +3,22 @@
 _Last updated: 2026-03-17 (continuation session)_
 
 ## Current session update — test stability, core services improvements, and build validation (v2.7.309 → v2.7.311)
+## Current session summary — Tasks 007/008/009 completion validated, version 2.7.312 released
+
+### Tasks completed and promoted to completed/ (v2.7.312)
+
+- **P0-1 (Task 007: Startup Orchestration Truthfulness)** ✅ COMPLETE
+  - Deterministic boot contract verified: 13/13 startup tests passing
+  - All acceptance criteria met, all work verified tested and in production
+- **P0-6 (Task 008: Dashboard Honesty Pass)** ✅ COMPLETE
+  - Dashboard pages labeled with beta/experimental; 1.0 core surfaces highlighted
+  - All acceptance criteria met, all work tested and merged
+- **P1-7 (Task 009: Health, Logs & Operator Surfaces)** ✅ COMPLETE  
+  - Health/logs/audit pages complete with full tRPC integration
+  - All acceptance criteria met, backend routers fully utilized
+- Version bumped 2.7.311 → 2.7.312; all changes pushed to main branch
+
+## Previous session update — test stability, core services improvements, and build validation (v2.7.309 → v2.7.311)
 
 ### What changed in this continuation session
 
