@@ -244,7 +244,6 @@ const BROWSER_EXTENSION_ARTIFACTS = [
     candidates: [
       ['apps', 'borg-extension', 'dist-chromium'],
       ['apps', 'borg-extension', 'dist'],
-      ['apps', 'extension', 'dist'],
     ],
     requiredFiles: ['background.js', 'manifest.json'],
   },
