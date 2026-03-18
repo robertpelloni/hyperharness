@@ -1176,6 +1176,54 @@ export class AgentMemoryService {
     }
 
     /**
+     * Handoff Session — Summarizes the current session and exports it as a portable artifact.
+     */
+    async handoffSession(metadata: Record<string, any> = {}): Promise<string> {
+        const stats = this.getStats();
+        const summaries = this.memories.values();
+        const recentEvents = Array.from(summaries)
+            .filter(m => m.type === 'session')
+            .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+            .slice(0, 20);
+
+        const handoffArtifact = {
+            version: "2.7.333",
+            timestamp: Date.now(),
+            sessionId: metadata.sessionId || 'current',
+            stats,
+            recentContext: recentEvents.map(m => ({
+                content: m.content,
+                metadata: m.metadata
+            })),
+            notes: metadata.notes || ''
+        };
+
+        return JSON.stringify(handoffArtifact, null, 2);
+    }
+
+    /**
+     * Pickup Session — Restores context from a handoff artifact.
+     */
+    async pickupSession(artifactJson: string): Promise<{ success: boolean; count: number }> {
+        try {
+            const artifact = JSON.parse(artifactJson);
+            let count = 0;
+
+            if (artifact.recentContext && Array.isArray(artifact.recentContext)) {
+                for (const item of artifact.recentContext) {
+                    await this.add(item.content, 'session', 'project', item.metadata);
+                    count++;
+                }
+            }
+
+            return { success: true, count };
+        } catch (e) {
+            console.error("[AgentMemoryService] Failed to pickup session:", e);
+            return { success: false, count: 0 };
+        }
+    }
+
+    /**
      * Schedule auto-save
      */
     private saveTimeout: NodeJS.Timeout | null = null;

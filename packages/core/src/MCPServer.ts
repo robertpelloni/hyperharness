@@ -2066,6 +2066,14 @@ export class MCPServer {
                     result = { content: [{ type: "text", text: `Code Mode Tools:\n${formatted}` }] };
                 }
             }
+            else if (name === "handoff_session") {
+                const artifact = await this.agentMemoryService.handoffSession(args);
+                result = { content: [{ type: "text", text: artifact }] };
+            }
+            else if (name === "pickup_session") {
+                const pickupRes = await this.agentMemoryService.pickupSession(args.artifact as string);
+                result = { content: [{ type: "text", text: pickupRes.success ? `Successfully restored ${pickupRes.count} context items.` : "Failed to restore session." }] };
+            }
             /*
             // Phase 60: The Mesh
             else if (name === "swarm_broadcast") {
@@ -2948,8 +2956,30 @@ export class MCPServer {
             },
             {
                 name: "list_code_tools",
-                description: "List tools available in Code Mode",
+                description: "List tools available within Code Mode",
                 inputSchema: { type: "object", properties: {} }
+            },
+            // Phase 56: Session Handoff Tools
+            {
+                name: "handoff_session",
+                description: "Summarizes the current session context and exports it as a portable handoff artifact.",
+                inputSchema: {
+                    type: "object",
+                    properties: {
+                        notes: { type: "string", description: "Additional notes to include in the handoff" }
+                    }
+                }
+            },
+            {
+                name: "pickup_session",
+                description: "Restores a previous session from a handoff artifact string.",
+                inputSchema: {
+                    type: "object",
+                    properties: {
+                        artifact: { type: "string", description: "The handoff artifact JSON string" }
+                    },
+                    required: ["artifact"]
+                }
             },
             /*
             // Phase 60: The Mesh tools

@@ -130,6 +130,61 @@ export class SuggestionService {
     }
 
     /**
+     * Analyzes conversation history using LLM to generate intelligent suggestions.
+     */
+    async processConversation(history: Array<{ role: string; content: string }>) {
+        if (history.length < 2) return;
+
+        try {
+            const contextText = history.slice(-5).map(h => `${h.role}: ${h.content}`).join('\n');
+
+            const prompt = `
+            You are a Neural OS Watcher. You are monitoring a conversation between a human and an agent.
+            
+            Conversation History (Last 5 turns):
+            ${contextText}
+            
+            Analyze the semantic intent and thematic progression. If you predict the user will need a specific tool or skill next (e.g. searching the web, running code, saving to memory, or a specific domain skill), suggest it.
+            
+            Return JSON ONLY:
+            {
+                "found": boolean,
+                "title": "Short Title",
+                "description": "Why this tool/skill is relevant now",
+                "tool": "tool_name_or_skill_id",
+                "args": { ... }
+            }
+            
+            If nothing specific is predicted, return { "found": false }.
+            `;
+
+            const response = await this.llmService.generateText(
+                'openai',
+                'gpt-4o',
+                'You are a predictive intelligence agent.',
+                prompt
+            );
+            const textContent = extractLlmText(response);
+            const jsonStart = textContent.indexOf('{');
+            const jsonEnd = textContent.lastIndexOf('}');
+            if (jsonStart !== -1 && jsonEnd !== -1) {
+                const result = JSON.parse(textContent.slice(jsonStart, jsonEnd + 1));
+
+                if (result.found) {
+                    this.addSuggestion(
+                        result.title,
+                        result.description,
+                        "Predictive Intelligence",
+                        { tool: result.tool, args: result.args }
+                    );
+                }
+            }
+        } catch (e) {
+            console.error("[SuggestionService] Conversation analysis failed:", e);
+        }
+    }
+
+    /**
      * Analyzes context using LLM to generate intelligent suggestions.
      */
     async processContext(context: { type: string; path?: string; content?: string }) {
