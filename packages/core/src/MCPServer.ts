@@ -506,7 +506,7 @@ export class MCPServer {
         this.nativeSessionMetaTools = new NativeSessionMetaTools(undefined, {
             llmService: this.llmService,
             delegatedToolCaller: async (name, args, meta) => {
-                return await this.handleDirectModeToolCall(name, args, meta) ?? {
+                return await this.handleDirectMetaTool(name, args, meta) ?? {
                     content: [{ type: 'text', text: `Tool ${name} returned null or was not handled.` }],
                     isError: true,
                 };
@@ -2085,7 +2085,7 @@ export class MCPServer {
                 if (context) {
                     await this.suggestionService.processContext({ type: 'manual', content: context });
                 }
-                const suggestions = this.suggestionService.getSuggestions();
+                const suggestions = this.suggestionService.getPendingSuggestions();
                 result = { content: [{ type: "text", text: JSON.stringify(suggestions, null, 2) }] };
             }
             /*

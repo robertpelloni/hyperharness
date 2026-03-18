@@ -17,7 +17,7 @@ import {
 import type { ToolContextPayload } from '../services/toolContextMemory.js';
 
 import { executeSemanticAutoCall } from './compatibilityToolRuntime.js';
-import type { LLMService } from '../services/LLMService.js';
+import { LLMService } from '@borg/ai';
 
 type SearchableTool = Tool & {
     server?: string;
