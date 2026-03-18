@@ -2124,6 +2124,23 @@ export class MCPServer {
                 const success = await this.healerService.heal(error, context);
                 result = { content: [{ type: "text", text: success ? "Healer successfully fixed the error." : "Healer could not fix this error autonomously." }] };
             }
+            else if (name === "get_project_context") {
+                const contextPath = path.join(process.cwd(), '.borg', 'project_context.md');
+                if (!fs.existsSync(contextPath)) {
+                    result = { content: [{ type: "text", text: "# Project Context\n\nNo persistent context has been recorded yet. Use `update_project_context` to initialize it." }] };
+                } else {
+                    const content = await fs.promises.readFile(contextPath, 'utf-8');
+                    result = { content: [{ type: "text", text: content }] };
+                }
+            }
+            else if (name === "update_project_context") {
+                const contextPath = path.join(process.cwd(), '.borg', 'project_context.md');
+                const borgDir = path.join(process.cwd(), '.borg');
+                if (!fs.existsSync(borgDir)) fs.mkdirSync(borgDir, { recursive: true });
+                
+                await fs.promises.writeFile(contextPath, args.content as string);
+                result = { content: [{ type: "text", text: "Project context updated successfully." }] };
+            }
             /*
             // Phase 60: The Mesh
             else if (name === "swarm_broadcast") {
@@ -3084,6 +3101,22 @@ export class MCPServer {
                         context: { type: "string", description: "Optional additional context about what was happening when the error occurred" }
                     },
                     required: ["error"]
+                }
+            },
+            {
+                name: "get_project_context",
+                description: "Retrieves the persistent project-wide context, rules, and architecture notes. Use this to maintain high-level situational awareness of the repository.",
+                inputSchema: { type: "object", properties: {} }
+            },
+            {
+                name: "update_project_context",
+                description: "Updates the persistent project-wide context. Use this to record major architectural decisions, new rules, or project milestones.",
+                inputSchema: {
+                    type: "object",
+                    properties: {
+                        content: { type: "string", description: "The updated full text of the project context" }
+                    },
+                    required: ["content"]
                 }
             },
             /*

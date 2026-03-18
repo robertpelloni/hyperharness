@@ -275,7 +275,7 @@ export const LABS_DASHBOARD_NAV: NavItem[] = [
     { title: "Brain", href: "/dashboard/brain", icon: Brain, variant: "ghost" },
     { title: "Memory", href: "/dashboard/memory", icon: Brain, variant: "ghost" },
     { title: "Knowledge", href: "/dashboard/knowledge", icon: Network, variant: "ghost" },
-    { title: "Ingestion", href: "/dashboard/ingestion", icon: Database, variant: "ghost" },
+    { title: "Cognitive Intake", href: "/dashboard/intake", icon: Database, variant: "ghost" },
     { title: "Research", href: "/dashboard/research", icon: FlaskConical, variant: "ghost" },
     { title: "Browser", href: "/dashboard/browser", icon: Globe, variant: "ghost" },
     { title: "Symbols", href: "/dashboard/symbols", icon: Code2, description: "Browse pinned code symbols and architectural references.", variant: "ghost", badge: "beta" },
