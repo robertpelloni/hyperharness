@@ -82,7 +82,7 @@ function copyDirectory(sourceDir, targetDir) {
 }
 
 function runWorkspaceBuild() {
-  printStep("Running Turbo workspace build (includes VS Code, browser-extension package, and OpenCode Autopilot workspaces)...");
+  printStep("Running Turbo workspace build (includes VS Code and browser-extension package workspaces)...");
 
   const result = runPnpm(
     [
