@@ -71,6 +71,20 @@ export const agentMemoryRouter = t.router({
         return server.agentMemoryService.export();
     }),
 
+    handoff: t.procedure.input(z.object({
+        notes: z.string().optional()
+    })).mutation(async ({ input }) => {
+        const server = getMcpServer();
+        return await server.agentMemoryService.handoffSession(input);
+    }),
+
+    pickup: t.procedure.input(z.object({
+        artifact: z.string()
+    })).mutation(async ({ input }) => {
+        const server = getMcpServer();
+        return await server.agentMemoryService.pickupSession(input.artifact);
+    }),
+
     stats: t.procedure.query(async () => {
         const server = getMcpServer();
         const memories = server.agentMemoryService;

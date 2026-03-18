@@ -69,6 +69,7 @@ import { PlanService } from "./services/PlanService.js";
 import { CodeModeService } from "./services/CodeModeService.js";
 import { WorkflowEngine } from "./orchestrator/WorkflowEngine.js";
 import { AgentMemoryService } from "./services/AgentMemoryService.js";
+import { SessionImportService } from "./services/SessionImportService.js";
 import { MemoryManager } from "./services/MemoryManager.js"; // Use legacy MemoryManager
 mcpServerDebugLog('[MCPServer] ✓ Phase 51/53 Infrastructure');
 import { SkillAssimilationService } from "./services/SkillAssimilationService.js";
@@ -289,6 +290,7 @@ export class MCPServer {
     public workflowEngine: WorkflowEngine;
     public lspTools: LSPTools;
     public agentMemoryService: AgentMemoryService;
+    public sessionImportService: SessionImportService;
     private readonly nativeSessionMetaTools: NativeSessionMetaTools;
     private readonly promptToClient: Record<string, ConnectedClient> = {};
     private readonly resourceToClient: Record<string, ConnectedClient> = {};
@@ -568,6 +570,7 @@ export class MCPServer {
         this.lspTools = new LSPTools(process.cwd());
         // MemoryManager initialized early
         this.agentMemoryService = new AgentMemoryService({ persistDir: path.join(process.cwd(), '.borg', 'agent_memory') }, this.memoryManager);
+        this.sessionImportService = new SessionImportService(this.llmService, this.agentMemoryService, process.cwd());
 
         // Phase 5 & 6 Init
         this.browserTool = new BrowserTool();
@@ -3207,23 +3210,33 @@ export class MCPServer {
         const baseTools = allNativeTools.filter((tool) => !aggregatedToolNames.has(tool.name));
         const savedScriptTools = await getDirectModeSavedScriptTools(jsonConfigProvider);
 
-        // Streamlined advertising: Only show meta tools and "always on" tools by default.
-        // baseTools (standard lib) are considered always on for the core Borg experience.
+        // ULTRA-STREAMLINED ADVERTISING:
+        // Only show core Meta-Tools by default.
+        // baseTools (standard lib) are now LATENT by default to keep context clean.
+        // They must be explicitly enabled via "Always On" in the dashboard or discovered via search.
         const alwaysOnDownstreamTools = cachedAdvertisedDownstreamTools.filter(t => t.alwaysOn);
+        const alwaysOnBaseTools = baseTools.filter(t => (t as any).alwaysOn);
 
         const allVisibleTools = [
             ...this.nativeSessionMetaTools.listToolDefinitions(),
-            ...getDirectModeCompatibilityTools(),
-            ...baseTools,
+            ...getDirectModeCompatibilityTools().filter(t => (t as any).alwaysOn), // Filter compatibility tools too
+            ...alwaysOnBaseTools,
             ...alwaysOnDownstreamTools,
-            ...savedScriptTools,
+            ...savedScriptTools.filter(t => (t as any).alwaysOn),
             ...this.nativeSessionMetaTools.getVisibleLoadedTools(),
         ];
 
         // Safety limit for LLMs (e.g. Gemini has a 512 function declaration limit)
         // We use 450 to leave room for native tools and CLI-specific tools.
         const MAX_TOOLS = 450;
-        return allVisibleTools.slice(0, MAX_TOOLS);
+        const result = allVisibleTools.slice(0, MAX_TOOLS);
+
+        // Ensure we always have AT LEAST the core meta tools even if everything is toggled off
+        if (result.length < this.nativeSessionMetaTools.listToolDefinitions().length) {
+             return this.nativeSessionMetaTools.listToolDefinitions();
+        }
+
+        return result;
     }
 
     private async handleDirectMetaTool(
@@ -3315,6 +3328,9 @@ export class MCPServer {
 
         // Start Services
         // this.director.startChatDaemon(); // Removed, auto-drive handles this
+
+        // Trigger automatic session log import in the background
+        this.sessionImportService.scanAndImport().catch(e => console.error("[SessionImport] Failed:", e));
 
         // Build Graph in Background
         this.autoTestService.repoGraph.buildGraph().catch(e => console.error("Graph build failed", e));

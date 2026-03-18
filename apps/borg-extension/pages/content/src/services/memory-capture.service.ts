@@ -90,13 +90,21 @@ export class MemoryCaptureService {
   }
 
   private extractPageContent(): string {
-    // Basic text extraction - can be improved with better readability logic
+    const url = window.location.href;
     const body = document.body;
     if (!body) return '';
 
-    // Remove script and style elements
+    // Special handling for known AI chat interfaces to extract clean session logs
+    if (url.includes('chatgpt.com') || url.includes('claude.ai')) {
+      const messages = Array.from(document.querySelectorAll('.prose, .markdown-body, [data-message-author-role]'));
+      if (messages.length > 0) {
+        return messages.map(m => m.textContent?.trim()).filter(Boolean).join('\n\n---\n\n');
+      }
+    }
+
+    // Default basic text extraction
     const clone = body.cloneNode(true) as HTMLElement;
-    const toRemove = clone.querySelectorAll('script, style, nav, footer, header, iframe, noscript');
+    const toRemove = clone.querySelectorAll('script, style, nav, footer, header, iframe, noscript, [role="navigation"]');
     toRemove.forEach(el => el.remove());
 
     return clone.innerText || clone.textContent || '';

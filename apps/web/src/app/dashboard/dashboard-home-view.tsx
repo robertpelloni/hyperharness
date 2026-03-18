@@ -2,6 +2,7 @@ import Link from 'next/link';
 
 import { MissionControlFunctionToggles } from './mission-control-function-toggles';
 import SuggestionsPanel from '../../components/SuggestionsPanel';
+import { SessionHandoffWidget } from '../../components/SessionHandoffWidget';
 
 export interface DashboardStatusSummary {
     initialized: boolean;
@@ -1141,6 +1142,8 @@ export function DashboardHomeView({
                 <MissionControlFunctionToggles />
 
                 <SuggestionsPanel />
+
+                <SessionHandoffWidget />
 
                 <div className="grid gap-6 xl:grid-cols-2">
                     <section className="rounded-3xl border border-slate-800 bg-slate-900/70 p-6 shadow-lg shadow-slate-950/20">
