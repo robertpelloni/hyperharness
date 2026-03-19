@@ -1,5 +1,7 @@
 # Task: Session Supervisor Attach and Interaction
 
+**Status:** Completed (2026-03-19)
+
 ## Context
 Session supervision is implemented and stable for supervision basics (creation, restart, termination), but operators lack a clear, shipped attach/interaction path for connecting to running supervised sessions. This creates ambiguity about whether supervised sessions are extensible for end-to-end workflows or are terminal/isolated.
 
@@ -18,12 +20,12 @@ Session supervision is implemented and stable for supervision basics (creation, 
 5. Ensure restart/recovery behavior is explicit and operator-visible during attach.
 
 ## Acceptance Criteria
-- [ ] Attach path is explicitly defined (either functional feature or documented non-goal)
-- [ ] Dashboard session cards show true attach readiness status
-- [ ] Supervisor attach tests pass (happy path + error cases)
-- [ ] Attach documentation reflects current implementation truthfully
-- [ ] Session restart during active attach is safe and visibly handled
-- [ ] `CHANGELOG.md` updated with attach story clarity
+- [x] Attach path is explicitly defined (either functional feature or documented non-goal)
+- [x] Dashboard session cards show true attach readiness status
+- [x] Supervisor attach tests pass (happy path + error cases)
+- [x] Attach documentation reflects current implementation truthfully
+- [x] Session restart during active attach is safe and visibly handled
+- [x] `CHANGELOG.md` updated with attach story clarity
 
 ## Out of Scope
 - Multi-user concurrent attach scenarios

@@ -1,5 +1,7 @@
 # Task: Provider Routing and Auth/Quota Truthfulness
 
+**Status:** Completed (2026-03-19)
+
 ## Context
 Borg routes requests across multiple LLM providers with fallback logic, but operator trust depends on truthful reporting of provider auth state, quota windows, and fallback rationale. Current billing dashboard may overstate data confidence or hide gaps in provider API coverage.
 
@@ -19,13 +21,13 @@ Borg routes requests across multiple LLM providers with fallback logic, but oper
 5. Test provider transitions (auth loss, quota exhaustion, provider outage) and verify dashboard accuracy during transitions.
 
 ## Acceptance Criteria
-- [ ] All provider auth states are truthfully reported (authenticated/expired/revoked/not-configured)
-- [ ] Quota windows show confidence level and last-refresh timestamp
-- [ ] Fallback reasoning visible in routing decision transparency (logs/audit/dashboard)
-- [ ] Provider state transitions tested (auth loss, quota flip, provider outage)
-- [ ] Dashboard billing/provider pages clearly marked with confidence/beta badges where appropriate
-- [ ] Focused provider state and fallback chain tests pass
-- [ ] `CHANGELOG.md` updated for provider auth/quota truthfulness improvements
+- [x] All provider auth states are truthfully reported (authenticated/expired/revoked/not-configured)
+- [x] Quota windows show confidence level and last-refresh timestamp
+- [x] Fallback reasoning visible in routing decision transparency (logs/audit/dashboard)
+- [x] Provider state transitions tested (auth loss, quota flip, provider outage)
+- [x] Dashboard billing/provider pages clearly marked with confidence/beta badges where appropriate
+- [x] Focused provider state and fallback chain tests pass
+- [x] `CHANGELOG.md` updated for provider auth/quota truthfulness improvements
 
 ## Out of Scope
 - Implementing new provider integrations
