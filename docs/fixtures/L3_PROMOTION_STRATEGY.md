@@ -145,25 +145,29 @@ kiro --version
 
 ## Implementation Timeline
 
-### Phase 1: Version Pinning Infrastructure ⏭️ NOW
-1. Create `docs/fixtures/VERSION_PINS.jsonc` with structure for all L2 platforms
-2. Document how to capture versions for each platform (CLI command or config file location)
-3. Add GitHub Actions workflow to validate version pins on CI
+### Phase 1: Version Pinning Infrastructure ✅ COMPLETED (2026-03-19)
+- [x] Created `docs/fixtures/VERSION_PINS.jsonc` with structure for all L2 platforms
+- [x] Documented capture methods for each platform (CLI command or config file location)
+- [x] Added GitHub Actions workflow to validate version pins on CI
+- **Commit**: `25dae9eb` — "docs: add Phase 1 evidence lock fixtures and CI validation"
 
-### Phase 2: Golden Fixtures (Response Payloads) ⏭️ NEXT
-1. Create `docs/fixtures/{platform}-tool-responses.yaml` for each platform
-2. Populate with concrete I/O examples from captured docs
-3. Add JSON Schema validation for each fixture
+### Phase 2: Golden Fixtures (Response Payloads) ✅ COMPLETED (2026-03-19)
+- [x] Created `docs/fixtures/GOLDEN_FIXTURE_RESPONSES.md` with concrete I/O examples for all L2 platforms
+- [x] Included response payloads for all tool categories (bash, edit, view, hooks, sandbox, approval flows)
+- [x] Added error/edge cases (conflicts, encoding, transitions)
+- [x] Created `docs/fixtures/FIXTURE_SCHEMA.jsonc` — JSON Schema validators for fixture compliance
+- [x] Documented cross-platform tool equivalence matrix
+- **Next step**: Run CI validation on these fixtures
 
-### Phase 3: Tool Equivalence Mapping
-1. Create `docs/fixtures/TOOL_EQUIVALENCE_MATRIX.md`
-2. Map semantic tool call equivalence across platforms (e.g., bash→bash, edit→Edit/Write, etc.)
-3. Document any behavioral differences that require special handling
+### Phase 3: Tool Equivalence Mapping ⏭️ NEXT
+- [ ] Add schema validation to CI workflow (validate GOLDEN_FIXTURE_RESPONSES against FIXTURE_SCHEMA)
+- [ ] Create test harness to verify fixtures match documented contracts
+- [ ] Document behavioral differences requiring special handling
 
-### Phase 4: CI Validation Gate
-1. Create `.github/workflows/validate-evidence-lock.yml`
-2. Run checks on PR: version pins valid, fixtures well-formed, lock rubric consistent
-3. Block merge if any L2 platform's version pin drifts or fixture breaks schema
+### Phase 4: Release Pin Capture & Promotion
+- [ ] Capture actual runtime versions for each L2 platform (populate VERSION_PINS.jsonc)
+- [ ] Run CI validation with live version pins
+- [ ] Promote platforms from L2 → L3 as versions are pinned and fixtures validated
 
 ---
 
@@ -187,17 +191,8 @@ Platform moves to L3 when:
 - 1 platform at L0 (no evidence)
 - 1 platform at L3 (OpenCode, baseline)
 
-**Next 3 Days: Phase 1 (Version Pins)**
-- Define version capture for each L2 platform
-- Create VERSION_PINS.jsonc structure
-- Add CI check
-
-**Target: Phase 1 + 2 Complete (1 week)**
-- All L2 platforms have version pins + basic response fixtures
-- First 2-3 platforms ready for L3 promotion review
-
-**Goal: Full L3+ Coverage (2 weeks)**
-- All platforms pinned and validated in CI
-- Cross-platform tool equivalence documented
-- Standardized tool-use baseline established
+**Phase 1 Completed**: Version pin infrastructure established            
+**Phase 2 Completed**: Golden fixture responses and schemas created    
+**Phase 3 In Progress**: Schema validation in CI and fixture completeness checks  
+**Timeline**: Phase 2 fixtures now ready for CI validation and version capture
 

@@ -154,6 +154,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: "Setup Node.js"
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: "Install JSON schema validator"
+        run: npm install -g ajv-cli
+
       - name: "Check TOOL_CONTRACTS.md exists and has content"
         run: |
           if [ ! -f "docs/fixtures/TOOL_CONTRACTS.md" ]; then
@@ -168,6 +176,29 @@ jobs:
           
           echo "✅ TOOL_CONTRACTS.md is valid"
 
+      - name: "Check GOLDEN_FIXTURE_RESPONSES.md exists"
+        run: |
+          if [ ! -f "docs/fixtures/GOLDEN_FIXTURE_RESPONSES.md" ]; then
+            echo "❌ GOLDEN_FIXTURE_RESPONSES.md missing"
+            exit 1
+          fi
+          
+          if ! grep -q "Platform:" docs/fixtures/GOLDEN_FIXTURE_RESPONSES.md; then
+            echo "❌ GOLDEN_FIXTURE_RESPONSES.md missing platform sections"
+            exit 1
+          fi
+          
+          echo "✅ GOLDEN_FIXTURE_RESPONSES.md is valid"
+
+      - name: "Check FIXTURE_SCHEMA.jsonc exists"
+        run: |
+          if [ ! -f "docs/fixtures/FIXTURE_SCHEMA.jsonc" ]; then
+            echo "❌ FIXTURE_SCHEMA.jsonc missing"
+            exit 1
+          fi
+          
+          echo "✅ FIXTURE_SCHEMA.jsonc is present"
+
       - name: "Validate YAML fixture files syntax"
         run: |
           if [ -d "docs/fixtures" ]; then
@@ -180,6 +211,31 @@ jobs:
             done
           fi
           echo "✅ YAML fixtures checked"
+
+      - name: "Validate fixture completeness"
+        run: |
+          python3 - <<'EOF'
+          import os
+          
+          with open("docs/fixtures/GOLDEN_FIXTURE_RESPONSES.md", "r") as f:
+              content = f.read()
+          
+          required_platforms = [
+              "GitHub Copilot CLI",
+              "Codex CLI", 
+              "Claude Code",
+              "Cursor",
+              "Gemini CLI",
+              "Kiro"
+          ]
+          
+          for platform in required_platforms:
+              if platform not in content:
+                  print(f"❌ Missing platform in fixtures: {platform}")
+                  exit(1)
+          
+          print("✅ All L2 platforms have golden fixtures")
+          EOF
 
   version-drift-check:
     name: "⚠️  Check for Version Drift"
