@@ -64,6 +64,19 @@ export interface SessionSupervisorLogEntry {
     message: string;
 }
 
+/**
+ * Attach information for a supervised session.
+ *
+ * **Attach Design:**
+ * - The supervisor provides metadata to determine attach readiness but is NOT a full
+ *   WebSocket/stdio streaming endpoint itself.
+ * - Instead, supervised sessions support two interaction patterns:
+ *   1. **Remote Shell Execution** (`executeShell`): Limited one-shot commands when attachable
+ *   2. **Local Terminal Attach** (via `buildAttachCommand`): Operators can manually attach using
+ *      a terminal command that connects directly to the process PID
+ * - Full stdio streaming/interactivity is intentionally deferred; operators requiring deep
+ *   interactivity can use terminal attach while Borg remains a supervision & recovery layer.
+ */
 export interface SessionAttachInfo {
     id: string;
     pid?: number;
