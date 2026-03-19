@@ -208,6 +208,30 @@ export const sessionRouter = t.router({
         return getSessionSupervisor().getSessionLogs(input.id, input.limit);
     }),
 
+    /**
+     * Query attach readiness and information for a supervised session.
+     *
+     * Returns details about whether and why a session is attachable:
+     * - `attachReadiness`: 'ready' (green), 'pending' (yellow), or 'unavailable' (red)
+     * - `attachReadinessReason`: specific reason code (e.g., 'running-with-pid', 'starting', 'stopped')
+     * - `pid`: process ID if running
+     * - `status`: current session status
+     * - Legacy field `attachable` for backward compatibility (true iff status=running AND pid exists)
+     *
+     * **Attach contract:**
+     * - When `attachReadiness === 'ready'`: the process is live with a valid PID; stdout/stderr
+     *   streams are available for attachment or one-shot shell commands.
+     * - When `attachReadiness === 'pending'`: the session is in a transitional state (starting,
+     *   restarting, or stopping); attach will be available once the transition completes.
+     * - When `attachReadiness === 'unavailable'`: the session is not attachable (stopped, created,
+     *   error, or running without a PID). Attach will become available after the next `startSession()`.
+     *
+     * **Safe attach during restart:**
+     * - If a running session transitions to 'restarting' state, existing attach streams should
+     *   be closed gracefully by the client; the process will be replaced with a new one.
+     * - Polling `attachInfo` allows clients to detect when the new process is ready and
+     *   re-attach with the updated PID.
+     */
     attachInfo: publicProcedure.input(z.object({
         id: z.string(),
     })).query(({ input }) => {
