@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { Card, CardHeader, CardTitle, CardContent, Badge } from "@borg/ui";
-import { Zap, Activity, Shield, Tool, Brain, MessageSquare, AlertTriangle, FileText } from "lucide-react";
+import { Zap, Activity, Shield, Brain, MessageSquare, AlertTriangle, FileText } from "lucide-react";
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface PulseEvent {

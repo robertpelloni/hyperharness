@@ -44,6 +44,7 @@ import {
     Puzzle,
     MonitorPlay,
     FolderOpen,
+    Scale,
 } from "lucide-react";
 
 export interface NavItem {

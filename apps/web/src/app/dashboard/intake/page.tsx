@@ -35,11 +35,10 @@ export default function IntakePage() {
             content,
             type: 'long_term',
             namespace: 'project',
-            metadata: {
-                source: 'manual_intake',
-                title: title || 'Untitled Note',
-                capturedAt: new Date().toISOString()
-            }
+            tags: [
+                'manual_intake',
+                ...(title?.trim() ? [title.trim()] : []),
+            ],
         });
     };
 
