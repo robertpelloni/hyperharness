@@ -2,6 +2,16 @@
 
 ## Delta update (latest)
 
+### MCP search preferences regression fix (idle eviction threshold preservation)
+- Patched `apps/web/src/app/dashboard/mcp/search/page.tsx` so partial preference updates no longer reset `idleEvictionThresholdMs` via server-side defaults.
+- Root cause: `mcp.setToolPreferences` input schema uses defaults for omitted fields; UI actions (`toggleImportant`, `toggleAlwaysLoaded`, `saveAutoLoadMinConfidence`) were omitting `idleEvictionThresholdMs`.
+- Fix: every preferences mutation path now includes `idleEvictionThresholdMs: preferences.idleEvictionThresholdMs`.
+- Operator impact: changing important/keep-warm/autoload confidence no longer silently reverts idle-eviction policy to 5 minutes.
+
+### Verification (post-change)
+- `pnpm -C apps/web exec tsc --noEmit --pretty false` ✅
+- File diagnostics for `apps/web/src/app/dashboard/mcp/search/page.tsx` report no errors ✅
+
 ### VS Code task hygiene (Vitest reporter + duplicate task cleanup)
 - Fixed `verify: mcp discovery guards` in `.vscode/tasks.json` by removing unsupported Vitest flag `--reporter=basic`.
 - Confirmed task execution now passes:

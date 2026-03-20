@@ -993,6 +993,7 @@ function SearchDashboardContent() {
             autoLoadMinConfidence: preferences.autoLoadMinConfidence,
             maxLoadedTools: preferences.maxLoadedTools,
             maxHydratedSchemas: preferences.maxHydratedSchemas,
+            idleEvictionThresholdMs: preferences.idleEvictionThresholdMs,
         });
     };
 
@@ -1010,6 +1011,7 @@ function SearchDashboardContent() {
             autoLoadMinConfidence: preferences.autoLoadMinConfidence,
             maxLoadedTools: preferences.maxLoadedTools,
             maxHydratedSchemas: preferences.maxHydratedSchemas,
+            idleEvictionThresholdMs: preferences.idleEvictionThresholdMs,
         });
     };
 
@@ -1027,6 +1029,7 @@ function SearchDashboardContent() {
             autoLoadMinConfidence: normalized,
             maxLoadedTools: preferences.maxLoadedTools,
             maxHydratedSchemas: preferences.maxHydratedSchemas,
+            idleEvictionThresholdMs: preferences.idleEvictionThresholdMs,
         });
     };
 
