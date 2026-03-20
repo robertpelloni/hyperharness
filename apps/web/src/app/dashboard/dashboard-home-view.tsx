@@ -199,6 +199,7 @@ export interface DashboardInstallSurfaceArtifact {
 }
 
 export interface DashboardHomeViewProps {
+    versionLabel?: string;
     generatedAtLabel: string;
     currentTimestamp?: number | null;
     isBootstrapping?: boolean;
@@ -1006,6 +1007,7 @@ function getAlertTone(severity: DashboardAlert['severity']): string {
 }
 
 export function DashboardHomeView({
+    versionLabel = 'Borg',
     generatedAtLabel,
     currentTimestamp,
     isBootstrapping = false,
@@ -1060,7 +1062,7 @@ export function DashboardHomeView({
                     <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
                         <div className="space-y-3">
                             <span className="inline-flex items-center rounded-full border border-cyan-500/30 bg-cyan-500/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.24em] text-cyan-200">
-                                Borg 0.9.1 control plane
+                                {versionLabel} control plane
                             </span>
                             <div className="space-y-2">
                                 <h1 className="text-3xl font-semibold tracking-tight text-white">Operator dashboard</h1>

@@ -28,6 +28,16 @@ type SearchResult = {
     requiresSchemaHydration?: boolean;
     matchReason?: string;
     score?: number;
+    scoreBreakdown?: {
+        primaryMatchScore: number;
+        tokenMatchScore: number;
+        tokenMatchCount: number;
+        profileBoostScore: number;
+        loadedBoostScore: number;
+        alwaysOnBoostScore: number;
+        hydratedBoostScore: number;
+        noQueryBaseScore: number;
+    };
     rank?: number;
     important?: boolean;
     alwaysShow?: boolean;
@@ -1750,6 +1760,20 @@ function SearchDashboardContent() {
                                         const isLoaded = tool.loaded ?? loadedToolNames.has(tool.name);
                                         const hydratedFromWorkingSet = workingSetByName.get(tool.name)?.hydrated ?? false;
                                         const isHydrated = Boolean(tool.hydrated) || hydratedFromWorkingSet;
+                                        const scoreBreakdownRows = tool.scoreBreakdown
+                                            ? [
+                                                { label: 'primary match', value: tool.scoreBreakdown.primaryMatchScore },
+                                                {
+                                                    label: `token matches (${tool.scoreBreakdown.tokenMatchCount})`,
+                                                    value: tool.scoreBreakdown.tokenMatchScore,
+                                                },
+                                                { label: 'profile boost', value: tool.scoreBreakdown.profileBoostScore },
+                                                { label: 'loaded boost', value: tool.scoreBreakdown.loadedBoostScore },
+                                                { label: 'always-on boost', value: tool.scoreBreakdown.alwaysOnBoostScore },
+                                                { label: 'hydrated boost', value: tool.scoreBreakdown.hydratedBoostScore },
+                                                { label: 'no-query baseline', value: tool.scoreBreakdown.noQueryBaseScore },
+                                            ].filter((entry) => entry.value > 0)
+                                            : [];
 
                                         return (
                                             <div key={tool.name} className="p-5 hover:bg-zinc-950/60 transition-colors space-y-4">
@@ -1817,6 +1841,19 @@ function SearchDashboardContent() {
                                                                 <div className="mt-1 font-mono text-zinc-300 break-all">{tool.originalName || 'n/a'}</div>
                                                             </div>
                                                         </div>
+                                                        {scoreBreakdownRows.length > 0 ? (
+                                                            <div className="mt-3 rounded-md border border-zinc-800 bg-zinc-950/50 p-3">
+                                                                <div className="text-[10px] uppercase tracking-wider text-zinc-500">Score decomposition</div>
+                                                                <div className="mt-2 grid gap-1 text-xs text-zinc-300 md:grid-cols-2">
+                                                                    {scoreBreakdownRows.map((row) => (
+                                                                        <div key={row.label} className="flex items-center justify-between gap-2 rounded border border-zinc-800 bg-zinc-900/60 px-2 py-1">
+                                                                            <span className="text-zinc-400">{row.label}</span>
+                                                                            <span className="font-mono text-zinc-100">+{row.value}</span>
+                                                                        </div>
+                                                                    ))}
+                                                                </div>
+                                                            </div>
+                                                        ) : null}
                                                         {(tool.serverTags?.length || tool.toolTags?.length) ? (
                                                             <div className="mt-3 grid gap-2 text-xs text-zinc-500 md:grid-cols-2">
                                                                 <div>

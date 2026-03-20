@@ -155,7 +155,7 @@ const importResult = await configService.importConfigs(['./my-mcp.json']);
 console.log('Import result:', importResult);
 
 // Export configuration
-const aiosFormat = await configService.exportConfigs('borg');
+const borgFormat = await configService.exportConfigs('borg');
 const claudeFormat = await configService.exportConfigs('claude');
 const openaiFormat = await configService.exportConfigs('openai');
 ```

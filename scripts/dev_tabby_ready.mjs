@@ -345,14 +345,20 @@ async function evaluateReadiness() {
 
   const startupSnapshotReady = Boolean(startupStatus.data?.ready);
   const startupContractCompatible = startupStatus.ok && startupStatus.compatible;
-
-  const ready = Boolean(web)
-    && coreBridge.ok
-    && startupContractCompatible
-    && (startupSnapshotReady || (mcpStatus.ok
+  const fallbackTelemetryHealthy = Boolean(
+    mcpStatus.ok
       && memoryStatus.ok
       && browserStatus.ok
-      && sessionStatus.ok))
+      && sessionStatus.ok,
+  );
+
+  // Prefer the richer startup contract when available, but allow readiness to proceed
+  // when the core bridge serves a legacy contract and all fallback telemetry probes are healthy.
+  const ready = Boolean(web)
+    && coreBridge.ok
+    && startupStatus.ok
+    && (startupSnapshotReady || fallbackTelemetryHealthy)
+    && (startupContractCompatible || fallbackTelemetryHealthy)
     && extension.ready;
 
   return {

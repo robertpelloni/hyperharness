@@ -18,6 +18,17 @@ export interface ToolSearchCandidate {
 
 export type ToolSearchProfile = 'web-research' | 'repo-coding' | 'browser-automation' | 'local-ops' | 'database';
 
+export interface ToolSearchScoreBreakdown {
+    primaryMatchScore: number;
+    tokenMatchScore: number;
+    tokenMatchCount: number;
+    profileBoostScore: number;
+    loadedBoostScore: number;
+    alwaysOnBoostScore: number;
+    hydratedBoostScore: number;
+    noQueryBaseScore: number;
+}
+
 export interface RankedToolSearchResult {
     name: string;
     description: string;
@@ -37,6 +48,7 @@ export interface RankedToolSearchResult {
     requiresSchemaHydration: boolean;
     matchReason: string;
     score: number;
+    scoreBreakdown: ToolSearchScoreBreakdown;
     autoLoaded?: boolean;
 }
 
@@ -156,15 +168,30 @@ function scoreCandidate(
     normalizedQuery: string,
     queryTokens: string[],
     profile: ToolSearchProfile | undefined,
-): { score: number; matchReason: string } | null {
+): {
+    score: number;
+    matchReason: string;
+    scoreBreakdown: ToolSearchScoreBreakdown;
+} | null {
     if (!normalizedQuery) {
+        const noQueryBaseScore = buildNoQueryScore(candidate);
         const profileBoost = buildProfileBoost(candidate, profile);
         return {
-            score: buildNoQueryScore(candidate) + profileBoost.boost,
+            score: noQueryBaseScore + profileBoost.boost,
             matchReason: profileBoost.reason
                 ?? (candidate.loaded
                     ? 'already loaded in the current session'
                     : 'available tool in the current catalog'),
+            scoreBreakdown: {
+                primaryMatchScore: 0,
+                tokenMatchScore: 0,
+                tokenMatchCount: 0,
+                profileBoostScore: profileBoost.boost,
+                loadedBoostScore: 0,
+                alwaysOnBoostScore: 0,
+                hydratedBoostScore: 0,
+                noQueryBaseScore,
+            },
         };
     }
 
@@ -182,52 +209,60 @@ function scoreCandidate(
         ...(candidate.keywords ?? []),
     ].join(' '));
 
+    let primaryMatchScore = 0;
+    let tokenMatchScore = 0;
+    let loadedBoostScore = 0;
+    let alwaysOnBoostScore = 0;
+    let hydratedBoostScore = 0;
+
     let score = 0;
     let matchReason = '';
 
     if (normalizedName === normalizedQuery) {
-        score += 120;
+        primaryMatchScore = 120;
         matchReason = 'exact tool name match';
     } else if (normalizedOriginalName === normalizedQuery) {
-        score += 115;
+        primaryMatchScore = 115;
         matchReason = 'exact original tool name match';
     } else if (normalizedAdvertisedName === normalizedQuery) {
-        score += 110;
+        primaryMatchScore = 110;
         matchReason = 'exact advertised tool name match';
     } else if (normalizedName.startsWith(normalizedQuery)) {
-        score += 90;
+        primaryMatchScore = 90;
         matchReason = 'tool name prefix match';
     } else if (normalizedOriginalName.startsWith(normalizedQuery)) {
-        score += 85;
+        primaryMatchScore = 85;
         matchReason = 'original tool name prefix match';
     } else if (normalizedAdvertisedName.startsWith(normalizedQuery)) {
-        score += 80;
+        primaryMatchScore = 80;
         matchReason = 'advertised tool name prefix match';
     } else if (normalizedName.includes(normalizedQuery)) {
-        score += 70;
+        primaryMatchScore = 70;
         matchReason = 'tool name contains query';
     } else if (normalizedOriginalName.includes(normalizedQuery)) {
-        score += 65;
+        primaryMatchScore = 65;
         matchReason = 'original tool name contains query';
     } else if (normalizedAdvertisedName.includes(normalizedQuery)) {
-        score += 60;
+        primaryMatchScore = 60;
         matchReason = 'advertised tool name contains query';
     } else if (normalizedTagText.includes(normalizedQuery)) {
-        score += 58;
+        primaryMatchScore = 58;
         matchReason = 'semantic tag match';
     } else if (normalizedSemanticGroupLabel.includes(normalizedQuery) || normalizedSemanticGroup.includes(normalizedQuery)) {
-        score += 55;
+        primaryMatchScore = 55;
         matchReason = 'semantic group match';
     } else if (normalizedDescription.includes(normalizedQuery)) {
-        score += 45;
+        primaryMatchScore = 45;
         matchReason = 'description contains query';
     } else if (normalizedServerDisplayName.includes(normalizedQuery)) {
-        score += 35;
+        primaryMatchScore = 35;
         matchReason = 'advertised server name contains query';
     } else if (normalizedServerName.includes(normalizedQuery)) {
-        score += 30;
+        primaryMatchScore = 30;
         matchReason = 'server name contains query';
     }
+
+    score += primaryMatchScore;
 
     const tokenMatches = queryTokens.filter((token) => (
         normalizedName.includes(token)
@@ -245,7 +280,8 @@ function scoreCandidate(
         return null;
     }
 
-    score += tokenMatches.length * 6;
+    tokenMatchScore = tokenMatches.length * 6;
+    score += tokenMatchScore;
 
     if (!matchReason) {
         matchReason = tokenMatches.length > 1
@@ -254,15 +290,18 @@ function scoreCandidate(
     }
 
     if (candidate.loaded) {
-        score += 5;
+        loadedBoostScore = 5;
+        score += loadedBoostScore;
     }
 
     if (candidate.alwaysOn) {
-        score += 4;
+        alwaysOnBoostScore = 4;
+        score += alwaysOnBoostScore;
     }
 
     if (candidate.hydrated) {
-        score += 3;
+        hydratedBoostScore = 3;
+        score += hydratedBoostScore;
     }
 
     const profileBoost = buildProfileBoost(candidate, profile);
@@ -272,7 +311,20 @@ function scoreCandidate(
         matchReason = `${matchReason}; ${profileBoost.reason}`;
     }
 
-    return { score, matchReason };
+    return {
+        score,
+        matchReason,
+        scoreBreakdown: {
+            primaryMatchScore,
+            tokenMatchScore,
+            tokenMatchCount: tokenMatches.length,
+            profileBoostScore: profileBoost.boost,
+            loadedBoostScore,
+            alwaysOnBoostScore,
+            hydratedBoostScore,
+            noQueryBaseScore: 0,
+        },
+    };
 }
 
 function compareResults(left: RankedToolSearchResult, right: RankedToolSearchResult): number {
@@ -330,6 +382,7 @@ export function rankToolSearchCandidates(
                 requiresSchemaHydration: deferred && !hydrated,
                 matchReason: ranking.matchReason,
                 score: ranking.score,
+                scoreBreakdown: ranking.scoreBreakdown,
             };
         });
 

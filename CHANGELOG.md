@@ -3,7 +3,46 @@
 ## Borg Changelog
 
 All notable changes to this project will be documented in this file.
-## [0.9.4] — 2026-03-22
+## [0.9.5] — 2026-03-20
+
+### Task 030 — MCP Registry: Server Detail Page + Batch Validation
+
+- feat(web/registry): New server detail page at `/dashboard/registry/[uuid]` — full drill-down for any published catalog entry:
+  - Header card: display name, author, status badge, transport badge, install method badge, star count, confidence percentage with color-coded ShieldCheck icon, and tag pills
+  - **Active Install Recipe** section: recipe version, confidence %, explanation text, required secrets (amber monospace), env defaults (code-style list), collapsible template JSON preview via `<details>`
+  - **Validation History** section: up to 20 most recent runs with outcome icon, outcome label, tool count, failure class, run mode, performer, and timestamp
+  - **Provenance Sources** section: lists all external registries that recorded this server with their last-seen date and source URL
+  - **Metadata** section: canonical ID, auth model, created/updated/last-seen/last-verified timestamps, homepage URL, categories
+  - **Validate** button triggers `catalog.triggerValidation` with success/error toast and instant cache invalidation
+  - **Install** button (validated/certified only) opens the full install modal (identical UX to the registry table modal) — collects secrets and env overrides then calls `catalog.installFromRecipe`
+  - Back navigation returns to `/dashboard/registry` via `useRouter`
+  - Not-found state with friendly empty state and back link
+  - All date values coerced through `formatDate()` which guards against null/invalid `Date` objects — consistent with tRPC's no-superjson date handling
+
+- feat(core/catalog): New `triggerBatchValidation` admin mutation in `catalogRouter`:
+  - Accepts `statuses` array (default: `["normalized", "probeable"]`) and `max_servers` int (default 10, max 50)
+  - Queries `listUuidsByStatus()` for matching server UUIDs, then runs `validatePublishedServer()` sequentially
+  - Per-server errors are caught and recorded as `outcome: "error"` without aborting the batch
+  - Returns `{ queued, passed, failed, skipped, results[] }` summary
+
+- feat(core/catalog): New `listUuidsByStatus(statuses, limit)` repository method on `PublishedCatalogRepository`:
+  - Selects only `uuid` column (avoids loading full server rows for batch use)
+  - Filters by `inArray(status, statuses)`, ordered by `updated_at DESC`
+
+- feat(web/registry): Added **"Validate All"** button to `/dashboard/registry` header:
+  - Calls `triggerBatchValidation` with default statuses and max 10 servers
+  - Shows pulsing icon while running, success toast with pass/fail/skip counts on completion
+  - Invalidates list and stats queries on success
+
+- feat(web/registry): Server name cells in registry table are now **clickable** — navigate to `/dashboard/registry/[uuid]` on click, with hover color change to indicate interactivity
+
+- chore(branding): Renamed all remaining `AIOS`/`aios` legacy references to `borg`/`Borg` across `archive/` SDKs (Python, Rust, Go), nvim plugin, archive docs and handoff files, `AGENTS.md`, and `UNIVERSAL_LLM_INSTRUCTIONS.md`
+
+- chore(version): Bumped `VERSION` from `0.9.1` → `0.9.4` to sync with CHANGELOG, then to `0.9.5` for this release
+
+- chore(todo): Updated `TODO.md` — marked all completed P0 catalog items as done; reflects accurate current project state
+
+
 
 ### Task 029 — MCP Registry Intelligence P0: Published Catalog End-to-End
 - feat(core/db): New Drizzle tables + raw `CREATE TABLE IF NOT EXISTS` SQL in `initializeSchema()`:
@@ -43,6 +82,12 @@ All notable changes to this project will be documented in this file.
 - feat(web/registry): Added `Updated 24h` stat card to `/dashboard/registry` so operators can monitor catalog freshness directly from the dashboard.
 - feat(web/mcp-registry): Added a `Published Catalog Intelligence` handoff panel to `/dashboard/mcp/registry` with live `catalog.stats` metrics and a direct navigation link to `/dashboard/registry`.
 - feat(web/mcp-registry): Clarified operator workflow split in UI copy: quick install actions remain in MCP Registry, while provenance/validation/confidence-first discovery is routed to the Published Catalog view.
+- feat(core/catalog): Added admin mutation `catalog.installFromRecipe` to install validated/certified published entries into managed `mcp_servers` using the active catalog recipe, with transport-aware mapping (STDIO/SSE/STREAMABLE_HTTP), unique-name generation, and required-secret enforcement.
+- feat(web/registry): Added per-row `Install` action on `/dashboard/registry` for validated/certified entries, wired to `catalog.installFromRecipe` with success/error toasts and managed-server list invalidation.
+- feat(web/registry): Upgraded install flow to a guided modal that fetches active recipe requirements (`required_secrets`, `required_env`) and collects operator-provided values before calling `catalog.installFromRecipe`.
+- fix(tasks): Updated `.vscode/tasks.json` Vitest command for `verify: mcp discovery guards` by removing unsupported `--reporter=basic` flag.
+- chore(tasks): Removed accidental duplicate task entries (`core: typecheck`, `web: build-webpack`) to reduce task list ambiguity in VS Code.
+- chore(tasks): Removed additional duplicate task variants (`web: tsc verify current 2`, `root: build extensions validate 2`, and redundant `verify: mcp discovery guards clean*` aliases).
 - TypeScript: `packages/core` and `apps/web` both pass `tsc --noEmit` with zero errors
 
 

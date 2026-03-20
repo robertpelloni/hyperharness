@@ -482,6 +482,26 @@ export class PublishedCatalogRepository {
             .limit(1);
         return row;
     }
+
+    /**
+     * List UUIDs of servers with the given status, up to a specified limit.
+     * Used by batch validation to avoid loading full server rows.
+     */
+    async listUuidsByStatus(
+        statuses: string[],
+        limit = 20
+    ): Promise<string[]> {
+        if (statuses.length === 0) return [];
+
+        const rows = await db
+            .select({ uuid: publishedMcpServersTable.uuid })
+            .from(publishedMcpServersTable)
+            .where(inArray(publishedMcpServersTable.status, statuses as any[]))
+            .orderBy(desc(publishedMcpServersTable.updated_at))
+            .limit(limit);
+
+        return rows.map((r) => r.uuid);
+    }
 }
 
 // Singleton export — mirrors pattern used by mcpServersRepository, toolsRepository etc.

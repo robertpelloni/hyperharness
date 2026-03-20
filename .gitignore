@@ -68,6 +68,7 @@ packages/cli/audit-*.jsonl
 packages/core/.tsc-output.txt
 .chunkhound/
 **/.chunkhound/
+.chunkhound.json
 .borg_startup_marker
 **/.borg_startup_marker
 .cli_startup_marker
@@ -86,3 +87,4 @@ chat2.json
 docs/sessions/chat.json
 docs/sessions/*.json
 audit-*.jsonl
+screenshot*.png

@@ -4,7 +4,12 @@ import { t, publicProcedure, adminProcedure, getMcpAggregator, getMcpServer } fr
 import { mcpServerPool } from '../services/mcp-server-pool.service.js';
 import { getCachedToolInventory } from '../mcp/cachedToolInventory.js';
 import { parseNamespacedToolName } from '../mcp/namespaces.js';
-import { evaluateAutoLoadCandidate, rankToolSearchCandidates, type ToolSearchProfile } from '../mcp/toolSearchRanking.js';
+import {
+    evaluateAutoLoadCandidate,
+    rankToolSearchCandidates,
+    type ToolSearchProfile,
+    type ToolSearchScoreBreakdown,
+} from '../mcp/toolSearchRanking.js';
 import { toolSelectionTelemetry } from '../mcp/toolSelectionTelemetry.js';
 import { getBorgMcpJsoncPath, loadBorgMcpConfig, stripJsonComments, writeBorgMcpConfig } from '../mcp/mcpJsonConfig.js';
 import {
@@ -215,6 +220,19 @@ function buildIgnoredSearchResultTelemetry<T extends { name: string }>(
     };
 }
 
+function buildDefaultScoreBreakdown(score = 0): ToolSearchScoreBreakdown {
+    return {
+        primaryMatchScore: score,
+        tokenMatchScore: 0,
+        tokenMatchCount: 0,
+        profileBoostScore: 0,
+        loadedBoostScore: 0,
+        alwaysOnBoostScore: 0,
+        hydratedBoostScore: 0,
+        noQueryBaseScore: 0,
+    };
+}
+
 const toolSearchProfileSchema = z.enum(['web-research', 'repo-coding', 'browser-automation', 'local-ops', 'database']);
 
 async function readToolPreferences(): Promise<ToolPreferences> {
@@ -384,6 +402,7 @@ export const mcpRouter = t.router({
                         requiresSchemaHydration?: boolean;
                         matchReason?: string;
                         score?: number;
+                        scoreBreakdown?: ToolSearchScoreBreakdown;
                         rank?: number;
                         autoLoaded?: boolean;
                         mcpServerUuid?: string;
@@ -409,6 +428,7 @@ export const mcpRouter = t.router({
                             requiresSchemaHydration: Boolean(tool.requiresSchemaHydration),
                             matchReason: tool.matchReason ?? 'matched available metadata',
                             score: tool.score ?? 0,
+                            scoreBreakdown: tool.scoreBreakdown ?? buildDefaultScoreBreakdown(tool.score ?? 0),
                             rank: tool.rank ?? (index + 1),
                             autoLoaded: Boolean(tool.autoLoaded),
                             inputSchema: null,
@@ -458,6 +478,7 @@ export const mcpRouter = t.router({
                                 requiresSchemaHydration: Boolean(tool.requiresSchemaHydration),
                                 matchReason: tool.matchReason ?? 'matched available metadata',
                                 score: tool.score ?? 0,
+                                scoreBreakdown: tool.scoreBreakdown,
                                 rank: index + 1,
                                 autoLoaded: tool.name === runtimeAutoLoadedToolName,
                                 inputSchema: null,
@@ -486,6 +507,7 @@ export const mcpRouter = t.router({
                                 requiresSchemaHydration: tool.requiresSchemaHydration,
                                 matchReason: tool.matchReason,
                                 score: tool.score,
+                                scoreBreakdown: tool.scoreBreakdown,
                             })),
                             normalizedQuery,
                             {
@@ -705,6 +727,7 @@ export const mcpRouter = t.router({
                         ? `${tool.matchReason}; ${autoLoadDecision.reason}`
                         : tool.matchReason,
                     score: tool.score,
+                    scoreBreakdown: tool.scoreBreakdown,
                     rank: index + 1,
                     autoLoaded: tool.name === autoLoadDecision?.toolName,
                     inputSchema: null,
@@ -784,6 +807,7 @@ export const mcpRouter = t.router({
                 requiresSchemaHydration: tool.requiresSchemaHydration,
                 matchReason: tool.matchReason,
                 score: tool.score,
+                scoreBreakdown: tool.scoreBreakdown,
                 rank: index + 1,
                 inputSchema: null,
             }));

@@ -460,7 +460,11 @@ export function getWaitingReasons(state) {
     missing.push('startup telemetry query');
   }
 
-  if (state.startupStatus.ok && state.startupStatus.compatible === false) {
+  if (
+    state.startupStatus.ok
+    && state.startupStatus.compatible === false
+    && !(state.mcpStatus?.ok && state.memoryStatus?.ok && state.browserStatus?.ok && state.sessionStatus?.ok)
+  ) {
     missing.push('core bridge startup contract refresh');
   }
 

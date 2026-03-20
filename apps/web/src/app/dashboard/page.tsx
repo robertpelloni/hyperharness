@@ -1,5 +1,31 @@
+import { readFile } from 'node:fs/promises';
+import path from 'node:path';
+
 import { DashboardHomeClient } from './DashboardHomeClient';
 
-export default function DashboardIndexPage() {
-    return <DashboardHomeClient />;
+async function getDashboardVersionLabel(): Promise<string> {
+    const candidatePaths = [
+        path.join(process.cwd(), 'VERSION'),
+        path.join(process.cwd(), '..', '..', 'VERSION'),
+    ];
+
+    for (const versionPath of candidatePaths) {
+        try {
+            const version = (await readFile(versionPath, 'utf8')).trim();
+            if (!version) {
+                continue;
+            }
+
+            return `Borg ${version}`;
+        } catch {
+            // try next candidate
+        }
+    }
+
+    return 'Borg';
+}
+
+export default async function DashboardIndexPage() {
+    const versionLabel = await getDashboardVersionLabel();
+    return <DashboardHomeClient versionLabel={versionLabel} />;
 }

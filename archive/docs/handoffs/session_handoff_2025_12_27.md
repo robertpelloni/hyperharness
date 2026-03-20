@@ -51,9 +51,9 @@ The analyzer uses heuristics to segment the context:
 ### Shell Manager Logic
 The manager uses a marker-based approach to ensure idempotency:
 ```bash
-# aios_START
+# borg_START
 export PATH=...
-# aios_END
+# borg_END
 ```
 This allows the system to find and update/remove its own configurations without touching the user's other settings.
 

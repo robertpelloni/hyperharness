@@ -1,6 +1,24 @@
 # Borg Roadmap
 
-_Last updated: 2026-03-19_
+_Last updated: 2026-03-20_
+
+## Canonical now/next (authoritative)
+
+This short block is the source of truth for current execution.
+
+### Current objective
+Deliver **MCP Registry Intelligence P0** end-to-end so Borg can ingest published MCP servers, generate safe config recipes, validate them, and persist trustworthy results.
+
+### Next implementation slice (active)
+1. Published catalog schema + persistence model
+2. Ingestion adapter contract + provenance fields
+3. Validation run model + status state machine
+4. Operator workflow wiring (`discover -> configure -> test -> save`)
+
+### Guardrails
+- No parity/marketing claims without version-locked validation evidence.
+- Distinguish clearly between `published`, `installed`, and `validated` states in all surfaces.
+- Keep startup/session/provider truthfulness at 1.0 quality while implementing catalog P0.
 
 This roadmap reconciles the **archive vision** with the **current repository reality**.
 

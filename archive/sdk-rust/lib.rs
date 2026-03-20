@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 use reqwest::header::{HeaderMap, HeaderValue, AUTHORIZATION, CONTENT_TYPE};
 
-pub struct AIOSClient {
+pub struct BorgClient {
     base_url: String,
     token: Option<String>,
     client: reqwest::Client,
@@ -16,7 +16,7 @@ pub struct AgentRunParams {
     pub session_id: Option<String>,
 }
 
-impl AIOSClient {
+impl BorgClient {
     pub fn new(base_url: &str, token: Option<String>) -> Self {
         Self {
             base_url: base_url.to_string(),

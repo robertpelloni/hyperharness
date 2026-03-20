@@ -1,8 +1,127 @@
 # Borg TODO
 
-_Last updated: 2026-03-19_
+_Last updated: 2026-03-20_
+
+## Active sprint (authoritative)
+
+- [x] ~~Implement published-catalog persistence primitives (schema/types/repos)~~ — done in 0.9.4
+- [x] ~~Add ingestion adapter contract with provenance + dedupe identity fields~~ — done in 0.9.4
+- [x] ~~Add validation-run state model~~ — done in 0.9.4
+- [x] ~~Wire first operator flow: discover -> preview recipe -> validate -> persist~~ — done in 0.9.4
+- [x] ~~Keep startup/session/provider truthfulness checks green~~ — done in 0.9.2/0.9.3
+- [ ] Add focused tests for ranking/normalization/validation transitions
 
 This TODO list reflects the current codebase state after comparing the archive plans against what is actually implemented now.
+
+## P0 — MCP ecosystem intelligence
+
+### 1) Model published MCP servers as first-class database records
+- [x] ~~Add a **published server catalog** table separate from installed/local `mcp_servers`~~ — done in 0.9.4
+- [x] ~~Store canonical identity, source registry, provenance URL, source confidence, and dedupe fingerprints~~ — done in 0.9.4
+- [x] ~~Track transport type, install method, required env/headers/auth model, and platform compatibility~~ — done in 0.9.4
+- [x] ~~Add validation state fields: `discovered`, `normalized`, `probeable`, `validated`, `certified`, `broken`~~ — done in 0.9.4
+- [x] ~~Track `last_seen_at`, `last_verified_at`, `verification_confidence`, and `failure_reason`~~ — done in 0.9.4
+
+### 2) Build registry ingestion adapters
+- [x] ~~Ingest from official/community MCP registries and normalize their formats (Glama.ai, Smithery.ai, mcp.run)~~ — done in 0.9.4
+- [x] ~~Preserve raw source payloads for audit/debugging~~ — done in 0.9.4
+- [x] ~~Deduplicate servers appearing in multiple registries~~ — done in 0.9.4
+- [ ] Add scheduled refresh/sync jobs (currently manual-only)
+- [ ] Replace heuristic-only snapshot extraction with richer source adapters (npm, GitHub topic search)
+
+### 3) Build intelligent configuration generation
+- [x] ~~Derive Borg-safe config recipes from published metadata~~ — done in 0.9.4
+- [x] ~~Infer install path and transport type~~ — done in 0.9.4
+- [x] ~~Extract required secrets, headers, env vars, and placeholders~~ — done in 0.9.4
+- [x] ~~Add confidence scoring for generated recipes~~ — done in 0.9.4
+- [ ] Improve recipe generation quality: version-pinned commands, better env inference
+
+### 4) Build a real MCP validation harness
+- [x] ~~Run transport reachability tests for published servers~~ — done in 0.9.4
+- [x] ~~Run `tools/list` validation automatically where safe (SSE/HTTP)~~ — done in 0.9.4
+- [x] ~~Distinguish auth/config/network/runtime/schema failures~~ — done in 0.9.4
+- [x] ~~Persist validation runs and result history in the database~~ — done in 0.9.4
+- [x] ~~Support retry/revalidation workflows~~ — done in 0.9.5 (triggerBatchValidation)
+- [ ] STDIO validation with safe sandbox isolation (currently skipped)
+- [ ] Optional sample `tools/call` smoke probes for low-risk servers
+
+### 5) Build the operator workflow end-to-end
+- [x] ~~Discover published server in dashboard~~ — done in 0.9.4
+- [x] ~~Preview normalized config recipe~~ — done in 0.9.5 (server detail page)
+- [x] ~~Fill secrets / required parameters~~ — done in 0.9.4
+- [x] ~~Run validation before install~~ — validate button on all rows
+- [x] ~~Save to published catalog + installed server DB~~ — done in 0.9.4
+- [x] ~~Enable/disable locally after successful probe~~ — install button wired
+- [x] ~~Show verification badge, last tested date~~ — done in 0.9.5 (detail page)
+- [ ] Show known blockers with operator-readable explanations
+
+## P1 — Harden the existing MCP surfaces
+
+### 6) Make the registry page truthful and DB-backed
+- [x] ~~Published catalog browser with real DB data~~ — done in 0.9.4
+- [x] ~~Show provenance, last verification, and confidence level~~ — done in 0.9.5 (detail page)
+- [x] ~~Distinguish "listed in registry" from "installable" from "validated" from "installed"~~ — status state machine in 0.9.4
+- [x] ~~Show required secrets and supported platforms in the UI~~ — done in 0.9.5 (detail page recipe section)
+- [ ] Server detail validation history (history list) — partially done, needs more polish
+
+### 7) Connect the legacy/parallel registry work to the canonical stack
+- [ ] Decide whether `cli/mcp-router-cli/**` registry/database services are canonical, migratable, or archival
+- [ ] Port useful logic into the modern `packages/core` / `apps/web` stack
+
+### 8) Improve installed-server truthfulness
+- [ ] Expand installed server records with richer metadata and verification state
+- [ ] Record whether metadata came from binary introspection, cache, or source registry
+- [ ] Make installed vs published vs validated states explicit across dashboard surfaces
+
+### 9) Expand testing
+- [ ] Add repository tests for normalization/dedupe/provenance logic
+- [ ] Add regression tests for config recipe generation  
+- [ ] Add DB tests for published catalog lifecycle
+- [ ] Add smoke tests for dashboard flows around discover/configure/test/install
+
+## P1 — Keep 1.0 control-plane trust intact
+
+### 10) Startup/readiness truthfulness
+- [x] ~~Keep launcher, dashboard, and runtime readiness semantics aligned~~ — done in 0.9.2
+
+### 11) Session supervisor reliability
+- [x] ~~Keep worktree behavior explicit and dependable in runtime~~ — done in 0.9.2
+- [ ] Improve operator-visible recovery UX
+
+### 12) Provider routing truthfulness
+- [x] ~~Auth/quota truthfulness: authTruth, quotaConfidence, quotaRefreshedAt~~ — done in 0.9.3
+- [x] ~~revoked/expired/not_configured auth states~~ — done in 0.9.3
+- [ ] Continue tightening for additional provider types
+
+### 13) Dashboard honesty
+- [ ] Audit wrapper/parity pages and mark them clearly as shipped/beta/experimental
+- [ ] Prevent surface breadth from outrunning backend truth
+
+## P2 — Important but no longer the immediate frontier
+
+### 14) Memory productization
+- [ ] Unify Borg-native memory UX across facts, observations, prompts, and provenance
+- [ ] Improve graph/entity linking beyond today's flatter relationships
+- [ ] Add better capture/replay flows tied to sessions and browser/IDE context
+
+### 15) Suggestion/autonomy hardening
+- [ ] Move suggestion engine from UI-only hints toward trustworthy prompt-time assistance
+- [ ] Add stronger debounce/noise filtering to memory harvesting and background cognition
+
+### 16) Sandboxing and security
+- [ ] Add safer execution isolation for shell/code paths
+- [ ] Distinguish validation-safe server probes from risky probes
+- [ ] Add stronger secret handling for generated MCP config recipes
+
+## P3 — Deferred until validated infrastructure is real
+
+### 17) Swarm/council productization
+- [ ] Only expand multi-agent orchestration once validated MCP infrastructure exists
+
+### 18) Broad parity and ecosystem assimilation
+- [ ] Continue evidence-lock work for built-in tool parity
+- [ ] Treat archive assimilation as optional unless directly improving validated MCP mission
+
 
 ## P0 — MCP ecosystem intelligence (new top priority)
 

@@ -2,8 +2,6 @@
 
 > The Unified AI Operations Control Plane.
 
-![Borg Mission Control Dashboard](./screenshot.png)
-
 Borg is a high-performance local control plane designed to sit between AI agents and their underlying infrastructure. It transforms standard agent interactions into a sophisticated, multi-tiered cognitive workflow with integrated memory, real-time observability, and autonomous "auto-drive" capabilities.
 
 ---
@@ -24,8 +22,6 @@ The "Meta-Tool" architecture eliminates the turn-latency of traditional tool use
 
 ### 🌐 Universal MCP Master Router
 Aggregate hundreds of MCP servers behind one endpoint. Borg manages connections, tool conflicts, and namespacing automatically.
-
-![Borg MCP Fleet Management](./screenshot2.png)
 
 ### 👁️ Real-Time "Local LLM" Watcher
 Borg runs background "Copilot" logic through the `SuggestionService`:

@@ -38,7 +38,11 @@ function sortServers(servers: DashboardServerSummary[]) {
     return [...servers].sort((left, right) => left.name.localeCompare(right.name));
 }
 
-export function DashboardHomeClient() {
+interface DashboardHomeClientProps {
+    versionLabel?: string;
+}
+
+export function DashboardHomeClient({ versionLabel }: DashboardHomeClientProps) {
     const utils = trpc.useUtils();
     const toolsClient = trpc.tools as any;
     const [pendingSessionActionId, setPendingSessionActionId] = useState<string | null>(null);
@@ -195,6 +199,7 @@ export function DashboardHomeClient() {
 
     return (
         <DashboardHomeView
+            versionLabel={versionLabel}
             generatedAtLabel={currentTimestamp ? new Date(currentTimestamp).toLocaleTimeString() : 'just now'}
             currentTimestamp={currentTimestamp}
             isBootstrapping={isBootstrapping}

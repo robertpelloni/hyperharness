@@ -3,9 +3,9 @@ import json
 from typing import Dict, Any, Optional
 
 
-class AIOSClient:
+class BorgClient:
     """
-    Python SDK for AIOS (Unified AI Operating System)
+    Python SDK for Borg AI Orchestration System
     """
 
     def __init__(
@@ -51,7 +51,7 @@ class AIOSClient:
 
     def get_system_status(self) -> Dict[str, Any]:
         """
-        Get the health and status of the AIOS instance.
+        Get the health and status of the Borg instance.
         """
         response = self.session.get(f"{self.base_url}/health")
         response.raise_for_status()
@@ -59,6 +59,6 @@ class AIOSClient:
 
 
 # Example usage:
-# client = AIOSClient(token="your_admin_token")
-# result = client.run_agent("researcher", "Analyze AIOS Phase 13 progress")
+# client = BorgClient(token="your_admin_token")
+# result = client.run_agent("researcher", "Analyze Borg Phase 13 progress")
 # print(result)

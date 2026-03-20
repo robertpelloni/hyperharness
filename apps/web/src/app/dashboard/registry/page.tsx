@@ -26,6 +26,7 @@
 
 import { trpc } from "@/utils/trpc";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import type { inferRouterOutputs } from "@trpc/server";
 import type { AppRouter } from "@borg/core";
 import {
@@ -39,9 +40,11 @@ import {
     Package,
     Cpu,
     PlayCircle,
+    Download,
     ExternalLink,
     ChevronLeft,
     ChevronRight,
+    ListChecks,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -106,10 +109,15 @@ function InstallBadge({ method }: { method: string }) {
 const PAGE_SIZE = 50;
 
 export default function RegistryPage() {
+    const router = useRouter();
     const [search, setSearch] = useState("");
     const [statusFilter, setStatusFilter] = useState<string>("");
     const [transportFilter, setTransportFilter] = useState<string>("");
     const [page, setPage] = useState(0);
+    const [installTarget, setInstallTarget] = useState<Server | null>(null);
+    const [installName, setInstallName] = useState("");
+    const [installEnv, setInstallEnv] = useState<Record<string, string>>({});
+    const [showSecrets, setShowSecrets] = useState(false);
 
     const utils = trpc.useContext();
 
@@ -165,6 +173,53 @@ export default function RegistryPage() {
         },
     });
 
+    // Install from validated/certified recipe
+    const installMutation = trpc.catalog.installFromRecipe.useMutation({
+        onSuccess: (result) => {
+            toast.success(`Installed as ${result.name}`);
+            utils.catalog.list.invalidate();
+            utils.mcpServers.list.invalidate();
+            setInstallTarget(null);
+            setInstallName("");
+            setInstallEnv({});
+            setShowSecrets(false);
+        },
+        onError: (err) => {
+            toast.error("Install failed: " + err.message);
+        },
+    });
+
+    // Batch validate — runs validation on all normalized/probeable servers
+    const batchValidateMutation = trpc.catalog.triggerBatchValidation.useMutation({
+        onSuccess: (result) => {
+            toast.success(
+                `Batch validation: ${result.passed ?? 0} passed, ${result.failed ?? 0} failed, ${result.skipped ?? 0} skipped (${result.queued} queued)`
+            );
+            utils.catalog.list.invalidate();
+            utils.catalog.stats.invalidate();
+        },
+        onError: (err) => {
+            toast.error("Batch validation error: " + err.message);
+        },
+    });
+
+    const { data: installDetails } = trpc.catalog.get.useQuery(
+        { uuid: installTarget?.uuid ?? "" },
+        {
+            enabled: Boolean(installTarget?.uuid),
+            staleTime: 30_000,
+        }
+    );
+
+    const requiredSecrets = installDetails?.activeRecipe?.required_secrets ?? [];
+    const requiredEnv = installDetails?.activeRecipe?.required_env ?? {};
+    const missingRequiredSecrets = requiredSecrets.filter((key) => !(installEnv[key] ?? "").trim());
+    const canSubmitInstall =
+        !installMutation.isPending &&
+        Boolean(installTarget?.uuid) &&
+        Boolean(installDetails?.activeRecipe) &&
+        missingRequiredSecrets.length === 0;
+
     const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
         setSearch(e.target.value);
         setPage(0);
@@ -185,14 +240,25 @@ export default function RegistryPage() {
                         )}
                     </p>
                 </div>
-                <button
-                    onClick={() => ingestMutation.mutate()}
-                    disabled={ingestMutation.isPending}
-                    className="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-500 disabled:bg-indigo-900 disabled:text-indigo-400 rounded-lg text-sm font-medium text-white transition-colors"
-                >
-                    <RefreshCw className={`w-4 h-4 ${ingestMutation.isPending ? "animate-spin" : ""}`} />
-                    {ingestMutation.isPending ? "Syncing…" : "Sync Registries"}
-                </button>
+                <div className="flex items-center gap-2">
+                    <button
+                        onClick={() => batchValidateMutation.mutate({ statuses: ["normalized", "probeable"], max_servers: 10 })}
+                        disabled={batchValidateMutation.isPending}
+                        className="flex items-center gap-2 px-4 py-2 bg-zinc-700 hover:bg-zinc-600 disabled:bg-zinc-800 disabled:text-zinc-500 rounded-lg text-sm font-medium text-zinc-200 transition-colors"
+                        title="Validate up to 10 unvalidated servers"
+                    >
+                        <ListChecks className={`w-4 h-4 ${batchValidateMutation.isPending ? "animate-pulse" : ""}`} />
+                        {batchValidateMutation.isPending ? "Validating…" : "Validate All"}
+                    </button>
+                    <button
+                        onClick={() => ingestMutation.mutate()}
+                        disabled={ingestMutation.isPending}
+                        className="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-500 disabled:bg-indigo-900 disabled:text-indigo-400 rounded-lg text-sm font-medium text-white transition-colors"
+                    >
+                        <RefreshCw className={`w-4 h-4 ${ingestMutation.isPending ? "animate-spin" : ""}`} />
+                        {ingestMutation.isPending ? "Syncing…" : "Sync Registries"}
+                    </button>
+                </div>
             </div>
 
             {/* Stats cards */}
@@ -283,7 +349,15 @@ export default function RegistryPage() {
                                         key={server.uuid}
                                         server={server}
                                         onValidate={() => validateMutation.mutate({ server_uuid: server.uuid })}
+                                        onInstall={() => {
+                                            setInstallTarget(server);
+                                            setInstallName("");
+                                            setInstallEnv({});
+                                            setShowSecrets(false);
+                                        }}
+                                        onDetail={() => router.push(`/dashboard/registry/${server.uuid}`)}
                                         isValidating={validateMutation.isPending && (validateMutation.variables as { server_uuid?: string } | undefined)?.server_uuid === server.uuid}
+                                        isInstalling={installMutation.isPending && (installMutation.variables as { server_uuid?: string } | undefined)?.server_uuid === server.uuid}
                                     />
                                 ))
                             )}
@@ -316,6 +390,110 @@ export default function RegistryPage() {
                     </div>
                 )}
             </div>
+
+            {installTarget && (
+                <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+                    <div className="w-full max-w-xl rounded-xl border border-zinc-800 bg-zinc-950 shadow-2xl">
+                        <div className="px-5 py-4 border-b border-zinc-800">
+                            <h2 className="text-base font-semibold text-zinc-100">Install from verified recipe</h2>
+                            <p className="text-xs text-zinc-500 mt-1">
+                                {installTarget.display_name} · provide required values before install.
+                            </p>
+                        </div>
+
+                        <div className="p-5 space-y-4 max-h-[70vh] overflow-y-auto">
+                            <div>
+                                <label className="block text-xs text-zinc-400 mb-1">Optional server name override</label>
+                                <input
+                                    className="w-full h-9 bg-zinc-900/50 border border-zinc-800 rounded-lg px-3 text-sm text-zinc-200 focus:outline-none focus:border-indigo-500/50"
+                                    placeholder="auto-generated from catalog"
+                                    value={installName}
+                                    onChange={(e) => setInstallName(e.target.value)}
+                                />
+                            </div>
+
+                            {Object.keys(requiredEnv).length > 0 && (
+                                <div className="space-y-2">
+                                    <p className="text-xs font-medium text-zinc-300">Recommended environment defaults</p>
+                                    {Object.entries(requiredEnv).map(([key, value]) => (
+                                        <div key={key}>
+                                            <label className="block text-xs text-zinc-500 mb-1">{key}</label>
+                                            <input
+                                                className="w-full h-9 bg-zinc-900/50 border border-zinc-800 rounded-lg px-3 text-sm text-zinc-200 focus:outline-none focus:border-indigo-500/50"
+                                                value={installEnv[key] ?? value}
+                                                onChange={(e) =>
+                                                    setInstallEnv((prev) => ({ ...prev, [key]: e.target.value }))
+                                                }
+                                            />
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+
+                            {requiredSecrets.length > 0 && (
+                                <div className="space-y-2">
+                                    <div className="flex items-center justify-between">
+                                        <p className="text-xs font-medium text-zinc-300">Required secret values</p>
+                                        <button
+                                            type="button"
+                                            className="text-xs text-zinc-500 hover:text-zinc-300"
+                                            onClick={() => setShowSecrets((v) => !v)}
+                                        >
+                                            {showSecrets ? "Hide" : "Show"}
+                                        </button>
+                                    </div>
+                                    {requiredSecrets.map((key) => (
+                                        <div key={key}>
+                                            <label className="block text-xs text-zinc-500 mb-1">{key}</label>
+                                            <input
+                                                className="w-full h-9 bg-zinc-900/50 border border-zinc-800 rounded-lg px-3 text-sm text-zinc-200 focus:outline-none focus:border-indigo-500/50"
+                                                type={showSecrets ? "text" : "password"}
+                                                value={installEnv[key] ?? ""}
+                                                onChange={(e) =>
+                                                    setInstallEnv((prev) => ({ ...prev, [key]: e.target.value }))
+                                                }
+                                            />
+                                        </div>
+                                    ))}
+                                    {missingRequiredSecrets.length > 0 && (
+                                        <p className="text-xs text-amber-400">
+                                            Missing required values: {missingRequiredSecrets.join(", ")}
+                                        </p>
+                                    )}
+                                </div>
+                            )}
+                        </div>
+
+                        <div className="px-5 py-4 border-t border-zinc-800 flex items-center justify-end gap-2">
+                            <button
+                                className="px-3 py-1.5 text-xs rounded border border-zinc-700 text-zinc-300 hover:bg-zinc-900"
+                                onClick={() => {
+                                    setInstallTarget(null);
+                                    setInstallName("");
+                                    setInstallEnv({});
+                                    setShowSecrets(false);
+                                }}
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                className="px-3 py-1.5 text-xs rounded bg-emerald-600 hover:bg-emerald-500 text-white disabled:bg-emerald-900 disabled:text-emerald-300"
+                                disabled={!canSubmitInstall}
+                                onClick={() => {
+                                    if (!installTarget) return;
+                                    installMutation.mutate({
+                                        server_uuid: installTarget.uuid,
+                                        name: installName.trim() || undefined,
+                                        env: installEnv,
+                                    });
+                                }}
+                            >
+                                {installMutation.isPending ? "Installing…" : "Install"}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
@@ -348,20 +526,27 @@ function StatCard({
 function ServerRow({
     server,
     onValidate,
+    onInstall,
+    onDetail,
     isValidating,
+    isInstalling,
 }: {
     server: Server;
     onValidate: () => void;
+    onInstall: () => void;
+    onDetail: () => void;
     isValidating: boolean;
+    isInstalling: boolean;
 }) {
     const statusCfg = getStatusConfig(server.status);
     const StatusIcon = statusCfg.icon;
+    const canInstall = server.status === "validated" || server.status === "certified";
 
     return (
         <tr className="border-b border-zinc-800/50 hover:bg-zinc-800/20 transition-colors">
-            {/* Name + description */}
-            <td className="px-4 py-3">
-                <div className="font-medium text-zinc-200 truncate max-w-[260px]">
+            {/* Name + description — click → detail page */}
+            <td className="px-4 py-3 cursor-pointer" onClick={onDetail}>
+                <div className="font-medium text-zinc-200 truncate max-w-[260px] hover:text-indigo-300 transition-colors">
                     {server.display_name}
                 </div>
                 {server.description && (
@@ -425,6 +610,14 @@ function ServerRow({
                         title="Run validation"
                     >
                         <PlayCircle className={`w-3.5 h-3.5 ${isValidating ? "animate-pulse" : ""}`} />
+                    </button>
+                    <button
+                        onClick={onInstall}
+                        disabled={!canInstall || isInstalling}
+                        className="p-1.5 rounded hover:bg-zinc-700 transition-colors text-zinc-500 hover:text-emerald-400 disabled:opacity-30 disabled:cursor-not-allowed"
+                        title={canInstall ? "Install from active recipe" : "Install enabled after validation"}
+                    >
+                        <Download className={`w-3.5 h-3.5 ${isInstalling ? "animate-pulse" : ""}`} />
                     </button>
                 </div>
             </td>

@@ -2,6 +2,42 @@
 
 ## Delta update (latest)
 
+### VS Code task hygiene (Vitest reporter + duplicate task cleanup)
+- Fixed `verify: mcp discovery guards` in `.vscode/tasks.json` by removing unsupported Vitest flag `--reporter=basic`.
+- Confirmed task execution now passes:
+  - `pnpm exec vitest run packages/core/test/mcpDiscoveryFailureHandling.test.ts packages/core/test/HealerReactor.test.ts` ✅
+- Removed duplicate task entries for `core: typecheck` / `web: build-webpack` to reduce task picker ambiguity and keep task IDs deterministic.
+- Re-validated `core: typecheck-marker` task after cleanup (`CORE_TSC_OK`) ✅
+- Follow-up cleanup removed additional duplicate variants:
+  - `web: tsc verify current 2`
+  - `root: build extensions validate 2`
+  - `verify: mcp discovery guards clean`, `clean 2`, `clean 3`
+- Re-validated after second pass:
+  - `web: tsc verify current` ✅
+  - `verify: mcp discovery guards` ✅
+
+### Published catalog → managed install workflow (operator action)
+- Added `catalog.installFromRecipe` admin mutation in `packages/core/src/routers/catalogRouter.ts`.
+- New install mutation behavior:
+  - allows install only for `validated`/`certified` published entries,
+  - requires an active recipe,
+  - maps recipe template fields into managed `mcp_servers` create input with transport-aware logic,
+  - enforces required secrets (`required_secrets`) before create,
+  - auto-generates a unique, safe server name if needed.
+- Updated `apps/web/src/app/dashboard/registry/page.tsx` with a row-level `Install` action (download icon), enabled only for validated/certified rows.
+- Install success now refreshes both published catalog list and managed MCP server list caches.
+- Improved `/dashboard/registry` install UX with a guided modal:
+  - opens from row-level Install action,
+  - loads active recipe detail via `catalog.get`,
+  - renders inputs for `required_env` defaults and `required_secrets`,
+  - submits merged values into `catalog.installFromRecipe`.
+
+### Verification (post-change)
+- `pnpm -C apps/web exec tsc --noEmit --pretty false` ✅
+- `pnpm -C apps/web build --webpack` ✅
+- Edited files report no diagnostics in workspace Problems for this slice ✅
+- Guided install modal wiring in `apps/web/src/app/dashboard/registry/page.tsx` reports no TypeScript diagnostics ✅
+
 ### MCP registry/catalog workflow unification (UI)
 - Updated `apps/web/src/app/dashboard/mcp/registry/page.tsx` to include a `Published Catalog Intelligence` panel.
 - Added live metrics sourced from `trpc.catalog.stats` (total, validated, broken, updated 24h).

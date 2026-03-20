@@ -1,1 +1,1 @@
-return require("aios.telescope")
+return require("borg.telescope")
