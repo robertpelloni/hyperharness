@@ -3,7 +3,28 @@
 ## Borg Changelog
 
 All notable changes to this project will be documented in this file.
-## [0.9.5] — 2026-03-20
+## [0.9.6] — 2026-03-20
+
+### Task 031 — npm Registry Ingestion Adapter + Archivist Normalization Pass
+
+- feat(core/catalog): New `NpmRegistryAdapter` in `published-catalog-ingestor.ts`:
+  - Runs 3 npm registry searches: `scope:modelcontextprotocol`, `keywords:mcp-server`, and `mcp-server` text query
+  - Deduplicates results across queries within the same ingestion run (in-memory `Set`)
+  - Filters false positives: keeps only `@modelcontextprotocol/*` scoped packages, keyword-tagged packages, or `mcp-server[-_]*` named packages
+  - Infers `stdio` transport by default for npm packages (majority run via `npx`/`node`); detects `sse`/`streamable_http` from description and keyword text
+  - Sets `install_method: "npm"` for all npm catalog entries
+  - Stores raw npm package metadata in `published_mcp_server_sources.raw_payload`
+  - Registered in `INGESTION_ADAPTERS` as adapter #4 — runs after existing Glama, Smithery, mcp.run adapters
+
+- feat(core/catalog): **Archivist normalization pass** runs automatically at the end of every ingestion cycle:
+  - Queries up to 200 `discovered` servers after all adapters complete
+  - Advances servers to `normalized` (confidence=30) when they satisfy: description length > 10 chars AND transport is not `unknown`
+  - Ensures the catalog does not pile up at `discovered` for well-described npm/glama entries
+  - Non-fatal: if the normalization pass fails, it logs a warning and ingestion report still completes
+
+- chore(docs): Updated `published-catalog-ingestor.ts` file-level docstring to list all 4 adapters
+
+
 
 ### Task 030 — MCP Registry: Server Detail Page + Batch Validation
 

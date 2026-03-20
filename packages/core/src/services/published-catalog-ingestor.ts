@@ -16,9 +16,10 @@
  * in `INGESTION_ADAPTERS`. The `ingestAll()` method runs all adapters sequentially.
  *
  * Currently implemented adapters:
- *   1. GlamaAiAdapter  — hits api.glama.ai public MCP offerings endpoint
- *   2. SmitheryAiAdapter — hits smithery.ai registry API
- *   3. AwesomeMcpServersAdapter — parses the glama-formatted GitHub awesome list
+ *   1. GlamaAiAdapter      — hits api.glama.ai public MCP offerings endpoint
+ *   2. SmitheryAiAdapter   — hits smithery.ai registry API
+ *   3. McpRunAdapter       — hits mcp.run/api/servers (soft failure if unavailable)
+ *   4. NpmRegistryAdapter  — searches npm for @modelcontextprotocol/* and mcp-server-* packages
  *
  * Security note: raw_payload is stored as JSON but NEVER executed. The Configurator
  * agent generates recipes separately based on the cataloged data. This adapter
@@ -321,6 +322,163 @@ export class McpRunAdapter implements CatalogSourceAdapter {
 }
 
 // ---------------------------------------------------------------------------
+// Adapter 4: npm registry search
+// Searches npm for packages matching common MCP server naming patterns:
+//   - Packages in the @modelcontextprotocol scope
+//   - Packages with "mcp" as a keyword
+//   - Packages named "mcp-server-*" or "@mcp-*"
+//
+// npm search API: https://registry.npmjs.org/-/v1/search
+//   Supports `text`, `size` (max 250), and result fields include package.links.repository
+//
+// WHY: npm is the largest registry for STDIO-based MCP servers because most
+// are Node.js packages run via `npx` or `node`. This gives far more coverage
+// than the Glama/Smithery lists alone.
+// ---------------------------------------------------------------------------
+
+type NpmSearchObject = {
+    package: {
+        name: string;
+        scope?: string;
+        version?: string;
+        description?: string;
+        keywords?: string[];
+        date?: string;
+        links?: {
+            npm?: string;
+            homepage?: string;
+            repository?: string;
+        };
+        author?: { name?: string; username?: string };
+        publisher?: { username?: string };
+    };
+    score?: { final?: number };
+};
+
+type NpmSearchResponse = {
+    objects?: NpmSearchObject[];
+    total?: number;
+};
+
+export class NpmRegistryAdapter implements CatalogSourceAdapter {
+    readonly name = "npm.registry";
+    private readonly searchBase = "https://registry.npmjs.org/-/v1/search";
+
+    async ingest(): Promise<IngestResult> {
+        const result: IngestResult = {
+            source: this.name,
+            fetched: 0,
+            upserted: 0,
+            errors: [],
+        };
+
+        // Run multiple focused queries to maximize coverage.
+        // Each query can return up to 250 results; we cap at a few queries to
+        // stay well within NPM's rate limits for this non-authenticated path.
+        const queries = [
+            // Official MCP scope
+            "scope:modelcontextprotocol",
+            // Keyword-tagged packages
+            "keywords:mcp-server",
+            // Common naming patterns
+            "mcp-server",
+        ];
+
+        const seen = new Set<string>();
+
+        for (const text of queries) {
+            try {
+                const url = `${this.searchBase}?text=${encodeURIComponent(text)}&size=250`;
+                const payload = await safeFetch(url) as NpmSearchResponse;
+                const objects = payload?.objects ?? [];
+
+                for (const obj of objects) {
+                    const pkg = obj.package;
+                    if (!pkg?.name) continue;
+
+                    // Deduplicate within this ingestion run
+                    if (seen.has(pkg.name)) continue;
+                    seen.add(pkg.name);
+
+                    result.fetched++;
+
+                    // Screen out packages that are very unlikely to be MCP servers.
+                    // We keep all @modelcontextprotocol/* and keyword-tagged ones,
+                    // but for the "mcp-server" text query we check the name pattern.
+                    if (
+                        pkg.scope !== "modelcontextprotocol" &&
+                        !(pkg.keywords ?? []).some((k) =>
+                            k === "mcp" || k === "mcp-server" || k === "model-context-protocol"
+                        ) &&
+                        !pkg.name.includes("mcp-server") &&
+                        !pkg.name.includes("mcp_server")
+                    ) {
+                        // Skip — probably a false positive from generic text match
+                        continue;
+                    }
+
+                    try {
+                        // Determine install method (npm - standard for Node.js packages)
+                        // and infer transport from description/keywords
+                        const transport = this.inferTransport(pkg.description ?? "", pkg.keywords ?? []);
+
+                        // Canonical ID uses npm package name as stable identifier
+                        const canonicalId = `npm/${pkg.name}`;
+
+                        const server = await publishedCatalogRepository.upsertServer({
+                            canonical_id: canonicalId,
+                            display_name: pkg.name,
+                            description: pkg.description ?? null,
+                            author:
+                                pkg.author?.name ??
+                                pkg.author?.username ??
+                                pkg.publisher?.username ??
+                                null,
+                            repository_url: pkg.links?.repository ?? null,
+                            homepage_url: pkg.links?.homepage ?? pkg.links?.npm ?? null,
+                            tags: pkg.keywords ?? [],
+                            categories: [],
+                            transport,
+                            // npm packages are installed via npm/npx
+                            install_method: "npm",
+                            auth_model: "unknown",
+                            stars: null,
+                        });
+
+                        await publishedCatalogRepository.upsertSource({
+                            server_uuid: server.uuid,
+                            source_name: this.name,
+                            source_url: pkg.links?.npm ?? `https://www.npmjs.com/package/${pkg.name}`,
+                            raw_payload: pkg as unknown as Record<string, unknown>,
+                        });
+
+                        result.upserted++;
+                    } catch (err) {
+                        result.errors.push(`npm package ${pkg.name}: ${String(err)}`);
+                    }
+                }
+            } catch (err) {
+                result.errors.push(`npm query "${text}" failed: ${String(err)}`);
+            }
+        }
+
+        return result;
+    }
+
+    /**
+     * Infer transport type from package description and keywords.
+     * Most npm MCP servers use STDIO — hosted/SSE variants mention it explicitly.
+     */
+    private inferTransport(description: string, keywords: string[]): string {
+        const combined = (description + " " + keywords.join(" ")).toLowerCase();
+        if (combined.includes("sse") || combined.includes("server-sent")) return "sse";
+        if (combined.includes("streamable") || combined.includes("http server")) return "streamable_http";
+        // Default for npm packages: stdio (run via npx/node)
+        return "stdio";
+    }
+}
+
+// ---------------------------------------------------------------------------
 // Main ingestion service
 // ---------------------------------------------------------------------------
 
@@ -329,6 +487,7 @@ const INGESTION_ADAPTERS: CatalogSourceAdapter[] = [
     new GlamaAiAdapter(),
     new SmitheryAiAdapter(),
     new McpRunAdapter(),
+    new NpmRegistryAdapter(),
 ];
 
 export type IngestionReport = {
@@ -342,6 +501,10 @@ export type IngestionReport = {
 /**
  * Run all registered ingestion adapters and return a consolidated report.
  * Each adapter's failures are captured without aborting the others.
+ *
+ * After ingestion, newly discovered servers that have enough normalized data
+ * (display_name + description + a known transport) are automatically advanced
+ * from `discovered` → `normalized` by the Archivist.
  *
  * Usage (from a cron / admin endpoint):
  *   const report = await ingestPublishedCatalog();
@@ -361,6 +524,27 @@ export async function ingestPublishedCatalog(
         if (result.errors.length > 0) {
             console.warn(`[CatalogIngestor] ${adapter.name} errors:`, result.errors);
         }
+    }
+
+    // --- Archivist normalization pass ---
+    // Advance `discovered` servers with sufficient metadata to `normalized`.
+    // This keeps status advancement automatic and avoids the catalog being
+    // stuck at `discovered` for well-understood npm/glama entries.
+    try {
+        const discovered = await publishedCatalogRepository.listServers({ status: "discovered", limit: 200 });
+        let normalized = 0;
+        for (const server of discovered) {
+            // Qualify as normalized if: has description, and transport is known
+            if (server.description && server.description.trim().length > 10 && server.transport !== "unknown") {
+                await publishedCatalogRepository.updateServerStatus(server.uuid, "normalized", 30);
+                normalized++;
+            }
+        }
+        if (normalized > 0) {
+            console.info(`[CatalogIngestor] Normalization pass: advanced ${normalized} discovered → normalized`);
+        }
+    } catch (err) {
+        console.warn("[CatalogIngestor] Normalization pass failed:", err);
     }
 
     const finishedAt = new Date().toISOString();
