@@ -141,6 +141,7 @@ export class McpServersRepository {
                 headers: input.headers ?? {},
                 always_on: input.always_on ?? false,
                 user_id: input.user_id ?? "system",
+                source_published_server_uuid: input.source_published_server_uuid ?? null,
             };
 
             const [createdServer] = await db

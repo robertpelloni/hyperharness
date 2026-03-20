@@ -75,6 +75,7 @@ export const mcpServersTable = sqliteTable(
             .notNull()
             .default(false),
         user_id: text("user_id").notNull(), // Foreign key to usersTable (if auth exists) or 'system'
+        source_published_server_uuid: text("source_published_server_uuid"), // FK to published_mcp_servers.uuid (nullable)
     },
     (table) => ({
         nameIdx: index("mcp_servers_name_idx").on(table.name),

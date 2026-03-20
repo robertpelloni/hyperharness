@@ -70,6 +70,16 @@ describe('toolSearchRanking auto-load decisions', () => {
                 matchReason: 'exact tool name match',
                 score: 140,
                 autoLoaded: true,
+                scoreBreakdown: {
+                    primaryMatchScore: 120,
+                    tokenMatchScore: 0,
+                    tokenMatchCount: 0,
+                    profileBoostScore: 0,
+                    loadedBoostScore: 5,
+                    alwaysOnBoostScore: 0,
+                    hydratedBoostScore: 0,
+                    noQueryBaseScore: 0,
+                },
             },
             {
                 name: 'browser__close_tab',
@@ -80,6 +90,16 @@ describe('toolSearchRanking auto-load decisions', () => {
                 requiresSchemaHydration: false,
                 matchReason: 'tool name contains query',
                 score: 90,
+                scoreBreakdown: {
+                    primaryMatchScore: 70,
+                    tokenMatchScore: 12,
+                    tokenMatchCount: 2,
+                    profileBoostScore: 0,
+                    loadedBoostScore: 0,
+                    alwaysOnBoostScore: 0,
+                    hydratedBoostScore: 0,
+                    noQueryBaseScore: 0,
+                },
             },
         ], 'browser__open_tab', { minConfidence: 0.85 });
 
@@ -105,6 +125,16 @@ describe('toolSearchRanking auto-load decisions', () => {
                 requiresSchemaHydration: false,
                 matchReason: 'exact tool name match',
                 score: 140,
+                scoreBreakdown: {
+                    primaryMatchScore: 120,
+                    tokenMatchScore: 0,
+                    tokenMatchCount: 0,
+                    profileBoostScore: 0,
+                    loadedBoostScore: 5,
+                    alwaysOnBoostScore: 0,
+                    hydratedBoostScore: 0,
+                    noQueryBaseScore: 0,
+                },
             },
             {
                 name: 'browser__close_tab',
@@ -115,6 +145,16 @@ describe('toolSearchRanking auto-load decisions', () => {
                 requiresSchemaHydration: false,
                 matchReason: 'tool name contains query',
                 score: 90,
+                scoreBreakdown: {
+                    primaryMatchScore: 70,
+                    tokenMatchScore: 12,
+                    tokenMatchCount: 2,
+                    profileBoostScore: 0,
+                    loadedBoostScore: 0,
+                    alwaysOnBoostScore: 0,
+                    hydratedBoostScore: 0,
+                    noQueryBaseScore: 0,
+                },
             },
         ], 'browser__open_tab', { minConfidence: 0.85 });
 

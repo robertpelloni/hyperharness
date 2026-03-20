@@ -86,7 +86,8 @@ function initializeSchema(database: InstanceType<typeof Database>): void {
             created_at INTEGER NOT NULL DEFAULT (strftime('%s', 'now')),
             bearer_token TEXT,
             headers TEXT NOT NULL DEFAULT '{}',
-            user_id TEXT NOT NULL
+            user_id TEXT NOT NULL,
+            source_published_server_uuid TEXT
         );
 
         CREATE TABLE IF NOT EXISTS oauth_sessions (
@@ -458,6 +459,11 @@ function initializeSchema(database: InstanceType<typeof Database>): void {
         if (!hasAlwaysOn) {
             database.exec(`ALTER TABLE mcp_servers ADD COLUMN always_on INTEGER NOT NULL DEFAULT 0;`);
             console.info("[DB Migration] Added 'always_on' column to mcp_servers table.");
+        }
+        const hasSourceCatalogUuid = tableInfo.some((col) => col.name === "source_published_server_uuid");
+        if (!hasSourceCatalogUuid) {
+            database.exec(`ALTER TABLE mcp_servers ADD COLUMN source_published_server_uuid TEXT;`);
+            console.info("[DB Migration] Added 'source_published_server_uuid' column to mcp_servers table.");
         }
     } catch (err) {
         console.warn("[DB Migration] Failed to alter mcp_servers table:", err);

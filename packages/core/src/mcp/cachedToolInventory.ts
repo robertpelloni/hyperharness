@@ -74,6 +74,7 @@ function buildConfigSnapshot(configServers: Record<string, BorgMcpServerEntry>):
             enabled: !server.disabled,
             always_on: Boolean(metadata?.alwaysOn),
             user_id: null,
+            source_published_server_uuid: null,
             displayName: metadata?.displayName ?? metadata?.serverName ?? name,
             tags: metadata?.serverTags ?? [],
             alwaysOnAdvertised: Boolean(metadata?.alwaysOn),

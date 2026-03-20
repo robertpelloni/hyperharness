@@ -3,6 +3,50 @@
 ## Borg Changelog
 
 All notable changes to this project will be documented in this file.
+## [0.9.8] — 2026-03-20
+
+### Task 033 — Bidirectional Server-to-Catalog Linking
+
+- feat(db/schema): Added `source_published_server_uuid TEXT` column to `mcp_servers` table:
+  - Nullable field enabling optional linkage between managed servers and published catalog entries
+  - Dynamic migration in `initializeSchema()` safely adds column via `ALTER TABLE IF NOT EXISTS`
+  - Preserves backward compatibility: existing servers have null source UUID
+
+- feat(types): Extended Zod validation schemas to support optional source tracking:
+  - `McpServerCreateInputSchema`: accepts optional `source_published_server_uuid` field
+  - `DatabaseMcpServerSchema`: includes `source_published_server_uuid: string | null`
+  - Type system now infers source field throughout the codebase
+
+- feat(core/catalog): **Install capture** — `installFromRecipe` mutation now records source:
+  - When admin installs a server from published catalog recipe, captures `published_server_uuid` as `source_published_server_uuid`
+  - Enables "Source" badge/indicator on managed server detail pages
+  - Logs canonical link between published entry and installed instance
+
+- feat(core/catalog): **New `listLinkedServers` query** for reverse lookup:
+  - Public tRPC procedure: `catalog.listLinkedServers({ published_server_uuid })`
+  - Returns all managed MCP servers where `source_published_server_uuid` matches input
+  - Enables UI to display "Installed as:" section on published catalog detail pages
+  - Returns full `DatabaseMcpServer` records (name, transport, status, health)
+
+- feat(web/ui): **Published catalog detail page** enhanced with "Installed as:" section:
+  - New section shows list of installed managed servers linked to this catalog entry
+  - Each linked server displays: name, transport type, running/health status
+  - Clickable button navigates to managed server detail page for inspection
+  - Loading spinner shown while fetching linked servers
+  - Type-safe query integration with tRPC `catalog.listLinkedServers`
+
+- fix(core/cache): Fixed TypeScript type mismatch in `cachedToolInventory.ts`:
+  - Added missing `source_published_server_uuid: null` field in `buildConfigSnapshot()` server object
+  - Resolved TS2352 error: "Property missing in type" when casting to `CachedMcpServerInventory`
+  - Config file servers correctly default to no catalog source (null)
+
+- fix(test): Added missing `scoreBreakdown` property to test fixtures in `toolSearchRanking.test.ts`:
+  - Updated 4 test objects to include required `ToolSearchScoreBreakdown` property
+  - Resolved TS2741 compilation errors in @borg/cli build
+  - All test cases now provide complete, type-safe ranking result objects
+
+- chore(build): Full monorepo build now succeeds — all 26 packages compile without errors
+
 ## [0.9.7] — 2026-03-20
 
 ### Task 032 — GitHub Topic Adapter + Scheduled Catalog Ingestion

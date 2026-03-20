@@ -454,6 +454,7 @@ export const McpServerCreateInputSchema = z.object({
     always_on: z.boolean().optional(),
     user_id: z.string().nullable().optional(),
     metadataStrategy: z.enum(['auto', 'binary', 'cache']).optional(),
+    source_published_server_uuid: z.string().nullable().optional(),
 });
 
 export const McpServerUpdateInputSchema = z.object({
@@ -501,6 +502,7 @@ export const DatabaseMcpServerSchema = z.object({
     headers: z.record(z.string()),
     always_on: z.boolean(),
     user_id: z.string().nullable(),
+    source_published_server_uuid: z.string().nullable(),
 });
 
 export type DatabaseMcpServer = z.infer<typeof DatabaseMcpServerSchema>;

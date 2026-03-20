@@ -327,6 +327,7 @@ export const catalogRouter = t.router({
                 headers: type === "STDIO" ? {} : headers,
                 always_on: false,
                 user_id: "system",
+                source_published_server_uuid: input.server_uuid,
             });
 
             return {
@@ -440,5 +441,16 @@ export const catalogRouter = t.router({
                 broken,
                 recentlyUpdated,
             };
+        }),
+
+    /**
+     * List managed MCP servers that were installed from a specific published catalog entry.
+     * Public-accessible. Returns server records linked via `source_published_server_uuid`.
+     */
+    listLinkedServers: publicProcedure
+        .input(z.object({ published_server_uuid: z.string() }))
+        .query(async ({ input }) => {
+            const servers = await mcpServersRepository.findAll();
+            return (servers ?? []).filter((s) => s.source_published_server_uuid === input.published_server_uuid);
         }),
 });

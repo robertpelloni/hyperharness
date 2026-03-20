@@ -134,6 +134,12 @@ export default function ServerDetailPage() {
         { enabled: Boolean(uuid), staleTime: 30_000 }
     );
 
+    // Linked managed servers (servers installed from this published catalog entry)
+    const { data: linkedServers = [], isFetching: loadingLinkedServers } = trpc.catalog.listLinkedServers.useQuery(
+        { published_server_uuid: uuid },
+        { enabled: Boolean(uuid), staleTime: 30_000 }
+    );
+
     // Validate mutation
     const validateMutation = trpc.catalog.triggerValidation.useMutation({
         onSuccess: (result) => {
@@ -429,6 +435,40 @@ export default function ServerDetailPage() {
                             </li>
                         ))}
                     </ul>
+                </Section>
+            )}
+
+            {/* Installed as */}
+            {linkedServers && linkedServers.length > 0 && (
+                <Section icon={Download} title="Installed as">
+                    <ul className="space-y-2">
+                        {linkedServers.map((server) => {
+                            const transport = (server.type ?? "STDIO").toLowerCase();
+                            const isRunning = !server.error_status;
+
+                            return (
+                                <li key={server.uuid} className="flex items-center justify-between text-xs border border-zinc-800 rounded-lg px-3 py-2 bg-zinc-900/30">
+                                    <button
+                                        onClick={() => router.push(`/dashboard/mcp/servers/${server.uuid}`)}
+                                        className="text-indigo-400 hover:underline text-left"
+                                    >
+                                        <div className="font-medium">{server.name}</div>
+                                        <div className="text-zinc-500 text-xs mt-0.5">{transport || "stdio"}</div>
+                                    </button>
+                                    <span className={`text-xs px-2 py-0.5 rounded ${
+                                        isRunning ? "bg-emerald-950 text-emerald-400 border border-emerald-800" : "bg-red-950 text-red-400 border border-red-800"
+                                    }`}>
+                                        {isRunning ? "✓ Running" : "⚠ Not running"}
+                                    </span>
+                                </li>
+                            );
+                        })}
+                    </ul>
+                    {loadingLinkedServers && (
+                        <div className="flex gap-2 items-center text-zinc-500 text-sm mt-2">
+                            <RefreshCw className="w-4 h-4 animate-spin" /> Loading…
+                        </div>
+                    )}
                 </Section>
             )}
 
