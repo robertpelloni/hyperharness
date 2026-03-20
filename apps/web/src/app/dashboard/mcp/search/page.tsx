@@ -976,7 +976,7 @@ function SearchDashboardContent() {
     }, [pathname, router, searchParams, evictionReasonFilter, evictionTierFilter, evictionWindowFilter]);
 
     const updateToolPreferences = (next: ToolPreferenceMutationInput) => {
-        setPreferencesMutation.mutate(next as never);
+        setPreferencesMutation.mutate(next);
     };
 
     const toggleImportant = (toolName: string) => {
@@ -989,11 +989,6 @@ function SearchDashboardContent() {
 
         updateToolPreferences({
             importantTools: Array.from(next),
-            alwaysLoadedTools: Array.from(alwaysLoadedTools),
-            autoLoadMinConfidence: preferences.autoLoadMinConfidence,
-            maxLoadedTools: preferences.maxLoadedTools,
-            maxHydratedSchemas: preferences.maxHydratedSchemas,
-            idleEvictionThresholdMs: preferences.idleEvictionThresholdMs,
         });
     };
 
@@ -1006,12 +1001,7 @@ function SearchDashboardContent() {
         }
 
         updateToolPreferences({
-            importantTools: Array.from(importantTools),
             alwaysLoadedTools: Array.from(next),
-            autoLoadMinConfidence: preferences.autoLoadMinConfidence,
-            maxLoadedTools: preferences.maxLoadedTools,
-            maxHydratedSchemas: preferences.maxHydratedSchemas,
-            idleEvictionThresholdMs: preferences.idleEvictionThresholdMs,
         });
     };
 
@@ -1024,12 +1014,7 @@ function SearchDashboardContent() {
         }
 
         updateToolPreferences({
-            importantTools: Array.from(importantTools),
-            alwaysLoadedTools: Array.from(alwaysLoadedTools),
             autoLoadMinConfidence: normalized,
-            maxLoadedTools: preferences.maxLoadedTools,
-            maxHydratedSchemas: preferences.maxHydratedSchemas,
-            idleEvictionThresholdMs: preferences.idleEvictionThresholdMs,
         });
     };
 
@@ -1050,9 +1035,6 @@ function SearchDashboardContent() {
         }
 
         updateToolPreferences({
-            importantTools: Array.from(importantTools),
-            alwaysLoadedTools: Array.from(alwaysLoadedTools),
-            autoLoadMinConfidence: preferences.autoLoadMinConfidence,
             maxLoadedTools: nextMax,
             maxHydratedSchemas: nextHydrated,
             idleEvictionThresholdMs: nextIdleEvictionThresholdMs,

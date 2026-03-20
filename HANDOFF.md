@@ -2,6 +2,19 @@
 
 ## Delta update (latest)
 
+### MCP search UI now uses true partial preference patches
+- Updated `apps/web/src/app/dashboard/mcp/search/page.tsx` to send minimal preference patch payloads instead of full snapshots.
+  - Important toggle patches only `importantTools`.
+  - Keep-warm toggle patches only `alwaysLoadedTools`.
+  - Auto-load confidence save patches only `autoLoadMinConfidence`.
+  - Capacity save patches only capacity/idle fields.
+- Removed `as never` cast from `setPreferencesMutation.mutate(...)`.
+- Rationale: with backend patch-merge semantics in place, partial payloads reduce stale-state overwrite risk and keep client intent explicit.
+
+### Verification (post-change)
+- `pnpm -C apps/web exec tsc --noEmit --pretty false` ✅
+- `pnpm -C packages/core exec tsc --noEmit --pretty false` ✅
+
 ### Backend hardening: safe partial `setToolPreferences` patches
 - Updated `packages/core/src/routers/mcpRouter.ts` so `mcp.setToolPreferences` accepts optional fields and merges patches with current persisted preferences before write.
 - Added `applyToolPreferencePatch(...)` to `packages/core/src/routers/mcp-tool-preferences.ts` to centralize patch merge + normalization semantics.

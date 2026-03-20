@@ -3,6 +3,24 @@
 ## Borg Changelog
 
 All notable changes to this project will be documented in this file.
+## [0.9.11] — 2026-03-20
+
+### Task 038 — MCP Search UI Partial Preference Patching
+
+- refactor(web/mcp-search): Updated `apps/web/src/app/dashboard/mcp/search/page.tsx` preference writes to send minimal partial patches instead of full preference snapshots.
+  - `toggleImportant` now patches only `importantTools`.
+  - `toggleAlwaysLoaded` now patches only `alwaysLoadedTools`.
+  - `saveAutoLoadMinConfidence` now patches only `autoLoadMinConfidence`.
+  - `saveCapacity` continues patching only capacity-related fields.
+
+- refactor(web/mcp-search): Removed the `as never` cast from `setPreferencesMutation.mutate(...)` now that mutation input semantics align with typed partial payloads.
+
+- design note: This follows Task 037 backend hardening (`applyToolPreferencePatch` + optional mutation fields) and reduces stale client-state overwrite risk when concurrent controls update preferences.
+
+- verification:
+  - `pnpm -C apps/web exec tsc --noEmit --pretty false` ✅
+  - `pnpm -C packages/core exec tsc --noEmit --pretty false` ✅
+
 ## [0.9.10] — 2026-03-20
 
 ### Task 037 — Safe Partial Tool Preference Patching
