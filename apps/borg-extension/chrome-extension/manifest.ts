@@ -23,7 +23,7 @@ const manifest = {
   name: 'Borg Extension',
   browser_specific_settings: {
     gecko: {
-      id: 'saurabh@mcpsuperassistant.ai',
+      id: 'extension@borg.local',
     },
   },
   version: packageJson.version,

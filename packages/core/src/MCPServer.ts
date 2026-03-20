@@ -92,6 +92,7 @@ import { SessionSupervisor } from "./supervisor/SessionSupervisor.js";
 import { ProjectTracker } from "./services/ProjectTracker.js";
 import { MissionService } from "./services/MissionService.js";
 import { buildToolObservationInput } from './services/toolObservationMemory.js';
+import { detectLocalExecutionEnvironment } from './services/execution-environment.js';
 import { loadBorgMcpConfig } from './mcp/mcpJsonConfig.js';
 import {
     buildAutomaticToolContextFingerprint,
@@ -2133,12 +2134,26 @@ export class MCPServer {
             }
             else if (name === "get_project_context") {
                 const contextPath = path.join(process.cwd(), '.borg', 'project_context.md');
-                if (!fs.existsSync(contextPath)) {
-                    result = { content: [{ type: "text", text: "# Project Context\n\nNo persistent context has been recorded yet. Use `update_project_context` to initialize it." }] };
+                let projectContent = "";
+                if (fs.existsSync(contextPath)) {
+                    projectContent = await fs.promises.readFile(contextPath, 'utf-8');
                 } else {
-                    const content = await fs.promises.readFile(contextPath, 'utf-8');
-                    result = { content: [{ type: "text", text: content }] };
+                    projectContent = "# Project Context\n\nNo persistent context has been recorded yet.";
                 }
+
+                // Append Environment Awareness
+                const env = await detectLocalExecutionEnvironment();
+                const envReport = `
+## Environment Awareness
+- **OS**: ${env.os}
+- **Preferred Shell**: ${env.summary.preferredShellLabel} (${env.summary.preferredShellId})
+- **POSIX Support**: ${env.summary.supportsPosixShell ? 'Available' : 'Missing'}
+- **Recommendations**: ${env.summary.notes.join(' ')}
+
+### Available Tools
+${env.tools.filter((tool) => tool.installed).map((tool) => `- **${tool.name}**: ${tool.version || 'detected'}`).join('\n')}
+`;
+                result = { content: [{ type: "text", text: `${projectContent}\n\n---\n${envReport}` }] };
             }
             else if (name === "update_project_context") {
                 const contextPath = path.join(process.cwd(), '.borg', 'project_context.md');
@@ -3033,6 +3048,28 @@ export class MCPServer {
                 description: "List tools available within Code Mode",
                 inputSchema: { type: "object", properties: {} }
             },
+            {
+                name: "list_workspace_symbols",
+                description: "Search for symbols (classes, functions, interfaces) across the entire workspace. Mimics Cursor/Windsurf internal context tools.",
+                inputSchema: {
+                    type: "object",
+                    properties: {
+                        query: { type: "string", description: "Search query for symbols" }
+                    },
+                    required: ["query"]
+                }
+            },
+            {
+                name: "symbol_search",
+                description: "(Alias for list_workspace_symbols) Search for symbols in the codebase.",
+                inputSchema: {
+                    type: "object",
+                    properties: {
+                        query: { type: "string" }
+                    },
+                    required: ["query"]
+                }
+            },
             // Phase 56: Session Handoff Tools
             {
                 name: "handoff_session",
@@ -3678,12 +3715,51 @@ export class MCPServer {
             this.wssInstance = wss;
 
             httpServer.on('error', (err: any) => {
+                if (err?.code === 'EADDRINUSE') {
+                    console.warn(`[Borg Core] ⚠️ WebSocket bridge port ${PORT} is already in use. Assuming another Borg bridge is already running and skipping duplicate bridge startup.`);
+                    this.wssInstance = null;
+                    return;
+                }
+
                 console.error(`[Borg Core] ❌ WebSocket Server Error (Port ${PORT}):`, err.message);
             });
 
-            httpServer.listen(PORT, () => {
-                mcpServerDebugLog(`Borg Core: WebSocket Transport Active on ws://localhost:${PORT}`);
+            const bridgeListening = await new Promise<boolean>((resolve) => {
+                let settled = false;
+
+                const finalize = (value: boolean) => {
+                    if (settled) {
+                        return;
+                    }
+
+                    settled = true;
+                    resolve(value);
+                };
+
+                httpServer.once('listening', () => {
+                    mcpServerDebugLog(`Borg Core: WebSocket Transport Active on ws://localhost:${PORT}`);
+                    finalize(true);
+                });
+
+                httpServer.once('error', (err: any) => {
+                    if (err?.code === 'EADDRINUSE') {
+                        finalize(false);
+                        return;
+                    }
+
+                    finalize(false);
+                });
+
+                httpServer.listen(PORT);
             });
+
+            if (!bridgeListening) {
+                try {
+                    httpServer.close();
+                } catch {
+                    // ignore cleanup failure for duplicate bridge startup
+                }
+            }
 
             // 2.5 Setup WS Message Handling mechanism
             wss.on('connection', (ws: any) => {

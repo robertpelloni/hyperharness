@@ -7,6 +7,28 @@ import {
     readToolPreferencesFromSettings,
 } from './mcp-tool-preferences.js';
 
+function makePreferences(overrides: Partial<ReturnType<typeof normalizeToolPreferences>> = {}) {
+    return {
+        importantTools: [],
+        alwaysLoadedTools: [],
+        autoLoadMinConfidence: 0.85,
+        maxLoadedTools: 16,
+        maxHydratedSchemas: 8,
+        idleEvictionThresholdMs: 5 * 60 * 1000,
+        ...overrides,
+    };
+}
+
+type DisplayTool = {
+    name: string;
+    description: string;
+    server: string;
+    rank?: number;
+    alwaysOn?: boolean;
+    matchReason?: string;
+    score?: number;
+};
+
 describe('mcp tool preferences helpers', () => {
     it('normalizes duplicate and empty preference entries', () => {
         expect(normalizeToolPreferences({
@@ -25,6 +47,9 @@ describe('mcp tool preferences helpers', () => {
             importantTools: ['github__issues'],
             alwaysLoadedTools: ['browser__open'],
             autoLoadMinConfidence: 0.9,
+            maxLoadedTools: 16,
+            maxHydratedSchemas: 8,
+            idleEvictionThresholdMs: 5 * 60 * 1000,
         })).toMatchObject({
             importantTools: ['github__issues'],
             alwaysLoadedTools: ['browser__open'],
@@ -33,7 +58,7 @@ describe('mcp tool preferences helpers', () => {
     });
 
     it('merges always-loaded tools ahead of normal search results', () => {
-        const merged = mergeToolPreferences([
+        const merged = mergeToolPreferences<DisplayTool>([
             {
                 name: 'github__issues',
                 description: 'Search GitHub issues',
@@ -46,11 +71,10 @@ describe('mcp tool preferences helpers', () => {
                 server: 'browser',
                 rank: 1,
             },
-        ], {
+        ], makePreferences({
             importantTools: ['github__issues'],
             alwaysLoadedTools: ['browser__open'],
-            autoLoadMinConfidence: 0.85,
-        }, [
+        }), [
             {
                 name: 'github__issues',
                 description: 'Search GitHub issues',
@@ -86,11 +110,7 @@ describe('mcp tool preferences helpers', () => {
     });
 
     it('always advertises always-on catalog tools even when they are not in the initial result set', () => {
-        const merged = mergeToolPreferences([], {
-            importantTools: [],
-            alwaysLoadedTools: [],
-            autoLoadMinConfidence: 0.85,
-        }, [
+        const merged = mergeToolPreferences<DisplayTool>([], makePreferences(), [
             {
                 name: 'memory__recall',
                 description: 'Recall a saved memory',
@@ -113,11 +133,11 @@ describe('mcp tool preferences helpers', () => {
             toolSelection: {
                 previous: 'keep-me',
             },
-        }, {
+        }, makePreferences({
             importantTools: ['github__issues'],
             alwaysLoadedTools: ['browser__open'],
             autoLoadMinConfidence: 0.9,
-        })).toMatchObject({
+        }))).toMatchObject({
             unrelated: true,
             toolSelection: {
                 previous: 'keep-me',

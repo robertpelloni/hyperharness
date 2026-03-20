@@ -4,8 +4,8 @@ import path from 'node:path';
 
 import { afterEach, describe, expect, it } from 'vitest';
 
-import { JsonConfigProvider } from './JsonConfigProvider.ts';
-import { loadBorgMcpConfig } from '../../mcp/mcpJsonConfig.ts';
+import { JsonConfigProvider } from './JsonConfigProvider.js';
+import { loadBorgMcpConfig } from '../../mcp/mcpJsonConfig.js';
 
 const tempDirs: string[] = [];
 

@@ -525,7 +525,7 @@ const Help: React.FC = () => {
                   </Button>
                 </a>
                 <a
-                  href="https://mcpsuperassistant.ai/"
+                  href="https://github.com/srbhptl39/Borg-Extension"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="no-underline">
@@ -534,7 +534,7 @@ const Help: React.FC = () => {
                     size="sm"
                     className="w-full justify-start h-10 hover:bg-slate-50 dark:hover:bg-slate-800">
                     <Icon name="arrow-up-right" size="sm" className="mr-3 text-primary-500" />
-                    Official Website
+                    Project Repository
                   </Button>
                 </a>
               </div>

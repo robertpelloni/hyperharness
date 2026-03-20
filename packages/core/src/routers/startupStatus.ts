@@ -87,7 +87,7 @@ type StartupStatusInput = {
     inventorySource?: 'database' | 'config' | 'empty';
     inventorySnapshotUpdatedAt?: string | null;
     executionEnvironment?: ExecutionEnvironmentSummary | null;
-    claudeMem?: {
+    sectionedMemory?: {
         enabled: boolean;
         storePath: string | null;
         storeExists: boolean;
@@ -106,7 +106,7 @@ type StartupBlockingReasonCode =
     | 'mcp_resident_runtime_not_ready'
     | 'mcp_config_sync_pending'
     | 'memory_not_ready'
-    | 'claude_mem_not_ready'
+    | 'sectioned_memory_not_ready'
     | 'browser_service_not_ready'
     | 'session_restore_not_ready'
     | 'extension_bridge_not_ready'
@@ -139,7 +139,7 @@ export async function buildStartupStatusSnapshot(input: StartupStatusInput) {
         inventorySource,
         inventorySnapshotUpdatedAt,
         executionEnvironment,
-        claudeMem,
+        sectionedMemory,
     } = input;
     const mcpServerRuntime = mcpServer as {
         memoryManager?: unknown;
@@ -208,12 +208,12 @@ export async function buildStartupStatusSnapshot(input: StartupStatusInput) {
         || (!lazySessionMode && inventoryReady && configuredServerCount > 0 && liveServerCount < configuredServerCount),
     );
     const executionReady = Boolean(executionEnvironment?.ready);
-    const claudeMemEnabled = Boolean(claudeMem?.enabled);
-    const claudeMemStoreExists = Boolean(claudeMem?.storeExists);
-    const claudeMemDefaultSectionsReady = claudeMemEnabled
-        ? Number(claudeMem?.presentDefaultSectionCount ?? 0) >= Number(claudeMem?.defaultSectionCount ?? 0)
+    const sectionedMemoryEnabled = Boolean(sectionedMemory?.enabled);
+    const sectionedMemoryStoreExists = Boolean(sectionedMemory?.storeExists);
+    const sectionedMemoryDefaultSectionsReady = sectionedMemoryEnabled
+        ? Number(sectionedMemory?.presentDefaultSectionCount ?? 0) >= Number(sectionedMemory?.defaultSectionCount ?? 0)
         : true;
-    const claudeMemReady = !claudeMemEnabled || (claudeMemStoreExists && claudeMemDefaultSectionsReady);
+    const sectionedMemoryReady = !sectionedMemoryEnabled || (sectionedMemoryStoreExists && sectionedMemoryDefaultSectionsReady);
 
     const blockingReasons: StartupBlockingReason[] = [];
 
@@ -258,12 +258,12 @@ export async function buildStartupStatusSnapshot(input: StartupStatusInput) {
         });
     }
 
-    if (!claudeMemReady) {
+    if (!sectionedMemoryReady) {
         blockingReasons.push({
-            code: 'claude_mem_not_ready',
-            detail: !claudeMemStoreExists
-                ? 'claude-mem store has not been created yet.'
-                : 'claude-mem default sections are still being seeded.',
+            code: 'sectioned_memory_not_ready',
+            detail: !sectionedMemoryStoreExists
+                ? 'Sectioned memory store has not been created yet.'
+                : 'Sectioned memory default sections are still being seeded.',
         });
     }
 
@@ -305,7 +305,7 @@ export async function buildStartupStatusSnapshot(input: StartupStatusInput) {
         status: 'running',
         ready: residentReady
             && memoryReady
-            && claudeMemReady
+            && sectionedMemoryReady
             && browserReady
             && sessionReady
             && bridgeReady
@@ -353,30 +353,30 @@ export async function buildStartupStatusSnapshot(input: StartupStatusInput) {
                 ready: memoryReady,
                 initialized: memoryInitialized,
                 agentMemory: Boolean(agentMemory),
-                claudeMem: {
-                    ready: claudeMemReady,
-                    enabled: claudeMemEnabled,
-                    storeExists: claudeMemStoreExists,
-                    storePath: claudeMem?.storePath ?? null,
-                    totalEntries: Number(claudeMem?.totalEntries ?? 0),
-                    sectionCount: Number(claudeMem?.sectionCount ?? 0),
-                    defaultSectionCount: Number(claudeMem?.defaultSectionCount ?? 0),
-                    presentDefaultSectionCount: Number(claudeMem?.presentDefaultSectionCount ?? 0),
-                    missingSections: claudeMem?.missingSections ?? [],
-                    lastUpdatedAt: claudeMem?.lastUpdatedAt ?? null,
+                sectionedMemory: {
+                    ready: sectionedMemoryReady,
+                    enabled: sectionedMemoryEnabled,
+                    storeExists: sectionedMemoryStoreExists,
+                    storePath: sectionedMemory?.storePath ?? null,
+                    totalEntries: Number(sectionedMemory?.totalEntries ?? 0),
+                    sectionCount: Number(sectionedMemory?.sectionCount ?? 0),
+                    defaultSectionCount: Number(sectionedMemory?.defaultSectionCount ?? 0),
+                    presentDefaultSectionCount: Number(sectionedMemory?.presentDefaultSectionCount ?? 0),
+                    missingSections: sectionedMemory?.missingSections ?? [],
+                    lastUpdatedAt: sectionedMemory?.lastUpdatedAt ?? null,
                 },
             },
-            claudeMem: {
-                ready: claudeMemReady,
-                enabled: claudeMemEnabled,
-                storeExists: claudeMemStoreExists,
-                storePath: claudeMem?.storePath ?? null,
-                totalEntries: Number(claudeMem?.totalEntries ?? 0),
-                sectionCount: Number(claudeMem?.sectionCount ?? 0),
-                defaultSectionCount: Number(claudeMem?.defaultSectionCount ?? 0),
-                presentDefaultSectionCount: Number(claudeMem?.presentDefaultSectionCount ?? 0),
-                missingSections: claudeMem?.missingSections ?? [],
-                lastUpdatedAt: claudeMem?.lastUpdatedAt ?? null,
+            sectionedMemory: {
+                ready: sectionedMemoryReady,
+                enabled: sectionedMemoryEnabled,
+                storeExists: sectionedMemoryStoreExists,
+                storePath: sectionedMemory?.storePath ?? null,
+                totalEntries: Number(sectionedMemory?.totalEntries ?? 0),
+                sectionCount: Number(sectionedMemory?.sectionCount ?? 0),
+                defaultSectionCount: Number(sectionedMemory?.defaultSectionCount ?? 0),
+                presentDefaultSectionCount: Number(sectionedMemory?.presentDefaultSectionCount ?? 0),
+                missingSections: sectionedMemory?.missingSections ?? [],
+                lastUpdatedAt: sectionedMemory?.lastUpdatedAt ?? null,
             },
             browser: {
                 ready: browserReady,

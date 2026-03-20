@@ -65,7 +65,10 @@ describe('callLoaderTool', () => {
 
         expect(proxyToolCall).not.toHaveBeenCalled();
         expect(result.isError).toBeFalsy();
-        expect(result.content[0]?.text).toContain('borg-core-stdio-loader');
+        expect(result.content[0]).toMatchObject({
+            type: 'text',
+            text: expect.stringContaining('borg-core-stdio-loader'),
+        });
     });
 
     it('returns a warming response when the background core is still unavailable', async () => {
@@ -84,8 +87,14 @@ describe('callLoaderTool', () => {
         });
 
         expect(result.isError).toBe(true);
-        expect(result.content[0]?.text).toContain('still warming');
-        expect(result.content[0]?.text).toContain('PID 4242');
+        expect(result.content[0]).toMatchObject({
+            type: 'text',
+            text: expect.stringContaining('still warming'),
+        });
+        expect(result.content[0]).toMatchObject({
+            type: 'text',
+            text: expect.stringContaining('PID 4242'),
+        });
     });
 
     it('proxies the tool call once the background core becomes healthy', async () => {
@@ -104,6 +113,9 @@ describe('callLoaderTool', () => {
         });
 
         expect(proxyToolCall).toHaveBeenCalledWith('alpha__search_docs', { query: 'mcp' });
-        expect(result.content[0]?.text).toBe('ok');
+        expect(result.content[0]).toMatchObject({
+            type: 'text',
+            text: 'ok',
+        });
     });
 });

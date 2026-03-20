@@ -4,25 +4,25 @@ import { MemoryManager } from './MemoryManager.js';
 import { RedundantMemoryManager } from './RedundantMemoryManager.js';
 
 describe('MemoryManager pipeline summaries', () => {
-    it('reports claude-mem as active in the default redundant pipeline', () => {
+    it('reports the sectioned store as active in the default redundant pipeline', () => {
         const manager = new MemoryManager('C:/borg-workspace');
 
         expect(manager.getPipelineSummary()).toEqual({
             configuredMode: 'redundant',
-            providerNames: ['json', 'claude-mem'],
+            providerNames: ['json', 'sectioned-store'],
             providerCount: 2,
-            claudeMemEnabled: true,
+            sectionedStoreEnabled: true,
         });
     });
 
-    it('reports claude-mem as inactive in json-only mode', () => {
+    it('reports the sectioned store as inactive in json-only mode', () => {
         const manager = new MemoryManager('C:/borg-workspace', 'json');
 
         expect(manager.getPipelineSummary()).toEqual({
             configuredMode: 'json',
             providerNames: ['json'],
             providerCount: 1,
-            claudeMemEnabled: false,
+            sectionedStoreEnabled: false,
         });
     });
 });
@@ -31,6 +31,6 @@ describe('RedundantMemoryManager provider registration', () => {
     it('lists the built-in provider names in fan-out order', () => {
         const manager = new RedundantMemoryManager('C:/borg-workspace');
 
-        expect(manager.getProviderNames()).toEqual(['json', 'claude-mem']);
+        expect(manager.getProviderNames()).toEqual(['json', 'sectioned-store']);
     });
 });

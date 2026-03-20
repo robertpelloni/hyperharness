@@ -3,7 +3,7 @@
  *
  * This is the "super-memory" module requested by the user.  It guarantees that
  * every memory write is persisted to ALL providers simultaneously (JSON flat
- * file, claude-mem structured store, and any future vector/DB providers).
+ * file, Borg sectioned memory store, and any future vector/DB providers).
  *
  * Read operations merge results from all providers, de-duplicate by UUID, and
  * return a combined view.
@@ -23,9 +23,9 @@
 
 import { IMemoryProvider, Memory } from '../../interfaces/IMemoryProvider.js';
 import { JsonMemoryProvider } from './JsonMemoryProvider.js';
-import { ClaudeMemAdapter } from './ClaudeMemAdapter.js';
+import { SectionedMemoryAdapter } from './SectionedMemoryAdapter.js';
 
-export type RedundantMemoryProviderName = 'json' | 'claude-mem';
+export type RedundantMemoryProviderName = 'json' | 'sectioned-store';
 
 export class RedundantMemoryManager implements IMemoryProvider {
     private providers: IMemoryProvider[] = [];
@@ -33,7 +33,7 @@ export class RedundantMemoryManager implements IMemoryProvider {
     constructor(workspaceRoot: string) {
         // Register all available memory providers
         this.providers.push(new JsonMemoryProvider(workspaceRoot));
-        this.providers.push(new ClaudeMemAdapter(workspaceRoot));
+        this.providers.push(new SectionedMemoryAdapter(workspaceRoot));
         // Future: add VectorMemoryProvider, PostgresMemoryProvider, etc.
     }
 
@@ -50,8 +50,8 @@ export class RedundantMemoryManager implements IMemoryProvider {
                 return ['json'];
             }
 
-            if (provider instanceof ClaudeMemAdapter) {
-                return ['claude-mem'];
+            if (provider instanceof SectionedMemoryAdapter) {
+                return ['sectioned-store'];
             }
 
             return [];

@@ -5,7 +5,7 @@ import {
     MemoryExportImportService,
     MEMORY_INTERCHANGE_FORMATS,
 } from '../services/memory/MemoryExportImportService.js';
-import { readClaudeMemStoreStatus } from './memoryRouter.claude-mem.js';
+import { readSectionedMemoryStoreStatus } from './memoryRouter.sectioned-store.js';
 import { 
     getCrossSessionMemoryLinksInputSchema,
     memoryInterchangeFormatSchema, 
@@ -279,9 +279,9 @@ export const memoryRouter = t.router({
         };
     }),
 
-    getClaudeMemStatus: publicProcedure.query(async () => {
+    getSectionedMemoryStatus: publicProcedure.query(async () => {
         const memoryManager = getMemoryManager() as { getPipelineSummary?: () => import('../services/memory/MemoryManager.js').MemoryPipelineSummary };
-        return await readClaudeMemStoreStatus(process.cwd(), memoryManager.getPipelineSummary?.() ?? null);
+        return await readSectionedMemoryStoreStatus(process.cwd(), memoryManager.getPipelineSummary?.() ?? null);
     }),
 });
 

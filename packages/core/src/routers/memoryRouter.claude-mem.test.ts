@@ -37,7 +37,7 @@ describe('summarizeClaudeMemStore', () => {
                 configuredMode: 'unknown',
                 providerNames: [],
                 providerCount: 0,
-                claudeMemEnabled: false,
+                sectionedStoreEnabled: false,
             },
             sections: [
                 { section: 'project_context', entryCount: 2 },
@@ -61,7 +61,7 @@ describe('summarizeClaudeMemStore', () => {
                 configuredMode: 'unknown',
                 providerNames: [],
                 providerCount: 0,
-                claudeMemEnabled: false,
+                sectionedStoreEnabled: false,
             },
             sections: [],
             lastUpdatedAt: null,
@@ -73,12 +73,12 @@ describe('summarizeClaudeMemStore', () => {
             configuredMode: 'redundant',
             providerNames: ['json', 'claude-mem'],
             providerCount: 2,
-            claudeMemEnabled: true,
+            sectionedStoreEnabled: true,
         })).toEqual({
             configuredMode: 'redundant',
             providerNames: ['json', 'claude-mem'],
             providerCount: 2,
-            claudeMemEnabled: true,
+            sectionedStoreEnabled: true,
         });
     });
 });

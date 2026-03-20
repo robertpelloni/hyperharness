@@ -195,7 +195,7 @@ ClassName | Custom class | User
   // instructions += '\n';
 
   // Add available tools section
-  instructions += '## AVAILABLE TOOLS FOR SUPERASSISTANT\n\n';
+  instructions += '## AVAILABLE TOOLS FOR BORG BRIDGE\n\n';
 
   // Add each tool with its schema
   tools.forEach(tool => {

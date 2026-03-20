@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { buildShellInvocation } from './ShellService.ts';
+import { buildShellInvocation } from './ShellService.js';
 
 describe('buildShellInvocation', () => {
     it('builds a PowerShell invocation when requested', () => {

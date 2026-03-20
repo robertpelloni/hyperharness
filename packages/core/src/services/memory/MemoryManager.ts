@@ -8,7 +8,7 @@ export type MemoryPipelineSummary = {
     configuredMode: MemoryProviderMode;
     providerNames: string[];
     providerCount: number;
-    claudeMemEnabled: boolean;
+    sectionedStoreEnabled: boolean;
 };
 
 export class MemoryManager implements IMemoryProvider {
@@ -18,7 +18,7 @@ export class MemoryManager implements IMemoryProvider {
     constructor(workspaceRoot: string, providerType: MemoryProviderMode = 'redundant') {
         this.providerType = providerType;
         // Provider selection:
-        // - 'redundant' (default): Fan-out to ALL providers (JSON + claude-mem + future vector).
+        // - 'redundant' (default): Fan-out to ALL providers (JSON + sectioned store + future vector).
         //   This ensures maximum data durability and search recall.
         // - 'json': Legacy single-provider mode using flat-file JSON.
         // - 'postgres': Placeholder for future DB-backed provider.
@@ -36,7 +36,7 @@ export class MemoryManager implements IMemoryProvider {
                 configuredMode: this.providerType,
                 providerNames,
                 providerCount: providerNames.length,
-                claudeMemEnabled: providerNames.includes('claude-mem'),
+                sectionedStoreEnabled: providerNames.includes('sectioned-store'),
             };
         }
 
@@ -44,7 +44,7 @@ export class MemoryManager implements IMemoryProvider {
             configuredMode: this.providerType,
             providerNames: ['json'],
             providerCount: 1,
-            claudeMemEnabled: false,
+            sectionedStoreEnabled: false,
         };
     }
 

@@ -76,7 +76,7 @@ export interface DashboardStartupStatus {
             ready: boolean;
             initialized: boolean;
             agentMemory: boolean;
-            claudeMem?: {
+            sectionedMemory?: {
                 ready?: boolean;
                 enabled?: boolean;
                 storeExists?: boolean;
@@ -292,7 +292,7 @@ const DEFAULT_DASHBOARD_STARTUP_CHECKS: DashboardStartupChecks = {
         ready: false,
         initialized: false,
         agentMemory: false,
-        claudeMem: {
+        sectionedMemory: {
             ready: true,
             enabled: false,
             storeExists: false,
@@ -426,9 +426,9 @@ function getStartupChecks(startupStatus: DashboardStartupStatus): DashboardStart
         memory: {
             ...DEFAULT_DASHBOARD_STARTUP_CHECKS.memory,
             ...(checks?.memory ?? {}),
-            claudeMem: {
-                ...DEFAULT_DASHBOARD_STARTUP_CHECKS.memory.claudeMem,
-                ...(checks?.memory?.claudeMem ?? {}),
+            sectionedMemory: {
+                ...DEFAULT_DASHBOARD_STARTUP_CHECKS.memory.sectionedMemory,
+                ...(checks?.memory?.sectionedMemory ?? {}),
             },
         },
         browser: {
@@ -530,11 +530,11 @@ function isResidentRuntimeReady(aggregator: DashboardStartupStatus['checks']['mc
 }
 
 function getMemoryContextDetail(memory: DashboardStartupStatus['checks']['memory']): string {
-    const claudeMem = memory.claudeMem;
+    const sectionedMemory = memory.sectionedMemory;
 
     if (memory.ready) {
-        if (claudeMem?.enabled) {
-            return 'Memory manager initialized and claude-mem default sections are ready';
+        if (sectionedMemory?.enabled) {
+            return 'Memory manager initialized and sectioned memory default sections are ready';
         }
 
         return 'Memory manager initialized and agent context services are available';
@@ -544,18 +544,18 @@ function getMemoryContextDetail(memory: DashboardStartupStatus['checks']['memory
         return 'Waiting for memory initialization';
     }
 
-    if (claudeMem?.enabled) {
-        if (!claudeMem.storeExists) {
-            return 'Memory manager is initialized, but claude-mem store has not been created yet';
+    if (sectionedMemory?.enabled) {
+        if (!sectionedMemory.storeExists) {
+            return 'Memory manager is initialized, but the sectioned memory store has not been created yet';
         }
 
-        const presentSectionCount = Number(claudeMem.presentDefaultSectionCount ?? 0);
-        const defaultSectionCount = Number(claudeMem.defaultSectionCount ?? 0);
+        const presentSectionCount = Number(sectionedMemory.presentDefaultSectionCount ?? 0);
+        const defaultSectionCount = Number(sectionedMemory.defaultSectionCount ?? 0);
         if (defaultSectionCount > 0 && presentSectionCount < defaultSectionCount) {
-            return `Memory manager is initialized, but claude-mem is still seeding default sections (${presentSectionCount}/${defaultSectionCount} present)`;
+            return `Memory manager is initialized, but sectioned memory is still seeding default sections (${presentSectionCount}/${defaultSectionCount} present)`;
         }
 
-        return 'Memory manager is initialized, but claude-mem readiness is still pending';
+        return 'Memory manager is initialized, but sectioned memory readiness is still pending';
     }
 
     return 'Memory manager is present, but agent context wiring is still finishing';
@@ -1646,7 +1646,7 @@ export function getStartupBlockingReasonAction(code: string): StartupBlockingRea
                 label: 'Open MCP system',
             };
         case 'memory_not_ready':
-        case 'claude_mem_not_ready':
+        case 'sectioned_memory_not_ready':
             return {
                 href: '/dashboard/memory',
                 label: 'Open memory dashboard',
@@ -1688,7 +1688,7 @@ export function getStartupBlockingReasonImpactedChecks(code: string): StartupBlo
                 { key: 'cached-inventory', label: 'Cached inventory' },
             ];
         case 'memory_not_ready':
-        case 'claude_mem_not_ready':
+        case 'sectioned_memory_not_ready':
             return [
                 { key: 'memory-context', label: 'Memory / context' },
             ];
@@ -1742,7 +1742,7 @@ export function getStartupBlockingReasonSubsystem(code: string): { key: string; 
                 label: 'MCP router',
             };
         case 'memory_not_ready':
-        case 'claude_mem_not_ready':
+        case 'sectioned_memory_not_ready':
             return {
                 key: 'memory',
                 label: 'Memory / context',
@@ -1779,8 +1779,8 @@ export function getStartupBlockingReasonTitle(code: string): string {
             return 'MCP config sync is still pending';
         case 'memory_not_ready':
             return 'Memory manager is still initializing';
-        case 'claude_mem_not_ready':
-            return 'Claude-mem default sections are not ready';
+        case 'sectioned_memory_not_ready':
+            return 'Sectioned memory default sections are not ready';
         case 'browser_service_not_ready':
             return 'Browser service bridge is not ready';
         case 'extension_bridge_not_ready':
@@ -1805,7 +1805,7 @@ export function getStartupBlockingReasonPriority(code: string): number {
         case 'extension_bridge_not_ready':
             return 80;
         case 'memory_not_ready':
-        case 'claude_mem_not_ready':
+        case 'sectioned_memory_not_ready':
         case 'session_restore_not_ready':
             return 60;
         case 'browser_service_not_ready':

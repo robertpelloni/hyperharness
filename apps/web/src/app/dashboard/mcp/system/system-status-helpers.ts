@@ -47,7 +47,7 @@ export interface SystemStartupStatusInput {
         memory?: {
             ready?: boolean;
             initialized?: boolean;
-            claudeMem?: {
+            sectionedMemory?: {
                 ready?: boolean;
                 enabled?: boolean;
                 storeExists?: boolean;
@@ -374,11 +374,11 @@ function getExecutionEnvironmentDetail(startupStatus: SystemStartupStatusInput):
 
 function getMemoryContextDetail(startupStatus: SystemStartupStatusInput): string {
     const memory = startupStatus.checks?.memory;
-    const claudeMem = memory?.claudeMem;
+    const sectionedMemory = memory?.sectionedMemory;
 
     if (memory?.ready) {
-        if (claudeMem?.enabled) {
-            return 'Memory manager initialized and claude-mem default sections are ready';
+        if (sectionedMemory?.enabled) {
+            return 'Memory manager initialized and sectioned memory default sections are ready';
         }
 
         return 'Memory manager initialized and context services are available';
@@ -388,18 +388,18 @@ function getMemoryContextDetail(startupStatus: SystemStartupStatusInput): string
         return 'Memory initialization is still in progress';
     }
 
-    if (claudeMem?.enabled) {
-        if (!claudeMem.storeExists) {
-            return 'Memory manager is initialized, but claude-mem store has not been created yet';
+    if (sectionedMemory?.enabled) {
+        if (!sectionedMemory.storeExists) {
+            return 'Memory manager is initialized, but the sectioned memory store has not been created yet';
         }
 
-        const presentSectionCount = Number(claudeMem.presentDefaultSectionCount ?? 0);
-        const defaultSectionCount = Number(claudeMem.defaultSectionCount ?? 0);
+        const presentSectionCount = Number(sectionedMemory.presentDefaultSectionCount ?? 0);
+        const defaultSectionCount = Number(sectionedMemory.defaultSectionCount ?? 0);
         if (defaultSectionCount > 0 && presentSectionCount < defaultSectionCount) {
-            return `Memory manager is initialized, but claude-mem is still seeding default sections (${presentSectionCount}/${defaultSectionCount} present)`;
+            return `Memory manager is initialized, but sectioned memory is still seeding default sections (${presentSectionCount}/${defaultSectionCount} present)`;
         }
 
-        return 'Memory manager is initialized, but claude-mem readiness is still pending';
+        return 'Memory manager is initialized, but sectioned memory readiness is still pending';
     }
 
     return 'Memory manager is present, but agent context wiring is still finishing';

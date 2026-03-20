@@ -12,7 +12,7 @@
  */
 
 import { spawnSync } from "node:child_process";
-import { cpSync, existsSync, mkdirSync, rmSync } from "node:fs";
+import { cpSync, existsSync, mkdirSync, readdirSync, readFileSync, rmSync } from "node:fs";
 import path from "node:path";
 import process from "node:process";
 import { fileURLToPath } from "node:url";
@@ -81,17 +81,60 @@ function copyDirectory(sourceDir, targetDir) {
   cpSync(sourceDir, targetDir, { recursive: true, force: true });
 }
 
+function directoryHasMergeMarkers(rootDir) {
+  if (!existsSync(rootDir)) {
+    return false;
+  }
+
+  const entries = readdirSync(rootDir, { withFileTypes: true });
+  for (const entry of entries) {
+    const fullPath = path.join(rootDir, entry.name);
+    if (entry.isDirectory()) {
+      if (entry.name === "node_modules" || entry.name === ".git" || entry.name === ".turbo" || entry.name === "dist") {
+        continue;
+      }
+      if (directoryHasMergeMarkers(fullPath)) {
+        return true;
+      }
+      continue;
+    }
+
+    if (!/\.(?:[cm]?[jt]s|tsx|jsx|json)$/i.test(entry.name)) {
+      continue;
+    }
+
+    const content = readFileSync(fullPath, "utf-8");
+    if (content.includes("<<<<<<< HEAD") || content.includes(">>>>>>> upstream/main")) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
 function runWorkspaceBuild() {
   printStep("Running Turbo workspace build (includes VS Code and browser-extension package workspaces)...");
 
+  const turboArgs = [
+    "exec",
+    "turbo",
+    "run",
+    "build",
+    "--filter=!@repo/*",
+  ];
+
+  const claudeMemRoot = path.join(repoRoot, "packages", "claude-mem");
+  const shouldRequireClaudeMem = process.env.BORG_REQUIRE_CLAUDE_MEM_BUILD === "true";
+  const claudeMemHasMergeMarkers = directoryHasMergeMarkers(path.join(claudeMemRoot, "src"))
+    || directoryHasMergeMarkers(path.join(claudeMemRoot, "scripts"));
+
+  if (claudeMemHasMergeMarkers && !shouldRequireClaudeMem) {
+    printStep("Detected unresolved merge markers in packages/claude-mem; excluding claude-mem from the workspace build so Borg can still start.");
+    turboArgs.push("--filter=!claude-mem");
+  }
+
   const result = runPnpm(
-    [
-      "exec",
-      "turbo",
-      "run",
-      "build",
-      "--filter=!@repo/*",
-    ],
+    turboArgs,
     {
       cwd: repoRoot,
       env: {

@@ -7,12 +7,13 @@ import { Button, Card, CardHeader, CardTitle, CardContent } from "@borg/ui";
 import { toast } from "sonner";
 
 export default function InfrastructureDashboardPage() {
-    const { data: status, isLoading: isLoadingStatus, refetch } = trpc.infrastructure.getMcpenetesStatus.useQuery();
+    const infrastructureClient = trpc.infrastructure as any;
+    const { data: status, isLoading: isLoadingStatus, refetch } = infrastructureClient.getInfrastructureStatus.useQuery();
 
     const applyMutation = trpc.infrastructure.applyConfigurations.useMutation({
         onSuccess: (data: any) => {
             if (data.success) {
-                toast.success("Applied mcpenetes configuration successfully.");
+                toast.success("Applied infrastructure configuration successfully.");
                 refetch();
             } else {
                 toast.error(`Failed to apply configuration: ${data.output}`);
@@ -42,7 +43,7 @@ export default function InfrastructureDashboardPage() {
                     Daemon Orchestration
                 </h1>
                 <p className="text-zinc-500 mt-2">
-                    Manage declarative Kubernetes-style MCP deployments via mcpenetes natively from the Supervisor namespace.
+                    Manage Borg infrastructure deployments from the Supervisor namespace.
                 </p>
             </div>
 
@@ -51,7 +52,7 @@ export default function InfrastructureDashboardPage() {
                     <CardHeader className="pb-2">
                         <CardTitle className="text-lg flex items-center gap-2">
                             <Activity className="h-5 w-5 text-zinc-400" />
-                            mcpenetes Daemon Status
+                            Infrastructure Daemon Status
                         </CardTitle>
                     </CardHeader>
                     <CardContent>
@@ -81,7 +82,7 @@ export default function InfrastructureDashboardPage() {
                                 </div>
                                 {!status?.installed && (
                                     <div className="text-xs text-amber-400/80 bg-amber-500/10 p-3 rounded border border-amber-500/20">
-                                        mcpenetes binary not found in PATH or submodules/bin. You may need to compile it inside submodules/mcpenetes first.
+                                        Infrastructure binary not found in PATH or the local submodule bin directory.
                                     </div>
                                 )}
                             </div>
@@ -98,7 +99,7 @@ export default function InfrastructureDashboardPage() {
                     </CardHeader>
                     <CardContent className="space-y-4">
                         <p className="text-sm text-zinc-400 mb-6">
-                            Apply settings from your `mcpenetes.yaml` across 30+ compliant environments instantly.
+                            Apply settings from your Borg infrastructure configuration across connected environments instantly.
                         </p>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <Button
@@ -141,13 +142,13 @@ export default function InfrastructureDashboardPage() {
                             <iframe
                                 src={process.env.NEXT_PUBLIC_MCPENETES_URL || "http://localhost:3000"}
                                 className="w-full h-full border-none pointer-events-auto"
-                                title="mcpenetes Dashboard"
+                                title="Infrastructure Dashboard"
                             />
                         ) : (
                             <div className="absolute inset-0 flex flex-col items-center justify-center text-zinc-500 bg-zinc-950/50 backdrop-blur-sm">
                                 <AlertTriangle className="h-10 w-10 mb-4 opacity-50 text-amber-500" />
                                 <h3 className="text-xl font-medium mb-2 text-zinc-300">Daemon Unavailable</h3>
-                                <p className="text-sm">The mcpenetes backend must be running on port 3000 to display the Web UI natively.</p>
+                                <p className="text-sm">The infrastructure backend must be running on port 3000 to display the Web UI natively.</p>
                             </div>
                         )}
                     </div>

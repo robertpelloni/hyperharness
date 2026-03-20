@@ -3,23 +3,28 @@ import { describe, expect, it } from 'vitest';
 import type { LocalExecutionEnvironment } from './execution-environment.js';
 import { buildExecutionPolicyEnv, selectSessionExecutionPolicy } from './session-execution-policy.js';
 
-function createEnvironment(overrides: Partial<LocalExecutionEnvironment> = {}): LocalExecutionEnvironment {
+type TestEnvironmentOverrides = Omit<Partial<LocalExecutionEnvironment>, 'summary'> & {
+    summary?: Partial<LocalExecutionEnvironment['summary']>;
+};
+
+function createEnvironment(overrides: TestEnvironmentOverrides = {}): LocalExecutionEnvironment {
+    const { summary: summaryOverrides, ...environmentOverrides } = overrides;
+
     return {
         os: 'win32',
         summary: {
-            ready: true,
-            preferredShellId: 'pwsh',
-            preferredShellLabel: 'PowerShell 7',
-            shellCount: 3,
-            verifiedShellCount: 3,
-            toolCount: 4,
-            verifiedToolCount: 4,
-            harnessCount: 2,
-            verifiedHarnessCount: 2,
-            supportsPowerShell: true,
-            supportsPosixShell: true,
-            notes: [],
-            ...overrides.summary,
+            ready: summaryOverrides?.ready ?? true,
+            preferredShellId: summaryOverrides?.preferredShellId ?? 'pwsh',
+            preferredShellLabel: summaryOverrides?.preferredShellLabel ?? 'PowerShell 7',
+            shellCount: summaryOverrides?.shellCount ?? 3,
+            verifiedShellCount: summaryOverrides?.verifiedShellCount ?? 3,
+            toolCount: summaryOverrides?.toolCount ?? 4,
+            verifiedToolCount: summaryOverrides?.verifiedToolCount ?? 4,
+            harnessCount: summaryOverrides?.harnessCount ?? 2,
+            verifiedHarnessCount: summaryOverrides?.verifiedHarnessCount ?? 2,
+            supportsPowerShell: summaryOverrides?.supportsPowerShell ?? true,
+            supportsPosixShell: summaryOverrides?.supportsPosixShell ?? true,
+            notes: summaryOverrides?.notes ?? [],
         },
         shells: [
             {
@@ -58,7 +63,7 @@ function createEnvironment(overrides: Partial<LocalExecutionEnvironment> = {}): 
         ],
         tools: [],
         harnesses: [],
-        ...overrides,
+        ...environmentOverrides,
     };
 }
 

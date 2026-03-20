@@ -306,7 +306,7 @@ export const LABS_DASHBOARD_NAV: NavItem[] = [
     { title: "Submodules", href: "/dashboard/submodules", icon: FileCode, variant: "ghost" },
     { title: "Workshop", href: "/dashboard/workshop", icon: Wrench, variant: "ghost" },
     { title: "Auto-Dev", href: "/dashboard/workshop/auto-dev", icon: Bot, variant: "ghost" },
-    { title: "Super Assistant", href: "/dashboard/super-assistant", icon: Bot, variant: "ghost", badge: "beta" },
+    { title: "Browser Bridge", href: "/dashboard/super-assistant", icon: Bot, variant: "ghost", badge: "beta" },
     { title: "Agents", href: "/dashboard/agents", icon: Brain, variant: "ghost", badge: "experimental", description: "Agent pool, memory access, and AgentPlayground. Full orchestration controls are a later slice." },
 ];
 

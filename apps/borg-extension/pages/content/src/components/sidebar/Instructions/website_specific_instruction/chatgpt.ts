@@ -11,7 +11,7 @@ How Borg works:
   3. Upon Capturing the function JSON events, it will be executed with the call_id provided.
   4. The result of the function execution will be provided in <function_results> tag.
   5. DO NOT USE canvas / can mode.
-  6. All other tools and functions are disabled except for the ones available to superassistant.
+  6. All other tools and functions are disabled except for the ones available to the Borg bridge.
 `;
 
 // Compressed schema notation documentation will be added after this point

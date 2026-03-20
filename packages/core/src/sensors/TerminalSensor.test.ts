@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { splitTerminalSensorBuffer } from './TerminalSensor.ts';
+import { splitTerminalSensorBuffer } from './TerminalSensor.js';
 
 describe('TerminalSensor', () => {
     it('buffers partial stderr chunks into a single complete line', () => {

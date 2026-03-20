@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-export const memoryInterchangeFormatSchema = z.enum(['json', 'csv', 'jsonl', 'json-provider', 'claude-mem-store']);
+export const memoryInterchangeFormatSchema = z.enum(['json', 'csv', 'jsonl', 'json-provider', 'sectioned-memory-store']);
 export type MemoryInterchangeFormat = z.infer<typeof memoryInterchangeFormatSchema>;
 
 export const observationTypeSchema = z.enum(['discovery', 'decision', 'progress', 'warning', 'fix']);

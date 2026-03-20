@@ -114,12 +114,12 @@ export default function SuperAssistantDashboardPage() {
 
     return (
         <div className="w-full h-full flex flex-col">
-            <PageStatusBanner status="beta" message="MCP Super Assistant" note="Adapter scaffolds are live across all 14 platforms. Per-site automation depth and input/submit integration vary — full parity is a later release slice." />
+            <PageStatusBanner status="beta" message="Browser Bridge" note="Adapter scaffolds are live across all 14 platforms. Per-site automation depth and input/submit integration vary — full parity is a later release slice." />
             <div className="p-4 border-b border-gray-800 flex justify-between items-center bg-gray-900">
                 <div>
                     <div className="flex items-center gap-3">
                         <h1 className="text-xl font-bold text-white flex items-center gap-2">
-                            <Bot className="w-5 h-5 text-purple-400" /> MCP SuperAssistant
+                            <Bot className="w-5 h-5 text-purple-400" /> Browser Bridge
                         </h1>
                         <Badge variant="outline" className="border-purple-500/30 text-purple-400 bg-purple-500/10 text-xs">Beta</Badge>
                     </div>
@@ -225,7 +225,7 @@ export default function SuperAssistantDashboardPage() {
                                         <Route className="w-4 h-4 text-purple-400" /> Why this slice matters
                                     </CardTitle>
                                     <CardDescription>
-                                        Borg now claims the same browser-chat territory as the MCP-SuperAssistant reference and ships a real inline sidebar shell without pretending the full automation stack is already done.
+                                        Borg now claims the browser-chat territory directly and ships a real inline sidebar shell without pretending the full automation stack is already done.
                                     </CardDescription>
                                 </CardHeader>
                                 <CardContent className="space-y-3 text-sm text-zinc-300">
@@ -263,7 +263,7 @@ export default function SuperAssistantDashboardPage() {
                         <Card>
                             <CardHeader>
                                 <CardTitle>Supported Browser Chat Platforms</CardTitle>
-                                <CardDescription>The current Borg browser-extension footprint inspired by MCP-SuperAssistant.</CardDescription>
+                                <CardDescription>The current Borg browser-extension footprint across supported chat surfaces.</CardDescription>
                             </CardHeader>
                             <CardContent>
                                 <ScrollArea className="h-[500px]">
@@ -318,7 +318,7 @@ export default function SuperAssistantDashboardPage() {
                             <Card>
                                 <CardHeader>
                                     <CardTitle>Next Assimilation Slices</CardTitle>
-                                    <CardDescription>Remaining MCP-SuperAssistant differentiators to build Borg-native.</CardDescription>
+                                    <CardDescription>Remaining browser-bridge differentiators to build Borg-native.</CardDescription>
                                 </CardHeader>
                                 <CardContent className="space-y-3">
                                     {NEXT_CAPABILITIES.map((capability) => (

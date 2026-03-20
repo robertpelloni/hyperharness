@@ -202,6 +202,7 @@ describe('NormalizedQuotaService authTruth mutation', () => {
             authMethod: 'api_key',
             configured: true,
             authenticated: true,
+            detail: 'api_key credential detected.',
             authTruth: 'authenticated',
             tier: 'standard',
             used: 0,

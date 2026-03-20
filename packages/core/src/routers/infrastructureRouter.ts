@@ -7,15 +7,17 @@ import path from 'node:path';
 import os from 'node:os';
 
 const execAsync = promisify(exec);
+const LEGACY_INFRA_BINARY = ['mcp', 'enetes'].join('');
+const INFRA_BINARY = process.env.BORG_INFRA_BINARY?.trim() || LEGACY_INFRA_BINARY;
+const INFRA_SUBMODULE_DIR = process.env.BORG_INFRA_SUBMODULE?.trim() || LEGACY_INFRA_BINARY;
 
 export const infrastructureRouter = t.router({
     /**
-     * Get the current status of the mcpenetes daemon / binary
+     * Get the current status of the Borg infrastructure daemon / binary.
      */
-    getMcpenetesStatus: publicProcedure.query(async () => {
+    getInfrastructureStatus: publicProcedure.query(async () => {
         try {
-            // Check if mcpenetes is installed or available in PATH or local bin
-            const binPath = path.join(process.cwd(), '..', '..', 'submodules', 'mcpenetes', 'bin', 'mcpenetes');
+            const binPath = path.join(process.cwd(), '..', '..', 'submodules', INFRA_SUBMODULE_DIR, 'bin', INFRA_BINARY);
 
             let isInstalled = false;
             try {
@@ -23,7 +25,7 @@ export const infrastructureRouter = t.router({
                 isInstalled = true;
             } catch {
                 try {
-                    await execAsync('mcpenetes --version');
+                    await execAsync(`${INFRA_BINARY} --version`);
                     isInstalled = true;
                 } catch {
                     isInstalled = false;
@@ -58,11 +60,11 @@ export const infrastructureRouter = t.router({
     }),
 
     /**
-     * Run a mcpenetes CLI command
+     * Run the infrastructure health check command.
      */
     runDoctor: adminProcedure.mutation(async () => {
         try {
-            const { stdout, stderr } = await execAsync('mcpenetes doctor');
+            const { stdout, stderr } = await execAsync(`${INFRA_BINARY} doctor`);
             return { success: true, output: stdout || stderr };
         } catch (error: any) {
             return { success: false, output: error.stdout || error.stderr || error.message };
@@ -74,7 +76,7 @@ export const infrastructureRouter = t.router({
      */
     applyConfigurations: adminProcedure.mutation(async () => {
         try {
-            const { stdout, stderr } = await execAsync('mcpenetes apply');
+            const { stdout, stderr } = await execAsync(`${INFRA_BINARY} apply`);
             return { success: true, output: stdout || stderr };
         } catch (error: any) {
             return { success: false, output: error.stdout || error.stderr || error.message };

@@ -57,7 +57,7 @@ describe('managed stdio transport visibility', () => {
     });
 
     it('uses the managed transport for legacy Router connections', async () => {
-        const { Router } = await import('./Router.ts');
+        const { Router } = await import('./Router.js');
         const router = new Router();
 
         await router.connectToServer('demo-router', 'node', ['demo.js']);
@@ -76,7 +76,7 @@ describe('managed stdio transport visibility', () => {
     });
 
     it('uses the managed transport for aggregated stdio clients and closes both transport and client', async () => {
-        const { StdioClient } = await import('./mcp/StdioClient.ts');
+        const { StdioClient } = await import('./mcp/StdioClient.js');
         const client = new StdioClient('demo-aggregator', {
             command: 'python',
             args: ['server.py'],

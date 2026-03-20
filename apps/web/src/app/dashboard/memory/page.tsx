@@ -29,14 +29,14 @@ import {
     type MemorySearchMode,
 } from './memory-dashboard-utils';
 
-type MemoryInterchangeFormat = 'json' | 'csv' | 'jsonl' | 'json-provider' | 'claude-mem-store';
+type MemoryInterchangeFormat = 'json' | 'csv' | 'jsonl' | 'json-provider' | 'sectioned-memory-store';
 
 const MEMORY_FORMAT_OPTIONS: Array<{ value: MemoryInterchangeFormat; label: string }> = [
     { value: 'json', label: 'Canonical JSON' },
     { value: 'csv', label: 'Canonical CSV' },
     { value: 'jsonl', label: 'Canonical JSONL' },
     { value: 'json-provider', label: 'Borg JSON Provider' },
-    { value: 'claude-mem-store', label: 'Claude-Mem Store' },
+    { value: 'sectioned-memory-store', label: 'Sectioned Memory Store' },
 ];
 
 export default function MemoryDashboard() {
@@ -46,7 +46,7 @@ export default function MemoryDashboard() {
     const [searchMode, setSearchMode] = useState<MemorySearchMode>('all');
     const [newFact, setNewFact] = useState('');
     const [exportFormat, setExportFormat] = useState<MemoryInterchangeFormat>('json');
-    const [convertToFormat, setConvertToFormat] = useState<MemoryInterchangeFormat>('claude-mem-store');
+    const [convertToFormat, setConvertToFormat] = useState<MemoryInterchangeFormat>('sectioned-memory-store');
     const [importing, setImporting] = useState(false);
     const [converting, setConverting] = useState(false);
     const [selectedRecordKey, setSelectedRecordKey] = useState<string | null>(null);
@@ -305,7 +305,7 @@ export default function MemoryDashboard() {
                         Borg Memory Control
                     </h1>
                     <p className="text-zinc-500 mt-2">
-                        Search and inspect Borg-native facts, observations, prompts, session summaries, and adapter exports from one control surface.
+                        Search and inspect Borg-native facts, observations, prompts, session summaries, and sectioned-store exports from one control surface.
                     </p>
                 </div>
                 <div className="flex gap-4">

@@ -5,7 +5,7 @@ import { MemoryExportImportService } from './MemoryExportImportService.js';
 describe('MemoryExportImportService interchange', () => {
     const service = new MemoryExportImportService({});
 
-    it('converts claude-mem store snapshots into Borg JSON provider snapshots', async () => {
+    it('converts sectioned store snapshots into Borg JSON provider snapshots', async () => {
         const source = JSON.stringify({
             version: '1.0.0',
             sections: [
@@ -24,7 +24,7 @@ describe('MemoryExportImportService interchange', () => {
             ],
         });
 
-        const converted = await service.convert(source, 'claude-mem-store', 'json-provider', 'default');
+        const converted = await service.convert(source, 'sectioned-memory-store', 'json-provider', 'default');
         const parsed = JSON.parse(converted);
 
         expect(parsed).toEqual([
@@ -35,7 +35,7 @@ describe('MemoryExportImportService interchange', () => {
                     section: 'project_context',
                     tags: ['billing', 'routing'],
                     source: 'agent',
-                    provider: 'claude-mem',
+                    provider: 'sectioned-store',
                 },
                 userId: 'default',
                 createdAt: '2026-03-11T10:00:00.000Z',
@@ -43,7 +43,7 @@ describe('MemoryExportImportService interchange', () => {
         ]);
     });
 
-    it('converts canonical JSON exports into claude-mem store snapshots', async () => {
+    it('converts canonical JSON exports into sectioned store snapshots', async () => {
         const source = JSON.stringify([
             {
                 uuid: 'mem-2',
@@ -58,7 +58,7 @@ describe('MemoryExportImportService interchange', () => {
             },
         ]);
 
-        const converted = await service.convert(source, 'json', 'claude-mem-store', 'default');
+        const converted = await service.convert(source, 'json', 'sectioned-memory-store', 'default');
         const parsed = JSON.parse(converted);
 
         expect(parsed.sections).toEqual(expect.arrayContaining([
@@ -109,7 +109,7 @@ describe('MemoryExportImportService interchange', () => {
                     ],
                 },
             ],
-        }), 'claude-mem-store', 'default');
+        }), 'sectioned-memory-store', 'default');
 
         expect(result).toEqual({ imported: 1, errors: 0 });
         expect(saved).toEqual([
@@ -119,7 +119,7 @@ describe('MemoryExportImportService interchange', () => {
                     section: 'general',
                     tags: ['import'],
                     source: 'user',
-                    provider: 'claude-mem',
+                    provider: 'sectioned-store',
                 },
                 userId: 'default',
                 agentId: undefined,

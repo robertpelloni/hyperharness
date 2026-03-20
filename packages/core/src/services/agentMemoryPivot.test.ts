@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
 
-import { searchMemoryRecordsByPivot } from './agentMemoryPivot.js';
+import { searchMemoryRecordsByPivot, type PivotMemoryRecord } from './agentMemoryPivot.js';
 
 describe('searchMemoryRecordsByPivot', () => {
-    const observation = {
+    const observation: PivotMemoryRecord = {
         id: 'observation-1',
         createdAt: new Date('2026-03-12T12:00:00.000Z'),
         metadata: {
@@ -17,7 +17,7 @@ describe('searchMemoryRecordsByPivot', () => {
         },
     };
 
-    const prompt = {
+    const prompt: PivotMemoryRecord = {
         id: 'prompt-1',
         createdAt: new Date('2026-03-12T11:30:00.000Z'),
         metadata: {
@@ -32,7 +32,7 @@ describe('searchMemoryRecordsByPivot', () => {
         },
     };
 
-    const summary = {
+    const summary: PivotMemoryRecord = {
         id: 'summary-1',
         createdAt: new Date('2026-03-12T11:45:00.000Z'),
         metadata: {
@@ -48,7 +48,7 @@ describe('searchMemoryRecordsByPivot', () => {
         },
     };
 
-    const unrelated = {
+    const unrelated: PivotMemoryRecord = {
         id: 'observation-2',
         createdAt: new Date('2026-03-12T12:05:00.000Z'),
         metadata: {
@@ -62,7 +62,7 @@ describe('searchMemoryRecordsByPivot', () => {
         },
     };
 
-    const objectivePrompt = {
+    const objectivePrompt: PivotMemoryRecord = {
         id: 'prompt-2',
         createdAt: new Date('2026-03-12T11:40:00.000Z'),
         metadata: {

@@ -3,7 +3,7 @@
  *
  * Supports:
  * - Canonical exports: JSON, CSV, JSONL
- * - Provider-native snapshots: Borg JSON provider, claude-mem store
+ * - Provider-native snapshots: Borg JSON provider, sectioned memory store
  * - Conversion between all supported formats via a canonical intermediate form
  */
 
@@ -12,10 +12,10 @@ import fs from 'fs/promises';
 import path from 'path';
 
 import { Memory } from '../../interfaces/IMemoryProvider.js';
-import { CLAUDE_MEM_DEFAULT_SECTIONS } from './ClaudeMemAdapter.js';
+import { SECTIONED_MEMORY_DEFAULT_SECTIONS } from './SectionedMemoryAdapter.js';
 
 export type CanonicalMemoryFormat = 'json' | 'csv' | 'jsonl';
-export type ProviderMemoryFormat = 'json-provider' | 'claude-mem-store';
+export type ProviderMemoryFormat = 'json-provider' | 'sectioned-memory-store';
 export type MemoryInterchangeFormat = CanonicalMemoryFormat | ProviderMemoryFormat;
 
 export const MEMORY_INTERCHANGE_FORMATS: Array<{
@@ -54,11 +54,11 @@ export const MEMORY_INTERCHANGE_FORMATS: Array<{
         description: 'Native snapshot of Borg\'s flat-file memory provider.',
     },
     {
-        id: 'claude-mem-store',
-        label: 'Claude-Mem Store',
+        id: 'sectioned-memory-store',
+        label: 'Sectioned Memory Store',
         kind: 'provider',
         extension: 'json',
-        description: 'Native claude-mem-style sectioned memory snapshot.',
+        description: 'Native Borg sectioned memory snapshot.',
     },
 ];
 
@@ -89,8 +89,8 @@ export class MemoryExportImportService {
 
         const memories = await this.readCanonicalMemories(userId);
 
-        if (format === 'claude-mem-store') {
-            return JSON.stringify(this.toClaudeMemStore(memories), null, 2);
+        if (format === 'sectioned-memory-store') {
+            return JSON.stringify(this.toSectionedMemoryStore(memories), null, 2);
         }
 
         return this.serializeCanonical(memories, format);
@@ -120,8 +120,8 @@ export class MemoryExportImportService {
     async convert(data: string, from: MemoryInterchangeFormat, to: MemoryInterchangeFormat, userId: string): Promise<string> {
         const records = this.parseToCanonical(data, from, userId);
 
-        if (to === 'claude-mem-store') {
-            return JSON.stringify(this.toClaudeMemStore(records), null, 2);
+        if (to === 'sectioned-memory-store') {
+            return JSON.stringify(this.toSectionedMemoryStore(records), null, 2);
         }
 
         if (to === 'json-provider') {
@@ -196,8 +196,8 @@ export class MemoryExportImportService {
                     .map(line => this.normalizeMemory(JSON.parse(line), userId));
             case 'json-provider':
                 return this.parseJsonProvider(data, userId);
-            case 'claude-mem-store':
-                return this.parseClaudeMemStore(data, userId);
+            case 'sectioned-memory-store':
+                return this.parseSectionedMemoryStore(data, userId);
             default:
                 throw new Error(`Unsupported memory format: ${format}`);
         }
@@ -229,7 +229,7 @@ export class MemoryExportImportService {
         return this.parseCanonicalJson(data, userId);
     }
 
-    private parseClaudeMemStore(data: string, userId: string): Memory[] {
+    private parseSectionedMemoryStore(data: string, userId: string): Memory[] {
         const parsed = JSON.parse(data) as {
             sections?: Array<{
                 section?: string;
@@ -261,7 +261,7 @@ export class MemoryExportImportService {
                         section: sectionName,
                         tags: Array.isArray(entry?.tags) ? entry.tags : [],
                         source: entry?.source ?? 'user',
-                        provider: 'claude-mem',
+                        provider: 'sectioned-store',
                     },
                 }, userId));
             }
@@ -296,7 +296,7 @@ export class MemoryExportImportService {
         return memories.map(memory => this.toSerializableMemory(memory));
     }
 
-    private toClaudeMemStore(memories: Memory[]) {
+    private toSectionedMemoryStore(memories: Memory[]) {
         const sections = new Map<string, Array<{
             uuid: string;
             content: string;
@@ -305,7 +305,7 @@ export class MemoryExportImportService {
             source: string;
         }>>();
 
-        for (const defaultSection of CLAUDE_MEM_DEFAULT_SECTIONS) {
+        for (const defaultSection of SECTIONED_MEMORY_DEFAULT_SECTIONS) {
             sections.set(defaultSection, []);
         }
 

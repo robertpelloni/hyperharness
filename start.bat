@@ -9,9 +9,12 @@ if %errorlevel% neq 0 (
 
 echo Installing dependencies...
 call pnpm install
+if %errorlevel% neq 0 exit /b %errorlevel%
 
 echo Building...
 call pnpm run build
+if %errorlevel% neq 0 exit /b %errorlevel%
 
 echo Starting Hub...
 call pnpm start
+if %errorlevel% neq 0 exit /b %errorlevel%

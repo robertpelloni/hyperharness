@@ -16,7 +16,7 @@ import { mcpServersRepository, toolsRepository } from '../db/repositories/index.
 import { buildStartupStatusSnapshot } from './startupStatus.js';
 import { detectLocalExecutionEnvironment } from '../services/execution-environment.js';
 import { getCachedToolInventory } from '../mcp/cachedToolInventory.js';
-import { readClaudeMemStoreStatus } from './memoryRouter.claude-mem.js';
+import { readSectionedMemoryStoreStatus } from './memoryRouter.sectioned-store.js';
 import { summarizeCachedInventory } from './startupInventorySummary.js';
 import { mcpServerPool } from '../services/mcp-server-pool.service.js';
 import type { MemoryPipelineSummary } from '../services/memory/MemoryManager.js';
@@ -82,7 +82,7 @@ export const systemProcedures = {
         const memoryManager = (mcpServer as { memoryManager?: { getPipelineSummary?: () => MemoryPipelineSummary } }).memoryManager;
         const memoryPipelineSummary: MemoryPipelineSummary | null = memoryManager?.getPipelineSummary?.() ?? null;
 
-        const [runtimeServers, sessionCount, browserStatus, persistedServers, persistedTools, executionEnvironment, cachedInventory, claudeMemStoreStatus] = await Promise.all([
+        const [runtimeServers, sessionCount, browserStatus, persistedServers, persistedTools, executionEnvironment, cachedInventory, sectionedMemoryStoreStatus] = await Promise.all([
             aggregator?.listServers?.().catch(() => []) ?? [],
             Promise.resolve(sessionSupervisor?.listSessions?.().length ?? 0),
             Promise.resolve(browserService?.getStatus?.() ?? { active: false, pageCount: 0, pageIds: [] }),
@@ -90,7 +90,7 @@ export const systemProcedures = {
             toolsRepository.findAll().catch(() => []),
             getCachedExecutionEnvironment(),
             getCachedToolInventory().catch(() => ({ servers: [], tools: [], toolCounts: new Map(), source: 'empty' as const, snapshotUpdatedAt: null })),
-            readClaudeMemStoreStatus(process.cwd(), memoryPipelineSummary).catch(() => null),
+            readSectionedMemoryStoreStatus(process.cwd(), memoryPipelineSummary).catch(() => null),
         ]);
 
         const liveServerCount = runtimeServers.filter((server) => server.status === 'connected').length;
@@ -142,17 +142,17 @@ export const systemProcedures = {
             inventorySource: cachedInventorySummary.source,
             inventorySnapshotUpdatedAt: cachedInventorySummary.snapshotUpdatedAt,
             executionEnvironment: executionEnvironment?.summary ?? null,
-            claudeMem: claudeMemStoreStatus
+            sectionedMemory: sectionedMemoryStoreStatus
                 ? {
-                    enabled: Boolean(claudeMemStoreStatus.runtimePipeline.claudeMemEnabled),
-                    storePath: claudeMemStoreStatus.storePath,
-                    storeExists: claudeMemStoreStatus.exists,
-                    totalEntries: claudeMemStoreStatus.totalEntries,
-                    sectionCount: claudeMemStoreStatus.sectionCount,
-                    defaultSectionCount: claudeMemStoreStatus.defaultSectionCount,
-                    presentDefaultSectionCount: claudeMemStoreStatus.presentDefaultSectionCount,
-                    missingSections: claudeMemStoreStatus.missingSections,
-                    lastUpdatedAt: claudeMemStoreStatus.lastUpdatedAt,
+                    enabled: Boolean(sectionedMemoryStoreStatus.runtimePipeline.sectionedStoreEnabled),
+                    storePath: sectionedMemoryStoreStatus.storePath,
+                    storeExists: sectionedMemoryStoreStatus.exists,
+                    totalEntries: sectionedMemoryStoreStatus.totalEntries,
+                    sectionCount: sectionedMemoryStoreStatus.sectionCount,
+                    defaultSectionCount: sectionedMemoryStoreStatus.defaultSectionCount,
+                    presentDefaultSectionCount: sectionedMemoryStoreStatus.presentDefaultSectionCount,
+                    missingSections: sectionedMemoryStoreStatus.missingSections,
+                    lastUpdatedAt: sectionedMemoryStoreStatus.lastUpdatedAt,
                 }
                 : null,
         });

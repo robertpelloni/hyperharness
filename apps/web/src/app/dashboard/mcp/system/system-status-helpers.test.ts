@@ -299,13 +299,13 @@ describe('system status startup helpers', () => {
         });
     });
 
-    it('shows claude-mem seeding posture inside the shared memory/context phase', () => {
+    it('shows sectioned-memory seeding posture inside the shared memory/context phase', () => {
         const checks = buildSystemStartupChecks(createStartupStatus({
             memory: {
                 ready: false,
                 initialized: true,
                 agentMemory: true,
-                claudeMem: {
+                sectionedMemory: {
                     ready: false,
                     enabled: true,
                     storeExists: true,
@@ -320,7 +320,7 @@ describe('system status startup helpers', () => {
             name: 'Memory / Context',
             status: 'Pending',
             latency: 'initialized',
-            detail: 'Memory manager is initialized, but claude-mem is still seeding default sections (2/7 present)',
+            detail: 'Memory manager is initialized, but sectioned memory is still seeding default sections (2/7 present)',
         });
     });
 

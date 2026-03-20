@@ -398,7 +398,7 @@ function buildSummary(
     }
 
     if (!supportsPosixShell && platform === 'win32') {
-        notes.push('No verified POSIX shell detected yet; Borg should prefer PowerShell-compatible command plans.');
+        notes.push('No verified POSIX shell detected. Recommendation: Install Cygwin or WSL to ensure 1:1 compatibility with AI model tool training (e.g. bash, grep, sed).');
     }
 
     return {
