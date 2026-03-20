@@ -3,6 +3,44 @@
 ## Borg Changelog
 
 All notable changes to this project will be documented in this file.
+## [0.9.4] — 2026-03-22
+
+### Task 029 — MCP Registry Intelligence P0: Published Catalog End-to-End
+- feat(core/db): New Drizzle tables + raw `CREATE TABLE IF NOT EXISTS` SQL in `initializeSchema()`:
+  - `published_mcp_servers` — canonical catalog; UNIQUE on `canonical_id`; status state machine (discovered → normalized → probeable → validated → certified / broken / archived); confidence 0–100 int
+  - `published_mcp_server_sources` — provenance per registry source; UNIQUE(server_uuid, source_name); raw_payload stored as JSON (never executed)
+  - `published_mcp_config_recipes` — config templates with versioning; auto-increments recipe_version; deactivates prior active recipes on insert
+  - `published_mcp_validation_runs` — validation outcomes with run_mode (transport_probe / tools_list / smoke_test / full_validation) and outcome state machine (pending → passed / failed / error / timeout / skipped)
+  - 6 new enum constants exported: `PublishedServerStatusEnum`, `PublishedServerTransportEnum`, `PublishedServerInstallMethodEnum`, `PublishedServerAuthModelEnum`, `ValidationRunModeEnum`, `ValidationRunOutcomeEnum`
+- feat(core/repos): New `PublishedCatalogRepository` class with: `upsertServer`, `upsertSource`, `createRecipe`, `startValidationRun`, `finishValidationRun`, `listServers` (filtered/paginated), `countServers`, `findServerByUuid`, `findSourcesByServerUuid`, `listRunsForServer`, `getActiveRecipe`, `updateServerStatus`; exported as `publishedCatalogRepository` singleton
+- feat(core/services): `published-catalog-ingestor.ts` — Archivist agent ingestion subsystem with three adapters:
+  - `GlamaAiAdapter` → `https://glama.ai/api/mcp/servers?limit=200`
+  - `SmitheryAiAdapter` → `https://registry.smithery.ai/servers?pageSize=200`
+  - `McpRunAdapter` → `https://mcp.run/api/servers` (soft failure if unavailable)
+  - `ingestPublishedCatalog()` entry point runs all adapters and returns a typed `IngestionReport`
+- feat(core/services): `published-catalog-validator.ts` — Verifier agent validation subsystem:
+  - HTTP probe checks reachability (200/401/403/404 all count as "server exists")
+  - MCP `tools/list` attempt via `@modelcontextprotocol/sdk` with 10 s timeout (SSE / StreamableHTTP transports only)
+  - STDIO transports → skipped with `failure_class = 'stdio_unsafe'` (no sandbox isolation yet)
+  - Updates server status and confidence score on completion
+- feat(core/trpc): `catalogRouter` added to `appRouter` as `catalog:` namespace with 5 procedures:
+  - `catalog.list` — paginated server list with search / status / transport filters
+  - `catalog.get` — server detail + latest run + active recipe + sources
+  - `catalog.listRuns` — validation run history for a server
+  - `catalog.triggerIngestion` (admin) — runs all ingestion adapters, returns `IngestionReport`
+  - `catalog.triggerValidation` (admin) — validates one server by UUID, returns outcome
+  - `catalog.stats` — dashboard summary counts (total, validated, broken, per-status breakdown)
+- feat(web/dashboard): New `/dashboard/registry` page — full-featured published MCP catalog browser:
+  - Stats cards: Total / Validated / Broken / Discovered
+  - Search input (name, author, canonical_id fuzzy filter), status dropdown, transport dropdown
+  - Paginated table (50/page) with: name + description + author, transport badge, install badge, color-coded status badge, confidence bar (visual 0–100%), stars, per-row validate button + repo link
+  - "Sync Registries" button → calls `catalog.triggerIngestion`
+  - Server type derived from `inferRouterOutputs<AppRouter>` (stays in sync with router automatically)
+- feat(web/nav): `Published Catalog` navigation entry added to `LABS_DASHBOARD_NAV` section (href `/dashboard/registry`, badge `beta`, icon `Globe`)
+- fix(web/registry): Removed `.output()` Zod validators from catalog router procedures — codebase has no superjson transformer so `z.date()` in output schemas caused tRPC client types to diverge from runtime values
+- fix(web/registry): Replaced `keepPreviousData` (removed in React Query v5) in the registry page list query
+- TypeScript: `packages/core` and `apps/web` both pass `tsc --noEmit` with zero errors
+
 
 ## [0.9.3] — 2026-03-21
 

@@ -662,3 +662,236 @@ export const savedScriptsTable = sqliteTable(
         nameUserUnique: unique("saved_scripts_name_user_unique_idx").on(table.name, table.user_id),
     })
 );
+
+// ============================================================
+// MCP REGISTRY INTELLIGENCE — Published Catalog Tables
+// ============================================================
+// These tables implement the P0 "MCP Registry Intelligence" feature:
+// ingesting publicly known MCP servers from external registries
+// (Glama.ai, Smithery.ai, curated GitHub lists, etc.), normalizing
+// them into a canonical catalog, and tracking validation results.
+//
+// Key design principles (from AGENTS.md):
+//   - Archivist: catalog integrity — canonical_id, provenance, dedup
+//   - Configurator: high-confidence recipes or human review
+//   - Verifier: only certify what we have safely observed
+//   - Guardian: isolation boundaries for validation runs
+
+/** Enum: status lifecycle for a published server entry */
+export const PublishedServerStatusEnum = [
+    "discovered",   // Seen in at least one external registry
+    "normalized",   // canonical_id assigned, fields cleaned
+    "probeable",    // Recipe exists and has enough info to attempt connection
+    "validated",    // At least one validation run passed (tools/list succeeded)
+    "certified",    // Manually reviewed by operator or passed full smoke test
+    "broken",       // Validation consistently fails
+    "archived",     // Removed from tracked sources / deprecated
+] as const;
+
+/** Enum: transport type of the published server */
+export const PublishedServerTransportEnum = ["stdio", "sse", "streamable_http", "unknown"] as const;
+
+/** Enum: primary install mechanism */
+export const PublishedServerInstallMethodEnum = ["npx", "uvx", "docker", "binary", "url", "unknown"] as const;
+
+/** Enum: authentication model */
+export const PublishedServerAuthModelEnum = ["none", "api_key", "oauth", "bearer", "unknown"] as const;
+
+/** Enum: validation run execution mode */
+export const ValidationRunModeEnum = ["transport_probe", "tools_list", "smoke_test", "full_validation"] as const;
+
+/** Enum: validation run outcome */
+export const ValidationRunOutcomeEnum = ["pending", "passed", "failed", "error", "timeout", "skipped"] as const;
+
+/**
+ * Table: published_mcp_servers
+ * The canonical catalog of publicly known MCP servers.
+ * Each row represents a de-duplicated, normalized server entry aggregated
+ * from one or more external registries.
+ *
+ * canonical_id format: "<source-org>/<repo-slug>" or "<registry>/<id>"
+ * confidence: 0–100, reflects richness + validation evidence
+ * status: follows the PublishedServerStatusEnum lifecycle
+ */
+export const publishedMcpServersTable = sqliteTable(
+    "published_mcp_servers",
+    {
+        uuid: text("uuid").primaryKey(),
+        // Deduplicated stable identifier — e.g. "modelcontextprotocol/servers/filesystem" or "glama/abc123"
+        canonical_id: text("canonical_id").notNull().unique(),
+        display_name: text("display_name").notNull(),
+        description: text("description"),
+        author: text("author"),
+        repository_url: text("repository_url"),
+        homepage_url: text("homepage_url"),
+        icon_url: text("icon_url"),
+        transport: text("transport", { enum: PublishedServerTransportEnum })
+            .notNull()
+            .default("unknown"),
+        install_method: text("install_method", { enum: PublishedServerInstallMethodEnum })
+            .notNull()
+            .default("unknown"),
+        auth_model: text("auth_model", { enum: PublishedServerAuthModelEnum })
+            .notNull()
+            .default("unknown"),
+        // Lifecycle status — controlled by Archivist
+        status: text("status", { enum: PublishedServerStatusEnum })
+            .notNull()
+            .default("discovered"),
+        // Confidence score 0–100: increases with each validation pass, decreases on failures
+        confidence: integer("confidence").notNull().default(0),
+        tags: text("tags", { mode: "json" })
+            .$type<string[]>()
+            .notNull()
+            .default(sql`'[]'`),
+        categories: text("categories", { mode: "json" })
+            .$type<string[]>()
+            .notNull()
+            .default(sql`'[]'`),
+        stars: integer("stars"), // GitHub stars if available
+        last_seen_at: integer("last_seen_at", { mode: "timestamp" }),
+        last_verified_at: integer("last_verified_at", { mode: "timestamp" }),
+        created_at: integer("created_at", { mode: "timestamp" })
+            .notNull()
+            .default(sql`(strftime('%s', 'now'))`),
+        updated_at: integer("updated_at", { mode: "timestamp" })
+            .notNull()
+            .default(sql`(strftime('%s', 'now'))`),
+    },
+    (table) => ({
+        canonicalIdx: index("pms_canonical_id_idx").on(table.canonical_id),
+        statusIdx: index("pms_status_idx").on(table.status),
+        transportIdx: index("pms_transport_idx").on(table.transport),
+        installIdx: index("pms_install_method_idx").on(table.install_method),
+        updatedIdx: index("pms_updated_at_idx").on(table.updated_at),
+    })
+);
+
+/**
+ * Table: published_mcp_server_sources
+ * Provenance tracking — one row per (server × registry) pair.
+ * Records where each server was found, when, and the raw payload.
+ * Enables accurate deduplication and registry change detection.
+ */
+export const publishedMcpServerSourcesTable = sqliteTable(
+    "published_mcp_server_sources",
+    {
+        uuid: text("uuid").primaryKey(),
+        server_uuid: text("server_uuid")
+            .notNull()
+            .references(() => publishedMcpServersTable.uuid, { onDelete: "cascade" }),
+        // Friendly name of the source registry, e.g. "glama.ai", "smithery.ai", "awesome-mcp-servers"
+        source_name: text("source_name").notNull(),
+        // URL of the specific page/API endpoint where this entry was found
+        source_url: text("source_url"),
+        // The raw JSON payload returned by the source (stored for audit/re-processing)
+        raw_payload: text("raw_payload", { mode: "json" })
+            .$type<Record<string, unknown>>(),
+        first_seen_at: integer("first_seen_at", { mode: "timestamp" })
+            .notNull()
+            .default(sql`(strftime('%s', 'now'))`),
+        last_seen_at: integer("last_seen_at", { mode: "timestamp" })
+            .notNull()
+            .default(sql`(strftime('%s', 'now'))`),
+    },
+    (table) => ({
+        serverIdx: index("pmss_server_uuid_idx").on(table.server_uuid),
+        sourceNameIdx: index("pmss_source_name_idx").on(table.source_name),
+        // One row per server × source_name pair
+        uniqueServerSource: unique("pmss_unique_server_source_idx").on(table.server_uuid, table.source_name),
+    })
+);
+
+/**
+ * Table: published_mcp_config_recipes
+ * Configuration templates generated by the Configurator agent.
+ * A recipe is an mcp.json-compatible config snippet with placeholders
+ * for required secrets/env vars. Confidence 0–100 indicates how reliable
+ * the recipe is (100 = validated by a successful validation run).
+ */
+export const publishedMcpConfigRecipesTable = sqliteTable(
+    "published_mcp_config_recipes",
+    {
+        uuid: text("uuid").primaryKey(),
+        server_uuid: text("server_uuid")
+            .notNull()
+            .references(() => publishedMcpServersTable.uuid, { onDelete: "cascade" }),
+        // Monotonically increasing version per server (recipe can be improved over time)
+        recipe_version: integer("recipe_version").notNull().default(1),
+        // The mcp.json-compatible config object (command/args/env/url/type etc.)
+        template: text("template", { mode: "json" })
+            .$type<Record<string, unknown>>()
+            .notNull(),
+        // List of env var names that must be provided by the operator, e.g. ["GITHUB_TOKEN"]
+        required_secrets: text("required_secrets", { mode: "json" })
+            .$type<string[]>()
+            .notNull()
+            .default(sql`'[]'`),
+        // Any additional env vars with suggested default values
+        required_env: text("required_env", { mode: "json" })
+            .$type<Record<string, string>>()
+            .notNull()
+            .default(sql`'{}'`),
+        // Confidence 0–100: how reliable this recipe is
+        confidence: integer("confidence").notNull().default(0),
+        // Human-readable explanation of the recipe and its confidence
+        explanation: text("explanation"),
+        // Whether this is the currently active recipe for this server
+        is_active: integer("is_active", { mode: "boolean" }).notNull().default(true),
+        // Which agent generated this recipe (Configurator by default)
+        generated_by: text("generated_by").notNull().default("Configurator"),
+        created_at: integer("created_at", { mode: "timestamp" })
+            .notNull()
+            .default(sql`(strftime('%s', 'now'))`),
+        updated_at: integer("updated_at", { mode: "timestamp" })
+            .notNull()
+            .default(sql`(strftime('%s', 'now'))`),
+    },
+    (table) => ({
+        serverIdx: index("pmcr_server_uuid_idx").on(table.server_uuid),
+        activeIdx: index("pmcr_is_active_idx").on(table.server_uuid, table.is_active),
+    })
+);
+
+/**
+ * Table: published_mcp_validation_runs
+ * Recorded state of each automated validation attempt against a published server.
+ * These are performed by the Verifier agent in a sandboxed environment.
+ *
+ * run_mode hierarchy (cost/risk ascending):
+ *   transport_probe → tools_list → smoke_test → full_validation
+ */
+export const publishedMcpValidationRunsTable = sqliteTable(
+    "published_mcp_validation_runs",
+    {
+        uuid: text("uuid").primaryKey(),
+        server_uuid: text("server_uuid")
+            .notNull()
+            .references(() => publishedMcpServersTable.uuid, { onDelete: "cascade" }),
+        run_mode: text("run_mode", { enum: ValidationRunModeEnum }).notNull(),
+        started_at: integer("started_at", { mode: "timestamp" })
+            .notNull()
+            .default(sql`(strftime('%s', 'now'))`),
+        finished_at: integer("finished_at", { mode: "timestamp" }),
+        outcome: text("outcome", { enum: ValidationRunOutcomeEnum })
+            .notNull()
+            .default("pending"),
+        // Categorical failure reason for grouping/alerting
+        failure_class: text("failure_class"),
+        // Number of tools discovered (populated when tools_list succeeds)
+        tool_count: integer("tool_count"),
+        // Structured summary of findings (tools list excerpt, capability flags, errors)
+        findings_summary: text("findings_summary", { mode: "json" })
+            .$type<Record<string, unknown>>(),
+        // Agent role responsible for this run
+        performed_by: text("performed_by").notNull().default("Verifier"),
+        created_at: integer("created_at", { mode: "timestamp" })
+            .notNull()
+            .default(sql`(strftime('%s', 'now'))`),
+    },
+    (table) => ({
+        serverIdx: index("pmvr_server_uuid_idx").on(table.server_uuid),
+        outcomeIdx: index("pmvr_outcome_idx").on(table.outcome),
+        createdIdx: index("pmvr_created_at_idx").on(table.created_at),
+    })
+);

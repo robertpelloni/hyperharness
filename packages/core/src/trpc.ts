@@ -57,6 +57,7 @@ import { swarmRouter } from './routers/swarmRouter.js';
 import { openWebUIRouter } from './routers/openWebUIRouter.js';
 import { infrastructureRouter } from './routers/infrastructureRouter.js';
 import { ragRouter } from './routers/ragRouter.js';
+import { catalogRouter } from './routers/catalogRouter.js';
 import { projectRouter } from './routers/projectRouter.js';
 
 // import { type AnyTRPCRouter } from '@trpc/server';
@@ -118,6 +119,7 @@ export const appRouter = t.router({
     openWebUI: openWebUIRouter,
     infrastructure: infrastructureRouter,
     rag: ragRouter,
+    catalog: catalogRouter,
 });
 
 export type AppRouter = typeof appRouter;

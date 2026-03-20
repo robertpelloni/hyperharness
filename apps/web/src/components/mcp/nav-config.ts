@@ -293,6 +293,7 @@ export const LABS_DASHBOARD_NAV: NavItem[] = [
     { title: "Plans", href: "/dashboard/plans", icon: Lightbulb, variant: "ghost" },
     { title: "Metrics", href: "/dashboard/metrics", icon: BarChart3, variant: "ghost" },
     { title: "Marketplace", href: "/dashboard/marketplace", icon: ShoppingBag, variant: "ghost" },
+        { title: "Published Catalog", href: "/dashboard/registry", icon: Globe, description: "Browse, search, and validate the indexed public MCP server catalog.", variant: "ghost", badge: "beta" },
     { title: "Skills", href: "/dashboard/skills", icon: Hammer, variant: "ghost" },
     { title: "Healer", href: "/dashboard/healer", icon: Heart, variant: "ghost" },
     { title: "Security", href: "/dashboard/security", icon: Shield, variant: "ghost" },

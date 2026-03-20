@@ -23,3 +23,4 @@ export * from "./tool-sets.repo.js";
 export * from "./logs.repo.js";
 export * from "./policies.repo.js";
 export * from "./saved-scripts.repo.js";
+export * from "./published-catalog.repo.js";
