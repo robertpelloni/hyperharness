@@ -54,6 +54,7 @@ type AggregatedServer = {
         args?: string[];
         env?: string[];
     };
+    source_published_server_uuid?: string | null;
 };
 
 type ManagedServerMetadata = {
@@ -68,6 +69,7 @@ type ManagedServerMetadata = {
     bearerToken?: string | null;
     headers?: Record<string, string>;
     always_on?: boolean;
+    source_published_server_uuid?: string | null;
     _meta?: {
         status?: string;
         metadataSource?: string;
@@ -2385,6 +2387,12 @@ export default function MCPDashboard(): React.JSX.Element {
                                                     }`} title={`Last reload decision: ${lastReloadDecision}`}>
                                                         reload: {lastReloadDecision}
                                                     </span>
+                                                ) : null}
+                                                {server.source_published_server_uuid ? (
+                                                    <Link href={`/dashboard/registry/${server.source_published_server_uuid}`} className="inline-flex items-center gap-1 rounded border border-indigo-900/50 bg-indigo-950/40 px-2 py-1 text-indigo-400 hover:bg-indigo-950/70 transition-colors">
+                                                        <Database className="h-3 w-3" />
+                                                        from registry
+                                                    </Link>
                                                 ) : null}
                                             </div>
                                         </div>

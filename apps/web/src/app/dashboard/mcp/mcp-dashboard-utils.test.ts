@@ -165,6 +165,7 @@ describe('buildDashboardServerRecords', () => {
                 metadataToolCount: 12,
                 lastSuccessfulBinaryLoadAt: '2026-03-11T00:00:00.000Z',
                 always_on: undefined,
+                source_published_server_uuid: null,
                 config: {
                     command: 'npx',
                     args: ['-y', 'github-mcp'],

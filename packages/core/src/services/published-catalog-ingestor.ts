@@ -56,6 +56,108 @@ function normalizeRepoPath(repositoryUrl?: string | null): string | null {
     return `${m[1]}/${m[2].replace(/\.git$/i, "")}`;
 }
 
+/**
+ * Heuristically extract likely secret / auth env-var names for a catalog server.
+ *
+ * HOW:
+ * 1. Check the auth_model field for known patterns ("oauth", "api_key", "bearer", "none").
+ * 2. Scan description and tags for common credential placeholder patterns:
+ *    - Anything matching UPPER_SNAKE_CASE ending in _API_KEY, _TOKEN, _SECRET, etc.
+ *    - Common provider-specific names (GITHUB_TOKEN, OPENAI_API_KEY, etc.)
+ * 3. Construct a best-guess env var name from the server name + suffix when pattern is
+ *    weak (auth_model = api_key but no env var found in descriptions).
+ *
+ * Returns a deduplicated array of secret names to use in `required_secrets`.
+ * Returns empty array when auth_model = "none" or no patterns detected.
+ */
+export function inferRequiredSecrets(server: {
+    canonical_id: string;
+    display_name: string;
+    description?: string | null;
+    auth_model?: string;
+    tags?: string[];
+    categories?: string[];
+}): string[] {
+    const authModel = (server.auth_model ?? "unknown").toLowerCase();
+
+    // Explicitly no auth — don't add any secrets
+    if (authModel === "none" || authModel === "public") {
+        return [];
+    }
+
+    const candidates = new Set<string>();
+
+    // Scan description + tags for UPPER_SNAKE_CASE secrets
+    const scanTargets = [
+        server.description ?? "",
+        ...(server.tags ?? []),
+        ...(server.categories ?? []),
+    ].join(" ");
+
+    // Pattern: UPPER_SNAKE_CASE env var name ending in a well-known secret suffix
+    const pattern = new RegExp(
+        `\\b([A-Z][A-Z0-9_]{1,}(?:_API_KEY|_TOKEN|_SECRET|_PASSWORD|_AUTH_TOKEN|_BEARER_TOKEN|_ACCESS_TOKEN|_ACCESS_KEY|_CLIENT_SECRET|_API_TOKEN|_AUTH_KEY|_PRIVATE_KEY|_SECRET_KEY))\\b`,
+        "g"
+    );
+    const matches = scanTargets.matchAll(pattern);
+    for (const m of matches) {
+        if (m[1] && m[1].length <= 48) {
+            candidates.add(m[1]);
+        }
+    }
+
+    // Well-known provider env vars that appear in descriptions but without UPPER_SNAKE suffix
+    const knownProviderPatterns: [RegExp, string][] = [
+        [/github/i, "GITHUB_TOKEN"],
+        [/openai/i, "OPENAI_API_KEY"],
+        [/anthropic/i, "ANTHROPIC_API_KEY"],
+        [/google|gemini/i, "GOOGLE_API_KEY"],
+        [/slack/i, "SLACK_BOT_TOKEN"],
+        [/stripe/i, "STRIPE_SECRET_KEY"],
+        [/notion/i, "NOTION_API_KEY"],
+        [/jira|atlassian/i, "JIRA_API_TOKEN"],
+        [/linear/i, "LINEAR_API_KEY"],
+        [/discord/i, "DISCORD_BOT_TOKEN"],
+        [/twitter|x\.com/i, "TWITTER_API_KEY"],
+        [/cloudflare/i, "CLOUDFLARE_API_TOKEN"],
+        [/aws|amazon/i, "AWS_ACCESS_KEY_ID"],
+        [/sendgrid/i, "SENDGRID_API_KEY"],
+        [/twilio/i, "TWILIO_AUTH_TOKEN"],
+        [/browserbase/i, "BROWSERBASE_API_KEY"],
+        [/figma/i, "FIGMA_ACCESS_TOKEN"],
+        [/gitlab/i, "GITLAB_TOKEN"],
+        [/bitbucket/i, "BITBUCKET_TOKEN"],
+        [/hubspot/i, "HUBSPOT_ACCESS_TOKEN"],
+        [/salesforce/i, "SALESFORCE_ACCESS_TOKEN"],
+    ];
+
+    // Only add provider-specific hints if we don't already have candidates
+    if (candidates.size === 0 && authModel !== "unknown") {
+        const fullText = [server.canonical_id, server.display_name, scanTargets].join(" ");
+        for (const [providerPat, envVar] of knownProviderPatterns) {
+            if (providerPat.test(fullText)) {
+                candidates.add(envVar);
+                break; // One provider hint per server
+            }
+        }
+    }
+
+    // If auth_model signals auth is needed but we found nothing, synthesize a generic name
+    if (candidates.size === 0 && (authModel === "api_key" || authModel === "bearer" || authModel === "token")) {
+        const safeName = server.display_name
+            .toUpperCase()
+            .replace(/[^A-Z0-9]+/g, "_")
+            .replace(/^_+|_+$/g, "")
+            .slice(0, 24);
+        if (safeName.length >= 2) {
+            candidates.add(`${safeName}_API_KEY`);
+        }
+    }
+
+    // Cap at 4 secrets to avoid false-positive overload
+    return Array.from(candidates).slice(0, 4);
+}
+
 export function buildBaselineRecipe(
     server: {
         canonical_id: string;
@@ -841,7 +943,7 @@ export async function ingestPublishedCatalog(
             await publishedCatalogRepository.createRecipe({
                 server_uuid: server.uuid,
                 template: baseline.template,
-                required_secrets: [],
+                required_secrets: inferRequiredSecrets(server),
                 required_env: {},
                 confidence: baseline.confidence,
                 explanation: baseline.explanation,

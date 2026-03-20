@@ -3,6 +3,27 @@
 ## Borg Changelog
 
 All notable changes to this project will be documented in this file.
+## [0.9.13] — 2026-03-20
+
+### Task 040 — Catalog Provenance Badge + Heuristic Secret Inference
+
+- feat(core/ingestor): Added `inferRequiredSecrets(server, sources)` heuristic to `published-catalog-ingestor.ts`.
+  - Scans server `description`, `display_name`, and `tags` for API key / token / secret patterns using a curated keyword list.
+  - Detects 25+ service-specific secret patterns: GitHub PAT, Slack, Notion, Linear, Jira, Stripe, Twilio, OpenAI, Anthropic, Google/Gemini, Azure, AWS, Cloudflare, Sentry, Vercel, Supabase, Airtable, Discord, Telegram, Figma, etc.
+  - `required_secrets` in ingested recipes is now populated instead of always being `[]`.
+
+- feat(web/mcp): Added "from registry" provenance badge to installed MCP server cards (`apps/web/src/app/dashboard/mcp/page.tsx`).
+  - When an installed server was imported from the published MCP catalog (`source_published_server_uuid` is set), its management card now shows a teal badge linking to the catalog entry at `/dashboard/registry/{uuid}`.
+  - Badge uses `Database` icon (lucide) + `Link` (next/link) with indigo styling to visually distinguish catalog-linked servers.
+  - Added `source_published_server_uuid` field to `AggregatedServer`, `ManagedServerMetadata`, `ManagedServerRuntimeRecord`, and `DashboardServerRecord` types and mapped through `buildDashboardServerRecords`.
+
+- test: Updated `mcp-dashboard-utils.test.ts` assertion for `buildDashboardServerRecords` to include `source_published_server_uuid: null` in expected output. All 8 tests pass.
+
+- test verification:
+  - `pnpm -C apps/web exec tsc --noEmit --pretty false` ✅
+  - `pnpm -C packages/core exec tsc --noEmit --pretty false` ✅
+  - `pnpm exec vitest run apps/web/src/app/dashboard/mcp/mcp-dashboard-utils.test.ts` — 8/8 ✅
+
 ## [0.9.12] — 2026-03-20
 
 ### Task 039 — Registry UX: Operator-Readable Blockers + Docker Recipe Support

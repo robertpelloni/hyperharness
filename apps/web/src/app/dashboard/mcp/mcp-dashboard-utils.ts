@@ -51,6 +51,7 @@ export type ManagedServerRuntimeRecord = ManagedServerDiscoveryRecord & {
     command?: string | null;
     args?: string[];
     env?: Record<string, string>;
+    source_published_server_uuid?: string | null;
     _meta?: (ManagedServerDiscoveryRecord['_meta'] & {
         metadataSource?: string | null;
         toolCount?: number | null;
@@ -74,6 +75,7 @@ export type DashboardServerRecord = {
     metadataToolCount?: number;
     lastSuccessfulBinaryLoadAt?: string;
     always_on?: boolean;
+    source_published_server_uuid?: string | null;
     config?: {
         command?: string;
         args?: string[];
@@ -200,6 +202,7 @@ export function buildDashboardServerRecords(
             metadataToolCount: server._meta?.toolCount ?? undefined,
             lastSuccessfulBinaryLoadAt: server._meta?.lastSuccessfulBinaryLoadAt ?? undefined,
             always_on: server.always_on,
+            source_published_server_uuid: server.source_published_server_uuid ?? null,
             config: {
                 command: runtime?.config?.command ?? server.command ?? undefined,
                 args: runtime?.config?.args ?? server.args ?? [],
