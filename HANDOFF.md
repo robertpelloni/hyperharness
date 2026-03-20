@@ -2,6 +2,17 @@
 
 ## Delta update (latest)
 
+### MCP registry/catalog workflow unification (UI)
+- Updated `apps/web/src/app/dashboard/mcp/registry/page.tsx` to include a `Published Catalog Intelligence` panel.
+- Added live metrics sourced from `trpc.catalog.stats` (total, validated, broken, updated 24h).
+- Added an explicit deep-link CTA to `/dashboard/registry` to route operators from quick-install templates to the provenance/validation-first catalog surface.
+- Clarified split responsibilities in-page to reduce operator ambiguity between install templates and verified catalog workflows.
+
+### Verification (post-change)
+- `pnpm -C apps/web exec tsc --noEmit --pretty false` ✅
+- `pnpm -C apps/web build --webpack` ✅
+- `pnpm -C packages/core exec tsc --noEmit --pretty false` ✅
+
 ### Catalog freshness metric completed
 - Implemented a real `recentlyUpdated` metric for the published catalog API:
   - Added `countRecentlyUpdated(hours = 24)` to `packages/core/src/db/repositories/published-catalog.repo.ts`

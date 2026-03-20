@@ -1,9 +1,10 @@
 "use client";
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { Card, CardHeader, CardTitle, CardContent } from "@borg/ui";
 import { Button } from "@borg/ui";
-import { Loader2, Globe, Download, ExternalLink, Database } from "lucide-react";
+import { Loader2, Globe, Download, ExternalLink, Database, ArrowRight, CheckCircle2, AlertCircle } from "lucide-react";
 import { trpc } from '@/utils/trpc';
 import { toast } from 'sonner';
 import { getInstalledServerNames, normalizeRegistryItems, type RegistryListItem } from './registry-page-normalizers';
@@ -62,6 +63,10 @@ export default function RegistryDashboard() {
     // We can use this to check which are already installed
     const { data: installedServers } = trpc.mcpServers.list.useQuery();
     const { data: registry, isLoading: loadingRegistry } = trpc.mcpServers.registrySnapshot.useQuery();
+    const { data: catalogStats } = trpc.catalog.stats.useQuery(undefined, {
+        staleTime: 30_000,
+        refetchOnWindowFocus: false,
+    });
 
     const installedServerNames = getInstalledServerNames(installedServers);
     const liveRegistry: RegistryItem[] = normalizeRegistryItems(registry);
@@ -88,6 +93,43 @@ export default function RegistryDashboard() {
             </div>
 
             <div className="relative">
+                <Card className="mb-6 bg-zinc-900/40 border-zinc-800">
+                    <CardHeader className="pb-3">
+                        <CardTitle className="text-zinc-100 flex items-center justify-between gap-3 flex-wrap">
+                            <span>Published Catalog Intelligence</span>
+                            <Link
+                                href="/dashboard/registry"
+                                className="inline-flex items-center gap-1.5 text-sm text-cyan-300 hover:text-cyan-200"
+                            >
+                                Open full catalog <ArrowRight className="h-4 w-4" />
+                            </Link>
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent className="pt-0">
+                        <p className="text-sm text-zinc-400 mb-3">
+                            Use this page for quick installs. Use the full catalog for provenance, validation history, and confidence-ranked discovery.
+                        </p>
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
+                            <div className="rounded border border-zinc-800 bg-zinc-950/40 px-3 py-2">
+                                <div className="text-zinc-500 text-xs">Catalog total</div>
+                                <div className="text-zinc-100 font-semibold">{catalogStats?.total ?? 0}</div>
+                            </div>
+                            <div className="rounded border border-emerald-900/60 bg-emerald-950/20 px-3 py-2">
+                                <div className="text-emerald-300 text-xs inline-flex items-center gap-1"><CheckCircle2 className="h-3 w-3" />Validated</div>
+                                <div className="text-emerald-100 font-semibold">{catalogStats?.validated ?? 0}</div>
+                            </div>
+                            <div className="rounded border border-red-900/60 bg-red-950/20 px-3 py-2">
+                                <div className="text-red-300 text-xs inline-flex items-center gap-1"><AlertCircle className="h-3 w-3" />Broken</div>
+                                <div className="text-red-100 font-semibold">{catalogStats?.broken ?? 0}</div>
+                            </div>
+                            <div className="rounded border border-amber-900/60 bg-amber-950/20 px-3 py-2">
+                                <div className="text-amber-300 text-xs">Updated 24h</div>
+                                <div className="text-amber-100 font-semibold">{catalogStats?.recentlyUpdated ?? 0}</div>
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+
                 <input
                     value={filter}
                     onChange={(e) => setFilter(e.target.value)}

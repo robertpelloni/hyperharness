@@ -41,6 +41,8 @@ All notable changes to this project will be documented in this file.
 - fix(web/registry): Replaced `keepPreviousData` (removed in React Query v5) in the registry page list query
 - feat(core/catalog): Implemented real freshness metric for `catalog.stats.recentlyUpdated` using `updated_at >= now - 24h` via new repository method `countRecentlyUpdated(hours)`.
 - feat(web/registry): Added `Updated 24h` stat card to `/dashboard/registry` so operators can monitor catalog freshness directly from the dashboard.
+- feat(web/mcp-registry): Added a `Published Catalog Intelligence` handoff panel to `/dashboard/mcp/registry` with live `catalog.stats` metrics and a direct navigation link to `/dashboard/registry`.
+- feat(web/mcp-registry): Clarified operator workflow split in UI copy: quick install actions remain in MCP Registry, while provenance/validation/confidence-first discovery is routed to the Published Catalog view.
 - TypeScript: `packages/core` and `apps/web` both pass `tsc --noEmit` with zero errors
 
 
