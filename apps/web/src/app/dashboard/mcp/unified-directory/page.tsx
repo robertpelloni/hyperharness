@@ -248,15 +248,7 @@ export default function UnifiedDirectoryPage() {
                 <button
                     type="button"
                     disabled={!hasActiveFilters}
-                    onClick={() => {
-                        router.replace(pathname);
-                        setSearch("");
-                        setSource("all");
-                        setResearchStatus("");
-                        setShowDuplicates(false);
-                        setDuplicatesOnly(false);
-                        setPage(0);
-                    }}
+                    onClick={resetFilters}
                     className="h-9 px-3 rounded-lg border border-zinc-700 text-sm text-zinc-300 hover:text-zinc-100 hover:border-zinc-500 disabled:opacity-50 disabled:hover:text-zinc-300 disabled:hover:border-zinc-700"
                 >
                     Clear filters{hasActiveFilters ? ` (${activeFilterCount})` : ""}

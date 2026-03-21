@@ -4,6 +4,18 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.10.23] — 2026-03-21
+
+### Unified Directory Reset Handler Unification
+
+- refactor(web/unified-directory): Updated `apps/web/src/app/dashboard/mcp/unified-directory/page.tsx` so the toolbar `Clear filters` button now uses the shared `resetFilters` handler.
+  - Ensures toolbar and empty-state recovery actions stay behaviorally identical for URL and local-state reset.
+  - Reduces duplicate reset logic and lowers future drift risk.
+
+- verification:
+  - `pnpm -C apps/web exec tsc --noEmit --pretty false` ✅
+  - `pnpm -C packages/core exec tsc --noEmit --pretty false` ✅
+
 ## [0.10.22] — 2026-03-21
 
 ### Unified Directory Pagination Clamp
