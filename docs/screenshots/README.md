@@ -66,6 +66,10 @@ Verify-only mode (no writes):
 
 `pnpm run visuals:verify`
 
+Verify-only strict mode (no writes, fails if screenshots are missing):
+
+`pnpm run visuals:verify:strict`
+
 ## Command matrix (all the stuff)
 
 | Goal | Command | Writes files | Fails on missing screenshots |
@@ -77,5 +81,11 @@ Verify-only mode (no writes):
 | Refresh visuals (daily) | `pnpm run visuals:refresh` | ✅ | ❌ |
 | Refresh visuals (release) | `pnpm run visuals:refresh:strict` | ✅ | ✅ |
 | Verify visuals (CI no-write) | `pnpm run visuals:verify` | ❌ | ❌ |
+| Verify visuals (CI no-write strict) | `pnpm run visuals:verify:strict` | ❌ | ✅ |
 | Do all visuals checks (daily) | `pnpm run visuals:all` | ✅ | ❌ |
 | Do all visuals checks (release) | `pnpm run visuals:all:strict` | ✅ | ✅ |
+
+## Release gate integration
+
+- Default gate (warn-level visuals): `pnpm run check:release-gate:ci`
+- Strict visuals gate: `pnpm run check:release-gate:ci:strict-visuals`

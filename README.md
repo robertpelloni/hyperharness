@@ -43,7 +43,11 @@
 >
 > Verify-only (no file writes): `pnpm run visuals:verify`
 >
+> Verify-only strict mode: `pnpm run visuals:verify:strict`
+>
 > Do all visual maintenance checks: `pnpm run visuals:all` (or `pnpm run visuals:all:strict` for release)
+>
+> CI strict gate: `pnpm run check:release-gate:ci:strict-visuals`
 
 | Capture | Target path | Status |
 |---|---|---|

@@ -15,6 +15,7 @@ const useNode = process.execPath;
 const args = new Set(process.argv.slice(2));
 const skipReadiness = args.has("--skip-readiness");
 const includeTurboLint = args.has("--with-turbo-lint");
+const strictVisuals = args.has("--strict-visuals");
 
 function run(name, command, args, options = {}) {
   const result = spawnSync(command, args, {
@@ -112,8 +113,9 @@ async function main() {
     fail(`Placeholder regression check failed. ${formatCommandFailure(placeholder)}`);
   }
 
-  printStep("Running visuals verification check...");
-  const visualsVerify = runPnpm("visuals-verify", ["run", "visuals:verify"], {
+  const visualsCommand = strictVisuals ? "visuals:verify:strict" : "visuals:verify";
+  printStep(`Running visuals verification check (${visualsCommand})...`);
+  const visualsVerify = runPnpm("visuals-verify", ["run", visualsCommand], {
     stdio: "inherit",
   });
 
