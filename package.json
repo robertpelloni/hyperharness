@@ -17,6 +17,8 @@
                     "test":  "set TURBO_DAEMON=false\u0026\u0026 turbo run test",
                     "test:ci":  "pnpm -C packages/ai run test \u0026\u0026 pnpm -C packages/cli exec vitest run src/commands/start.test.ts \u0026\u0026 pnpm -C packages/core exec vitest run src/orchestrator-listen.test.ts \u0026\u0026 pnpm -C packages/mcp-client run test \u0026\u0026 pnpm -C packages/mcp-registry run test",
                     "check:placeholders":  "node scripts/check-placeholder-regressions.mjs",
+                    "check:screenshots":  "node scripts/check-screenshots.mjs",
+                    "check:screenshots:strict":  "node scripts/check-screenshots.mjs --strict",
                     "check:dev-readiness":  "node scripts/verify_dev_readiness.mjs",
                     "check:release-gate":  "node scripts/check_release_gate.mjs",
                     "check:release-gate:ci":  "node scripts/check_release_gate.mjs --skip-readiness --with-turbo-lint",

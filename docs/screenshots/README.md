@@ -31,3 +31,13 @@ Use this folder for repository-facing screenshots referenced from the root `READ
 - Ensure each screenshot opens correctly.
 - Ensure file names match the README table paths exactly.
 - Keep file sizes reasonable for GitHub rendering (generally under 1.5 MB per image).
+
+## Validation command
+
+Run the repository screenshot validator before committing:
+
+`pnpm run check:screenshots`
+
+Use strict mode to fail when any required screenshot is missing:
+
+`pnpm run check:screenshots:strict`
