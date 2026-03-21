@@ -269,7 +269,21 @@ function runBrowserExtensionBuilds() {
   });
 
   if ((installResult.status ?? 1) !== 0) {
-    fail("Browser-extension dependency install failed", installResult);
+    printStep("Browser-extension install failed; retrying with --ignore-scripts to bypass flaky lifecycle hooks.");
+
+    const fallbackInstallResult = runPnpm(["install", "--frozen-lockfile", "--ignore-scripts"], {
+      cwd: extensionRoot,
+      env: {
+        ...process.env,
+        CI: process.env.CI ?? "true",
+      },
+    });
+
+    if ((fallbackInstallResult.status ?? 1) !== 0) {
+      fail("Browser-extension dependency install failed", fallbackInstallResult);
+    }
+
+    printStep("Browser-extension dependencies installed via --ignore-scripts fallback.");
   }
 
   printStep("Building Borg browser extension for Chromium/Chrome/Edge...");
