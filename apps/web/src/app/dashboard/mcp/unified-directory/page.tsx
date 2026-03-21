@@ -261,7 +261,7 @@ function UnifiedRow({ item }: { item: UnifiedItem }) {
                             </Link>
                         ) : (
                             <Link
-                                href={`/dashboard/links?search=${encodeURIComponent(item.subtitle ?? item.title)}&source=unified-directory`}
+                                href={`/dashboard/links?search=${encodeURIComponent(item.subtitle ?? item.title)}&source=unified-directory${item.status ? `&research_status=${encodeURIComponent(item.status)}` : ""}${item.is_duplicate ? "&show_duplicates=true" : ""}`}
                                 className="inline-flex items-center text-xs text-cyan-300 hover:text-cyan-200 hover:underline"
                             >
                                 Open in link backlog
@@ -289,6 +289,13 @@ function UnifiedRow({ item }: { item: UnifiedItem }) {
                 <span className={`inline-flex px-2 py-0.5 rounded text-xs border ${statusClass(item.source, item.status)}`}>
                     {item.status ?? "—"}
                 </span>
+                {item.source === "backlog" && item.is_duplicate ? (
+                    <div className="mt-1">
+                        <span className="inline-flex px-2 py-0.5 rounded text-[11px] border bg-amber-950 text-amber-300 border-amber-800">
+                            duplicate
+                        </span>
+                    </div>
+                ) : null}
             </td>
             <td className="px-4 py-3 align-top text-zinc-400 text-xs">
                 {item.source === "catalog" ? (

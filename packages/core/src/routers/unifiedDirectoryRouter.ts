@@ -19,6 +19,7 @@ type UnifiedCatalogItem = {
     url: string | null;
     tags: string[];
     confidence: number | null;
+    is_duplicate: null;
 };
 
 type UnifiedBacklogItem = {
@@ -35,6 +36,7 @@ type UnifiedBacklogItem = {
     url: string | null;
     tags: string[];
     confidence: null;
+    is_duplicate: boolean;
 };
 
 export type UnifiedDirectoryItem = UnifiedCatalogItem | UnifiedBacklogItem;
@@ -63,6 +65,7 @@ function normalizeCatalogItem(server: Awaited<ReturnType<typeof publishedCatalog
         url: server.repository_url ?? server.homepage_url ?? null,
         tags: [...(server.categories ?? []), ...(server.tags ?? [])],
         confidence: typeof server.confidence === "number" ? server.confidence : null,
+        is_duplicate: null,
     };
 }
 
@@ -81,6 +84,7 @@ function normalizeBacklogItem(item: Awaited<ReturnType<typeof linksBacklogReposi
         url: item.url,
         tags: item.tags ?? [],
         confidence: null,
+        is_duplicate: Boolean(item.is_duplicate),
     };
 }
 

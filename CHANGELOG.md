@@ -4,6 +4,28 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.10.6] — 2026-03-21
+
+### Unified Directory Duplicate-Aware Backlog Navigation
+
+- feat(core/unified-directory): Added `is_duplicate` to unified list item shape for backlog entries in `packages/core/src/routers/unifiedDirectoryRouter.ts`.
+  - Catalog items expose `is_duplicate: null` for discriminated consistency.
+  - Backlog items now carry concrete duplicate state from `links_backlog.is_duplicate`.
+
+- feat(web/unified-directory): Improved backlog row actions in `apps/web/src/app/dashboard/mcp/unified-directory/page.tsx`.
+  - Backlog deep-links into `/dashboard/links` now preserve context with:
+    - `search`
+    - `source=unified-directory`
+    - `research_status` (when present)
+    - `show_duplicates=true` for duplicate entries
+  - Added visible `duplicate` badge on backlog rows when applicable.
+
+- verification:
+  - `pnpm -C packages/core exec vitest run src/routers/unifiedDirectoryRouter.test.ts` ✅
+  - `pnpm -C packages/core exec tsc --noEmit --pretty false` ✅
+  - `pnpm -C packages/core build` ✅
+  - `pnpm -C apps/web exec tsc --noEmit --pretty false` ✅
+
 ## [0.10.5] — 2026-03-21
 
 ### Unified Directory Backlog Triage Filter
