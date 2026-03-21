@@ -4,6 +4,9 @@ import {
   getBillingUsageSummary,
   getDefaultRoutingStrategy,
   getFallbackTaskType,
+  formatFallbackCauseLabel,
+  formatFallbackReasonLabel,
+  formatProviderAvailabilityLabel,
   normalizeBillingPricingModels,
   normalizeBillingQuotaRows,
   normalizeFallbackChain,
@@ -47,6 +50,22 @@ describe('billing page normalizers', () => {
         reason: 'quota_headroom',
       },
     ]);
+  });
+
+  it('formats fallback reason, cause, and availability labels for operators', () => {
+    expect(formatFallbackReasonLabel('TASK_TYPE_CODING')).toBe('Matched coding task routing');
+    expect(formatFallbackReasonLabel('BUDGET_EXCEEDED_FORCED_LOCAL')).toBe('Budget guard forced a local provider');
+    expect(formatFallbackReasonLabel('quota_headroom')).toBe('Quota Headroom');
+    expect(formatFallbackReasonLabel('')).toBe('Ranked fallback');
+
+    expect(formatFallbackCauseLabel('fallback_provider')).toBe('Fallback');
+    expect(formatFallbackCauseLabel('budget_forced_local')).toBe('Budget guard');
+    expect(formatFallbackCauseLabel('custom_reason')).toBe('Custom Reason');
+
+    expect(formatProviderAvailabilityLabel('quota_exhausted')).toBe('Quota exhausted');
+    expect(formatProviderAvailabilityLabel('missing_auth')).toBe('Missing auth');
+    expect(formatProviderAvailabilityLabel('rate_limited')).toBe('Rate limited');
+    expect(formatProviderAvailabilityLabel('unknown_state')).toBe('Unknown State');
   });
 
   it('normalizes routing strategy and rules from unknown payload shapes', () => {

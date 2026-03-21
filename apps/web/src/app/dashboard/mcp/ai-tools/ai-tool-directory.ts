@@ -31,7 +31,7 @@ export interface ProviderDirectoryCard {
     provider: string;
     label: string;
     statusLabel: string;
-    statusTone: 'success' | 'warning' | 'muted';
+    statusTone: 'success' | 'warning' | 'danger' | 'muted';
     authLabel: string;
     availabilityLabel: string;
     usageLabel: string;
@@ -114,12 +114,14 @@ export function getProviderDirectoryCards(
     });
 }
 
-export function getStatusBadgeClasses(tone: CliHarnessCard['statusTone']): string {
+export function getStatusBadgeClasses(tone: CliHarnessCard['statusTone'] | ProviderDirectoryCard['statusTone']): string {
     switch (tone) {
         case 'success':
             return 'bg-emerald-500/10 text-emerald-300 border-emerald-500/20';
         case 'warning':
             return 'bg-amber-500/10 text-amber-300 border-amber-500/20';
+        case 'danger':
+            return 'bg-red-500/10 text-red-300 border-red-500/20';
         default:
             return 'bg-zinc-800 text-zinc-400 border-zinc-700';
     }

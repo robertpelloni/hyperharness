@@ -157,6 +157,92 @@ export function normalizeFallbackChain(fallback: unknown): BillingFallbackLink[]
     }, []);
 }
 
+function humanizeCode(value: string, fallback: string): string {
+    const normalized = value.trim();
+    if (!normalized) {
+        return fallback;
+    }
+
+    return normalized
+        .replace(/[_-]+/g, ' ')
+        .toLowerCase()
+        .replace(/\b\w/g, (char) => char.toUpperCase());
+}
+
+export function formatFallbackReasonLabel(reason: string | null | undefined): string {
+    const normalized = toStringValue(reason);
+    switch (normalized.toUpperCase()) {
+        case 'PROVIDER_PREFERENCE':
+            return 'Preferred provider available';
+        case 'BEST':
+            return 'Highest-quality ranked candidate';
+        case 'CHEAPEST':
+            return 'Lowest-cost ranked candidate';
+        case 'ROUND_ROBIN':
+            return 'Round-robin rotation';
+        case 'EMERGENCY_FALLBACK':
+            return 'Emergency fallback after all providers were unavailable';
+        case 'BUDGET_EXCEEDED_FORCED_LOCAL':
+            return 'Budget guard forced a local provider';
+        case 'TASK_TYPE_CODING':
+            return 'Matched coding task routing';
+        case 'TASK_TYPE_PLANNING':
+            return 'Matched planning task routing';
+        case 'TASK_TYPE_RESEARCH':
+            return 'Matched research task routing';
+        case 'TASK_TYPE_GENERAL':
+            return 'Matched general-purpose routing';
+        case 'TASK_TYPE_WORKER':
+            return 'Matched worker-task routing';
+        case 'TASK_TYPE_SUPERVISOR':
+            return 'Matched supervisor-task routing';
+        default:
+            return humanizeCode(normalized, 'Ranked fallback');
+    }
+}
+
+export function formatFallbackCauseLabel(
+    causeCode: 'fallback_provider' | 'budget_forced_local' | 'emergency_fallback' | 'preference_honored' | string,
+): string {
+    switch (causeCode) {
+        case 'fallback_provider':
+            return 'Fallback';
+        case 'budget_forced_local':
+            return 'Budget guard';
+        case 'emergency_fallback':
+            return 'Emergency';
+        case 'preference_honored':
+            return 'Preferred';
+        default:
+            return humanizeCode(causeCode, 'Fallback');
+    }
+}
+
+export function formatProviderAvailabilityLabel(availability: string | null | undefined): string {
+    const normalized = toStringValue(availability, 'unknown').toLowerCase();
+    switch (normalized) {
+        case 'available':
+            return 'Available';
+        case 'healthy':
+            return 'Healthy';
+        case 'rate_limited':
+            return 'Rate limited';
+        case 'quota_exhausted':
+            return 'Quota exhausted';
+        case 'cooldown':
+            return 'Cooling down';
+        case 'missing_auth':
+        case 'missing_config':
+            return 'Missing auth';
+        case 'degraded':
+            return 'Degraded';
+        case 'unknown':
+            return 'Unknown';
+        default:
+            return humanizeCode(normalized, 'Unknown');
+    }
+}
+
 // ---------------------------------------------------------------------------
 // Task routing
 // ---------------------------------------------------------------------------

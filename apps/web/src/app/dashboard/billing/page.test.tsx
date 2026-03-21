@@ -19,6 +19,7 @@ describe('billing dashboard provider portals', () => {
         configured: true,
         authenticated: true,
         authMethod: 'api_key',
+        authTruth: 'authenticated',
         availability: 'healthy',
       },
       {
@@ -27,6 +28,7 @@ describe('billing dashboard provider portals', () => {
         configured: true,
         authenticated: false,
         authMethod: 'api_key',
+        authTruth: 'revoked',
         availability: 'cooldown',
         lastError: 'quota exhausted',
       },
@@ -44,10 +46,10 @@ describe('billing dashboard provider portals', () => {
     });
 
     expect(anthropic).toMatchObject({
-      statusLabel: 'Configured',
-      statusTone: 'warning',
-      authLabel: 'api key',
-      availabilityLabel: 'cooldown',
+      statusLabel: 'Revoked',
+      statusTone: 'danger',
+      authLabel: 'Credential rejected by provider',
+      availabilityLabel: 'cooling down',
       errorLabel: 'quota exhausted',
     });
   });

@@ -22,6 +22,9 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Input } from '@borg/ui';
 import { PageStatusBanner } from '@/components/PageStatusBanner';
 import {
+    formatFallbackCauseLabel,
+    formatFallbackReasonLabel,
+    formatProviderAvailabilityLabel,
     getBillingUsageSummary,
     getDefaultRoutingStrategy,
     getFallbackTaskType,
@@ -125,6 +128,9 @@ export default function ProviderAuthBillingMatrix() {
     const configuredOnlyProviderCount = quotaRows.filter((row) => row.configured && !row.authenticated).length;
     const missingAuthProviderCount = quotaRows.filter((row) => !row.configured).length;
     const liveErrorProviderCount = quotaRows.filter((row) => Boolean(row.lastError)).length;
+    const revokedProviderCount = quotaRows.filter((row) => row.authTruth === 'revoked').length;
+    const throttledProviderCount = quotaRows.filter((row) => row.availability === 'rate_limited' || row.availability === 'cooldown').length;
+    const quotaExhaustedProviderCount = quotaRows.filter((row) => row.availability === 'quota_exhausted').length;
     const fallbackChain = normalizeFallbackChain(fallback);
     const fallbackSelectedTaskType = getFallbackTaskType(fallback, fallbackTaskType);
     const defaultRoutingStrategy = getDefaultRoutingStrategy(taskRouting);
@@ -258,6 +264,21 @@ export default function ProviderAuthBillingMatrix() {
                         {liveErrorProviderCount > 0 ? (
                             <Badge variant="outline" className="border-red-500/40 text-red-300 bg-red-950/20">
                                 Provider errors: {liveErrorProviderCount}
+                            </Badge>
+                        ) : null}
+                        {revokedProviderCount > 0 ? (
+                            <Badge variant="outline" className="border-red-500/40 text-red-300 bg-red-950/20">
+                                Revoked auth: {revokedProviderCount}
+                            </Badge>
+                        ) : null}
+                        {throttledProviderCount > 0 ? (
+                            <Badge variant="outline" className="border-amber-500/40 text-amber-300 bg-amber-950/20">
+                                Cooling down: {throttledProviderCount}
+                            </Badge>
+                        ) : null}
+                        {quotaExhaustedProviderCount > 0 ? (
+                            <Badge variant="outline" className="border-orange-500/40 text-orange-300 bg-orange-950/20">
+                                Quota exhausted: {quotaExhaustedProviderCount}
                             </Badge>
                         ) : null}
                     </div>
@@ -436,10 +457,7 @@ export default function ProviderAuthBillingMatrix() {
                                         event.causeCode === 'emergency_fallback' ? 'text-red-400 border-red-800' :
                                         event.causeCode === 'budget_forced_local' ? 'text-orange-400 border-orange-800' :
                                         'text-amber-300 border-amber-800';
-                                    const causeLabel =
-                                        event.causeCode === 'emergency_fallback' ? 'EMERGENCY' :
-                                        event.causeCode === 'budget_forced_local' ? 'BUDGET' :
-                                        'FALLBACK';
+                                    const causeLabel = formatFallbackCauseLabel(event.causeCode).toUpperCase();
                                     const elapsed = Math.round((Date.now() - event.timestamp) / 1000);
                                     const elapsedLabel = elapsed < 60 ? `${elapsed}s ago` : elapsed < 3600 ? `${Math.round(elapsed / 60)}m ago` : `${Math.round(elapsed / 3600)}h ago`;
                                     return (
@@ -458,7 +476,7 @@ export default function ProviderAuthBillingMatrix() {
                                                     <span className="font-semibold text-zinc-100 capitalize">{event.selectedProvider}/{event.selectedModelId}</span>
                                                 </div>
                                                 <div className="text-zinc-500 mt-0.5">
-                                                    {event.taskType} · {event.strategy} · {event.reason}
+                                                    {formatTaskRoutingLabel(event.taskType)} · {formatRoutingStrategyLabel(event.strategy as BillingRoutingStrategy)} · {formatFallbackReasonLabel(event.reason)}
                                                 </div>
                                             </div>
                                             <div className="shrink-0 text-zinc-600 text-[10px] pt-0.5">{elapsedLabel}</div>
@@ -512,7 +530,7 @@ export default function ProviderAuthBillingMatrix() {
                                                     <span className="font-bold text-zinc-200 capitalize text-sm truncate">{link.provider}</span>
                                                     {link.model ? <Badge variant="outline" className="text-[10px] px-1.5 py-0 bg-zinc-800 text-zinc-400 border-zinc-700 truncate">{link.model}</Badge> : null}
                                                 </div>
-                                                <div className="text-xs text-zinc-500 mt-0.5 truncate">{link.reason}</div>
+                                                <div className="text-xs text-zinc-500 mt-0.5 truncate">{formatFallbackReasonLabel(link.reason)}</div>
                                             </div>
                                         </div>
                                     )) : (
@@ -590,7 +608,7 @@ export default function ProviderAuthBillingMatrix() {
                                                     <div key={`${rule.taskType}-${candidate.provider}-${candidate.model ?? index}`} className="rounded-md border border-zinc-800 bg-zinc-950/80 px-2.5 py-2 text-xs text-zinc-300">
                                                         <div className="font-medium capitalize">{candidate.provider}</div>
                                                         {candidate.model ? <div className="mt-0.5 font-mono text-[10px] text-zinc-500">{candidate.model}</div> : null}
-                                                        {candidate.reason ? <div className="mt-1 text-[10px] uppercase tracking-wide text-zinc-500">{candidate.reason.replace(/_/g, ' ')}</div> : null}
+                                                        {candidate.reason ? <div className="mt-1 text-[10px] tracking-wide text-zinc-500">{formatFallbackReasonLabel(candidate.reason)}</div> : null}
                                                     </div>
                                                 )) : (
                                                     <span className="text-xs text-zinc-500">No ranked providers available for this task yet.</span>
@@ -657,7 +675,7 @@ export default function ProviderAuthBillingMatrix() {
                                             <td className="px-6 py-4 font-medium text-zinc-200 capitalize">
                                                 <div>
                                                     <div>{q.name}</div>
-                                                    <div className="mt-1 text-[10px] uppercase tracking-wide text-zinc-500">{(q.availability ?? 'unknown').replace(/_/g, ' ')}</div>
+                                                    <div className="mt-1 text-[10px] uppercase tracking-wide text-zinc-500">{formatProviderAvailabilityLabel(q.availability)}</div>
                                                     {q.lastError ? (
                                                         <div className="mt-1 flex items-center gap-1 text-[10px] text-amber-400">
                                                             <AlertCircle className="h-3 w-3" />

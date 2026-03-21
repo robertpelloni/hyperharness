@@ -4,6 +4,7 @@ export interface BillingProviderQuotaSummary {
     configured: boolean;
     authenticated?: boolean;
     authMethod?: string;
+    authTruth?: string | null;
     tier?: string;
     limit?: number | null;
     used?: number;
@@ -64,7 +65,7 @@ interface ProviderPortalDefinition {
 
 export interface ProviderPortalCard extends ProviderPortalDefinition {
     statusLabel: string;
-    statusTone: 'success' | 'warning' | 'muted';
+    statusTone: 'success' | 'warning' | 'danger' | 'muted';
     authLabel: string;
     availabilityLabel: string;
     errorLabel: string | null;
@@ -284,6 +285,38 @@ export const ROUTING_STRATEGY_OPTIONS: Array<{ value: BillingRoutingStrategy; la
     { value: 'round-robin', label: 'Round robin' },
 ];
 
+function humanizeProviderState(value: string, fallback: string): string {
+    const normalized = value.trim();
+    if (!normalized) {
+        return fallback;
+    }
+
+    return normalized
+        .replace(/[_-]+/g, ' ')
+        .toLowerCase()
+        .replace(/\b\w/g, (char) => char.toUpperCase());
+}
+
+function formatAvailabilityLabel(availability: string | undefined): string {
+    if (!availability) {
+        return 'reference only';
+    }
+
+    switch (availability.toLowerCase()) {
+        case 'rate_limited':
+            return 'rate limited';
+        case 'quota_exhausted':
+            return 'quota exhausted';
+        case 'missing_auth':
+        case 'missing_config':
+            return 'missing auth';
+        case 'cooldown':
+            return 'cooling down';
+        default:
+            return humanizeProviderState(availability, 'reference only').toLowerCase();
+    }
+}
+
 export function getProviderPortalCards(quotas: BillingProviderQuotaSummary[] | undefined): ProviderPortalCard[] {
     const normalizedQuotas = (Array.isArray(quotas) ? quotas : [])
         .filter((quota): quota is BillingProviderQuotaSummary => Boolean(quota) && typeof quota === 'object' && typeof quota.provider === 'string');
@@ -293,16 +326,40 @@ export function getProviderPortalCards(quotas: BillingProviderQuotaSummary[] | u
         const quota = quotaMap.get(portal.id);
         const authenticated = !!quota?.authenticated;
         const configured = !!quota?.configured;
+        const authTruth = typeof quota?.authTruth === 'string' ? quota.authTruth : undefined;
         const authMethod = quota?.authMethod && quota.authMethod !== 'none'
             ? quota.authMethod.replace(/_/g, ' ')
             : 'manual setup';
-        const availability = quota?.availability?.replace(/_/g, ' ') ?? 'reference only';
+        const availability = formatAvailabilityLabel(quota?.availability);
+        const statusLabel = authTruth === 'revoked'
+            ? 'Revoked'
+            : authTruth === 'expired'
+                ? 'Expired'
+                : authenticated
+                    ? 'Connected'
+                    : configured
+                        ? 'Configured'
+                        : 'Not connected';
+        const statusTone: ProviderPortalCard['statusTone'] = authTruth === 'revoked'
+            ? 'danger'
+            : authenticated
+                ? 'success'
+                : configured
+                    ? 'warning'
+                    : 'muted';
+        const authLabel = authTruth === 'revoked'
+            ? 'Credential rejected by provider'
+            : authTruth === 'expired'
+                ? 'Credential expired or needs refresh'
+                : authenticated || configured
+                    ? authMethod
+                    : 'No auth detected';
 
         return {
             ...portal,
-            statusLabel: authenticated ? 'Connected' : configured ? 'Configured' : 'Not connected',
-            statusTone: authenticated ? 'success' : configured ? 'warning' : 'muted',
-            authLabel: authenticated || configured ? authMethod : 'No auth detected',
+            statusLabel,
+            statusTone,
+            authLabel,
             availabilityLabel: availability,
             errorLabel: quota?.lastError ?? null,
         };
@@ -356,6 +413,8 @@ export function getPortalBadgeClasses(tone: ProviderPortalCard['statusTone']): s
             return 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20';
         case 'warning':
             return 'bg-amber-500/10 text-amber-300 border-amber-500/20';
+        case 'danger':
+            return 'bg-red-500/10 text-red-400 border-red-500/20';
         default:
             return 'bg-zinc-800 text-zinc-400 border-zinc-700';
     }
