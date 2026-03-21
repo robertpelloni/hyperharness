@@ -3,8 +3,8 @@
 import { useState } from 'react';
 import type { ComponentType } from 'react';
 import Link from 'next/link';
-import { Card, CardContent, CardHeader, CardTitle } from '@borg/ui';
-import { Bot, Cable, Check, Copy, ExternalLink, FolderCode, Globe, Loader2, Puzzle, Settings2, Sparkles, TerminalSquare } from 'lucide-react';
+import { Button, Card, CardContent, CardHeader, CardTitle } from '@borg/ui';
+import { Bot, Cable, Check, Copy, Download, ExternalLink, FileJson, FolderCode, Globe, Loader2, Puzzle, RefreshCcw, Settings2, Sparkles, TerminalSquare } from 'lucide-react';
 import { toast } from 'sonner';
 import { PageStatusBanner } from '@/components/PageStatusBanner';
 
@@ -19,6 +19,26 @@ import {
     getStatusBadgeClasses,
     type StartupStatusSummary,
 } from './integration-catalog';
+
+type SupportedClient = 'claude-desktop' | 'cursor' | 'vscode';
+type ClientConfigPreview = {
+    client: SupportedClient;
+    targetPath: string;
+    existed: boolean;
+    serverCount: number;
+    document: Record<string, unknown>;
+    json: string;
+};
+type ClientConfigSyncResult = ClientConfigPreview & {
+    written: boolean;
+};
+
+const MCP_SYNC_CLIENTS: SupportedClient[] = ['claude-desktop', 'cursor', 'vscode'];
+const CLIENT_LABELS: Record<SupportedClient, string> = {
+    'claude-desktop': 'Claude Desktop',
+    'cursor': 'Cursor',
+    'vscode': 'VS Code',
+};
 
 function StatCard({
     title,
@@ -51,6 +71,7 @@ function StatCard({
 
 export default function IntegrationsDashboard() {
     const [copiedActionId, setCopiedActionId] = useState<string | null>(null);
+    const [selectedSyncClient, setSelectedSyncClient] = useState<SupportedClient>('claude-desktop');
     const mcpServersClient = trpc.mcpServers as any;
     const toolsClient = trpc.tools as any;
 
@@ -64,6 +85,28 @@ export default function IntegrationsDashboard() {
         ? toolsClient.detectInstallSurfaces.useQuery(undefined, { refetchInterval: 10000 })
         : ({ data: [], isLoading: false } as { data: []; isLoading: boolean });
     const startupStatus: StartupStatusSummary | null = (startupStatusQuery.data ?? null) as StartupStatusSummary | null;
+    const previewQuery = mcpServersClient.exportClientConfig.useQuery(
+        { client: selectedSyncClient },
+        { enabled: true },
+    ) as {
+        data?: ClientConfigPreview;
+        isLoading: boolean;
+        isRefetching: boolean;
+        refetch: () => Promise<unknown>;
+    };
+    const syncMutation = mcpServersClient.syncClientConfig.useMutation({
+        onSuccess: (result: ClientConfigSyncResult) => {
+            toast.success(`Synced ${CLIENT_LABELS[result.client]} config to ${result.targetPath}`);
+            void syncTargetsQuery.refetch();
+            void previewQuery.refetch();
+        },
+        onError: (error: Error) => {
+            toast.error(`Sync failed: ${error.message}`);
+        },
+    }) as {
+        isPending: boolean;
+        mutate: (input: { client: SupportedClient }) => void;
+    };
 
     const overview = getIntegrationOverview(
         startupStatus,
@@ -74,6 +117,9 @@ export default function IntegrationsDashboard() {
     const clientRows = getExternalClientRows(syncTargetsQuery.data);
     const connectedBridgeClients = getConnectedBridgeClientRows(startupStatus);
     const installSurfaceRows = getInstallSurfaceRows(installArtifactsQuery.data);
+    const selectedClientRow = clientRows.find((row) => row.id === selectedSyncClient);
+    const isPreviewLoading = previewQuery.isLoading || previewQuery.isRefetching;
+    const isSyncing = syncMutation.isPending;
 
     const isLoading = startupStatusQuery.isLoading || browserStatusQuery.isLoading || syncTargetsQuery.isLoading || cliDetectionsQuery.isLoading || installArtifactsQuery.isLoading;
 
@@ -93,6 +139,11 @@ export default function IntegrationsDashboard() {
         } catch (error) {
             toast.error(`Copy failed: ${error instanceof Error ? error.message : 'Clipboard unavailable'}`);
         }
+    };
+
+    const handleSyncClient = (client: SupportedClient) => {
+        setSelectedSyncClient(client);
+        syncMutation.mutate({ client });
     };
 
     return (
@@ -383,6 +434,35 @@ export default function IntegrationsDashboard() {
                                             <div className="mt-2 text-xs text-zinc-500">Windows config path</div>
                                             <div className="mt-1 break-all font-mono text-xs text-zinc-300">{row.resolvedPath}</div>
                                             <div className="mt-2 text-xs text-zinc-400">{row.notes}</div>
+                                            {row.autoSyncSupported && MCP_SYNC_CLIENTS.includes(row.id as SupportedClient) ? (
+                                                <div className="mt-3 flex flex-wrap gap-2">
+                                                    <button
+                                                        type="button"
+                                                        className="inline-flex items-center gap-1 rounded-md border border-zinc-700 bg-zinc-900 px-2.5 py-1.5 text-[11px] text-zinc-300 transition hover:border-zinc-600 hover:bg-zinc-800 hover:text-white"
+                                                        onClick={() => setSelectedSyncClient(row.id as SupportedClient)}
+                                                    >
+                                                        <FileJson className="h-3.5 w-3.5" />
+                                                        Preview Borg config
+                                                    </button>
+                                                    <button
+                                                        type="button"
+                                                        className="inline-flex items-center gap-1 rounded-md border border-blue-500/30 bg-blue-500/10 px-2.5 py-1.5 text-[11px] text-blue-200 transition hover:border-blue-400/40 hover:bg-blue-500/20"
+                                                        onClick={() => handleSyncClient(row.id as SupportedClient)}
+                                                        disabled={isSyncing}
+                                                    >
+                                                        {isSyncing && selectedSyncClient === row.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Download className="h-3.5 w-3.5" />}
+                                                        Add Borg as MCP server
+                                                    </button>
+                                                    <button
+                                                        type="button"
+                                                        className="inline-flex items-center gap-1 rounded-md border border-zinc-700 bg-zinc-900 px-2.5 py-1.5 text-[11px] text-zinc-300 transition hover:border-zinc-600 hover:bg-zinc-800 hover:text-white"
+                                                        onClick={() => handleCopyOperatorAction(`sync-target-${row.id}`, row.resolvedPath, 'Copy path')}
+                                                    >
+                                                        {copiedActionId === `sync-target-${row.id}` ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
+                                                        {copiedActionId === `sync-target-${row.id}` ? 'Copied' : 'Copy path'}
+                                                    </button>
+                                                </div>
+                                            ) : null}
                                         </div>
                                         <div className="flex items-center gap-2 text-xs text-zinc-400">
                                             <FolderCode className="h-4 w-4" />
@@ -393,6 +473,95 @@ export default function IntegrationsDashboard() {
                             ))}
                         </div>
                     )}
+                </CardContent>
+            </Card>
+
+            <Card className="bg-zinc-900 border-zinc-800">
+                <CardHeader>
+                    <CardTitle className="text-white">Quick MCP registration</CardTitle>
+                </CardHeader>
+                <CardContent className="grid gap-6 xl:grid-cols-[minmax(320px,420px)_1fr]">
+                    <div className="rounded-lg border border-zinc-800 bg-zinc-950 p-4 space-y-4">
+                        <div>
+                            <div className="text-sm font-medium text-white">{CLIENT_LABELS[selectedSyncClient]}</div>
+                            <div className="mt-1 text-xs text-zinc-500">
+                                Preview or write Borg-managed MCP config directly from the Integration Hub without leaving this setup flow.
+                            </div>
+                        </div>
+
+                        <div className="space-y-2 text-sm">
+                            <div>
+                                <div className="text-zinc-500">Target path</div>
+                                <div className="break-all font-mono text-xs text-zinc-300">
+                                    {selectedClientRow?.resolvedPath ?? 'Loading…'}
+                                </div>
+                            </div>
+                            <div>
+                                <div className="text-zinc-500">Current status</div>
+                                <div className="text-zinc-300">
+                                    {selectedClientRow?.detected ? 'Existing config detected' : 'Ready to create Borg-managed config'}
+                                </div>
+                            </div>
+                            <div>
+                                <div className="text-zinc-500">MCP servers included</div>
+                                <div className="text-zinc-300">{previewQuery.data?.serverCount ?? 0}</div>
+                            </div>
+                        </div>
+
+                        <div className="flex flex-wrap gap-2">
+                            <Button
+                                onClick={() => void previewQuery.refetch()}
+                                variant="outline"
+                                className="border-zinc-700 hover:bg-zinc-800"
+                                disabled={isPreviewLoading}
+                            >
+                                {isPreviewLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <RefreshCcw className="mr-2 h-4 w-4" />}
+                                Refresh preview
+                            </Button>
+                            <Button
+                                onClick={() => handleSyncClient(selectedSyncClient)}
+                                className="bg-blue-600 hover:bg-blue-500 text-white"
+                                disabled={isPreviewLoading || isSyncing}
+                            >
+                                {isSyncing ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Download className="mr-2 h-4 w-4" />}
+                                Add Borg as MCP server
+                            </Button>
+                        </div>
+                    </div>
+
+                    <div className="rounded-lg border border-zinc-800 bg-zinc-950 p-4 space-y-3">
+                        <div className="flex items-center justify-between gap-3">
+                            <div>
+                                <div className="text-sm font-medium text-white">Generated preview</div>
+                                <div className="text-xs text-zinc-500">
+                                    This is the exact JSON Borg will merge into {CLIENT_LABELS[selectedSyncClient]}.
+                                </div>
+                            </div>
+                            {previewQuery.data?.existed ? (
+                                <span className="rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-1 text-xs text-emerald-300">
+                                    merging into existing file
+                                </span>
+                            ) : (
+                                <span className="rounded-full border border-zinc-700 bg-zinc-900 px-2.5 py-1 text-xs text-zinc-400">
+                                    new file preview
+                                </span>
+                            )}
+                        </div>
+
+                        {isPreviewLoading ? (
+                            <div className="flex justify-center p-12">
+                                <Loader2 className="h-8 w-8 animate-spin text-zinc-500" />
+                            </div>
+                        ) : previewQuery.data ? (
+                            <pre className="max-h-[520px] overflow-auto rounded-md border border-zinc-800 bg-black/30 p-4 text-xs text-zinc-200">
+                                {previewQuery.data.json}
+                            </pre>
+                        ) : (
+                            <div className="rounded-md border border-zinc-800 bg-black/20 p-6 text-sm text-zinc-500">
+                                Preview unavailable.
+                            </div>
+                        )}
+                    </div>
                 </CardContent>
             </Card>
 
