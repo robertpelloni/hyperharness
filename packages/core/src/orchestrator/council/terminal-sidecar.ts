@@ -2,7 +2,7 @@ import * as pty from 'node-pty';
 import { createServer } from 'net';
 
 /**
- * Terminal Sidecar
+ * Terminal Sidecar - Integrated into Borg Core
  * 
  * This is a standalone process that manages a PTY session.
  * It allows the main Orchestrator to restart without killing the CLI process.
@@ -50,10 +50,6 @@ const server = createServer((socket) => {
         const ctrl = JSON.parse(text.substring(10));
         if (ctrl.type === 'SET_ENV') {
           console.log(`[Sidecar] Injecting env: ${ctrl.key}=${ctrl.value.substring(0, 4)}...`);
-          
-          // Inject into shell via escape sequences or direct command injection
-          // Since we are in a PTY, we can type into the shell.
-          // This assumes the shell is currently at a prompt.
           const isWin = process.platform === 'win32';
           const cmd = isWin 
             ? `$env:${ctrl.key} = '${ctrl.value}';` 

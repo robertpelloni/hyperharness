@@ -1,6 +1,7 @@
 import { EventEmitter } from 'events';
 import { dbService } from './db.js';
 import type { CouncilDecision, DevelopmentTask, Vote, ConsensusMode, TaskType } from './types.js';
+import { eq, lt, and, gte, lte, desc, asc, sql } from 'drizzle-orm';
 
 /**
  * A complete record of a council debate
@@ -116,11 +117,11 @@ export class DebateHistoryService extends EventEmitter {
   /**
    * Save a debate record
    */
-  saveDebate(
+  async saveDebate(
     task: DevelopmentTask,
     decision: CouncilDecision,
     metadata: Partial<DebateMetadata>
-  ): DebateRecord {
+  ): Promise<DebateRecord> {
     const id = this.generateId();
     const timestamp = Date.now();
     
@@ -142,33 +143,37 @@ export class DebateHistoryService extends EventEmitter {
     };
 
     if (this.config.enabled) {
-      this.persistRecord(record);
-      this.pruneOldRecords();
+      await this.persistRecord(record);
+      await this.pruneOldRecords();
     }
 
     this.emit('debate_saved', record);
     return record;
   }
 
-  private pruneOldRecords(): void {
-    const db = dbService.getDb();
-    const cutoffTime = Date.now() - (this.config.retentionDays * 24 * 60 * 60 * 1000);
+  private async pruneOldRecords(): Promise<void> {
+    const db = dbService.getDrizzle();
+    const schema = dbService.getSchema();
+    const cutoffTime = new Date(Date.now() - (this.config.retentionDays * 24 * 60 * 60 * 1000));
 
     // Delete old records
-    db.prepare('DELETE FROM debates WHERE timestamp < ?').run(cutoffTime);
+    await db.delete(schema.councilDebatesTable).where(lt(schema.councilDebatesTable.timestamp, cutoffTime));
 
     // Delete excess records
-    const count = this.getRecordCount();
+    const count = await this.getRecordCount();
     if (count > this.config.maxRecords) {
         const excess = count - this.config.maxRecords;
-        const ids = db.prepare(`SELECT id FROM debates ORDER BY timestamp ASC LIMIT ?`).all(excess) as {id: string}[];
+        const oldRecords = await db.select({ id: schema.councilDebatesTable.id })
+            .from(schema.councilDebatesTable)
+            .orderBy(asc(schema.councilDebatesTable.timestamp))
+            .limit(excess);
 
-        for (const row of ids) {
-            this.deleteRecord(row.id);
+        for (const row of oldRecords) {
+            await this.deleteRecord(row.id);
         }
 
-        if (ids.length > 0) {
-             this.emit('pruned', { count: ids.length });
+        if (oldRecords.length > 0) {
+             this.emit('pruned', { count: oldRecords.length });
         }
     }
   }
@@ -176,28 +181,24 @@ export class DebateHistoryService extends EventEmitter {
   /**
    * Persist a single record to SQLite
    */
-  private persistRecord(record: DebateRecord): void {
+  private async persistRecord(record: DebateRecord): Promise<void> {
     try {
-      const db = dbService.getDb();
-      const stmt = db.prepare(`
-        INSERT INTO debates (
-          id, title, sessionId, taskType, status, consensus, weightedConsensus, outcome, rounds, timestamp, data
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-      `);
-
-      stmt.run(
-        record.id,
-        record.task.description.substring(0, 255), // Use description as title
-        record.metadata.sessionId || null,
-        record.metadata.dynamicSelection?.taskType || 'general',
-        'completed',
-        record.decision.consensus,
-        record.decision.weightedConsensus || record.decision.consensus,
-        record.decision.approved ? 'approved' : 'rejected',
-        record.metadata.debateRounds,
-        record.timestamp,
-        JSON.stringify(record)
-      );
+      const db = dbService.getDrizzle();
+      const schema = dbService.getSchema();
+      
+      await db.insert(schema.councilDebatesTable).values({
+        id: record.id,
+        title: record.task.description.substring(0, 255),
+        sessionId: record.metadata.sessionId || null,
+        taskType: record.metadata.dynamicSelection?.taskType || 'general',
+        status: 'completed',
+        consensus: record.decision.consensus,
+        weightedConsensus: record.decision.weightedConsensus || record.decision.consensus,
+        outcome: record.decision.approved ? 'approved' : 'rejected',
+        rounds: record.metadata.debateRounds,
+        timestamp: new Date(record.timestamp),
+        data: record
+      });
     } catch (error) {
       this.emit('error', { action: 'persist', recordId: record.id, error });
     }
@@ -206,14 +207,14 @@ export class DebateHistoryService extends EventEmitter {
   /**
    * Delete a record from SQLite
    */
-  deleteRecord(id: string): boolean {
+  async deleteRecord(id: string): Promise<boolean> {
     if (!this.config.enabled) return false;
     
-    const db = dbService.getDb();
-    const stmt = db.prepare('DELETE FROM debates WHERE id = ?');
-    const info = stmt.run(id);
+    const db = dbService.getDrizzle();
+    const schema = dbService.getSchema();
+    const result = await db.delete(schema.councilDebatesTable).where(eq(schema.councilDebatesTable.id, id));
 
-    const deleted = info.changes > 0;
+    const deleted = (result as any).changes > 0;
     if (deleted) {
       this.emit('debate_deleted', { id });
     }
@@ -224,13 +225,13 @@ export class DebateHistoryService extends EventEmitter {
   /**
    * Get a single debate record by ID
    */
-  getDebate(id: string): DebateRecord | undefined {
-    const db = dbService.getDb();
-    const stmt = db.prepare('SELECT data FROM debates WHERE id = ?');
-    const row = stmt.get(id) as { data: string } | undefined;
+  async getDebate(id: string): Promise<DebateRecord | undefined> {
+    const db = dbService.getDrizzle();
+    const schema = dbService.getSchema();
+    const rows = await db.select().from(schema.councilDebatesTable).where(eq(schema.councilDebatesTable.id, id)).limit(1);
 
-    if (row) {
-      return JSON.parse(row.data);
+    if (rows.length > 0) {
+      return rows[0].data as DebateRecord;
     }
     return undefined;
   }
@@ -238,61 +239,64 @@ export class DebateHistoryService extends EventEmitter {
   /**
    * Query debate records with filters
    */
-  queryDebates(options: DebateQueryOptions = {}): DebateRecord[] {
-    const db = dbService.getDb();
-    let query = 'SELECT data FROM debates WHERE 1=1';
-    const params: any[] = [];
+  async queryDebates(options: DebateQueryOptions = {}): Promise<DebateRecord[]> {
+    const db = dbService.getDrizzle();
+    const schema = dbService.getSchema();
+    
+    let where: any = undefined;
+    const conditions = [];
 
     if (options.sessionId) {
-      query += ' AND sessionId = ?';
-      params.push(options.sessionId);
+      conditions.push(eq(schema.councilDebatesTable.sessionId, options.sessionId));
     }
 
     if (options.taskType) {
-      query += ' AND taskType = ?';
-      params.push(options.taskType);
+      conditions.push(eq(schema.councilDebatesTable.taskType, options.taskType));
     }
 
     if (options.approved !== undefined) {
-      query += ' AND outcome = ?';
-      params.push(options.approved ? 'approved' : 'rejected');
+      conditions.push(eq(schema.councilDebatesTable.outcome, options.approved ? 'approved' : 'rejected'));
     }
 
     if (options.fromTimestamp) {
-      query += ' AND timestamp >= ?';
-      params.push(options.fromTimestamp);
+      conditions.push(gte(schema.councilDebatesTable.timestamp, new Date(options.fromTimestamp)));
     }
 
     if (options.toTimestamp) {
-      query += ' AND timestamp <= ?';
-      params.push(options.toTimestamp);
+      conditions.push(lte(schema.councilDebatesTable.timestamp, new Date(options.toTimestamp)));
     }
 
     if (options.minConsensus !== undefined) {
-      query += ' AND consensus >= ?';
-      params.push(options.minConsensus);
+      conditions.push(gte(schema.councilDebatesTable.consensus, options.minConsensus));
     }
 
     if (options.maxConsensus !== undefined) {
-      query += ' AND consensus <= ?';
-      params.push(options.maxConsensus);
+      conditions.push(lte(schema.councilDebatesTable.consensus, options.maxConsensus));
     }
+
+    if (conditions.length > 0) {
+      where = and(...conditions);
+    }
+
+    const limit = options.limit ?? 50;
+    const offset = options.offset ?? 0;
+    
+    let query = db.select().from(schema.councilDebatesTable);
+    if (where) query = query.where(where) as any;
 
     const sortBy = options.sortBy ?? 'timestamp';
     const sortOrder = options.sortOrder ?? 'desc';
     
-    query += ` ORDER BY ${sortBy} ${sortOrder.toUpperCase()}`;
+    const sortCol = sortBy === 'consensus' ? schema.councilDebatesTable.consensus : 
+                   sortBy === 'duration' ? schema.councilDebatesTable.id : // duration not in schema, fallback to ID or similar
+                   schema.councilDebatesTable.timestamp;
 
-    // Pagination
-    const limit = options.limit ?? 50;
-    const offset = options.offset ?? 0;
-    query += ' LIMIT ? OFFSET ?';
-    params.push(limit, offset);
+    query = query.orderBy(sortOrder === 'desc' ? desc(sortCol) : asc(sortCol))
+                 .limit(limit)
+                 .offset(offset) as any;
 
-    const stmt = db.prepare(query);
-    const rows = stmt.all(...params) as { data: string }[];
-    
-    let results = rows.map(r => JSON.parse(r.data) as DebateRecord);
+    const rows = await query;
+    let results = rows.map(r => r.data as DebateRecord);
 
     // Post-filter for supervisor name as it's inside the JSON/metadata
     if (options.supervisorName) {
@@ -307,21 +311,33 @@ export class DebateHistoryService extends EventEmitter {
   /**
    * Get statistics about debate history
    */
-  getStats(): DebateStats {
-    const db = dbService.getDb();
+  async getStats(): Promise<DebateStats> {
+    const db = dbService.getDrizzle();
+    const schema = dbService.getSchema();
     
-    const totalDebates = (db.prepare('SELECT COUNT(*) as count FROM debates').get() as any).count;
-    const approvedCount = (db.prepare("SELECT COUNT(*) as count FROM debates WHERE outcome = 'approved'").get() as any).count;
+    const totalCountResult = await db.select({ count: sql<number>`count(*)` }).from(schema.councilDebatesTable);
+    const totalDebates = totalCountResult[0]?.count || 0;
+    
+    const approvedCountResult = await db.select({ count: sql<number>`count(*)` })
+        .from(schema.councilDebatesTable)
+        .where(eq(schema.councilDebatesTable.outcome, 'approved'));
+    const approvedCount = approvedCountResult[0]?.count || 0;
+    
     const rejectedCount = totalDebates - approvedCount;
 
-    const avgConsensus = (db.prepare('SELECT AVG(consensus) as val FROM debates').get() as any).val || 0;
+    const avgConsensusResult = await db.select({ avg: sql<number>`avg(consensus)` }).from(schema.councilDebatesTable);
+    const avgConsensus = avgConsensusResult[0]?.avg || 0;
 
-    const taskTypeStats = db.prepare('SELECT taskType, COUNT(*) as count FROM debates GROUP BY taskType').all() as {taskType: string, count: number}[];
+    const taskTypeStats = await db.select({ 
+        taskType: schema.councilDebatesTable.taskType, 
+        count: sql<number>`count(*)` 
+    }).from(schema.councilDebatesTable).groupBy(schema.councilDebatesTable.taskType);
+    
     const debatesByTaskType: Record<string, number> = {};
     taskTypeStats.forEach(r => debatesByTaskType[r.taskType] = r.count);
 
     // Load full data for complex aggregations (safe for MVP scale)
-    const allDebates = this.queryDebates({ limit: 10000 });
+    const allDebates = await this.queryDebates({ limit: 10000 });
 
     const debatesBySupervisor: Record<string, number> = {};
     const debatesByConsensusMode: Record<string, number> = {};
@@ -338,7 +354,10 @@ export class DebateHistoryService extends EventEmitter {
         debatesByConsensusMode[mode] = (debatesByConsensusMode[mode] ?? 0) + 1;
     }
 
-    const timestamps = db.prepare('SELECT MIN(timestamp) as min, MAX(timestamp) as max FROM debates').get() as {min: number, max: number};
+    const timestampResult = await db.select({ 
+        min: sql<number>`min(timestamp)`, 
+        max: sql<number>`max(timestamp)` 
+    }).from(schema.councilDebatesTable);
 
     return {
       totalDebates,
@@ -350,28 +369,29 @@ export class DebateHistoryService extends EventEmitter {
       debatesByTaskType,
       debatesBySupervisor,
       debatesByConsensusMode,
-      oldestDebate: timestamps.min,
-      newestDebate: timestamps.max,
+      oldestDebate: timestampResult[0]?.min,
+      newestDebate: timestampResult[0]?.max,
     };
   }
 
   /**
    * Get vote patterns for a specific supervisor
    */
-  getSupervisorVoteHistory(supervisorName: string): {
+  async getSupervisorVoteHistory(supervisorName: string): Promise<{
     totalVotes: number;
     approvals: number;
     rejections: number;
     averageConfidence: number;
     recentVotes: Array<{ debateId: string; approved: boolean; confidence: number; timestamp: number }>;
-  } {
-    const db = dbService.getDb();
-    const rows = db.prepare('SELECT id, timestamp, data FROM debates ORDER BY timestamp DESC LIMIT 1000').all() as {id: string, timestamp: number, data: string}[];
+  }> {
+    const db = dbService.getDrizzle();
+    const schema = dbService.getSchema();
+    const rows = await db.select().from(schema.councilDebatesTable).orderBy(desc(schema.councilDebatesTable.timestamp)).limit(1000);
 
     const votes: Array<{ debateId: string; vote: Vote; timestamp: number }> = [];
 
     for (const row of rows) {
-      const record = JSON.parse(row.data) as DebateRecord;
+      const record = row.data as DebateRecord;
       const vote = record.decision.votes.find(v => v.supervisor === supervisorName);
       if (vote) {
         votes.push({ debateId: record.id, vote, timestamp: record.timestamp });
@@ -408,16 +428,16 @@ export class DebateHistoryService extends EventEmitter {
   /**
    * Export debate history to JSON
    */
-  exportToJson(options: DebateQueryOptions = {}): string {
-    const records = this.queryDebates({ ...options, limit: options.limit ?? 10000 });
+  async exportToJson(options: DebateQueryOptions = {}): Promise<string> {
+    const records = await this.queryDebates({ ...options, limit: options.limit ?? 10000 });
     return JSON.stringify(records, null, 2);
   }
 
   /**
    * Export debate history to CSV
    */
-  exportToCsv(options: DebateQueryOptions = {}): string {
-    const records = this.queryDebates({ ...options, limit: options.limit ?? 10000 });
+  async exportToCsv(options: DebateQueryOptions = {}): Promise<string> {
+    const records = await this.queryDebates({ ...options, limit: options.limit ?? 10000 });
     
     const headers = [
       'id',
@@ -457,10 +477,11 @@ export class DebateHistoryService extends EventEmitter {
   /**
    * Clear all debate history
    */
-  clearAll(): number {
-    const db = dbService.getDb();
-    const info = db.prepare('DELETE FROM debates').run();
-    const count = info.changes;
+  async clearAll(): Promise<number> {
+    const db = dbService.getDrizzle();
+    const schema = dbService.getSchema();
+    const result = await db.delete(schema.councilDebatesTable);
+    const count = (result as any).changes || 0;
     this.emit('cleared', { count });
     return count;
   }
@@ -491,9 +512,11 @@ export class DebateHistoryService extends EventEmitter {
   /**
    * Get total record count
    */
-  getRecordCount(): number {
-    const db = dbService.getDb();
-    return (db.prepare('SELECT COUNT(*) as count FROM debates').get() as any).count;
+  async getRecordCount(): Promise<number> {
+    const db = dbService.getDrizzle();
+    const schema = dbService.getSchema();
+    const result = await db.select({ count: sql<number>`count(*)` }).from(schema.councilDebatesTable);
+    return result[0]?.count || 0;
   }
 
   /**

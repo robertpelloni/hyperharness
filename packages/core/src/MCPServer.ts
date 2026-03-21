@@ -89,6 +89,7 @@ import { HealerReactor } from "./reactors/HealerReactor.js";
 import { MemoryHarvestReactor } from "./reactors/MemoryHarvestReactor.js";
 import { SessionManager } from "./services/SessionManager.js";
 import { SessionSupervisor } from "./supervisor/SessionSupervisor.js";
+import { PtySupervisor } from "./supervisor/PtySupervisor.js";
 import { ProjectTracker } from "./services/ProjectTracker.js";
 import { MissionService } from "./services/MissionService.js";
 import { buildToolObservationInput } from './services/toolObservationMemory.js';
@@ -493,6 +494,10 @@ export class MCPServer {
         this.gitService = new GitService(process.cwd()); // Phase 30
         this.gitWorktreeManager = new GitWorktreeManager(process.cwd());
         this.sessionSupervisor = new SessionSupervisor({
+            rootDir: process.cwd(),
+            worktreeManager: this.gitWorktreeManager,
+        });
+        this.ptySupervisor = new PtySupervisor({
             rootDir: process.cwd(),
             worktreeManager: this.gitWorktreeManager,
         });

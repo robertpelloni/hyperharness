@@ -1,6 +1,7 @@
 import { EventEmitter } from 'events';
 import { dbService } from './db.js';
 import type { CouncilConfig, ConsensusMode, DevelopmentTask, CouncilDecision } from './types.js';
+import { eq, and, sql, desc } from 'drizzle-orm';
 
 /**
  * Workspace configuration and state
@@ -109,12 +110,12 @@ export class WorkspaceManagerService extends EventEmitter {
 
   // ============ Workspace CRUD ============
 
-  createWorkspace(
+  async createWorkspace(
     name: string,
     path: string,
     config?: Partial<WorkspaceConfig>,
     description?: string
-  ): Workspace {
+  ): Promise<Workspace> {
     const id = this.generateId();
     const now = new Date();
 
@@ -147,75 +148,76 @@ export class WorkspaceManagerService extends EventEmitter {
       status: 'active',
     };
 
-    const db = dbService.getDb();
-    const stmt = db.prepare(`
-      INSERT INTO workspaces (id, name, path, status, config, description, createdAt, updatedAt)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-    `);
+    const db = dbService.getDrizzle();
+    const schema = dbService.getSchema();
 
-    stmt.run(
-      workspace.id,
-      workspace.name,
-      workspace.path,
-      workspace.status,
-      JSON.stringify({ config: workspace.config, metadata: workspace.metadata }),
-      workspace.description || null,
-      workspace.createdAt.getTime(),
-      workspace.updatedAt.getTime()
-    );
+    await db.insert(schema.councilWorkspacesTable).values({
+      id: workspace.id,
+      name: workspace.name,
+      path: workspace.path,
+      status: workspace.status,
+      config: { config: workspace.config, metadata: workspace.metadata },
+      description: workspace.description || null,
+      createdAt: workspace.createdAt,
+      updatedAt: workspace.updatedAt
+    });
 
     this.emit('workspace:created', workspace);
     return workspace;
   }
 
-  getWorkspace(id: string): Workspace | undefined {
-    const db = dbService.getDb();
-    const row = db.prepare('SELECT * FROM workspaces WHERE id = ?').get(id) as any;
-    if (!row) return undefined;
-    return this.mapRowToWorkspace(row);
+  async getWorkspace(id: string): Promise<Workspace | undefined> {
+    const db = dbService.getDrizzle();
+    const schema = dbService.getSchema();
+    const rows = await db.select().from(schema.councilWorkspacesTable).where(eq(schema.councilWorkspacesTable.id, id)).limit(1);
+    if (rows.length === 0) return undefined;
+    return this.mapRowToWorkspace(rows[0]);
   }
 
-  getWorkspaceByPath(path: string): Workspace | undefined {
-    const db = dbService.getDb();
-    const row = db.prepare('SELECT * FROM workspaces WHERE path = ?').get(path) as any;
-    if (!row) return undefined;
-    return this.mapRowToWorkspace(row);
+  async getWorkspaceByPath(path: string): Promise<Workspace | undefined> {
+    const db = dbService.getDrizzle();
+    const schema = dbService.getSchema();
+    const rows = await db.select().from(schema.councilWorkspacesTable).where(eq(schema.councilWorkspacesTable.path, path)).limit(1);
+    if (rows.length === 0) return undefined;
+    return this.mapRowToWorkspace(rows[0]);
   }
 
-  getAllWorkspaces(): Workspace[] {
-    const db = dbService.getDb();
-    const rows = db.prepare('SELECT * FROM workspaces').all() as any[];
+  async getAllWorkspaces(): Promise<Workspace[]> {
+    const db = dbService.getDrizzle();
+    const schema = dbService.getSchema();
+    const rows = await db.select().from(schema.councilWorkspacesTable);
     return rows.map(r => this.mapRowToWorkspace(r));
   }
 
-  getWorkspacesByStatus(status: WorkspaceStatus): Workspace[] {
-    const db = dbService.getDb();
-    const rows = db.prepare('SELECT * FROM workspaces WHERE status = ?').all(status) as any[];
+  async getWorkspacesByStatus(status: WorkspaceStatus): Promise<Workspace[]> {
+    const db = dbService.getDrizzle();
+    const schema = dbService.getSchema();
+    const rows = await db.select().from(schema.councilWorkspacesTable).where(eq(schema.councilWorkspacesTable.status, status));
     return rows.map(r => this.mapRowToWorkspace(r));
   }
 
-  getWorkspacesByTag(tag: string): Workspace[] {
-    // SQLite JSON query would be better, but for compatibility/simplicity, filtering in memory after fetch active/all
-    return this.getAllWorkspaces().filter(w => w.config.tags && w.config.tags.includes(tag));
+  async getWorkspacesByTag(tag: string): Promise<Workspace[]> {
+    const all = await this.getAllWorkspaces();
+    return all.filter(w => w.config.tags && w.config.tags.includes(tag));
   }
 
   private mapRowToWorkspace(row: any): Workspace {
-    const data = JSON.parse(row.config);
+    const data = row.config as any;
     return {
       id: row.id,
       name: row.name,
       path: row.path,
-      status: row.status,
+      status: row.status as WorkspaceStatus,
       description: row.description,
-      createdAt: new Date(row.createdAt),
-      updatedAt: new Date(row.updatedAt),
+      createdAt: row.createdAt,
+      updatedAt: row.updatedAt,
       config: data.config,
       metadata: data.metadata,
     };
   }
 
-  updateWorkspace(id: string, updates: Partial<Omit<Workspace, 'id' | 'createdAt'>>): Workspace | undefined {
-    const workspace = this.getWorkspace(id);
+  async updateWorkspace(id: string, updates: Partial<Omit<Workspace, 'id' | 'createdAt'>>): Promise<Workspace | undefined> {
+    const workspace = await this.getWorkspace(id);
     if (!workspace) return undefined;
 
     const updated: Workspace = {
@@ -228,29 +230,26 @@ export class WorkspaceManagerService extends EventEmitter {
       metadata: updates.metadata ? { ...workspace.metadata, ...updates.metadata } : workspace.metadata,
     };
 
-    const db = dbService.getDb();
-    const stmt = db.prepare(`
-      UPDATE workspaces
-      SET name = ?, path = ?, status = ?, config = ?, description = ?, updatedAt = ?
-      WHERE id = ?
-    `);
+    const db = dbService.getDrizzle();
+    const schema = dbService.getSchema();
 
-    stmt.run(
-      updated.name,
-      updated.path,
-      updated.status,
-      JSON.stringify({ config: updated.config, metadata: updated.metadata }),
-      updated.description || null,
-      updated.updatedAt.getTime(),
-      updated.id
-    );
+    await db.update(schema.councilWorkspacesTable)
+      .set({
+        name: updated.name,
+        path: updated.path,
+        status: updated.status,
+        config: { config: updated.config, metadata: updated.metadata },
+        description: updated.description || null,
+        updatedAt: updated.updatedAt,
+      })
+      .where(eq(schema.councilWorkspacesTable.id, updated.id));
 
     this.emit('workspace:updated', updated);
     return updated;
   }
 
-  updateWorkspaceConfig(id: string, config: Partial<WorkspaceConfig>): Workspace | undefined {
-    const workspace = this.getWorkspace(id);
+  async updateWorkspaceConfig(id: string, config: Partial<WorkspaceConfig>): Promise<Workspace | undefined> {
+    const workspace = await this.getWorkspace(id);
     if (!workspace) return undefined;
 
     return this.updateWorkspace(id, {
@@ -258,29 +257,30 @@ export class WorkspaceManagerService extends EventEmitter {
     });
   }
 
-  deleteWorkspace(id: string): boolean {
-    const workspace = this.getWorkspace(id);
+  async deleteWorkspace(id: string): Promise<boolean> {
+    const workspace = await this.getWorkspace(id);
     if (!workspace) return false;
 
     if (this.activeWorkspaceId === id) {
       this.activeWorkspaceId = null;
     }
 
-    const db = dbService.getDb();
-    db.prepare('DELETE FROM workspaces WHERE id = ?').run(id);
+    const db = dbService.getDrizzle();
+    const schema = dbService.getSchema();
+    await db.delete(schema.councilWorkspacesTable).where(eq(schema.councilWorkspacesTable.id, id));
 
     this.emit('workspace:deleted', { id, name: workspace.name });
     return true;
   }
 
-  archiveWorkspace(id: string): Workspace | undefined {
+  async archiveWorkspace(id: string): Promise<Workspace | undefined> {
     return this.updateWorkspace(id, { status: 'archived' });
   }
 
   // ============ Active Workspace ============
 
-  setActiveWorkspace(id: string): boolean {
-    const workspace = this.getWorkspace(id);
+  async setActiveWorkspace(id: string): Promise<boolean> {
+    const workspace = await this.getWorkspace(id);
     if (!workspace || workspace.status !== 'active') return false;
 
     this.activeWorkspaceId = id;
@@ -288,7 +288,7 @@ export class WorkspaceManagerService extends EventEmitter {
     return true;
   }
 
-  getActiveWorkspace(): Workspace | undefined {
+  async getActiveWorkspace(): Promise<Workspace | undefined> {
     if (!this.activeWorkspaceId) return undefined;
     return this.getWorkspace(this.activeWorkspaceId);
   }
@@ -298,18 +298,23 @@ export class WorkspaceManagerService extends EventEmitter {
     this.emit('workspace:deactivated');
   }
 
-  // ============ Debate Tracking (Simplified for now - using metadata) ============
-  // Note: Full debate tracking would use the 'debates' table with a workspaceId column.
-  // For now, we update metadata.
+  // ============ Debate Tracking ============
 
-  startDebate(workspaceId: string, task: DevelopmentTask): WorkspaceDebate | undefined {
-    const workspace = this.getWorkspace(workspaceId);
+  async startDebate(workspaceId: string, task: DevelopmentTask): Promise<WorkspaceDebate | undefined> {
+    const workspace = await this.getWorkspace(workspaceId);
     if (!workspace) return undefined;
 
-    const db = dbService.getDb();
+    const db = dbService.getDrizzle();
+    const schema = dbService.getSchema();
 
     // Check concurrent limit
-    const activeCount = (db.prepare("SELECT COUNT(*) as count FROM debates WHERE workspaceId = ? AND status = 'in_progress'").get(workspaceId) as any).count;
+    const activeCountResult = await db.select({ count: sql<number>`count(*)` })
+        .from(schema.councilDebatesTable)
+        .where(and(
+            eq(schema.councilDebatesTable.workspaceId, workspaceId),
+            eq(schema.councilDebatesTable.status, 'in_progress')
+        ));
+    const activeCount = activeCountResult[0]?.count || 0;
 
     if (activeCount >= workspace.config.maxConcurrentDebates) {
       this.emit('workspace:debate:limit_reached', { workspaceId, limit: workspace.config.maxConcurrentDebates });
@@ -327,40 +332,39 @@ export class WorkspaceManagerService extends EventEmitter {
       status: 'in_progress',
     };
 
-    // Insert into debates table (using partial data since it's in progress)
-    db.prepare(`
-      INSERT INTO debates (id, title, workspaceId, taskType, status, timestamp, data)
-      VALUES (?, ?, ?, ?, ?, ?, ?)
-    `).run(
-      debateId,
-      task.description.substring(0, 255),
+    // Insert into debates table
+    await db.insert(schema.councilDebatesTable).values({
+      id: debateId,
+      title: task.description.substring(0, 255),
       workspaceId,
-      'general',
-      'in_progress',
-      startedAt.getTime(),
-      JSON.stringify(debate)
-    );
+      taskType: 'general',
+      status: 'in_progress',
+      timestamp: startedAt,
+      data: debate,
+      outcome: 'pending' // need to provide a value for non-null column
+    });
 
     this.emit('workspace:debate:started', debate);
     return debate;
   }
 
-  completeDebate(
+  async completeDebate(
     workspaceId: string,
     debateId: string,
     decision: CouncilDecision,
     tokensUsed: number = 0,
     cost: number = 0
-  ): WorkspaceDebate | undefined {
-    const workspace = this.getWorkspace(workspaceId);
+  ): Promise<WorkspaceDebate | undefined> {
+    const workspace = await this.getWorkspace(workspaceId);
     if (!workspace) return undefined;
 
-    const db = dbService.getDb();
-    const row = db.prepare('SELECT data FROM debates WHERE id = ?').get(debateId) as { data: string };
+    const db = dbService.getDrizzle();
+    const schema = dbService.getSchema();
+    const rows = await db.select().from(schema.councilDebatesTable).where(eq(schema.councilDebatesTable.id, debateId)).limit(1);
 
-    if (!row) return undefined;
+    if (rows.length === 0) return undefined;
 
-    const existingDebate = JSON.parse(row.data) as WorkspaceDebate;
+    const existingDebate = rows[0].data as WorkspaceDebate;
     const completedAt = new Date();
     const duration = completedAt.getTime() - new Date(existingDebate.startedAt).getTime();
 
@@ -372,27 +376,21 @@ export class WorkspaceManagerService extends EventEmitter {
     };
 
     // Update debate record
-    db.prepare(`
-      UPDATE debates
-      SET status = 'completed',
-          outcome = ?,
-          consensus = ?,
-          weightedConsensus = ?,
-          data = ?
-      WHERE id = ?
-    `).run(
-      decision.approved ? 'approved' : 'rejected',
-      decision.consensus,
-      decision.weightedConsensus ?? null,
-      JSON.stringify(updatedDebate),
-      debateId
-    );
+    await db.update(schema.councilDebatesTable)
+      .set({
+        status: 'completed',
+        outcome: decision.approved ? 'approved' : 'rejected',
+        consensus: decision.consensus,
+        weightedConsensus: decision.weightedConsensus ?? decision.consensus,
+        data: updatedDebate
+      })
+      .where(eq(schema.councilDebatesTable.id, debateId));
 
     // Update workspace metadata
     const totalDebates = workspace.metadata.totalDebates + 1;
     const previousTotalDuration = workspace.metadata.averageDebateDuration * workspace.metadata.totalDebates;
       
-    this.updateWorkspace(workspaceId, {
+    await this.updateWorkspace(workspaceId, {
         metadata: {
           ...workspace.metadata,
           totalDebates,
@@ -409,63 +407,63 @@ export class WorkspaceManagerService extends EventEmitter {
     return updatedDebate;
   }
 
-  failDebate(workspaceId: string, debateId: string, error: string): WorkspaceDebate | undefined {
-    const db = dbService.getDb();
-    const row = db.prepare('SELECT data FROM debates WHERE id = ?').get(debateId) as { data: string };
-    if (!row) return undefined;
+  async failDebate(workspaceId: string, debateId: string, error: string): Promise<WorkspaceDebate | undefined> {
+    const db = dbService.getDrizzle();
+    const schema = dbService.getSchema();
+    const rows = await db.select().from(schema.councilDebatesTable).where(eq(schema.councilDebatesTable.id, debateId)).limit(1);
+    if (rows.length === 0) return undefined;
 
-    const existingDebate = JSON.parse(row.data) as WorkspaceDebate;
+    const existingDebate = rows[0].data as WorkspaceDebate;
     const updatedDebate: WorkspaceDebate = {
       ...existingDebate,
       completedAt: new Date(),
       status: 'failed',
     };
 
-    db.prepare("UPDATE debates SET status = 'failed', data = ? WHERE id = ?").run(
-      JSON.stringify(updatedDebate),
-      debateId
-    );
+    await db.update(schema.councilDebatesTable)
+      .set({ status: 'failed', data: updatedDebate })
+      .where(eq(schema.councilDebatesTable.id, debateId));
 
     this.emit('workspace:debate:failed', { debate: updatedDebate, error });
     return updatedDebate;
   }
 
-  getWorkspaceDebates(workspaceId: string, limit: number = 50): WorkspaceDebate[] {
-    const db = dbService.getDb();
-    const rows = db.prepare(`
-      SELECT data FROM debates
-      WHERE workspaceId = ?
-      ORDER BY timestamp DESC
-      LIMIT ?
-    `).all(workspaceId, limit) as { data: string }[];
+  async getWorkspaceDebates(workspaceId: string, limit: number = 50): Promise<WorkspaceDebate[]> {
+    const db = dbService.getDrizzle();
+    const schema = dbService.getSchema();
+    const rows = await db.select().from(schema.councilDebatesTable)
+      .where(eq(schema.councilDebatesTable.workspaceId, workspaceId))
+      .orderBy(desc(schema.councilDebatesTable.timestamp))
+      .limit(limit);
 
-    return rows.map(r => JSON.parse(r.data));
+    return rows.map(r => r.data as WorkspaceDebate);
   }
 
-  getActiveDebates(workspaceId: string): WorkspaceDebate[] {
-    const db = dbService.getDb();
-    const rows = db.prepare(`
-      SELECT data FROM debates
-      WHERE workspaceId = ? AND status = 'in_progress'
-    `).all(workspaceId) as { data: string }[];
+  async getActiveDebates(workspaceId: string): Promise<WorkspaceDebate[]> {
+    const db = dbService.getDrizzle();
+    const schema = dbService.getSchema();
+    const rows = await db.select().from(schema.councilDebatesTable)
+      .where(and(
+          eq(schema.councilDebatesTable.workspaceId, workspaceId),
+          eq(schema.councilDebatesTable.status, 'in_progress')
+      ));
 
-    return rows.map(r => JSON.parse(r.data));
+    return rows.map(r => r.data as WorkspaceDebate);
   }
 
-  getAllActiveDebates(): WorkspaceDebate[] {
-    const db = dbService.getDb();
-    const rows = db.prepare(`
-      SELECT data FROM debates
-      WHERE status = 'in_progress'
-    `).all() as { data: string }[];
+  async getAllActiveDebates(): Promise<WorkspaceDebate[]> {
+    const db = dbService.getDrizzle();
+    const schema = dbService.getSchema();
+    const rows = await db.select().from(schema.councilDebatesTable)
+      .where(eq(schema.councilDebatesTable.status, 'in_progress'));
 
-    return rows.map(r => JSON.parse(r.data));
+    return rows.map(r => r.data as WorkspaceDebate);
   }
 
   // ============ Statistics & Analytics ============
 
-  getWorkspaceStats(workspaceId: string, periodDays: number = 30): WorkspaceStats | undefined {
-    const workspace = this.getWorkspace(workspaceId);
+  async getWorkspaceStats(workspaceId: string, periodDays: number = 30): Promise<WorkspaceStats | undefined> {
+    const workspace = await this.getWorkspace(workspaceId);
     if (!workspace) return undefined;
 
     // Basic stats from metadata
@@ -498,10 +496,10 @@ export class WorkspaceManagerService extends EventEmitter {
     };
   }
 
-  compareWorkspaces(workspaceIds: string[]): WorkspaceComparison {
-    const metrics = workspaceIds.map(id => {
-      const stats = this.getWorkspaceStats(id);
-      const workspace = this.getWorkspace(id);
+  async compareWorkspaces(workspaceIds: string[]): Promise<WorkspaceComparison> {
+    const metrics = await Promise.all(workspaceIds.map(async id => {
+      const stats = await this.getWorkspaceStats(id);
+      const workspace = await this.getWorkspace(id);
       if (!stats || !workspace) return null;
 
       return {
@@ -513,43 +511,55 @@ export class WorkspaceManagerService extends EventEmitter {
         avgDuration: stats.performance.avgDurationMs,
         totalCost: stats.cost.total,
       };
-    }).filter((m): m is NonNullable<typeof m> => m !== null);
+    }));
 
-    const byApprovalRate = [...metrics].sort((a, b) => b.approvalRate - a.approvalRate).map(m => m.workspaceId);
-    const byConsensus = [...metrics].sort((a, b) => b.avgConsensus - a.avgConsensus).map(m => m.workspaceId);
-    const byEfficiency = [...metrics].sort((a, b) => a.totalCost - b.totalCost).map(m => m.workspaceId); // Lower cost is better
+    const validMetrics = metrics.filter((m): m is NonNullable<typeof m> => m !== null);
+
+    const byApprovalRate = [...validMetrics].sort((a, b) => b.approvalRate - a.approvalRate).map(m => m.workspaceId);
+    const byConsensus = [...validMetrics].sort((a, b) => b.avgConsensus - a.avgConsensus).map(m => m.workspaceId);
+    const byEfficiency = [...validMetrics].sort((a, b) => a.totalCost - b.totalCost).map(m => m.workspaceId); // Lower cost is better
 
     return {
         workspaces: workspaceIds,
-        metrics,
+        metrics: validMetrics,
         ranking: { byApprovalRate, byConsensus, byEfficiency }
     };
   }
 
   // ============ Bulk Operations ============
 
-  pauseAllWorkspaces(): number {
-    const db = dbService.getDb();
-    const info = db.prepare("UPDATE workspaces SET status = 'paused' WHERE status = 'active'").run();
-    this.emit('workspaces:paused_all', { count: info.changes });
-    return info.changes;
+  async pauseAllWorkspaces(): Promise<number> {
+    const db = dbService.getDrizzle();
+    const schema = dbService.getSchema();
+    const result = await db.update(schema.councilWorkspacesTable)
+      .set({ status: 'paused' })
+      .where(eq(schema.councilWorkspacesTable.status, 'active'));
+    
+    const count = (result as any).changes || 0;
+    this.emit('workspaces:paused_all', { count });
+    return count;
   }
 
-  resumeAllWorkspaces(): number {
-    const db = dbService.getDb();
-    const info = db.prepare("UPDATE workspaces SET status = 'active' WHERE status = 'paused'").run();
-    this.emit('workspaces:resumed_all', { count: info.changes });
-    return info.changes;
+  async resumeAllWorkspaces(): Promise<number> {
+    const db = dbService.getDrizzle();
+    const schema = dbService.getSchema();
+    const result = await db.update(schema.councilWorkspacesTable)
+      .set({ status: 'active' })
+      .where(eq(schema.councilWorkspacesTable.status, 'paused'));
+    
+    const count = (result as any).changes || 0;
+    this.emit('workspaces:resumed_all', { count });
+    return count;
   }
 
   // ============ Config Templates ============
 
-  cloneWorkspaceConfig(sourceId: string, targetId: string): boolean {
-    const source = this.getWorkspace(sourceId);
-    const target = this.getWorkspace(targetId);
+  async cloneWorkspaceConfig(sourceId: string, targetId: string): Promise<boolean> {
+    const source = await this.getWorkspace(sourceId);
+    const target = await this.getWorkspace(targetId);
     if (!source || !target) return false;
 
-    this.updateWorkspaceConfig(targetId, { ...source.config });
+    await this.updateWorkspaceConfig(targetId, { ...source.config });
     return true;
   }
 
@@ -561,11 +571,11 @@ export class WorkspaceManagerService extends EventEmitter {
 
   // ============ Export/Import ============
 
-  exportWorkspace(id: string): { workspace: Workspace; debates: WorkspaceDebate[] } | undefined {
-    const workspace = this.getWorkspace(id);
+  async exportWorkspace(id: string): Promise<{ workspace: Workspace; debates: WorkspaceDebate[] } | undefined> {
+    const workspace = await this.getWorkspace(id);
     if (!workspace) return undefined;
 
-    const debates = this.getWorkspaceDebates(id, 1000);
+    const debates = await this.getWorkspaceDebates(id, 1000);
 
     return {
       workspace,
@@ -573,7 +583,7 @@ export class WorkspaceManagerService extends EventEmitter {
     };
   }
 
-  importWorkspace(data: { workspace: Workspace; debates: WorkspaceDebate[] }): Workspace {
+  async importWorkspace(data: { workspace: Workspace; debates: WorkspaceDebate[] }): Promise<Workspace> {
     const newId = this.generateId();
     const now = new Date();
 
@@ -585,22 +595,19 @@ export class WorkspaceManagerService extends EventEmitter {
       updatedAt: now,
     };
 
-    const db = dbService.getDb();
-    const stmt = db.prepare(`
-      INSERT INTO workspaces (id, name, path, status, config, description, createdAt, updatedAt)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-    `);
+    const db = dbService.getDrizzle();
+    const schema = dbService.getSchema();
 
-    stmt.run(
-      imported.id,
-      imported.name,
-      imported.path,
-      imported.status,
-      JSON.stringify({ config: imported.config, metadata: imported.metadata }),
-      imported.description || null,
-      imported.createdAt.getTime(),
-      imported.updatedAt.getTime()
-    );
+    await db.insert(schema.councilWorkspacesTable).values({
+      id: imported.id,
+      name: imported.name,
+      path: imported.path,
+      status: imported.status,
+      config: { config: imported.config, metadata: imported.metadata },
+      description: imported.description || null,
+      createdAt: imported.createdAt,
+      updatedAt: imported.updatedAt
+    });
 
     this.emit('workspace:imported', imported);
     return imported;
@@ -608,11 +615,12 @@ export class WorkspaceManagerService extends EventEmitter {
 
   // ============ Cleanup ============
 
-  clearAllWorkspaces(): void {
-    const db = dbService.getDb();
+  async clearAllWorkspaces(): Promise<void> {
+    const db = dbService.getDrizzle();
+    const schema = dbService.getSchema();
     // Also clear debates associated with workspaces
-    db.prepare('DELETE FROM debates WHERE workspaceId IS NOT NULL').run();
-    db.prepare('DELETE FROM workspaces').run();
+    await db.delete(schema.councilDebatesTable).where(sql`workspace_id IS NOT NULL`);
+    await db.delete(schema.councilWorkspacesTable);
     this.activeWorkspaceId = null;
     this.emit('workspaces:cleared');
   }
