@@ -44,13 +44,16 @@ export default function UnifiedDirectoryPage() {
     const [source, setSource] = useState<SourceFilter>("all");
     const [researchStatus, setResearchStatus] = useState<(typeof RESEARCH_FILTERS)[number]>("");
     const [showDuplicates, setShowDuplicates] = useState(false);
+    const [duplicatesOnly, setDuplicatesOnly] = useState(false);
     const [page, setPage] = useState(0);
 
     const querySearch = searchParams.get("search")?.trim() ?? "";
     const querySourceRaw = searchParams.get("source")?.trim() ?? "";
     const queryResearchStatusRaw = searchParams.get("research_status")?.trim() ?? "";
     const queryShowDuplicatesRaw = searchParams.get("show_duplicates")?.trim().toLowerCase() ?? "";
+    const queryDuplicatesOnlyRaw = searchParams.get("duplicates_only")?.trim().toLowerCase() ?? "";
     const queryShowDuplicates = queryShowDuplicatesRaw === "1" || queryShowDuplicatesRaw === "true";
+    const queryDuplicatesOnly = queryDuplicatesOnlyRaw === "1" || queryDuplicatesOnlyRaw === "true";
     const querySource = SOURCE_FILTERS.includes(querySourceRaw as SourceFilter)
         ? (querySourceRaw as SourceFilter)
         : "all";
@@ -63,10 +66,11 @@ export default function UnifiedDirectoryPage() {
         if (querySource !== source) setSource(querySource);
         if (queryResearchStatus !== researchStatus) setResearchStatus(queryResearchStatus);
         if (queryShowDuplicates !== showDuplicates) setShowDuplicates(queryShowDuplicates);
-        if (querySearch || querySource !== "all" || queryResearchStatus || queryShowDuplicates) setPage(0);
+        if (queryDuplicatesOnly !== duplicatesOnly) setDuplicatesOnly(queryDuplicatesOnly);
+        if (querySearch || querySource !== "all" || queryResearchStatus || queryShowDuplicates || queryDuplicatesOnly) setPage(0);
         // Hydrate from URL params without overriding user changes unless params change.
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [querySearch, querySource, queryResearchStatus, queryShowDuplicates]);
+    }, [querySearch, querySource, queryResearchStatus, queryShowDuplicates, queryDuplicatesOnly]);
 
     const { data: stats } = trpc.unifiedDirectory.stats.useQuery();
     const { data, isLoading, isFetching } = trpc.unifiedDirectory.list.useQuery({
@@ -75,7 +79,8 @@ export default function UnifiedDirectoryPage() {
         search: search.trim() || undefined,
         source,
         research_status: researchStatus || undefined,
-        show_duplicates: showDuplicates,
+        show_duplicates: showDuplicates || duplicatesOnly,
+        duplicates_only: duplicatesOnly,
     });
 
     const items = data?.items ?? [];
@@ -99,7 +104,7 @@ export default function UnifiedDirectoryPage() {
                         Merged operator view of published MCP catalog entries and BobbyBookmarks backlog links.
                         {subtitle && <span className="ml-2 text-zinc-500">{subtitle}</span>}
                     </p>
-                    {(querySearch || querySource !== "all" || queryResearchStatus || queryShowDuplicates) && (
+                    {(querySearch || querySource !== "all" || queryResearchStatus || queryShowDuplicates || queryDuplicatesOnly) && (
                         <p className="text-indigo-400 text-xs mt-1">
                             Prefiltered from URL parameters.
                         </p>
@@ -171,6 +176,18 @@ export default function UnifiedDirectoryPage() {
                         }}
                     />
                     Show duplicate backlog links
+                </label>
+
+                <label className="inline-flex items-center gap-2 text-sm text-zinc-300">
+                    <input
+                        type="checkbox"
+                        checked={duplicatesOnly}
+                        onChange={(event) => {
+                            setDuplicatesOnly(event.target.checked);
+                            setPage(0);
+                        }}
+                    />
+                    Only duplicate backlog links
                 </label>
             </div>
 

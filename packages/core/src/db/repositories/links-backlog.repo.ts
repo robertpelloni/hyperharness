@@ -13,6 +13,7 @@ export type LinkBacklogListInput = {
     research_status?: string;
     cluster_id?: string;
     show_duplicates?: boolean;
+    duplicates_only?: boolean;
 };
 
 export type UpsertLinkBacklogInput = {
@@ -40,7 +41,9 @@ export type UpsertLinkBacklogInput = {
 function buildConditions(input: LinkBacklogListInput) {
     const conditions = [];
 
-    if (!input.show_duplicates) {
+    if (input.duplicates_only) {
+        conditions.push(eq(linksBacklogTable.is_duplicate, true));
+    } else if (!input.show_duplicates) {
         conditions.push(eq(linksBacklogTable.is_duplicate, false));
     }
     if (input.source) {

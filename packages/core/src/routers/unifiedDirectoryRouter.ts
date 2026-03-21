@@ -98,6 +98,7 @@ export const unifiedDirectoryRouter = t.router({
                     search: z.string().optional(),
                     source: z.enum(["all", "catalog", "backlog"]).default("all"),
                     show_duplicates: z.boolean().default(false),
+                    duplicates_only: z.boolean().default(false),
                     research_status: z.enum(["pending", "running", "done", "failed", "skipped"]).optional(),
                 })
                 .optional(),
@@ -108,7 +109,9 @@ export const unifiedDirectoryRouter = t.router({
             const source = input?.source ?? "all";
             const search = input?.search;
             const showDuplicates = input?.show_duplicates ?? false;
+            const duplicatesOnly = input?.duplicates_only ?? false;
             const researchStatus = input?.research_status;
+            const effectiveShowDuplicates = showDuplicates || duplicatesOnly;
 
             const wantCatalog = source === "all" || source === "catalog";
             const wantBacklog = source === "all" || source === "backlog";
@@ -127,7 +130,8 @@ export const unifiedDirectoryRouter = t.router({
                               limit: fetchWindow,
                               offset: 0,
                               search,
-                              show_duplicates: showDuplicates,
+                              show_duplicates: effectiveShowDuplicates,
+                              duplicates_only: duplicatesOnly,
                               research_status: researchStatus,
                           })
                           .then((rows) => rows.map(normalizeBacklogItem))
@@ -138,8 +142,9 @@ export const unifiedDirectoryRouter = t.router({
                 wantBacklog
                     ? linksBacklogRepository.countLinks({
                           search,
-                          show_duplicates: showDuplicates,
-                                                    research_status: researchStatus,
+                          show_duplicates: effectiveShowDuplicates,
+                          duplicates_only: duplicatesOnly,
+                          research_status: researchStatus,
                       })
                     : Promise.resolve(0),
             ]);

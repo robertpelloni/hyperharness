@@ -4,6 +4,28 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.10.7] — 2026-03-21
+
+### Unified Directory Duplicates-Only Triage
+
+- feat(core/links-backlog): Added `duplicates_only` support to `LinkBacklogListInput` and repository condition builder in `packages/core/src/db/repositories/links-backlog.repo.ts`.
+  - `duplicates_only=true` now enforces `is_duplicate = true` at query time.
+
+- feat(core/unified-directory): Added `duplicates_only` input to `unifiedDirectory.list` in `packages/core/src/routers/unifiedDirectoryRouter.ts`.
+  - For backlog queries, router now forwards `duplicates_only` and computes effective `show_duplicates` (`show_duplicates || duplicates_only`).
+
+- feat(web/unified-directory): Added `Only duplicate backlog links` toggle to `apps/web/src/app/dashboard/mcp/unified-directory/page.tsx`.
+  - UI now passes both `duplicates_only` and effective `show_duplicates` to the backend.
+  - URL hydration now reads `duplicates_only` in addition to existing query-driven filters.
+
+- test(core/router): Updated `packages/core/src/routers/unifiedDirectoryRouter.test.ts` to assert forwarding of `duplicates_only` and effective duplicate visibility behavior.
+
+- verification:
+  - `pnpm -C packages/core exec vitest run src/routers/unifiedDirectoryRouter.test.ts` ✅
+  - `pnpm -C packages/core exec tsc --noEmit --pretty false` ✅
+  - `pnpm -C packages/core build` ✅
+  - `pnpm -C apps/web exec tsc --noEmit --pretty false` ✅
+
 ## [0.10.6] — 2026-03-21
 
 ### Unified Directory Duplicate-Aware Backlog Navigation
