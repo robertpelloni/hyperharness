@@ -4,6 +4,19 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.10.16] — 2026-03-21
+
+### Unified Directory Smart Clear Filters UX
+
+- feat(web/unified-directory): Enhanced filter reset ergonomics in `apps/web/src/app/dashboard/mcp/unified-directory/page.tsx`.
+  - Added active filter counting to the `Clear filters` action label (for example, `Clear filters (3)`).
+  - Disabled `Clear filters` when no active filters are currently applied.
+  - Active count is source-aware and only includes backlog-specific filters when backlog scope is enabled.
+
+- verification:
+  - `pnpm -C apps/web exec tsc --noEmit --pretty false` ✅
+  - `pnpm -C packages/core exec tsc --noEmit --pretty false` ✅
+
 ## [0.10.15] — 2026-03-21
 
 ### Unified Directory One-Click Filter Reset

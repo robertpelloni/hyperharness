@@ -97,6 +97,12 @@ export default function UnifiedDirectoryPage() {
     const items = data?.items ?? [];
     const total = data?.total ?? 0;
     const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+    const activeFilterCount =
+        Number(search.trim().length > 0)
+        + Number(source !== "all")
+        + Number(backlogFiltersEnabled && researchStatus !== "")
+        + Number(backlogFiltersEnabled && (showDuplicates || duplicatesOnly));
+    const hasActiveFilters = activeFilterCount > 0;
 
     const subtitle = useMemo(() => {
         if (!stats) return "";
@@ -210,6 +216,7 @@ export default function UnifiedDirectoryPage() {
 
                 <button
                     type="button"
+                    disabled={!hasActiveFilters}
                     onClick={() => {
                         setSearch("");
                         setSource("all");
@@ -218,9 +225,9 @@ export default function UnifiedDirectoryPage() {
                         setDuplicatesOnly(false);
                         setPage(0);
                     }}
-                    className="h-9 px-3 rounded-lg border border-zinc-700 text-sm text-zinc-300 hover:text-zinc-100 hover:border-zinc-500"
+                    className="h-9 px-3 rounded-lg border border-zinc-700 text-sm text-zinc-300 hover:text-zinc-100 hover:border-zinc-500 disabled:opacity-50 disabled:hover:text-zinc-300 disabled:hover:border-zinc-700"
                 >
-                    Clear filters
+                    Clear filters{hasActiveFilters ? ` (${activeFilterCount})` : ""}
                 </button>
             </div>
 
