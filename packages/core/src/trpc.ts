@@ -2,7 +2,7 @@ export { t, publicProcedure, adminProcedure } from './lib/trpc-core.js';
 import { t } from './lib/trpc-core.js';
 import { suggestionsRouter } from './routers/suggestionsRouter.js';
 import { squadRouter } from './routers/squadRouter.js';
-import { councilRouter } from './routers/councilRouter.js';
+import { councilRouter } from './routers/council/index.js';
 import { graphRouter } from './routers/graphRouter.js';
 import { workflowRouter } from './routers/workflowRouter.js';
 import { testsRouter } from './routers/testsRouter.js';

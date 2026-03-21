@@ -6,3 +6,4 @@
  */
 
 export * from "./metamcp-schema.js";
+export * from "./council-schema.js";
