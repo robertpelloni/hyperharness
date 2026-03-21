@@ -164,6 +164,21 @@ function formatDate(value: string | Date | null | undefined): string {
     if (isNaN(d.getTime())) return "—";
     return d.toLocaleString();
 }
+function formatRelativeTime(value: string | Date | null | undefined): string {
+    if (!value) return "—";
+    const d = typeof value === "string" ? new Date(value) : value;
+    if (isNaN(d.getTime())) return "—";
+    const diffMs = Date.now() - d.getTime();
+    const sec = Math.floor(diffMs / 1000);
+    if (sec < 60) return "just now";
+    const min = Math.floor(sec / 60);
+    if (min < 60) return `${min}m ago`;
+    const hr = Math.floor(min / 60);
+    if (hr < 24) return `${hr}h ago`;
+    const days = Math.floor(hr / 24);
+    if (days < 7) return `${days}d ago`;
+    return d.toLocaleDateString();
+}
 
 // ---- Main page ----
 
@@ -499,7 +514,7 @@ export default function ServerDetailPage() {
                                                 <span className="text-zinc-600">· {run.tool_count} tools</span>
                                             )}
                                         </div>
-                                        <span className="text-zinc-600 text-xs shrink-0">{formatDate(run.started_at)}</span>
+                                        <span className="text-zinc-600 text-xs shrink-0" title={formatDate(run.started_at)}>{formatRelativeTime(run.started_at)}</span>
                                     </div>
                                     {failureInfo && (
                                         <div className={`mt-1.5 rounded px-2 py-1 ${

@@ -24,5 +24,5 @@ export function readCanonicalVersion(baseDir: string): string {
     }
   }
 
-  return '0.9.1';
+  return '0.10.0';
 }

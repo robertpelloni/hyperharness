@@ -3,6 +3,19 @@
 ## Borg Changelog
 
 All notable changes to this project will be documented in this file.
+
+## [0.10.0] — 2026-03-20
+
+### Massive Vision & Documentation Overhaul
+- docs(vision): Completely rewrote `VISION.md` to capture the ultimate scope: the Universal AI Dashboard, Cognitive Control Plane, and Verifiable Orchestration Substrate.
+- docs(roadmap): Overhauled `ROADMAP.md` to include phases for Omniscient Memory (Phase I), Universal Integrations (Browser/IDE) (Phase J), Intelligent Model Routing (Phase K), The Ultimate AI Coding Harness (Phase L), and Advanced MCP Aggregation (Phase M).
+- docs(todo): Updated `TODO.md` with highly granular, short-term tasks reflecting the mega-prompt requirements (OAuth logins, UI tracking for submodules, auto-fallback logic).
+- docs(submodules): Created `docs/SUBMODULES.md` as the source of truth for all tracked submodules, their origins, and their integration status.
+- docs(memory): Created `MEMORY.md` to track architectural insights, code style preferences, and the 7-Step Merge Protocol.
+- docs(deploy): Created `DEPLOY.md` to provide exact startup and deployment instructions.
+- docs(agents): Unified LLM instructions into `docs/UNIVERSAL_LLM_INSTRUCTIONS.md` and updated `AGENTS.md`, `GEMINI.md`, `CLAUDE.md`, `GPT.md`, and `copilot-instructions.md` to inherit from this universal base.
+- feat(council): Completed the 100% assimilation of opencode-autopilot into Borg core (now Borg Orchestrator), bringing multi-model debate, PTY session supervision, and the Roundtable dashboard natively into the platform. Submodule removed.
+
 ## [0.9.13] — 2026-03-20
 
 ### Task 040 — Catalog Provenance Badge + Heuristic Secret Inference

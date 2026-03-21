@@ -450,6 +450,38 @@ function initializeSchema(database: InstanceType<typeof Database>): void {
         CREATE INDEX IF NOT EXISTS pmvr_server_uuid_idx ON published_mcp_validation_runs(server_uuid);
         CREATE INDEX IF NOT EXISTS pmvr_outcome_idx ON published_mcp_validation_runs(outcome);
         CREATE INDEX IF NOT EXISTS pmvr_created_at_idx ON published_mcp_validation_runs(created_at);
+
+        -- Council Tables
+        CREATE TABLE IF NOT EXISTS council_debates (
+            id TEXT PRIMARY KEY,
+            title TEXT NOT NULL,
+            session_id TEXT,
+            workspace_id TEXT,
+            task_type TEXT NOT NULL DEFAULT 'general',
+            status TEXT NOT NULL DEFAULT 'completed',
+            consensus REAL NOT NULL DEFAULT 0,
+            weighted_consensus REAL NOT NULL DEFAULT 0,
+            outcome TEXT NOT NULL,
+            rounds INTEGER NOT NULL DEFAULT 1,
+            timestamp INTEGER NOT NULL DEFAULT (strftime('%s', 'now')),
+            data TEXT NOT NULL
+        );
+
+        CREATE INDEX IF NOT EXISTS idx_council_debates_session ON council_debates(session_id);
+        CREATE INDEX IF NOT EXISTS idx_council_debates_timestamp ON council_debates(timestamp);
+
+        CREATE TABLE IF NOT EXISTS council_workspaces (
+            id TEXT PRIMARY KEY,
+            name TEXT NOT NULL,
+            path TEXT NOT NULL,
+            status TEXT NOT NULL DEFAULT 'active',
+            config TEXT NOT NULL DEFAULT '{}',
+            description TEXT,
+            created_at INTEGER NOT NULL DEFAULT (strftime('%s', 'now')),
+            updated_at INTEGER NOT NULL DEFAULT (strftime('%s', 'now'))
+        );
+
+        CREATE INDEX IF NOT EXISTS idx_council_workspaces_status ON council_workspaces(status);
     `);
 
     // Dynamic Migrations for existing databases

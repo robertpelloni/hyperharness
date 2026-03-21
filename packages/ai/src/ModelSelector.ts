@@ -35,17 +35,17 @@ interface ChainCandidate {
 // The selector iterates through this list, checking for API keys and depletion status.
 const DEFAULT_CHAINS: Record<'worker' | 'supervisor', ChainCandidate[]> = {
     worker: [
-        { provider: 'google', modelId: 'gemini-2.0-flash' },
-        { provider: 'anthropic', modelId: 'claude-sonnet-4-20250514' },
-        { provider: 'openai', modelId: 'gpt-4o' },
+        { provider: 'google', modelId: 'gemini-3.0-pro' },
+        { provider: 'openai', modelId: 'codex-5.3' },
+        { provider: 'anthropic', modelId: 'claude-opus-4.6' },
         { provider: 'deepseek', modelId: 'deepseek-chat' },
         { provider: 'lmstudio', modelId: 'local' },
         { provider: 'ollama', modelId: 'gemma:2b' }
     ],
     supervisor: [
-        { provider: 'openai', modelId: 'gpt-4o' },
-        { provider: 'anthropic', modelId: 'claude-sonnet-4-20250514' },
-        { provider: 'google', modelId: 'gemini-1.5-pro' },
+        { provider: 'google', modelId: 'gemini-3.0-pro' },
+        { provider: 'anthropic', modelId: 'claude-opus-4.6' },
+        { provider: 'openai', modelId: 'codex-5.3' },
         { provider: 'lmstudio', modelId: 'local' }
     ]
 };

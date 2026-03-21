@@ -89,6 +89,7 @@ import { HealerReactor } from "./reactors/HealerReactor.js";
 import { MemoryHarvestReactor } from "./reactors/MemoryHarvestReactor.js";
 import { SessionManager } from "./services/SessionManager.js";
 import { SessionSupervisor } from "./supervisor/SessionSupervisor.js";
+import { PtySupervisor } from "./supervisor/PtySupervisor.js";
 import { ProjectTracker } from "./services/ProjectTracker.js";
 import { MissionService } from "./services/MissionService.js";
 import { buildToolObservationInput } from './services/toolObservationMemory.js';
@@ -496,6 +497,10 @@ export class MCPServer {
             rootDir: process.cwd(),
             worktreeManager: this.gitWorktreeManager,
         });
+        this.ptySupervisor = new PtySupervisor({
+            rootDir: process.cwd(),
+            worktreeManager: this.gitWorktreeManager,
+        });
         this.metricsService = new MetricsService(); // Phase 31
         this.metricsService.startMonitoring();
         this.policyService = new PolicyService(process.cwd()); // Phase 32
@@ -728,7 +733,7 @@ export class MCPServer {
 
     private createServerInstance(): { server: Server; ready: Promise<void> } {
         const s = new Server(
-            { name: "borg-core", version: "0.9.1" },
+            { name: "borg-core", version: "0.10.0" },
             {
                 capabilities: {
                     tools: {},
@@ -3505,7 +3510,7 @@ ${env.tools.filter((tool) => tool.installed).map((tool) => `- **${tool.name}**: 
                         status: 'online',
                         uptime: process.uptime(),
                         timestamp: Date.now(),
-                        version: '0.9.1'
+                        version: '0.10.0'
                     }));
                 } else if (req.url === '/mcp/servers') {
                     const servers = await this.mcpAggregator.listServers();

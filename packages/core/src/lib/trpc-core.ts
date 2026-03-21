@@ -667,6 +667,23 @@ export function getCouncilService(): CouncilServiceRuntime {
     return getMcpServer().councilService as CouncilServiceRuntime;
 }
 
+export function getSupervisorCouncil() {
+    // This returns the migrated SupervisorCouncil singleton
+    return import('../orchestrator/council/services/council.js').then(m => m.council);
+}
+
+export function getCouncilSessionManager() {
+    return import('../orchestrator/council/services/session-manager.js').then(m => m.sessionManager);
+}
+
+export function getCouncilWsManager() {
+    return import('../orchestrator/council/services/ws-manager.js').then(m => m.wsManager);
+}
+
+export function getCouncilHierarchy() {
+    return import('../orchestrator/council/services/council-hierarchy.js').then(m => m.councilHierarchy);
+}
+
 export function getMemoryManager(): MemoryManagerRuntime {
     return getMcpServer().memoryManager as MemoryManagerRuntime;
 }

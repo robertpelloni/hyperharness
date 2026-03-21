@@ -1,38 +1,65 @@
 # Version
 
-0.9.13
+0.10.0
 
-## Maintenance Guide: Where to Update
-When bumping the version of Borg, the following locations must be synchronized to ensure consistency across the CLI, Web Dashboard, and internal packages:
+## Version Sync Checklist
 
-### 1. Root Identity Files
-- `VERSION` (Plain text version string)
-- `VERSION.md` (This file)
+When bumping Borg, update every active product-facing version reference below in the same change set. This list was refreshed during the `0.10.0` normalization pass to match the files that were actually updated.
 
-### 2. Core Package Files
-- `package.json` (Root)
-- `apps/web/package.json`
+### 1. Canonical version files
+- `VERSION`
+- `VERSION.md`
+
+### 2. Top-level branding and package identity
+- `README.md`
+- `package.json`
+
+### 3. App package manifests
 - `apps/borg-extension/package.json`
-- `packages/core/package.json`
-- `packages/cli/package.json`
+- `apps/vscode/package.json`
+- `apps/web/package.json`
+
+### 4. Package manifests
+- `packages/adk/package.json`
+- `packages/agents/package.json`
 - `packages/ai/package.json`
-- `packages/memory/package.json`
-- `packages/types/package.json`
-- `packages/ui/package.json`
+- `packages/borg-supervisor/package.json`
+- `packages/browser/package.json`
+- `packages/browser-extension/package.json`
+- `packages/cli/package.json`
+- `packages/core/package.json`
 - `packages/mcp-client/package.json`
 - `packages/mcp-registry/package.json`
 - `packages/mcp-router-cli/package.json`
+- `packages/memory/package.json`
+- `packages/search/package.json`
 - `packages/supervisor-plugin/package.json`
 - `packages/tools/package.json`
 - `packages/tsconfig/package.json`
+- `packages/types/package.json`
+- `packages/ui/package.json`
+- `packages/vscode/package.json`
 
-### 3. UI Fallback & Branding
-- `apps/web/src/components/Navigation.tsx` (Default `versionLabel` fallback)
-- `apps/web/src/app/dashboard/dashboard-home-view.tsx` (Branding badge version)
-- `apps/web/src/components/mcp/nav-config.ts` (Sidebar section title)
-- `apps/web/src/components/ContextHealthWidget.tsx` (Header badge)
+### 5. Web UI fallback and branding strings
+- `apps/web/src/components/Navigation.tsx`
+- `apps/web/src/components/mcp/nav-config.ts`
 
-### 4. CLI & Startup
-- `packages/cli/src/version.ts` (Fallback string in `readCanonicalVersion`)
-- `packages/core/src/MCPServer.ts` (Version reported in `initializeServer`)
-- `packages/core/src/services/AgentMemoryService.ts` (Version in `handoffSession` artifacts)
+### 6. CLI and runtime fallback strings
+- `packages/cli/src/version.ts`
+- `packages/core/src/Router.ts`
+- `packages/core/src/MCPServer.ts`
+- `packages/core/src/stdioLoader.ts`
+- `packages/core/src/routers/openWebUIRouter.ts`
+- `packages/core/src/services/AgentMemoryService.ts`
+- `packages/core/src/services/mcp-client.service.ts`
+
+### 7. Tests that assert version metadata
+- `packages/core/src/bridge/bridge-manifest.test.ts`
+
+## Verification
+
+After updating the files above:
+
+1. Search active files for the previous version string to confirm none remain.
+2. Run `pnpm run typecheck`.
+3. If the version bump also changed release notes, verify `CHANGELOG.md` and `VERSION` agree with the new version.

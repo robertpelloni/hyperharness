@@ -1,0 +1,27 @@
+# Borg Memory & Observations
+
+_This document records ongoing observations about the codebase, architectural decisions, and the user's design preferences._
+
+## Codebase & Design Preferences
+1.  **Dense, Comprehensive Instructions**: The user expects extreme detail and full coverage. Summaries should retain all unique instructions and specific tool names (e.g., Amp, Auggie, Claude Code, etc.).
+2.  **No Redundant Comments**: Code should be self-documenting where possible. Only comment to explain *why* something is done or to document non-obvious side effects, workarounds, or bugs.
+3.  **Universal LLM Instructions**: All AI agents should reference a single global instruction set (`UNIVERSAL_LLM_INSTRUCTIONS.md`) with model-specific files (e.g., `GEMINI.md`, `CLAUDE.md`) containing only overrides.
+4.  **UI Supremacy**: Every backend feature (submodules, memory, quotas, routing) MUST have a corresponding, highly polished UI representation in the Dashboard. Nothing should be "hidden" in the CLI.
+5.  **Autonomous Execution**: When instructed to proceed, agents should operate autonomously, commit frequently, push to git, and continue to the next feature without requiring manual human confirmation unless explicitly asked or if the change is destructive.
+6.  **Submodule Assimilation**: Submodules are used as references or active plugins. The goal is to deeply research them, map their features, and eventually integrate them into the core `@borg/core` substrate for 100% parity.
+
+## Operational Protocol
+*   **7-Step Merge & Assimilation**:
+    1. Selectively merge feature branches / update submodules.
+    2. Reanalyze project history.
+    3. Update roadmap/docs.
+    4. Update Submodule dashboard.
+    5. Bump version in `VERSION` and `CHANGELOG.md`.
+    6. Commit and push.
+    7. Redeploy.
+
+## System Architecture Insights
+*   **Runtime**: Node.js 22+ (for ecosystem compatibility with MCP).
+*   **Persistence**: Drizzle ORM + SQLite (operational state) and LanceDB (vector search).
+*   **Orchestration**: The system relies heavily on `SessionSupervisor` and `PtySupervisor` to manage a fleet of interactive AI terminal sessions.
+*   **Verification**: The "Evidence Lock" mechanism enforces that the infrastructure is trustworthy before AI agents execute complex plans.
