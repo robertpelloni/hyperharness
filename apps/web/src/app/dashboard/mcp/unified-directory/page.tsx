@@ -5,7 +5,7 @@ import type { inferRouterOutputs } from "@trpc/server";
 import type { AppRouter } from "@borg/core";
 import { trpc } from "@/utils/trpc";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { BookMarked, Database, ExternalLink, Loader2, Search } from "lucide-react";
 
 const PAGE_SIZE = 50;
@@ -38,6 +38,8 @@ function statusClass(source: UnifiedItem["source"], status: string | null): stri
 }
 
 export default function UnifiedDirectoryPage() {
+    const router = useRouter();
+    const pathname = usePathname();
     const searchParams = useSearchParams();
 
     const [search, setSearch] = useState("");
@@ -218,6 +220,7 @@ export default function UnifiedDirectoryPage() {
                     type="button"
                     disabled={!hasActiveFilters}
                     onClick={() => {
+                        router.replace(pathname);
                         setSearch("");
                         setSource("all");
                         setResearchStatus("");

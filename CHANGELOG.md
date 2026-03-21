@@ -4,6 +4,18 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.10.17] — 2026-03-21
+
+### Unified Directory Clear Filters URL Reset
+
+- feat(web/unified-directory): Updated `apps/web/src/app/dashboard/mcp/unified-directory/page.tsx` so `Clear filters` now clears URL query params in addition to local filter state.
+  - Uses `router.replace(pathname)` to reset deep-link parameters in-place.
+  - Keeps UI state, URL state, and prefilter messaging aligned after reset.
+
+- verification:
+  - `pnpm -C apps/web exec tsc --noEmit --pretty false` ✅
+  - `pnpm -C packages/core exec tsc --noEmit --pretty false` ✅
+
 ## [0.10.16] — 2026-03-21
 
 ### Unified Directory Smart Clear Filters UX
