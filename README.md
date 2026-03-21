@@ -2,6 +2,48 @@
 
 > The Unified AI Operations Control Plane.
 
+<p align="center">
+  <a href="https://github.com/robertpelloni/borg/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/robertpelloni/borg/actions/workflows/ci.yml/badge.svg" /></a>
+  <a href="https://github.com/robertpelloni/borg/actions/workflows/codeql.yml"><img alt="CodeQL" src="https://github.com/robertpelloni/borg/actions/workflows/codeql.yml/badge.svg" /></a>
+  <a href="https://github.com/robertpelloni/borg/releases"><img alt="GitHub Release" src="https://img.shields.io/github/v/release/robertpelloni/borg?display_name=tag" /></a>
+  <a href="https://github.com/robertpelloni/borg/stargazers"><img alt="GitHub stars" src="https://img.shields.io/github/stars/robertpelloni/borg?style=flat" /></a>
+  <a href="https://github.com/robertpelloni/borg/network/members"><img alt="GitHub forks" src="https://img.shields.io/github/forks/robertpelloni/borg?style=flat" /></a>
+  <a href="https://github.com/robertpelloni/borg/issues"><img alt="GitHub issues" src="https://img.shields.io/github/issues/robertpelloni/borg" /></a>
+  <a href="./LICENSE"><img alt="License" src="https://img.shields.io/badge/license-MIT-green" /></a>
+</p>
+
+<p align="center">
+  <a href="https://github.com/robertpelloni/borg/actions"><img alt="Open Actions" src="https://img.shields.io/badge/View-Actions-1f6feb?logo=githubactions&logoColor=white" /></a>
+  <a href="https://github.com/robertpelloni/borg/deployments"><img alt="Open Deployments" src="https://img.shields.io/badge/View-Deployments-0ea5e9?logo=vercel&logoColor=white" /></a>
+  <a href="https://github.com/robertpelloni/borg/releases"><img alt="Open Releases" src="https://img.shields.io/badge/View-Releases-7c3aed?logo=github" /></a>
+  <a href="https://github.com/robertpelloni/borg/pkgs/container/borg"><img alt="Open Container" src="https://img.shields.io/badge/View-Container-2563eb?logo=docker&logoColor=white" /></a>
+</p>
+
+## 📊 GitHub Stats & Activity
+
+<p align="center">
+  <img alt="Borg repo stats" src="https://github-readme-stats.vercel.app/api/pin/?username=robertpelloni&repo=borg&theme=dark&hide_border=true" />
+</p>
+
+<p align="center">
+  <img alt="Borg commit activity" src="https://img.shields.io/github/commit-activity/m/robertpelloni/borg" />
+  <img alt="Borg last commit" src="https://img.shields.io/github/last-commit/robertpelloni/borg" />
+  <img alt="Borg open PRs" src="https://img.shields.io/github/issues-pr/robertpelloni/borg" />
+</p>
+
+## 🖼️ Screenshots
+
+> Drop your latest captures into `docs/screenshots/` and keep this section as your visual changelog.
+
+| Capture | Target path | Status |
+|---|---|---|
+| Dashboard Home | `docs/screenshots/dashboard-home.png` | ⬜ Add |
+| MCP Registry | `docs/screenshots/mcp-registry.png` | ⬜ Add |
+| MCP Search | `docs/screenshots/mcp-search.png` | ⬜ Add |
+| MCP Inspector | `docs/screenshots/mcp-inspector.png` | ⬜ Add |
+| Billing | `docs/screenshots/billing.png` | ⬜ Add |
+| GitHub Actions | `docs/screenshots/github-actions.png` | ⬜ Add |
+
 Borg is a high-performance local control plane designed to sit between AI agents and their underlying infrastructure. It transforms standard agent interactions into a sophisticated, multi-tiered cognitive workflow with integrated memory, real-time observability, and autonomous "auto-drive" capabilities.
 
 ---
