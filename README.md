@@ -1,4 +1,4 @@
-# Borg (v0.10.0)
+# Borg (v0.9.667)
 
 > The Unified AI Operations Control Plane.
 

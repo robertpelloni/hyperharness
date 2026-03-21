@@ -4,7 +4,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.10.28] — 2026-03-21
+## [0.9.667] — 2026-03-21
 
 ### useSearchParams Guard AST Hook Detection
 
