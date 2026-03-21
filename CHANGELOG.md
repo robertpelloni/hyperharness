@@ -4,6 +4,19 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.10.14] — 2026-03-21
+
+### Unified Directory Effective URL Prefilter Detection
+
+- feat(web/unified-directory): Updated `apps/web/src/app/dashboard/mcp/unified-directory/page.tsx` to detect URL prefilters based on **effective** source-aware filter semantics.
+  - Backlog-only URL parameters are now ignored for prefilter messaging and page-reset logic when `source=catalog`.
+  - The `Prefiltered from URL parameters.` hint now appears only when filters actually affect the current source scope.
+  - Pagination reset on URL hydration now also respects effective filter scope, reducing no-op state churn.
+
+- verification:
+  - `pnpm -C apps/web exec tsc --noEmit --pretty false` ✅
+  - `pnpm -C packages/core exec tsc --noEmit --pretty false` ✅
+
 ## [0.10.13] — 2026-03-21
 
 ### Unified Directory Source-Aware Backlog Control Display

@@ -60,6 +60,12 @@ export default function UnifiedDirectoryPage() {
     const queryResearchStatus = RESEARCH_FILTERS.includes(queryResearchStatusRaw as (typeof RESEARCH_FILTERS)[number])
         ? (queryResearchStatusRaw as (typeof RESEARCH_FILTERS)[number])
         : "";
+    const queryBacklogFiltersEnabled = querySource !== "catalog";
+    const hasEffectiveQueryPrefilters = Boolean(
+        querySearch
+            || querySource !== "all"
+            || (queryBacklogFiltersEnabled && (queryResearchStatus || queryShowDuplicates || queryDuplicatesOnly)),
+    );
 
     useEffect(() => {
         if (querySearch !== search) setSearch(querySearch);
@@ -67,10 +73,10 @@ export default function UnifiedDirectoryPage() {
         if (queryResearchStatus !== researchStatus) setResearchStatus(queryResearchStatus);
         if (queryShowDuplicates !== showDuplicates) setShowDuplicates(queryShowDuplicates);
         if (queryDuplicatesOnly !== duplicatesOnly) setDuplicatesOnly(queryDuplicatesOnly);
-        if (querySearch || querySource !== "all" || queryResearchStatus || queryShowDuplicates || queryDuplicatesOnly) setPage(0);
+        if (hasEffectiveQueryPrefilters) setPage(0);
         // Hydrate from URL params without overriding user changes unless params change.
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [querySearch, querySource, queryResearchStatus, queryShowDuplicates, queryDuplicatesOnly]);
+    }, [querySearch, querySource, queryResearchStatus, queryShowDuplicates, queryDuplicatesOnly, hasEffectiveQueryPrefilters]);
 
     const { data: stats } = trpc.unifiedDirectory.stats.useQuery();
     const backlogFiltersEnabled = source !== "catalog";
@@ -109,7 +115,7 @@ export default function UnifiedDirectoryPage() {
                         Merged operator view of published MCP catalog entries and BobbyBookmarks backlog links.
                         {subtitle && <span className="ml-2 text-zinc-500">{subtitle}</span>}
                     </p>
-                    {(querySearch || querySource !== "all" || queryResearchStatus || queryShowDuplicates || queryDuplicatesOnly) && (
+                    {hasEffectiveQueryPrefilters && (
                         <p className="text-indigo-400 text-xs mt-1">
                             Prefiltered from URL parameters.
                         </p>
