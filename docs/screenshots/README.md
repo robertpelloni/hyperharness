@@ -65,3 +65,17 @@ For release-level enforcement (fails if any required screenshot is missing):
 Verify-only mode (no writes):
 
 `pnpm run visuals:verify`
+
+## Command matrix (all the stuff)
+
+| Goal | Command | Writes files | Fails on missing screenshots |
+|---|---|---:|---:|
+| Sync status only | `pnpm run sync:screenshot-status` | ✅ | ❌ |
+| Check status sync only | `pnpm run check:screenshot-status-sync` | ❌ | ❌ |
+| Validate screenshots (warn mode) | `pnpm run check:screenshots` | ❌ | ❌ |
+| Validate screenshots (strict) | `pnpm run check:screenshots:strict` | ❌ | ✅ |
+| Refresh visuals (daily) | `pnpm run visuals:refresh` | ✅ | ❌ |
+| Refresh visuals (release) | `pnpm run visuals:refresh:strict` | ✅ | ✅ |
+| Verify visuals (CI no-write) | `pnpm run visuals:verify` | ❌ | ❌ |
+| Do all visuals checks (daily) | `pnpm run visuals:all` | ✅ | ❌ |
+| Do all visuals checks (release) | `pnpm run visuals:all:strict` | ✅ | ✅ |

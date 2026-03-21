@@ -42,6 +42,8 @@
 > Enforce all screenshots before release: `pnpm run visuals:refresh:strict`
 >
 > Verify-only (no file writes): `pnpm run visuals:verify`
+>
+> Do all visual maintenance checks: `pnpm run visuals:all` (or `pnpm run visuals:all:strict` for release)
 
 | Capture | Target path | Status |
 |---|---|---|
