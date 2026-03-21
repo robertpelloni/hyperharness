@@ -2584,7 +2584,6 @@ function SearchDashboardContent() {
                             {filteredEvictions.length > 0 ? (
                                 <div className="space-y-2 max-h-[200px] overflow-y-auto">
                                     {filteredEvictions.slice(0, 10).map((event, index) => (
-                                        // eslint-disable-next-line react/no-array-index-key
                                         <div key={`${event.toolName}-${event.timestamp}-${index}`} className="flex items-center justify-between gap-3 rounded-lg border border-zinc-800 bg-zinc-950/60 px-3 py-2">
                                             <div className="min-w-0">
                                                 <span className="font-mono text-xs text-zinc-200 break-all block">{event.toolName}</span>
