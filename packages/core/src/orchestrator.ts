@@ -13,6 +13,7 @@ console.log("[Core:Orchestrator] ✓ trpc.js");
 import { ingestPublishedCatalog } from './services/published-catalog-ingestor.js';
 import { InputTools, SystemStatusTool } from '@borg/tools';
 import { MCPServer } from './MCPServer.js';
+import { listenExpress } from './orchestrator-listen.js';
 import { resolveSupervisorEntryPath } from './orchestratorPaths.js';
 console.log("[Core:Orchestrator] ✓ MCPServer.js");
 
@@ -47,9 +48,8 @@ export async function startOrchestrator(options: StartOrchestratorOptions = {}) 
         })
     );
 
-    app.listen(trpcPort, host, () => {
-        console.log(`[Core] tRPC Server running at http://${host}:${trpcPort}/trpc`);
-    });
+    await listenExpress(app, trpcPort, host);
+    console.log(`[Core] tRPC Server running at http://${host}:${trpcPort}/trpc`);
 
     // 1.1. Schedule automatic catalog ingestion (startup + 24h interval)
     scheduleCatalogIngestion();
