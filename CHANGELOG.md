@@ -2,6 +2,25 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.90.4] — 2026-03-22
+
+### Always On Tools & Semantic Auto-Execution
+- feat(core/db): Added `always_on` boolean column to both `mcp_servers` and `tools` SQLite tables for persistent Always On state.
+- feat(core/mcp): Implemented `executeSemanticAutoCall` in `compatibilityToolRuntime.ts` — uses LLM-based tool selection to automatically match and execute the best tool for a given query.
+- feat(core/mcp): Registered `auto_call_tool` as a global meta-tool in `metamcp-proxy.service.ts`, bridging arbitrary text queries into the semantic execution engine.
+- feat(web/mcp): Added "Always On" toggle to MCP server cards on `/dashboard/mcp` for server-level auto-load.
+- feat(web/mcp): Added per-tool "Always On" toggle in the MCP Inspector (`/dashboard/mcp/inspector`).
+- fix(web/mcp): Corrected `setAlwaysOn` mutation property names (`uuid`/`alwaysOn`) to match backend schema.
+
+### Build Fixes
+- fix(web): Replaced broken `@/components/ui/scroll-area` import in `DebateVisualizer.tsx` with a plain overflow div.
+- fix(web): Merged `Textarea` import from non-existent `@/components/ui/textarea` into `@borg/ui` in `swarm/page.tsx`.
+- fix: Cleaned autopilot bump text corruption from `process-managed.transport.js`.
+
+### Documentation
+- docs: Updated `DEPLOY.md` with MCP configuration path (`~/.borg/`), Always On tools documentation, and ports reference table.
+- docs: Updated `TODO.md` — marked tool semantic search/RAG as complete.
+
 ## [0.90.3] — 2026-03-22
 ### Added
 - **TOON Parser Engine:** Replaced the stub JSON serializer in `core/mcp` with a full Tool-Optimized Output Notation parser that compresses LLM context by stripping redundant braces/quotes into a lightweight pseudo-YAML payload framed by `<toon>` tags.

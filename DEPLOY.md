@@ -126,3 +126,37 @@ pnpm run check:release-gate:ci:strict-visuals
 ```
 
 If strict visuals fail, run `pnpm run sync:screenshot-status` to resync the README table.
+
+## MCP Configuration
+
+MCP server definitions are stored in `~/.borg/mcp.json` (or `mcp.jsonc` for commented JSON). On first run, Borg migrates any legacy config from the workspace root to `~/.borg/`.
+
+Example `~/.borg/mcp.json`:
+```json
+{
+  "mcpServers": {
+    "filesystem": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-filesystem", "C:/workspace"]
+    }
+  }
+}
+```
+
+### Always On Tools
+
+Servers and individual tools can be marked **Always On** via the dashboard:
+- **Server-level**: Toggle on the MCP dashboard (`/dashboard/mcp`) to auto-load all tools from a server.
+- **Tool-level**: Toggle individual tools from the Inspector (`/dashboard/mcp/inspector`).
+
+Always On tools are permanently advertised to clients and available for the semantic `auto_call_tool` meta-tool, which uses LLM-based matching to automatically select and execute the best tool for a given query.
+
+## Ports
+
+| Service | Default Port | Override |
+|---------|-------------|----------|
+| Core API (tRPC + REST) | 3001 | `BORG_PORT` |
+| Web Dashboard (Next.js) | 3000 | `PORT` |
+| Orchestrator | 3847 | `BORG_ORCHESTRATOR_PORT` |
+| MCP Proxy (stdio) | stdin/stdout | N/A |
+

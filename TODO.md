@@ -24,7 +24,7 @@ _Short-term tasks, bug fixes, and feature implementations. For long-term goals, 
 - [x] Improve MCP router startup: load last-known-good configuration to report immediately, regardless of whether the core is fully ready.
 - [ ] Build the universal integrated MCP directory so installed servers, published catalog entries, BobbyBookmarks backlog links, and future feature-group assets resolve through one operator-facing directory surface.
 - [x] Implement dynamic progressive tool disclosure (show only 5-6 permanent meta tools initially, auto-load others on high confidence).
-- [ ] Add explicit tool semantic search / tool RAG.
+- [x] Add explicit tool semantic search / tool RAG.
 - [ ] Implement TOON format parsing and MCP traffic inspection panels.
 - [x] Build environment variable and secrets management tool inside the dashboard.
 
@@ -41,6 +41,6 @@ _Short-term tasks, bug fixes, and feature implementations. For long-term goals, 
 
 ## Documentation
 - [ ] Create/Update `MEMORY.md` with ongoing observations.
-- [ ] Create/Update `DEPLOY.md` with explicit deployment/startup instructions.
-- [ ] Update `CHANGELOG.md` for this sprint.
+- [x] Create/Update `DEPLOY.md` with explicit deployment/startup instructions.
+- [x] Update `CHANGELOG.md` for this sprint.
 - [ ] Refine `AGENTS.md`, `GEMINI.md`, `CLAUDE.md`, `GPT.md` to reference the Universal LLM Instructions and the new rigorous documentation protocols.
