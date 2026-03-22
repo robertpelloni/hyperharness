@@ -35,9 +35,9 @@ _Short-term tasks, bug fixes, and feature implementations. For long-term goals, 
 - [ ] Integrate NotebookLM-style features for source-grounded, citation-backed answers.
 
 ## Automation & Scripts
-- [ ] Create automated script to check versions of all submodules, update them, and generate the UI data feed for the submodule dashboard.
+- [x] Create automated script to check versions of all submodules, update them, and generate the UI data feed for the submodule dashboard.
 - [x] Harden workspace build startup by clearing stale Next.js web build locks when no active `next build` process exists.
-- [ ] Standardize and document the 7-step merge protocol for handling upstream forks.
+- [x] Standardize and document the 7-step merge protocol for handling upstream forks.
 
 ## Documentation
 - [x] Create/Update `MEMORY.md` with ongoing observations.

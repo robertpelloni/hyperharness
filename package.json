@@ -36,6 +36,7 @@
         "index:sync": "node scripts/sync_master_index.mjs",
         "index:update": "node scripts/update_ingestion_status.mjs",
         "submodules:prune-orphans": "node scripts/prune_orphaned_gitlinks.mjs",
+        "submodules:check": "node scripts/check_submodule_versions.mjs",
         "clean": "set TURBO_DAEMON=false&& turbo run clean",
         "typecheck": "set TURBO_DAEMON=false&& turbo run typecheck"
     },
