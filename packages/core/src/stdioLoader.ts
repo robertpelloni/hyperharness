@@ -13,11 +13,12 @@ import {
     waitForCoreBridge,
     type BackgroundCoreBootstrapResult,
 } from './backgroundCoreBootstrap.js';
+import { getBridgeHealthUrl, getBridgeToolExecuteUrl } from './bridge/bridgePort.js';
 import { type BorgMcpJsonConfig, loadBorgMcpConfig, type BorgMcpToolMetadata } from './mcp/mcpJsonConfig.js';
 import { namespaceToolName } from './mcp/namespaces.js';
 
-const CORE_HEALTH_URL = 'http://127.0.0.1:3001/health';
-const CORE_TOOL_EXECUTE_URL = 'http://127.0.0.1:3001/tool/execute';
+const CORE_HEALTH_URL = getBridgeHealthUrl();
+const CORE_TOOL_EXECUTE_URL = getBridgeToolExecuteUrl();
 const DEFAULT_TOOL_CALL_READY_TIMEOUT_MS = 1_500;
 const DEFAULT_TOOL_CALL_POLL_INTERVAL_MS = 250;
 

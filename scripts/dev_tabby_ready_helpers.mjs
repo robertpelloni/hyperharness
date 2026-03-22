@@ -151,7 +151,7 @@ export function chooseStaleCoreRefreshTarget({
     return {
       kind: 'owner',
       pid: ownerPid,
-      sourceLabel: 'port 3001',
+      sourceLabel: 'bridge port',
       trusted: true,
     };
   }
@@ -160,7 +160,7 @@ export function chooseStaleCoreRefreshTarget({
     return {
       kind: 'skip-untrusted-owner',
       pid: ownerPid,
-      sourceLabel: 'port 3001',
+      sourceLabel: 'bridge port',
       trusted: false,
     };
   }

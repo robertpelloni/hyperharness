@@ -20,7 +20,6 @@ import {
 } from './dev_tabby_ready_helpers.mjs';
 
 const WEB_PORT_CANDIDATES = [3000, 3010, 3020, 3030, 3040];
-const CORE_HTTP_BASE = 'http://127.0.0.1:3001';
 const POLL_INTERVAL_MS = Number(process.env.BORG_DEV_READY_POLL_MS || 2000);
 const READY_TIMEOUT_MS = Number(process.env.BORG_DEV_READY_TIMEOUT_MS || 600000);
 const WEB_DETECT_TIMEOUT_MS = Number(process.env.BORG_DEV_READY_WEB_TIMEOUT_MS || 15000);
@@ -28,10 +27,41 @@ const TRPC_QUERY_TIMEOUT_MS = Number(process.env.BORG_DEV_READY_TRPC_TIMEOUT_MS 
 const AUTO_OPEN_DASHBOARD = process.env.BORG_DEV_READY_OPEN_BROWSER !== '0';
 const AUTO_REFRESH_STALE_CORE = process.env.BORG_DEV_READY_RESTART_STALE_CORE !== '0';
 const REPO_ROOT = process.cwd();
-const CORE_BRIDGE_PROBE_URLS = [
-  `${CORE_HTTP_BASE}/api/mesh/stream`,
-  `${CORE_HTTP_BASE}/health`,
-];
+const DEFAULT_CORE_BRIDGE_PORT = resolveBridgePort();
+const FALLBACK_BRIDGE_PORT_CANDIDATES = [DEFAULT_CORE_BRIDGE_PORT, 3011, 3021, 3031, 3041];
+let activeBridgePort = DEFAULT_CORE_BRIDGE_PORT;
+
+function normalizePort(value) {
+  if (typeof value !== 'string') {
+    return null;
+  }
+
+  const trimmed = value.trim();
+  if (!/^\d+$/u.test(trimmed)) {
+    return null;
+  }
+
+  const parsed = Number(trimmed);
+  if (!Number.isInteger(parsed) || parsed <= 0 || parsed > 65535) {
+    return null;
+  }
+
+  return parsed;
+}
+
+function resolveBridgePort(env = process.env) {
+  return normalizePort(env.BORG_BRIDGE_PORT)
+    ?? normalizePort(env.BORG_CORE_BRIDGE_PORT)
+    ?? 3001;
+}
+
+function buildCoreBridgeProbeUrls(port = activeBridgePort) {
+  const coreHttpBase = `http://127.0.0.1:${port}`;
+  return [
+    `${coreHttpBase}/api/mesh/stream`,
+    `${coreHttpBase}/health`,
+  ];
+}
 
 function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -64,7 +94,6 @@ async function detectWebPort() {
     const candidates = [
       `http://127.0.0.1:${port}/api/trpc/startupStatus?input=%7B%7D`,
       `http://127.0.0.1:${port}/dashboard`,
-      `http://127.0.0.1:${port}/`,
     ];
 
     for (const url of candidates) {
@@ -291,7 +320,7 @@ async function warmMcpAndMemory(webPort) {
 
 async function evaluateReadiness() {
   const web = await detectWebPort();
-  const coreBridgeChecks = await Promise.all(CORE_BRIDGE_PROBE_URLS.map((url) => fetchStatus(url)));
+  const coreBridgeChecks = await Promise.all(buildCoreBridgeProbeUrls().map((url) => fetchStatus(url)));
   const coreBridge = coreBridgeChecks.find((check) => check.ok) ?? coreBridgeChecks[0] ?? { ok: false, status: null };
   const extensions = detectBrowserExtensionArtifacts(REPO_ROOT);
   const extension = summarizeBrowserExtensionArtifacts(extensions);
@@ -385,7 +414,7 @@ function printReadySummary(state) {
   console.log('\n[Borg Dev Ready] ✅ stack is ready');
   console.log(`[Borg Dev Ready] Dashboard: ${dashboardUrl}`);
   console.log(`[Borg Dev Ready] Orchestrator: http://127.0.0.1:3847 (Health: /health)`);
-  console.log('[Borg Dev Ready] Core bridge: ws://127.0.0.1:3001 (HTTP probe: /api/mesh/stream or /health)');
+  console.log(`[Borg Dev Ready] Core bridge: ws://127.0.0.1:${activeBridgePort} (HTTP probe: /api/mesh/stream or /health)`);
   console.log(`[Borg Dev Ready] Startup telemetry API: ${state.startupStatus.url ?? 'unavailable'}`);
   console.log(`[Borg Dev Ready] MCP telemetry API: ${state.mcpStatus.url ?? 'unavailable'}`);
   console.log(`[Borg Dev Ready] Memory telemetry API: ${state.memoryStatus.url ?? 'unavailable'}`);
@@ -406,6 +435,7 @@ function printWaitingSummary(state, elapsedMs) {
 function spawnTurboDev() {
   const env = {
     ...process.env,
+    BORG_BRIDGE_PORT: String(activeBridgePort),
     CI: 'true',
     TURBO_DAEMON: 'false',
   };
@@ -434,6 +464,7 @@ function spawnTurboDev() {
 function spawnCliDev() {
   const env = {
     ...process.env,
+    BORG_BRIDGE_PORT: String(activeBridgePort),
     CI: 'true',
   };
 
@@ -458,6 +489,7 @@ function spawnCliDev() {
 function spawnOrchestratorDev() {
   const env = {
     ...process.env,
+    BORG_BRIDGE_PORT: String(activeBridgePort),
     BORG_ORCHESTRATOR_PORT: '3847',
   };
 
@@ -474,18 +506,18 @@ function spawnOrchestratorDev() {
 }
 
 async function detectExistingCoreBridge() {
-  const checks = await Promise.all(CORE_BRIDGE_PROBE_URLS.map((url) => fetchStatus(url)));
+  const checks = await Promise.all(buildCoreBridgeProbeUrls().map((url) => fetchStatus(url)));
 
   return checks.some((check) => check.ok);
 }
 
-async function detectCoreBridgeOwnerPid() {
+async function detectCoreBridgeOwnerPid(port = activeBridgePort) {
   if (process.platform === 'win32') {
     const output = await execFileText('netstat', ['-ano', '-p', 'tcp']);
-    return parseListeningPidFromNetstat(output, 3001);
+    return parseListeningPidFromNetstat(output, port);
   }
 
-  const output = await execFileText('lsof', ['-nP', '-iTCP:3001', '-sTCP:LISTEN', '-t']);
+  const output = await execFileText('lsof', ['-nP', `-iTCP:${port}`, '-sTCP:LISTEN', '-t']);
   return parseListeningPidFromLsof(output);
 }
 
@@ -508,8 +540,8 @@ async function readProcessCommandLine(pid) {
   return output.trim();
 }
 
-async function detectCoreBridgeOwner() {
-  const pid = await detectCoreBridgeOwnerPid();
+async function detectCoreBridgeOwner(port = activeBridgePort) {
+  const pid = await detectCoreBridgeOwnerPid(port);
   if (!pid) {
     return null;
   }
@@ -535,7 +567,7 @@ async function stopExistingCoreBridge(pid, sourceLabel) {
   }
 
   const stopped = await waitForCoreBridgeShutdown(
-    CORE_BRIDGE_PROBE_URLS,
+    buildCoreBridgeProbeUrls(),
     {
       timeoutMs: TRPC_QUERY_TIMEOUT_MS,
       pollIntervalMs: POLL_INTERVAL_MS,
@@ -551,6 +583,32 @@ async function stopExistingCoreBridge(pid, sourceLabel) {
   }
 
   return stopped;
+}
+
+async function selectActiveBridgePort() {
+  const explicitPort = normalizePort(process.env.BORG_BRIDGE_PORT)
+    ?? normalizePort(process.env.BORG_CORE_BRIDGE_PORT);
+  if (explicitPort) {
+    return explicitPort;
+  }
+
+  const defaultOwner = await detectCoreBridgeOwner(DEFAULT_CORE_BRIDGE_PORT);
+  if (!defaultOwner || defaultOwner.trusted) {
+    return DEFAULT_CORE_BRIDGE_PORT;
+  }
+
+  for (const candidate of FALLBACK_BRIDGE_PORT_CANDIDATES) {
+    if (candidate === DEFAULT_CORE_BRIDGE_PORT) {
+      continue;
+    }
+
+    const ownerPid = await detectCoreBridgeOwnerPid(candidate);
+    if (!ownerPid) {
+      return candidate;
+    }
+  }
+
+  return DEFAULT_CORE_BRIDGE_PORT;
 }
 
 function waitForChildExit(label, child) {
@@ -572,6 +630,11 @@ function waitForChildExit(label, child) {
 }
 
 async function main() {
+  activeBridgePort = await selectActiveBridgePort();
+  if (activeBridgePort !== DEFAULT_CORE_BRIDGE_PORT) {
+    console.log(`[Borg Dev Ready] bridge port ${DEFAULT_CORE_BRIDGE_PORT} is occupied by a non-Borg process; using fallback port ${activeBridgePort}.`);
+  }
+
   const child = spawnTurboDev();
   const orchestratorChild = spawnOrchestratorDev();
   let reuseExistingCoreBridge = await detectExistingCoreBridge();
@@ -582,7 +645,7 @@ async function main() {
   let attemptedStaleCoreRefresh = false;
 
   if (reuseExistingCoreBridge) {
-    console.log('[Borg Dev Ready] reusing existing core bridge on port 3001; skipping duplicate CLI launch.');
+    console.log(`[Borg Dev Ready] reusing existing core bridge on port ${activeBridgePort}; skipping duplicate CLI launch.`);
   }
 
   const attachCliChild = (nextCliChild) => {
@@ -664,6 +727,13 @@ async function main() {
 
     const state = await evaluateReadiness();
 
+    const reportedBridgePort = Number.isInteger(state.startupStatus.data?.checks?.extensionBridge?.port)
+      ? Number(state.startupStatus.data.checks.extensionBridge.port)
+      : null;
+    if (reportedBridgePort && reportedBridgePort !== activeBridgePort) {
+      activeBridgePort = reportedBridgePort;
+    }
+
     if (!state.extension.ready && !extensionBuildPromise) {
       extensionBuildPromise = ensureOfficialBrowserExtensionArtifacts().catch((error) => {
         console.warn(`[Borg Dev Ready] browser-extension build failed: ${error instanceof Error ? error.message : String(error)}`);
@@ -714,7 +784,7 @@ async function main() {
 
           console.warn('[Borg Dev Ready] existing core bridge is healthy but serving an older startup contract; the locked Borg core could not be stopped automatically.');
         } else if (refreshTarget.kind === 'owner') {
-          console.warn(`[Borg Dev Ready] existing core bridge is healthy but serving an older startup contract; stopping Borg-owned bridge PID ${refreshTarget.pid} discovered from port 3001 and starting a fresh CLI instance.`);
+          console.warn(`[Borg Dev Ready] existing core bridge is healthy but serving an older startup contract; stopping Borg-owned bridge PID ${refreshTarget.pid} discovered from port ${activeBridgePort} and starting a fresh CLI instance.`);
           const stopped = await stopExistingCoreBridge(refreshTarget.pid, refreshTarget.sourceLabel);
 
           if (stopped) {
@@ -726,7 +796,7 @@ async function main() {
 
           console.warn('[Borg Dev Ready] existing core bridge is healthy but serving an older startup contract; the Borg-owned port listener could not be stopped automatically.');
         } else if (refreshTarget.kind === 'skip-untrusted-owner') {
-          console.warn(`[Borg Dev Ready] existing core bridge is healthy but serving an older startup contract; port 3001 is owned by PID ${refreshTarget.pid}, but its command line did not look Borg-owned, so automatic refresh was skipped.`);
+          console.warn(`[Borg Dev Ready] existing core bridge is healthy but serving an older startup contract; port ${activeBridgePort} is owned by PID ${refreshTarget.pid}, but its command line did not look Borg-owned, so automatic refresh was skipped.`);
         } else {
           console.warn('[Borg Dev Ready] existing core bridge is healthy but serving an older startup contract; no Borg startup lock or port owner PID was found, so automatic refresh was skipped.');
         }

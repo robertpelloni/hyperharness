@@ -49,8 +49,8 @@ class AutonomousMaintenanceService {
    */
   private async optimizeDatabase(): Promise<void> {
     const db = dbService.getDb();
-    db.run('VACUUM');
-    db.run('ANALYZE');
+    db.exec('VACUUM');
+    db.exec('ANALYZE');
     console.log('[Maintenance] Database optimized.');
   }
 

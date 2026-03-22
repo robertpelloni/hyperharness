@@ -15,6 +15,7 @@ import { InputTools, SystemStatusTool } from '@borg/tools';
 import { MCPServer } from './MCPServer.js';
 import { listenExpress } from './orchestrator-listen.js';
 import { resolveSupervisorEntryPath } from './orchestratorPaths.js';
+import { resolveBridgePort } from './bridge/bridgePort.js';
 console.log("[Core:Orchestrator] ✓ MCPServer.js");
 
 export const name = "@borg/core";
@@ -111,7 +112,7 @@ export async function startOrchestrator(options: StartOrchestratorOptions = {}) 
     return {
         host,
         trpcPort,
-        bridgePort: startMcp ? 3001 : null,
+        bridgePort: startMcp ? resolveBridgePort() : null,
     };
 }
 

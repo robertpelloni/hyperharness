@@ -4,6 +4,8 @@ import os from 'os';
 import fs from 'fs';
 import path from 'path';
 
+import { getBridgeHealthUrl } from '../bridge/bridgePort.js';
+
 export interface HealthStatus {
     component: string;
     status: 'online' | 'offline' | 'warning';
@@ -16,7 +18,7 @@ export class DiagnosticTools {
 
         // 1. Core API
         try {
-            const res = await fetch('http://localhost:3001/health');
+            const res = await fetch(getBridgeHealthUrl());
             if (res.ok) {
                 results.push({ component: 'Core API', status: 'online', details: 'Healthy' });
             } else {

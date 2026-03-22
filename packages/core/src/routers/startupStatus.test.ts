@@ -9,11 +9,15 @@ describe('buildStartupStatusSnapshot', () => {
                 memoryManager: {},
                 isMemoryInitialized: true,
                 getBridgeStatus: () => ({
+                    port: 3011,
                     ready: true,
                     clientCount: 0,
                     clients: [],
                     supportedCapabilities: [],
                     supportedHookPhases: [],
+                    websocketUrl: 'ws://127.0.0.1:3011',
+                    healthUrl: 'http://127.0.0.1:3011/health',
+                    streamUrl: 'http://127.0.0.1:3011/api/mesh/stream',
                 }),
             },
             aggregator: {
@@ -72,6 +76,7 @@ describe('buildStartupStatusSnapshot', () => {
         expect(snapshot.checks.mcpAggregator.advertisedToolCount).toBe(0);
         expect(snapshot.checks.mcpAggregator.inventorySource).toBe('database');
         expect(snapshot.checks.extensionBridge.ready).toBe(true);
+        expect(snapshot.checks.extensionBridge.port).toBe(3011);
         expect(snapshot.checks.extensionBridge.hasConnectedClients).toBe(false);
         expect(snapshot.runtime).toEqual(expect.objectContaining({
             nodeEnv: process.env.NODE_ENV ?? null,

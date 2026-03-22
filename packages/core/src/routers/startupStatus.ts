@@ -145,11 +145,15 @@ export async function buildStartupStatusSnapshot(input: StartupStatusInput) {
         memoryManager?: unknown;
         isMemoryInitialized?: boolean;
         getBridgeStatus?: () => {
+            port?: number | null;
             ready?: boolean;
             clientCount?: number;
             clients?: RegisteredBridgeClient[];
             supportedCapabilities?: string[];
             supportedHookPhases?: string[];
+            websocketUrl?: string | null;
+            healthUrl?: string | null;
+            streamUrl?: string | null;
         };
     };
 
@@ -157,15 +161,20 @@ export async function buildStartupStatusSnapshot(input: StartupStatusInput) {
     const configSyncStatus = mcpConfigService?.getStatus?.();
     const restoreStatus = sessionSupervisor?.getRestoreStatus?.();
     const bridgeStatus = mcpServerRuntime.getBridgeStatus?.() ?? {
+        port: null,
         ready: false,
         clientCount: 0,
         clients: [],
         supportedCapabilities: [],
         supportedHookPhases: [],
+        websocketUrl: null,
+        healthUrl: null,
+        streamUrl: null,
     };
 
     const bridgeClientCount = Number(bridgeStatus.clientCount ?? 0);
     const bridgeReady = Boolean(bridgeStatus.ready);
+    const bridgePort = Number.isInteger(bridgeStatus.port) ? Number(bridgeStatus.port) : null;
     const hasConnectedBridgeClients = bridgeClientCount > 0;
     const memoryInitialized = Boolean(mcpServerRuntime.isMemoryInitialized);
     const memoryReady = Boolean(mcpServerRuntime.memoryManager && agentMemory && memoryInitialized);
@@ -389,6 +398,7 @@ export async function buildStartupStatusSnapshot(input: StartupStatusInput) {
                 restore: restoreStatus ?? null,
             },
             extensionBridge: {
+                port: bridgePort,
                 ready: bridgeReady,
                 acceptingConnections: bridgeReady,
                 clientCount: bridgeClientCount,
@@ -396,6 +406,9 @@ export async function buildStartupStatusSnapshot(input: StartupStatusInput) {
                 clients: bridgeStatus.clients ?? [],
                 supportedCapabilities: bridgeStatus.supportedCapabilities ?? [],
                 supportedHookPhases: bridgeStatus.supportedHookPhases ?? [],
+                websocketUrl: bridgeStatus.websocketUrl ?? null,
+                healthUrl: bridgeStatus.healthUrl ?? null,
+                streamUrl: bridgeStatus.streamUrl ?? null,
             },
             executionEnvironment: {
                 ready: executionReady,

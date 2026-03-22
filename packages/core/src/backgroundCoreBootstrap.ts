@@ -1,5 +1,6 @@
 import { spawn, type ChildProcess } from 'child_process';
 
+import { getBridgeHealthUrl } from './bridge/bridgePort.js';
 import { resolveCliEntryPath } from './orchestratorPaths.js';
 
 export interface BackgroundCoreBootstrapOptions {
@@ -35,7 +36,7 @@ interface BackgroundCoreBootstrapDeps {
     waitImpl?: (ms: number) => Promise<void>;
 }
 
-const DEFAULT_HEALTH_URL = 'http://127.0.0.1:3001/health';
+const DEFAULT_HEALTH_URL = getBridgeHealthUrl();
 const DEFAULT_STARTUP_TIMEOUT_MS = 15_000;
 const DEFAULT_POLL_INTERVAL_MS = 500;
 

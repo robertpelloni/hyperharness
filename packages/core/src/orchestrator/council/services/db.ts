@@ -3,7 +3,7 @@ import { db, schema, sqliteInstance } from '../../../db/index.js';
 class DatabaseService {
   constructor() {}
 
-  getDb() {
+  getDb(): import('better-sqlite3').Database {
     console.log('[DatabaseService] getDb called, sqliteInstance:', !!sqliteInstance);
     // In Borg, we use Drizzle 'db' for ORM and 'sqliteInstance' for raw sqlite.
     return sqliteInstance;

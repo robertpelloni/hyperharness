@@ -17,38 +17,6 @@ import {
 
 const REPO_ROOT = process.cwd();
 const WEB_PORT_CANDIDATES = [3000, 3010, 3020, 3030, 3040];
-
-const SERVICE_CHECKS = [
-  {
-    id: "borg-web",
-    description: "Borg Next.js dashboard",
-    ports: getPreferredWebPorts(REPO_ROOT, WEB_PORT_CANDIDATES),
-    path: "/api/trpc/startupStatus?input=%7B%7D|/",
-    critical: true,
-  },
-  {
-    id: "borg-core-bridge",
-    description: "Borg Core extension bridge stream",
-    ports: [3001],
-    path: "/api/mesh/stream|/health",
-    critical: true,
-  },
-  {
-    id: "borg-mcp-status",
-    description: "Borg MCP status query via web API",
-    ports: getPreferredWebPorts(REPO_ROOT, WEB_PORT_CANDIDATES),
-    path: "/api/trpc/mcp.getStatus?input=%7B%7D",
-    critical: true,
-  },
-  {
-    id: "borg-memory-status",
-    description: "Borg memory status query via web API",
-    ports: getPreferredWebPorts(REPO_ROOT, WEB_PORT_CANDIDATES),
-    path: "/api/trpc/memory.getAgentStats?input=%7B%7D",
-    critical: true,
-  },
-];
-
 const REQUEST_TIMEOUT_MS = Number(process.env.READINESS_TIMEOUT_MS || 5000);
 const REQUEST_RETRIES = Number(process.env.READINESS_RETRIES || 2);
 const RETRY_DELAY_MS = Number(process.env.READINESS_RETRY_DELAY_MS || 1000);
@@ -56,6 +24,63 @@ const strictJsonMode = process.argv.includes("--strict-json");
 const softMode = process.argv.includes("--soft");
 const jsonMode = process.argv.includes("--json") || strictJsonMode;
 const compactJsonMode = strictJsonMode || process.argv.includes("--json-compact");
+
+function normalizePort(value) {
+  if (typeof value !== 'string') {
+    return null;
+  }
+
+  const trimmed = value.trim();
+  if (!/^\d+$/u.test(trimmed)) {
+    return null;
+  }
+
+  const parsed = Number(trimmed);
+  if (!Number.isInteger(parsed) || parsed <= 0 || parsed > 65535) {
+    return null;
+  }
+
+  return parsed;
+}
+
+function resolveBridgePort(env = process.env) {
+  return normalizePort(env.BORG_BRIDGE_PORT)
+    ?? normalizePort(env.BORG_CORE_BRIDGE_PORT)
+    ?? 3001;
+}
+
+function buildServiceChecks(coreBridgePorts) {
+  return [
+    {
+      id: "borg-web",
+      description: "Borg Next.js dashboard",
+      ports: getPreferredWebPorts(REPO_ROOT, WEB_PORT_CANDIDATES),
+      path: "/api/trpc/startupStatus?input=%7B%7D|/dashboard",
+      critical: true,
+    },
+    {
+      id: "borg-core-bridge",
+      description: "Borg Core extension bridge stream",
+      ports: coreBridgePorts,
+      path: "/api/mesh/stream|/health",
+      critical: true,
+    },
+    {
+      id: "borg-mcp-status",
+      description: "Borg MCP status query via web API",
+      ports: getPreferredWebPorts(REPO_ROOT, WEB_PORT_CANDIDATES),
+      path: "/api/trpc/mcp.getStatus?input=%7B%7D",
+      critical: true,
+    },
+    {
+      id: "borg-memory-status",
+      description: "Borg memory status query via web API",
+      ports: getPreferredWebPorts(REPO_ROOT, WEB_PORT_CANDIDATES),
+      path: "/api/trpc/memory.getAgentStats?input=%7B%7D",
+      critical: true,
+    },
+  ];
+}
 
 function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -82,6 +107,61 @@ async function fetchWithTimeout(url, timeoutMs) {
   } finally {
     clearTimeout(timeout);
   }
+}
+
+function extractTrpcData(payload) {
+  if (Array.isArray(payload) && payload.length > 0) {
+    return extractTrpcData(payload[0]);
+  }
+
+  if (!payload || typeof payload !== 'object') {
+    return undefined;
+  }
+
+  const result = payload.result;
+  if (!result || typeof result !== 'object') {
+    return undefined;
+  }
+
+  const data = result.data;
+  if (!data || typeof data !== 'object') {
+    return data;
+  }
+
+  if (Object.prototype.hasOwnProperty.call(data, 'json')) {
+    return data.json;
+  }
+
+  return data;
+}
+
+async function detectBridgePorts() {
+  for (const port of getPreferredWebPorts(REPO_ROOT, WEB_PORT_CANDIDATES)) {
+    const url = `http://127.0.0.1:${port}/api/trpc/startupStatus?input=%7B%7D`;
+    const response = await fetchWithTimeout(url, REQUEST_TIMEOUT_MS);
+    if (!response.ok) {
+      continue;
+    }
+
+    try {
+      const text = await fetch(url).then((res) => res.text());
+      const payload = JSON.parse(text);
+      const data = extractTrpcData(payload);
+      const bridgePort = data?.checks?.extensionBridge?.port;
+      if (Number.isInteger(bridgePort)) {
+        return [Number(bridgePort)];
+      }
+
+      const bridgePortMatch = text.match(/"extensionBridge"\s*:\s*\{[\s\S]*?"port"\s*:\s*(\d+)/u);
+      if (bridgePortMatch) {
+        return [Number(bridgePortMatch[1])];
+      }
+    } catch {
+      // fall back to the configured/default port
+    }
+  }
+
+  return [resolveBridgePort()];
 }
 
 async function detectRunningEndpoint(service) {
@@ -153,7 +233,7 @@ function formatLine(service, result) {
 
 function getFailureHint(serviceId, result) {
   if (serviceId === 'borg-core-bridge') {
-    return 'Core API bridge is unreachable. Ensure packages/core dev server is running on port 3001 and not blocked by another process.';
+    return 'Core API bridge is unreachable. Ensure the configured Borg bridge port is running and not blocked by another process.';
   }
 
   if (serviceId === 'borg-memory-status') {
@@ -196,8 +276,9 @@ async function main() {
     console.log(`\n[Borg Dev Readiness] timeout=${REQUEST_TIMEOUT_MS}ms mode=${softMode ? "soft" : "strict"}`);
   }
 
+  const serviceChecks = buildServiceChecks(await detectBridgePorts());
   const results = await Promise.all(
-    SERVICE_CHECKS.map(async (service) => ({
+    serviceChecks.map(async (service) => ({
       service,
       result: await detectRunningEndpoint(service),
     })),

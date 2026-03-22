@@ -170,6 +170,12 @@ import {
     createDefaultBridgeClient,
     type RegisteredBridgeClient,
 } from './bridge/bridge-manifest.js';
+import {
+    getBridgeHealthUrl,
+    getBridgeStreamUrl,
+    getBridgeWebSocketUrl,
+    resolveBridgePort,
+} from './bridge/bridgePort.js';
 mcpServerDebugLog('[MCPServer] ✓ PermissionManager');
 
 const __filename = fileURLToPath(import.meta.url);
@@ -300,6 +306,7 @@ export class MCPServer {
     private readonly promptToClient: Record<string, ConnectedClient> = {};
     private readonly resourceToClient: Record<string, ConnectedClient> = {};
     private readonly bridgeClients: Map<any, RegisteredBridgeClient> = new Map();
+    private readonly bridgePort = resolveBridgePort();
     private readonly recentToolContextFingerprints: Map<string, number> = new Map();
 
     // Core Integrations (Phase 5 & 6)
@@ -350,11 +357,15 @@ export class MCPServer {
         const manifest = buildBridgeManifest(connectedClients);
 
         return {
+            port: this.bridgePort,
             ready: Boolean(this.wssInstance),
             clientCount: Number(this.wssInstance?.clients?.size ?? 0),
             clients: connectedClients,
             supportedCapabilities: manifest.supportedCapabilities,
             supportedHookPhases: manifest.supportedHookPhases,
+            websocketUrl: getBridgeWebSocketUrl(this.bridgePort),
+            healthUrl: getBridgeHealthUrl(this.bridgePort),
+            streamUrl: getBridgeStreamUrl(this.bridgePort),
         };
     }
 
@@ -697,7 +708,7 @@ export class MCPServer {
         this.serverSetupPromise = primaryServer.ready;
 
         if (!options.skipWebsocket) {
-            const PORT = 3001;
+            const PORT = this.bridgePort;
             mcpServerDebugLog(`[MCPServer] Preparing WebSocket/HTTP bridge for port ${PORT}...`);
 
             // Create a dedicated MCP server instance for websocket transport.
@@ -3480,7 +3491,7 @@ ${env.tools.filter((tool) => tool.installed).map((tool) => `- **${tool.name}**: 
         // 2. Start WebSocket (for Extension/Web usage)
         if (this.wsServer && !this.wssInstance) {
             mcpServerDebugLog('[MCPServer] Starting WebSocket Server...');
-            const PORT = 3001;
+            const PORT = this.bridgePort;
             const httpServer = http.createServer(async (req, res) => {
                 if (req.method === 'GET' && req.url === '/api/mesh/stream') {
                     res.writeHead(200, {

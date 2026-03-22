@@ -889,7 +889,7 @@ export default function MCPDashboard(): React.JSX.Element {
         serverCount: 0,
         toolCount: 0,
         connectedCount: 0,
-    }) as StatusSummary;
+    }) as unknown as StatusSummary;
 
     const topTools = toolList.slice(0, 8);
     const lifecycleEvents = summary.lifecycle?.events ?? [];
