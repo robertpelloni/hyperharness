@@ -1,4 +1,4 @@
-import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import net from 'node:net';
 import { tmpdir } from 'node:os';
@@ -214,6 +214,26 @@ describe('acquireSingleInstanceLock', () => {
         }, {
             isPortFree: async () => false,
         })).rejects.toThrow('Port 4000 is already in use by another process');
+    });
+
+    it('updates the lock record port when the active control-plane port changes', async () => {
+        const dataDir = createTempDir();
+        const handle = await acquireSingleInstanceLock({
+            dataDir,
+            requestedPort: 4000,
+            explicitPort: false,
+            host: '127.0.0.1',
+        }, {
+            isPortFree: async () => true,
+        });
+
+        handle.updatePort(4002);
+
+        const lockRaw = JSON.parse(readFileSync(handle.lockPath, 'utf8')) as { port: number };
+        expect(lockRaw.port).toBe(4002);
+        expect(handle.port).toBe(4002);
+
+        handle.releaseSync();
     });
 
     it('releases the lock when startup crashes with an uncaught exception', async () => {

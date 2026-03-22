@@ -35,6 +35,7 @@ export interface BorgStartLockHandle {
   lockPath: string;
   clearedStaleLock: boolean;
   reusedStalePort: boolean;
+  updatePort: (port: number) => void;
   release: () => Promise<void>;
   releaseSync: () => void;
 }
@@ -198,11 +199,33 @@ export async function acquireSingleInstanceLock(
         createdAt: now().toISOString(),
       });
 
+      let currentPort = selectedPort;
+
+      const writeCurrentRecord = () => {
+        writeFileSync(lockPath, `${JSON.stringify({
+          instanceId,
+          pid,
+          port: currentPort,
+          host: options.host,
+          createdAt: now().toISOString(),
+        }, null, 2)}\n`, 'utf8');
+      };
+
       const releaseSync = () => {
         const current = readStartLock(lockPath);
         if (current?.instanceId === instanceId) {
           rmSync(lockPath, { force: true });
         }
+      };
+
+      const updatePort = (port: number) => {
+        const current = readStartLock(lockPath);
+        if (current?.instanceId !== instanceId) {
+          return;
+        }
+
+        currentPort = port;
+        writeCurrentRecord();
       };
 
       const selectedPortIsFree = selectedPort > 0
@@ -218,10 +241,13 @@ export async function acquireSingleInstanceLock(
       }
 
       return {
-        port: selectedPort,
+        get port() {
+          return currentPort;
+        },
         lockPath,
         clearedStaleLock,
         reusedStalePort,
+        updatePort,
         release: async () => {
           releaseSync();
         },
@@ -610,6 +636,8 @@ Examples:
             supervisor: Boolean(opts.supervisor),
             autoDrive: Boolean(opts.autoDrive),
           });
+
+          lockHandle.updatePort(activePort);
         }
 
         console.log(chalk.dim('  Core loaded: orchestrator started'));
