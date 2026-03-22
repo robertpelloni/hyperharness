@@ -17,7 +17,7 @@ _Short-term tasks, bug fixes, and feature implementations. For long-term goals, 
 ## Orchestration & Models
 - [x] Implement robust model fallback logic: when quota limit errors occur, automatically switch to the next appropriate model/provider (e.g., Gemini 3 Pro -> Codex 5.3 -> Opus 4.6).
 - [x] Ensure auto-start/restart logic can handle opencode, superai-cli, codebuff, codemachine, factory droid, codex, claude code, and gemini CLI instances.
-- [ ] Implement OAuth logic for subscribing to premium models (Copilot Premium Plus, ChatGPT Plus, Claude Pro, Google AI Plus).
+- [x] Implement OAuth logic for subscribing to premium models (Copilot Premium Plus, ChatGPT Plus, Claude Pro, Google AI Plus).
 - [x] Fully wire up the Council debate to the `SmartPilot` trigger so sessions can autonomously self-correct based on consensus.
 
 ## MCP Substrate & Proxies
@@ -29,7 +29,7 @@ _Short-term tasks, bug fixes, and feature implementations. For long-term goals, 
 - [x] Build environment variable and secrets management tool inside the dashboard.
 
 ## Memory & RAG
-- [ ] Integrate `github.com/robertpelloni/bobbybookmarks` as the canonical link backlog datasource with sync, dedupe, research-status, and clustering visibility in Borg.
+- [x] Integrate `github.com/robertpelloni/bobbybookmarks` as the canonical link backlog datasource with sync, dedupe, research-status, and clustering visibility in Borg.
 - [ ] Connect the memory subsystem to Google Docs, Gmail, and Google Drive for seamless RAG.
 - [ ] Implement memory browser extension endpoints (saving web memories, parsing DOM).
 - [ ] Integrate NotebookLM-style features for source-grounded, citation-backed answers.
