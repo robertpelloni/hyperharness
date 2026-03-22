@@ -16,6 +16,7 @@ const args = new Set(process.argv.slice(2));
 const skipReadiness = args.has("--skip-readiness");
 const includeTurboLint = args.has("--with-turbo-lint");
 const strictVisuals = args.has("--strict-visuals");
+const includeVisuals = args.has("--with-visuals") || strictVisuals;
 
 function run(name, command, args, options = {}) {
   const result = spawnSync(command, args, {
@@ -113,14 +114,18 @@ async function main() {
     fail(`Placeholder regression check failed. ${formatCommandFailure(placeholder)}`);
   }
 
-  const visualsCommand = strictVisuals ? "visuals:verify:strict" : "visuals:verify";
-  printStep(`Running visuals verification check (${visualsCommand})...`);
-  const visualsVerify = runPnpm("visuals-verify", ["run", visualsCommand], {
-    stdio: "inherit",
-  });
+  if (includeVisuals) {
+    const visualsCommand = strictVisuals ? "visuals:verify:strict" : "visuals:verify";
+    printStep(`Running visuals verification check (${visualsCommand})...`);
+    const visualsVerify = runPnpm("visuals-verify", ["run", visualsCommand], {
+      stdio: "inherit",
+    });
 
-  if ((visualsVerify.status ?? 1) !== 0) {
-    fail(`Visuals verification failed. ${formatCommandFailure(visualsVerify)}`);
+    if ((visualsVerify.status ?? 1) !== 0) {
+      fail(`Visuals verification failed. ${formatCommandFailure(visualsVerify)}`);
+    }
+  } else {
+    printStep("Skipping visuals verification (screenshots are manual, opt-in release artifacts).");
   }
 
   printStep("Running core typecheck...");
