@@ -25,9 +25,9 @@ Evolve Borg into the **Ultimate Universal AI Dashboard**, bringing full feature 
 
 ## Phase J — Universal Integrations (Browser & IDE)
 - [x] **Browser Extensions** (Chrome/Firefox): install surfaces, artifact detection, bridge readiness, and memory save/parse endpoints.
-- [ ] Browser controls: scrape web pages, intercept debug logs, read history.
+- [x] Browser controls: scrape web pages, intercept debug logs, read history.
 - [~] **IDE Plugins** (VSCode, Cursor, Windsurf, JetBrains): VS Code packaging/install scaffolding exists; deeper core integration remains.
-- [ ] Provide new hook events to the IDE and automatically save sessions.
+- [x] Provide new hook events to the IDE and automatically save sessions.
 - [x] Add a non-destructive Borg MCP registration workflow and dashboard auto-launch startup path.
 
 ## Phase K — Intelligent Model Routing & Quota Fallbacks
@@ -38,9 +38,9 @@ Evolve Borg into the **Ultimate Universal AI Dashboard**, bringing full feature 
 
 ## Phase L — The Ultimate AI Coding Harness
 - [x] Feature parity with all major harnesses: Amp, Auggie, Claude Code, Codebuff, Codemachine, Codex, Copilot CLI, Crush, Factory Droid, Gemini CLI, Goose, Grok Build, Kilo Code, Kimi, Mistral Vibe, OpenCode, Qwen Code, Warp, Trae.
-- [ ] WebUI with TUI/CLI parity, including remote access/control from mobile.
+- [x] WebUI with TUI/CLI parity, including remote access/control from mobile.
 - [x] Auto-start/restart of stalled CLI instances on autopilot with council supervision.
-- [ ] Transfer tasks to cloud dev environments and broadcast messages across instances.
+- [x] Transfer tasks to cloud dev environments and broadcast messages across instances.
 
 ## Phase M — Advanced MCP Aggregation & Proxying
 - [x] Build a universal integrated MCP directory that becomes the shared operator-facing catalog surface for installed servers, published MCP entries, BobbyBookmarks backlog links, and every planned future feature group.
