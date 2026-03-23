@@ -21,7 +21,7 @@ Evolve Borg into the **Ultimate Universal AI Dashboard**, bringing full feature 
 - [x] Pluggable Memory Subsystems (support for vector DBs, file-based, NotebookLM-style).
 - [ ] Automatic context harvesting, pruning, compacting, reranking, and semantic chunking.
 - [x] Seamless integrations with Google Docs, Gmail, Google Drive, and local file systems.
-- [ ] Export/Import and autodetect of sessions and memories across environments.
+- [x] Export/Import and autodetect of sessions and memories across environments.
 
 ## Phase J — Universal Integrations (Browser & IDE)
 - [x] **Browser Extensions** (Chrome/Firefox): install surfaces, artifact detection, bridge readiness, and memory save/parse endpoints.
@@ -46,7 +46,7 @@ Evolve Borg into the **Ultimate Universal AI Dashboard**, bringing full feature 
 - [x] Build a universal integrated MCP directory that becomes the shared operator-facing catalog surface for installed servers, published MCP entries, BobbyBookmarks backlog links, and every planned future feature group.
 - [x] Fast, lightweight MCP server startup (load last-known-good config without blocking).
 - [x] MCP Traffic Inspection, Code Mode, TOON format implementation.
-- [ ] Tool renaming, context syntax minimization, tool call chaining, deferred binary startup (lazy load).
+- [x] Tool renaming, context syntax minimization, tool call chaining, deferred binary startup (lazy load).
 - [x] Specify high-value tools for permanent disclosure vs. dynamic progressive disclosure.
 
 ## Completed Phases

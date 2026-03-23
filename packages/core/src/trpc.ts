@@ -64,6 +64,8 @@ import { unifiedDirectoryRouter } from './routers/unifiedDirectoryRouter.js';
 import { codeModeRouter } from './routers/codeModeRouter.js';
 import { secretsRouter } from './routers/secretsRouter.js';
 import { browserExtensionRouter } from './routers/browserExtensionRouter.js';
+import { sessionExportRouter } from './routers/sessionExportRouter.js';
+import { toolChainingRouter } from './routers/toolChainingRouter.js';
 
 // import { type AnyTRPCRouter } from '@trpc/server';
 
@@ -130,6 +132,8 @@ export const appRouter = t.router({
     codeMode: codeModeRouter,
     secrets: secretsRouter,
     browserExtension: browserExtensionRouter,
+    sessionExport: sessionExportRouter,
+    toolChaining: toolChainingRouter,
 });
 
 export type AppRouter = typeof appRouter;
