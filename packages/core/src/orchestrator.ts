@@ -41,6 +41,19 @@ export async function startOrchestrator(options: StartOrchestratorOptions = {}) 
     // 1. Start tRPC Server (Dashboard API)
     const app = express();
     app.use(cors());
+
+    // Health endpoint — must precede TRPC so probes don't fall through to
+    // middleware that calls getMcpServer() (which throws before init).
+    app.get('/health', (_req, res) => {
+        res.json({
+            status: 'ok',
+            name: '@borg/core',
+            uptime: process.uptime(),
+            timestamp: Date.now(),
+            mcpReady: !!global.mcpServerInstance,
+        });
+    });
+
     app.use(
         '/trpc',
         createExpressMiddleware({
