@@ -51,10 +51,10 @@ Evolve Borg into the **Ultimate Universal AI Dashboard**, bringing full feature 
 - [x] Specify high-value tools for permanent disclosure vs. dynamic progressive disclosure.
 
 ## Phase N — Marketplace, Mesh & Community (Next)
-- [ ] Activate the `meshRouter` (currently commented out in `trpc.ts`). Enable P2P memory swarm and agent federation across Borg instances.
-- [ ] Wire `MarketplaceService` to real community data instead of TODO stubs for MeshService.
-- [ ] Implement community tool/skill/agent publishing and discovery.
-- [ ] Upgrade `CitationService` from keyword scoring to LanceDB vector embeddings.
+- [x] Activate the `meshRouter` (currently commented out in `trpc.ts`). Enable P2P memory swarm and agent federation across Borg instances.
+- [x] Wire `MarketplaceService` to real community data instead of TODO stubs for MeshService.
+- [x] Implement community tool/skill/agent publishing and discovery.
+- [x] Upgrade `CitationService` from keyword scoring to LanceDB vector embeddings.
 - [ ] React Native/Expo mobile companion app for remote monitoring/control.
 
 ## Completed Phases
