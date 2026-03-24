@@ -59,3 +59,4 @@ export * from "./components/ContextPanel";
 export * from "./components/MemoryPage";
 export * from "./components/IntegratedTerminal";
 export * from "./components/SystemStatus";
+export * from "./components/ProviderExhaustionBanner";

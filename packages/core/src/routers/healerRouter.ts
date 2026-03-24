@@ -28,5 +28,27 @@ export const healerRouter = t.router({
                 service.off('heal', onHeal);
             };
         });
+    }),
+    subscribeQuotaEvents: publicProcedure.subscription(() => {
+        return observable<unknown>((emit) => {
+            const onEvent = (eventData: unknown) => {
+                emit.next(eventData);
+            };
+            // Safely fetch internal EventBus from active Orchestrator Context
+            const server = getHealerService() as any; 
+            // In Borg, either the server or generic system holds event bus. We use MCPServer fallback.
+            const mcpServer = (global as any).mcpServerInstance;
+            if (mcpServer && mcpServer.eventBus) {
+                mcpServer.eventBus.on('system:llm_quota_exhausted', onEvent);
+                mcpServer.eventBus.on('system:llm_fallback', onEvent);
+                mcpServer.eventBus.on('system:healer_halted', onEvent);
+                return () => {
+                    mcpServer.eventBus.off('system:llm_quota_exhausted', onEvent);
+                    mcpServer.eventBus.off('system:llm_fallback', onEvent);
+                    mcpServer.eventBus.off('system:healer_halted', onEvent);
+                };
+            }
+            return () => {}; // No-op teardown if missing context
+        });
     })
 });

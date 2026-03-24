@@ -1,7 +1,7 @@
 import { z } from 'zod';
-import { t, publicProcedure } from '../lib/trpc-core.js';
+import { t, publicProcedure, adminProcedure } from '../lib/trpc-core.js';
 import { getCouncilOrchestrator, getCouncilService } from '../lib/trpc-core.js';
-import { readFileSync } from 'fs';
+import { readFileSync, writeFileSync, existsSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 
@@ -79,6 +79,32 @@ export const councilRouter = t.router({
                 console.warn('[councilRouter] Failed to read council.json:', e);
                 return [];
             }
+        }),
+
+    /**
+     * updateMembers — Phase K1: Quota-Aware Routing UX
+     * Safely flushes explicit provider drag-and-drop hierarchy straight into the runtime configuration.
+     */
+    updateMembers: adminProcedure
+        .input(z.array(memberSchema))
+        .mutation(async ({ input }) => {
+            const configPath = join(
+                dirname(fileURLToPath(import.meta.url)),
+                '..', '..', 'config', 'council.json'
+            );
+            
+            let config: any = { members: [] };
+            try {
+                if (existsSync(configPath)) {
+                    config = JSON.parse(readFileSync(configPath, 'utf-8'));
+                }
+            } catch (e) {
+                console.warn('[councilRouter] Could not parse existing council.json:', e);
+            }
+            
+            config.members = input;
+            writeFileSync(configPath, JSON.stringify(config, null, 2));
+            return { success: true };
         }),
 
     /** Triggers a multi-agent consensus debate on a proposal */

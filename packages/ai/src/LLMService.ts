@@ -78,7 +78,13 @@ export class LLMService {
     private routingHistory: RoutingEvent[] = [];
     public modelSelector: RoutingAwareModelSelector;
 
-    constructor(modelSelector?: RoutingAwareModelSelector) {
+    constructor(
+        modelSelector?: RoutingAwareModelSelector,
+        private hooks?: {
+            onFallback?: (fromProvider: string, fromModelId: string, toProvider: string, toModelId: string, reason: string) => void;
+            onQuotaExhausted?: (provider: string, modelId: string, reason: string) => void;
+        }
+    ) {
         this.modelSelector = modelSelector || new ModelSelector() as RoutingAwareModelSelector;
         if (process.env.GOOGLE_API_KEY) {
             this.googleClient = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY);
@@ -512,6 +518,11 @@ export class LLMService {
                         recoverable: isRecoverable,
                     });
 
+                    // Broadcast Quota exhaustion Hook if the pathogen stems from a HTTP 402/429 wallet block.
+                    if (failureMessage.includes('insufficient_quota') || failureMessage.includes('402') || failureMessage.includes('429') || failureMessage.includes('balance')) {
+                        this.hooks?.onQuotaExhausted?.(provider, modelId, failureMessage);
+                    }
+
                     // 2. Select Next Model
                     // Use options.taskComplexity if available, else 'medium'
                     const next = await this.modelSelector.selectModel({
@@ -528,6 +539,9 @@ export class LLMService {
                     }
 
                     console.log(`[LLMService] 🔄 Switched to: ${next.provider}/${next.modelId}`);
+                    // Broadcast standard fallback logic hook
+                    this.hooks?.onFallback?.(provider, modelId, next.provider, next.modelId, failureMessage);
+
                     provider = next.provider;
                     modelId = next.modelId;
 

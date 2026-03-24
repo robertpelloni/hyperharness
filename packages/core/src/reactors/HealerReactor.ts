@@ -115,8 +115,13 @@ export class HealerReactor {
                 this.consecutiveFailures++;
             }
 
-        } catch (error) {
-            console.error("[HealerReactor] ❌ Immune System Failure:", error);
+        } catch (error: any) {
+            if (shouldIgnoreExpectedStartupError(String(error?.message || error))) {
+                console.log(`[HealerReactor] ⏳ Healer API Limit Reached (Waiting for budget/quota...)`);
+                this.eventBus.emitEvent('system:healer_halted', 'HealerReactor', { reason: 'CRITICAL_BUDGET_HALT', detail: error?.message });
+            } else {
+                console.error("[HealerReactor] ❌ Immune System Failure:", error);
+            }
             this.consecutiveFailures++;
         } finally {
             this.isHealing = false;

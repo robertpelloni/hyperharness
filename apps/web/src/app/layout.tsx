@@ -21,7 +21,7 @@ export const metadata: Metadata = {
 };
 
 import { TRPCProvider } from "../utils/TRPCProvider";
-import { Toaster } from "@borg/ui";
+import { Toaster, ProviderExhaustionBanner } from "@borg/ui";
 import { Navigation } from "../components/Navigation";
 
 export default function RootLayout({
@@ -42,6 +42,7 @@ export default function RootLayout({
             </div>
           </div>
           <Toaster />
+          <ProviderExhaustionBanner />
         </TRPCProvider>
       </body>
     </html>

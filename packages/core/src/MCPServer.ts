@@ -490,8 +490,14 @@ export class MCPServer {
         this.options = options;
         this.router = new Router();
         this.modelSelector = new CoreModelSelector();
-        this.llmService = new LLMService(this.modelSelector);
-        // SkillRegistry initialized later with correct paths
+        this.llmService = new LLMService(this.modelSelector, {
+            onQuotaExhausted: (provider: string, modelId: string, reason: string) => {
+                this.eventBus?.emitEvent('system:llm_quota_exhausted', 'MCPServer', { provider, modelId, reason });
+            },
+            onFallback: (fromProvider: string, fromModelId: string, toProvider: string, toModelId: string, reason: string) => {
+                this.eventBus?.emitEvent('system:llm_fallback', 'MCPServer', { fromProvider, fromModelId, toProvider, toModelId, reason });
+            }
+        });
         this.sessionManager = new SessionManager(process.cwd()); // Phase 57: State Persistence
         if (options.skipAutoDrive) {
             this.sessionManager.disableAutoDriveRestore();
