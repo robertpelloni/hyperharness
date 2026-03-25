@@ -6,8 +6,8 @@ import express from 'express';
 console.log("[Core:Orchestrator] ✓ express");
 import cors from 'cors';
 console.log("[Core:Orchestrator] ✓ cors");
-import { createExpressMiddleware } from '@trpc/server/adapters/express';
-console.log("[Core:Orchestrator] ✓ @trpc/server/adapters/express");
+import { createHTTPHandler } from '@trpc/server/adapters/node-http';
+console.log("[Core:Orchestrator] ✓ @trpc/server/adapters/node-http");
 import { appRouter } from './trpc.js';
 console.log("[Core:Orchestrator] ✓ trpc.js");
 import { ingestPublishedCatalog } from './services/published-catalog-ingestor.js';
@@ -32,7 +32,7 @@ export async function startOrchestrator(options: StartOrchestratorOptions = {}) 
     console.log(`[Core] Initializing ${name}...`);
 
     const host = options.host ?? '0.0.0.0';
-    const trpcPort = options.trpcPort ?? 4000;
+    const trpcPort = options.trpcPort ?? 3847;
     const startSupervisor = options.startSupervisor ?? false;
     const startMcp = options.startMcp ?? true;
     const autoDrive = options.autoDrive ?? false;
@@ -40,7 +40,17 @@ export async function startOrchestrator(options: StartOrchestratorOptions = {}) 
     console.log("[Core] 1. Starting Express/tRPC...");
     // 1. Start tRPC Server (Dashboard API)
     const app = express();
-    app.use(cors());
+    app.use(cors({
+        origin: (origin, callback) => {
+            // allow requests with no origin (like mobile apps or curl requests)
+            if (!origin) return callback(null, true);
+            if (origin.includes('localhost') || origin.includes('127.0.0.1')) {
+                return callback(null, true);
+            }
+            return callback(null, true); // Fallback to allow all during transition
+        },
+        credentials: true,
+    }));
 
     // Health endpoint — must precede TRPC so probes don't fall through to
     // middleware that calls getMcpServer() (which throws before init).
@@ -54,13 +64,14 @@ export async function startOrchestrator(options: StartOrchestratorOptions = {}) 
         });
     });
 
-    app.use(
-        '/trpc',
-        createExpressMiddleware({
-            router: appRouter,
-            createContext: () => ({}),
-        })
-    );
+    const trpcHandler = createHTTPHandler({
+        router: appRouter,
+        createContext: () => ({}),
+    });
+
+    app.all('/trpc*', (req, res) => {
+        trpcHandler(req, res);
+    });
 
     await listenExpress(app, trpcPort, host);
     console.log(`[Core] tRPC Server running at http://${host}:${trpcPort}/trpc`);

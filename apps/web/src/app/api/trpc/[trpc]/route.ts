@@ -136,7 +136,6 @@ const LOCAL_COMPAT_RESPONSE_KEYS = {
   'mcp.getToolPreferences': 'mcp.getToolPreferences',
   'mcp.getJsoncEditor': 'mcp.getJsoncEditor',
   'mcpServers.get': 'mcpServers.get',
-  'mcpServers.list': 'mcpServers.list',
   'apiKeys.list': 'apiKeys.list',
   'tools.detectCliHarnesses': 'tools.detectCliHarnesses',
   'tools.detectExecutionEnvironment': 'tools.detectExecutionEnvironment',
@@ -1505,10 +1504,20 @@ async function handler(req: Request): Promise<Response> {
     }
   }
 
+  // Detect and handle SSE (Server-Sent Events) for subscriptions
+  const isSse = upstreamResponse.headers.get('content-type')?.includes('text/event-stream');
+  
+  const responseHeaders = new Headers(upstreamResponse.headers);
+  if (isSse) {
+    responseHeaders.set('Connection', 'keep-alive');
+    responseHeaders.set('Cache-Control', 'no-cache, no-transform');
+    responseHeaders.set('X-Accel-Buffering', 'no');
+  }
+
   return new Response(upstreamResponse.body, {
     status: upstreamResponse.status,
     statusText: upstreamResponse.statusText,
-    headers: upstreamResponse.headers,
+    headers: responseHeaders,
   });
 }
 

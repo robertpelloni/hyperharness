@@ -68,7 +68,17 @@ app.use('*', logger());
 app.use('*', metricsMiddleware);
 
 app.use('*', cors({
-  origin: config.server.corsOrigins || '*',
+  origin: (origin) => {
+    // If explicit origins are configured, use them
+    if (config.server.corsOrigins && config.server.corsOrigins !== '*') {
+      return config.server.corsOrigins;
+    }
+    // Default: allow all localhost origins to support credentials
+    if (origin && (origin.includes('localhost') || origin.includes('127.0.0.1'))) {
+      return origin;
+    }
+    return '*';
+  },
   allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
   exposeHeaders: ['X-RateLimit-Limit', 'X-RateLimit-Remaining', 'X-RateLimit-Reset'],

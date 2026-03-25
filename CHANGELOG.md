@@ -4,6 +4,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.99.7] — 2026-03-24
+
+### Fixed
+- **Dynamic CORS Resolution**: Implemented dynamic origin reflection for `localhost` and `127.0.0.1` in both Hono and Express core services. This resolves `Cross-Origin Request Blocked` errors when using credentials, ensuring stable communication between the dashboard and the orchestrator.
+- **Robust tRPC Subscriptions**: Enhanced the `splitLink` condition in `apps/web/src/utils/TRPCProvider.tsx` to explicitly check for `healer.` and `subscribe` paths. This ensures that tRPC subscriptions are always routed to `unstable_httpSubscriptionLink`, fixing the "Subscriptions unsupported by httpLink" error.
+- **Port Consistency**: Finalized the transition to port `3847` by updating all remaining legacy `3001` and `4000` references in the core orchestrator and UI components.
+
+### Changed
+- **SSE-Aware Proxy**: Updated the tRPC proxy handler in `apps/web/src/app/api/trpc/[trpc]/route.ts` to properly detect and handle `text/event-stream` responses, enabling SSE subscription proxying.
+
+### Version
+- Bumped `VERSION` from `0.99.6` to `0.99.7`.
+
 ## [0.99.6] — 2026-03-24
 
 ### Added

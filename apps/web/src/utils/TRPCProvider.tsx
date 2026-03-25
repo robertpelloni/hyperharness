@@ -11,7 +11,10 @@ export function TRPCProvider({ children }: { children: React.ReactNode }) {
         trpc.createClient({
             links: [
                 splitLink({
-                    condition: (op) => op.type === 'subscription',
+                    condition: (op) => 
+                        op.type === 'subscription' || 
+                        op.path.toLocaleLowerCase().includes('subscribe') ||
+                        op.path.startsWith('healer.'),
                     true: unstable_httpSubscriptionLink({
                         url: resolveTrpcHttpUrl(process.env.NEXT_PUBLIC_TRPC_URL),
                     }),

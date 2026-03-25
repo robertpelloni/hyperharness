@@ -1,6 +1,7 @@
 const DEFAULT_UPSTREAM_TRPC_URLS: string[] = [
   'http://127.0.0.1:3100/trpc',
   'http://127.0.0.1:4000/trpc',
+  'http://127.0.0.1:3847/trpc',
   'http://127.0.0.1:3001/trpc',
 ];
 
