@@ -50,12 +50,25 @@ Evolve Borg into the **Ultimate Universal AI Dashboard**, bringing full feature 
 - [x] Tool renaming, context syntax minimization, tool call chaining, deferred binary startup.
 - [x] Specify high-value tools for permanent disclosure vs. dynamic progressive disclosure.
 
-## Phase N — Marketplace, Mesh & Community (Next)
+## Phase N — Marketplace, Mesh & Community
 - [x] Activate the `meshRouter` (currently commented out in `trpc.ts`). Enable P2P memory swarm and agent federation across Borg instances.
 - [x] Wire `MarketplaceService` to real community data instead of TODO stubs for MeshService.
 - [x] Implement community tool/skill/agent publishing and discovery.
 - [x] Upgrade `CitationService` from keyword scoring to LanceDB vector embeddings.
 - [x] React Native/Expo mobile companion app for remote monitoring/control.
+
+## Phase O — Dashboard Convergence & v1.0.0 (Current)
+- [ ] **Convergence**: Ensure all 59+ dashboard pages are 100% functional, responsive, and data-bound.
+- [ ] **Production Stabilization**: Zero-error console policy. Fix remaining storage access and tRPC SSE connection errors in extensions.
+- [ ] **Submodule Dashboard**: Implement a unified UI for monitoring and updating all project submodules and their versions.
+- [ ] **Mobile App Hardening**: Finalize wireframes and link @borg/mobile to real WebSocket/tRPC endpoints.
+- [ ] **Global v1.0.0 Global Cut**: Comprehensive audit of all package.json lockfiles and preparation for the stable release.
+
+## Phase P — The Autonomous Future (Mad Science)
+- [ ] **Rust Micro-Kernel Rewrite**: Transition the core event loop to Rust for ultra-low latency.
+- [ ] **P2P Hive Mind**: Global swarm intelligence layer for cross-node knowledge gossip.
+- [ ] **Autonomous Economy**: Full Bobcoin integration for verified tool marketplaces and decentralized compute rental.
+- [ ] **Immersive 3D Brain**: Three.js/React Three Fiber visualization of the P2P mesh and cognitive activity.
 
 ## Completed Phases
 - **Phase A**: Initial architecture and schema.
@@ -63,4 +76,4 @@ Evolve Borg into the **Ultimate Universal AI Dashboard**, bringing full feature 
 - **Phase C**: L1/L2 memory scaffolding.
 - **Phase H**: Assimilation of Auto-Orchestrator (Council Debate, Smart Pilot, Terminal PTY Harness).
 - **Phase K**: Intelligent Model Routing & Quota Fallbacks (v0.90.5).
-- **Phase I–M**: All completed as of v0.99.1.
+- **Phase I–N**: All completed as of v0.99.5.

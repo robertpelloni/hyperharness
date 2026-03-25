@@ -18,7 +18,7 @@ export function NeuralPulse() {
 
     useEffect(() => {
         // Connect to Borg WebSocket for live NEURAL_PULSE feed
-        const ws = new WebSocket('ws://localhost:3001');
+        const ws = new WebSocket('ws://localhost:3847');
         
         ws.onmessage = (msg) => {
             try {

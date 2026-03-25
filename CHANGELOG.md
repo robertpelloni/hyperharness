@@ -4,6 +4,26 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.99.6] — 2026-03-24
+
+### Added
+- **Phase O Initialization**: Officially entered Phase O (Dashboard Convergence & v1.0.0) with an updated ROADMAP.md and VISION.md reflecting the path toward a stable release.
+- **tRPC SSE for Extensions**: Implemented `TRPCProvider.tsx` in `packages/claude-mem` dashboard with `unstable_httpSubscriptionLink` and `splitLink`. This allows extension webviews to handle tRPC subscriptions over HTTP SSE, resolving the "Subscriptions unsupported by httpLink" error in restricted browser contexts.
+- **Storage Access Fallback**: Created a `safeStorage` utility in `packages/claude-mem` that automatically falls back to in-memory storage when `localStorage` is inaccessible, fixing access errors in sandboxed extension webviews.
+- **Ambitious Roadmap Expansion**: Seeded `IDEAS.md` files across all major repositories (`ai`, `core`, `mcp-client`, `ui`, `web`, `maestro`, `borg-extension`) with high-intelligence proposals including a Rust micro-kernel, P2P Hive Mind, and Bobcoin integration.
+
+### Fixed
+- **Port 3847 Harmonization**: Standardized the `BORG_ORCHESTRATOR_PORT` to `3847` across all packages (`packages/ui`, `apps/web`, `apps/maestro`), resolving persistent `ERR_CONNECTION_REFUSED` errors from legacy port 3001 references.
+- **CI/CD Stabilization**: Restored GitHub frontpage "Green" status by resolving linting and type errors in `apps/maestro`:
+    - Installed missing `@types/mdast` dependency.
+    - Removed redundant `@ts-expect-error` directives.
+    - Fixed `agentSessionId` type mismatches in CLI commands and updated `SessionInfo` interface.
+    - Cleaned up unused `path` imports.
+- **README Mad Science**: Restored the "🧪 ALL CAPS MAD SCIENCE" heading to the project root README.
+
+### Version
+- Bumped `VERSION` from `0.99.5` to `0.99.6`.
+
 ## [0.99.3] — 2026-03-23
 
 ### Added

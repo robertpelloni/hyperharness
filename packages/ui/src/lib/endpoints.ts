@@ -58,11 +58,11 @@ export function resolveTrpcHttpUrl(envUrl?: string | null): string {
     return `${window.location.origin}/api/trpc`;
   }
 
-  return 'http://localhost:3000/api/trpc';
+  return 'http://localhost:3847/api/trpc';
 }
 
 export function resolveCoreWsUrl(envUrl?: string | null): string {
-  return resolveWsUrl({ envUrl, defaultPort: 3001 });
+  return resolveWsUrl({ envUrl, defaultPort: 3847 });
 }
 
 export function resolveCouncilWsUrl(envUrl?: string | null): string {
@@ -74,5 +74,5 @@ export function resolveTerminalWsUrl(envUrl?: string | null): string {
 }
 
 export function resolveCliApiBaseUrl(envUrl?: string | null): string {
-  return resolveHttpBaseUrl({ envUrl, defaultPort: 3001 });
+  return resolveHttpBaseUrl({ envUrl, defaultPort: 3847 });
 }

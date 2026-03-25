@@ -232,7 +232,7 @@ export function ConductorDashboard() {
 
   const [selectedRole, setSelectedRole] = useState<TaskRole>('developer');
   const [frontendPort, setFrontendPort] = useState('3000');
-  const [backendPort, setBackendPort] = useState('3001');
+  const [backendPort, setBackendPort] = useState('3847');
   const [isStartingTask, setIsStartingTask] = useState(false);
 
   const handleStartTask = async () => {

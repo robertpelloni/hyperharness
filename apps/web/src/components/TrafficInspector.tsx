@@ -261,7 +261,7 @@ export function TrafficInspector() {
                         type="text"
                         value={customWsUrl}
                         onChange={(e) => setCustomWsUrl(e.target.value)}
-                        placeholder="ws://localhost:3001"
+                        placeholder="ws://localhost:3847"
                         className="flex-1 bg-black/50 border border-zinc-800 rounded px-2 py-1 text-xs font-mono text-zinc-400 focus:border-blue-500 outline-none"
                     />
                     <button

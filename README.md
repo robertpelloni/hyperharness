@@ -2,6 +2,8 @@
 
 # 🤖 BORG
 
+## 🧪 ALL CAPS MAD SCIENCE
+
 ### The Neural Operating System for AI Agents
 
 > *Connect everything. Orchestrate anything. Remember forever.*

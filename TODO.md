@@ -2,6 +2,13 @@
 
 _Short-term tasks, bug fixes, and feature implementations. For long-term goals, see ROADMAP.md._
 
+## Critical — Phase O Convergence & v1.0.0
+- [ ] **Zero-Error Console Policy**: Fix remaining "Access to storage" and "tRPC SSE connection" errors in browser/VSCode extensions. (Partially done: safeStorage fallback implemented).
+- [ ] **Audit all package.json lockfiles**: Ensure exact version pinning for v1.0.0 release to prevent dependency drift.
+- [ ] **Finalize Dashboard Data-Binding**: Verify all 59+ pages in `apps/web` are fully wired to real tRPC services (brain, cloud-dev, chronicle, experts, evolution, reader).
+- [ ] **Submodule Dashboard**: Implement the UI for monitoring and updating submodules directly from the dashboard.
+- [ ] **Mobile App Hardening**: Link `@borg/mobile` React Native wireframes to real WebSocket/tRPC endpoints for remote monitoring.
+
 ## Critical — Build & Type Safety
 - [x] Fix `council/index.ts` — expose `members`/`updateMembers` at top level for `providers/routing/page.tsx` build fix.
 - [ ] Ensure `council.json` config file exists at `packages/core/config/council.json` with default members for fresh installs.
@@ -14,8 +21,8 @@ _Short-term tasks, bug fixes, and feature implementations. For long-term goals, 
 - [x] Implement "Code Mode" escape hatch interface in the dashboard.
 - [x] Create detailed usage/billing subpanels tracking credit balances per provider.
 - [x] Build Unified Directory merging installed servers + backlog links.
-- [x] **Marketplace page** (`/dashboard/marketplace`, 136 lines) — currently calls `MarketplaceService` which has TODO stubs for MeshService peer queries. Wire up actual community entries or catalog data.
-- [ ] **Config page** (`/dashboard/config`, 14 lines) — minimal wrapper around DirectorConfig component. Expand with the full system settings surface (themes, notifications, data retention, etc.).
+- [x] **Marketplace page** — currently calls `MarketplaceService` which has TODO stubs for MeshService peer queries. Wire up actual community entries or catalog data.
+- [ ] **Config page** (`/dashboard/config`) — minimal wrapper around DirectorConfig component. Expand with the full system settings surface (themes, notifications, data retention, etc.).
 - [x] **Workshop page** — delegates to `@borg/ui` `WorkshopPage`. Verify this component is fully implemented in the UI package.
 
 ## Orchestration & Models
@@ -25,24 +32,15 @@ _Short-term tasks, bug fixes, and feature implementations. For long-term goals, 
 - [x] Fully wire up the Council debate to SmartPilot.
 - [x] **MeshRouter** (`meshRouter`) — currently commented out in `trpc.ts`. The P2P mesh networking layer for distributed Borg instances is scaffolded but disabled. Re-enable when MeshService is stable.
 
-## MCP Substrate & Proxies
-- [x] Improve MCP router startup with LKG configuration.
-- [x] Build the universal integrated MCP directory.
-- [x] Implement dynamic progressive tool disclosure.
-- [x] Add tool semantic search / tool RAG.
-- [x] Implement TOON format parsing and MCP traffic inspection.
-- [x] Build environment variable and secrets management.
-
-## Memory & RAG
-- [x] Integrate BobbyBookmarks as canonical link backlog datasource.
-- [x] Connect memory subsystem to Google Workspace (Docs, Gmail, Drive).
-- [x] Implement browser extension endpoints.
-- [x] Integrate NotebookLM-style citation features.
-- [x] **MarketplaceService TODO stubs** — `MarketplaceService.ts` lines 90 and 113 have TODO comments for MeshService integration (peer discovery and broadcasting). Implement or remove.
-- [x] **CitationService** — uses keyword-based relevance as placeholder for vector similarity (noted in MEMORY.md). Upgrade to LanceDB embedding queries in production.
-
-## Documentation
+## Documentation & Instructions
+- [x] Restore "ALL CAPS MAD SCIENCE" to README.md.
 - [x] Create/Update MEMORY.md, DEPLOY.md, CHANGELOG.md.
-- [x] Refine AGENTS.md, GEMINI.md, CLAUDE.md, GPT.md with Universal LLM Instructions reference.
-- [x] Ensure `docs/SUBMODULES.md` is current with all 7 active submodules. (Actually 6 active ones, updated previously)
-- [x] Update `docs/VERSION_LOCATIONS.md` after version bump to 0.99.2. (Updated to 0.99.3 previously)
+- [ ] **Universal Instruction Unification**: Refine CLAUDE.md, GEMINI.md, GPT.md to all reference `docs/UNIVERSAL_LLM_INSTRUCTIONS.md` as the primary source of truth.
+- [x] Ensure `docs/SUBMODULES.md` is current with all 7 active submodules.
+- [x] Update `docs/VERSION_LOCATIONS.md` after version bump to 0.99.5.
+
+## Mad Science & Ambitious Pivots (IDEAS.md)
+- [ ] **Rust Micro-Kernel**: Prototype the core event loop in Rust for sub-millisecond response times.
+- [ ] **P2P Hive Mind**: Activate fact-gossiping across the Borg mesh.
+- [ ] **Bobcoin Integration**: Implement micro-payments for tool/skill marketplace.
+- [ ] **3D Brain Dashboard**: Visualization of cognitive activity using Three.js.

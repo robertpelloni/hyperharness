@@ -27,6 +27,7 @@ It is designed to be the central nervous system for all PC-based local AI tools,
 *   **Omni-Interface:** A polished WebUI dashboard that connects to local CLI sessions, cloud dev sessions, and mobile remote control.
 *   **Session Management:** Auto-start/restart of stalled instances, session resuming, import/export of session history, and cross-session memory injection.
 *   **Intelligent Model Routing:** Automatic fallback and selection of alternative models when quotas are extinguished or budgets are met (e.g., switch across all providers of Gemini 3 Pro, then Codex 5.3, then Opus 4.6).
+*   **Rust-Powered Performance:** A high-performance Rust-based micro-kernel for ultra-low latency tool execution and zero-overhead quota management.
 
 ### 4. Omniscient Memory & RAG Ecosystem
 *   **Canonical Link Backlog:** Borg uses `github.com/robertpelloni/bobbybookmarks` as the canonical backlog datasource for links, bookmark imports, research status, deduplication, and clustering metadata.
@@ -38,9 +39,14 @@ It is designed to be the central nervous system for all PC-based local AI tools,
 *   **Agentic Supervision:** Built-in auto-pilot, supervisor functions, and a multi-model debate/consensus protocol (Borg Orchestrator) for critical architectural decisions.
 *   **Subagent Spawning:** Ability to dynamically spawn specialized agents from different models and providers to execute parallel tasks.
 *   **Agent-to-Agent (A2A) Protocols:** Standardized communication for local and remote development intercommunication.
+*   **P2P "Hive Mind":** A decentralized swarm intelligence layer where Borg nodes gossip facts, code symbols, and tool optimizations across a global peer-to-peer mesh.
 
 ### 6. Universal Integrations (Browser & IDE)
 *   **Browser Extensions:** Connects the core memory/MCP systems to web chat interfaces (ChatGPT, Claude, Gemini). Harvests web memories, reads browser history, controls the browser DOM, and intercepts debug logs.
 *   **IDE Plugins:** Extensions for VSCode, Cursor, Windsurf, JetBrains that connect to the Borg core to access memories, sessions, skills, and configuration, while automatically harvesting context from active coding sessions.
+
+### 7. Autonomous Economy (Bobcoin Integration)
+*   **Verified Marketplace:** A decentralized marketplace for MCP tools and agent skills, with cryptographic proof of work and Bobcoin-based micro-payments.
+*   **Decentralized Compute:** Autonomous agents can "rent" compute or specialized tool access from other nodes in the swarm using a unified ledger.
 
 *Borg is not just a tool aggregator; it is the verifiable operating system for autonomous developers.*
