@@ -477,6 +477,21 @@ export async function pickAvailableControlPlaneFallbackPort(
   return null;
 }
 
+export function syncLockHandlePort(
+  lockHandle: BorgStartLockHandle,
+  runtimePort: number | null | undefined,
+): void {
+  if (!Number.isInteger(runtimePort) || runtimePort === null || runtimePort === undefined) {
+    return;
+  }
+
+  if (lockHandle.port === runtimePort) {
+    return;
+  }
+
+  lockHandle.updatePort(runtimePort);
+}
+
 function getDashboardSpawnSpec(webRoot: string, repoRoot: string, host: string, port: number) {
   const nextBinCandidates = [
     join(repoRoot, 'node_modules', 'next', 'dist', 'bin', 'next'),
@@ -606,6 +621,8 @@ Examples:
             supervisor: Boolean(opts.supervisor),
             autoDrive: Boolean(opts.autoDrive),
           });
+          activePort = runtime.trpcPort;
+          syncLockHandlePort(lockHandle, runtime.trpcPort);
         } catch (startupError) {
           const fallbackPort = resolveControlPlaneFallbackPort({
             requestedPort,
@@ -636,8 +653,8 @@ Examples:
             supervisor: Boolean(opts.supervisor),
             autoDrive: Boolean(opts.autoDrive),
           });
-
-          lockHandle.updatePort(activePort);
+          activePort = runtime.trpcPort;
+          syncLockHandlePort(lockHandle, runtime.trpcPort);
         }
 
         console.log(chalk.dim('  Core loaded: orchestrator started'));

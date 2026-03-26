@@ -14,6 +14,7 @@ import {
     resolveControlPlaneFallbackPort,
     resolveDashboardUrl,
     resolveDataDir,
+    syncLockHandlePort,
     startCoreRuntime,
 } from './start.js';
 
@@ -232,6 +233,47 @@ describe('acquireSingleInstanceLock', () => {
         const lockRaw = JSON.parse(readFileSync(handle.lockPath, 'utf8')) as { port: number };
         expect(lockRaw.port).toBe(4002);
         expect(handle.port).toBe(4002);
+
+        handle.releaseSync();
+    });
+
+    it('syncs the lock record to the runtime-reported port after startup', async () => {
+        const dataDir = createTempDir();
+        const handle = await acquireSingleInstanceLock({
+            dataDir,
+            requestedPort: 4000,
+            explicitPort: false,
+            host: '127.0.0.1',
+        }, {
+            isPortFree: async () => true,
+        });
+
+        syncLockHandlePort(handle, 4012);
+
+        const lockRaw = JSON.parse(readFileSync(handle.lockPath, 'utf8')) as { port: number };
+        expect(lockRaw.port).toBe(4012);
+        expect(handle.port).toBe(4012);
+
+        handle.releaseSync();
+    });
+
+    it('ignores null or unchanged runtime ports when syncing the lock record', async () => {
+        const dataDir = createTempDir();
+        const handle = await acquireSingleInstanceLock({
+            dataDir,
+            requestedPort: 4000,
+            explicitPort: false,
+            host: '127.0.0.1',
+        }, {
+            isPortFree: async () => true,
+        });
+
+        syncLockHandlePort(handle, null);
+        syncLockHandlePort(handle, 4000);
+
+        const lockRaw = JSON.parse(readFileSync(handle.lockPath, 'utf8')) as { port: number };
+        expect(lockRaw.port).toBe(4000);
+        expect(handle.port).toBe(4000);
 
         handle.releaseSync();
     });
