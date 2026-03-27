@@ -1,0 +1,6 @@
+[submodule "pi-mono"]
+	path = pi-mono
+	url = https://github.com/badlogic/pi-mono.git
+[submodule "opencode"]
+	path = opencode
+	url = https://github.com/opencode-ai/opencode.git
