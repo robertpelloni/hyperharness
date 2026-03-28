@@ -1,0 +1,9 @@
+[submodule "adrenaline"]
+	path = adrenaline
+	url = https://github.com/shobrook/adrenaline
+[submodule "auggie"]
+	path = auggie
+	url = https://github.com/augmentcode/auggie
+[submodule "azure-ai-cli"]
+	path = azure-ai-cli
+	url = https://github.com/Azure/azure-ai-cli
