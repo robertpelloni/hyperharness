@@ -3,58 +3,59 @@ package tools
 import (
 	"fmt"
 	"os"
-	"path/filepath"
 	"strings"
 )
 
-func (r *Registry) registerRefactoringTools() {
-	r.Tools = append(r.Tools, Tool{
-		Name:        "bulk_refactor",
-		Description: "Performs an automated mass find-and-replace across the codebase. Arguments: target_dir (string), old_pattern (string), new_pattern (string)",
+// RefactorTool bridges Opencode parity with strict AST REPLACE blocks.
+type RefactorTool struct{}
+
+// ApplySearchReplace strictly enforces LLM blocks in the format:
+// <<<<<<< SEARCH
+// existing
+// =======
+// new
+// >>>>>>> REPLACE
+func (r *RefactorTool) ApplySearchReplace(filePath, searchBlock, replaceBlock string) error {
+	content, err := os.ReadFile(filePath)
+	if err != nil {
+		return fmt.Errorf("failed to read target: %w", err)
+	}
+
+	strContent := string(content)
+
+	if !strings.Contains(strContent, searchBlock) {
+		return fmt.Errorf("search block not found natively in file. LLM hallucinated context buffer.")
+	}
+
+	// Native atomic replacement
+	newContent := strings.Replace(strContent, searchBlock, replaceBlock, 1)
+
+	// Write back with strict permissions
+	err = os.WriteFile(filePath, []byte(newContent), 0644)
+	if err != nil {
+		return fmt.Errorf("failed atomic write application: %w", err)
+	}
+
+	fmt.Printf("[Opencode Parity] Block successfully mutated %s natively.\n", filePath)
+	return nil
+}
+
+// registerRefactoringTools binds the isolated Aider functionality to the core Native Engine.
+func (reg *Registry) registerRefactoringTools() {
+	reg.Tools = append(reg.Tools, Tool{
+		Name:        "apply_search_replace",
+		Description: "Aider Parity: strict block-replacement AST refactoring.",
 		Execute: func(args map[string]interface{}) (string, error) {
-			targetDir, ok := args["target_dir"].(string)
-			if !ok {
-				return "", fmt.Errorf("target_dir must be a string")
-			}
-			oldPattern, ok := args["old_pattern"].(string)
-			if !ok {
-				return "", fmt.Errorf("old_pattern must be a string")
-			}
-			newPattern, ok := args["new_pattern"].(string)
-			if !ok {
-				return "", fmt.Errorf("new_pattern must be a string")
-			}
+			path, _ := args["file_path"].(string)
+			search, _ := args["search_block"].(string)
+			replace, _ := args["replace_block"].(string)
 
-			modifiedFiles := 0
-
-			err := filepath.Walk(targetDir, func(path string, info os.FileInfo, err error) error {
-				if err != nil {
-					return nil
-				}
-				if info.IsDir() && (info.Name() == ".git" || info.Name() == "node_modules" || info.Name() == "vendor") {
-					return filepath.SkipDir
-				}
-				if !info.IsDir() {
-					content, err := os.ReadFile(path)
-					if err != nil {
-						return nil
-					}
-					
-					strContent := string(content)
-					if strings.Contains(strContent, oldPattern) {
-						newContent := strings.ReplaceAll(strContent, oldPattern, newPattern)
-						os.WriteFile(path, []byte(newContent), info.Mode())
-						modifiedFiles++
-					}
-				}
-				return nil
-			})
-
+			rf := &RefactorTool{}
+			err := rf.ApplySearchReplace(path, search, replace)
 			if err != nil {
 				return "", err
 			}
-
-			return fmt.Sprintf("Bulk refactoring complete. Modified %d files.", modifiedFiles), nil
+			return "File safely mutated natively.", nil
 		},
 	})
 }

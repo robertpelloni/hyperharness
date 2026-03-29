@@ -5,31 +5,41 @@ import (
 	"log"
 	"strings"
 
+	"github.com/charmbracelet/bubbles/spinner"
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/robertpelloni/hypercode/agent"
+	"github.com/charmbracelet/lipgloss"
+	"github.com/robertpelloni/hypercode/agents"
 )
 
 type model struct {
-	agent   *agent.Agent
+	director *agents.Director
 	input   string
 	history []string
 	loading bool
+	spinner spinner.Model
 }
 
 func initialModel() model {
+	s := spinner.New()
+	s.Spinner = spinner.Dot
+	s.Style = lipgloss.NewStyle().Foreground(lipgloss.Color("205"))
+
 	return model{
-		agent:   agent.NewAgent(),
+		director: agents.NewDirector(&agents.DefaultProvider{}),
 		input:   "",
 		history: []string{},
 		loading: false,
+		spinner: s,
 	}
 }
 
 func (m model) Init() tea.Cmd {
-	return nil
+	return m.spinner.Tick
 }
 
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	var cmds []tea.Cmd
+
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.Type {
@@ -37,17 +47,34 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, tea.Quit
 		case tea.KeyEnter:
 			if strings.TrimSpace(m.input) != "" {
-				m.history = append(m.history, "You: "+m.input)
-				req := m.input
+				req := strings.TrimSpace(m.input)
+				
+				if strings.HasPrefix(m.input, "/") {
+					m.input = ""
+					mdl, cmd := ProcessSlashCommand(req, &m)
+					m = mdl.(model)
+					return m, cmd
+				}
+				
+				if strings.HasPrefix(m.input, "??") {
+					m.input = ""
+					mdl, cmd := ProcessShellCommand(req, &m)
+					m = mdl.(model)
+					return m, cmd
+				}
+
+				m.history = append(m.history, "You: "+req)
 				m.input = ""
 				m.loading = true
-				return m, func() tea.Msg {
-					response, err := m.agent.Chat(req)
+				cmds = append(cmds, func() tea.Msg {
+					// Use the new native parity abstraction
+					response, err := m.director.HandleInput(nil, req)
 					if err != nil {
 						return fmt.Sprintf("Error: %v", err)
 					}
 					return response
-				}
+				})
+				return m, tea.Batch(cmds...)
 			}
 		case tea.KeyBackspace, tea.KeyDelete:
 			if len(m.input) > 0 {
@@ -58,16 +85,25 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 	case string:
 		m.loading = false
-		m.history = append(m.history, "SuperCLI: "+msg)
+		m.history = append(m.history, "Borg-Go-Director: "+msg)
+	
+	case ShellProposalMsg:
+		m.loading = false
+		m.history = append(m.history, fmt.Sprintf("[Shell Proposal] %s\n> Execute? (Y/n)", msg.Command))
+		
+	case spinner.TickMsg:
+		var cmd tea.Cmd
+		m.spinner, cmd = m.spinner.Update(msg)
+		cmds = append(cmds, cmd)
 	}
-	return m, nil
+	return m, tea.Batch(cmds...)
 }
 
 func (m model) View() string {
 	s := strings.Join(m.history, "\n")
 	s += "\n\n"
 	if m.loading {
-		s += "Thinking...\n"
+		s += fmt.Sprintf("%s Processing neural inputs...\n", m.spinner.View())
 	} else {
 		s += "> " + m.input
 	}
