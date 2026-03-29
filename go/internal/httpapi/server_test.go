@@ -13,6 +13,7 @@ import (
 
 	"github.com/borghq/borg-go/internal/config"
 	"github.com/borghq/borg-go/internal/controlplane"
+	"github.com/borghq/borg-go/internal/interop"
 	"github.com/borghq/borg-go/internal/lockfile"
 	"github.com/borghq/borg-go/internal/memorystore"
 )
@@ -441,9 +442,39 @@ func TestRuntimeLocksEndpoint(t *testing.T) {
 		t.Fatalf("expected status 200, got %d", recorder.Code)
 	}
 
-	body := recorder.Body.String()
-	if body == "" || body[0] != '{' {
-		t.Fatalf("expected JSON object body, got %q", body)
+	var payload struct {
+		Success bool                         `json:"success"`
+		Data    []interop.ControlPlaneStatus `json:"data"`
+	}
+	if err := json.Unmarshal(recorder.Body.Bytes(), &payload); err != nil {
+		t.Fatalf("expected JSON payload, got decode error: %v", err)
+	}
+	if !payload.Success {
+		t.Fatalf("expected success payload, got %s", recorder.Body.String())
+	}
+	if len(payload.Data) != 2 {
+		t.Fatalf("expected 2 runtime lock slots, got %d", len(payload.Data))
+	}
+	if payload.Data[0].Name != "borg-node" {
+		t.Fatalf("expected borg-node first lock slot, got %+v", payload.Data[0])
+	}
+	if payload.Data[0].LockPath != cfg.MainLockPath() {
+		t.Fatalf("expected main lock path %s, got %s", cfg.MainLockPath(), payload.Data[0].LockPath)
+	}
+	if !payload.Data[0].Running || payload.Data[0].Host != "127.0.0.1" || payload.Data[0].Port != 4000 {
+		t.Fatalf("expected seeded main lock details, got %+v", payload.Data[0])
+	}
+	if payload.Data[0].Version != "0.99.1" || payload.Data[0].StartedAt != "2026-03-28T00:00:00Z" {
+		t.Fatalf("expected seeded main lock metadata, got %+v", payload.Data[0])
+	}
+	if payload.Data[1].Name != "borg-go" {
+		t.Fatalf("expected borg-go second lock slot, got %+v", payload.Data[1])
+	}
+	if payload.Data[1].LockPath != cfg.LockPath() {
+		t.Fatalf("expected go lock path %s, got %s", cfg.LockPath(), payload.Data[1].LockPath)
+	}
+	if payload.Data[1].Running {
+		t.Fatalf("expected borg-go lock slot to be absent, got %+v", payload.Data[1])
 	}
 }
 
