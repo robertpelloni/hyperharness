@@ -309,9 +309,24 @@ func TestCLIToolsEndpoint(t *testing.T) {
 		t.Fatalf("expected status 200, got %d", recorder.Code)
 	}
 
-	body := recorder.Body.String()
-	if body == "" || body[0] != '{' {
-		t.Fatalf("expected JSON object body, got %q", body)
+	var payload struct {
+		Success bool                `json:"success"`
+		Data    []controlplane.Tool `json:"data"`
+	}
+	if err := json.Unmarshal(recorder.Body.Bytes(), &payload); err != nil {
+		t.Fatalf("expected JSON payload, got decode error: %v", err)
+	}
+	if !payload.Success {
+		t.Fatalf("expected success payload, got %s", recorder.Body.String())
+	}
+	if len(payload.Data) != 1 {
+		t.Fatalf("expected 1 CLI tool, got %d", len(payload.Data))
+	}
+	if payload.Data[0].Type != "go" || payload.Data[0].Name != "Go" {
+		t.Fatalf("expected Go tool identity, got %+v", payload.Data[0])
+	}
+	if payload.Data[0].Command != "go" || !payload.Data[0].Available {
+		t.Fatalf("expected available go command, got %+v", payload.Data[0])
 	}
 }
 
