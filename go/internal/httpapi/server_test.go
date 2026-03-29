@@ -622,11 +622,28 @@ func TestImportRootsEndpoint(t *testing.T) {
 	if recorder.Code != http.StatusOK {
 		t.Fatalf("expected status 200, got %d", recorder.Code)
 	}
-	if !strings.Contains(recorder.Body.String(), "\"sourceTool\":\"claude-code\"") {
-		t.Fatalf("expected claude root payload, got %s", recorder.Body.String())
+
+	var payload struct {
+		Success bool                       `json:"success"`
+		Data    []sessionimport.RootStatus `json:"data"`
 	}
-	if !strings.Contains(recorder.Body.String(), "\"exists\":true") {
-		t.Fatalf("expected existing root in payload, got %s", recorder.Body.String())
+	if err := json.Unmarshal(recorder.Body.Bytes(), &payload); err != nil {
+		t.Fatalf("expected JSON payload, got decode error: %v", err)
+	}
+	if !payload.Success {
+		t.Fatalf("expected success payload, got %s", recorder.Body.String())
+	}
+	if len(payload.Data) == 0 {
+		t.Fatalf("expected at least one import root, got 0")
+	}
+	if payload.Data[0].SourceTool != "claude-code" {
+		t.Fatalf("expected first root to be claude-code, got %+v", payload.Data[0])
+	}
+	if payload.Data[0].RootPath != claudeRoot {
+		t.Fatalf("expected claude root path %s, got %s", claudeRoot, payload.Data[0].RootPath)
+	}
+	if !payload.Data[0].Exists {
+		t.Fatalf("expected claude root to exist, got %+v", payload.Data[0])
 	}
 }
 
