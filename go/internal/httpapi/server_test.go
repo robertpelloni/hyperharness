@@ -312,7 +312,9 @@ func TestSupervisorSessionBridgeRoutes(t *testing.T) {
 
 	t.Setenv("BORG_TRPC_UPSTREAM", upstream.URL+"/trpc")
 
-	server := New(config.Default(), stubDetector{})
+	cfg := config.Default()
+	cfg.MainConfigDir = t.TempDir()
+	server := New(cfg, stubDetector{})
 
 	listRequest := httptest.NewRequest(http.MethodGet, "/api/sessions/supervisor/list", nil)
 	listRecorder := httptest.NewRecorder()
@@ -512,6 +514,158 @@ func TestMCPBridgeRoutes(t *testing.T) {
 					},
 				},
 			})
+		case "/trpc/mcp.traffic":
+			_ = json.NewEncoder(w).Encode(map[string]any{
+				"result": map[string]any{
+					"data": map[string]any{
+						"json": []map[string]any{
+							{"server": "core", "method": "tools/call", "success": true},
+						},
+					},
+				},
+			})
+		case "/trpc/mcp.getToolSelectionTelemetry":
+			_ = json.NewEncoder(w).Encode(map[string]any{
+				"result": map[string]any{
+					"data": map[string]any{
+						"json": []map[string]any{
+							{"type": "search", "toolName": "search_tools", "status": "success"},
+						},
+					},
+				},
+			})
+		case "/trpc/mcp.clearToolSelectionTelemetry":
+			_ = json.NewEncoder(w).Encode(map[string]any{
+				"result": map[string]any{
+					"data": map[string]any{
+						"json": map[string]any{"ok": true},
+					},
+				},
+			})
+		case "/trpc/mcp.getWorkingSetEvictionHistory":
+			_ = json.NewEncoder(w).Encode(map[string]any{
+				"result": map[string]any{
+					"data": map[string]any{
+						"json": []map[string]any{
+							{"toolName": "search_tools", "tier": "loaded"},
+						},
+					},
+				},
+			})
+		case "/trpc/mcp.clearWorkingSetEvictionHistory":
+			_ = json.NewEncoder(w).Encode(map[string]any{
+				"result": map[string]any{
+					"data": map[string]any{
+						"json": map[string]any{"ok": true, "message": "cleared"},
+					},
+				},
+			})
+		case "/trpc/mcp.runServerTest":
+			body, err := io.ReadAll(r.Body)
+			if err != nil {
+				t.Fatalf("failed to read runServerTest body: %v", err)
+			}
+			if !strings.Contains(string(body), `"targetKind":"router"`) || !strings.Contains(string(body), `"operation":"tools/list"`) {
+				t.Fatalf("expected server test payload, got %s", string(body))
+			}
+			_ = json.NewEncoder(w).Encode(map[string]any{
+				"result": map[string]any{
+					"data": map[string]any{
+						"json": map[string]any{"ok": true, "success": true, "latencyMs": 5},
+					},
+				},
+			})
+		case "/trpc/mcp.getJsoncEditor":
+			_ = json.NewEncoder(w).Encode(map[string]any{
+				"result": map[string]any{
+					"data": map[string]any{
+						"json": map[string]any{"path": "C:/tmp/borg.mcp.jsonc", "content": "// Borg MCP configuration"},
+					},
+				},
+			})
+		case "/trpc/mcp.saveJsoncEditor":
+			body, err := io.ReadAll(r.Body)
+			if err != nil {
+				t.Fatalf("failed to read saveJsoncEditor body: %v", err)
+			}
+			if !strings.Contains(string(body), `"content":"{}`) {
+				t.Fatalf("expected JSONC content payload, got %s", string(body))
+			}
+			_ = json.NewEncoder(w).Encode(map[string]any{
+				"result": map[string]any{
+					"data": map[string]any{
+						"json": map[string]any{"ok": true},
+					},
+				},
+			})
+		case "/trpc/mcpServers.get":
+			body, err := io.ReadAll(r.Body)
+			if err != nil {
+				t.Fatalf("failed to read mcpServers.get body: %v", err)
+			}
+			if !strings.Contains(string(body), `"uuid":"srv-1"`) {
+				t.Fatalf("expected uuid payload for mcpServers.get, got %s", string(body))
+			}
+			_ = json.NewEncoder(w).Encode(map[string]any{
+				"result": map[string]any{
+					"data": map[string]any{
+						"json": map[string]any{"uuid": "srv-1", "name": "core"},
+					},
+				},
+			})
+		case "/trpc/mcpServers.create", "/trpc/mcpServers.update", "/trpc/mcpServers.delete", "/trpc/mcpServers.reloadMetadata", "/trpc/mcpServers.clearMetadataCache", "/trpc/mcpServers.syncClientConfig":
+			body, err := io.ReadAll(r.Body)
+			if err != nil {
+				t.Fatalf("failed to read %s body: %v", r.URL.Path, err)
+			}
+			if len(body) == 0 {
+				t.Fatalf("expected non-empty body for %s", r.URL.Path)
+			}
+			_ = json.NewEncoder(w).Encode(map[string]any{
+				"result": map[string]any{
+					"data": map[string]any{
+						"json": map[string]any{"ok": true, "path": r.URL.Path},
+					},
+				},
+			})
+		case "/trpc/mcpServers.bulkImport":
+			body, err := io.ReadAll(r.Body)
+			if err != nil {
+				t.Fatalf("failed to read bulkImport body: %v", err)
+			}
+			if !strings.Contains(string(body), `"name":"core"`) {
+				t.Fatalf("expected array import payload, got %s", string(body))
+			}
+			_ = json.NewEncoder(w).Encode(map[string]any{
+				"result": map[string]any{
+					"data": map[string]any{
+						"json": []map[string]any{{"uuid": "srv-1", "name": "core"}},
+					},
+				},
+			})
+		case "/trpc/mcpServers.syncTargets":
+			_ = json.NewEncoder(w).Encode(map[string]any{
+				"result": map[string]any{
+					"data": map[string]any{
+						"json": []map[string]any{{"client": "claude-desktop", "configured": true}},
+					},
+				},
+			})
+		case "/trpc/mcpServers.exportClientConfig":
+			body, err := io.ReadAll(r.Body)
+			if err != nil {
+				t.Fatalf("failed to read exportClientConfig body: %v", err)
+			}
+			if !strings.Contains(string(body), `"client":"claude-desktop"`) {
+				t.Fatalf("expected client payload for exportClientConfig, got %s", string(body))
+			}
+			_ = json.NewEncoder(w).Encode(map[string]any{
+				"result": map[string]any{
+					"data": map[string]any{
+						"json": map[string]any{"client": "claude-desktop", "content": "{}"},
+					},
+				},
+			})
 		case "/trpc/mcpServers.registrySnapshot":
 			_ = json.NewEncoder(w).Encode(map[string]any{
 				"result": map[string]any{
@@ -530,7 +684,9 @@ func TestMCPBridgeRoutes(t *testing.T) {
 
 	t.Setenv("BORG_TRPC_UPSTREAM", upstream.URL+"/trpc")
 
-	server := New(config.Default(), stubDetector{})
+	cfg := config.Default()
+	cfg.MainConfigDir = t.TempDir()
+	server := New(cfg, stubDetector{})
 
 	cases := []struct {
 		name      string
@@ -550,9 +706,146 @@ func TestMCPBridgeRoutes(t *testing.T) {
 		{name: "unload tool", method: http.MethodPost, path: "/api/mcp/working-set/unload", body: `{"name":"search_tools"}`, contains: "\"message\":\"unloaded\"", procedure: "\"procedure\":\"mcp.unloadTool\""},
 		{name: "tool schema", method: http.MethodPost, path: "/api/mcp/tools/schema", body: `{"name":"search_tools"}`, contains: "\"inputSchema\"", procedure: "\"procedure\":\"mcp.getToolSchema\""},
 		{name: "status", method: http.MethodGet, path: "/api/mcp/status", contains: "\"connected\":true", procedure: "\"procedure\":\"mcp.getStatus\""},
+		{name: "traffic", method: http.MethodGet, path: "/api/mcp/traffic", contains: "\"method\":\"tools/call\"", procedure: "\"procedure\":\"mcp.traffic\""},
+		{name: "tool selection telemetry", method: http.MethodGet, path: "/api/mcp/tool-selection-telemetry", contains: "\"toolName\":\"search_tools\"", procedure: "\"procedure\":\"mcp.getToolSelectionTelemetry\""},
+		{name: "clear tool selection telemetry", method: http.MethodPost, path: "/api/mcp/tool-selection-telemetry/clear", body: `null`, contains: "\"ok\":true", procedure: "\"procedure\":\"mcp.clearToolSelectionTelemetry\""},
+		{name: "working set evictions", method: http.MethodGet, path: "/api/mcp/working-set/evictions", contains: "\"tier\":\"loaded\"", procedure: "\"procedure\":\"mcp.getWorkingSetEvictionHistory\""},
+		{name: "clear working set evictions", method: http.MethodPost, path: "/api/mcp/working-set/evictions/clear", body: `null`, contains: "\"message\":\"cleared\"", procedure: "\"procedure\":\"mcp.clearWorkingSetEvictionHistory\""},
+		{name: "server test", method: http.MethodPost, path: "/api/mcp/server-test", body: `{"targetKind":"router","operation":"tools/list"}`, contains: "\"latencyMs\":5", procedure: "\"procedure\":\"mcp.runServerTest\""},
+		{name: "get jsonc config", method: http.MethodGet, path: "/api/mcp/config/jsonc", contains: "\"content\":\"// Borg MCP configuration\"", procedure: "\"procedure\":\"mcp.getJsoncEditor\""},
+		{name: "save jsonc config", method: http.MethodPost, path: "/api/mcp/config/jsonc", body: `{"content":"{}"}`, contains: "\"ok\":true", procedure: "\"procedure\":\"mcp.saveJsoncEditor\""},
 		{name: "runtime servers", method: http.MethodGet, path: "/api/mcp/servers/runtime", contains: "\"runtimeConnected\":true", procedure: "\"procedure\":\"mcp.listServers\""},
 		{name: "configured servers", method: http.MethodGet, path: "/api/mcp/servers/configured", contains: "\"uuid\":\"srv-1\"", procedure: "\"procedure\":\"mcpServers.list\""},
+		{name: "configured server get", method: http.MethodGet, path: "/api/mcp/servers/get?uuid=srv-1", contains: "\"uuid\":\"srv-1\"", procedure: "\"procedure\":\"mcpServers.get\""},
+		{name: "configured server create", method: http.MethodPost, path: "/api/mcp/servers/create", body: `{"name":"core","command":"node","args":["server.js"]}`, contains: "\"ok\":true", procedure: "\"procedure\":\"mcpServers.create\""},
+		{name: "configured server update", method: http.MethodPost, path: "/api/mcp/servers/update", body: `{"uuid":"srv-1","name":"core","command":"node"}`, contains: "\"ok\":true", procedure: "\"procedure\":\"mcpServers.update\""},
+		{name: "configured server delete", method: http.MethodPost, path: "/api/mcp/servers/delete", body: `{"uuid":"srv-1"}`, contains: "\"ok\":true", procedure: "\"procedure\":\"mcpServers.delete\""},
+		{name: "configured server bulk import", method: http.MethodPost, path: "/api/mcp/servers/bulk-import", body: `[{"name":"core","command":"node","args":["server.js"]}]`, contains: "\"uuid\":\"srv-1\"", procedure: "\"procedure\":\"mcpServers.bulkImport\""},
+		{name: "configured server reload metadata", method: http.MethodPost, path: "/api/mcp/servers/reload-metadata", body: `{"uuid":"srv-1","mode":"binary"}`, contains: "\"ok\":true", procedure: "\"procedure\":\"mcpServers.reloadMetadata\""},
+		{name: "configured server clear metadata cache", method: http.MethodPost, path: "/api/mcp/servers/clear-metadata-cache", body: `{"uuid":"srv-1"}`, contains: "\"ok\":true", procedure: "\"procedure\":\"mcpServers.clearMetadataCache\""},
 		{name: "registry snapshot", method: http.MethodGet, path: "/api/mcp/servers/registry-snapshot", contains: "\"Core MCP\"", procedure: "\"procedure\":\"mcpServers.registrySnapshot\""},
+		{name: "sync targets", method: http.MethodGet, path: "/api/mcp/servers/sync-targets", contains: "\"claude-desktop\"", procedure: "\"procedure\":\"mcpServers.syncTargets\""},
+		{name: "export client config", method: http.MethodGet, path: "/api/mcp/servers/export-client-config?client=claude-desktop", contains: "\"client\":\"claude-desktop\"", procedure: "\"procedure\":\"mcpServers.exportClientConfig\""},
+		{name: "sync client config", method: http.MethodPost, path: "/api/mcp/servers/sync-client-config", body: `{"client":"claude-desktop"}`, contains: "\"ok\":true", procedure: "\"procedure\":\"mcpServers.syncClientConfig\""},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			var body io.Reader
+			if tc.body != "" {
+				body = strings.NewReader(tc.body)
+			}
+			request := httptest.NewRequest(tc.method, tc.path, body)
+			if tc.body != "" {
+				request.Header.Set("content-type", "application/json")
+			}
+			recorder := httptest.NewRecorder()
+			server.Handler().ServeHTTP(recorder, request)
+			if recorder.Code != http.StatusOK {
+				t.Fatalf("expected status 200, got %d with body %s", recorder.Code, recorder.Body.String())
+			}
+			if !strings.Contains(recorder.Body.String(), tc.contains) {
+				t.Fatalf("expected response to contain %s, got %s", tc.contains, recorder.Body.String())
+			}
+			if !strings.Contains(recorder.Body.String(), tc.procedure) {
+				t.Fatalf("expected bridge metadata %s, got %s", tc.procedure, recorder.Body.String())
+			}
+		})
+	}
+}
+
+func TestImportedSessionBridgeRoutes(t *testing.T) {
+	upstream := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("content-type", "application/json")
+		switch r.URL.Path {
+		case "/trpc/session.importedList":
+			body, err := io.ReadAll(r.Body)
+			if err != nil {
+				t.Fatalf("failed to read importedList body: %v", err)
+			}
+			if !strings.Contains(string(body), `"limit":25`) {
+				t.Fatalf("expected importedList limit payload, got %s", string(body))
+			}
+			_ = json.NewEncoder(w).Encode(map[string]any{
+				"result": map[string]any{
+					"data": map[string]any{
+						"json": []map[string]any{
+							{"id": "imp-1", "sourceTool": "claude-code", "parsedMemories": []any{}},
+						},
+					},
+				},
+			})
+		case "/trpc/session.importedGet":
+			body, err := io.ReadAll(r.Body)
+			if err != nil {
+				t.Fatalf("failed to read importedGet body: %v", err)
+			}
+			if !strings.Contains(string(body), `"id":"imp-1"`) {
+				t.Fatalf("expected importedGet id payload, got %s", string(body))
+			}
+			_ = json.NewEncoder(w).Encode(map[string]any{
+				"result": map[string]any{
+					"data": map[string]any{
+						"json": map[string]any{"id": "imp-1", "sourceTool": "claude-code", "parsedMemories": []any{}},
+					},
+				},
+			})
+		case "/trpc/session.importedScan":
+			body, err := io.ReadAll(r.Body)
+			if err != nil {
+				t.Fatalf("failed to read importedScan body: %v", err)
+			}
+			if !strings.Contains(string(body), `"force":true`) {
+				t.Fatalf("expected importedScan force payload, got %s", string(body))
+			}
+			_ = json.NewEncoder(w).Encode(map[string]any{
+				"result": map[string]any{
+					"data": map[string]any{
+						"json": map[string]any{
+							"discoveredCount":    3,
+							"importedCount":      1,
+							"skippedCount":       2,
+							"storedMemoryCount":  4,
+							"instructionDocPath": "C:/tmp/auto-imported-agent-instructions.md",
+							"tools":              []string{"claude-code"},
+						},
+					},
+				},
+			})
+		case "/trpc/session.importedInstructionDocs":
+			_ = json.NewEncoder(w).Encode(map[string]any{
+				"result": map[string]any{
+					"data": map[string]any{
+						"json": []map[string]any{
+							{"path": "C:/tmp/auto-imported-agent-instructions.md", "name": "auto-imported-agent-instructions.md"},
+						},
+					},
+				},
+			})
+		default:
+			t.Fatalf("unexpected upstream path %s", r.URL.Path)
+		}
+	}))
+	defer upstream.Close()
+
+	t.Setenv("BORG_TRPC_UPSTREAM", upstream.URL+"/trpc")
+
+	cfg := config.Default()
+	cfg.MainConfigDir = t.TempDir()
+	server := New(cfg, stubDetector{})
+
+	cases := []struct {
+		name      string
+		method    string
+		path      string
+		body      string
+		contains  string
+		procedure string
+	}{
+		{name: "imported list", method: http.MethodGet, path: "/api/sessions/imported/list?limit=25", contains: "\"sourceTool\":\"claude-code\"", procedure: "\"procedure\":\"session.importedList\""},
+		{name: "imported get", method: http.MethodGet, path: "/api/sessions/imported/get?id=imp-1", contains: "\"id\":\"imp-1\"", procedure: "\"procedure\":\"session.importedGet\""},
+		{name: "imported scan", method: http.MethodPost, path: "/api/sessions/imported/scan", body: `{"force":true}`, contains: "\"storedMemoryCount\":4", procedure: "\"procedure\":\"session.importedScan\""},
+		{name: "imported docs", method: http.MethodGet, path: "/api/sessions/imported/instruction-docs", contains: "\"auto-imported-agent-instructions.md\"", procedure: "\"procedure\":\"session.importedInstructionDocs\""},
 	}
 
 	for _, tc := range cases {
