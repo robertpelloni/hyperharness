@@ -295,6 +295,86 @@ func TestSessionContextEndpoint(t *testing.T) {
 	}
 }
 
+func TestToolsContextEndpoint(t *testing.T) {
+	upstream := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch r.URL.Path {
+		case "/trpc/health":
+			_ = json.NewEncoder(w).Encode(map[string]any{
+				"result": map[string]any{"data": map[string]any{"json": map[string]any{"status": "ok"}}},
+			})
+		case "/trpc/session.catalog":
+			_ = json.NewEncoder(w).Encode(map[string]any{
+				"result": map[string]any{"data": map[string]any{"json": map[string]any{"sessions": []any{}}}},
+			})
+		case "/trpc/memory.getToolContext":
+			_ = json.NewEncoder(w).Encode(map[string]any{
+				"result": map[string]any{"data": map[string]any{"json": map[string]any{
+					"toolName":         "search_tools",
+					"query":            "search_tools borg go session",
+					"matchedPaths":     []string{"go/internal/httpapi/server.go"},
+					"observationCount": 2,
+					"summaryCount":     1,
+					"prompt":           "JIT tool context for search_tools:",
+				}}},
+			})
+		case "/trpc/mcp.callTool":
+			_ = json.NewEncoder(w).Encode(map[string]any{
+				"result": map[string]any{"data": map[string]any{"json": map[string]any{
+					"ok": true,
+					"result": map[string]any{
+						"content": []map[string]any{{"type": "text", "text": "list_all_tools"}},
+					},
+				}}},
+			})
+		case "/trpc/mesh.getCapabilities":
+			_ = json.NewEncoder(w).Encode(map[string]any{
+				"result": map[string]any{"data": map[string]any{"json": map[string]any{}}},
+			})
+		default:
+			t.Fatalf("unexpected bridge path %s", r.URL.Path)
+		}
+	}))
+	defer upstream.Close()
+
+	t.Setenv("BORG_TRPC_UPSTREAM", upstream.URL+"/trpc")
+
+	workspaceRoot := t.TempDir()
+	cfg := config.Default()
+	cfg.WorkspaceRoot = workspaceRoot
+	cfg.ConfigDir = filepath.Join(workspaceRoot, ".borg-go")
+	cfg.MainConfigDir = filepath.Join(workspaceRoot, ".borg")
+	if err := os.MkdirAll(cfg.ConfigDir, 0o755); err != nil {
+		t.Fatalf("failed to create go config dir: %v", err)
+	}
+	if err := os.MkdirAll(cfg.MainConfigDir, 0o755); err != nil {
+		t.Fatalf("failed to create main config dir: %v", err)
+	}
+	if err := os.MkdirAll(filepath.Join(workspaceRoot, ".borg", "memory"), 0o755); err != nil {
+		t.Fatalf("failed to create memory dir: %v", err)
+	}
+	if err := os.WriteFile(filepath.Join(workspaceRoot, ".borg", "memory", "claude_mem.json"), []byte(`{"default":[]}`), 0o644); err != nil {
+		t.Fatalf("failed to seed memory store: %v", err)
+	}
+
+	server := New(cfg, stubDetector{})
+	recorder := httptest.NewRecorder()
+	request := httptest.NewRequest(http.MethodGet, "/api/tools/context?toolName=search_tools&activeGoal=ship%20go%20parity&lastObjective=surface%20jit%20tool%20context", nil)
+	server.Handler().ServeHTTP(recorder, request)
+
+	if recorder.Code != http.StatusOK {
+		t.Fatalf("expected tools context 200, got %d with body %s", recorder.Code, recorder.Body.String())
+	}
+	if !strings.Contains(recorder.Body.String(), "\"toolContext\"") {
+		t.Fatalf("expected toolContext payload, got %s", recorder.Body.String())
+	}
+	if !strings.Contains(recorder.Body.String(), "\"JIT tool context for search_tools:\"") {
+		t.Fatalf("expected tool context prompt, got %s", recorder.Body.String())
+	}
+	if !strings.Contains(recorder.Body.String(), "\"toolName\":\"list_all_tools\"") {
+		t.Fatalf("expected related tools bridge metadata, got %s", recorder.Body.String())
+	}
+}
+
 func TestConfigStatusEndpoint(t *testing.T) {
 	workspaceRoot := t.TempDir()
 	cfg := config.Default()

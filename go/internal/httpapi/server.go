@@ -350,6 +350,7 @@ func (s *Server) registerRoutes() {
 	s.mux.HandleFunc("/api/tools", s.handleToolsList)
 	s.mux.HandleFunc("/api/tools/by-server", s.handleToolsByServer)
 	s.mux.HandleFunc("/api/tools/search", s.handleToolsSearch)
+	s.mux.HandleFunc("/api/tools/context", s.handleToolsContext)
 	s.mux.HandleFunc("/api/tools/detect-cli-harnesses", s.handleToolsDetectCLIHarnesses)
 	s.mux.HandleFunc("/api/tools/detect-execution-environment", s.handleToolsDetectExecutionEnvironment)
 	s.mux.HandleFunc("/api/tools/detect-install-surfaces", s.handleToolsDetectInstallSurfaces)
@@ -688,6 +689,7 @@ func (s *Server) handleAPIIndex(w http.ResponseWriter, _ *http.Request) {
 				{Path: "/api/tools", Category: "control", Description: "Bridge to the TypeScript tool registry list."},
 				{Path: "/api/tools/by-server", Category: "control", Description: "Bridge to TypeScript tools filtered by MCP server."},
 				{Path: "/api/tools/search", Category: "control", Description: "Bridge to TypeScript tool search."},
+				{Path: "/api/tools/context", Category: "control", Description: "Go-owned tool guidance snapshot combining startup readiness, tool context memory, and related tool advertisements."},
 				{Path: "/api/tools/detect-cli-harnesses", Category: "control", Description: "Bridge to TypeScript CLI harness detection."},
 				{Path: "/api/tools/detect-execution-environment", Category: "control", Description: "Bridge to TypeScript execution-environment detection."},
 				{Path: "/api/tools/detect-install-surfaces", Category: "control", Description: "Bridge to TypeScript install-surface detection."},
