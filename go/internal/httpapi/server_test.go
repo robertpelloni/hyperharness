@@ -2209,6 +2209,158 @@ func TestResearchOAuthPulseAndExportBridgeRoutes(t *testing.T) {
 	}
 }
 
+func TestUIHelperBridgeRoutes(t *testing.T) {
+	upstream := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("content-type", "application/json")
+		switch r.URL.Path {
+		case "/trpc/browserExtension.saveMemory":
+			_ = json.NewEncoder(w).Encode(map[string]any{"result": map[string]any{"data": map[string]any{"json": map[string]any{"id": "mem-1", "deduplicated": false}}}})
+		case "/trpc/browserExtension.parseDom":
+			_ = json.NewEncoder(w).Encode(map[string]any{"result": map[string]any{"data": map[string]any{"json": map[string]any{"wordCount": 12}}}})
+		case "/trpc/browserExtension.listMemories":
+			body, _ := io.ReadAll(r.Body)
+			if !strings.Contains(string(body), `"search":"mcp"`) {
+				t.Fatalf("expected browserExtension.listMemories payload, got %s", string(body))
+			}
+			_ = json.NewEncoder(w).Encode(map[string]any{"result": map[string]any{"data": map[string]any{"json": map[string]any{"items": []any{map[string]any{"id": "mem-1"}}, "total": 1}}}})
+		case "/trpc/browserExtension.deleteMemory":
+			_ = json.NewEncoder(w).Encode(map[string]any{"result": map[string]any{"data": map[string]any{"json": map[string]any{"deleted": true}}}})
+		case "/trpc/browserExtension.stats":
+			_ = json.NewEncoder(w).Encode(map[string]any{"result": map[string]any{"data": map[string]any{"json": map[string]any{"totalMemories": 1}}}})
+		case "/trpc/openWebUI.getStatus":
+			_ = json.NewEncoder(w).Encode(map[string]any{"result": map[string]any{"data": map[string]any{"json": map[string]any{"status": "active"}}}})
+		case "/trpc/openWebUI.getEmbedUrl":
+			_ = json.NewEncoder(w).Encode(map[string]any{"result": map[string]any{"data": map[string]any{"json": map[string]any{"url": "http://localhost:8080"}}}})
+		case "/trpc/codeMode.getStatus":
+			_ = json.NewEncoder(w).Encode(map[string]any{"result": map[string]any{"data": map[string]any{"json": map[string]any{"enabled": true}}}})
+		case "/trpc/codeMode.enable":
+			_ = json.NewEncoder(w).Encode(map[string]any{"result": map[string]any{"data": map[string]any{"json": map[string]any{"enabled": true}}}})
+		case "/trpc/codeMode.disable":
+			_ = json.NewEncoder(w).Encode(map[string]any{"result": map[string]any{"data": map[string]any{"json": map[string]any{"enabled": false}}}})
+		case "/trpc/codeMode.execute":
+			_ = json.NewEncoder(w).Encode(map[string]any{"result": map[string]any{"data": map[string]any{"json": map[string]any{"success": true}}}})
+		case "/trpc/submodule.list":
+			_ = json.NewEncoder(w).Encode(map[string]any{"result": map[string]any{"data": map[string]any{"json": []any{map[string]any{"path": "submodules/hypercode"}}}}})
+		case "/trpc/submodule.updateAll":
+			_ = json.NewEncoder(w).Encode(map[string]any{"result": map[string]any{"data": map[string]any{"json": map[string]any{"success": true}}}})
+		case "/trpc/submodule.installDependencies":
+			_ = json.NewEncoder(w).Encode(map[string]any{"result": map[string]any{"data": map[string]any{"json": map[string]any{"success": true}}}})
+		case "/trpc/submodule.build":
+			_ = json.NewEncoder(w).Encode(map[string]any{"result": map[string]any{"data": map[string]any{"json": map[string]any{"success": true}}}})
+		case "/trpc/submodule.enable":
+			_ = json.NewEncoder(w).Encode(map[string]any{"result": map[string]any{"data": map[string]any{"json": map[string]any{"success": true}}}})
+		case "/trpc/submodule.detectCapabilities":
+			body, _ := io.ReadAll(r.Body)
+			if !strings.Contains(string(body), `"path":"submodules/hypercode"`) {
+				t.Fatalf("expected submodule.detectCapabilities payload, got %s", string(body))
+			}
+			_ = json.NewEncoder(w).Encode(map[string]any{"result": map[string]any{"data": map[string]any{"json": map[string]any{"caps": []any{"build"}}}}})
+		case "/trpc/suggestions.list":
+			_ = json.NewEncoder(w).Encode(map[string]any{"result": map[string]any{"data": map[string]any{"json": []any{map[string]any{"id": "sug-1"}}}}})
+		case "/trpc/suggestions.resolve":
+			_ = json.NewEncoder(w).Encode(map[string]any{"result": map[string]any{"data": map[string]any{"json": map[string]any{"id": "sug-1", "status": "APPROVED"}}}})
+		case "/trpc/suggestions.clearAll":
+			_ = json.NewEncoder(w).Encode(map[string]any{"result": map[string]any{"data": map[string]any{"json": true}}})
+		case "/trpc/plan.getMode":
+			_ = json.NewEncoder(w).Encode(map[string]any{"result": map[string]any{"data": map[string]any{"json": map[string]any{"mode": "PLAN"}}}})
+		case "/trpc/plan.setMode":
+			_ = json.NewEncoder(w).Encode(map[string]any{"result": map[string]any{"data": map[string]any{"json": map[string]any{"mode": "BUILD"}}}})
+		case "/trpc/plan.getDiffs":
+			_ = json.NewEncoder(w).Encode(map[string]any{"result": map[string]any{"data": map[string]any{"json": []any{map[string]any{"id": "diff-1"}}}}})
+		case "/trpc/plan.approveDiff":
+			_ = json.NewEncoder(w).Encode(map[string]any{"result": map[string]any{"data": map[string]any{"json": true}}})
+		case "/trpc/plan.rejectDiff":
+			_ = json.NewEncoder(w).Encode(map[string]any{"result": map[string]any{"data": map[string]any{"json": true}}})
+		case "/trpc/plan.applyAll":
+			_ = json.NewEncoder(w).Encode(map[string]any{"result": map[string]any{"data": map[string]any{"json": map[string]any{"applied": 1}}}})
+		case "/trpc/plan.getSummary":
+			_ = json.NewEncoder(w).Encode(map[string]any{"result": map[string]any{"data": map[string]any{"json": map[string]any{"pending": 1}}}})
+		case "/trpc/plan.getCheckpoints":
+			_ = json.NewEncoder(w).Encode(map[string]any{"result": map[string]any{"data": map[string]any{"json": []any{map[string]any{"id": "cp-1"}}}}})
+		case "/trpc/plan.createCheckpoint":
+			_ = json.NewEncoder(w).Encode(map[string]any{"result": map[string]any{"data": map[string]any{"json": map[string]any{"id": "cp-1"}}}})
+		case "/trpc/plan.rollback":
+			_ = json.NewEncoder(w).Encode(map[string]any{"result": map[string]any{"data": map[string]any{"json": true}}})
+		case "/trpc/plan.clear":
+			_ = json.NewEncoder(w).Encode(map[string]any{"result": map[string]any{"data": map[string]any{"json": map[string]any{"success": true}}}})
+		default:
+			t.Fatalf("unexpected upstream path %s", r.URL.Path)
+		}
+	}))
+	defer upstream.Close()
+
+	t.Setenv("BORG_TRPC_UPSTREAM", upstream.URL+"/trpc")
+
+	cfg := config.Default()
+	cfg.MainConfigDir = t.TempDir()
+	server := New(cfg, stubDetector{})
+
+	cases := []struct {
+		name      string
+		method    string
+		path      string
+		body      string
+		contains  string
+		procedure string
+	}{
+		{name: "browser save memory", method: http.MethodPost, path: "/api/browser-extension/save-memory", body: `{"url":"https://example.com","title":"Example","content":"Hello world"}`, contains: `"mem-1"`, procedure: `"procedure":"browserExtension.saveMemory"`},
+		{name: "browser parse dom", method: http.MethodPost, path: "/api/browser-extension/parse-dom", body: `{"url":"https://example.com","html":"<html><body>Hello</body></html>"}`, contains: `"wordCount":12`, procedure: `"procedure":"browserExtension.parseDom"`},
+		{name: "browser list memories", method: http.MethodGet, path: "/api/browser-extension/memories?search=mcp&tag=tool&limit=10&offset=0", contains: `"total":1`, procedure: `"procedure":"browserExtension.listMemories"`},
+		{name: "browser delete memory", method: http.MethodPost, path: "/api/browser-extension/delete-memory", body: `{"id":"mem-1"}`, contains: `"deleted":true`, procedure: `"procedure":"browserExtension.deleteMemory"`},
+		{name: "browser stats", method: http.MethodGet, path: "/api/browser-extension/stats", contains: `"totalMemories":1`, procedure: `"procedure":"browserExtension.stats"`},
+		{name: "openwebui status", method: http.MethodGet, path: "/api/open-webui/status", contains: `"status":"active"`, procedure: `"procedure":"openWebUI.getStatus"`},
+		{name: "openwebui embed", method: http.MethodGet, path: "/api/open-webui/embed-url", contains: `"http://localhost:8080"`, procedure: `"procedure":"openWebUI.getEmbedUrl"`},
+		{name: "code mode status", method: http.MethodGet, path: "/api/code-mode/status", contains: `"enabled":true`, procedure: `"procedure":"codeMode.getStatus"`},
+		{name: "code mode enable", method: http.MethodPost, path: "/api/code-mode/enable", body: `{}`, contains: `"enabled":true`, procedure: `"procedure":"codeMode.enable"`},
+		{name: "code mode disable", method: http.MethodPost, path: "/api/code-mode/disable", body: `{}`, contains: `"enabled":false`, procedure: `"procedure":"codeMode.disable"`},
+		{name: "code mode execute", method: http.MethodPost, path: "/api/code-mode/execute", body: `{"code":"return 1;"}`, contains: `"success":true`, procedure: `"procedure":"codeMode.execute"`},
+		{name: "submodule list", method: http.MethodGet, path: "/api/submodules", contains: `"submodules/hypercode"`, procedure: `"procedure":"submodule.list"`},
+		{name: "submodule update all", method: http.MethodPost, path: "/api/submodules/update-all", body: `{}`, contains: `"success":true`, procedure: `"procedure":"submodule.updateAll"`},
+		{name: "submodule install deps", method: http.MethodPost, path: "/api/submodules/install-dependencies", body: `{"path":"submodules/hypercode"}`, contains: `"success":true`, procedure: `"procedure":"submodule.installDependencies"`},
+		{name: "submodule build", method: http.MethodPost, path: "/api/submodules/build", body: `{"path":"submodules/hypercode"}`, contains: `"success":true`, procedure: `"procedure":"submodule.build"`},
+		{name: "submodule enable", method: http.MethodPost, path: "/api/submodules/enable", body: `{"path":"submodules/hypercode"}`, contains: `"success":true`, procedure: `"procedure":"submodule.enable"`},
+		{name: "submodule capabilities", method: http.MethodGet, path: "/api/submodules/capabilities?path=submodules%2Fhypercode", contains: `"build"`, procedure: `"procedure":"submodule.detectCapabilities"`},
+		{name: "suggestions list", method: http.MethodGet, path: "/api/suggestions", contains: `"sug-1"`, procedure: `"procedure":"suggestions.list"`},
+		{name: "suggestions resolve", method: http.MethodPost, path: "/api/suggestions/resolve", body: `{"id":"sug-1","status":"APPROVED"}`, contains: `"APPROVED"`, procedure: `"procedure":"suggestions.resolve"`},
+		{name: "suggestions clear", method: http.MethodPost, path: "/api/suggestions/clear", body: `{}`, contains: `"data":true`, procedure: `"procedure":"suggestions.clearAll"`},
+		{name: "plan mode get", method: http.MethodGet, path: "/api/plan/mode", contains: `"mode":"PLAN"`, procedure: `"procedure":"plan.getMode"`},
+		{name: "plan mode set", method: http.MethodPost, path: "/api/plan/mode", body: `{"mode":"BUILD"}`, contains: `"mode":"BUILD"`, procedure: `"procedure":"plan.setMode"`},
+		{name: "plan diffs", method: http.MethodGet, path: "/api/plan/diffs", contains: `"diff-1"`, procedure: `"procedure":"plan.getDiffs"`},
+		{name: "plan approve diff", method: http.MethodPost, path: "/api/plan/approve-diff", body: `{"diffId":"diff-1"}`, contains: `"data":true`, procedure: `"procedure":"plan.approveDiff"`},
+		{name: "plan reject diff", method: http.MethodPost, path: "/api/plan/reject-diff", body: `{"diffId":"diff-1"}`, contains: `"data":true`, procedure: `"procedure":"plan.rejectDiff"`},
+		{name: "plan apply all", method: http.MethodPost, path: "/api/plan/apply-all", body: `{}`, contains: `"applied":1`, procedure: `"procedure":"plan.applyAll"`},
+		{name: "plan summary", method: http.MethodGet, path: "/api/plan/summary", contains: `"pending":1`, procedure: `"procedure":"plan.getSummary"`},
+		{name: "plan checkpoints", method: http.MethodGet, path: "/api/plan/checkpoints", contains: `"cp-1"`, procedure: `"procedure":"plan.getCheckpoints"`},
+		{name: "plan checkpoint create", method: http.MethodPost, path: "/api/plan/create-checkpoint", body: `{"name":"checkpoint-1","description":"desc"}`, contains: `"cp-1"`, procedure: `"procedure":"plan.createCheckpoint"`},
+		{name: "plan rollback", method: http.MethodPost, path: "/api/plan/rollback", body: `{"checkpointId":"cp-1"}`, contains: `"data":true`, procedure: `"procedure":"plan.rollback"`},
+		{name: "plan clear", method: http.MethodPost, path: "/api/plan/clear", body: `{}`, contains: `"success":true`, procedure: `"procedure":"plan.clear"`},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			var body io.Reader
+			if tc.body != "" {
+				body = strings.NewReader(tc.body)
+			}
+			request := httptest.NewRequest(tc.method, tc.path, body)
+			if tc.body != "" {
+				request.Header.Set("content-type", "application/json")
+			}
+			recorder := httptest.NewRecorder()
+			server.Handler().ServeHTTP(recorder, request)
+			if recorder.Code != http.StatusOK {
+				t.Fatalf("expected status 200, got %d with body %s", recorder.Code, recorder.Body.String())
+			}
+			if !strings.Contains(recorder.Body.String(), tc.contains) {
+				t.Fatalf("expected response to contain %s, got %s", tc.contains, recorder.Body.String())
+			}
+			if !strings.Contains(recorder.Body.String(), tc.procedure) {
+				t.Fatalf("expected bridge metadata %s, got %s", tc.procedure, recorder.Body.String())
+			}
+		})
+	}
+}
+
 func TestCLIToolsEndpoint(t *testing.T) {
 	server := New(config.Default(), stubDetector{
 		tools: []controlplane.Tool{

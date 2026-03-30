@@ -464,6 +464,36 @@ func (s *Server) registerRoutes() {
 	s.mux.HandleFunc("/api/session-export/detect-format", s.handleSessionExportDetectFormat)
 	s.mux.HandleFunc("/api/session-export/formats", s.handleSessionExportKnownFormats)
 	s.mux.HandleFunc("/api/session-export/history", s.handleSessionExportHistory)
+	s.mux.HandleFunc("/api/browser-extension/save-memory", s.handleBrowserExtensionSaveMemory)
+	s.mux.HandleFunc("/api/browser-extension/parse-dom", s.handleBrowserExtensionParseDOM)
+	s.mux.HandleFunc("/api/browser-extension/memories", s.handleBrowserExtensionListMemories)
+	s.mux.HandleFunc("/api/browser-extension/delete-memory", s.handleBrowserExtensionDeleteMemory)
+	s.mux.HandleFunc("/api/browser-extension/stats", s.handleBrowserExtensionStats)
+	s.mux.HandleFunc("/api/open-webui/status", s.handleOpenWebUIStatus)
+	s.mux.HandleFunc("/api/open-webui/embed-url", s.handleOpenWebUIEmbedURL)
+	s.mux.HandleFunc("/api/code-mode/status", s.handleCodeModeStatus)
+	s.mux.HandleFunc("/api/code-mode/enable", s.handleCodeModeEnable)
+	s.mux.HandleFunc("/api/code-mode/disable", s.handleCodeModeDisable)
+	s.mux.HandleFunc("/api/code-mode/execute", s.handleCodeModeExecute)
+	s.mux.HandleFunc("/api/submodules", s.handleSubmoduleList)
+	s.mux.HandleFunc("/api/submodules/update-all", s.handleSubmoduleUpdateAll)
+	s.mux.HandleFunc("/api/submodules/install-dependencies", s.handleSubmoduleInstallDependencies)
+	s.mux.HandleFunc("/api/submodules/build", s.handleSubmoduleBuild)
+	s.mux.HandleFunc("/api/submodules/enable", s.handleSubmoduleEnable)
+	s.mux.HandleFunc("/api/submodules/capabilities", s.handleSubmoduleCapabilities)
+	s.mux.HandleFunc("/api/suggestions", s.handleSuggestionsList)
+	s.mux.HandleFunc("/api/suggestions/resolve", s.handleSuggestionsResolve)
+	s.mux.HandleFunc("/api/suggestions/clear", s.handleSuggestionsClear)
+	s.mux.HandleFunc("/api/plan/mode", s.handlePlanMode)
+	s.mux.HandleFunc("/api/plan/diffs", s.handlePlanDiffs)
+	s.mux.HandleFunc("/api/plan/approve-diff", s.handlePlanApproveDiff)
+	s.mux.HandleFunc("/api/plan/reject-diff", s.handlePlanRejectDiff)
+	s.mux.HandleFunc("/api/plan/apply-all", s.handlePlanApplyAll)
+	s.mux.HandleFunc("/api/plan/summary", s.handlePlanSummary)
+	s.mux.HandleFunc("/api/plan/checkpoints", s.handlePlanCheckpoints)
+	s.mux.HandleFunc("/api/plan/create-checkpoint", s.handlePlanCreateCheckpoint)
+	s.mux.HandleFunc("/api/plan/rollback", s.handlePlanRollback)
+	s.mux.HandleFunc("/api/plan/clear", s.handlePlanClear)
 	s.mux.HandleFunc("/api/cli/tools", s.handleCLITools)
 	s.mux.HandleFunc("/api/cli/harnesses", s.handleHarnesses)
 	s.mux.HandleFunc("/api/cli/summary", s.handleCLISummary)
@@ -738,6 +768,36 @@ func (s *Server) handleAPIIndex(w http.ResponseWriter, _ *http.Request) {
 				{Path: "/api/session-export/detect-format", Category: "sessions", Description: "Detect session export format through the TypeScript session export router."},
 				{Path: "/api/session-export/formats", Category: "sessions", Description: "List known session export formats through the TypeScript session export router."},
 				{Path: "/api/session-export/history", Category: "sessions", Description: "Read session export history through the TypeScript session export router."},
+				{Path: "/api/browser-extension/save-memory", Category: "ui", Description: "Save a browser-extension memory through the TypeScript browser extension router."},
+				{Path: "/api/browser-extension/parse-dom", Category: "ui", Description: "Parse browser DOM content through the TypeScript browser extension router."},
+				{Path: "/api/browser-extension/memories", Category: "ui", Description: "List browser-extension memories through the TypeScript browser extension router."},
+				{Path: "/api/browser-extension/delete-memory", Category: "ui", Description: "Delete a browser-extension memory through the TypeScript browser extension router."},
+				{Path: "/api/browser-extension/stats", Category: "ui", Description: "Read browser-extension memory stats through the TypeScript browser extension router."},
+				{Path: "/api/open-webui/status", Category: "ui", Description: "Read Open WebUI status through the TypeScript OpenWebUI router."},
+				{Path: "/api/open-webui/embed-url", Category: "ui", Description: "Read Open WebUI embed URL through the TypeScript OpenWebUI router."},
+				{Path: "/api/code-mode/status", Category: "ui", Description: "Read Code Mode status through the TypeScript code mode router."},
+				{Path: "/api/code-mode/enable", Category: "ui", Description: "Enable Code Mode through the TypeScript code mode router."},
+				{Path: "/api/code-mode/disable", Category: "ui", Description: "Disable Code Mode through the TypeScript code mode router."},
+				{Path: "/api/code-mode/execute", Category: "ui", Description: "Execute Code Mode code through the TypeScript code mode router."},
+				{Path: "/api/submodules", Category: "ui", Description: "List submodules through the TypeScript submodule router."},
+				{Path: "/api/submodules/update-all", Category: "ui", Description: "Update all submodules through the TypeScript submodule router."},
+				{Path: "/api/submodules/install-dependencies", Category: "ui", Description: "Install submodule dependencies through the TypeScript submodule router."},
+				{Path: "/api/submodules/build", Category: "ui", Description: "Build a submodule through the TypeScript submodule router."},
+				{Path: "/api/submodules/enable", Category: "ui", Description: "Enable a submodule through the TypeScript submodule router."},
+				{Path: "/api/submodules/capabilities", Category: "ui", Description: "Read submodule capabilities through the TypeScript submodule router."},
+				{Path: "/api/suggestions", Category: "ui", Description: "List suggestions through the TypeScript suggestions router."},
+				{Path: "/api/suggestions/resolve", Category: "ui", Description: "Resolve a suggestion through the TypeScript suggestions router."},
+				{Path: "/api/suggestions/clear", Category: "ui", Description: "Clear suggestions through the TypeScript suggestions router."},
+				{Path: "/api/plan/mode", Category: "ui", Description: "Read or update plan mode through the TypeScript plan router."},
+				{Path: "/api/plan/diffs", Category: "ui", Description: "List pending plan diffs through the TypeScript plan router."},
+				{Path: "/api/plan/approve-diff", Category: "ui", Description: "Approve a plan diff through the TypeScript plan router."},
+				{Path: "/api/plan/reject-diff", Category: "ui", Description: "Reject a plan diff through the TypeScript plan router."},
+				{Path: "/api/plan/apply-all", Category: "ui", Description: "Apply approved plan diffs through the TypeScript plan router."},
+				{Path: "/api/plan/summary", Category: "ui", Description: "Read plan sandbox summary through the TypeScript plan router."},
+				{Path: "/api/plan/checkpoints", Category: "ui", Description: "List plan checkpoints through the TypeScript plan router."},
+				{Path: "/api/plan/create-checkpoint", Category: "ui", Description: "Create a plan checkpoint through the TypeScript plan router."},
+				{Path: "/api/plan/rollback", Category: "ui", Description: "Rollback a plan checkpoint through the TypeScript plan router."},
+				{Path: "/api/plan/clear", Category: "ui", Description: "Clear plan sandbox state through the TypeScript plan router."},
 				{Path: "/api/cli/tools", Category: "cli", Description: "Detected local CLI tools and versions."},
 				{Path: "/api/cli/harnesses", Category: "cli", Description: "Harness registry metadata and install visibility."},
 				{Path: "/api/cli/summary", Category: "cli", Description: "Compact CLI and harness readiness summary."},
@@ -2244,6 +2304,152 @@ func (s *Server) handleSessionExportKnownFormats(w http.ResponseWriter, r *http.
 
 func (s *Server) handleSessionExportHistory(w http.ResponseWriter, r *http.Request) {
 	s.handleTRPCBridgeCall(w, r, http.MethodGet, "sessionExport.history", nil)
+}
+
+func (s *Server) handleBrowserExtensionSaveMemory(w http.ResponseWriter, r *http.Request) {
+	s.handleTRPCBridgeBodyCall(w, r, "browserExtension.saveMemory")
+}
+
+func (s *Server) handleBrowserExtensionParseDOM(w http.ResponseWriter, r *http.Request) {
+	s.handleTRPCBridgeBodyCall(w, r, "browserExtension.parseDom")
+}
+
+func (s *Server) handleBrowserExtensionListMemories(w http.ResponseWriter, r *http.Request) {
+	payload := map[string]any{}
+	if search := strings.TrimSpace(r.URL.Query().Get("search")); search != "" {
+		payload["search"] = search
+	}
+	if tag := strings.TrimSpace(r.URL.Query().Get("tag")); tag != "" {
+		payload["tag"] = tag
+	}
+	if limit := strings.TrimSpace(r.URL.Query().Get("limit")); limit != "" {
+		if parsed, err := strconv.Atoi(limit); err == nil {
+			payload["limit"] = parsed
+		}
+	}
+	if offset := strings.TrimSpace(r.URL.Query().Get("offset")); offset != "" {
+		if parsed, err := strconv.Atoi(offset); err == nil {
+			payload["offset"] = parsed
+		}
+	}
+	s.handleTRPCBridgeCall(w, r, http.MethodGet, "browserExtension.listMemories", payload)
+}
+
+func (s *Server) handleBrowserExtensionDeleteMemory(w http.ResponseWriter, r *http.Request) {
+	s.handleTRPCBridgeBodyCall(w, r, "browserExtension.deleteMemory")
+}
+
+func (s *Server) handleBrowserExtensionStats(w http.ResponseWriter, r *http.Request) {
+	s.handleTRPCBridgeCall(w, r, http.MethodGet, "browserExtension.stats", nil)
+}
+
+func (s *Server) handleOpenWebUIStatus(w http.ResponseWriter, r *http.Request) {
+	s.handleTRPCBridgeCall(w, r, http.MethodGet, "openWebUI.getStatus", nil)
+}
+
+func (s *Server) handleOpenWebUIEmbedURL(w http.ResponseWriter, r *http.Request) {
+	s.handleTRPCBridgeCall(w, r, http.MethodGet, "openWebUI.getEmbedUrl", nil)
+}
+
+func (s *Server) handleCodeModeStatus(w http.ResponseWriter, r *http.Request) {
+	s.handleTRPCBridgeCall(w, r, http.MethodGet, "codeMode.getStatus", nil)
+}
+
+func (s *Server) handleCodeModeEnable(w http.ResponseWriter, r *http.Request) {
+	s.handleTRPCBridgeBodyCall(w, r, "codeMode.enable")
+}
+
+func (s *Server) handleCodeModeDisable(w http.ResponseWriter, r *http.Request) {
+	s.handleTRPCBridgeBodyCall(w, r, "codeMode.disable")
+}
+
+func (s *Server) handleCodeModeExecute(w http.ResponseWriter, r *http.Request) {
+	s.handleTRPCBridgeBodyCall(w, r, "codeMode.execute")
+}
+
+func (s *Server) handleSubmoduleList(w http.ResponseWriter, r *http.Request) {
+	s.handleTRPCBridgeCall(w, r, http.MethodGet, "submodule.list", nil)
+}
+
+func (s *Server) handleSubmoduleUpdateAll(w http.ResponseWriter, r *http.Request) {
+	s.handleTRPCBridgeBodyCall(w, r, "submodule.updateAll")
+}
+
+func (s *Server) handleSubmoduleInstallDependencies(w http.ResponseWriter, r *http.Request) {
+	s.handleTRPCBridgeBodyCall(w, r, "submodule.installDependencies")
+}
+
+func (s *Server) handleSubmoduleBuild(w http.ResponseWriter, r *http.Request) {
+	s.handleTRPCBridgeBodyCall(w, r, "submodule.build")
+}
+
+func (s *Server) handleSubmoduleEnable(w http.ResponseWriter, r *http.Request) {
+	s.handleTRPCBridgeBodyCall(w, r, "submodule.enable")
+}
+
+func (s *Server) handleSubmoduleCapabilities(w http.ResponseWriter, r *http.Request) {
+	pathValue := strings.TrimSpace(r.URL.Query().Get("path"))
+	if pathValue == "" {
+		writeJSON(w, http.StatusBadRequest, map[string]any{"success": false, "error": "missing path query parameter"})
+		return
+	}
+	s.handleTRPCBridgeCall(w, r, http.MethodGet, "submodule.detectCapabilities", map[string]any{"path": pathValue})
+}
+
+func (s *Server) handleSuggestionsList(w http.ResponseWriter, r *http.Request) {
+	s.handleTRPCBridgeCall(w, r, http.MethodGet, "suggestions.list", nil)
+}
+
+func (s *Server) handleSuggestionsResolve(w http.ResponseWriter, r *http.Request) {
+	s.handleTRPCBridgeBodyCall(w, r, "suggestions.resolve")
+}
+
+func (s *Server) handleSuggestionsClear(w http.ResponseWriter, r *http.Request) {
+	s.handleTRPCBridgeBodyCall(w, r, "suggestions.clearAll")
+}
+
+func (s *Server) handlePlanMode(w http.ResponseWriter, r *http.Request) {
+	if r.Method == http.MethodGet {
+		s.handleTRPCBridgeCall(w, r, http.MethodGet, "plan.getMode", nil)
+		return
+	}
+	s.handleTRPCBridgeBodyCall(w, r, "plan.setMode")
+}
+
+func (s *Server) handlePlanDiffs(w http.ResponseWriter, r *http.Request) {
+	s.handleTRPCBridgeCall(w, r, http.MethodGet, "plan.getDiffs", nil)
+}
+
+func (s *Server) handlePlanApproveDiff(w http.ResponseWriter, r *http.Request) {
+	s.handleTRPCBridgeBodyCall(w, r, "plan.approveDiff")
+}
+
+func (s *Server) handlePlanRejectDiff(w http.ResponseWriter, r *http.Request) {
+	s.handleTRPCBridgeBodyCall(w, r, "plan.rejectDiff")
+}
+
+func (s *Server) handlePlanApplyAll(w http.ResponseWriter, r *http.Request) {
+	s.handleTRPCBridgeBodyCall(w, r, "plan.applyAll")
+}
+
+func (s *Server) handlePlanSummary(w http.ResponseWriter, r *http.Request) {
+	s.handleTRPCBridgeCall(w, r, http.MethodGet, "plan.getSummary", nil)
+}
+
+func (s *Server) handlePlanCheckpoints(w http.ResponseWriter, r *http.Request) {
+	s.handleTRPCBridgeCall(w, r, http.MethodGet, "plan.getCheckpoints", nil)
+}
+
+func (s *Server) handlePlanCreateCheckpoint(w http.ResponseWriter, r *http.Request) {
+	s.handleTRPCBridgeBodyCall(w, r, "plan.createCheckpoint")
+}
+
+func (s *Server) handlePlanRollback(w http.ResponseWriter, r *http.Request) {
+	s.handleTRPCBridgeBodyCall(w, r, "plan.rollback")
+}
+
+func (s *Server) handlePlanClear(w http.ResponseWriter, r *http.Request) {
+	s.handleTRPCBridgeBodyCall(w, r, "plan.clear")
 }
 
 func (s *Server) handleSessionBridgeBodyCall(w http.ResponseWriter, r *http.Request, procedure string) {
