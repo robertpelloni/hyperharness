@@ -24,14 +24,15 @@ func NewAutoDrive(director *Director) *AutoDrive {
 }
 
 // Start initiates the autonomous loop recursively calling the ILLMProvider dynamically handling inputs!
-func (a *AutoDrive) Start(ctx context.Context, objective string) error {
+func (a *AutoDrive) Start(ctx context.Context, objective string, sandboxDir string) error {
 	a.IsRunning = true
-	log.Printf("[AutoDrive] Engaged native autonomous loop with objective: %s", objective)
+	log.Printf("[AutoDrive] Engaged native autonomous loop internally isolating execution inside: %s", sandboxDir)
 
 	// Append core driver objective natively modifying pointers structurally
+	prompt := fmt.Sprintf("Execute the following plan autonomously:\n%s\n\nCRITICAL: All commands MUST be executed exclusively within '%s'.", objective, sandboxDir)
 	a.Director.History = append(a.Director.History, Message{
 		Role:    RoleUser,
-		Content: fmt.Sprintf("Execute the following plan autonomously:\n%s", objective),
+		Content: prompt,
 	})
 
 	for i := 0; i < a.MaxIterations; i++ {

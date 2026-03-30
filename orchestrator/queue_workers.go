@@ -2,7 +2,9 @@ package orchestrator
 
 import (
 	"context"
+	"fmt"
 	"log"
+	"os"
 	"time"
 
 	"github.com/robertpelloni/hypercode/agents"
@@ -173,10 +175,23 @@ func BackgroundWorker() {
 
 			go func(runningSession Session) {
 				DB.Model(&runningSession).Update("raw_state", "IN_PROGRESS")
-				err := engine.Start(context.Background(), "Execute the approved plan objectives perfectly across the repository.")
 
-				if err != nil {
-					log.Printf("[AutoDrive] Execution aborted natively: %v", err)
+				// Dynamically extract the execution sandbox
+				sandboxDir := fmt.Sprintf("/tmp/borg_run_%s", runningSession.ID)
+				branchName := fmt.Sprintf("run-%s", runningSession.ID)
+
+				log.Printf("[Sandbox] Extracting Git boundaries creating protective shield %s natively...", sandboxDir)
+				os.MkdirAll(sandboxDir, 0755)
+
+				wMgr := NewGitWorktreeManager(".")
+				if err := wMgr.CreateWorktree(branchName, sandboxDir); err != nil {
+					log.Printf("[AutoDrive-Fault] Strict execution blocked explicitly due to Git boundaries: %v", err)
+				} else {
+					defer wMgr.DestroyWorktree(sandboxDir, branchName)
+					err := engine.Start(context.Background(), "Execute the approved plan perfectly within the explicitly bound repository isolation boundaries.", sandboxDir)
+					if err != nil {
+						log.Printf("[AutoDrive] Execution aborted natively: %v", err)
+					}
 				}
 
 				// Mark complete implicitly waiting for human verification
