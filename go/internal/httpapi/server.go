@@ -443,6 +443,27 @@ func (s *Server) registerRoutes() {
 	s.mux.HandleFunc("/api/catalog/validate-batch", s.handleCatalogValidateBatch)
 	s.mux.HandleFunc("/api/catalog/stats", s.handleCatalogStats)
 	s.mux.HandleFunc("/api/catalog/linked-servers", s.handleCatalogLinkedServers)
+	s.mux.HandleFunc("/api/oauth/clients/create", s.handleOAuthClientCreate)
+	s.mux.HandleFunc("/api/oauth/clients/get", s.handleOAuthClientGet)
+	s.mux.HandleFunc("/api/oauth/sessions/upsert", s.handleOAuthSessionUpsert)
+	s.mux.HandleFunc("/api/oauth/sessions/by-server", s.handleOAuthSessionGetByServer)
+	s.mux.HandleFunc("/api/oauth/exchange", s.handleOAuthExchange)
+	s.mux.HandleFunc("/api/research/conduct", s.handleResearchConduct)
+	s.mux.HandleFunc("/api/research/ingest", s.handleResearchIngest)
+	s.mux.HandleFunc("/api/research/recursive", s.handleResearchRecursive)
+	s.mux.HandleFunc("/api/research/queries", s.handleResearchQueries)
+	s.mux.HandleFunc("/api/research/queue", s.handleResearchQueue)
+	s.mux.HandleFunc("/api/research/retry-failed", s.handleResearchRetryFailed)
+	s.mux.HandleFunc("/api/research/retry-all-failed", s.handleResearchRetryAllFailed)
+	s.mux.HandleFunc("/api/research/enqueue", s.handleResearchEnqueuePending)
+	s.mux.HandleFunc("/api/pulse/events", s.handlePulseEvents)
+	s.mux.HandleFunc("/api/pulse/status", s.handlePulseStatus)
+	s.mux.HandleFunc("/api/pulse/providers", s.handlePulseProviders)
+	s.mux.HandleFunc("/api/session-export/export", s.handleSessionExport)
+	s.mux.HandleFunc("/api/session-export/import", s.handleSessionImport)
+	s.mux.HandleFunc("/api/session-export/detect-format", s.handleSessionExportDetectFormat)
+	s.mux.HandleFunc("/api/session-export/formats", s.handleSessionExportKnownFormats)
+	s.mux.HandleFunc("/api/session-export/history", s.handleSessionExportHistory)
 	s.mux.HandleFunc("/api/cli/tools", s.handleCLITools)
 	s.mux.HandleFunc("/api/cli/harnesses", s.handleHarnesses)
 	s.mux.HandleFunc("/api/cli/summary", s.handleCLISummary)
@@ -696,6 +717,27 @@ func (s *Server) handleAPIIndex(w http.ResponseWriter, _ *http.Request) {
 				{Path: "/api/catalog/validate-batch", Category: "registry", Description: "Trigger batch catalog validation through the TypeScript catalog router."},
 				{Path: "/api/catalog/stats", Category: "registry", Description: "Read catalog summary stats through the TypeScript catalog router."},
 				{Path: "/api/catalog/linked-servers", Category: "registry", Description: "List managed servers linked to a published catalog entry."},
+				{Path: "/api/oauth/clients/create", Category: "auth", Description: "Create an OAuth client through the TypeScript OAuth router."},
+				{Path: "/api/oauth/clients/get", Category: "auth", Description: "Read an OAuth client through the TypeScript OAuth router."},
+				{Path: "/api/oauth/sessions/upsert", Category: "auth", Description: "Upsert an OAuth session through the TypeScript OAuth router."},
+				{Path: "/api/oauth/sessions/by-server", Category: "auth", Description: "Read an OAuth session for an MCP server through the TypeScript OAuth router."},
+				{Path: "/api/oauth/exchange", Category: "auth", Description: "Exchange an OAuth authorization code through the TypeScript OAuth router."},
+				{Path: "/api/research/conduct", Category: "research", Description: "Run a research task through the TypeScript research router."},
+				{Path: "/api/research/ingest", Category: "research", Description: "Ingest a research URL through the TypeScript research router."},
+				{Path: "/api/research/recursive", Category: "research", Description: "Run recursive research through the TypeScript research router."},
+				{Path: "/api/research/queries", Category: "research", Description: "Generate research queries through the TypeScript research router."},
+				{Path: "/api/research/queue", Category: "research", Description: "Read research ingestion queue state through the TypeScript research router."},
+				{Path: "/api/research/retry-failed", Category: "research", Description: "Retry a failed research URL through the TypeScript research router."},
+				{Path: "/api/research/retry-all-failed", Category: "research", Description: "Retry all failed research URLs through the TypeScript research router."},
+				{Path: "/api/research/enqueue", Category: "research", Description: "Enqueue a research URL through the TypeScript research router."},
+				{Path: "/api/pulse/events", Category: "observability", Description: "Read pulse event history through the TypeScript pulse router."},
+				{Path: "/api/pulse/status", Category: "observability", Description: "Read pulse system status through the TypeScript pulse router."},
+				{Path: "/api/pulse/providers", Category: "observability", Description: "Check local provider status through the TypeScript pulse router."},
+				{Path: "/api/session-export/export", Category: "sessions", Description: "Export sessions through the TypeScript session export router."},
+				{Path: "/api/session-export/import", Category: "sessions", Description: "Import sessions through the TypeScript session export router."},
+				{Path: "/api/session-export/detect-format", Category: "sessions", Description: "Detect session export format through the TypeScript session export router."},
+				{Path: "/api/session-export/formats", Category: "sessions", Description: "List known session export formats through the TypeScript session export router."},
+				{Path: "/api/session-export/history", Category: "sessions", Description: "Read session export history through the TypeScript session export router."},
 				{Path: "/api/cli/tools", Category: "cli", Description: "Detected local CLI tools and versions."},
 				{Path: "/api/cli/harnesses", Category: "cli", Description: "Harness registry metadata and install visibility."},
 				{Path: "/api/cli/summary", Category: "cli", Description: "Compact CLI and harness readiness summary."},
@@ -2092,6 +2134,116 @@ func (s *Server) handleCatalogLinkedServers(w http.ResponseWriter, r *http.Reque
 		return
 	}
 	s.handleTRPCBridgeCall(w, r, http.MethodGet, "catalog.listLinkedServers", map[string]any{"published_server_uuid": publishedServerUUID})
+}
+
+func (s *Server) handleOAuthClientCreate(w http.ResponseWriter, r *http.Request) {
+	s.handleTRPCBridgeBodyCall(w, r, "oauth.clients.create")
+}
+
+func (s *Server) handleOAuthClientGet(w http.ResponseWriter, r *http.Request) {
+	clientID := strings.TrimSpace(r.URL.Query().Get("clientId"))
+	if clientID == "" {
+		writeJSON(w, http.StatusBadRequest, map[string]any{"success": false, "error": "missing clientId query parameter"})
+		return
+	}
+	s.handleTRPCBridgeCall(w, r, http.MethodGet, "oauth.clients.get", map[string]any{"clientId": clientID})
+}
+
+func (s *Server) handleOAuthSessionUpsert(w http.ResponseWriter, r *http.Request) {
+	s.handleTRPCBridgeBodyCall(w, r, "oauth.sessions.upsert")
+}
+
+func (s *Server) handleOAuthSessionGetByServer(w http.ResponseWriter, r *http.Request) {
+	serverUUID := strings.TrimSpace(r.URL.Query().Get("mcpServerUuid"))
+	if serverUUID == "" {
+		writeJSON(w, http.StatusBadRequest, map[string]any{"success": false, "error": "missing mcpServerUuid query parameter"})
+		return
+	}
+	s.handleTRPCBridgeCall(w, r, http.MethodGet, "oauth.sessions.getByServer", map[string]any{"mcpServerUuid": serverUUID})
+}
+
+func (s *Server) handleOAuthExchange(w http.ResponseWriter, r *http.Request) {
+	s.handleTRPCBridgeBodyCall(w, r, "oauth.exchange")
+}
+
+func (s *Server) handleResearchConduct(w http.ResponseWriter, r *http.Request) {
+	s.handleTRPCBridgeBodyCall(w, r, "research.conduct")
+}
+
+func (s *Server) handleResearchIngest(w http.ResponseWriter, r *http.Request) {
+	s.handleTRPCBridgeBodyCall(w, r, "research.ingest")
+}
+
+func (s *Server) handleResearchRecursive(w http.ResponseWriter, r *http.Request) {
+	s.handleTRPCBridgeBodyCall(w, r, "research.recursiveResearch")
+}
+
+func (s *Server) handleResearchQueries(w http.ResponseWriter, r *http.Request) {
+	topic := strings.TrimSpace(r.URL.Query().Get("topic"))
+	if topic == "" {
+		writeJSON(w, http.StatusBadRequest, map[string]any{"success": false, "error": "missing topic query parameter"})
+		return
+	}
+	s.handleTRPCBridgeCall(w, r, http.MethodGet, "research.generateQueries", map[string]any{"topic": topic})
+}
+
+func (s *Server) handleResearchQueue(w http.ResponseWriter, r *http.Request) {
+	s.handleTRPCBridgeCall(w, r, http.MethodGet, "research.ingestionQueue", nil)
+}
+
+func (s *Server) handleResearchRetryFailed(w http.ResponseWriter, r *http.Request) {
+	s.handleTRPCBridgeBodyCall(w, r, "research.retryFailed")
+}
+
+func (s *Server) handleResearchRetryAllFailed(w http.ResponseWriter, r *http.Request) {
+	s.handleTRPCBridgeBodyCall(w, r, "research.retryAllFailed")
+}
+
+func (s *Server) handleResearchEnqueuePending(w http.ResponseWriter, r *http.Request) {
+	s.handleTRPCBridgeBodyCall(w, r, "research.enqueuePending")
+}
+
+func (s *Server) handlePulseEvents(w http.ResponseWriter, r *http.Request) {
+	payload := map[string]any{}
+	if limit := strings.TrimSpace(r.URL.Query().Get("limit")); limit != "" {
+		if parsed, err := strconv.Atoi(limit); err == nil {
+			payload["limit"] = parsed
+		}
+	}
+	if afterTimestamp := strings.TrimSpace(r.URL.Query().Get("afterTimestamp")); afterTimestamp != "" {
+		if parsed, err := strconv.ParseInt(afterTimestamp, 10, 64); err == nil {
+			payload["afterTimestamp"] = parsed
+		}
+	}
+	s.handleTRPCBridgeCall(w, r, http.MethodGet, "pulse.getLatestEvents", payload)
+}
+
+func (s *Server) handlePulseStatus(w http.ResponseWriter, r *http.Request) {
+	s.handleTRPCBridgeCall(w, r, http.MethodGet, "pulse.getSystemStatus", nil)
+}
+
+func (s *Server) handlePulseProviders(w http.ResponseWriter, r *http.Request) {
+	s.handleTRPCBridgeCall(w, r, http.MethodGet, "pulse.checkLocalProviders", nil)
+}
+
+func (s *Server) handleSessionExport(w http.ResponseWriter, r *http.Request) {
+	s.handleTRPCBridgeBodyCall(w, r, "sessionExport.export")
+}
+
+func (s *Server) handleSessionImport(w http.ResponseWriter, r *http.Request) {
+	s.handleTRPCBridgeBodyCall(w, r, "sessionExport.import")
+}
+
+func (s *Server) handleSessionExportDetectFormat(w http.ResponseWriter, r *http.Request) {
+	s.handleTRPCBridgeBodyCall(w, r, "sessionExport.detectFormat")
+}
+
+func (s *Server) handleSessionExportKnownFormats(w http.ResponseWriter, r *http.Request) {
+	s.handleTRPCBridgeCall(w, r, http.MethodGet, "sessionExport.knownFormats", nil)
+}
+
+func (s *Server) handleSessionExportHistory(w http.ResponseWriter, r *http.Request) {
+	s.handleTRPCBridgeCall(w, r, http.MethodGet, "sessionExport.history", nil)
 }
 
 func (s *Server) handleSessionBridgeBodyCall(w http.ResponseWriter, r *http.Request, procedure string) {

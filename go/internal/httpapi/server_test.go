@@ -2079,6 +2079,136 @@ func TestGovernanceAndCatalogBridgeRoutes(t *testing.T) {
 	}
 }
 
+func TestResearchOAuthPulseAndExportBridgeRoutes(t *testing.T) {
+	upstream := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("content-type", "application/json")
+		switch r.URL.Path {
+		case "/trpc/oauth.clients.create":
+			_ = json.NewEncoder(w).Encode(map[string]any{"result": map[string]any{"data": map[string]any{"json": map[string]any{"client_id": "client-1"}}}})
+		case "/trpc/oauth.clients.get":
+			body, _ := io.ReadAll(r.Body)
+			if !strings.Contains(string(body), `"clientId":"client-1"`) {
+				t.Fatalf("expected oauth.clients.get payload, got %s", string(body))
+			}
+			_ = json.NewEncoder(w).Encode(map[string]any{"result": map[string]any{"data": map[string]any{"json": map[string]any{"client_id": "client-1"}}}})
+		case "/trpc/oauth.sessions.upsert":
+			_ = json.NewEncoder(w).Encode(map[string]any{"result": map[string]any{"data": map[string]any{"json": map[string]any{"mcp_server_uuid": "server-1"}}}})
+		case "/trpc/oauth.sessions.getByServer":
+			body, _ := io.ReadAll(r.Body)
+			if !strings.Contains(string(body), `"mcpServerUuid":"server-1"`) {
+				t.Fatalf("expected oauth.sessions.getByServer payload, got %s", string(body))
+			}
+			_ = json.NewEncoder(w).Encode(map[string]any{"result": map[string]any{"data": map[string]any{"json": map[string]any{"mcp_server_uuid": "server-1"}}}})
+		case "/trpc/oauth.exchange":
+			_ = json.NewEncoder(w).Encode(map[string]any{"result": map[string]any{"data": map[string]any{"json": map[string]any{"success": true, "tokens": map[string]any{"access_token": "token"}}}}})
+		case "/trpc/research.conduct":
+			_ = json.NewEncoder(w).Encode(map[string]any{"result": map[string]any{"data": map[string]any{"json": map[string]any{"report": "done"}}}})
+		case "/trpc/research.ingest":
+			_ = json.NewEncoder(w).Encode(map[string]any{"result": map[string]any{"data": map[string]any{"json": map[string]any{"result": "ingested"}}}})
+		case "/trpc/research.recursiveResearch":
+			_ = json.NewEncoder(w).Encode(map[string]any{"result": map[string]any{"data": map[string]any{"json": map[string]any{"result": map[string]any{"topic": "mcp"}}}}})
+		case "/trpc/research.generateQueries":
+			body, _ := io.ReadAll(r.Body)
+			if !strings.Contains(string(body), `"topic":"mcp bridges"`) {
+				t.Fatalf("expected research.generateQueries payload, got %s", string(body))
+			}
+			_ = json.NewEncoder(w).Encode(map[string]any{"result": map[string]any{"data": map[string]any{"json": map[string]any{"queries": []any{"mcp bridges"}}}}})
+		case "/trpc/research.ingestionQueue":
+			_ = json.NewEncoder(w).Encode(map[string]any{"result": map[string]any{"data": map[string]any{"json": map[string]any{"totals": map[string]any{"pending": 2}}}}})
+		case "/trpc/research.retryFailed":
+			_ = json.NewEncoder(w).Encode(map[string]any{"result": map[string]any{"data": map[string]any{"json": map[string]any{"success": true}}}})
+		case "/trpc/research.retryAllFailed":
+			_ = json.NewEncoder(w).Encode(map[string]any{"result": map[string]any{"data": map[string]any{"json": map[string]any{"moved": 2}}}})
+		case "/trpc/research.enqueuePending":
+			_ = json.NewEncoder(w).Encode(map[string]any{"result": map[string]any{"data": map[string]any{"json": map[string]any{"queued": true}}}})
+		case "/trpc/pulse.getLatestEvents":
+			body, _ := io.ReadAll(r.Body)
+			if !strings.Contains(string(body), `"limit":5`) {
+				t.Fatalf("expected pulse.getLatestEvents payload, got %s", string(body))
+			}
+			_ = json.NewEncoder(w).Encode(map[string]any{"result": map[string]any{"data": map[string]any{"json": []any{map[string]any{"type": "event", "timestamp": 123}}}}})
+		case "/trpc/pulse.getSystemStatus":
+			_ = json.NewEncoder(w).Encode(map[string]any{"result": map[string]any{"data": map[string]any{"json": map[string]any{"status": "online"}}}})
+		case "/trpc/pulse.checkLocalProviders":
+			_ = json.NewEncoder(w).Encode(map[string]any{"result": map[string]any{"data": map[string]any{"json": map[string]any{"ollama": true}}}})
+		case "/trpc/sessionExport.export":
+			_ = json.NewEncoder(w).Encode(map[string]any{"result": map[string]any{"data": map[string]any{"json": map[string]any{"id": "export-1"}}}})
+		case "/trpc/sessionExport.import":
+			_ = json.NewEncoder(w).Encode(map[string]any{"result": map[string]any{"data": map[string]any{"json": map[string]any{"imported": 1}}}})
+		case "/trpc/sessionExport.detectFormat":
+			_ = json.NewEncoder(w).Encode(map[string]any{"result": map[string]any{"data": map[string]any{"json": map[string]any{"format": "borg-export", "valid": true}}}})
+		case "/trpc/sessionExport.knownFormats":
+			_ = json.NewEncoder(w).Encode(map[string]any{"result": map[string]any{"data": map[string]any{"json": []any{map[string]any{"id": "borg", "type": "borg"}}}}})
+		case "/trpc/sessionExport.history":
+			_ = json.NewEncoder(w).Encode(map[string]any{"result": map[string]any{"data": map[string]any{"json": []any{map[string]any{"id": "export-1"}}}}})
+		default:
+			t.Fatalf("unexpected upstream path %s", r.URL.Path)
+		}
+	}))
+	defer upstream.Close()
+
+	t.Setenv("BORG_TRPC_UPSTREAM", upstream.URL+"/trpc")
+
+	cfg := config.Default()
+	cfg.MainConfigDir = t.TempDir()
+	server := New(cfg, stubDetector{})
+
+	cases := []struct {
+		name      string
+		method    string
+		path      string
+		body      string
+		contains  string
+		procedure string
+	}{
+		{name: "oauth client create", method: http.MethodPost, path: "/api/oauth/clients/create", body: `{"client_name":"test","redirect_uris":["https://example.com/callback"]}`, contains: `"client-1"`, procedure: `"procedure":"oauth.clients.create"`},
+		{name: "oauth client get", method: http.MethodGet, path: "/api/oauth/clients/get?clientId=client-1", contains: `"client-1"`, procedure: `"procedure":"oauth.clients.get"`},
+		{name: "oauth session upsert", method: http.MethodPost, path: "/api/oauth/sessions/upsert", body: `{"mcp_server_uuid":"server-1","client_information":{"client_id":"client-1"}}`, contains: `"server-1"`, procedure: `"procedure":"oauth.sessions.upsert"`},
+		{name: "oauth session by server", method: http.MethodGet, path: "/api/oauth/sessions/by-server?mcpServerUuid=server-1", contains: `"server-1"`, procedure: `"procedure":"oauth.sessions.getByServer"`},
+		{name: "oauth exchange", method: http.MethodPost, path: "/api/oauth/exchange", body: `{"code":"abc","state":"server-1"}`, contains: `"success":true`, procedure: `"procedure":"oauth.exchange"`},
+		{name: "research conduct", method: http.MethodPost, path: "/api/research/conduct", body: `{"topic":"mcp","depth":3}`, contains: `"done"`, procedure: `"procedure":"research.conduct"`},
+		{name: "research ingest", method: http.MethodPost, path: "/api/research/ingest", body: `{"url":"https://example.com"}`, contains: `"ingested"`, procedure: `"procedure":"research.ingest"`},
+		{name: "research recursive", method: http.MethodPost, path: "/api/research/recursive", body: `{"topic":"mcp","depth":2,"maxBreadth":3}`, contains: `"topic":"mcp"`, procedure: `"procedure":"research.recursiveResearch"`},
+		{name: "research queries", method: http.MethodGet, path: "/api/research/queries?topic=mcp%20bridges", contains: `"mcp bridges"`, procedure: `"procedure":"research.generateQueries"`},
+		{name: "research queue", method: http.MethodGet, path: "/api/research/queue", contains: `"pending":2`, procedure: `"procedure":"research.ingestionQueue"`},
+		{name: "research retry failed", method: http.MethodPost, path: "/api/research/retry-failed", body: `{"url":"https://example.com"}`, contains: `"success":true`, procedure: `"procedure":"research.retryFailed"`},
+		{name: "research retry all", method: http.MethodPost, path: "/api/research/retry-all-failed", body: `{}`, contains: `"moved":2`, procedure: `"procedure":"research.retryAllFailed"`},
+		{name: "research enqueue", method: http.MethodPost, path: "/api/research/enqueue", body: `{"url":"https://example.com","source":"dashboard-reader"}`, contains: `"queued":true`, procedure: `"procedure":"research.enqueuePending"`},
+		{name: "pulse events", method: http.MethodGet, path: "/api/pulse/events?limit=5&afterTimestamp=100", contains: `"timestamp":123`, procedure: `"procedure":"pulse.getLatestEvents"`},
+		{name: "pulse status", method: http.MethodGet, path: "/api/pulse/status", contains: `"status":"online"`, procedure: `"procedure":"pulse.getSystemStatus"`},
+		{name: "pulse providers", method: http.MethodGet, path: "/api/pulse/providers", contains: `"ollama":true`, procedure: `"procedure":"pulse.checkLocalProviders"`},
+		{name: "session export", method: http.MethodPost, path: "/api/session-export/export", body: `{"format":"json","includeMemories":true,"includeLogs":true,"includeMetadata":true}`, contains: `"export-1"`, procedure: `"procedure":"sessionExport.export"`},
+		{name: "session import", method: http.MethodPost, path: "/api/session-export/import", body: `{"data":"{}","merge":true,"dryRun":true}`, contains: `"imported":1`, procedure: `"procedure":"sessionExport.import"`},
+		{name: "session detect format", method: http.MethodPost, path: "/api/session-export/detect-format", body: `{"data":"{\"version\":\"1.0\",\"sessions\":[]}"}`, contains: `"borg-export"`, procedure: `"procedure":"sessionExport.detectFormat"`},
+		{name: "session known formats", method: http.MethodGet, path: "/api/session-export/formats", contains: `"type":"borg"`, procedure: `"procedure":"sessionExport.knownFormats"`},
+		{name: "session export history", method: http.MethodGet, path: "/api/session-export/history", contains: `"export-1"`, procedure: `"procedure":"sessionExport.history"`},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			var body io.Reader
+			if tc.body != "" {
+				body = strings.NewReader(tc.body)
+			}
+			request := httptest.NewRequest(tc.method, tc.path, body)
+			if tc.body != "" {
+				request.Header.Set("content-type", "application/json")
+			}
+			recorder := httptest.NewRecorder()
+			server.Handler().ServeHTTP(recorder, request)
+			if recorder.Code != http.StatusOK {
+				t.Fatalf("expected status 200, got %d with body %s", recorder.Code, recorder.Body.String())
+			}
+			if !strings.Contains(recorder.Body.String(), tc.contains) {
+				t.Fatalf("expected response to contain %s, got %s", tc.contains, recorder.Body.String())
+			}
+			if !strings.Contains(recorder.Body.String(), tc.procedure) {
+				t.Fatalf("expected bridge metadata %s, got %s", tc.procedure, recorder.Body.String())
+			}
+		})
+	}
+}
+
 func TestCLIToolsEndpoint(t *testing.T) {
 	server := New(config.Default(), stubDetector{
 		tools: []controlplane.Tool{
