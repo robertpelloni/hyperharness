@@ -1,9 +1,9 @@
 package git
 
 import (
-	"time"
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing/object"
+	"time"
 )
 
 // AutoCommit creates a commit with the given message automatically handling staging
@@ -12,12 +12,12 @@ func (rm *RepoManager) AutoCommit(message string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	
+
 	_, err = w.Add(".")
 	if err != nil {
 		return "", err
 	}
-	
+
 	commit, err := w.Commit(message, &git.CommitOptions{
 		Author: &object.Signature{
 			Name:  "SuperCLI Agent",
@@ -25,10 +25,10 @@ func (rm *RepoManager) AutoCommit(message string) (string, error) {
 			When:  time.Now(),
 		},
 	})
-	
+
 	if err != nil {
 		return "", err
 	}
-	
+
 	return commit.String(), nil
 }

@@ -23,24 +23,24 @@ type ServerConfig struct {
 func ParseMetadataContext() (*Config, error) {
 	home, _ := os.UserHomeDir()
 	path := filepath.Join(home, ".borg", "mcp.json")
-	
+
 	b, err := os.ReadFile(path)
 	if err != nil {
 		return nil, fmt.Errorf("missing .borg/mcp.json definition: %w", err)
 	}
-	
+
 	var conf Config
 	if err := json.Unmarshal(b, &conf); err != nil {
 		return nil, err
 	}
-	
+
 	return &conf, nil
 }
 
 // FlattenEnv constructs the isolated subprocess environmental bindings
 func (s *ServerConfig) FlattenEnv() []string {
 	var envList []string
-	
+
 	// Start with host required bindings silently merged
 	for _, e := range os.Environ() {
 		if strings.HasPrefix(e, "PATH=") || strings.HasPrefix(e, "NODE_ENV=") {

@@ -49,7 +49,7 @@ func (o *Orchestrator) PlanAndExecute(task string) (string, error) {
 	// 2. Here we would parse the plan and delegate. For now, we simulate execution.
 	var builder strings.Builder
 	builder.WriteString(fmt.Sprintf("### Orchestration Plan ###\n%s\n\n### Execution ###\n", planResponse))
-	
+
 	// Create a generic execution agent if none exist
 	if len(o.Agents) == 0 {
 		o.Spawn("executor", "You are the Executor Agent. Complete the tasks assigned to you.")

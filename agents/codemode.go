@@ -11,34 +11,34 @@ import (
 // This enforces the "Escape Hatch - Code Mode - 94% context reduction" specification from AGENTS.md
 func ExecuteCodeMode(scriptBundle string, language string) (string, error) {
 	tmpDir := os.TempDir()
-	
+
 	switch language {
 	case "typescript", "ts":
 		tmpFile := filepath.Join(tmpDir, "hypercode_codemode.ts")
 		if err := os.WriteFile(tmpFile, []byte(scriptBundle), 0644); err != nil {
 			return "", err
 		}
-		
+
 		// Map execution directly using local Bun runtime
 		cmd := exec.Command("bun", "run", tmpFile)
 		output, err := cmd.CombinedOutput()
 		os.Remove(tmpFile)
-		
+
 		if err != nil {
 			return string(output), fmt.Errorf("CodeMode exception: %w\n%s", err, output)
 		}
 		return string(output), nil
-		
+
 	case "bash", "sh", "pwsh":
 		tmpFile := filepath.Join(tmpDir, "hypercode_codemode.sh")
 		if err := os.WriteFile(tmpFile, []byte(scriptBundle), 0644); err != nil {
 			return "", err
 		}
-		
+
 		cmd := exec.Command("pwsh", "-File", tmpFile)
 		output, err := cmd.CombinedOutput()
 		os.Remove(tmpFile)
-		
+
 		if err != nil {
 			return string(output), fmt.Errorf("CodeMode native exception: %w\n%s", err, output)
 		}

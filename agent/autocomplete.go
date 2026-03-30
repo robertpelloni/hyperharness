@@ -11,9 +11,9 @@ import (
 // It analyzes code before and after the cursor to suggest completions.
 func (a *Agent) SuggestCompletion(prefix, suffix string) (string, error) {
 	prompt := fmt.Sprintf("Provide the code completion that goes exactly between this prefix and suffix.\n\nPrefix:\n%s\n\nSuffix:\n%s\n\nOutput ONLY the completion string.", prefix, suffix)
-	
+
 	req := openai.ChatCompletionRequest{
-		Model:    openai.GPT4o, // Use appropriate fast model like gpt-4o-mini or a specialized coder model
+		Model: openai.GPT4o, // Use appropriate fast model like gpt-4o-mini or a specialized coder model
 		Messages: []openai.ChatCompletionMessage{
 			{Role: openai.ChatMessageRoleUser, Content: prompt},
 		},

@@ -27,7 +27,7 @@ func (r *RepoMapTool) Generate() (string, error) {
 		if err != nil {
 			return err
 		}
-		
+
 		// Skip standard exclusions
 		name := info.Name()
 		if info.IsDir() && (name == ".git" || name == "node_modules" || name == "dist" || name == ".next") {

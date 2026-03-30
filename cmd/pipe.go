@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/spf13/cobra"
 	"github.com/robertpelloni/hypercode/agent"
+	"github.com/spf13/cobra"
 )
 
 var pipeCmd = &cobra.Command{

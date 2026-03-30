@@ -31,12 +31,11 @@ func (sm *ServerManager) InstallNPXServer(packageName string) error {
 // StartServer launches an MCP server process
 func (sm *ServerManager) StartServer(command string, args ...string) (*exec.Cmd, error) {
 	cmd := exec.Command(command, args...)
-	
+
 	// We'd set up StdinPipe and StdoutPipe here for Stdio-based MCP
 	if err := cmd.Start(); err != nil {
 		return nil, err
 	}
-	
+
 	return cmd, nil
 }
-

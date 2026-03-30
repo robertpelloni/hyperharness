@@ -54,13 +54,13 @@ type Session struct {
 	UserId       string    `gorm:"type:varchar(255)" json:"userId"`
 	Expires      time.Time `json:"expires"`
 	// Additional state mock columns utilized natively by Dashboard
-	Title        string    `gorm:"type:varchar(255);default:'Native Daemon Session'" json:"title"`
-	Status       string    `gorm:"type:varchar(255);default:'active'" json:"status"`
-	RawState     string    `gorm:"type:varchar(255);default:'ACTIVE'" json:"rawState"`
-	SourceId     string    `gorm:"type:varchar(255);default:'google/jules'" json:"sourceId"`
-	Branch       string    `gorm:"type:varchar(255);default:'main'" json:"branch"`
-	CreatedAt    time.Time `gorm:"autoCreateTime" json:"createdAt"`
-	UpdatedAt    time.Time `gorm:"autoUpdateTime" json:"updatedAt"`
+	Title     string    `gorm:"type:varchar(255);default:'Native Daemon Session'" json:"title"`
+	Status    string    `gorm:"type:varchar(255);default:'active'" json:"status"`
+	RawState  string    `gorm:"type:varchar(255);default:'ACTIVE'" json:"rawState"`
+	SourceId  string    `gorm:"type:varchar(255);default:'google/jules'" json:"sourceId"`
+	Branch    string    `gorm:"type:varchar(255);default:'main'" json:"branch"`
+	CreatedAt time.Time `gorm:"autoCreateTime" json:"createdAt"`
+	UpdatedAt time.Time `gorm:"autoUpdateTime" json:"updatedAt"`
 }
 
 // QueueJob replaces TS QueueJob model natively
@@ -79,7 +79,7 @@ type QueueJob struct {
 	UpdatedAt   time.Time `gorm:"autoUpdateTime" json:"updatedAt"`
 }
 
-// MemoryChunk tracks relational vector text references 
+// MemoryChunk tracks relational vector text references
 type MemoryChunk struct {
 	ID        string    `gorm:"primaryKey;type:varchar(255)" json:"id"`
 	SessionId string    `gorm:"index;type:varchar(255)" json:"sessionId"`

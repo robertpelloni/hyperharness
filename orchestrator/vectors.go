@@ -7,8 +7,8 @@ import (
 	"math"
 	"sort"
 
-	_ "modernc.org/sqlite"
 	"github.com/robertpelloni/hypercode/agents"
+	_ "modernc.org/sqlite"
 )
 
 // VectorDB handles the "Jules Autopilot" requirement directly over SQLite natively
@@ -38,7 +38,7 @@ func NewVectorDB(dbPath string) (*VectorDB, error) {
 // StoreTool calculates an embedding via external API (stubbed here) and saves it natively.
 func (v *VectorDB) StoreTool(tool agents.Tool, vector []float64) error {
 	vecBytes, _ := json.Marshal(vector)
-	_, err := v.db.Exec("INSERT OR REPLACE INTO tool_embeddings (name, description, embedding) VALUES (?, ?, ?)", 
+	_, err := v.db.Exec("INSERT OR REPLACE INTO tool_embeddings (name, description, embedding) VALUES (?, ?, ?)",
 		tool.Name, tool.Description, string(vecBytes))
 	return err
 }
@@ -81,16 +81,16 @@ func (v *VectorDB) Search(intentVector []float64, topK int) ([]QueryResult, erro
 		if err := rows.Scan(&name, &desc, &embedStr); err != nil {
 			continue
 		}
-		
+
 		var dbVec []float64
 		if err := json.Unmarshal([]byte(embedStr), &dbVec); err != nil {
 			continue // skip corrupted numerical arrays
 		}
-		
+
 		score := cosineSimilarity(intentVector, dbVec)
 		results = append(results, QueryResult{ToolName: name, Description: desc, Score: score})
 	}
-	
+
 	// Fast memory pointer sort natively prioritizing highest relevance
 	sort.SliceStable(results, func(i, j int) bool {
 		return results[i].Score > results[j].Score
@@ -99,6 +99,6 @@ func (v *VectorDB) Search(intentVector []float64, topK int) ([]QueryResult, erro
 	if len(results) > topK {
 		results = results[:topK]
 	}
-	
+
 	return results, nil
 }

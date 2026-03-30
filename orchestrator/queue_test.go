@@ -7,7 +7,7 @@ import (
 
 func TestQueueInitialization(t *testing.T) {
 	dbPath := "./.test_borg_queue.db"
-	
+
 	// Ensure clean state
 	os.Remove(dbPath)
 	defer os.Remove(dbPath)

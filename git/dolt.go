@@ -27,4 +27,3 @@ func (dvm *DataVersionManager) BranchData(branchName string) error {
 	fmt.Printf("Created data branch: %s\n", branchName)
 	return nil
 }
-

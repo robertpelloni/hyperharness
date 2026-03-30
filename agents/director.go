@@ -38,7 +38,7 @@ func (d *Director) GetRole() string {
 
 func (d *Director) HandleInput(ctx context.Context, input string) (string, error) {
 	d.History = append(d.History, Message{Role: RoleUser, Content: input})
-	
+
 	// Delegate to the provider
 	responseMsg, err := d.Provider.Chat(ctx, d.History, []Tool{})
 	if err != nil {
@@ -59,7 +59,7 @@ func (d *Director) GetState() map[string]interface{} {
 
 // Example Stubs for other agents to achieve parity:
 
-type Coder struct { Director } // Inherits base logic for simplicity in this stub
-type MetaArchitect struct { Director }
-type Researcher struct { Director }
-type Council struct { Director }
+type Coder struct{ Director } // Inherits base logic for simplicity in this stub
+type MetaArchitect struct{ Director }
+type Researcher struct{ Director }
+type Council struct{ Director }

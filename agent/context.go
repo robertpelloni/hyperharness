@@ -11,10 +11,10 @@ func (a *Agent) TrimHistory(maxMessages int) {
 		// Keep the system prompt (index 0) and the most recent messages
 		trimmed := make([]openai.ChatCompletionMessage, 0, maxMessages)
 		trimmed = append(trimmed, a.messages[0])
-		
+
 		startIndex := len(a.messages) - (maxMessages - 1)
 		trimmed = append(trimmed, a.messages[startIndex:]...)
-		
+
 		a.messages = trimmed
 	}
 }

@@ -3,7 +3,7 @@ package mcp
 import (
 	"context"
 	"fmt"
-	
+
 	"github.com/mark3labs/mcp-go/mcp"
 	"github.com/mark3labs/mcp-go/server"
 )
@@ -29,15 +29,15 @@ func NewMCPHost() *MCPHost {
 // directly into the MCP Server so they bypass IPC routing overhead.
 func (h *MCPHost) RegisterNativeTools() {
 	// Example stub of native Go tool registration (equivalent to @borg/tools)
-	
+
 	systemStatusTool := mcp.NewTool("system_status",
 		mcp.WithDescription("Get the health and status of the Hypercode native core."),
 	)
-	
+
 	h.server.AddTool(systemStatusTool, func(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
 		return mcp.NewToolResultText("Hypercode Native Core is running smoothly with 100% capacity."), nil
 	})
-	
+
 	fmt.Println("[MCP] Native Tools registered directly to host.")
 }
 

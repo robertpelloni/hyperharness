@@ -20,7 +20,7 @@ func NewTelemetrySocket() *TelemetrySocket {
 	}
 }
 
-// WsHandler mounts directly into Fiber's router. 
+// WsHandler mounts directly into Fiber's router.
 func (t *TelemetrySocket) WsHandler(c *fiber.Ctx) error {
 	if websocket.IsWebSocketUpgrade(c) {
 		c.Locals("allowed", true)
@@ -56,7 +56,7 @@ func (t *TelemetrySocket) ConnectionLoop(c *websocket.Conn) {
 func (t *TelemetrySocket) Broadcast(payload string) {
 	t.mu.Lock()
 	defer t.mu.Unlock()
-	
+
 	for client := range t.clients {
 		err := client.WriteMessage(websocket.TextMessage, []byte(payload))
 		if err != nil {

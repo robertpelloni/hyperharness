@@ -15,7 +15,7 @@ func (a *Agent) ApplyInlineDiff(filePath, diffContent string) error {
 	}
 
 	strContent := string(content)
-	
+
 	// Extremely simplified diff application for parity demonstration.
 	// In a full implementation, we'd use a robust diff matching algorithm.
 	lines := strings.Split(diffContent, "\n")

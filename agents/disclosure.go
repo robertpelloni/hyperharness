@@ -22,7 +22,7 @@ func NewDisclosureProxy(base ILLMProvider, allTools []Tool) *DisclosureProxy {
 // FormatBorgNativeTools overrides the massive 649+ array with one deterministic access point
 func (d *DisclosureProxy) FormatBorgNativeTools() []Tool {
 	var visibleTools []Tool
-	
+
 	// Phase 3: "Always On" Strict Parity constraint
 	for _, t := range d.HiddenTools {
 		// Mock condition for 'always_on' JSON property flag detection bypassing Vector Search
@@ -42,7 +42,7 @@ func (d *DisclosureProxy) FormatBorgNativeTools() []Tool {
 			return fmt.Sprintf("Progressive Disclosure: Injected top 3 tools into context structurally regarding '%s'.", intent), nil
 		},
 	})
-	
+
 	// Phase 3: "auto_call_tool" Semantic Execution (100% TS parity mapping SQLite relevance natively)
 	visibleTools = append(visibleTools, Tool{
 		Name:        "auto_call_tool",
@@ -52,7 +52,7 @@ func (d *DisclosureProxy) FormatBorgNativeTools() []Tool {
 			if !ok {
 				return "", fmt.Errorf("missing intent mapping")
 			}
-			
+
 			// Simulate triggering `execute_sql` automatically
 			return fmt.Sprintf(`[AUTO-CALL] Successfully executed execute_sql tool against '%s' natively in 15ms.`, intent), nil
 		},
@@ -63,7 +63,7 @@ func (d *DisclosureProxy) FormatBorgNativeTools() []Tool {
 
 // Chat acts as the interceptor, funneling through the massive tools slice but passing only the minimal payload to the API
 func (d *DisclosureProxy) Chat(ctx context.Context, messages []Message, tools []Tool) (Message, error) {
-	// The core TS Hono backend parity logic: 
+	// The core TS Hono backend parity logic:
 	// We override 'tools' natively and send just search_tools.
 	minimalTools := d.FormatBorgNativeTools()
 	return d.BaseProvider.Chat(ctx, messages, minimalTools)

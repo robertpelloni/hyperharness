@@ -26,8 +26,8 @@ func (a *Agent) ProcessPipe(prompt string) (string, error) {
 	}
 
 	combinedPrompt := fmt.Sprintf("%s\n\nInput Data:\n%s", prompt, string(inputData))
-	
+
 	fmt.Printf("[PipeProcessor] Processing %d bytes of piped data...\n", len(inputData))
-	
+
 	return a.Chat(combinedPrompt)
 }

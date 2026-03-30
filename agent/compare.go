@@ -3,8 +3,8 @@ package agent
 import (
 	"context"
 	"fmt"
-	"strings"
 	"github.com/sashabaranov/go-openai"
+	"strings"
 )
 
 // CompareModels matches RowboatX's capability to evaluate multiple models side-by-side.

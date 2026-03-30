@@ -63,7 +63,7 @@ func (q *TaskQueue) StartWorker() {
 				return
 			default:
 				time.Sleep(1 * time.Second) // Poll simulation
-				
+
 				// In fully built version: SELECT * FROM job_queue WHERE status = 'pending' LIMIT 1
 				// Then natively route 'payload' into agents.Director logic.
 			}

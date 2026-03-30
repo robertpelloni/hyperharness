@@ -56,7 +56,7 @@ func HandleBorgWebhook(payload WebhookPayload, queue *TaskQueue, ws *TelemetrySo
 		"data":      payload.Data,
 		"timestamp": time.Now().Format(time.RFC3339),
 	}
-	
+
 	rawJson, _ := json.Marshal(emitPayload)
 	ws.Broadcast(fmt.Sprintf(`{"event": "borg_signal_received", "payload": %s}`, string(rawJson)))
 

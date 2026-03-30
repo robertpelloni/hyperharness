@@ -9,7 +9,7 @@ func TestMCPSchemaExtraction(t *testing.T) {
 	// We instantiate a synthetic struct replacing os.exec JSON-RPC for testing
 	// In reality we would mock the Stdio bridge, but for robustness parity
 	// we merely assign boundaries for the integration mapper.
-	
+
 	host := &RemoteMCP{}
 	if host.activeClient != nil {
 		t.Fatal("MCP Client initialized prematurely bypassing lifecycle.")

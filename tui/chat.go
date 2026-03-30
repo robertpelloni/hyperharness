@@ -13,10 +13,10 @@ import (
 
 type model struct {
 	director *agents.Director
-	input   string
-	history []string
-	loading bool
-	spinner spinner.Model
+	input    string
+	history  []string
+	loading  bool
+	spinner  spinner.Model
 }
 
 func initialModel() model {
@@ -26,10 +26,10 @@ func initialModel() model {
 
 	return model{
 		director: agents.NewDirector(&agents.DefaultProvider{}),
-		input:   "",
-		history: []string{},
-		loading: false,
-		spinner: s,
+		input:    "",
+		history:  []string{},
+		loading:  false,
+		spinner:  s,
 	}
 }
 
@@ -48,14 +48,14 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case tea.KeyEnter:
 			if strings.TrimSpace(m.input) != "" {
 				req := strings.TrimSpace(m.input)
-				
+
 				if strings.HasPrefix(m.input, "/") {
 					m.input = ""
 					mdl, cmd := ProcessSlashCommand(req, &m)
 					m = mdl.(model)
 					return m, cmd
 				}
-				
+
 				if strings.HasPrefix(m.input, "??") {
 					m.input = ""
 					mdl, cmd := ProcessShellCommand(req, &m)
@@ -86,11 +86,11 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case string:
 		m.loading = false
 		m.history = append(m.history, "Borg-Go-Director: "+msg)
-	
+
 	case ShellProposalMsg:
 		m.loading = false
 		m.history = append(m.history, fmt.Sprintf("[Shell Proposal] %s\n> Execute? (Y/n)", msg.Command))
-		
+
 	case spinner.TickMsg:
 		var cmd tea.Cmd
 		m.spinner, cmd = m.spinner.Update(msg)

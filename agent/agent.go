@@ -6,9 +6,9 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/sashabaranov/go-openai"
 	"github.com/robertpelloni/hypercode/borg"
 	"github.com/robertpelloni/hypercode/tools"
+	"github.com/sashabaranov/go-openai"
 )
 
 type Agent struct {
@@ -23,10 +23,10 @@ func NewAgent() *Agent {
 	if apiKey == "" {
 		apiKey = "dummy"
 	}
-	
+
 	registry := tools.NewRegistry()
 	borgAdapter := borg.NewAdapter()
-	
+
 	return &Agent{
 		client: openai.NewClient(apiKey),
 		messages: []openai.ChatCompletionMessage{
@@ -35,7 +35,7 @@ func NewAgent() *Agent {
 				Content: "You are Hypercode (formerly SuperCLI), the world's most advanced AI CLI assistant. You have full feature parity with Aider, Claude Code, and Open Interpreter. You can: 1) Execute shell commands. 2) Read/Write files. 3) Use a stateful Code Interpreter for Python/Node.js. 4) Search the codebase. 5) View an AST-lite Repository Map. Use these tools aggressively to solve the user's problems. You are ASSIMILATED by Borg for memory and context management.",
 			},
 		},
-		tools: registry,
+		tools:       registry,
 		BorgAdapter: borgAdapter,
 	}
 }
@@ -92,11 +92,11 @@ func (a *Agent) Chat(input string) (string, error) {
 
 func (a *Agent) handleToolCalls(toolCalls []openai.ToolCall) (string, error) {
 	resultSummary := ""
-	
+
 	for _, tc := range toolCalls {
 		var args map[string]interface{}
 		json.Unmarshal([]byte(tc.Function.Arguments), &args)
-		
+
 		var toolResult string
 		for _, t := range a.tools.Tools {
 			if t.Name == tc.Function.Name {
@@ -109,14 +109,14 @@ func (a *Agent) handleToolCalls(toolCalls []openai.ToolCall) (string, error) {
 				break
 			}
 		}
-		
+
 		a.messages = append(a.messages, openai.ChatCompletionMessage{
 			Role:       openai.ChatMessageRoleTool,
 			Content:    toolResult,
 			Name:       tc.Function.Name,
 			ToolCallID: tc.ID,
 		})
-		
+
 		resultSummary += fmt.Sprintf("Executed tool %s\n", tc.Function.Name)
 	}
 

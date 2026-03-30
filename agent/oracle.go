@@ -15,13 +15,13 @@ func (a *Agent) OracleQuery(prompt string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	
+
 	fmt.Println("[Oracle Mode] Research Plan Generated:")
 	fmt.Println(plan)
 
 	// Step 2: Execute the plan using tools
 	executionPrompt := fmt.Sprintf("Execute this research plan using your available tools. Gather all necessary context.\nPlan:\n%s\n\nOriginal Query: %s", plan, prompt)
-	
+
 	// We use the standard Chat function which handles tool execution
 	researchData, err := a.Chat(executionPrompt)
 	if err != nil {
@@ -30,7 +30,7 @@ func (a *Agent) OracleQuery(prompt string) (string, error) {
 
 	// Step 3: Synthesize the final answer
 	synthesisPrompt := fmt.Sprintf("Based on the original query: '%s', and the gathered research data:\n%s\n\nProvide a comprehensive, authoritative, and definitive answer.", prompt, researchData)
-	
+
 	finalAnswer, err := a.Chat(synthesisPrompt)
 	if err != nil {
 		return "", err

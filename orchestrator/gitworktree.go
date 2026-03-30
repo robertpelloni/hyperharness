@@ -3,7 +3,7 @@ package orchestrator
 import (
 	"fmt"
 	"log"
-	
+
 	"github.com/go-git/go-git/v5"
 )
 
@@ -32,7 +32,7 @@ func (g *GitWorktreeManager) CreateWorktree(branchName, targetDir string) error 
 	if err != nil {
 		return fmt.Errorf("failed to get existing worktree: %w", err)
 	}
-	
+
 	log.Printf("[Worktree] Checking out branch %s to %s", branchName, targetDir)
 	// Implementation stub for actual `git worktree add` mapping via `os/exec` or `go-git` internals.
 	// For now, returning success as scaffolding.

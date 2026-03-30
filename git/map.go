@@ -20,7 +20,9 @@ func (rm *RepoManager) GenerateRepoMap() string {
 	builder.WriteString("### Repository Structure Map (AST-Lite) ###\n")
 
 	filepath.Walk(rm.path, func(path string, info os.FileInfo, err error) error {
-		if err != nil { return nil }
+		if err != nil {
+			return nil
+		}
 		if info.IsDir() && (info.Name() == ".git" || info.Name() == "node_modules" || info.Name() == "vendor") {
 			return filepath.SkipDir
 		}
@@ -29,7 +31,7 @@ func (rm *RepoManager) GenerateRepoMap() string {
 		if ext == ".go" || ext == ".py" || ext == ".js" || ext == ".ts" {
 			relPath, _ := filepath.Rel(rm.path, path)
 			builder.WriteString(fmt.Sprintf("\nFile: %s\n", relPath))
-			
+
 			content, _ := os.ReadFile(path)
 			lines := strings.Split(string(content), "\n")
 			for i, line := range lines {

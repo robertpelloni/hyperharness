@@ -8,7 +8,7 @@ import (
 func (r *Registry) registerAdvancedTools() {
 	// Provide access to the MCP server manager
 	manager := mcp.NewServerManager()
-	
+
 	r.Tools = append(r.Tools, Tool{
 		Name:        "install_mcp_server",
 		Description: "Installs an MCP server using npx. Arguments: package_name (string)",

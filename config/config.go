@@ -20,7 +20,7 @@ func LoadConfig() *Config {
 	if model == "" {
 		model = "gpt-4o"
 	}
-	
+
 	return &Config{
 		Provider: provider,
 		Model:    model,

@@ -9,10 +9,10 @@ import (
 )
 
 type Session struct {
-	cmd    *exec.Cmd
-	stdin  io.WriteCloser
-	stdout io.ReadCloser
-	scanner *bufio.Scanner
+	cmd      *exec.Cmd
+	stdin    io.WriteCloser
+	stdout   io.ReadCloser
+	scanner  *bufio.Scanner
 	Language string
 }
 
@@ -40,13 +40,13 @@ func NewSession(language string) (*Session, error) {
 	}
 
 	return &Session{
-		cmd:      cmd,
-		stdin:    stdin,
-		stdout:   stdout,
-		scanner:  bufio.NewScanner(stdout),
-		Language: language,
-	},
- nil
+			cmd:      cmd,
+			stdin:    stdin,
+			stdout:   stdout,
+			scanner:  bufio.NewScanner(stdout),
+			Language: language,
+		},
+		nil
 }
 
 func (s *Session) Execute(code string) (string, error) {

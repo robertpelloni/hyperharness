@@ -12,7 +12,7 @@ import (
 func ProcessSlashCommand(cmd string, m *model) (tea.Model, tea.Cmd) {
 	cmd = strings.TrimSpace(cmd)
 	parts := strings.Split(cmd, " ")
-	
+
 	switch parts[0] {
 	case "/help":
 		return handleHelp(m)

@@ -11,7 +11,7 @@ type ServiceLocator struct {
 	ConfigManager *ConfigService
 	MemoryManager *MemoryService
 	Metrics       *MetricsService
-	
+
 	// Future:
 	// SandboxProvider *SandboxService
 }
@@ -36,11 +36,14 @@ func GetLocator() *ServiceLocator {
 
 // Below are stubs for the core services to fulfill the interface parity.
 
-type ConfigService struct {}
+type ConfigService struct{}
+
 func NewConfigService() *ConfigService { return &ConfigService{} }
 
-type MemoryService struct {}
+type MemoryService struct{}
+
 func NewMemoryService() *MemoryService { return &MemoryService{} }
 
-type MetricsService struct {}
+type MetricsService struct{}
+
 func NewMetricsService() *MetricsService { return &MetricsService{} }

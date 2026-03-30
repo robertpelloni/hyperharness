@@ -17,7 +17,9 @@ type SubmoduleStatus struct {
 
 // ExtractSubmoduleIntelligence natively shells out to pull repository health metadata completely replacing node/simple-git parity natively.
 func ExtractSubmoduleIntelligence() ([]SubmoduleStatus, error) {
-	cmd := exec.Command("git", "submodule", "status")
+	// The Go process executes from submodules/hypercode, so we explicitly command Git
+	// to query the top-level parent monorepo.
+	cmd := exec.Command("git", "-C", "../..", "submodule", "status")
 	outputBytes, err := cmd.CombinedOutput()
 	if err != nil {
 		// Log error but proceed to return empty or partial on simple execution faults
@@ -26,7 +28,7 @@ func ExtractSubmoduleIntelligence() ([]SubmoduleStatus, error) {
 
 	output := string(outputBytes)
 	lines := strings.Split(output, "\n")
-	
+
 	var submodules []SubmoduleStatus
 
 	// Match TS pattern: /^([\s+-])([a-f0-9]+)\s+([^\s]+)(?:\s+\((.+)\))?$/
@@ -50,7 +52,7 @@ func ExtractSubmoduleIntelligence() ([]SubmoduleStatus, error) {
 		if len(matches) > 4 && matches[4] != "" {
 			ref = matches[4]
 		}
-		
+
 		pathParts := strings.Split(path, "/")
 		name := pathParts[len(pathParts)-1]
 

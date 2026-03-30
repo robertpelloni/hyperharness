@@ -28,7 +28,7 @@ func NewGeminiBorgProvider() ILLMProvider {
 		Client: openai.NewClientWithConfig(config),
 		Model:  "gemini-1.5-pro",
 	}
-	
+
 	// Progressive Disclosure: We proxy all requests mapping SQLite vectors natively.
 	return NewDisclosureProxy(baseLayer, baseLayer.FetchLegacyToolArray())
 }
@@ -57,7 +57,7 @@ func (p *GeminiBorgProvider) FetchLegacyToolArray() []Tool {
 func (p *GeminiBorgProvider) Chat(ctx context.Context, messages []Message, tools []Tool) (Message, error) {
 	// A massive structural parser here maps `messages` into `openai.ChatCompletionMessage`
 	// then sends it natively via REST to the API, caching responses natively.
-	
+
 	// Example Bypass
 	return Message{
 		Role:    RoleAssistant,

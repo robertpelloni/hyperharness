@@ -1,10 +1,10 @@
 package tools
 
 import (
+	"fmt"
+	"os"
 	"os/exec"
 	"path/filepath"
-	"os"
-	"fmt"
 	"strings"
 )
 
@@ -20,21 +20,21 @@ type Tool struct {
 }
 
 func NewRegistry() *Registry {
-        r := &Registry{}
-        r.registerCoreTools()
-        r.registerFileTools()
-        r.registerInterpreterTools()
-        r.registerSearchTools()
-        r.registerAdvancedTools()
-        r.registerRefactoringTools()
-        r.registerCloudTools()
-        r.registerIntegrationsTools()
-        r.registerBookmarkTools()
-        r.registerGUITools()
-        r.registerCloudOrchestratorTools()
-        r.registerSystemTools()
-        r.registerLlamafileTools()
-        return r
+	r := &Registry{}
+	r.registerCoreTools()
+	r.registerFileTools()
+	r.registerInterpreterTools()
+	r.registerSearchTools()
+	r.registerAdvancedTools()
+	r.registerRefactoringTools()
+	r.registerCloudTools()
+	r.registerIntegrationsTools()
+	r.registerBookmarkTools()
+	r.registerGUITools()
+	r.registerCloudOrchestratorTools()
+	r.registerSystemTools()
+	r.registerLlamafileTools()
+	return r
 }
 func (r *Registry) registerCoreTools() {
 	r.Tools = append(r.Tools, Tool{
@@ -58,7 +58,9 @@ func (r *Registry) registerSearchTools() {
 			// Simple fallback if ripgrep isn't there, matching Aider/Adrenaline
 			var results string
 			filepath.Walk(".", func(path string, info os.FileInfo, err error) error {
-				if err != nil { return nil }
+				if err != nil {
+					return nil
+				}
 				if info.IsDir() && (info.Name() == ".git" || info.Name() == "node_modules") {
 					return filepath.SkipDir
 				}

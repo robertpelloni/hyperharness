@@ -80,7 +80,7 @@ func (h *RemoteMCP) MapToNativeTools(ctx context.Context, cachedSchema []agents.
 			Description: raw.Description,
 		})
 	}
-	
+
 	log.Printf("[MCP] Discovered %d tools from %s dynamically.", len(parsedSchema), h.binaryPath)
 	return h.bindClosures(ctx, parsedSchema), nil
 }
@@ -105,12 +105,12 @@ func (h *RemoteMCP) bindClosures(ctx context.Context, schema []agents.Tool) []ag
 						Arguments: args,
 					},
 				}
-				
+
 				res, err := h.activeClient.CallTool(ctx, req)
 				if err != nil {
 					return "", fmt.Errorf("JIT route execution dropped: %w", err)
 				}
-				
+
 				var extracted string
 				for _, block := range res.Content {
 					if txtBlock, ok := block.(mcp.TextContent); ok {

@@ -22,7 +22,7 @@ func (d *DocumentIntakeService) Ingest(filepath string) error {
 }
 
 // EmbeddingService handles the float32 array generation mimicking TS logic
-type EmbeddingService struct {}
+type EmbeddingService struct{}
 
 func (e *EmbeddingService) Compute(text string) ([]float32, error) {
 	// Native vector arithmetic stub

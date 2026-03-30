@@ -30,7 +30,7 @@ func (p *PermissionManager) RequiresApproval(actionType string, resource string)
 	if p.Level == AutonomyLevelGod {
 		return false
 	}
-	
+
 	// Complex heuristics mapping...
 	log.Printf("[Security] Evaluating action %s on %s at level %d", actionType, resource, p.Level)
 	return true

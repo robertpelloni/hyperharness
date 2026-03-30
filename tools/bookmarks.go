@@ -1,14 +1,14 @@
 package tools
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
-	"encoding/json"
 )
 
 type Bookmark struct {
-	Title string `json:"title"`
-	URL   string `json:"url"`
+	Title string   `json:"title"`
+	URL   string   `json:"url"`
 	Tags  []string `json:"tags"`
 }
 
@@ -22,7 +22,7 @@ func (r *Registry) registerBookmarkTools() {
 			title, _ := args["title"].(string)
 			url, _ := args["url"].(string)
 			tagsInterface, _ := args["tags"].([]interface{})
-			
+
 			var tags []string
 			for _, t := range tagsInterface {
 				tags = append(tags, t.(string))

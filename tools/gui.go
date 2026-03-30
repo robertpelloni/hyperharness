@@ -12,7 +12,7 @@ func (r *Registry) registerGUITools() {
 		Description: "Launches a system webview or browser window (Electron-Orchestrator parity). Arguments: url (string)",
 		Execute: func(args map[string]interface{}) (string, error) {
 			url, _ := args["url"].(string)
-			
+
 			var cmd string
 			var osArgs []string
 

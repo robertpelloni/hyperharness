@@ -1,10 +1,10 @@
 package cmd
 
 import (
-	"os"
 	"fmt"
-	"github.com/spf13/cobra"
 	"github.com/robertpelloni/hypercode/tui"
+	"github.com/spf13/cobra"
+	"os"
 )
 
 var rootCmd = &cobra.Command{

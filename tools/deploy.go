@@ -11,7 +11,7 @@ func (r *Registry) registerCloudOrchestratorTools() {
 		Description: "Autonomously deploys the current project to cloud hosting (Jules-Autopilot / Cloud-Orchestrator parity). Arguments: platform (string: 'vercel', 'aws', 'netlify')",
 		Execute: func(args map[string]interface{}) (string, error) {
 			platform, _ := args["platform"].(string)
-			
+
 			// Detect project type and use native CLI tools (e.g. vercel, aws cli)
 			// matching the 'Jules Autopilot' philosophy.
 			var cmd *exec.Cmd

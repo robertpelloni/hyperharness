@@ -11,9 +11,9 @@ import (
 // It translates natural language into a runnable shell command.
 func (a *Agent) SuggestShellCommand(query string) (string, error) {
 	prompt := fmt.Sprintf("Translate this natural language request into a single, valid shell command for a Windows environment. Output ONLY the command, nothing else. Request: %s", query)
-	
+
 	req := openai.ChatCompletionRequest{
-		Model:    openai.GPT4o,
+		Model: openai.GPT4o,
 		Messages: []openai.ChatCompletionMessage{
 			{Role: openai.ChatMessageRoleUser, Content: prompt},
 		},
