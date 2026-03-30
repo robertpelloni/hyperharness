@@ -192,6 +192,32 @@ interface MissionRiskFacets {
     };
 }
 
+interface MeshStatus {
+    nodeId: string;
+    peersCount: number;
+}
+
+interface RemoteMeshCapabilities {
+    capabilities: string[];
+    role?: string;
+    load?: number;
+    cachedAt: number;
+}
+
+interface MatchingMeshPeer {
+    nodeId: string;
+    capabilities: string[];
+    role?: string;
+    load?: number;
+}
+
+function parseCommaSeparatedList(input: string): string[] {
+    return input
+        .split(',')
+        .map(value => value.trim())
+        .filter(Boolean);
+}
+
 type DebateMode = 'standard' | 'adversarial';
 type DebateTopicType = 'general' | 'mission-plan';
 
@@ -211,6 +237,12 @@ export default function SwarmDashboard() {
         refetchInterval: 5000
     });
     const meshCapabilitiesQuery = (trpc.swarm as any).getMeshCapabilities.useQuery(undefined, {
+        refetchInterval: 10000
+    });
+    const meshStatusQuery = (trpc.mesh as any).getStatus.useQuery(undefined, {
+        refetchInterval: 10000
+    });
+    const meshPeersQuery = (trpc.mesh as any).getPeers.useQuery(undefined, {
         refetchInterval: 10000
     });
 
@@ -236,6 +268,8 @@ export default function SwarmDashboard() {
     const [requestedTools, setRequestedTools] = useState("");
     const [policyAllowInput, setPolicyAllowInput] = useState("");
     const [policyDenyInput, setPolicyDenyInput] = useState("");
+    const [selectedMeshNode, setSelectedMeshNode] = useState('');
+    const [meshCapabilitySearchInput, setMeshCapabilitySearchInput] = useState('git');
     const [lastLaunchFeedback, setLastLaunchFeedback] = useState<StartSwarmFeedback | null>(null);
     const [showDeniedOnly, setShowDeniedOnly] = useState(false);
     const [sortMissionsByRisk, setSortMissionsByRisk] = useState(true);
@@ -252,6 +286,21 @@ export default function SwarmDashboard() {
         minRisk: showHighRiskOnly ? riskThreshold : undefined
     }, {
         refetchInterval: 5000
+    });
+    const requiredMeshCapabilities = parseCommaSeparatedList(meshCapabilitySearchInput);
+    const remoteMeshCapabilitiesQuery = (trpc.mesh as any).queryCapabilities.useQuery({
+        nodeId: selectedMeshNode,
+        timeoutMs: 3000
+    }, {
+        enabled: !!selectedMeshNode,
+        refetchInterval: selectedMeshNode ? 10000 : false
+    });
+    const meshCapabilityMatchQuery = (trpc.mesh as any).findPeerForCapabilities.useQuery({
+        requiredCapabilities: requiredMeshCapabilities,
+        timeoutMs: 3000
+    }, {
+        enabled: requiredMeshCapabilities.length > 0,
+        refetchInterval: requiredMeshCapabilities.length > 0 ? 10000 : false
     });
     const missionRiskFacetsQuery = (trpc.swarm as any).getMissionRiskFacets.useQuery({
         statusFilter: missionStatusFilter,
@@ -282,6 +331,20 @@ export default function SwarmDashboard() {
 
         return () => eventSource.close();
     }, []);
+
+    useEffect(() => {
+        const peers = (meshPeersQuery.data ?? []) as string[];
+        if (peers.length === 0) {
+            if (selectedMeshNode) {
+                setSelectedMeshNode('');
+            }
+            return;
+        }
+
+        if (!selectedMeshNode || !peers.includes(selectedMeshNode)) {
+            setSelectedMeshNode(peers[0]);
+        }
+    }, [meshPeersQuery.data, selectedMeshNode]);
 
     // Swarm State
     const [swarmPrompt, setSwarmPrompt] = useState('Build a Next.js landing page with Stripe integration and a dark mode toggle.');
@@ -350,6 +413,11 @@ export default function SwarmDashboard() {
     const maxHourlyDenied = hourlyDenied.reduce((max, point) => Math.max(max, point.count), 0) || 1;
     const missionCards = (missionRiskRowsQuery.data ?? []) as MissionRiskRow[];
     const riskFacets = missionRiskFacetsQuery.data as MissionRiskFacets | undefined;
+    const meshStatus = meshStatusQuery.data as MeshStatus | undefined;
+    const meshPeers = (meshPeersQuery.data ?? []) as string[];
+    const meshCapabilityMap = (meshCapabilitiesQuery.data ?? {}) as Record<string, string[]>;
+    const selectedPeerDetails = remoteMeshCapabilitiesQuery.data as RemoteMeshCapabilities | undefined;
+    const matchingPeer = meshCapabilityMatchQuery.data as MatchingMeshPeer | null | undefined;
 
     return (
         <div className="flex flex-col h-full bg-slate-950 text-slate-100 p-6 space-y-6 overflow-hidden">
@@ -539,26 +607,159 @@ export default function SwarmDashboard() {
 
                             <Card className="col-span-2 border-slate-800 bg-slate-900">
                                 <CardHeader>
-                                    <CardTitle className="text-sm uppercase text-slate-500">Mesh Capability Registry</CardTitle>
-                                    <CardDescription>Known nodes and their specialized tools.</CardDescription>
+                                    <CardTitle className="text-sm uppercase text-slate-500">Mesh Operator Registry</CardTitle>
+                                    <CardDescription>Live node health, peer capability cache, and capability matching.</CardDescription>
                                 </CardHeader>
-                                <CardContent>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                                        {meshCapabilitiesQuery.data ? Object.entries(meshCapabilitiesQuery.data).map(([nodeId, tools]) => (
-                                            <div key={nodeId} className="p-3 bg-slate-950 border border-slate-800 rounded">
-                                                <div className="flex items-center justify-between mb-2">
-                                                    <span className="text-[10px] font-mono text-cyan-500 truncate mr-2">{nodeId}</span>
-                                                    <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
-                                                </div>
-                                                <div className="flex flex-wrap gap-1">
-                                                    {(tools as string[]).map((tool: string) => (
-                                                        <span key={tool} className="text-[8px] bg-slate-800 text-slate-400 px-1.5 py-0.5 rounded border border-slate-700">
-                                                            {tool}
-                                                        </span>
-                                                    ))}
+                                <CardContent className="space-y-4">
+                                    <div className="grid grid-cols-1 xl:grid-cols-3 gap-3">
+                                        <div className="rounded border border-slate-800 bg-slate-950 p-3 space-y-2">
+                                            <div className="text-[10px] uppercase tracking-widest text-slate-500 font-bold">Local Mesh Node</div>
+                                            <div className="text-[10px] text-slate-300">
+                                                Node: <span className="font-mono text-cyan-400">{meshStatus?.nodeId ?? 'loading...'}</span>
+                                            </div>
+                                            <div className="text-[10px] text-slate-300">
+                                                Peers: <span className="font-mono text-emerald-400">{meshStatus?.peersCount ?? 0}</span>
+                                            </div>
+                                            <div className="flex flex-wrap gap-1 pt-1">
+                                                {(meshStatus?.nodeId ? (meshCapabilityMap[meshStatus.nodeId] ?? []) : []).map((tool) => (
+                                                    <span key={tool} className="text-[8px] bg-slate-800 text-slate-300 px-1.5 py-0.5 rounded border border-slate-700">
+                                                        {tool}
+                                                    </span>
+                                                ))}
+                                                {meshStatus?.nodeId && (meshCapabilityMap[meshStatus.nodeId] ?? []).length === 0 && (
+                                                    <span className="text-[9px] text-slate-600 italic">No local capabilities advertised.</span>
+                                                )}
+                                            </div>
+                                        </div>
+
+                                        <div className="rounded border border-slate-800 bg-slate-950 p-3 space-y-2 xl:col-span-2">
+                                            <div className="flex items-center justify-between gap-3">
+                                                <div>
+                                                    <div className="text-[10px] uppercase tracking-widest text-slate-500 font-bold">Capability Match</div>
+                                                    <div className="text-[10px] text-slate-600">Find the first peer that advertises every requested capability.</div>
                                                 </div>
                                             </div>
-                                        )) : <div className="text-slate-600 italic text-xs">Scanning mesh for capabilities...</div>}
+                                            <Input
+                                                value={meshCapabilitySearchInput}
+                                                onChange={e => setMeshCapabilitySearchInput(e.target.value)}
+                                                placeholder="git, research"
+                                                className="bg-slate-950 border-slate-800 text-sm font-mono text-emerald-300"
+                                            />
+                                            <div className="flex flex-wrap gap-1">
+                                                {requiredMeshCapabilities.map((capability) => (
+                                                    <span key={capability} className="text-[8px] bg-emerald-950/40 text-emerald-300 px-1.5 py-0.5 rounded border border-emerald-900/50">
+                                                        {capability}
+                                                    </span>
+                                                ))}
+                                                {requiredMeshCapabilities.length === 0 && (
+                                                    <span className="text-[9px] text-slate-600 italic">Enter one or more capabilities to search.</span>
+                                                )}
+                                            </div>
+                                            {meshCapabilityMatchQuery.isLoading ? (
+                                                <div className="text-[10px] text-slate-500">Searching mesh peers...</div>
+                                            ) : matchingPeer ? (
+                                                <div className="rounded border border-emerald-900/50 bg-emerald-950/20 p-2 text-[10px] text-slate-200">
+                                                    <div>
+                                                        Match: <span className="font-mono text-emerald-300">{matchingPeer.nodeId}</span>
+                                                    </div>
+                                                    <div>
+                                                        Role: <span className="text-cyan-300">{matchingPeer.role ?? 'unknown'}</span>
+                                                    </div>
+                                                    <div>
+                                                        Load: <span className="text-amber-300">{typeof matchingPeer.load === 'number' ? matchingPeer.load : 'unknown'}</span>
+                                                    </div>
+                                                </div>
+                                            ) : requiredMeshCapabilities.length > 0 ? (
+                                                <div className="rounded border border-amber-900/40 bg-amber-950/20 p-2 text-[10px] text-amber-200">
+                                                    No peer currently matches all requested capabilities.
+                                                </div>
+                                            ) : null}
+                                        </div>
+                                    </div>
+
+                                    <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+                                        <div className="space-y-3">
+                                            <div className="text-[10px] uppercase tracking-widest text-slate-500 font-bold">Known Nodes</div>
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                                {Object.keys(meshCapabilityMap).length > 0 ? Object.entries(meshCapabilityMap).map(([nodeId, tools]) => {
+                                                    const isLocalNode = nodeId === meshStatus?.nodeId;
+                                                    const isSelected = nodeId === selectedMeshNode;
+                                                    return (
+                                                        <button
+                                                            key={nodeId}
+                                                            type="button"
+                                                            onClick={() => !isLocalNode && setSelectedMeshNode(nodeId)}
+                                                            className={`p-3 bg-slate-950 border rounded text-left transition-colors ${isSelected
+                                                                ? 'border-cyan-500'
+                                                                : 'border-slate-800 hover:border-slate-700'
+                                                                } ${isLocalNode ? 'cursor-default' : 'cursor-pointer'}`}
+                                                        >
+                                                            <div className="flex items-center justify-between mb-2">
+                                                                <span className="text-[10px] font-mono text-cyan-500 truncate mr-2">{nodeId}</span>
+                                                                <span className={`text-[8px] uppercase tracking-wider ${isLocalNode ? 'text-emerald-400' : 'text-slate-500'}`}>
+                                                                    {isLocalNode ? 'local' : 'peer'}
+                                                                </span>
+                                                            </div>
+                                                            <div className="flex flex-wrap gap-1">
+                                                                {(tools as string[]).map((tool: string) => (
+                                                                    <span key={tool} className="text-[8px] bg-slate-800 text-slate-400 px-1.5 py-0.5 rounded border border-slate-700">
+                                                                        {tool}
+                                                                    </span>
+                                                                ))}
+                                                                {(tools as string[]).length === 0 && (
+                                                                    <span className="text-[9px] text-slate-600 italic">No capabilities advertised.</span>
+                                                                )}
+                                                            </div>
+                                                        </button>
+                                                    );
+                                                }) : <div className="text-slate-600 italic text-xs">Scanning mesh for capabilities...</div>}
+                                            </div>
+                                        </div>
+
+                                        <div className="rounded border border-slate-800 bg-slate-950 p-3 space-y-2">
+                                            <div className="text-[10px] uppercase tracking-widest text-slate-500 font-bold">Selected Peer Detail</div>
+                                            {!selectedMeshNode ? (
+                                                <div className="text-[10px] text-slate-600 italic">Select a peer once one is discovered.</div>
+                                            ) : remoteMeshCapabilitiesQuery.isLoading ? (
+                                                <div className="text-[10px] text-slate-500">Refreshing remote capability cache for <span className="font-mono">{selectedMeshNode}</span>...</div>
+                                            ) : remoteMeshCapabilitiesQuery.isError ? (
+                                                <div className="rounded border border-rose-900/40 bg-rose-950/20 p-2 text-[10px] text-rose-200">
+                                                    Unable to query <span className="font-mono">{selectedMeshNode}</span> right now.
+                                                </div>
+                                            ) : selectedPeerDetails ? (
+                                                <>
+                                                    <div className="text-[10px] text-slate-300">
+                                                        Node: <span className="font-mono text-cyan-400">{selectedMeshNode}</span>
+                                                    </div>
+                                                    <div className="text-[10px] text-slate-300">
+                                                        Role: <span className="text-cyan-300">{selectedPeerDetails.role ?? 'unknown'}</span>
+                                                    </div>
+                                                    <div className="text-[10px] text-slate-300">
+                                                        Load: <span className="text-amber-300">{typeof selectedPeerDetails.load === 'number' ? selectedPeerDetails.load : 'unknown'}</span>
+                                                    </div>
+                                                    <div className="text-[10px] text-slate-300">
+                                                        Cached: <span className="text-slate-400">{new Date(selectedPeerDetails.cachedAt).toLocaleString()}</span>
+                                                    </div>
+                                                    <div className="flex flex-wrap gap-1 pt-1">
+                                                        {selectedPeerDetails.capabilities.map((tool) => (
+                                                            <span key={tool} className="text-[8px] bg-cyan-950/30 text-cyan-300 px-1.5 py-0.5 rounded border border-cyan-900/50">
+                                                                {tool}
+                                                            </span>
+                                                        ))}
+                                                        {selectedPeerDetails.capabilities.length === 0 && (
+                                                            <span className="text-[9px] text-slate-600 italic">Peer responded without any advertised capabilities.</span>
+                                                        )}
+                                                    </div>
+                                                </>
+                                            ) : (
+                                                <div className="text-[10px] text-slate-600 italic">No remote detail loaded yet.</div>
+                                            )}
+                                            {meshPeers.length === 0 && (
+                                                <div className="rounded border border-slate-800 bg-black/20 p-2 text-[10px] text-slate-500">
+                                                    No remote peers are currently known to the local mesh service.
+                                                </div>
+                                            )}
+                                        </div>
                                     </div>
                                 </CardContent>
                             </Card>
