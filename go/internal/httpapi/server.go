@@ -399,6 +399,30 @@ func (s *Server) registerRoutes() {
 	s.mux.HandleFunc("/api/lsp/symbols", s.handleLSPGetSymbols)
 	s.mux.HandleFunc("/api/lsp/search", s.handleLSPSearchSymbols)
 	s.mux.HandleFunc("/api/lsp/index", s.handleLSPIndexProject)
+	s.mux.HandleFunc("/api/api-keys", s.handleAPIKeysList)
+	s.mux.HandleFunc("/api/api-keys/get", s.handleAPIKeysGet)
+	s.mux.HandleFunc("/api/api-keys/create", s.handleAPIKeysCreate)
+	s.mux.HandleFunc("/api/api-keys/update", s.handleAPIKeysUpdate)
+	s.mux.HandleFunc("/api/api-keys/delete", s.handleAPIKeysDelete)
+	s.mux.HandleFunc("/api/api-keys/validate", s.handleAPIKeysValidate)
+	s.mux.HandleFunc("/api/audit", s.handleAuditList)
+	s.mux.HandleFunc("/api/audit/query", s.handleAuditQuery)
+	s.mux.HandleFunc("/api/scripts", s.handleSavedScriptsList)
+	s.mux.HandleFunc("/api/scripts/get", s.handleSavedScriptsGet)
+	s.mux.HandleFunc("/api/scripts/create", s.handleSavedScriptsCreate)
+	s.mux.HandleFunc("/api/scripts/update", s.handleSavedScriptsUpdate)
+	s.mux.HandleFunc("/api/scripts/delete", s.handleSavedScriptsDelete)
+	s.mux.HandleFunc("/api/scripts/execute", s.handleSavedScriptsExecute)
+	s.mux.HandleFunc("/api/links-backlog", s.handleLinksBacklogList)
+	s.mux.HandleFunc("/api/links-backlog/stats", s.handleLinksBacklogStats)
+	s.mux.HandleFunc("/api/links-backlog/get", s.handleLinksBacklogGet)
+	s.mux.HandleFunc("/api/links-backlog/sync", s.handleLinksBacklogSync)
+	s.mux.HandleFunc("/api/infrastructure", s.handleInfrastructureStatus)
+	s.mux.HandleFunc("/api/infrastructure/doctor", s.handleInfrastructureDoctor)
+	s.mux.HandleFunc("/api/infrastructure/apply", s.handleInfrastructureApply)
+	s.mux.HandleFunc("/api/expert/research", s.handleExpertResearch)
+	s.mux.HandleFunc("/api/expert/code", s.handleExpertCode)
+	s.mux.HandleFunc("/api/expert/status", s.handleExpertStatus)
 	s.mux.HandleFunc("/api/cli/tools", s.handleCLITools)
 	s.mux.HandleFunc("/api/cli/harnesses", s.handleHarnesses)
 	s.mux.HandleFunc("/api/cli/summary", s.handleCLISummary)
@@ -608,6 +632,30 @@ func (s *Server) handleAPIIndex(w http.ResponseWriter, _ *http.Request) {
 				{Path: "/api/lsp/symbols", Category: "code", Description: "Bridge to the TypeScript LSP file-symbol surface."},
 				{Path: "/api/lsp/search", Category: "code", Description: "Bridge to the TypeScript LSP symbol-search surface."},
 				{Path: "/api/lsp/index", Category: "code", Description: "Trigger TypeScript LSP indexing through the bridge."},
+				{Path: "/api/api-keys", Category: "governance", Description: "List API keys through the TypeScript API keys router."},
+				{Path: "/api/api-keys/get", Category: "governance", Description: "Read an API key through the TypeScript API keys router."},
+				{Path: "/api/api-keys/create", Category: "governance", Description: "Create an API key through the TypeScript API keys router."},
+				{Path: "/api/api-keys/update", Category: "governance", Description: "Update an API key through the TypeScript API keys router."},
+				{Path: "/api/api-keys/delete", Category: "governance", Description: "Delete an API key through the TypeScript API keys router."},
+				{Path: "/api/api-keys/validate", Category: "governance", Description: "Validate an API key through the TypeScript API keys router."},
+				{Path: "/api/audit", Category: "governance", Description: "List audit logs through the TypeScript audit router."},
+				{Path: "/api/audit/query", Category: "governance", Description: "Query audit logs through the TypeScript audit router."},
+				{Path: "/api/scripts", Category: "operator", Description: "List saved scripts through the TypeScript saved scripts router."},
+				{Path: "/api/scripts/get", Category: "operator", Description: "Read a saved script through the TypeScript saved scripts router."},
+				{Path: "/api/scripts/create", Category: "operator", Description: "Create a saved script through the TypeScript saved scripts router."},
+				{Path: "/api/scripts/update", Category: "operator", Description: "Update a saved script through the TypeScript saved scripts router."},
+				{Path: "/api/scripts/delete", Category: "operator", Description: "Delete a saved script through the TypeScript saved scripts router."},
+				{Path: "/api/scripts/execute", Category: "operator", Description: "Execute a saved script through the TypeScript saved scripts router."},
+				{Path: "/api/links-backlog", Category: "operator", Description: "List BobbyBookmarks backlog links through the TypeScript links backlog router."},
+				{Path: "/api/links-backlog/stats", Category: "operator", Description: "Read BobbyBookmarks backlog stats through the TypeScript links backlog router."},
+				{Path: "/api/links-backlog/get", Category: "operator", Description: "Read a BobbyBookmarks backlog item through the TypeScript links backlog router."},
+				{Path: "/api/links-backlog/sync", Category: "operator", Description: "Sync BobbyBookmarks backlog data through the TypeScript links backlog router."},
+				{Path: "/api/infrastructure", Category: "operator", Description: "Read infrastructure daemon status through the TypeScript infrastructure router."},
+				{Path: "/api/infrastructure/doctor", Category: "operator", Description: "Run the infrastructure doctor command through the TypeScript infrastructure router."},
+				{Path: "/api/infrastructure/apply", Category: "operator", Description: "Apply infrastructure configuration through the TypeScript infrastructure router."},
+				{Path: "/api/expert/research", Category: "agents", Description: "Dispatch a research task through the TypeScript expert router."},
+				{Path: "/api/expert/code", Category: "agents", Description: "Dispatch a coding task through the TypeScript expert router."},
+				{Path: "/api/expert/status", Category: "agents", Description: "Read TypeScript expert agent status."},
 				{Path: "/api/cli/tools", Category: "cli", Description: "Detected local CLI tools and versions."},
 				{Path: "/api/cli/harnesses", Category: "cli", Description: "Harness registry metadata and install visibility."},
 				{Path: "/api/cli/summary", Category: "cli", Description: "Compact CLI and harness readiness summary."},
@@ -1713,6 +1761,164 @@ func (s *Server) handleLSPSearchSymbols(w http.ResponseWriter, r *http.Request) 
 
 func (s *Server) handleLSPIndexProject(w http.ResponseWriter, r *http.Request) {
 	s.handleTRPCBridgeBodyCall(w, r, "lsp.indexProject")
+}
+
+func (s *Server) handleAPIKeysList(w http.ResponseWriter, r *http.Request) {
+	s.handleTRPCBridgeCall(w, r, http.MethodGet, "apiKeys.list", nil)
+}
+
+func (s *Server) handleAPIKeysGet(w http.ResponseWriter, r *http.Request) {
+	uuid := strings.TrimSpace(r.URL.Query().Get("uuid"))
+	if uuid == "" {
+		writeJSON(w, http.StatusBadRequest, map[string]any{"success": false, "error": "missing uuid query parameter"})
+		return
+	}
+	s.handleTRPCBridgeCall(w, r, http.MethodGet, "apiKeys.get", map[string]any{"uuid": uuid})
+}
+
+func (s *Server) handleAPIKeysCreate(w http.ResponseWriter, r *http.Request) {
+	s.handleTRPCBridgeBodyCall(w, r, "apiKeys.create")
+}
+
+func (s *Server) handleAPIKeysUpdate(w http.ResponseWriter, r *http.Request) {
+	s.handleTRPCBridgeBodyCall(w, r, "apiKeys.update")
+}
+
+func (s *Server) handleAPIKeysDelete(w http.ResponseWriter, r *http.Request) {
+	s.handleTRPCBridgeBodyCall(w, r, "apiKeys.delete")
+}
+
+func (s *Server) handleAPIKeysValidate(w http.ResponseWriter, r *http.Request) {
+	s.handleTRPCBridgeBodyCall(w, r, "apiKeys.validate")
+}
+
+func (s *Server) handleAuditList(w http.ResponseWriter, r *http.Request) {
+	payload := map[string]any{}
+	if limit := strings.TrimSpace(r.URL.Query().Get("limit")); limit != "" {
+		if parsed, err := strconv.Atoi(limit); err == nil {
+			payload["limit"] = parsed
+		}
+	}
+	s.handleTRPCBridgeCall(w, r, http.MethodGet, "audit.list", payload)
+}
+
+func (s *Server) handleAuditQuery(w http.ResponseWriter, r *http.Request) {
+	payload := map[string]any{}
+	if level := strings.TrimSpace(r.URL.Query().Get("level")); level != "" {
+		payload["level"] = level
+	}
+	if agentID := strings.TrimSpace(r.URL.Query().Get("agentId")); agentID != "" {
+		payload["agentId"] = agentID
+	}
+	if action := strings.TrimSpace(r.URL.Query().Get("action")); action != "" {
+		payload["action"] = action
+	}
+	if limit := strings.TrimSpace(r.URL.Query().Get("limit")); limit != "" {
+		if parsed, err := strconv.Atoi(limit); err == nil {
+			payload["limit"] = parsed
+		}
+	}
+	s.handleTRPCBridgeCall(w, r, http.MethodGet, "audit.log", payload)
+}
+
+func (s *Server) handleSavedScriptsList(w http.ResponseWriter, r *http.Request) {
+	s.handleTRPCBridgeCall(w, r, http.MethodGet, "savedScripts.list", nil)
+}
+
+func (s *Server) handleSavedScriptsGet(w http.ResponseWriter, r *http.Request) {
+	uuid := strings.TrimSpace(r.URL.Query().Get("uuid"))
+	if uuid == "" {
+		writeJSON(w, http.StatusBadRequest, map[string]any{"success": false, "error": "missing uuid query parameter"})
+		return
+	}
+	s.handleTRPCBridgeCall(w, r, http.MethodGet, "savedScripts.get", map[string]any{"uuid": uuid})
+}
+
+func (s *Server) handleSavedScriptsCreate(w http.ResponseWriter, r *http.Request) {
+	s.handleTRPCBridgeBodyCall(w, r, "savedScripts.create")
+}
+
+func (s *Server) handleSavedScriptsUpdate(w http.ResponseWriter, r *http.Request) {
+	s.handleTRPCBridgeBodyCall(w, r, "savedScripts.update")
+}
+
+func (s *Server) handleSavedScriptsDelete(w http.ResponseWriter, r *http.Request) {
+	s.handleTRPCBridgeBodyCall(w, r, "savedScripts.delete")
+}
+
+func (s *Server) handleSavedScriptsExecute(w http.ResponseWriter, r *http.Request) {
+	s.handleTRPCBridgeBodyCall(w, r, "savedScripts.execute")
+}
+
+func (s *Server) handleLinksBacklogList(w http.ResponseWriter, r *http.Request) {
+	payload := map[string]any{}
+	if limit := strings.TrimSpace(r.URL.Query().Get("limit")); limit != "" {
+		if parsed, err := strconv.Atoi(limit); err == nil {
+			payload["limit"] = parsed
+		}
+	}
+	if offset := strings.TrimSpace(r.URL.Query().Get("offset")); offset != "" {
+		if parsed, err := strconv.Atoi(offset); err == nil {
+			payload["offset"] = parsed
+		}
+	}
+	if search := strings.TrimSpace(r.URL.Query().Get("search")); search != "" {
+		payload["search"] = search
+	}
+	if source := strings.TrimSpace(r.URL.Query().Get("source")); source != "" {
+		payload["source"] = source
+	}
+	if status := strings.TrimSpace(r.URL.Query().Get("research_status")); status != "" {
+		payload["research_status"] = status
+	}
+	if clusterID := strings.TrimSpace(r.URL.Query().Get("cluster_id")); clusterID != "" {
+		payload["cluster_id"] = clusterID
+	}
+	if showDuplicates := strings.TrimSpace(r.URL.Query().Get("show_duplicates")); showDuplicates != "" {
+		payload["show_duplicates"] = strings.EqualFold(showDuplicates, "true") || showDuplicates == "1"
+	}
+	s.handleTRPCBridgeCall(w, r, http.MethodGet, "linksBacklog.list", payload)
+}
+
+func (s *Server) handleLinksBacklogStats(w http.ResponseWriter, r *http.Request) {
+	s.handleTRPCBridgeCall(w, r, http.MethodGet, "linksBacklog.stats", nil)
+}
+
+func (s *Server) handleLinksBacklogGet(w http.ResponseWriter, r *http.Request) {
+	uuid := strings.TrimSpace(r.URL.Query().Get("uuid"))
+	if uuid == "" {
+		writeJSON(w, http.StatusBadRequest, map[string]any{"success": false, "error": "missing uuid query parameter"})
+		return
+	}
+	s.handleTRPCBridgeCall(w, r, http.MethodGet, "linksBacklog.get", map[string]any{"uuid": uuid})
+}
+
+func (s *Server) handleLinksBacklogSync(w http.ResponseWriter, r *http.Request) {
+	s.handleTRPCBridgeBodyCall(w, r, "linksBacklog.syncFromBobbyBookmarks")
+}
+
+func (s *Server) handleInfrastructureStatus(w http.ResponseWriter, r *http.Request) {
+	s.handleTRPCBridgeCall(w, r, http.MethodGet, "infrastructure.getInfrastructureStatus", nil)
+}
+
+func (s *Server) handleInfrastructureDoctor(w http.ResponseWriter, r *http.Request) {
+	s.handleTRPCBridgeBodyCall(w, r, "infrastructure.runDoctor")
+}
+
+func (s *Server) handleInfrastructureApply(w http.ResponseWriter, r *http.Request) {
+	s.handleTRPCBridgeBodyCall(w, r, "infrastructure.applyConfigurations")
+}
+
+func (s *Server) handleExpertResearch(w http.ResponseWriter, r *http.Request) {
+	s.handleTRPCBridgeBodyCall(w, r, "expert.research")
+}
+
+func (s *Server) handleExpertCode(w http.ResponseWriter, r *http.Request) {
+	s.handleTRPCBridgeBodyCall(w, r, "expert.code")
+}
+
+func (s *Server) handleExpertStatus(w http.ResponseWriter, r *http.Request) {
+	s.handleTRPCBridgeCall(w, r, http.MethodGet, "expert.getStatus", nil)
 }
 
 func (s *Server) handleSessionBridgeBodyCall(w http.ResponseWriter, r *http.Request, procedure string) {

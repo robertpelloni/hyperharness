@@ -1797,6 +1797,153 @@ func TestSymbolsAndLSPBridgeRoutes(t *testing.T) {
 	}
 }
 
+func TestCompactBridgeRoutes(t *testing.T) {
+	upstream := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("content-type", "application/json")
+		switch r.URL.Path {
+		case "/trpc/apiKeys.list":
+			_ = json.NewEncoder(w).Encode(map[string]any{"result": map[string]any{"data": map[string]any{"json": []any{map[string]any{"uuid": "key-1", "name": "Primary"}}}}})
+		case "/trpc/apiKeys.get":
+			body, _ := io.ReadAll(r.Body)
+			if !strings.Contains(string(body), `"uuid":"key-1"`) {
+				t.Fatalf("expected apiKeys.get payload, got %s", string(body))
+			}
+			_ = json.NewEncoder(w).Encode(map[string]any{"result": map[string]any{"data": map[string]any{"json": map[string]any{"uuid": "key-1", "name": "Primary"}}}})
+		case "/trpc/apiKeys.create":
+			_ = json.NewEncoder(w).Encode(map[string]any{"result": map[string]any{"data": map[string]any{"json": map[string]any{"uuid": "key-2"}}}})
+		case "/trpc/apiKeys.update":
+			_ = json.NewEncoder(w).Encode(map[string]any{"result": map[string]any{"data": map[string]any{"json": map[string]any{"uuid": "key-1", "name": "Updated"}}}})
+		case "/trpc/apiKeys.delete":
+			_ = json.NewEncoder(w).Encode(map[string]any{"result": map[string]any{"data": map[string]any{"json": true}}})
+		case "/trpc/apiKeys.validate":
+			_ = json.NewEncoder(w).Encode(map[string]any{"result": map[string]any{"data": map[string]any{"json": map[string]any{"valid": true}}}})
+		case "/trpc/audit.list":
+			body, _ := io.ReadAll(r.Body)
+			if !strings.Contains(string(body), `"limit":25`) {
+				t.Fatalf("expected audit.list payload, got %s", string(body))
+			}
+			_ = json.NewEncoder(w).Encode(map[string]any{"result": map[string]any{"data": map[string]any{"json": []any{map[string]any{"action": "run"}}}}})
+		case "/trpc/audit.log":
+			body, _ := io.ReadAll(r.Body)
+			if !strings.Contains(string(body), `"level":"info"`) || !strings.Contains(string(body), `"agentId":"agent-1"`) {
+				t.Fatalf("expected audit.log payload, got %s", string(body))
+			}
+			_ = json.NewEncoder(w).Encode(map[string]any{"result": map[string]any{"data": map[string]any{"json": []any{map[string]any{"action": "run", "level": "info"}}}}})
+		case "/trpc/savedScripts.list":
+			_ = json.NewEncoder(w).Encode(map[string]any{"result": map[string]any{"data": map[string]any{"json": []any{map[string]any{"uuid": "script-1", "name": "Deploy"}}}}})
+		case "/trpc/savedScripts.get":
+			body, _ := io.ReadAll(r.Body)
+			if !strings.Contains(string(body), `"uuid":"script-1"`) {
+				t.Fatalf("expected savedScripts.get payload, got %s", string(body))
+			}
+			_ = json.NewEncoder(w).Encode(map[string]any{"result": map[string]any{"data": map[string]any{"json": map[string]any{"uuid": "script-1", "name": "Deploy"}}}})
+		case "/trpc/savedScripts.create":
+			_ = json.NewEncoder(w).Encode(map[string]any{"result": map[string]any{"data": map[string]any{"json": map[string]any{"uuid": "script-2"}}}})
+		case "/trpc/savedScripts.update":
+			_ = json.NewEncoder(w).Encode(map[string]any{"result": map[string]any{"data": map[string]any{"json": map[string]any{"uuid": "script-1", "name": "Deploy v2"}}}})
+		case "/trpc/savedScripts.delete":
+			_ = json.NewEncoder(w).Encode(map[string]any{"result": map[string]any{"data": map[string]any{"json": map[string]any{"success": true}}}})
+		case "/trpc/savedScripts.execute":
+			_ = json.NewEncoder(w).Encode(map[string]any{"result": map[string]any{"data": map[string]any{"json": map[string]any{"success": true, "result": "done"}}}})
+		case "/trpc/linksBacklog.list":
+			body, _ := io.ReadAll(r.Body)
+			if !strings.Contains(string(body), `"search":"mcp"`) || !strings.Contains(string(body), `"show_duplicates":true`) {
+				t.Fatalf("expected linksBacklog.list payload, got %s", string(body))
+			}
+			_ = json.NewEncoder(w).Encode(map[string]any{"result": map[string]any{"data": map[string]any{"json": map[string]any{"items": []any{map[string]any{"uuid": "link-1", "title": "MCP"}}, "total": 1}}}})
+		case "/trpc/linksBacklog.stats":
+			_ = json.NewEncoder(w).Encode(map[string]any{"result": map[string]any{"data": map[string]any{"json": map[string]any{"pending": 10, "done": 5}}}})
+		case "/trpc/linksBacklog.get":
+			body, _ := io.ReadAll(r.Body)
+			if !strings.Contains(string(body), `"uuid":"link-1"`) {
+				t.Fatalf("expected linksBacklog.get payload, got %s", string(body))
+			}
+			_ = json.NewEncoder(w).Encode(map[string]any{"result": map[string]any{"data": map[string]any{"json": map[string]any{"uuid": "link-1", "title": "MCP"}}}})
+		case "/trpc/linksBacklog.syncFromBobbyBookmarks":
+			_ = json.NewEncoder(w).Encode(map[string]any{"result": map[string]any{"data": map[string]any{"json": map[string]any{"imported": 3, "updated": 2}}}})
+		case "/trpc/infrastructure.getInfrastructureStatus":
+			_ = json.NewEncoder(w).Encode(map[string]any{"result": map[string]any{"data": map[string]any{"json": map[string]any{"installed": true, "hasConfig": true}}}})
+		case "/trpc/infrastructure.runDoctor":
+			_ = json.NewEncoder(w).Encode(map[string]any{"result": map[string]any{"data": map[string]any{"json": map[string]any{"success": true, "output": "ok"}}}})
+		case "/trpc/infrastructure.applyConfigurations":
+			_ = json.NewEncoder(w).Encode(map[string]any{"result": map[string]any{"data": map[string]any{"json": map[string]any{"success": true, "output": "applied"}}}})
+		case "/trpc/expert.research":
+			_ = json.NewEncoder(w).Encode(map[string]any{"result": map[string]any{"data": map[string]any{"json": map[string]any{"summary": "researched"}}}})
+		case "/trpc/expert.code":
+			_ = json.NewEncoder(w).Encode(map[string]any{"result": map[string]any{"data": map[string]any{"json": map[string]any{"summary": "coded"}}}})
+		case "/trpc/expert.getStatus":
+			_ = json.NewEncoder(w).Encode(map[string]any{"result": map[string]any{"data": map[string]any{"json": map[string]any{"researcher": "active", "coder": "offline"}}}})
+		default:
+			t.Fatalf("unexpected upstream path %s", r.URL.Path)
+		}
+	}))
+	defer upstream.Close()
+
+	t.Setenv("BORG_TRPC_UPSTREAM", upstream.URL+"/trpc")
+
+	cfg := config.Default()
+	cfg.MainConfigDir = t.TempDir()
+	server := New(cfg, stubDetector{})
+
+	cases := []struct {
+		name      string
+		method    string
+		path      string
+		body      string
+		contains  string
+		procedure string
+	}{
+		{name: "api keys list", method: http.MethodGet, path: "/api/api-keys", contains: `"key-1"`, procedure: `"procedure":"apiKeys.list"`},
+		{name: "api keys get", method: http.MethodGet, path: "/api/api-keys/get?uuid=key-1", contains: `"Primary"`, procedure: `"procedure":"apiKeys.get"`},
+		{name: "api keys create", method: http.MethodPost, path: "/api/api-keys/create", body: `{"name":"Secondary","key_prefix":"sk","is_active":true}`, contains: `"key-2"`, procedure: `"procedure":"apiKeys.create"`},
+		{name: "api keys update", method: http.MethodPost, path: "/api/api-keys/update", body: `{"uuid":"key-1","name":"Updated"}`, contains: `"Updated"`, procedure: `"procedure":"apiKeys.update"`},
+		{name: "api keys delete", method: http.MethodPost, path: "/api/api-keys/delete", body: `{"uuid":"key-1"}`, contains: `"data":true`, procedure: `"procedure":"apiKeys.delete"`},
+		{name: "api keys validate", method: http.MethodPost, path: "/api/api-keys/validate", body: `{"key":"secret"}`, contains: `"valid":true`, procedure: `"procedure":"apiKeys.validate"`},
+		{name: "audit list", method: http.MethodGet, path: "/api/audit?limit=25", contains: `"action":"run"`, procedure: `"procedure":"audit.list"`},
+		{name: "audit query", method: http.MethodGet, path: "/api/audit/query?level=info&agentId=agent-1&action=run&limit=10", contains: `"level":"info"`, procedure: `"procedure":"audit.log"`},
+		{name: "scripts list", method: http.MethodGet, path: "/api/scripts", contains: `"script-1"`, procedure: `"procedure":"savedScripts.list"`},
+		{name: "scripts get", method: http.MethodGet, path: "/api/scripts/get?uuid=script-1", contains: `"Deploy"`, procedure: `"procedure":"savedScripts.get"`},
+		{name: "scripts create", method: http.MethodPost, path: "/api/scripts/create", body: `{"name":"Deploy","description":"ship it","code":"echo hi"}`, contains: `"script-2"`, procedure: `"procedure":"savedScripts.create"`},
+		{name: "scripts update", method: http.MethodPost, path: "/api/scripts/update", body: `{"uuid":"script-1","name":"Deploy v2"}`, contains: `"Deploy v2"`, procedure: `"procedure":"savedScripts.update"`},
+		{name: "scripts delete", method: http.MethodPost, path: "/api/scripts/delete", body: `{"uuid":"script-1"}`, contains: `"success":true`, procedure: `"procedure":"savedScripts.delete"`},
+		{name: "scripts execute", method: http.MethodPost, path: "/api/scripts/execute", body: `{"uuid":"script-1"}`, contains: `"result":"done"`, procedure: `"procedure":"savedScripts.execute"`},
+		{name: "links backlog list", method: http.MethodGet, path: "/api/links-backlog?limit=5&offset=0&search=mcp&source=bobby&research_status=pending&cluster_id=cluster-1&show_duplicates=true", contains: `"total":1`, procedure: `"procedure":"linksBacklog.list"`},
+		{name: "links backlog stats", method: http.MethodGet, path: "/api/links-backlog/stats", contains: `"pending":10`, procedure: `"procedure":"linksBacklog.stats"`},
+		{name: "links backlog get", method: http.MethodGet, path: "/api/links-backlog/get?uuid=link-1", contains: `"title":"MCP"`, procedure: `"procedure":"linksBacklog.get"`},
+		{name: "links backlog sync", method: http.MethodPost, path: "/api/links-backlog/sync", body: `{"baseUrl":"https://example.com","perPage":100,"includeDuplicates":true,"includeResearched":true}`, contains: `"imported":3`, procedure: `"procedure":"linksBacklog.syncFromBobbyBookmarks"`},
+		{name: "infrastructure status", method: http.MethodGet, path: "/api/infrastructure", contains: `"installed":true`, procedure: `"procedure":"infrastructure.getInfrastructureStatus"`},
+		{name: "infrastructure doctor", method: http.MethodPost, path: "/api/infrastructure/doctor", body: `{}`, contains: `"output":"ok"`, procedure: `"procedure":"infrastructure.runDoctor"`},
+		{name: "infrastructure apply", method: http.MethodPost, path: "/api/infrastructure/apply", body: `{}`, contains: `"output":"applied"`, procedure: `"procedure":"infrastructure.applyConfigurations"`},
+		{name: "expert research", method: http.MethodPost, path: "/api/expert/research", body: `{"query":"mcp bridges","depth":2,"breadth":3}`, contains: `"researched"`, procedure: `"procedure":"expert.research"`},
+		{name: "expert code", method: http.MethodPost, path: "/api/expert/code", body: `{"task":"wire endpoint"}`, contains: `"coded"`, procedure: `"procedure":"expert.code"`},
+		{name: "expert status", method: http.MethodGet, path: "/api/expert/status", contains: `"researcher":"active"`, procedure: `"procedure":"expert.getStatus"`},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			var body io.Reader
+			if tc.body != "" {
+				body = strings.NewReader(tc.body)
+			}
+			request := httptest.NewRequest(tc.method, tc.path, body)
+			if tc.body != "" {
+				request.Header.Set("content-type", "application/json")
+			}
+			recorder := httptest.NewRecorder()
+			server.Handler().ServeHTTP(recorder, request)
+			if recorder.Code != http.StatusOK {
+				t.Fatalf("expected status 200, got %d with body %s", recorder.Code, recorder.Body.String())
+			}
+			if !strings.Contains(recorder.Body.String(), tc.contains) {
+				t.Fatalf("expected response to contain %s, got %s", tc.contains, recorder.Body.String())
+			}
+			if !strings.Contains(recorder.Body.String(), tc.procedure) {
+				t.Fatalf("expected bridge metadata %s, got %s", tc.procedure, recorder.Body.String())
+			}
+		})
+	}
+}
+
 func TestCLIToolsEndpoint(t *testing.T) {
 	server := New(config.Default(), stubDetector{
 		tools: []controlplane.Tool{
