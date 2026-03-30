@@ -1944,6 +1944,141 @@ func TestCompactBridgeRoutes(t *testing.T) {
 	}
 }
 
+func TestGovernanceAndCatalogBridgeRoutes(t *testing.T) {
+	upstream := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("content-type", "application/json")
+		switch r.URL.Path {
+		case "/trpc/policies.list":
+			_ = json.NewEncoder(w).Encode(map[string]any{"result": map[string]any{"data": map[string]any{"json": []any{map[string]any{"uuid": "policy-1", "name": "Default"}}}}})
+		case "/trpc/policies.get":
+			body, _ := io.ReadAll(r.Body)
+			if !strings.Contains(string(body), `"uuid":"policy-1"`) {
+				t.Fatalf("expected policies.get payload, got %s", string(body))
+			}
+			_ = json.NewEncoder(w).Encode(map[string]any{"result": map[string]any{"data": map[string]any{"json": map[string]any{"uuid": "policy-1", "name": "Default"}}}})
+		case "/trpc/policies.create":
+			_ = json.NewEncoder(w).Encode(map[string]any{"result": map[string]any{"data": map[string]any{"json": map[string]any{"uuid": "policy-2"}}}})
+		case "/trpc/policies.update":
+			_ = json.NewEncoder(w).Encode(map[string]any{"result": map[string]any{"data": map[string]any{"json": map[string]any{"uuid": "policy-1", "name": "Updated"}}}})
+		case "/trpc/policies.delete":
+			_ = json.NewEncoder(w).Encode(map[string]any{"result": map[string]any{"data": map[string]any{"json": map[string]any{"success": true}}}})
+		case "/trpc/secrets.list":
+			_ = json.NewEncoder(w).Encode(map[string]any{"result": map[string]any{"data": map[string]any{"json": []any{map[string]any{"key": "OPENAI_API_KEY"}}}}})
+		case "/trpc/secrets.set":
+			_ = json.NewEncoder(w).Encode(map[string]any{"result": map[string]any{"data": map[string]any{"json": map[string]any{"success": true}}}})
+		case "/trpc/secrets.delete":
+			_ = json.NewEncoder(w).Encode(map[string]any{"result": map[string]any{"data": map[string]any{"json": map[string]any{"success": true}}}})
+		case "/trpc/marketplace.list":
+			body, _ := io.ReadAll(r.Body)
+			if !strings.Contains(string(body), `"filter":"tool"`) {
+				t.Fatalf("expected marketplace.list payload, got %s", string(body))
+			}
+			_ = json.NewEncoder(w).Encode(map[string]any{"result": map[string]any{"data": map[string]any{"json": []any{map[string]any{"id": "entry-1", "name": "Tool One"}}}}})
+		case "/trpc/marketplace.install":
+			_ = json.NewEncoder(w).Encode(map[string]any{"result": map[string]any{"data": map[string]any{"json": map[string]any{"installed": true}}}})
+		case "/trpc/marketplace.publish":
+			_ = json.NewEncoder(w).Encode(map[string]any{"result": map[string]any{"data": map[string]any{"json": map[string]any{"id": "entry-2"}}}})
+		case "/trpc/catalog.list":
+			body, _ := io.ReadAll(r.Body)
+			if !strings.Contains(string(body), `"search":"mcp"`) || !strings.Contains(string(body), `"limit":10`) {
+				t.Fatalf("expected catalog.list payload, got %s", string(body))
+			}
+			_ = json.NewEncoder(w).Encode(map[string]any{"result": map[string]any{"data": map[string]any{"json": map[string]any{"servers": []any{map[string]any{"uuid": "catalog-1", "display_name": "Catalog One"}}, "total": 1}}}})
+		case "/trpc/catalog.get":
+			body, _ := io.ReadAll(r.Body)
+			if !strings.Contains(string(body), `"uuid":"catalog-1"`) {
+				t.Fatalf("expected catalog.get payload, got %s", string(body))
+			}
+			_ = json.NewEncoder(w).Encode(map[string]any{"result": map[string]any{"data": map[string]any{"json": map[string]any{"server": map[string]any{"uuid": "catalog-1"}}}}})
+		case "/trpc/catalog.listRuns":
+			body, _ := io.ReadAll(r.Body)
+			if !strings.Contains(string(body), `"server_uuid":"catalog-1"`) {
+				t.Fatalf("expected catalog.listRuns payload, got %s", string(body))
+			}
+			_ = json.NewEncoder(w).Encode(map[string]any{"result": map[string]any{"data": map[string]any{"json": []any{map[string]any{"uuid": "run-1", "outcome": "passed"}}}}})
+		case "/trpc/catalog.triggerIngestion":
+			_ = json.NewEncoder(w).Encode(map[string]any{"result": map[string]any{"data": map[string]any{"json": map[string]any{"total_upserted": 3}}}})
+		case "/trpc/catalog.triggerValidation":
+			_ = json.NewEncoder(w).Encode(map[string]any{"result": map[string]any{"data": map[string]any{"json": map[string]any{"run_uuid": "run-1", "outcome": "passed"}}}})
+		case "/trpc/catalog.installFromRecipe":
+			_ = json.NewEncoder(w).Encode(map[string]any{"result": map[string]any{"data": map[string]any{"json": map[string]any{"installed": true, "server_uuid": "managed-1"}}}})
+		case "/trpc/catalog.triggerBatchValidation":
+			_ = json.NewEncoder(w).Encode(map[string]any{"result": map[string]any{"data": map[string]any{"json": map[string]any{"queued": 1, "passed": 1}}}})
+		case "/trpc/catalog.stats":
+			_ = json.NewEncoder(w).Encode(map[string]any{"result": map[string]any{"data": map[string]any{"json": map[string]any{"total": 9, "validated": 4}}}})
+		case "/trpc/catalog.listLinkedServers":
+			body, _ := io.ReadAll(r.Body)
+			if !strings.Contains(string(body), `"published_server_uuid":"catalog-1"`) {
+				t.Fatalf("expected catalog.listLinkedServers payload, got %s", string(body))
+			}
+			_ = json.NewEncoder(w).Encode(map[string]any{"result": map[string]any{"data": map[string]any{"json": []any{map[string]any{"uuid": "managed-1"}}}}})
+		default:
+			t.Fatalf("unexpected upstream path %s", r.URL.Path)
+		}
+	}))
+	defer upstream.Close()
+
+	t.Setenv("BORG_TRPC_UPSTREAM", upstream.URL+"/trpc")
+
+	cfg := config.Default()
+	cfg.MainConfigDir = t.TempDir()
+	server := New(cfg, stubDetector{})
+
+	cases := []struct {
+		name      string
+		method    string
+		path      string
+		body      string
+		contains  string
+		procedure string
+	}{
+		{name: "policies list", method: http.MethodGet, path: "/api/policies", contains: `"policy-1"`, procedure: `"procedure":"policies.list"`},
+		{name: "policies get", method: http.MethodGet, path: "/api/policies/get?uuid=policy-1", contains: `"Default"`, procedure: `"procedure":"policies.get"`},
+		{name: "policies create", method: http.MethodPost, path: "/api/policies/create", body: `{"name":"New Policy","resource":"tool","action":"read","effect":"allow"}`, contains: `"policy-2"`, procedure: `"procedure":"policies.create"`},
+		{name: "policies update", method: http.MethodPost, path: "/api/policies/update", body: `{"uuid":"policy-1","name":"Updated"}`, contains: `"Updated"`, procedure: `"procedure":"policies.update"`},
+		{name: "policies delete", method: http.MethodPost, path: "/api/policies/delete", body: `{"uuid":"policy-1"}`, contains: `"success":true`, procedure: `"procedure":"policies.delete"`},
+		{name: "secrets list", method: http.MethodGet, path: "/api/secrets", contains: `"OPENAI_API_KEY"`, procedure: `"procedure":"secrets.list"`},
+		{name: "secrets set", method: http.MethodPost, path: "/api/secrets/set", body: `{"key":"OPENAI_API_KEY","value":"secret"}`, contains: `"success":true`, procedure: `"procedure":"secrets.set"`},
+		{name: "secrets delete", method: http.MethodPost, path: "/api/secrets/delete", body: `{"key":"OPENAI_API_KEY"}`, contains: `"success":true`, procedure: `"procedure":"secrets.delete"`},
+		{name: "marketplace list", method: http.MethodGet, path: "/api/marketplace?filter=tool", contains: `"entry-1"`, procedure: `"procedure":"marketplace.list"`},
+		{name: "marketplace install", method: http.MethodPost, path: "/api/marketplace/install", body: `{"id":"entry-1"}`, contains: `"installed":true`, procedure: `"procedure":"marketplace.install"`},
+		{name: "marketplace publish", method: http.MethodPost, path: "/api/marketplace/publish", body: `{"name":"Tool One","description":"desc","url":"https://example.com"}`, contains: `"entry-2"`, procedure: `"procedure":"marketplace.publish"`},
+		{name: "catalog list", method: http.MethodGet, path: "/api/catalog?limit=10&offset=0&search=mcp&status=validated&transport=STDIO&install_method=npm", contains: `"catalog-1"`, procedure: `"procedure":"catalog.list"`},
+		{name: "catalog get", method: http.MethodGet, path: "/api/catalog/get?uuid=catalog-1", contains: `"catalog-1"`, procedure: `"procedure":"catalog.get"`},
+		{name: "catalog runs", method: http.MethodGet, path: "/api/catalog/runs?server_uuid=catalog-1&limit=5", contains: `"run-1"`, procedure: `"procedure":"catalog.listRuns"`},
+		{name: "catalog ingest", method: http.MethodPost, path: "/api/catalog/ingest", body: `{}`, contains: `"total_upserted":3`, procedure: `"procedure":"catalog.triggerIngestion"`},
+		{name: "catalog validate", method: http.MethodPost, path: "/api/catalog/validate", body: `{"server_uuid":"catalog-1"}`, contains: `"outcome":"passed"`, procedure: `"procedure":"catalog.triggerValidation"`},
+		{name: "catalog install", method: http.MethodPost, path: "/api/catalog/install", body: `{"server_uuid":"catalog-1","env":{"TOKEN":"x"},"name":"installed-server"}`, contains: `"managed-1"`, procedure: `"procedure":"catalog.installFromRecipe"`},
+		{name: "catalog validate batch", method: http.MethodPost, path: "/api/catalog/validate-batch", body: `{"statuses":["normalized"],"max_servers":5}`, contains: `"queued":1`, procedure: `"procedure":"catalog.triggerBatchValidation"`},
+		{name: "catalog stats", method: http.MethodGet, path: "/api/catalog/stats", contains: `"total":9`, procedure: `"procedure":"catalog.stats"`},
+		{name: "catalog linked servers", method: http.MethodGet, path: "/api/catalog/linked-servers?published_server_uuid=catalog-1", contains: `"managed-1"`, procedure: `"procedure":"catalog.listLinkedServers"`},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			var body io.Reader
+			if tc.body != "" {
+				body = strings.NewReader(tc.body)
+			}
+			request := httptest.NewRequest(tc.method, tc.path, body)
+			if tc.body != "" {
+				request.Header.Set("content-type", "application/json")
+			}
+			recorder := httptest.NewRecorder()
+			server.Handler().ServeHTTP(recorder, request)
+			if recorder.Code != http.StatusOK {
+				t.Fatalf("expected status 200, got %d with body %s", recorder.Code, recorder.Body.String())
+			}
+			if !strings.Contains(recorder.Body.String(), tc.contains) {
+				t.Fatalf("expected response to contain %s, got %s", tc.contains, recorder.Body.String())
+			}
+			if !strings.Contains(recorder.Body.String(), tc.procedure) {
+				t.Fatalf("expected bridge metadata %s, got %s", tc.procedure, recorder.Body.String())
+			}
+		})
+	}
+}
+
 func TestCLIToolsEndpoint(t *testing.T) {
 	server := New(config.Default(), stubDetector{
 		tools: []controlplane.Tool{

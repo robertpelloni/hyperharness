@@ -423,6 +423,26 @@ func (s *Server) registerRoutes() {
 	s.mux.HandleFunc("/api/expert/research", s.handleExpertResearch)
 	s.mux.HandleFunc("/api/expert/code", s.handleExpertCode)
 	s.mux.HandleFunc("/api/expert/status", s.handleExpertStatus)
+	s.mux.HandleFunc("/api/policies", s.handlePoliciesList)
+	s.mux.HandleFunc("/api/policies/get", s.handlePoliciesGet)
+	s.mux.HandleFunc("/api/policies/create", s.handlePoliciesCreate)
+	s.mux.HandleFunc("/api/policies/update", s.handlePoliciesUpdate)
+	s.mux.HandleFunc("/api/policies/delete", s.handlePoliciesDelete)
+	s.mux.HandleFunc("/api/secrets", s.handleSecretsList)
+	s.mux.HandleFunc("/api/secrets/set", s.handleSecretsSet)
+	s.mux.HandleFunc("/api/secrets/delete", s.handleSecretsDelete)
+	s.mux.HandleFunc("/api/marketplace", s.handleMarketplaceList)
+	s.mux.HandleFunc("/api/marketplace/install", s.handleMarketplaceInstall)
+	s.mux.HandleFunc("/api/marketplace/publish", s.handleMarketplacePublish)
+	s.mux.HandleFunc("/api/catalog", s.handleCatalogList)
+	s.mux.HandleFunc("/api/catalog/get", s.handleCatalogGet)
+	s.mux.HandleFunc("/api/catalog/runs", s.handleCatalogRuns)
+	s.mux.HandleFunc("/api/catalog/ingest", s.handleCatalogIngest)
+	s.mux.HandleFunc("/api/catalog/validate", s.handleCatalogValidate)
+	s.mux.HandleFunc("/api/catalog/install", s.handleCatalogInstall)
+	s.mux.HandleFunc("/api/catalog/validate-batch", s.handleCatalogValidateBatch)
+	s.mux.HandleFunc("/api/catalog/stats", s.handleCatalogStats)
+	s.mux.HandleFunc("/api/catalog/linked-servers", s.handleCatalogLinkedServers)
 	s.mux.HandleFunc("/api/cli/tools", s.handleCLITools)
 	s.mux.HandleFunc("/api/cli/harnesses", s.handleHarnesses)
 	s.mux.HandleFunc("/api/cli/summary", s.handleCLISummary)
@@ -656,6 +676,26 @@ func (s *Server) handleAPIIndex(w http.ResponseWriter, _ *http.Request) {
 				{Path: "/api/expert/research", Category: "agents", Description: "Dispatch a research task through the TypeScript expert router."},
 				{Path: "/api/expert/code", Category: "agents", Description: "Dispatch a coding task through the TypeScript expert router."},
 				{Path: "/api/expert/status", Category: "agents", Description: "Read TypeScript expert agent status."},
+				{Path: "/api/policies", Category: "governance", Description: "List policies through the TypeScript policies router."},
+				{Path: "/api/policies/get", Category: "governance", Description: "Read a policy through the TypeScript policies router."},
+				{Path: "/api/policies/create", Category: "governance", Description: "Create a policy through the TypeScript policies router."},
+				{Path: "/api/policies/update", Category: "governance", Description: "Update a policy through the TypeScript policies router."},
+				{Path: "/api/policies/delete", Category: "governance", Description: "Delete a policy through the TypeScript policies router."},
+				{Path: "/api/secrets", Category: "governance", Description: "List secrets through the TypeScript secrets router."},
+				{Path: "/api/secrets/set", Category: "governance", Description: "Set a secret through the TypeScript secrets router."},
+				{Path: "/api/secrets/delete", Category: "governance", Description: "Delete a secret through the TypeScript secrets router."},
+				{Path: "/api/marketplace", Category: "registry", Description: "List marketplace entries through the TypeScript marketplace router."},
+				{Path: "/api/marketplace/install", Category: "registry", Description: "Install a marketplace entry through the TypeScript marketplace router."},
+				{Path: "/api/marketplace/publish", Category: "registry", Description: "Publish a marketplace entry through the TypeScript marketplace router."},
+				{Path: "/api/catalog", Category: "registry", Description: "List published catalog entries through the TypeScript catalog router."},
+				{Path: "/api/catalog/get", Category: "registry", Description: "Read a published catalog entry through the TypeScript catalog router."},
+				{Path: "/api/catalog/runs", Category: "registry", Description: "List validation runs through the TypeScript catalog router."},
+				{Path: "/api/catalog/ingest", Category: "registry", Description: "Trigger published catalog ingestion through the TypeScript catalog router."},
+				{Path: "/api/catalog/validate", Category: "registry", Description: "Trigger published catalog validation through the TypeScript catalog router."},
+				{Path: "/api/catalog/install", Category: "registry", Description: "Install an MCP server from a TypeScript catalog recipe."},
+				{Path: "/api/catalog/validate-batch", Category: "registry", Description: "Trigger batch catalog validation through the TypeScript catalog router."},
+				{Path: "/api/catalog/stats", Category: "registry", Description: "Read catalog summary stats through the TypeScript catalog router."},
+				{Path: "/api/catalog/linked-servers", Category: "registry", Description: "List managed servers linked to a published catalog entry."},
 				{Path: "/api/cli/tools", Category: "cli", Description: "Detected local CLI tools and versions."},
 				{Path: "/api/cli/harnesses", Category: "cli", Description: "Harness registry metadata and install visibility."},
 				{Path: "/api/cli/summary", Category: "cli", Description: "Compact CLI and harness readiness summary."},
@@ -1919,6 +1959,139 @@ func (s *Server) handleExpertCode(w http.ResponseWriter, r *http.Request) {
 
 func (s *Server) handleExpertStatus(w http.ResponseWriter, r *http.Request) {
 	s.handleTRPCBridgeCall(w, r, http.MethodGet, "expert.getStatus", nil)
+}
+
+func (s *Server) handlePoliciesList(w http.ResponseWriter, r *http.Request) {
+	s.handleTRPCBridgeCall(w, r, http.MethodGet, "policies.list", nil)
+}
+
+func (s *Server) handlePoliciesGet(w http.ResponseWriter, r *http.Request) {
+	uuid := strings.TrimSpace(r.URL.Query().Get("uuid"))
+	if uuid == "" {
+		writeJSON(w, http.StatusBadRequest, map[string]any{"success": false, "error": "missing uuid query parameter"})
+		return
+	}
+	s.handleTRPCBridgeCall(w, r, http.MethodGet, "policies.get", map[string]any{"uuid": uuid})
+}
+
+func (s *Server) handlePoliciesCreate(w http.ResponseWriter, r *http.Request) {
+	s.handleTRPCBridgeBodyCall(w, r, "policies.create")
+}
+
+func (s *Server) handlePoliciesUpdate(w http.ResponseWriter, r *http.Request) {
+	s.handleTRPCBridgeBodyCall(w, r, "policies.update")
+}
+
+func (s *Server) handlePoliciesDelete(w http.ResponseWriter, r *http.Request) {
+	s.handleTRPCBridgeBodyCall(w, r, "policies.delete")
+}
+
+func (s *Server) handleSecretsList(w http.ResponseWriter, r *http.Request) {
+	s.handleTRPCBridgeCall(w, r, http.MethodGet, "secrets.list", nil)
+}
+
+func (s *Server) handleSecretsSet(w http.ResponseWriter, r *http.Request) {
+	s.handleTRPCBridgeBodyCall(w, r, "secrets.set")
+}
+
+func (s *Server) handleSecretsDelete(w http.ResponseWriter, r *http.Request) {
+	s.handleTRPCBridgeBodyCall(w, r, "secrets.delete")
+}
+
+func (s *Server) handleMarketplaceList(w http.ResponseWriter, r *http.Request) {
+	payload := map[string]any{}
+	if filter := strings.TrimSpace(r.URL.Query().Get("filter")); filter != "" {
+		payload["filter"] = filter
+	}
+	s.handleTRPCBridgeCall(w, r, http.MethodGet, "marketplace.list", payload)
+}
+
+func (s *Server) handleMarketplaceInstall(w http.ResponseWriter, r *http.Request) {
+	s.handleTRPCBridgeBodyCall(w, r, "marketplace.install")
+}
+
+func (s *Server) handleMarketplacePublish(w http.ResponseWriter, r *http.Request) {
+	s.handleTRPCBridgeBodyCall(w, r, "marketplace.publish")
+}
+
+func (s *Server) handleCatalogList(w http.ResponseWriter, r *http.Request) {
+	payload := map[string]any{}
+	if limit := strings.TrimSpace(r.URL.Query().Get("limit")); limit != "" {
+		if parsed, err := strconv.Atoi(limit); err == nil {
+			payload["limit"] = parsed
+		}
+	}
+	if offset := strings.TrimSpace(r.URL.Query().Get("offset")); offset != "" {
+		if parsed, err := strconv.Atoi(offset); err == nil {
+			payload["offset"] = parsed
+		}
+	}
+	if search := strings.TrimSpace(r.URL.Query().Get("search")); search != "" {
+		payload["search"] = search
+	}
+	if status := strings.TrimSpace(r.URL.Query().Get("status")); status != "" {
+		payload["status"] = status
+	}
+	if transport := strings.TrimSpace(r.URL.Query().Get("transport")); transport != "" {
+		payload["transport"] = transport
+	}
+	if installMethod := strings.TrimSpace(r.URL.Query().Get("install_method")); installMethod != "" {
+		payload["install_method"] = installMethod
+	}
+	s.handleTRPCBridgeCall(w, r, http.MethodGet, "catalog.list", payload)
+}
+
+func (s *Server) handleCatalogGet(w http.ResponseWriter, r *http.Request) {
+	uuid := strings.TrimSpace(r.URL.Query().Get("uuid"))
+	if uuid == "" {
+		writeJSON(w, http.StatusBadRequest, map[string]any{"success": false, "error": "missing uuid query parameter"})
+		return
+	}
+	s.handleTRPCBridgeCall(w, r, http.MethodGet, "catalog.get", map[string]any{"uuid": uuid})
+}
+
+func (s *Server) handleCatalogRuns(w http.ResponseWriter, r *http.Request) {
+	serverUUID := strings.TrimSpace(r.URL.Query().Get("server_uuid"))
+	if serverUUID == "" {
+		writeJSON(w, http.StatusBadRequest, map[string]any{"success": false, "error": "missing server_uuid query parameter"})
+		return
+	}
+	payload := map[string]any{"server_uuid": serverUUID}
+	if limit := strings.TrimSpace(r.URL.Query().Get("limit")); limit != "" {
+		if parsed, err := strconv.Atoi(limit); err == nil {
+			payload["limit"] = parsed
+		}
+	}
+	s.handleTRPCBridgeCall(w, r, http.MethodGet, "catalog.listRuns", payload)
+}
+
+func (s *Server) handleCatalogIngest(w http.ResponseWriter, r *http.Request) {
+	s.handleTRPCBridgeBodyCall(w, r, "catalog.triggerIngestion")
+}
+
+func (s *Server) handleCatalogValidate(w http.ResponseWriter, r *http.Request) {
+	s.handleTRPCBridgeBodyCall(w, r, "catalog.triggerValidation")
+}
+
+func (s *Server) handleCatalogInstall(w http.ResponseWriter, r *http.Request) {
+	s.handleTRPCBridgeBodyCall(w, r, "catalog.installFromRecipe")
+}
+
+func (s *Server) handleCatalogValidateBatch(w http.ResponseWriter, r *http.Request) {
+	s.handleTRPCBridgeBodyCall(w, r, "catalog.triggerBatchValidation")
+}
+
+func (s *Server) handleCatalogStats(w http.ResponseWriter, r *http.Request) {
+	s.handleTRPCBridgeCall(w, r, http.MethodGet, "catalog.stats", nil)
+}
+
+func (s *Server) handleCatalogLinkedServers(w http.ResponseWriter, r *http.Request) {
+	publishedServerUUID := strings.TrimSpace(r.URL.Query().Get("published_server_uuid"))
+	if publishedServerUUID == "" {
+		writeJSON(w, http.StatusBadRequest, map[string]any{"success": false, "error": "missing published_server_uuid query parameter"})
+		return
+	}
+	s.handleTRPCBridgeCall(w, r, http.MethodGet, "catalog.listLinkedServers", map[string]any{"published_server_uuid": publishedServerUUID})
 }
 
 func (s *Server) handleSessionBridgeBodyCall(w http.ResponseWriter, r *http.Request, procedure string) {
