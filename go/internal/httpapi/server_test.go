@@ -445,6 +445,91 @@ func TestAutonomyBridgeRoutes(t *testing.T) {
 	}
 }
 
+func TestDirectorBridgeRoutes(t *testing.T) {
+	upstream := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("content-type", "application/json")
+		switch r.URL.Path {
+		case "/trpc/director.memorize":
+			_ = json.NewEncoder(w).Encode(map[string]any{
+				"result": map[string]any{"data": map[string]any{"json": "Memorized."}},
+			})
+		case "/trpc/director.chat":
+			body, _ := io.ReadAll(r.Body)
+			if !strings.Contains(string(body), `"message":"status?"`) {
+				t.Fatalf("expected director.chat payload, got %s", string(body))
+			}
+			_ = json.NewEncoder(w).Encode(map[string]any{
+				"result": map[string]any{"data": map[string]any{"json": "Director online"}},
+			})
+		case "/trpc/director.status":
+			_ = json.NewEncoder(w).Encode(map[string]any{
+				"result": map[string]any{"data": map[string]any{"json": map[string]any{"status": "online"}}},
+			})
+		case "/trpc/director.updateConfig":
+			_ = json.NewEncoder(w).Encode(map[string]any{
+				"result": map[string]any{"data": map[string]any{"json": map[string]any{"success": true}}},
+			})
+		case "/trpc/director.stopAutoDrive":
+			_ = json.NewEncoder(w).Encode(map[string]any{
+				"result": map[string]any{"data": map[string]any{"json": "Stopped"}},
+			})
+		case "/trpc/director.startAutoDrive":
+			_ = json.NewEncoder(w).Encode(map[string]any{
+				"result": map[string]any{"data": map[string]any{"json": "Started"}},
+			})
+		default:
+			t.Fatalf("unexpected upstream path %s", r.URL.Path)
+		}
+	}))
+	defer upstream.Close()
+
+	t.Setenv("BORG_TRPC_UPSTREAM", upstream.URL+"/trpc")
+
+	cfg := config.Default()
+	cfg.MainConfigDir = t.TempDir()
+	server := New(cfg, stubDetector{})
+
+	cases := []struct {
+		name      string
+		method    string
+		path      string
+		body      string
+		contains  string
+		procedure string
+	}{
+		{name: "director memorize", method: http.MethodPost, path: "/api/director/memorize", body: `{"content":"memo","source":"web","title":"Note"}`, contains: `"Memorized."`, procedure: `"procedure":"director.memorize"`},
+		{name: "director chat", method: http.MethodPost, path: "/api/director/chat", body: `{"message":"status?"}`, contains: `"Director online"`, procedure: `"procedure":"director.chat"`},
+		{name: "director status", method: http.MethodGet, path: "/api/director/status", contains: `"status":"online"`, procedure: `"procedure":"director.status"`},
+		{name: "director update config", method: http.MethodPost, path: "/api/director/config/update", body: `{"defaultTopic":"mcp"}`, contains: `"success":true`, procedure: `"procedure":"director.updateConfig"`},
+		{name: "director stop auto drive", method: http.MethodPost, path: "/api/director/auto-drive/stop", body: `null`, contains: `"Stopped"`, procedure: `"procedure":"director.stopAutoDrive"`},
+		{name: "director start auto drive", method: http.MethodPost, path: "/api/director/auto-drive/start", body: `null`, contains: `"Started"`, procedure: `"procedure":"director.startAutoDrive"`},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			var body io.Reader
+			if tc.body != "" {
+				body = strings.NewReader(tc.body)
+			}
+			request := httptest.NewRequest(tc.method, tc.path, body)
+			if tc.body != "" {
+				request.Header.Set("content-type", "application/json")
+			}
+			recorder := httptest.NewRecorder()
+			server.Handler().ServeHTTP(recorder, request)
+			if recorder.Code != http.StatusOK {
+				t.Fatalf("expected status 200, got %d with body %s", recorder.Code, recorder.Body.String())
+			}
+			if !strings.Contains(recorder.Body.String(), tc.contains) {
+				t.Fatalf("expected response to contain %s, got %s", tc.contains, recorder.Body.String())
+			}
+			if !strings.Contains(recorder.Body.String(), tc.procedure) {
+				t.Fatalf("expected bridge metadata %s, got %s", tc.procedure, recorder.Body.String())
+			}
+		})
+	}
+}
+
 func TestConfigStatusEndpoint(t *testing.T) {
 	workspaceRoot := t.TempDir()
 	cfg := config.Default()

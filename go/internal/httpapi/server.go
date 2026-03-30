@@ -331,6 +331,12 @@ func (s *Server) registerRoutes() {
 	s.mux.HandleFunc("/api/autonomy/get-level", s.handleAutonomyGetLevel)
 	s.mux.HandleFunc("/api/autonomy/set-level", s.handleAutonomySetLevel)
 	s.mux.HandleFunc("/api/autonomy/activate-full", s.handleAutonomyActivateFull)
+	s.mux.HandleFunc("/api/director/memorize", s.handleDirectorMemorize)
+	s.mux.HandleFunc("/api/director/chat", s.handleDirectorChat)
+	s.mux.HandleFunc("/api/director/status", s.handleDirectorStatus)
+	s.mux.HandleFunc("/api/director/config/update", s.handleDirectorUpdateConfig)
+	s.mux.HandleFunc("/api/director/auto-drive/stop", s.handleDirectorStopAutoDrive)
+	s.mux.HandleFunc("/api/director/auto-drive/start", s.handleDirectorStartAutoDrive)
 	s.mux.HandleFunc("/api/metrics/stats", s.handleMetricsStats)
 	s.mux.HandleFunc("/api/metrics/track", s.handleMetricsTrack)
 	s.mux.HandleFunc("/api/metrics/system-snapshot", s.handleMetricsSystemSnapshot)
@@ -774,6 +780,12 @@ func (s *Server) handleAPIIndex(w http.ResponseWriter, _ *http.Request) {
 				{Path: "/api/autonomy/get-level", Category: "governance", Description: "Read the current autonomy level through the TypeScript autonomy router."},
 				{Path: "/api/autonomy/set-level", Category: "governance", Description: "Set autonomy level through the TypeScript autonomy router."},
 				{Path: "/api/autonomy/activate-full", Category: "governance", Description: "Activate full autonomy through the TypeScript autonomy router."},
+				{Path: "/api/director/memorize", Category: "governance", Description: "Send memory content to the TypeScript director router."},
+				{Path: "/api/director/chat", Category: "governance", Description: "Chat with the TypeScript director runtime."},
+				{Path: "/api/director/status", Category: "governance", Description: "Read TypeScript director runtime status."},
+				{Path: "/api/director/config/update", Category: "governance", Description: "Update TypeScript director config."},
+				{Path: "/api/director/auto-drive/stop", Category: "governance", Description: "Stop auto-drive through the TypeScript director router."},
+				{Path: "/api/director/auto-drive/start", Category: "governance", Description: "Start auto-drive through the TypeScript director router."},
 				{Path: "/api/policies", Category: "governance", Description: "List policies through the TypeScript policies router."},
 				{Path: "/api/policies/get", Category: "governance", Description: "Read a policy through the TypeScript policies router."},
 				{Path: "/api/policies/create", Category: "governance", Description: "Create a policy through the TypeScript policies router."},
