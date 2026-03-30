@@ -78,7 +78,7 @@ export function registerMcpCommand(program: Command): void {
     .option('-n, --namespace <ns>', 'Server namespace', 'default')
     .option('--args <args...>', 'Command arguments')
     .option('--env <vars...>', 'Environment variables (KEY=VALUE)')
-    .option('--auto-start', 'Auto-start on Borg launch', true)
+    .option('--auto-start', 'Auto-start on HyperCode launch', true)
     .addHelpText('after', `
 Examples:
   $ borg mcp add filesystem npx -- -y @modelcontextprotocol/server-filesystem /home

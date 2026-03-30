@@ -46,7 +46,7 @@ export function registerSessionCommand(program: Command): void {
 
   session
     .command('harnesses')
-    .description('List Borg-supported CLI harness identities and maturity')
+    .description('List HyperCode-supported CLI harness identities and maturity')
     .option('--json', 'Output harness metadata as JSON')
     .option('--verbose', 'Show extra integration and tool inventory details')
     .action(async (opts) => {
@@ -139,7 +139,7 @@ ${formatCliHarnessHelpLines()}
       console.log(chalk.dim(`    Model:    ${opts.model || 'auto'}`));
       console.log(chalk.dim(`    Restart:  ${opts.autoRestart ? 'enabled' : 'disabled'}`));
       if (definition.primary) {
-        console.log(chalk.cyan(`    Role:     primary Borg CLI harness lane`));
+        console.log(chalk.cyan(`    Role:     primary HyperCode CLI harness lane`));
       }
       if (definition.submodulePath) {
         console.log(chalk.dim(`    Source:   ${definition.submodulePath}`));

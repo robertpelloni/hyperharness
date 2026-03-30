@@ -1,7 +1,7 @@
 /**
  * `borg status` - Show system status overview
  *
- * Displays the current state of the Borg system including server status,
+ * Displays the current state of the HyperCode system including server status,
  * MCP servers, active sessions, memory usage, and provider quotas.
  *
  * @example
@@ -20,7 +20,7 @@ export function registerStatusCommand(program: Command): void {
 
   program
     .command('status')
-    .description('Show Borg system status (server, MCP, sessions, memory, providers)')
+    .description('Show HyperCode system status (server, MCP, sessions, memory, providers)')
     .option('--json', 'Output as JSON')
     .addHelpText('after', `
 Examples:
@@ -44,7 +44,7 @@ Examples:
         return;
       }
 
-      console.log(chalk.bold.cyan('\n  ⬡ Borg Status\n'));
+      console.log(chalk.bold.cyan('\n  ⬡ HyperCode Status\n'));
 
       const table = new Table({
         chars: { mid: '', 'left-mid': '', 'mid-mid': '', 'right-mid': '' },

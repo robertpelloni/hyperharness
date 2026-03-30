@@ -279,6 +279,31 @@ func (s *Server) registerRoutes() {
 	s.mux.HandleFunc("/api/mcp/working-set/evictions/clear", s.handleMCPClearWorkingSetEvictions)
 	s.mux.HandleFunc("/api/mcp/working-set/load", s.handleMCPLoadTool)
 	s.mux.HandleFunc("/api/mcp/working-set/unload", s.handleMCPUnloadTool)
+	s.mux.HandleFunc("/api/memory/search", s.handleMemorySearch)
+	s.mux.HandleFunc("/api/memory/contexts", s.handleMemoryContexts)
+	s.mux.HandleFunc("/api/memory/context/get", s.handleMemoryContextGet)
+	s.mux.HandleFunc("/api/memory/context/delete", s.handleMemoryContextDelete)
+	s.mux.HandleFunc("/api/memory/agent-stats", s.handleMemoryAgentStats)
+	s.mux.HandleFunc("/api/memory/agent-search", s.handleMemoryAgentSearch)
+	s.mux.HandleFunc("/api/memory/session-bootstrap", s.handleMemorySessionBootstrap)
+	s.mux.HandleFunc("/api/memory/tool-context", s.handleMemoryToolContext)
+	s.mux.HandleFunc("/api/memory/session-summaries/recent", s.handleMemoryRecentSessionSummaries)
+	s.mux.HandleFunc("/api/memory/session-summaries/search", s.handleMemorySearchSessionSummaries)
+	s.mux.HandleFunc("/api/memory/interchange-formats", s.handleMemoryInterchangeFormats)
+	s.mux.HandleFunc("/api/memory/export", s.handleMemoryExport)
+	s.mux.HandleFunc("/api/memory/import", s.handleMemoryImport)
+	s.mux.HandleFunc("/api/memory/convert", s.handleMemoryConvert)
+	s.mux.HandleFunc("/api/agent-memory/search", s.handleAgentMemorySearch)
+	s.mux.HandleFunc("/api/agent-memory/add", s.handleAgentMemoryAdd)
+	s.mux.HandleFunc("/api/agent-memory/recent", s.handleAgentMemoryRecent)
+	s.mux.HandleFunc("/api/agent-memory/by-type", s.handleAgentMemoryByType)
+	s.mux.HandleFunc("/api/agent-memory/by-namespace", s.handleAgentMemoryByNamespace)
+	s.mux.HandleFunc("/api/agent-memory/delete", s.handleAgentMemoryDelete)
+	s.mux.HandleFunc("/api/agent-memory/clear-session", s.handleAgentMemoryClearSession)
+	s.mux.HandleFunc("/api/agent-memory/export", s.handleAgentMemoryExport)
+	s.mux.HandleFunc("/api/agent-memory/handoff", s.handleAgentMemoryHandoff)
+	s.mux.HandleFunc("/api/agent-memory/pickup", s.handleAgentMemoryPickup)
+	s.mux.HandleFunc("/api/agent-memory/stats", s.handleAgentMemoryStats)
 	s.mux.HandleFunc("/api/cli/tools", s.handleCLITools)
 	s.mux.HandleFunc("/api/cli/harnesses", s.handleHarnesses)
 	s.mux.HandleFunc("/api/cli/summary", s.handleCLISummary)
@@ -368,6 +393,31 @@ func (s *Server) handleAPIIndex(w http.ResponseWriter, _ *http.Request) {
 				{Path: "/api/mcp/working-set/evictions/clear", Category: "mcp", Description: "Clear TypeScript MCP working-set eviction history."},
 				{Path: "/api/mcp/working-set/load", Category: "mcp", Description: "Load an MCP tool into the TypeScript working set."},
 				{Path: "/api/mcp/working-set/unload", Category: "mcp", Description: "Unload an MCP tool from the TypeScript working set."},
+				{Path: "/api/memory/search", Category: "memory", Description: "Bridge to TypeScript contextual memory search."},
+				{Path: "/api/memory/contexts", Category: "memory", Description: "Bridge to TypeScript saved context listing."},
+				{Path: "/api/memory/context/get", Category: "memory", Description: "Bridge to a specific saved memory context."},
+				{Path: "/api/memory/context/delete", Category: "memory", Description: "Delete a saved memory context through the TypeScript control plane."},
+				{Path: "/api/memory/agent-stats", Category: "memory", Description: "Bridge to TypeScript agent-memory statistics."},
+				{Path: "/api/memory/agent-search", Category: "memory", Description: "Bridge to TypeScript agent-memory search."},
+				{Path: "/api/memory/session-bootstrap", Category: "memory", Description: "Bridge to TypeScript session bootstrap memory context."},
+				{Path: "/api/memory/tool-context", Category: "memory", Description: "Bridge to TypeScript tool-context memory lookup."},
+				{Path: "/api/memory/session-summaries/recent", Category: "memory", Description: "Bridge to recent session-summary memories from the TypeScript control plane."},
+				{Path: "/api/memory/session-summaries/search", Category: "memory", Description: "Bridge to session-summary memory search from the TypeScript control plane."},
+				{Path: "/api/memory/interchange-formats", Category: "memory", Description: "Bridge to the TypeScript memory interchange-format list."},
+				{Path: "/api/memory/export", Category: "memory", Description: "Bridge to TypeScript memory export."},
+				{Path: "/api/memory/import", Category: "memory", Description: "Bridge to TypeScript memory import."},
+				{Path: "/api/memory/convert", Category: "memory", Description: "Bridge to TypeScript memory format conversion."},
+				{Path: "/api/agent-memory/search", Category: "memory", Description: "Bridge to TypeScript agent-memory search across namespaces and tiers."},
+				{Path: "/api/agent-memory/add", Category: "memory", Description: "Add an agent-memory entry through the TypeScript control plane."},
+				{Path: "/api/agent-memory/recent", Category: "memory", Description: "Bridge to recent TypeScript agent-memory entries."},
+				{Path: "/api/agent-memory/by-type", Category: "memory", Description: "Bridge to TypeScript agent-memory entries for a specific tier."},
+				{Path: "/api/agent-memory/by-namespace", Category: "memory", Description: "Bridge to TypeScript agent-memory entries for a specific namespace."},
+				{Path: "/api/agent-memory/delete", Category: "memory", Description: "Delete a TypeScript agent-memory entry by id."},
+				{Path: "/api/agent-memory/clear-session", Category: "memory", Description: "Clear session-tier agent memory through the TypeScript control plane."},
+				{Path: "/api/agent-memory/export", Category: "memory", Description: "Bridge to TypeScript agent-memory export."},
+				{Path: "/api/agent-memory/handoff", Category: "memory", Description: "Create an agent-memory handoff artifact through the TypeScript control plane."},
+				{Path: "/api/agent-memory/pickup", Category: "memory", Description: "Restore an agent-memory handoff artifact through the TypeScript control plane."},
+				{Path: "/api/agent-memory/stats", Category: "memory", Description: "Bridge to TypeScript agent-memory counts by tier."},
 				{Path: "/api/cli/tools", Category: "cli", Description: "Detected local CLI tools and versions."},
 				{Path: "/api/cli/harnesses", Category: "cli", Description: "Harness registry metadata and install visibility."},
 				{Path: "/api/cli/summary", Category: "cli", Description: "Compact CLI and harness readiness summary."},
@@ -378,7 +428,7 @@ func (s *Server) handleAPIIndex(w http.ResponseWriter, _ *http.Request) {
 				{Path: "/api/import/candidates", Category: "imports", Description: "Validated import candidates with metadata."},
 				{Path: "/api/import/manifest", Category: "imports", Description: "Structured manifest of validated import candidates."},
 				{Path: "/api/import/summary", Category: "imports", Description: "Aggregate summary of validated import candidates."},
-				{Path: "/api/runtime/locks", Category: "runtime", Description: "Visibility into main Borg and sidecar lock files."},
+				{Path: "/api/runtime/locks", Category: "runtime", Description: "Visibility into main HyperCode and sidecar lock files."},
 				{Path: "/api/runtime/status", Category: "runtime", Description: "Top-level runtime summary across CLI, imports, providers, memory, and sessions."},
 				{Path: "/api/runtime/imported-instructions", Category: "runtime", Description: "Read-only bridge to imported instructions generated by the main fork."},
 			},
@@ -688,6 +738,239 @@ func (s *Server) handleMCPLoadTool(w http.ResponseWriter, r *http.Request) {
 
 func (s *Server) handleMCPUnloadTool(w http.ResponseWriter, r *http.Request) {
 	s.handleTRPCBridgeBodyCall(w, r, "mcp.unloadTool")
+}
+
+func (s *Server) handleMemorySearch(w http.ResponseWriter, r *http.Request) {
+	query := strings.TrimSpace(r.URL.Query().Get("query"))
+	if query == "" {
+		writeJSON(w, http.StatusBadRequest, map[string]any{
+			"success": false,
+			"error":   "missing query parameter",
+		})
+		return
+	}
+	payload := map[string]any{"query": query}
+	if limit := strings.TrimSpace(r.URL.Query().Get("limit")); limit != "" {
+		if parsed, err := strconv.Atoi(limit); err == nil {
+			payload["limit"] = parsed
+		}
+	}
+	s.handleTRPCBridgeCall(w, r, http.MethodGet, "memory.query", payload)
+}
+
+func (s *Server) handleMemoryContexts(w http.ResponseWriter, r *http.Request) {
+	s.handleTRPCBridgeCall(w, r, http.MethodGet, "memory.listContexts", nil)
+}
+
+func (s *Server) handleMemoryContextGet(w http.ResponseWriter, r *http.Request) {
+	id := strings.TrimSpace(r.URL.Query().Get("id"))
+	if id == "" {
+		writeJSON(w, http.StatusBadRequest, map[string]any{
+			"success": false,
+			"error":   "missing id query parameter",
+		})
+		return
+	}
+	s.handleTRPCBridgeCall(w, r, http.MethodGet, "memory.getContext", map[string]any{"id": id})
+}
+
+func (s *Server) handleMemoryContextDelete(w http.ResponseWriter, r *http.Request) {
+	s.handleTRPCBridgeBodyCall(w, r, "memory.deleteContext")
+}
+
+func (s *Server) handleMemoryAgentStats(w http.ResponseWriter, r *http.Request) {
+	s.handleTRPCBridgeCall(w, r, http.MethodGet, "memory.getAgentStats", nil)
+}
+
+func (s *Server) handleMemoryAgentSearch(w http.ResponseWriter, r *http.Request) {
+	query := strings.TrimSpace(r.URL.Query().Get("query"))
+	if query == "" {
+		writeJSON(w, http.StatusBadRequest, map[string]any{
+			"success": false,
+			"error":   "missing query parameter",
+		})
+		return
+	}
+	payload := map[string]any{"query": query}
+	if limit := strings.TrimSpace(r.URL.Query().Get("limit")); limit != "" {
+		if parsed, err := strconv.Atoi(limit); err == nil {
+			payload["limit"] = parsed
+		}
+	}
+	if memoryType := strings.TrimSpace(r.URL.Query().Get("type")); memoryType != "" {
+		payload["type"] = memoryType
+	}
+	s.handleTRPCBridgeCall(w, r, http.MethodGet, "memory.searchAgentMemory", payload)
+}
+
+func (s *Server) handleMemorySessionBootstrap(w http.ResponseWriter, r *http.Request) {
+	payload := map[string]any{}
+	if activeGoal := strings.TrimSpace(r.URL.Query().Get("activeGoal")); activeGoal != "" {
+		payload["activeGoal"] = activeGoal
+	}
+	if lastObjective := strings.TrimSpace(r.URL.Query().Get("lastObjective")); lastObjective != "" {
+		payload["lastObjective"] = lastObjective
+	}
+	s.handleTRPCBridgeCall(w, r, http.MethodGet, "memory.getSessionBootstrap", payload)
+}
+
+func (s *Server) handleMemoryToolContext(w http.ResponseWriter, r *http.Request) {
+	toolName := strings.TrimSpace(r.URL.Query().Get("toolName"))
+	if toolName == "" {
+		writeJSON(w, http.StatusBadRequest, map[string]any{
+			"success": false,
+			"error":   "missing toolName query parameter",
+		})
+		return
+	}
+	payload := map[string]any{"toolName": toolName}
+	if activeGoal := strings.TrimSpace(r.URL.Query().Get("activeGoal")); activeGoal != "" {
+		payload["activeGoal"] = activeGoal
+	}
+	if lastObjective := strings.TrimSpace(r.URL.Query().Get("lastObjective")); lastObjective != "" {
+		payload["lastObjective"] = lastObjective
+	}
+	s.handleTRPCBridgeCall(w, r, http.MethodGet, "memory.getToolContext", payload)
+}
+
+func (s *Server) handleMemoryRecentSessionSummaries(w http.ResponseWriter, r *http.Request) {
+	payload := map[string]any{"limit": 10}
+	if limit := strings.TrimSpace(r.URL.Query().Get("limit")); limit != "" {
+		if parsed, err := strconv.Atoi(limit); err == nil {
+			payload["limit"] = parsed
+		}
+	}
+	s.handleTRPCBridgeCall(w, r, http.MethodGet, "memory.getRecentSessionSummaries", payload)
+}
+
+func (s *Server) handleMemorySearchSessionSummaries(w http.ResponseWriter, r *http.Request) {
+	query := strings.TrimSpace(r.URL.Query().Get("query"))
+	if query == "" {
+		writeJSON(w, http.StatusBadRequest, map[string]any{
+			"success": false,
+			"error":   "missing query parameter",
+		})
+		return
+	}
+	payload := map[string]any{"query": query, "limit": 10}
+	if limit := strings.TrimSpace(r.URL.Query().Get("limit")); limit != "" {
+		if parsed, err := strconv.Atoi(limit); err == nil {
+			payload["limit"] = parsed
+		}
+	}
+	s.handleTRPCBridgeCall(w, r, http.MethodGet, "memory.searchSessionSummaries", payload)
+}
+
+func (s *Server) handleMemoryInterchangeFormats(w http.ResponseWriter, r *http.Request) {
+	s.handleTRPCBridgeCall(w, r, http.MethodGet, "memory.listInterchangeFormats", nil)
+}
+
+func (s *Server) handleMemoryExport(w http.ResponseWriter, r *http.Request) {
+	payload := map[string]any{"userId": "default", "format": "json"}
+	if userID := strings.TrimSpace(r.URL.Query().Get("userId")); userID != "" {
+		payload["userId"] = userID
+	}
+	if format := strings.TrimSpace(r.URL.Query().Get("format")); format != "" {
+		payload["format"] = format
+	}
+	s.handleTRPCBridgeCall(w, r, http.MethodGet, "memory.exportMemories", payload)
+}
+
+func (s *Server) handleMemoryImport(w http.ResponseWriter, r *http.Request) {
+	s.handleTRPCBridgeBodyCall(w, r, "memory.importMemories")
+}
+
+func (s *Server) handleMemoryConvert(w http.ResponseWriter, r *http.Request) {
+	s.handleTRPCBridgeBodyCall(w, r, "memory.convertMemories")
+}
+
+func (s *Server) handleAgentMemorySearch(w http.ResponseWriter, r *http.Request) {
+	query := strings.TrimSpace(r.URL.Query().Get("query"))
+	if query == "" {
+		writeJSON(w, http.StatusBadRequest, map[string]any{
+			"success": false,
+			"error":   "missing query parameter",
+		})
+		return
+	}
+	payload := map[string]any{"query": query}
+	if namespace := strings.TrimSpace(r.URL.Query().Get("namespace")); namespace != "" {
+		payload["namespace"] = namespace
+	}
+	if memoryType := strings.TrimSpace(r.URL.Query().Get("type")); memoryType != "" {
+		payload["type"] = memoryType
+	}
+	if limit := strings.TrimSpace(r.URL.Query().Get("limit")); limit != "" {
+		if parsed, err := strconv.Atoi(limit); err == nil {
+			payload["limit"] = parsed
+		}
+	}
+	s.handleTRPCBridgeCall(w, r, http.MethodGet, "agentMemory.search", payload)
+}
+
+func (s *Server) handleAgentMemoryAdd(w http.ResponseWriter, r *http.Request) {
+	s.handleTRPCBridgeBodyCall(w, r, "agentMemory.add")
+}
+
+func (s *Server) handleAgentMemoryRecent(w http.ResponseWriter, r *http.Request) {
+	payload := map[string]any{}
+	if memoryType := strings.TrimSpace(r.URL.Query().Get("type")); memoryType != "" {
+		payload["type"] = memoryType
+	}
+	if limit := strings.TrimSpace(r.URL.Query().Get("limit")); limit != "" {
+		if parsed, err := strconv.Atoi(limit); err == nil {
+			payload["limit"] = parsed
+		}
+	}
+	s.handleTRPCBridgeCall(w, r, http.MethodGet, "agentMemory.getRecent", payload)
+}
+
+func (s *Server) handleAgentMemoryByType(w http.ResponseWriter, r *http.Request) {
+	memoryType := strings.TrimSpace(r.URL.Query().Get("type"))
+	if memoryType == "" {
+		writeJSON(w, http.StatusBadRequest, map[string]any{
+			"success": false,
+			"error":   "missing type query parameter",
+		})
+		return
+	}
+	s.handleTRPCBridgeCall(w, r, http.MethodGet, "agentMemory.getByType", map[string]any{"type": memoryType})
+}
+
+func (s *Server) handleAgentMemoryByNamespace(w http.ResponseWriter, r *http.Request) {
+	namespace := strings.TrimSpace(r.URL.Query().Get("namespace"))
+	if namespace == "" {
+		writeJSON(w, http.StatusBadRequest, map[string]any{
+			"success": false,
+			"error":   "missing namespace query parameter",
+		})
+		return
+	}
+	s.handleTRPCBridgeCall(w, r, http.MethodGet, "agentMemory.getByNamespace", map[string]any{"namespace": namespace})
+}
+
+func (s *Server) handleAgentMemoryDelete(w http.ResponseWriter, r *http.Request) {
+	s.handleTRPCBridgeBodyCall(w, r, "agentMemory.delete")
+}
+
+func (s *Server) handleAgentMemoryClearSession(w http.ResponseWriter, r *http.Request) {
+	s.handleTRPCBridgeCall(w, r, http.MethodPost, "agentMemory.clearSession", nil)
+}
+
+func (s *Server) handleAgentMemoryExport(w http.ResponseWriter, r *http.Request) {
+	s.handleTRPCBridgeCall(w, r, http.MethodGet, "agentMemory.export", nil)
+}
+
+func (s *Server) handleAgentMemoryHandoff(w http.ResponseWriter, r *http.Request) {
+	s.handleTRPCBridgeBodyCall(w, r, "agentMemory.handoff")
+}
+
+func (s *Server) handleAgentMemoryPickup(w http.ResponseWriter, r *http.Request) {
+	s.handleTRPCBridgeBodyCall(w, r, "agentMemory.pickup")
+}
+
+func (s *Server) handleAgentMemoryStats(w http.ResponseWriter, r *http.Request) {
+	s.handleTRPCBridgeCall(w, r, http.MethodGet, "agentMemory.stats", nil)
 }
 
 func (s *Server) handleSessionBridgeBodyCall(w http.ResponseWriter, r *http.Request, procedure string) {

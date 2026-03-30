@@ -201,7 +201,7 @@ describe('acquireSingleInstanceLock', () => {
         }, {
             isProcessRunning: () => true,
             isPortFree: async () => false,
-        })).rejects.toThrow('Borg is already running');
+        })).rejects.toThrow('HyperCode is already running');
     });
 
     it('fails clearly when the requested port is already occupied by another process', async () => {
@@ -345,6 +345,24 @@ describe('dashboard startup helpers', () => {
             false,
             '127.0.0.1',
             {
+                fetchImpl: fetchImpl as any,
+                isPortFree: async (port) => port === 3010,
+            },
+        )).resolves.toEqual({
+            port: 3010,
+            reusedExisting: false,
+        });
+    });
+
+    it('does not reuse an existing dashboard when the core had to fall back ports', async () => {
+        const fetchImpl = vi.fn().mockResolvedValue({ ok: true });
+
+        await expect(pickDashboardPort(
+            3000,
+            false,
+            '127.0.0.1',
+            {
+                allowReuseExisting: false,
                 fetchImpl: fetchImpl as any,
                 isPortFree: async (port) => port === 3010,
             },

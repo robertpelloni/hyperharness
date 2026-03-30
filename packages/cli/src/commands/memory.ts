@@ -1,7 +1,7 @@
 /**
  * `borg memory` - Universal memory management
  *
- * Manage Borg's multi-backend memory system: add, search, browse,
+ * Manage HyperCode's multi-backend memory system: add, search, browse,
  * import/export, prune, and configure memory backends.
  *
  * @example

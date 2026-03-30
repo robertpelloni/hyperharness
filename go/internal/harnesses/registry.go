@@ -44,7 +44,7 @@ func List(workspaceRoot string, tools []controlplane.Tool) []Definition {
 	}
 
 	hypercodeTools := hypercodeToolNames(workspaceRoot)
-	externalHarnessNote := "External harness; Borg currently tracks install/runtime metadata only, not a source-backed tool registry."
+	externalHarnessNote := "External harness; HyperCode currently tracks install/runtime metadata only, not a source-backed tool registry."
 	definitions := []Definition{
 		{
 			ID:                  "hypercode",
@@ -56,7 +56,7 @@ func List(workspaceRoot string, tools []controlplane.Tool) []Definition {
 			Runtime:             "Go / Cobra / TUI",
 			LaunchCommand:       "go run .",
 			Capabilities:        []string{"repl", "pipe", "borg-adapter", "tool-registry"},
-			ParityNotes:         "Borg can read HyperCode tool calls directly from the assimilated submodule source.",
+			ParityNotes:         "HyperCode can read HyperCode tool calls directly from the assimilated submodule source.",
 			ToolCallCount:       len(hypercodeTools),
 			ToolCallNames:       hypercodeTools,
 			ToolSource:          "submodules/hypercode/tools/*.go",
@@ -80,7 +80,7 @@ func List(workspaceRoot string, tools []controlplane.Tool) []Definition {
 			Maturity:            "Experimental",
 			Runtime:             "Desktop IDE / command surface",
 			Upstream:            "https://antigravity.google/",
-			ParityNotes:         "Docs-backed Antigravity editor surface; Borg does not yet have a source-backed shell contract or tool registry for parity-safe integration.",
+			ParityNotes:         "Docs-backed Antigravity editor surface; HyperCode does not yet have a source-backed shell contract or tool registry for parity-safe integration.",
 			ToolInventoryStatus: "metadata-only",
 			IntegrationLevel:    "metadata-only",
 			Installed:           false,

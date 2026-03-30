@@ -56,7 +56,7 @@ export interface CliHarnessParitySummary {
 export const PRIMARY_CLI_HARNESS: CliHarness = 'hypercode';
 
 const EXTERNAL_HARNESS_NOTE =
-  'External harness; Borg currently tracks install/runtime metadata only, not a source-backed tool registry.';
+  'External harness; HyperCode currently tracks install/runtime metadata only, not a source-backed tool registry.';
 
 export const CLI_HARNESS_DEFINITIONS: Record<CliHarness, CliHarnessDefinition> = {
   hypercode: {
@@ -69,7 +69,7 @@ export const CLI_HARNESS_DEFINITIONS: Record<CliHarness, CliHarnessDefinition> =
     runtime: 'Go / Cobra / TUI',
     launchCommand: 'go run .',
     capabilities: ['repl', 'pipe', 'borg-adapter', 'tool-registry'],
-    parityNotes: 'Borg can read HyperCode tool calls directly from the assimilated submodule source.',
+    parityNotes: 'HyperCode can read HyperCode tool calls directly from the assimilated submodule source.',
   },
   aider: {
     id: 'aider',
@@ -85,7 +85,7 @@ export const CLI_HARNESS_DEFINITIONS: Record<CliHarness, CliHarnessDefinition> =
     runtime: 'Desktop IDE / command surface',
     upstream: 'https://antigravity.google/',
     parityNotes:
-      'Docs-backed Antigravity editor surface; Borg does not yet have a source-backed shell contract or tool registry for parity-safe integration.',
+      'Docs-backed Antigravity editor surface; HyperCode does not yet have a source-backed shell contract or tool registry for parity-safe integration.',
   },
   opencode: {
     id: 'opencode',

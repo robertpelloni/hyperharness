@@ -873,6 +873,215 @@ func TestImportedSessionBridgeRoutes(t *testing.T) {
 	}
 }
 
+func TestMemoryBridgeRoutes(t *testing.T) {
+	upstream := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("content-type", "application/json")
+		switch r.URL.Path {
+		case "/trpc/memory.query":
+			body, _ := io.ReadAll(r.Body)
+			if !strings.Contains(string(body), `"query":"bootstrap"`) {
+				t.Fatalf("expected memory.query payload, got %s", string(body))
+			}
+			_ = json.NewEncoder(w).Encode(map[string]any{"result": map[string]any{"data": map[string]any{"json": []map[string]any{{"id": "ctx-1", "title": "Bootstrap Context"}}}}})
+		case "/trpc/memory.listContexts":
+			_ = json.NewEncoder(w).Encode(map[string]any{"result": map[string]any{"data": map[string]any{"json": []map[string]any{{"id": "ctx-1", "title": "Bootstrap Context"}}}}})
+		case "/trpc/memory.getContext":
+			body, _ := io.ReadAll(r.Body)
+			if !strings.Contains(string(body), `"id":"ctx-1"`) {
+				t.Fatalf("expected memory.getContext id payload, got %s", string(body))
+			}
+			_ = json.NewEncoder(w).Encode(map[string]any{"result": map[string]any{"data": map[string]any{"json": map[string]any{"id": "ctx-1", "content": "hello"}}}})
+		case "/trpc/memory.deleteContext":
+			_ = json.NewEncoder(w).Encode(map[string]any{"result": map[string]any{"data": map[string]any{"json": map[string]any{"success": true}}}})
+		case "/trpc/memory.getAgentStats":
+			_ = json.NewEncoder(w).Encode(map[string]any{"result": map[string]any{"data": map[string]any{"json": map[string]any{"session": 1, "working": 2, "longTerm": 3, "total": 6}}}})
+		case "/trpc/memory.searchAgentMemory":
+			body, _ := io.ReadAll(r.Body)
+			if !strings.Contains(string(body), `"query":"memory"`) {
+				t.Fatalf("expected memory.searchAgentMemory payload, got %s", string(body))
+			}
+			_ = json.NewEncoder(w).Encode(map[string]any{"result": map[string]any{"data": map[string]any{"json": []map[string]any{{"id": "mem-1", "content": "memory result"}}}}})
+		case "/trpc/memory.getSessionBootstrap":
+			_ = json.NewEncoder(w).Encode(map[string]any{"result": map[string]any{"data": map[string]any{"json": map[string]any{"activeGoal": "ship parity", "memories": []any{}}}}})
+		case "/trpc/memory.getToolContext":
+			body, _ := io.ReadAll(r.Body)
+			if !strings.Contains(string(body), `"toolName":"search_tools"`) {
+				t.Fatalf("expected memory.getToolContext tool payload, got %s", string(body))
+			}
+			_ = json.NewEncoder(w).Encode(map[string]any{"result": map[string]any{"data": map[string]any{"json": map[string]any{"toolName": "search_tools", "context": []any{}}}}})
+		case "/trpc/memory.getRecentSessionSummaries":
+			_ = json.NewEncoder(w).Encode(map[string]any{"result": map[string]any{"data": map[string]any{"json": []map[string]any{{"sessionId": "sess-1", "summary": "recent"}}}}})
+		case "/trpc/memory.searchSessionSummaries":
+			body, _ := io.ReadAll(r.Body)
+			if !strings.Contains(string(body), `"query":"recent"`) {
+				t.Fatalf("expected memory.searchSessionSummaries payload, got %s", string(body))
+			}
+			_ = json.NewEncoder(w).Encode(map[string]any{"result": map[string]any{"data": map[string]any{"json": []map[string]any{{"sessionId": "sess-1", "summary": "recent"}}}}})
+		case "/trpc/memory.listInterchangeFormats":
+			_ = json.NewEncoder(w).Encode(map[string]any{"result": map[string]any{"data": map[string]any{"json": []string{"json", "markdown"}}}})
+		case "/trpc/memory.exportMemories":
+			_ = json.NewEncoder(w).Encode(map[string]any{"result": map[string]any{"data": map[string]any{"json": map[string]any{"data": "{}", "format": "json"}}}})
+		case "/trpc/memory.importMemories":
+			_ = json.NewEncoder(w).Encode(map[string]any{"result": map[string]any{"data": map[string]any{"json": map[string]any{"imported": 2}}}})
+		case "/trpc/memory.convertMemories":
+			_ = json.NewEncoder(w).Encode(map[string]any{"result": map[string]any{"data": map[string]any{"json": map[string]any{"data": "---", "toFormat": "markdown"}}}})
+		default:
+			t.Fatalf("unexpected upstream path %s", r.URL.Path)
+		}
+	}))
+	defer upstream.Close()
+
+	t.Setenv("BORG_TRPC_UPSTREAM", upstream.URL+"/trpc")
+
+	cfg := config.Default()
+	cfg.MainConfigDir = t.TempDir()
+	server := New(cfg, stubDetector{})
+
+	cases := []struct {
+		name      string
+		method    string
+		path      string
+		body      string
+		contains  string
+		procedure string
+	}{
+		{name: "memory search", method: http.MethodGet, path: "/api/memory/search?query=bootstrap&limit=3", contains: "\"Bootstrap Context\"", procedure: "\"procedure\":\"memory.query\""},
+		{name: "memory contexts", method: http.MethodGet, path: "/api/memory/contexts", contains: "\"ctx-1\"", procedure: "\"procedure\":\"memory.listContexts\""},
+		{name: "memory get context", method: http.MethodGet, path: "/api/memory/context/get?id=ctx-1", contains: "\"content\":\"hello\"", procedure: "\"procedure\":\"memory.getContext\""},
+		{name: "memory delete context", method: http.MethodPost, path: "/api/memory/context/delete", body: `{"id":"ctx-1"}`, contains: "\"success\":true", procedure: "\"procedure\":\"memory.deleteContext\""},
+		{name: "memory agent stats", method: http.MethodGet, path: "/api/memory/agent-stats", contains: "\"total\":6", procedure: "\"procedure\":\"memory.getAgentStats\""},
+		{name: "memory agent search", method: http.MethodGet, path: "/api/memory/agent-search?query=memory&type=working&limit=5", contains: "\"memory result\"", procedure: "\"procedure\":\"memory.searchAgentMemory\""},
+		{name: "memory session bootstrap", method: http.MethodGet, path: "/api/memory/session-bootstrap?activeGoal=ship%20parity", contains: "\"activeGoal\":\"ship parity\"", procedure: "\"procedure\":\"memory.getSessionBootstrap\""},
+		{name: "memory tool context", method: http.MethodGet, path: "/api/memory/tool-context?toolName=search_tools", contains: "\"toolName\":\"search_tools\"", procedure: "\"procedure\":\"memory.getToolContext\""},
+		{name: "recent session summaries", method: http.MethodGet, path: "/api/memory/session-summaries/recent?limit=5", contains: "\"sessionId\":\"sess-1\"", procedure: "\"procedure\":\"memory.getRecentSessionSummaries\""},
+		{name: "search session summaries", method: http.MethodGet, path: "/api/memory/session-summaries/search?query=recent&limit=5", contains: "\"summary\":\"recent\"", procedure: "\"procedure\":\"memory.searchSessionSummaries\""},
+		{name: "memory interchange formats", method: http.MethodGet, path: "/api/memory/interchange-formats", contains: "\"markdown\"", procedure: "\"procedure\":\"memory.listInterchangeFormats\""},
+		{name: "memory export", method: http.MethodGet, path: "/api/memory/export?userId=default&format=json", contains: "\"format\":\"json\"", procedure: "\"procedure\":\"memory.exportMemories\""},
+		{name: "memory import", method: http.MethodPost, path: "/api/memory/import", body: `{"userId":"default","format":"json","data":"{}"}`, contains: "\"imported\":2", procedure: "\"procedure\":\"memory.importMemories\""},
+		{name: "memory convert", method: http.MethodPost, path: "/api/memory/convert", body: `{"userId":"default","fromFormat":"json","toFormat":"markdown","data":"{}"}`, contains: "\"toFormat\":\"markdown\"", procedure: "\"procedure\":\"memory.convertMemories\""},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			var body io.Reader
+			if tc.body != "" {
+				body = strings.NewReader(tc.body)
+			}
+			request := httptest.NewRequest(tc.method, tc.path, body)
+			if tc.body != "" {
+				request.Header.Set("content-type", "application/json")
+			}
+			recorder := httptest.NewRecorder()
+			server.Handler().ServeHTTP(recorder, request)
+			if recorder.Code != http.StatusOK {
+				t.Fatalf("expected status 200, got %d with body %s", recorder.Code, recorder.Body.String())
+			}
+			if !strings.Contains(recorder.Body.String(), tc.contains) {
+				t.Fatalf("expected response to contain %s, got %s", tc.contains, recorder.Body.String())
+			}
+			if !strings.Contains(recorder.Body.String(), tc.procedure) {
+				t.Fatalf("expected bridge metadata %s, got %s", tc.procedure, recorder.Body.String())
+			}
+		})
+	}
+}
+
+func TestAgentMemoryBridgeRoutes(t *testing.T) {
+	upstream := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("content-type", "application/json")
+		switch r.URL.Path {
+		case "/trpc/agentMemory.search":
+			body, _ := io.ReadAll(r.Body)
+			if !strings.Contains(string(body), `"query":"bridge"`) {
+				t.Fatalf("expected agentMemory.search payload, got %s", string(body))
+			}
+			_ = json.NewEncoder(w).Encode(map[string]any{"result": map[string]any{"data": map[string]any{"json": []map[string]any{{"id": "am-1", "content": "bridge result"}}}}})
+		case "/trpc/agentMemory.add":
+			_ = json.NewEncoder(w).Encode(map[string]any{"result": map[string]any{"data": map[string]any{"json": map[string]any{"id": "am-2", "content": "added memory"}}}})
+		case "/trpc/agentMemory.getRecent":
+			_ = json.NewEncoder(w).Encode(map[string]any{"result": map[string]any{"data": map[string]any{"json": []map[string]any{{"id": "am-3", "type": "working"}}}}})
+		case "/trpc/agentMemory.getByType":
+			body, _ := io.ReadAll(r.Body)
+			if !strings.Contains(string(body), `"type":"working"`) {
+				t.Fatalf("expected agentMemory.getByType payload, got %s", string(body))
+			}
+			_ = json.NewEncoder(w).Encode(map[string]any{"result": map[string]any{"data": map[string]any{"json": []map[string]any{{"id": "am-4", "type": "working"}}}}})
+		case "/trpc/agentMemory.getByNamespace":
+			body, _ := io.ReadAll(r.Body)
+			if !strings.Contains(string(body), `"namespace":"project"`) {
+				t.Fatalf("expected agentMemory.getByNamespace payload, got %s", string(body))
+			}
+			_ = json.NewEncoder(w).Encode(map[string]any{"result": map[string]any{"data": map[string]any{"json": []map[string]any{{"id": "am-5", "namespace": "project"}}}}})
+		case "/trpc/agentMemory.delete":
+			_ = json.NewEncoder(w).Encode(map[string]any{"result": map[string]any{"data": map[string]any{"json": true}}})
+		case "/trpc/agentMemory.clearSession":
+			_ = json.NewEncoder(w).Encode(map[string]any{"result": map[string]any{"data": map[string]any{"json": map[string]any{"success": true}}}})
+		case "/trpc/agentMemory.export":
+			_ = json.NewEncoder(w).Encode(map[string]any{"result": map[string]any{"data": map[string]any{"json": map[string]any{"session": []any{}, "working": []any{}, "long_term": []any{}}}}})
+		case "/trpc/agentMemory.handoff":
+			_ = json.NewEncoder(w).Encode(map[string]any{"result": map[string]any{"data": map[string]any{"json": map[string]any{"artifact": "handoff.md"}}}})
+		case "/trpc/agentMemory.pickup":
+			_ = json.NewEncoder(w).Encode(map[string]any{"result": map[string]any{"data": map[string]any{"json": map[string]any{"restored": 3}}}})
+		case "/trpc/agentMemory.stats":
+			_ = json.NewEncoder(w).Encode(map[string]any{"result": map[string]any{"data": map[string]any{"json": map[string]any{"session": 2, "working": 3, "longTerm": 4, "total": 9}}}})
+		default:
+			t.Fatalf("unexpected upstream path %s", r.URL.Path)
+		}
+	}))
+	defer upstream.Close()
+
+	t.Setenv("BORG_TRPC_UPSTREAM", upstream.URL+"/trpc")
+
+	cfg := config.Default()
+	cfg.MainConfigDir = t.TempDir()
+	server := New(cfg, stubDetector{})
+
+	cases := []struct {
+		name      string
+		method    string
+		path      string
+		body      string
+		contains  string
+		procedure string
+	}{
+		{name: "agent memory search", method: http.MethodGet, path: "/api/agent-memory/search?query=bridge&namespace=project&type=working&limit=5", contains: "\"bridge result\"", procedure: "\"procedure\":\"agentMemory.search\""},
+		{name: "agent memory add", method: http.MethodPost, path: "/api/agent-memory/add", body: `{"content":"remember this","type":"working","namespace":"project","tags":["bridge"]}`, contains: "\"added memory\"", procedure: "\"procedure\":\"agentMemory.add\""},
+		{name: "agent memory recent", method: http.MethodGet, path: "/api/agent-memory/recent?type=working&limit=3", contains: "\"type\":\"working\"", procedure: "\"procedure\":\"agentMemory.getRecent\""},
+		{name: "agent memory by type", method: http.MethodGet, path: "/api/agent-memory/by-type?type=working", contains: "\"am-4\"", procedure: "\"procedure\":\"agentMemory.getByType\""},
+		{name: "agent memory by namespace", method: http.MethodGet, path: "/api/agent-memory/by-namespace?namespace=project", contains: "\"namespace\":\"project\"", procedure: "\"procedure\":\"agentMemory.getByNamespace\""},
+		{name: "agent memory delete", method: http.MethodPost, path: "/api/agent-memory/delete", body: `{"id":"am-1"}`, contains: "\"data\":true", procedure: "\"procedure\":\"agentMemory.delete\""},
+		{name: "agent memory clear session", method: http.MethodPost, path: "/api/agent-memory/clear-session", contains: "\"success\":true", procedure: "\"procedure\":\"agentMemory.clearSession\""},
+		{name: "agent memory export", method: http.MethodGet, path: "/api/agent-memory/export", contains: "\"long_term\":[]", procedure: "\"procedure\":\"agentMemory.export\""},
+		{name: "agent memory handoff", method: http.MethodPost, path: "/api/agent-memory/handoff", body: `{"notes":"bridge handoff"}`, contains: "\"artifact\":\"handoff.md\"", procedure: "\"procedure\":\"agentMemory.handoff\""},
+		{name: "agent memory pickup", method: http.MethodPost, path: "/api/agent-memory/pickup", body: `{"artifact":"handoff.md"}`, contains: "\"restored\":3", procedure: "\"procedure\":\"agentMemory.pickup\""},
+		{name: "agent memory stats", method: http.MethodGet, path: "/api/agent-memory/stats", contains: "\"total\":9", procedure: "\"procedure\":\"agentMemory.stats\""},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			var body io.Reader
+			if tc.body != "" {
+				body = strings.NewReader(tc.body)
+			}
+			request := httptest.NewRequest(tc.method, tc.path, body)
+			if tc.body != "" {
+				request.Header.Set("content-type", "application/json")
+			}
+			recorder := httptest.NewRecorder()
+			server.Handler().ServeHTTP(recorder, request)
+			if recorder.Code != http.StatusOK {
+				t.Fatalf("expected status 200, got %d with body %s", recorder.Code, recorder.Body.String())
+			}
+			if !strings.Contains(recorder.Body.String(), tc.contains) {
+				t.Fatalf("expected response to contain %s, got %s", tc.contains, recorder.Body.String())
+			}
+			if !strings.Contains(recorder.Body.String(), tc.procedure) {
+				t.Fatalf("expected bridge metadata %s, got %s", tc.procedure, recorder.Body.String())
+			}
+		})
+	}
+}
+
 func TestCLIToolsEndpoint(t *testing.T) {
 	server := New(config.Default(), stubDetector{
 		tools: []controlplane.Tool{

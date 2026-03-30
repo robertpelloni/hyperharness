@@ -1,7 +1,7 @@
 /**
- * `borg start` - Start the Borg backend server
+ * `borg start` - Start the HyperCode backend server
  *
- * Launches the Borg core server with Express/tRPC/WebSocket/MCP endpoints.
+ * Launches the HyperCode core server with Express/tRPC/WebSocket/MCP endpoints.
  * The server provides the API backend for the WebUI dashboard, CLI commands,
  * and external MCP clients.
  *
@@ -236,7 +236,7 @@ export async function acquireSingleInstanceLock(
         releaseSync();
         throw new Error(
           `Port ${selectedPort} is already in use by another process. `
-          + `Stop that process or start Borg with --port <free-port>.`,
+          + `Stop that process or start HyperCode with --port <free-port>.`,
         );
       }
 
@@ -267,7 +267,7 @@ export async function acquireSingleInstanceLock(
 
         if (!lockedPortIsFree) {
           throw new Error(
-            `Borg is already running (PID ${existingLock.pid}) on port ${existingLock.port}. `
+            `HyperCode is already running (PID ${existingLock.pid}) on port ${existingLock.port}. `
             + `Stop that process before starting another instance, or remove ${lockPath} if it is incorrect.`,
           );
         }
@@ -286,7 +286,7 @@ export async function acquireSingleInstanceLock(
     }
   }
 
-  throw new Error(`Unable to acquire Borg startup lock at ${lockPath}`);
+  throw new Error(`Unable to acquire HyperCode startup lock at ${lockPath}`);
 }
 
 export async function startCoreRuntime(
@@ -375,13 +375,15 @@ export async function pickDashboardPort(
   deps: {
     isPortFree?: (port: number) => Promise<boolean>;
     fetchImpl?: FetchLike;
+    allowReuseExisting?: boolean;
   } = {},
 ): Promise<{ port: number; reusedExisting: boolean }> {
   const checkPortFree = deps.isPortFree ?? isPortFree;
   const fetchImpl = deps.fetchImpl ?? globalThis.fetch;
+  const allowReuseExisting = deps.allowReuseExisting ?? true;
   const requestedUrl = resolveDashboardUrl(host, requestedPort);
 
-  if (await isHttpReady(requestedUrl, fetchImpl)) {
+  if (allowReuseExisting && await isHttpReady(requestedUrl, fetchImpl)) {
     return { port: requestedPort, reusedExisting: true };
   }
 
@@ -399,7 +401,7 @@ export async function pickDashboardPort(
     }
 
     const candidateUrl = resolveDashboardUrl(host, candidate);
-    if (await isHttpReady(candidateUrl, fetchImpl)) {
+    if (allowReuseExisting && await isHttpReady(candidateUrl, fetchImpl)) {
       return { port: candidate, reusedExisting: true };
     }
 
@@ -543,17 +545,17 @@ export function createLockLifecycleHandlers(
 export function registerStartCommand(program: Command): void {
   program
     .command('start')
-    .description('Start the Borg backend server (Express/tRPC/WebSocket/MCP)')
+    .description('Start the HyperCode backend server (Express/tRPC/WebSocket/MCP)')
     .option('-p, --port <number>', 'tRPC control-plane port', '4000')
     .option('--dashboard-port <number>', 'Dashboard web runtime port', '3000')
     .option('-H, --host <address>', 'Server host address', '0.0.0.0')
     .option('--no-mcp', 'Disable the MCP server endpoint')
-    .option('--supervisor', 'Enable Borg supervisor startup')
+    .option('--supervisor', 'Enable HyperCode supervisor startup')
     .option('--auto-drive', 'Enable Director auto-drive after startup')
     .option('--no-dashboard', 'Disable serving the WebUI dashboard')
     .option('--no-open-dashboard', 'Start the dashboard runtime without opening the browser')
     .option('-c, --config <path>', 'Path to config file')
-    .option('-d, --data-dir <path>', 'Data directory for Borg state', '~/.borg')
+    .option('-d, --data-dir <path>', 'Data directory for HyperCode state (compat path: ~/.borg)', '~/.borg')
     .option('--daemon', 'Run as background daemon')
     .addHelpText('after', `
 Examples:
@@ -578,7 +580,7 @@ Examples:
       const borgVersion = readCanonicalVersion(cliDir);
       const repoRoot = resolveRepoRoot(cliDir) ?? resolve(cliDir, '..', '..', '..', '..', '..');
       const webRoot = join(repoRoot, 'apps', 'web');
-      console.log(chalk.bold.cyan(`\n  ⬡ Borg v${borgVersion}`));
+      console.log(chalk.bold.cyan(`\n  ⬡ HyperCode v${borgVersion}`));
       console.log(chalk.dim('  The Neural Operating System\n'));
 
       try {
@@ -606,7 +608,7 @@ Examples:
         console.log(chalk.dim(`  Dashboard: ${opts.dashboard ? 'enabled' : 'disabled'}`));
         console.log(chalk.dim(`  Lock: ${lockHandle.lockPath}`));
         if (lockHandle.clearedStaleLock) {
-          console.log(chalk.yellow(`  ↺ Cleared stale Borg lock${lockHandle.reusedStalePort ? ` and reused port ${port}` : ''}`));
+          console.log(chalk.yellow(`  ↺ Cleared stale HyperCode lock${lockHandle.reusedStalePort ? ` and reused port ${port}` : ''}`));
         }
         console.log('');
 
@@ -666,10 +668,15 @@ Examples:
           console.log(chalk.green('  ✓ Supervisor startup enabled for this run'));
         }
         if (opts.dashboard) {
+          const browserHost = resolveBrowserHost(runtime.host);
+          const orchestratorBaseUrl = `http://${browserHost}:${runtime.trpcPort}`;
           const dashboardSelection = await pickDashboardPort(
             requestedDashboardPort,
             explicitDashboardPort,
             host,
+            {
+              allowReuseExisting: activePort === requestedPort,
+            },
           );
           const dashboardUrl = resolveDashboardUrl(host, dashboardSelection.port);
           const shouldOpenDashboard = opts.openDashboard !== false && !opts.daemon;
@@ -691,6 +698,9 @@ Examples:
               stdio: 'inherit',
               env: {
                 ...process.env,
+                BORG_TRPC_UPSTREAM: `${orchestratorBaseUrl}/trpc`,
+                NEXT_PUBLIC_BORG_ORCHESTRATOR_URL: orchestratorBaseUrl,
+                NEXT_PUBLIC_AUTOPILOT_URL: orchestratorBaseUrl,
               },
               windowsHide: true,
             });
@@ -706,6 +716,9 @@ Examples:
 
             if (!explicitDashboardPort && dashboardSelection.port !== requestedDashboardPort) {
               console.log(chalk.yellow(`  ↺ Dashboard port ${requestedDashboardPort} busy, falling back to ${dashboardSelection.port}`));
+              if (activePort !== requestedPort) {
+                console.log(chalk.yellow(`  ↺ Started a fresh dashboard runtime so it can target the live control plane at ${orchestratorBaseUrl}`));
+              }
             }
 
             const dashboardReady = await waitForHttpReady({

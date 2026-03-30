@@ -1,7 +1,7 @@
 /**
  * `borg config` - Configuration management
  *
- * View, set, and manage Borg configuration including
+ * View, set, and manage HyperCode configuration including
  * all subsystem settings, secrets, and environment variables.
  *
  * @example
@@ -22,11 +22,11 @@ export function registerConfigCommand(program: Command): void {
   const config = program
     .command('config')
     .alias('cfg')
-    .description('Config — view and manage Borg configuration, secrets, and environment variables');
+    .description('Config — view and manage HyperCode configuration, secrets, and environment variables');
 
   config
     .command('show')
-    .description('Display the current Borg configuration')
+    .description('Display the current HyperCode configuration')
     .option('--json', 'Output as raw JSON')
     .option('--section <section>', 'Show specific section: server, mcp, memory, providers, sessions, director')
     .action(async (opts) => {
@@ -62,7 +62,7 @@ export function registerConfigCommand(program: Command): void {
         return;
       }
 
-      console.log(chalk.bold.cyan('\n  Borg Configuration\n'));
+      console.log(chalk.bold.cyan('\n  HyperCode Configuration\n'));
       const printConfig = (obj: Record<string, unknown>, prefix = '  ') => {
         for (const [key, val] of Object.entries(obj)) {
           if (typeof val === 'object' && val !== null && !Array.isArray(val)) {
@@ -153,7 +153,7 @@ Examples:
 
   config
     .command('init')
-    .description('Initialize Borg configuration in current directory or globally')
+    .description('Initialize HyperCode configuration in current directory or globally')
     .option('--global', 'Initialize global config at ~/.borg/')
     .option('--local', 'Initialize local .borg/ config in current directory')
     .action(async (opts) => {
