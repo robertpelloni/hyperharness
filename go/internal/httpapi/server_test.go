@@ -1317,6 +1317,168 @@ func TestAdminBridgeRoutes(t *testing.T) {
 	}
 }
 
+func TestControlBridgeRoutes(t *testing.T) {
+	upstream := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("content-type", "application/json")
+		switch r.URL.Path {
+		case "/trpc/settings.get":
+			_ = json.NewEncoder(w).Encode(map[string]any{"result": map[string]any{"data": map[string]any{"json": map[string]any{"theme": "dark"}}}})
+		case "/trpc/settings.update":
+			_ = json.NewEncoder(w).Encode(map[string]any{"result": map[string]any{"data": map[string]any{"json": map[string]any{"success": true}}}})
+		case "/trpc/settings.getProviders":
+			_ = json.NewEncoder(w).Encode(map[string]any{"result": map[string]any{"data": map[string]any{"json": []any{map[string]any{"id": "openai", "configured": true}}}}})
+		case "/trpc/settings.testConnection":
+			_ = json.NewEncoder(w).Encode(map[string]any{"result": map[string]any{"data": map[string]any{"json": map[string]any{"success": true, "provider": "openai"}}}})
+		case "/trpc/settings.getEnvironment":
+			_ = json.NewEncoder(w).Encode(map[string]any{"result": map[string]any{"data": map[string]any{"json": map[string]any{"platform": "win32"}}}})
+		case "/trpc/settings.getMcpServers":
+			_ = json.NewEncoder(w).Encode(map[string]any{"result": map[string]any{"data": map[string]any{"json": []any{map[string]any{"name": "core"}}}}})
+		case "/trpc/settings.updateProviderKey":
+			_ = json.NewEncoder(w).Encode(map[string]any{"result": map[string]any{"data": map[string]any{"json": map[string]any{"success": true, "updatedKey": "OPENAI_API_KEY"}}}})
+		case "/trpc/tools.list":
+			_ = json.NewEncoder(w).Encode(map[string]any{"result": map[string]any{"data": map[string]any{"json": []any{map[string]any{"name": "search_tools"}}}}})
+		case "/trpc/tools.listByServer":
+			body, _ := io.ReadAll(r.Body)
+			if !strings.Contains(string(body), `"mcpServerUuid":"srv-1"`) {
+				t.Fatalf("expected tools.listByServer payload, got %s", string(body))
+			}
+			_ = json.NewEncoder(w).Encode(map[string]any{"result": map[string]any{"data": map[string]any{"json": []any{map[string]any{"server": "core"}}}}})
+		case "/trpc/tools.search":
+			body, _ := io.ReadAll(r.Body)
+			if !strings.Contains(string(body), `"query":"search"`) {
+				t.Fatalf("expected tools.search payload, got %s", string(body))
+			}
+			_ = json.NewEncoder(w).Encode(map[string]any{"result": map[string]any{"data": map[string]any{"json": []any{map[string]any{"name": "search_tools"}}}}})
+		case "/trpc/tools.detectCliHarnesses":
+			_ = json.NewEncoder(w).Encode(map[string]any{"result": map[string]any{"data": map[string]any{"json": []any{map[string]any{"id": "hypercode"}}}}})
+		case "/trpc/tools.detectExecutionEnvironment":
+			_ = json.NewEncoder(w).Encode(map[string]any{"result": map[string]any{"data": map[string]any{"json": map[string]any{"shell": "pwsh"}}}})
+		case "/trpc/tools.detectInstallSurfaces":
+			_ = json.NewEncoder(w).Encode(map[string]any{"result": map[string]any{"data": map[string]any{"json": []any{map[string]any{"surface": "npm-global"}}}}})
+		case "/trpc/tools.get":
+			body, _ := io.ReadAll(r.Body)
+			if !strings.Contains(string(body), `"uuid":"search_tools"`) {
+				t.Fatalf("expected tools.get payload, got %s", string(body))
+			}
+			_ = json.NewEncoder(w).Encode(map[string]any{"result": map[string]any{"data": map[string]any{"json": map[string]any{"name": "search_tools"}}}})
+		case "/trpc/tools.create":
+			_ = json.NewEncoder(w).Encode(map[string]any{"result": map[string]any{"data": map[string]any{"json": map[string]any{"success": true}}}})
+		case "/trpc/tools.upsertBatch":
+			_ = json.NewEncoder(w).Encode(map[string]any{"result": map[string]any{"data": map[string]any{"json": map[string]any{"success": true}}}})
+		case "/trpc/tools.delete":
+			_ = json.NewEncoder(w).Encode(map[string]any{"result": map[string]any{"data": map[string]any{"json": map[string]any{"success": true}}}})
+		case "/trpc/tools.setAlwaysOn":
+			_ = json.NewEncoder(w).Encode(map[string]any{"result": map[string]any{"data": map[string]any{"json": map[string]any{"success": true, "tool": map[string]any{"always_on": true}}}}})
+		case "/trpc/toolSets.list":
+			_ = json.NewEncoder(w).Encode(map[string]any{"result": map[string]any{"data": map[string]any{"json": []any{map[string]any{"uuid": "ts-1"}}}}})
+		case "/trpc/toolSets.get":
+			body, _ := io.ReadAll(r.Body)
+			if !strings.Contains(string(body), `"uuid":"ts-1"`) {
+				t.Fatalf("expected toolSets.get payload, got %s", string(body))
+			}
+			_ = json.NewEncoder(w).Encode(map[string]any{"result": map[string]any{"data": map[string]any{"json": map[string]any{"uuid": "ts-1", "name": "Core Tools"}}}})
+		case "/trpc/toolSets.create":
+			_ = json.NewEncoder(w).Encode(map[string]any{"result": map[string]any{"data": map[string]any{"json": map[string]any{"uuid": "ts-2"}}}})
+		case "/trpc/toolSets.update":
+			_ = json.NewEncoder(w).Encode(map[string]any{"result": map[string]any{"data": map[string]any{"json": map[string]any{"uuid": "ts-1", "name": "Updated"}}}})
+		case "/trpc/toolSets.delete":
+			_ = json.NewEncoder(w).Encode(map[string]any{"result": map[string]any{"data": map[string]any{"json": map[string]any{"success": true}}}})
+		case "/trpc/project.getContext":
+			_ = json.NewEncoder(w).Encode(map[string]any{"result": map[string]any{"data": map[string]any{"json": "# Project Context"}}})
+		case "/trpc/project.updateContext":
+			_ = json.NewEncoder(w).Encode(map[string]any{"result": map[string]any{"data": map[string]any{"json": map[string]any{"success": true}}}})
+		case "/trpc/project.getHandoffs":
+			_ = json.NewEncoder(w).Encode(map[string]any{"result": map[string]any{"data": map[string]any{"json": []any{map[string]any{"id": "handoff_1.json"}}}}})
+		case "/trpc/shell.logCommand":
+			_ = json.NewEncoder(w).Encode(map[string]any{"result": map[string]any{"data": map[string]any{"json": map[string]any{"success": true, "id": "cmd-1"}}}})
+		case "/trpc/shell.queryHistory":
+			body, _ := io.ReadAll(r.Body)
+			if !strings.Contains(string(body), `"query":"pnpm"`) {
+				t.Fatalf("expected shell.queryHistory payload, got %s", string(body))
+			}
+			_ = json.NewEncoder(w).Encode(map[string]any{"result": map[string]any{"data": map[string]any{"json": []any{map[string]any{"command": "pnpm test"}}}}})
+		case "/trpc/shell.getSystemHistory":
+			body, _ := io.ReadAll(r.Body)
+			if !strings.Contains(string(body), `"limit":5`) {
+				t.Fatalf("expected shell.getSystemHistory payload, got %s", string(body))
+			}
+			_ = json.NewEncoder(w).Encode(map[string]any{"result": map[string]any{"data": map[string]any{"json": []any{map[string]any{"command": "git status"}}}}})
+		default:
+			t.Fatalf("unexpected upstream path %s", r.URL.Path)
+		}
+	}))
+	defer upstream.Close()
+
+	t.Setenv("BORG_TRPC_UPSTREAM", upstream.URL+"/trpc")
+
+	cfg := config.Default()
+	cfg.MainConfigDir = t.TempDir()
+	server := New(cfg, stubDetector{})
+
+	cases := []struct {
+		name      string
+		method    string
+		path      string
+		body      string
+		contains  string
+		procedure string
+	}{
+		{name: "settings get", method: http.MethodGet, path: "/api/settings", contains: `"theme":"dark"`, procedure: `"procedure":"settings.get"`},
+		{name: "settings update", method: http.MethodPost, path: "/api/settings/update", body: `{"config":{"theme":"dark"}}`, contains: `"success":true`, procedure: `"procedure":"settings.update"`},
+		{name: "settings providers", method: http.MethodGet, path: "/api/settings/providers", contains: `"configured":true`, procedure: `"procedure":"settings.getProviders"`},
+		{name: "settings test connection", method: http.MethodPost, path: "/api/settings/test-connection", body: `{"provider":"openai"}`, contains: `"provider":"openai"`, procedure: `"procedure":"settings.testConnection"`},
+		{name: "settings environment", method: http.MethodGet, path: "/api/settings/environment", contains: `"platform":"win32"`, procedure: `"procedure":"settings.getEnvironment"`},
+		{name: "settings mcp servers", method: http.MethodGet, path: "/api/settings/mcp-servers", contains: `"name":"core"`, procedure: `"procedure":"settings.getMcpServers"`},
+		{name: "settings provider key", method: http.MethodPost, path: "/api/settings/provider-key", body: `{"provider":"openai","key":"sk-test"}`, contains: `"updatedKey":"OPENAI_API_KEY"`, procedure: `"procedure":"settings.updateProviderKey"`},
+		{name: "tools list", method: http.MethodGet, path: "/api/tools", contains: `"search_tools"`, procedure: `"procedure":"tools.list"`},
+		{name: "tools by server", method: http.MethodGet, path: "/api/tools/by-server?mcpServerUuid=srv-1", contains: `"core"`, procedure: `"procedure":"tools.listByServer"`},
+		{name: "tools search", method: http.MethodGet, path: "/api/tools/search?query=search&limit=5", contains: `"search_tools"`, procedure: `"procedure":"tools.search"`},
+		{name: "tools detect cli harnesses", method: http.MethodGet, path: "/api/tools/detect-cli-harnesses", contains: `"hypercode"`, procedure: `"procedure":"tools.detectCliHarnesses"`},
+		{name: "tools detect execution environment", method: http.MethodGet, path: "/api/tools/detect-execution-environment", contains: `"shell":"pwsh"`, procedure: `"procedure":"tools.detectExecutionEnvironment"`},
+		{name: "tools detect install surfaces", method: http.MethodGet, path: "/api/tools/detect-install-surfaces", contains: `"npm-global"`, procedure: `"procedure":"tools.detectInstallSurfaces"`},
+		{name: "tools get", method: http.MethodGet, path: "/api/tools/get?uuid=search_tools", contains: `"name":"search_tools"`, procedure: `"procedure":"tools.get"`},
+		{name: "tools create", method: http.MethodPost, path: "/api/tools/create", body: `{"name":"demo","mcp_server_uuid":"srv-1","description":"Demo","toolSchema":{"type":"object"}}`, contains: `"success":true`, procedure: `"procedure":"tools.create"`},
+		{name: "tools upsert batch", method: http.MethodPost, path: "/api/tools/upsert-batch", body: `[{"name":"demo","mcp_server_uuid":"srv-1","description":"Demo","toolSchema":{"type":"object"}}]`, contains: `"success":true`, procedure: `"procedure":"tools.upsertBatch"`},
+		{name: "tools delete", method: http.MethodPost, path: "/api/tools/delete", body: `{"uuid":"search_tools"}`, contains: `"success":true`, procedure: `"procedure":"tools.delete"`},
+		{name: "tools always on", method: http.MethodPost, path: "/api/tools/always-on", body: `{"uuid":"search_tools","alwaysOn":true}`, contains: `"always_on":true`, procedure: `"procedure":"tools.setAlwaysOn"`},
+		{name: "tool sets list", method: http.MethodGet, path: "/api/tool-sets", contains: `"uuid":"ts-1"`, procedure: `"procedure":"toolSets.list"`},
+		{name: "tool sets get", method: http.MethodGet, path: "/api/tool-sets/get?uuid=ts-1", contains: `"Core Tools"`, procedure: `"procedure":"toolSets.get"`},
+		{name: "tool sets create", method: http.MethodPost, path: "/api/tool-sets/create", body: `{"name":"Core Tools","tools":["search_tools"]}`, contains: `"uuid":"ts-2"`, procedure: `"procedure":"toolSets.create"`},
+		{name: "tool sets update", method: http.MethodPost, path: "/api/tool-sets/update", body: `{"uuid":"ts-1","name":"Updated"}`, contains: `"Updated"`, procedure: `"procedure":"toolSets.update"`},
+		{name: "tool sets delete", method: http.MethodPost, path: "/api/tool-sets/delete", body: `{"uuid":"ts-1"}`, contains: `"success":true`, procedure: `"procedure":"toolSets.delete"`},
+		{name: "project context", method: http.MethodGet, path: "/api/project/context", contains: `# Project Context`, procedure: `"procedure":"project.getContext"`},
+		{name: "project context update", method: http.MethodPost, path: "/api/project/context/update", body: `{"content":"# Project Context"}`, contains: `"success":true`, procedure: `"procedure":"project.updateContext"`},
+		{name: "project handoffs", method: http.MethodGet, path: "/api/project/handoffs", contains: `"handoff_1.json"`, procedure: `"procedure":"project.getHandoffs"`},
+		{name: "shell log", method: http.MethodPost, path: "/api/shell/log", body: `{"command":"pnpm test","cwd":"C:\\repo","session":"sess-1"}`, contains: `"id":"cmd-1"`, procedure: `"procedure":"shell.logCommand"`},
+		{name: "shell query history", method: http.MethodGet, path: "/api/shell/history/query?query=pnpm&limit=5", contains: `"pnpm test"`, procedure: `"procedure":"shell.queryHistory"`},
+		{name: "shell system history", method: http.MethodGet, path: "/api/shell/history/system?limit=5", contains: `"git status"`, procedure: `"procedure":"shell.getSystemHistory"`},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			var body io.Reader
+			if tc.body != "" {
+				body = strings.NewReader(tc.body)
+			}
+			request := httptest.NewRequest(tc.method, tc.path, body)
+			if tc.body != "" {
+				request.Header.Set("content-type", "application/json")
+			}
+			recorder := httptest.NewRecorder()
+			server.Handler().ServeHTTP(recorder, request)
+			if recorder.Code != http.StatusOK {
+				t.Fatalf("expected status 200, got %d with body %s", recorder.Code, recorder.Body.String())
+			}
+			if !strings.Contains(recorder.Body.String(), tc.contains) {
+				t.Fatalf("expected response to contain %s, got %s", tc.contains, recorder.Body.String())
+			}
+			if !strings.Contains(recorder.Body.String(), tc.procedure) {
+				t.Fatalf("expected bridge metadata %s, got %s", tc.procedure, recorder.Body.String())
+			}
+		})
+	}
+}
+
 func TestCLIToolsEndpoint(t *testing.T) {
 	server := New(config.Default(), stubDetector{
 		tools: []controlplane.Tool{

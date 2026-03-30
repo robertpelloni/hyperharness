@@ -335,6 +335,35 @@ func (s *Server) registerRoutes() {
 	s.mux.HandleFunc("/api/logs/clear", s.handleLogsClear)
 	s.mux.HandleFunc("/api/server-health/check", s.handleServerHealthCheck)
 	s.mux.HandleFunc("/api/server-health/reset", s.handleServerHealthReset)
+	s.mux.HandleFunc("/api/settings", s.handleSettingsGet)
+	s.mux.HandleFunc("/api/settings/update", s.handleSettingsUpdate)
+	s.mux.HandleFunc("/api/settings/providers", s.handleSettingsProviders)
+	s.mux.HandleFunc("/api/settings/test-connection", s.handleSettingsTestConnection)
+	s.mux.HandleFunc("/api/settings/environment", s.handleSettingsEnvironment)
+	s.mux.HandleFunc("/api/settings/mcp-servers", s.handleSettingsMCPServers)
+	s.mux.HandleFunc("/api/settings/provider-key", s.handleSettingsProviderKey)
+	s.mux.HandleFunc("/api/tools", s.handleToolsList)
+	s.mux.HandleFunc("/api/tools/by-server", s.handleToolsByServer)
+	s.mux.HandleFunc("/api/tools/search", s.handleToolsSearch)
+	s.mux.HandleFunc("/api/tools/detect-cli-harnesses", s.handleToolsDetectCLIHarnesses)
+	s.mux.HandleFunc("/api/tools/detect-execution-environment", s.handleToolsDetectExecutionEnvironment)
+	s.mux.HandleFunc("/api/tools/detect-install-surfaces", s.handleToolsDetectInstallSurfaces)
+	s.mux.HandleFunc("/api/tools/get", s.handleToolsGet)
+	s.mux.HandleFunc("/api/tools/create", s.handleToolsCreate)
+	s.mux.HandleFunc("/api/tools/upsert-batch", s.handleToolsUpsertBatch)
+	s.mux.HandleFunc("/api/tools/delete", s.handleToolsDelete)
+	s.mux.HandleFunc("/api/tools/always-on", s.handleToolsAlwaysOn)
+	s.mux.HandleFunc("/api/tool-sets", s.handleToolSetsList)
+	s.mux.HandleFunc("/api/tool-sets/get", s.handleToolSetsGet)
+	s.mux.HandleFunc("/api/tool-sets/create", s.handleToolSetsCreate)
+	s.mux.HandleFunc("/api/tool-sets/update", s.handleToolSetsUpdate)
+	s.mux.HandleFunc("/api/tool-sets/delete", s.handleToolSetsDelete)
+	s.mux.HandleFunc("/api/project/context", s.handleProjectContext)
+	s.mux.HandleFunc("/api/project/context/update", s.handleProjectContextUpdate)
+	s.mux.HandleFunc("/api/project/handoffs", s.handleProjectHandoffs)
+	s.mux.HandleFunc("/api/shell/log", s.handleShellLog)
+	s.mux.HandleFunc("/api/shell/history/query", s.handleShellQueryHistory)
+	s.mux.HandleFunc("/api/shell/history/system", s.handleShellSystemHistory)
 	s.mux.HandleFunc("/api/cli/tools", s.handleCLITools)
 	s.mux.HandleFunc("/api/cli/harnesses", s.handleHarnesses)
 	s.mux.HandleFunc("/api/cli/summary", s.handleCLISummary)
@@ -480,6 +509,35 @@ func (s *Server) handleAPIIndex(w http.ResponseWriter, _ *http.Request) {
 				{Path: "/api/logs/clear", Category: "ops", Description: "Clear TypeScript observability logs."},
 				{Path: "/api/server-health/check", Category: "ops", Description: "Bridge to the TypeScript MCP server health state for a specific server UUID."},
 				{Path: "/api/server-health/reset", Category: "ops", Description: "Reset the TypeScript MCP server health error state for a specific server UUID."},
+				{Path: "/api/settings", Category: "control", Description: "Bridge to the full TypeScript configuration object."},
+				{Path: "/api/settings/update", Category: "control", Description: "Update the TypeScript configuration object with a partial config payload."},
+				{Path: "/api/settings/providers", Category: "control", Description: "Bridge to masked TypeScript provider key visibility."},
+				{Path: "/api/settings/test-connection", Category: "control", Description: "Test a provider connection through the TypeScript control plane."},
+				{Path: "/api/settings/environment", Category: "control", Description: "Bridge to TypeScript environment diagnostics."},
+				{Path: "/api/settings/mcp-servers", Category: "control", Description: "Bridge to configured MCP servers from the TypeScript settings layer."},
+				{Path: "/api/settings/provider-key", Category: "control", Description: "Persist a provider key through the TypeScript settings layer."},
+				{Path: "/api/tools", Category: "control", Description: "Bridge to the TypeScript tool registry list."},
+				{Path: "/api/tools/by-server", Category: "control", Description: "Bridge to TypeScript tools filtered by MCP server."},
+				{Path: "/api/tools/search", Category: "control", Description: "Bridge to TypeScript tool search."},
+				{Path: "/api/tools/detect-cli-harnesses", Category: "control", Description: "Bridge to TypeScript CLI harness detection."},
+				{Path: "/api/tools/detect-execution-environment", Category: "control", Description: "Bridge to TypeScript execution-environment detection."},
+				{Path: "/api/tools/detect-install-surfaces", Category: "control", Description: "Bridge to TypeScript install-surface detection."},
+				{Path: "/api/tools/get", Category: "control", Description: "Bridge to a specific TypeScript tool definition."},
+				{Path: "/api/tools/create", Category: "control", Description: "Create a tool through the TypeScript control plane."},
+				{Path: "/api/tools/upsert-batch", Category: "control", Description: "Upsert a batch of tools through the TypeScript control plane."},
+				{Path: "/api/tools/delete", Category: "control", Description: "Delete a tool through the TypeScript control plane."},
+				{Path: "/api/tools/always-on", Category: "control", Description: "Toggle the TypeScript always-on state for a tool."},
+				{Path: "/api/tool-sets", Category: "control", Description: "Bridge to the TypeScript tool-set list."},
+				{Path: "/api/tool-sets/get", Category: "control", Description: "Bridge to a specific TypeScript tool set."},
+				{Path: "/api/tool-sets/create", Category: "control", Description: "Create a tool set through the TypeScript control plane."},
+				{Path: "/api/tool-sets/update", Category: "control", Description: "Update a tool set through the TypeScript control plane."},
+				{Path: "/api/tool-sets/delete", Category: "control", Description: "Delete a tool set through the TypeScript control plane."},
+				{Path: "/api/project/context", Category: "control", Description: "Bridge to the TypeScript project context document."},
+				{Path: "/api/project/context/update", Category: "control", Description: "Update the TypeScript project context document."},
+				{Path: "/api/project/handoffs", Category: "control", Description: "Bridge to TypeScript project handoff metadata."},
+				{Path: "/api/shell/log", Category: "control", Description: "Log a shell command through the TypeScript shell service."},
+				{Path: "/api/shell/history/query", Category: "control", Description: "Bridge to TypeScript shell history search."},
+				{Path: "/api/shell/history/system", Category: "control", Description: "Bridge to recent TypeScript system shell history."},
 				{Path: "/api/cli/tools", Category: "cli", Description: "Detected local CLI tools and versions."},
 				{Path: "/api/cli/harnesses", Category: "cli", Description: "Harness registry metadata and install visibility."},
 				{Path: "/api/cli/summary", Category: "cli", Description: "Compact CLI and harness readiness summary."},
@@ -1222,6 +1280,165 @@ func (s *Server) handleServerHealthCheck(w http.ResponseWriter, r *http.Request)
 
 func (s *Server) handleServerHealthReset(w http.ResponseWriter, r *http.Request) {
 	s.handleTRPCBridgeBodyCall(w, r, "serverHealth.reset")
+}
+
+func (s *Server) handleSettingsGet(w http.ResponseWriter, r *http.Request) {
+	s.handleTRPCBridgeCall(w, r, http.MethodGet, "settings.get", nil)
+}
+
+func (s *Server) handleSettingsUpdate(w http.ResponseWriter, r *http.Request) {
+	s.handleTRPCBridgeBodyCall(w, r, "settings.update")
+}
+
+func (s *Server) handleSettingsProviders(w http.ResponseWriter, r *http.Request) {
+	s.handleTRPCBridgeCall(w, r, http.MethodGet, "settings.getProviders", nil)
+}
+
+func (s *Server) handleSettingsTestConnection(w http.ResponseWriter, r *http.Request) {
+	s.handleTRPCBridgeBodyCall(w, r, "settings.testConnection")
+}
+
+func (s *Server) handleSettingsEnvironment(w http.ResponseWriter, r *http.Request) {
+	s.handleTRPCBridgeCall(w, r, http.MethodGet, "settings.getEnvironment", nil)
+}
+
+func (s *Server) handleSettingsMCPServers(w http.ResponseWriter, r *http.Request) {
+	s.handleTRPCBridgeCall(w, r, http.MethodGet, "settings.getMcpServers", nil)
+}
+
+func (s *Server) handleSettingsProviderKey(w http.ResponseWriter, r *http.Request) {
+	s.handleTRPCBridgeBodyCall(w, r, "settings.updateProviderKey")
+}
+
+func (s *Server) handleToolsList(w http.ResponseWriter, r *http.Request) {
+	s.handleTRPCBridgeCall(w, r, http.MethodGet, "tools.list", nil)
+}
+
+func (s *Server) handleToolsByServer(w http.ResponseWriter, r *http.Request) {
+	serverID := strings.TrimSpace(r.URL.Query().Get("mcpServerUuid"))
+	if serverID == "" {
+		writeJSON(w, http.StatusBadRequest, map[string]any{"success": false, "error": "missing mcpServerUuid query parameter"})
+		return
+	}
+	s.handleTRPCBridgeCall(w, r, http.MethodGet, "tools.listByServer", map[string]any{"mcpServerUuid": serverID})
+}
+
+func (s *Server) handleToolsSearch(w http.ResponseWriter, r *http.Request) {
+	query := strings.TrimSpace(r.URL.Query().Get("query"))
+	if query == "" {
+		writeJSON(w, http.StatusBadRequest, map[string]any{"success": false, "error": "missing query parameter"})
+		return
+	}
+	payload := map[string]any{"query": query}
+	if limit := strings.TrimSpace(r.URL.Query().Get("limit")); limit != "" {
+		if parsed, err := strconv.Atoi(limit); err == nil {
+			payload["limit"] = parsed
+		}
+	}
+	s.handleTRPCBridgeCall(w, r, http.MethodGet, "tools.search", payload)
+}
+
+func (s *Server) handleToolsDetectCLIHarnesses(w http.ResponseWriter, r *http.Request) {
+	s.handleTRPCBridgeCall(w, r, http.MethodGet, "tools.detectCliHarnesses", nil)
+}
+
+func (s *Server) handleToolsDetectExecutionEnvironment(w http.ResponseWriter, r *http.Request) {
+	s.handleTRPCBridgeCall(w, r, http.MethodGet, "tools.detectExecutionEnvironment", nil)
+}
+
+func (s *Server) handleToolsDetectInstallSurfaces(w http.ResponseWriter, r *http.Request) {
+	s.handleTRPCBridgeCall(w, r, http.MethodGet, "tools.detectInstallSurfaces", nil)
+}
+
+func (s *Server) handleToolsGet(w http.ResponseWriter, r *http.Request) {
+	uuid := strings.TrimSpace(r.URL.Query().Get("uuid"))
+	if uuid == "" {
+		writeJSON(w, http.StatusBadRequest, map[string]any{"success": false, "error": "missing uuid query parameter"})
+		return
+	}
+	s.handleTRPCBridgeCall(w, r, http.MethodGet, "tools.get", map[string]any{"uuid": uuid})
+}
+
+func (s *Server) handleToolsCreate(w http.ResponseWriter, r *http.Request) {
+	s.handleTRPCBridgeBodyCall(w, r, "tools.create")
+}
+
+func (s *Server) handleToolsUpsertBatch(w http.ResponseWriter, r *http.Request) {
+	s.handleTRPCBridgeBodyCall(w, r, "tools.upsertBatch")
+}
+
+func (s *Server) handleToolsDelete(w http.ResponseWriter, r *http.Request) {
+	s.handleTRPCBridgeBodyCall(w, r, "tools.delete")
+}
+
+func (s *Server) handleToolsAlwaysOn(w http.ResponseWriter, r *http.Request) {
+	s.handleTRPCBridgeBodyCall(w, r, "tools.setAlwaysOn")
+}
+
+func (s *Server) handleToolSetsList(w http.ResponseWriter, r *http.Request) {
+	s.handleTRPCBridgeCall(w, r, http.MethodGet, "toolSets.list", nil)
+}
+
+func (s *Server) handleToolSetsGet(w http.ResponseWriter, r *http.Request) {
+	uuid := strings.TrimSpace(r.URL.Query().Get("uuid"))
+	if uuid == "" {
+		writeJSON(w, http.StatusBadRequest, map[string]any{"success": false, "error": "missing uuid query parameter"})
+		return
+	}
+	s.handleTRPCBridgeCall(w, r, http.MethodGet, "toolSets.get", map[string]any{"uuid": uuid})
+}
+
+func (s *Server) handleToolSetsCreate(w http.ResponseWriter, r *http.Request) {
+	s.handleTRPCBridgeBodyCall(w, r, "toolSets.create")
+}
+
+func (s *Server) handleToolSetsUpdate(w http.ResponseWriter, r *http.Request) {
+	s.handleTRPCBridgeBodyCall(w, r, "toolSets.update")
+}
+
+func (s *Server) handleToolSetsDelete(w http.ResponseWriter, r *http.Request) {
+	s.handleTRPCBridgeBodyCall(w, r, "toolSets.delete")
+}
+
+func (s *Server) handleProjectContext(w http.ResponseWriter, r *http.Request) {
+	s.handleTRPCBridgeCall(w, r, http.MethodGet, "project.getContext", nil)
+}
+
+func (s *Server) handleProjectContextUpdate(w http.ResponseWriter, r *http.Request) {
+	s.handleTRPCBridgeBodyCall(w, r, "project.updateContext")
+}
+
+func (s *Server) handleProjectHandoffs(w http.ResponseWriter, r *http.Request) {
+	s.handleTRPCBridgeCall(w, r, http.MethodGet, "project.getHandoffs", nil)
+}
+
+func (s *Server) handleShellLog(w http.ResponseWriter, r *http.Request) {
+	s.handleTRPCBridgeBodyCall(w, r, "shell.logCommand")
+}
+
+func (s *Server) handleShellQueryHistory(w http.ResponseWriter, r *http.Request) {
+	query := strings.TrimSpace(r.URL.Query().Get("query"))
+	if query == "" {
+		writeJSON(w, http.StatusBadRequest, map[string]any{"success": false, "error": "missing query parameter"})
+		return
+	}
+	payload := map[string]any{"query": query}
+	if limit := strings.TrimSpace(r.URL.Query().Get("limit")); limit != "" {
+		if parsed, err := strconv.Atoi(limit); err == nil {
+			payload["limit"] = parsed
+		}
+	}
+	s.handleTRPCBridgeCall(w, r, http.MethodGet, "shell.queryHistory", payload)
+}
+
+func (s *Server) handleShellSystemHistory(w http.ResponseWriter, r *http.Request) {
+	payload := map[string]any{}
+	if limit := strings.TrimSpace(r.URL.Query().Get("limit")); limit != "" {
+		if parsed, err := strconv.Atoi(limit); err == nil {
+			payload["limit"] = parsed
+		}
+	}
+	s.handleTRPCBridgeCall(w, r, http.MethodGet, "shell.getSystemHistory", payload)
 }
 
 func (s *Server) handleSessionBridgeBodyCall(w http.ResponseWriter, r *http.Request, procedure string) {
