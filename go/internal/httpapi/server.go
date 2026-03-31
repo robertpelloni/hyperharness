@@ -3047,11 +3047,64 @@ func (s *Server) handleMemorySearchSessionSummaries(w http.ResponseWriter, r *ht
 }
 
 func (s *Server) handleMemorySectionedStatus(w http.ResponseWriter, r *http.Request) {
-	s.handleTRPCBridgeCall(w, r, http.MethodGet, "memory.getSectionedMemoryStatus", nil)
+	var result map[string]any
+	upstreamBase, err := s.callUpstreamJSON(r.Context(), "memory.getSectionedMemoryStatus", nil, &result)
+	if err == nil {
+		writeJSON(w, http.StatusOK, map[string]any{
+			"success": true,
+			"data":    result,
+			"bridge": map[string]any{
+				"upstreamBase": upstreamBase,
+				"procedure":    "memory.getSectionedMemoryStatus",
+			},
+		})
+		return
+	}
+
+	status, fallbackErr := memorystore.ReadStatus(s.cfg.WorkspaceRoot)
+	if fallbackErr != nil {
+		writeJSON(w, http.StatusServiceUnavailable, map[string]any{"success": false, "error": err.Error(), "detail": fallbackErr.Error()})
+		return
+	}
+	writeJSON(w, http.StatusOK, map[string]any{
+		"success": true,
+		"data": map[string]any{
+			"available": status.Exists,
+			"sections":  status.Sections,
+			"storePath": status.StorePath,
+		},
+		"bridge": map[string]any{
+			"fallback":  "go-local-memory",
+			"procedure": "memory.getSectionedMemoryStatus",
+			"reason":    err.Error(),
+		},
+	})
 }
 
 func (s *Server) handleMemoryInterchangeFormats(w http.ResponseWriter, r *http.Request) {
-	s.handleTRPCBridgeCall(w, r, http.MethodGet, "memory.listInterchangeFormats", nil)
+	var result any
+	upstreamBase, err := s.callUpstreamJSON(r.Context(), "memory.listInterchangeFormats", nil, &result)
+	if err == nil {
+		writeJSON(w, http.StatusOK, map[string]any{
+			"success": true,
+			"data":    result,
+			"bridge": map[string]any{
+				"upstreamBase": upstreamBase,
+				"procedure":    "memory.listInterchangeFormats",
+			},
+		})
+		return
+	}
+
+	writeJSON(w, http.StatusOK, map[string]any{
+		"success": true,
+		"data":    []string{"json", "markdown"},
+		"bridge": map[string]any{
+			"fallback":  "go-local-memory",
+			"procedure": "memory.listInterchangeFormats",
+			"reason":    err.Error(),
+		},
+	})
 }
 
 func (s *Server) handleMemoryExport(w http.ResponseWriter, r *http.Request) {

@@ -581,6 +581,36 @@ func TestMemorySessionBootstrapFallsBackToLocalPrompt(t *testing.T) {
 	}
 }
 
+func TestMemorySectionedStatusAndFormatsFallBackLocally(t *testing.T) {
+	workspaceRoot := t.TempDir()
+	if err := os.MkdirAll(filepath.Join(workspaceRoot, ".borg"), 0o755); err != nil {
+		t.Fatalf("failed to create .borg dir: %v", err)
+	}
+	store := `{"sections":[{"section":"project_context","entries":[{"createdAt":"2026-01-01T00:00:00Z"}]}]}`
+	if err := os.WriteFile(filepath.Join(workspaceRoot, ".borg", "sectioned_memory.json"), []byte(store), 0o644); err != nil {
+		t.Fatalf("failed to seed sectioned memory: %v", err)
+	}
+
+	t.Setenv("BORG_TRPC_UPSTREAM", "http://127.0.0.1:1/trpc")
+	cfg := config.Default()
+	cfg.WorkspaceRoot = workspaceRoot
+	cfg.ConfigDir = t.TempDir()
+	cfg.MainConfigDir = t.TempDir()
+	server := New(cfg, stubDetector{})
+
+	statusRecorder := httptest.NewRecorder()
+	server.Handler().ServeHTTP(statusRecorder, httptest.NewRequest(http.MethodGet, "/api/memory/sectioned-status", nil))
+	if statusRecorder.Code != http.StatusOK || !strings.Contains(statusRecorder.Body.String(), `"fallback":"go-local-memory"`) || !strings.Contains(statusRecorder.Body.String(), `"project_context"`) {
+		t.Fatalf("expected local sectioned-status fallback, got %d %s", statusRecorder.Code, statusRecorder.Body.String())
+	}
+
+	formatsRecorder := httptest.NewRecorder()
+	server.Handler().ServeHTTP(formatsRecorder, httptest.NewRequest(http.MethodGet, "/api/memory/interchange-formats", nil))
+	if formatsRecorder.Code != http.StatusOK || !strings.Contains(formatsRecorder.Body.String(), `"markdown"`) || !strings.Contains(formatsRecorder.Body.String(), `"fallback":"go-local-memory"`) {
+		t.Fatalf("expected local interchange formats fallback, got %d %s", formatsRecorder.Code, formatsRecorder.Body.String())
+	}
+}
+
 func TestAutonomyBridgeRoutes(t *testing.T) {
 	upstream := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("content-type", "application/json")
