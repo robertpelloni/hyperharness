@@ -744,6 +744,48 @@ func TestReadOnlyMemoryRoutesFallBackLocally(t *testing.T) {
 	}
 }
 
+func TestMemoryServiceBackedMutationsFallBackLocally(t *testing.T) {
+	t.Setenv("BORG_TRPC_UPSTREAM", "http://127.0.0.1:1/trpc")
+	cfg := config.Default()
+	cfg.WorkspaceRoot = t.TempDir()
+	cfg.ConfigDir = t.TempDir()
+	cfg.MainConfigDir = t.TempDir()
+	server := New(cfg, stubDetector{})
+
+	cases := []struct {
+		path        string
+		body        string
+		containsAny []string
+	}{
+		{path: "/api/memory/context/delete", body: `{"id":"ctx-1"}`, containsAny: []string{`"fallback":"go-local-memory"`, `"success":false`, `"procedure":"memory.deleteContext"`}},
+		{path: "/api/memory/facts/add", body: `{"content":"remember this","type":"working"}`, containsAny: []string{`"fallback":"go-local-memory"`, `"success":false`, `"procedure":"memory.addFact"`}},
+		{path: "/api/memory/observations/record", body: `{"content":"Observation","type":"fact","namespace":"ops"}`, containsAny: []string{`"fallback":"go-local-memory"`, `"success":false`, `"procedure":"memory.recordObservation"`}},
+		{path: "/api/memory/user-prompts/capture", body: `{"content":"Need help","role":"user"}`, containsAny: []string{`"fallback":"go-local-memory"`, `"success":false`, `"procedure":"memory.captureUserPrompt"`}},
+		{path: "/api/memory/pivot/search", body: `{"pivotMemoryId":"mem-1","limit":5}`, containsAny: []string{`"fallback":"go-local-memory"`, `"data":[]`}},
+		{path: "/api/memory/timeline/window", body: `{"centerMemoryId":"mem-1","before":2,"after":2}`, containsAny: []string{`"fallback":"go-local-memory"`, `"data":[]`}},
+		{path: "/api/memory/cross-session-links", body: `{"memoryId":"mem-1","limit":5}`, containsAny: []string{`"fallback":"go-local-memory"`, `"data":[]`}},
+		{path: "/api/memory/session-summaries/capture", body: `{"sessionId":"sess-1","status":"stopped"}`, containsAny: []string{`"fallback":"go-local-memory"`, `"success":false`, `"procedure":"memory.captureSessionSummary"`}},
+	}
+
+	for _, tc := range cases {
+		recorder := httptest.NewRecorder()
+		server.Handler().ServeHTTP(recorder, httptest.NewRequest(http.MethodPost, tc.path, strings.NewReader(tc.body)))
+		if recorder.Code != http.StatusOK {
+			t.Fatalf("POST %s: expected 200, got %d", tc.path, recorder.Code)
+		}
+		matched := false
+		for _, expected := range tc.containsAny {
+			if strings.Contains(recorder.Body.String(), expected) {
+				matched = true
+				break
+			}
+		}
+		if !matched {
+			t.Fatalf("POST %s: expected response to contain one of %v, got %s", tc.path, tc.containsAny, recorder.Body.String())
+		}
+	}
+}
+
 func TestAutonomyBridgeRoutes(t *testing.T) {
 	upstream := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("content-type", "application/json")

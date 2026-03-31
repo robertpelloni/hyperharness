@@ -2998,7 +2998,18 @@ func (s *Server) handleMemoryContextGet(w http.ResponseWriter, r *http.Request) 
 }
 
 func (s *Server) handleMemoryContextDelete(w http.ResponseWriter, r *http.Request) {
-	s.handleTRPCBridgeBodyCall(w, r, "memory.deleteContext")
+	var payload map[string]any
+	if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
+		writeJSON(w, http.StatusBadRequest, map[string]any{"success": false, "error": "invalid JSON body"})
+		return
+	}
+	var result any
+	upstreamBase, err := s.callUpstreamJSON(r.Context(), "memory.deleteContext", payload, &result)
+	if err == nil {
+		writeJSON(w, http.StatusOK, map[string]any{"success": true, "data": result, "bridge": map[string]any{"upstreamBase": upstreamBase, "procedure": "memory.deleteContext"}})
+		return
+	}
+	writeJSON(w, http.StatusOK, map[string]any{"success": true, "data": map[string]any{"success": false}, "bridge": map[string]any{"fallback": "go-local-memory", "procedure": "memory.deleteContext", "reason": err.Error()}})
 }
 
 func (s *Server) handleMemoryAgentStats(w http.ResponseWriter, r *http.Request) {
@@ -3091,11 +3102,33 @@ func (s *Server) handleMemoryAgentSearch(w http.ResponseWriter, r *http.Request)
 }
 
 func (s *Server) handleMemoryAddFact(w http.ResponseWriter, r *http.Request) {
-	s.handleTRPCBridgeBodyCall(w, r, "memory.addFact")
+	var payload map[string]any
+	if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
+		writeJSON(w, http.StatusBadRequest, map[string]any{"success": false, "error": "invalid JSON body"})
+		return
+	}
+	var result any
+	upstreamBase, err := s.callUpstreamJSON(r.Context(), "memory.addFact", payload, &result)
+	if err == nil {
+		writeJSON(w, http.StatusOK, map[string]any{"success": true, "data": result, "bridge": map[string]any{"upstreamBase": upstreamBase, "procedure": "memory.addFact"}})
+		return
+	}
+	writeJSON(w, http.StatusOK, map[string]any{"success": true, "data": map[string]any{"success": false}, "bridge": map[string]any{"fallback": "go-local-memory", "procedure": "memory.addFact", "reason": err.Error()}})
 }
 
 func (s *Server) handleMemoryRecordObservation(w http.ResponseWriter, r *http.Request) {
-	s.handleTRPCBridgeBodyCall(w, r, "memory.recordObservation")
+	var payload map[string]any
+	if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
+		writeJSON(w, http.StatusBadRequest, map[string]any{"success": false, "error": "invalid JSON body"})
+		return
+	}
+	var result any
+	upstreamBase, err := s.callUpstreamJSON(r.Context(), "memory.recordObservation", payload, &result)
+	if err == nil {
+		writeJSON(w, http.StatusOK, map[string]any{"success": true, "data": result, "bridge": map[string]any{"upstreamBase": upstreamBase, "procedure": "memory.recordObservation"}})
+		return
+	}
+	writeJSON(w, http.StatusOK, map[string]any{"success": true, "data": map[string]any{"success": false}, "bridge": map[string]any{"fallback": "go-local-memory", "procedure": "memory.recordObservation", "reason": err.Error()}})
 }
 
 func (s *Server) handleMemoryRecentObservations(w http.ResponseWriter, r *http.Request) {
@@ -3183,7 +3216,18 @@ func (s *Server) handleMemorySearchObservations(w http.ResponseWriter, r *http.R
 }
 
 func (s *Server) handleMemoryCaptureUserPrompt(w http.ResponseWriter, r *http.Request) {
-	s.handleTRPCBridgeBodyCall(w, r, "memory.captureUserPrompt")
+	var payload map[string]any
+	if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
+		writeJSON(w, http.StatusBadRequest, map[string]any{"success": false, "error": "invalid JSON body"})
+		return
+	}
+	var result any
+	upstreamBase, err := s.callUpstreamJSON(r.Context(), "memory.captureUserPrompt", payload, &result)
+	if err == nil {
+		writeJSON(w, http.StatusOK, map[string]any{"success": true, "data": result, "bridge": map[string]any{"upstreamBase": upstreamBase, "procedure": "memory.captureUserPrompt"}})
+		return
+	}
+	writeJSON(w, http.StatusOK, map[string]any{"success": true, "data": map[string]any{"success": false}, "bridge": map[string]any{"fallback": "go-local-memory", "procedure": "memory.captureUserPrompt", "reason": err.Error()}})
 }
 
 func (s *Server) handleMemoryRecentUserPrompts(w http.ResponseWriter, r *http.Request) {
@@ -3265,15 +3309,15 @@ func (s *Server) handleMemorySearchUserPrompts(w http.ResponseWriter, r *http.Re
 }
 
 func (s *Server) handleMemorySearchPivot(w http.ResponseWriter, r *http.Request) {
-	s.handleTRPCBridgeBodyCall(w, r, "memory.searchMemoryPivot")
+	s.handleReadOnlyMemoryBodyFallback(w, r, "memory.searchMemoryPivot")
 }
 
 func (s *Server) handleMemoryTimelineWindow(w http.ResponseWriter, r *http.Request) {
-	s.handleTRPCBridgeBodyCall(w, r, "memory.getMemoryTimelineWindow")
+	s.handleReadOnlyMemoryBodyFallback(w, r, "memory.getMemoryTimelineWindow")
 }
 
 func (s *Server) handleMemoryCrossSessionLinks(w http.ResponseWriter, r *http.Request) {
-	s.handleTRPCBridgeBodyCall(w, r, "memory.getCrossSessionMemoryLinks")
+	s.handleReadOnlyMemoryBodyFallback(w, r, "memory.getCrossSessionMemoryLinks")
 }
 
 func (s *Server) handleMemorySessionBootstrap(w http.ResponseWriter, r *http.Request) {
@@ -3387,7 +3431,18 @@ func (s *Server) handleMemoryToolContext(w http.ResponseWriter, r *http.Request)
 }
 
 func (s *Server) handleMemoryCaptureSessionSummary(w http.ResponseWriter, r *http.Request) {
-	s.handleTRPCBridgeBodyCall(w, r, "memory.captureSessionSummary")
+	var payload map[string]any
+	if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
+		writeJSON(w, http.StatusBadRequest, map[string]any{"success": false, "error": "invalid JSON body"})
+		return
+	}
+	var result any
+	upstreamBase, err := s.callUpstreamJSON(r.Context(), "memory.captureSessionSummary", payload, &result)
+	if err == nil {
+		writeJSON(w, http.StatusOK, map[string]any{"success": true, "data": result, "bridge": map[string]any{"upstreamBase": upstreamBase, "procedure": "memory.captureSessionSummary"}})
+		return
+	}
+	writeJSON(w, http.StatusOK, map[string]any{"success": true, "data": map[string]any{"success": false}, "bridge": map[string]any{"fallback": "go-local-memory", "procedure": "memory.captureSessionSummary", "reason": err.Error()}})
 }
 
 func (s *Server) handleMemoryRecentSessionSummaries(w http.ResponseWriter, r *http.Request) {
@@ -6047,6 +6102,38 @@ func (s *Server) localMemoryContexts() ([]map[string]any, error) {
 		return nil, err
 	}
 	return contexts, nil
+}
+
+func (s *Server) handleReadOnlyMemoryBodyFallback(w http.ResponseWriter, r *http.Request, procedure string) {
+	var payload map[string]any
+	if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
+		writeJSON(w, http.StatusBadRequest, map[string]any{"success": false, "error": "invalid JSON body"})
+		return
+	}
+
+	var result any
+	upstreamBase, err := s.callUpstreamJSON(r.Context(), procedure, payload, &result)
+	if err == nil {
+		writeJSON(w, http.StatusOK, map[string]any{
+			"success": true,
+			"data":    result,
+			"bridge": map[string]any{
+				"upstreamBase": upstreamBase,
+				"procedure":    procedure,
+			},
+		})
+		return
+	}
+
+	writeJSON(w, http.StatusOK, map[string]any{
+		"success": true,
+		"data":    []map[string]any{},
+		"bridge": map[string]any{
+			"fallback":  "go-local-memory",
+			"procedure": procedure,
+			"reason":    err.Error(),
+		},
+	})
 }
 
 func (s *Server) localConfiguredMCPServers() ([]map[string]any, error) {
