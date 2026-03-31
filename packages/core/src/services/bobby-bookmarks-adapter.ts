@@ -52,23 +52,76 @@ function coerceTags(tags: unknown): string[] {
 }
 
 export function normalizeBookmarkUrl(rawUrl: string): string {
+    const trimmed = rawUrl.trim();
+    if (!trimmed) {
+        return trimmed;
+    }
+
+    const candidate = /^[a-zA-Z][a-zA-Z0-9+\-.]*:\/\//.test(trimmed) ? trimmed : `https://${trimmed}`;
+
     try {
-        const url = new URL(rawUrl);
+        const url = new URL(candidate);
         const blockedParams = new Set([
             "utm_source",
             "utm_medium",
             "utm_campaign",
             "utm_term",
             "utm_content",
+            "utm_id",
+            "utm_reader",
+            "utm_name",
+            "utm_cid",
             "fbclid",
             "gclid",
+            "gclsrc",
+            "dclid",
+            "msclkid",
+            "adrefer",
             "ref",
+            "source",
+            "mc_cid",
+            "mc_eid",
+            "zanpid",
+            "openid",
+            "_ga",
+            "_gid",
+            "igshid",
+            "yclid",
+            "twclid",
+            "li_fat_id",
+            "epik",
+            "rdid",
+            "ttclid",
+            "wbraid",
+            "gbraid",
+            "srsltid",
+        ]);
+        const defaultPorts = new Map([
+            ["http:", "80"],
+            ["https:", "443"],
+            ["ftp:", "21"],
         ]);
 
         const kept = Array.from(url.searchParams.entries())
-            .filter(([key]) => !blockedParams.has(key.toLowerCase()))
+            .filter(([key]) => {
+                const normalizedKey = key.toLowerCase();
+                return !blockedParams.has(normalizedKey) && !normalizedKey.startsWith("utm_");
+            })
+            .map(([key, value]) => [key.toLowerCase(), value] as const)
             .sort(([left], [right]) => left.localeCompare(right));
 
+        url.protocol = url.protocol.toLowerCase();
+        url.hostname = url.hostname.toLowerCase();
+        if (url.port !== "" && defaultPorts.get(url.protocol) === url.port) {
+            url.port = "";
+        }
+        url.pathname = url.pathname.toLowerCase();
+        if (url.pathname !== "/" && url.pathname.endsWith("/")) {
+            url.pathname = url.pathname.replace(/\/+$/, "");
+        }
+        if (!url.pathname) {
+            url.pathname = "/";
+        }
         url.search = "";
         for (const [key, value] of kept) {
             url.searchParams.append(key, value);
@@ -76,7 +129,7 @@ export function normalizeBookmarkUrl(rawUrl: string): string {
         url.hash = "";
         return url.toString();
     } catch {
-        return rawUrl.trim();
+        return trimmed.toLowerCase();
     }
 }
 
