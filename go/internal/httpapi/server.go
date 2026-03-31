@@ -2264,7 +2264,56 @@ func (s *Server) handleMCPSearchTools(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) handleMCPCallTool(w http.ResponseWriter, r *http.Request) {
-	s.handleTRPCBridgeBodyCall(w, r, "mcp.callTool")
+	if r.Method != http.MethodPost {
+		writeJSON(w, http.StatusMethodNotAllowed, map[string]any{
+			"success": false,
+			"error":   "method not allowed",
+		})
+		return
+	}
+
+	var payload map[string]any
+	if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
+		writeJSON(w, http.StatusBadRequest, map[string]any{
+			"success": false,
+			"error":   "invalid JSON body",
+		})
+		return
+	}
+
+	var result any
+	upstreamBase, err := s.callUpstreamJSON(r.Context(), "mcp.callTool", payload, &result)
+	if err == nil {
+		writeJSON(w, http.StatusOK, map[string]any{
+			"success": true,
+			"data":    result,
+			"bridge": map[string]any{
+				"upstreamBase": upstreamBase,
+				"procedure":    "mcp.callTool",
+			},
+		})
+		return
+	}
+
+	fallbackResult, fallbackErr := s.localCallMCPMetaTool(r, payload)
+	if fallbackErr != nil {
+		writeJSON(w, http.StatusServiceUnavailable, map[string]any{
+			"success": false,
+			"error":   err.Error(),
+			"detail":  fallbackErr.Error(),
+		})
+		return
+	}
+
+	writeJSON(w, http.StatusOK, map[string]any{
+		"success": true,
+		"data":    fallbackResult,
+		"bridge": map[string]any{
+			"fallback":  "go-local-mcp",
+			"procedure": "mcp.callTool",
+			"reason":    err.Error(),
+		},
+	})
 }
 
 func (s *Server) handleMCPAutoCallTool(w http.ResponseWriter, r *http.Request) {
@@ -2286,10 +2335,43 @@ func (s *Server) handleMCPAutoCallTool(w http.ResponseWriter, r *http.Request) {
 	}
 
 	args := normalizeAutoCallArgs(rawArgs)
-
-	s.handleTRPCBridgeCall(w, r, http.MethodPost, "mcp.callTool", map[string]any{
+	payload := map[string]any{
 		"name": "auto_call_tool",
 		"args": args,
+	}
+
+	var result any
+	upstreamBase, err := s.callUpstreamJSON(r.Context(), "mcp.callTool", payload, &result)
+	if err == nil {
+		writeJSON(w, http.StatusOK, map[string]any{
+			"success": true,
+			"data":    result,
+			"bridge": map[string]any{
+				"upstreamBase": upstreamBase,
+				"procedure":    "mcp.callTool",
+			},
+		})
+		return
+	}
+
+	fallbackResult, fallbackErr := s.localCallMCPMetaTool(r, payload)
+	if fallbackErr != nil {
+		writeJSON(w, http.StatusServiceUnavailable, map[string]any{
+			"success": false,
+			"error":   err.Error(),
+			"detail":  fallbackErr.Error(),
+		})
+		return
+	}
+
+	writeJSON(w, http.StatusOK, map[string]any{
+		"success": true,
+		"data":    fallbackResult,
+		"bridge": map[string]any{
+			"fallback":  "go-local-mcp",
+			"procedure": "mcp.callTool",
+			"reason":    err.Error(),
+		},
 	})
 }
 
@@ -5037,6 +5119,92 @@ func fallbackSearchMCPTools(definitions []harnesses.Definition, query string) []
 		})
 	}
 	return results
+}
+
+func (s *Server) localCallMCPMetaTool(r *http.Request, payload map[string]any) (map[string]any, error) {
+	name, _ := payload["name"].(string)
+	args, _ := payload["args"].(map[string]any)
+	if args == nil {
+		args = map[string]any{}
+	}
+
+	switch name {
+	case "search_tools":
+		query, _ := args["query"].(string)
+		_, summary, err := s.localMCPSummary(r.Context())
+		if err != nil {
+			return nil, err
+		}
+		results := fallbackSearchMCPTools(summary.InstalledHarnesses, query)
+		return map[string]any{
+			"ok": true,
+			"result": map[string]any{
+				"content": []map[string]any{
+					{
+						"type": "text",
+						"text": prettyJSON(results),
+					},
+				},
+			},
+		}, nil
+	case "list_all_tools":
+		_, summary, err := s.localMCPSummary(r.Context())
+		if err != nil {
+			return nil, err
+		}
+		results := fallbackMCPTools(summary.InstalledHarnesses)
+		return map[string]any{
+			"ok": true,
+			"result": map[string]any{
+				"content": []map[string]any{
+					{
+						"type": "text",
+						"text": prettyJSON(results),
+					},
+				},
+			},
+		}, nil
+	case "auto_call_tool":
+		normalized := normalizeAutoCallArgs(args)
+		objective, _ := normalized["objective"].(string)
+		if strings.TrimSpace(objective) == "" {
+			return map[string]any{
+				"ok": false,
+				"result": map[string]any{
+					"content": []map[string]any{
+						{
+							"type": "text",
+							"text": "Objective is required for auto_call_tool.",
+						},
+					},
+				},
+			}, nil
+		}
+		_, summary, err := s.localMCPSummary(r.Context())
+		if err != nil {
+			return nil, err
+		}
+		searchResults := fallbackSearchMCPTools(summary.InstalledHarnesses, objective)
+		chosen := "list_all_tools"
+		if len(searchResults) > 0 {
+			if toolName, ok := searchResults[0]["name"].(string); ok && strings.TrimSpace(toolName) != "" {
+				chosen = toolName
+			}
+		}
+		return map[string]any{
+			"ok": true,
+			"result": map[string]any{
+				"content": []map[string]any{
+					{
+						"type": "text",
+						"text": "[Auto-Execution Logic: Chose " + chosen + "]\n--- Result ---\nLocal fallback can recommend tools but cannot execute non-meta MCP tools without the TypeScript bridge.",
+					},
+				},
+			},
+		}, nil
+	default:
+		return nil, errors.New("unsupported tool fallback: " + name)
+	}
 }
 
 func (s *Server) localMCPRegistrySnapshot() ([]map[string]any, error) {

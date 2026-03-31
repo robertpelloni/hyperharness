@@ -4179,6 +4179,57 @@ var SearchTools = struct{
 	}
 }
 
+func TestMCPCallToolFallsBackToLocalMetaTools(t *testing.T) {
+	workspaceRoot := t.TempDir()
+	toolsDir := filepath.Join(workspaceRoot, "submodules", "hypercode", "tools")
+	if err := os.MkdirAll(toolsDir, 0o755); err != nil {
+		t.Fatalf("failed to create hypercode tools dir: %v", err)
+	}
+	toolSource := `package tools
+
+var SearchTools = struct{
+	Name string
+}{
+	Name: "search_tools",
+}
+
+var ListAllTools = struct{
+	Name string
+}{
+	Name: "list_all_tools",
+}
+`
+	if err := os.WriteFile(filepath.Join(toolsDir, "search.go"), []byte(toolSource), 0o644); err != nil {
+		t.Fatalf("failed to write hypercode tool source: %v", err)
+	}
+
+	t.Setenv("BORG_TRPC_UPSTREAM", "http://127.0.0.1:1/trpc")
+
+	cfg := config.Default()
+	cfg.WorkspaceRoot = workspaceRoot
+	cfg.ConfigDir = t.TempDir()
+	cfg.MainConfigDir = t.TempDir()
+	server := New(cfg, stubDetector{tools: []controlplane.Tool{
+		{Type: "go", Name: "Go", Command: "go", Available: true},
+	}})
+
+	callRequest := httptest.NewRequest(http.MethodPost, "/api/mcp/tools/call", strings.NewReader(`{"name":"search_tools","args":{"query":"search"}}`))
+	callRequest.Header.Set("content-type", "application/json")
+	callRecorder := httptest.NewRecorder()
+	server.Handler().ServeHTTP(callRecorder, callRequest)
+	if callRecorder.Code != http.StatusOK || !strings.Contains(callRecorder.Body.String(), `"fallback":"go-local-mcp"`) || !strings.Contains(callRecorder.Body.String(), `hypercode`) || !strings.Contains(callRecorder.Body.String(), `search_tools`) {
+		t.Fatalf("expected local callTool fallback response, got %d %s", callRecorder.Code, callRecorder.Body.String())
+	}
+
+	autoRequest := httptest.NewRequest(http.MethodPost, "/api/mcp/tools/auto-call", strings.NewReader(`{"objective":"find the right tool","context":"repo: borg"}`))
+	autoRequest.Header.Set("content-type", "application/json")
+	autoRecorder := httptest.NewRecorder()
+	server.Handler().ServeHTTP(autoRecorder, autoRequest)
+	if autoRecorder.Code != http.StatusOK || !strings.Contains(autoRecorder.Body.String(), `"fallback":"go-local-mcp"`) || !strings.Contains(autoRecorder.Body.String(), `Auto-Execution Logic`) {
+		t.Fatalf("expected local auto_call_tool fallback response, got %d %s", autoRecorder.Code, autoRecorder.Body.String())
+	}
+}
+
 func TestMCPRegistrySnapshotFallsBackToMasterIndex(t *testing.T) {
 	workspaceRoot := t.TempDir()
 	indexContent := `{
