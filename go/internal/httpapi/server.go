@@ -337,6 +337,28 @@ func (s *Server) registerRoutes() {
 	s.mux.HandleFunc("/api/director/config/update", s.handleDirectorUpdateConfig)
 	s.mux.HandleFunc("/api/director/auto-drive/stop", s.handleDirectorStopAutoDrive)
 	s.mux.HandleFunc("/api/director/auto-drive/start", s.handleDirectorStartAutoDrive)
+	s.mux.HandleFunc("/api/council/members", s.handleCouncilMembers)
+	s.mux.HandleFunc("/api/council/members/update", s.handleCouncilUpdateMembers)
+	s.mux.HandleFunc("/api/council/sessions", s.handleCouncilSessionsList)
+	s.mux.HandleFunc("/api/council/sessions/active", s.handleCouncilSessionsActive)
+	s.mux.HandleFunc("/api/council/sessions/stats", s.handleCouncilSessionsStats)
+	s.mux.HandleFunc("/api/council/sessions/get", s.handleCouncilSessionsGet)
+	s.mux.HandleFunc("/api/council/sessions/start", s.handleCouncilSessionsStart)
+	s.mux.HandleFunc("/api/council/sessions/stop", s.handleCouncilSessionsStop)
+	s.mux.HandleFunc("/api/council/sessions/resume", s.handleCouncilSessionsResume)
+	s.mux.HandleFunc("/api/council/sessions/delete", s.handleCouncilSessionsDelete)
+	s.mux.HandleFunc("/api/council/sessions/logs", s.handleCouncilSessionsLogs)
+	s.mux.HandleFunc("/api/council/sessions/templates", s.handleCouncilSessionsTemplates)
+	s.mux.HandleFunc("/api/council/quota/status", s.handleCouncilQuotaStatus)
+	s.mux.HandleFunc("/api/council/quota/config", s.handleCouncilQuotaConfig)
+	s.mux.HandleFunc("/api/council/quota/enabled", s.handleCouncilQuotaEnabled)
+	s.mux.HandleFunc("/api/council/quota/check", s.handleCouncilQuotaCheck)
+	s.mux.HandleFunc("/api/council/quota/stats", s.handleCouncilQuotaStats)
+	s.mux.HandleFunc("/api/council/quota/limits", s.handleCouncilQuotaLimits)
+	s.mux.HandleFunc("/api/council/quota/reset", s.handleCouncilQuotaReset)
+	s.mux.HandleFunc("/api/council/quota/unthrottle", s.handleCouncilQuotaUnthrottle)
+	s.mux.HandleFunc("/api/council/quota/record-request", s.handleCouncilQuotaRecordRequest)
+	s.mux.HandleFunc("/api/council/quota/rate-limit-error", s.handleCouncilQuotaRecordRateLimitError)
 	s.mux.HandleFunc("/api/metrics/stats", s.handleMetricsStats)
 	s.mux.HandleFunc("/api/metrics/track", s.handleMetricsTrack)
 	s.mux.HandleFunc("/api/metrics/system-snapshot", s.handleMetricsSystemSnapshot)
@@ -786,6 +808,28 @@ func (s *Server) handleAPIIndex(w http.ResponseWriter, _ *http.Request) {
 				{Path: "/api/director/config/update", Category: "governance", Description: "Update TypeScript director config."},
 				{Path: "/api/director/auto-drive/stop", Category: "governance", Description: "Stop auto-drive through the TypeScript director router."},
 				{Path: "/api/director/auto-drive/start", Category: "governance", Description: "Start auto-drive through the TypeScript director router."},
+				{Path: "/api/council/members", Category: "governance", Description: "Read council members through the TypeScript council router."},
+				{Path: "/api/council/members/update", Category: "governance", Description: "Update council members through the TypeScript council router."},
+				{Path: "/api/council/sessions", Category: "governance", Description: "List council sessions through the TypeScript council router."},
+				{Path: "/api/council/sessions/active", Category: "governance", Description: "List active council sessions through the TypeScript council router."},
+				{Path: "/api/council/sessions/stats", Category: "governance", Description: "Read council session stats through the TypeScript council router."},
+				{Path: "/api/council/sessions/get", Category: "governance", Description: "Read a specific council session through the TypeScript council router."},
+				{Path: "/api/council/sessions/start", Category: "governance", Description: "Start a council session through the TypeScript council router."},
+				{Path: "/api/council/sessions/stop", Category: "governance", Description: "Stop a council session through the TypeScript council router."},
+				{Path: "/api/council/sessions/resume", Category: "governance", Description: "Resume a council session through the TypeScript council router."},
+				{Path: "/api/council/sessions/delete", Category: "governance", Description: "Delete a council session through the TypeScript council router."},
+				{Path: "/api/council/sessions/logs", Category: "governance", Description: "Read council session logs through the TypeScript council router."},
+				{Path: "/api/council/sessions/templates", Category: "governance", Description: "Read council session templates through the TypeScript council router."},
+				{Path: "/api/council/quota/status", Category: "governance", Description: "Read council quota status through the TypeScript council router."},
+				{Path: "/api/council/quota/config", Category: "governance", Description: "Read or update council quota config through the TypeScript council router."},
+				{Path: "/api/council/quota/enabled", Category: "governance", Description: "Enable or disable council quota enforcement through the TypeScript council router."},
+				{Path: "/api/council/quota/check", Category: "governance", Description: "Check council quota availability for a provider through the TypeScript council router."},
+				{Path: "/api/council/quota/stats", Category: "governance", Description: "Read council quota stats through the TypeScript council router."},
+				{Path: "/api/council/quota/limits", Category: "governance", Description: "Read or update council quota limits through the TypeScript council router."},
+				{Path: "/api/council/quota/reset", Category: "governance", Description: "Reset council quota usage through the TypeScript council router."},
+				{Path: "/api/council/quota/unthrottle", Category: "governance", Description: "Unthrottle a council quota provider through the TypeScript council router."},
+				{Path: "/api/council/quota/record-request", Category: "governance", Description: "Record a council quota request through the TypeScript council router."},
+				{Path: "/api/council/quota/rate-limit-error", Category: "governance", Description: "Record a council quota rate-limit error through the TypeScript council router."},
 				{Path: "/api/policies", Category: "governance", Description: "List policies through the TypeScript policies router."},
 				{Path: "/api/policies/get", Category: "governance", Description: "Read a policy through the TypeScript policies router."},
 				{Path: "/api/policies/create", Category: "governance", Description: "Create a policy through the TypeScript policies router."},

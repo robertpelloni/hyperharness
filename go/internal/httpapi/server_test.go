@@ -530,6 +530,212 @@ func TestDirectorBridgeRoutes(t *testing.T) {
 	}
 }
 
+func TestCouncilBridgeRoutes(t *testing.T) {
+	upstream := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("content-type", "application/json")
+		switch r.URL.Path {
+		case "/trpc/council.members":
+			_ = json.NewEncoder(w).Encode(map[string]any{
+				"result": map[string]any{"data": map[string]any{"json": []any{map[string]any{"name": "planner", "provider": "openai", "modelId": "gpt-5", "systemPrompt": "plan"}}}},
+			})
+		case "/trpc/council.updateMembers":
+			_ = json.NewEncoder(w).Encode(map[string]any{
+				"result": map[string]any{"data": map[string]any{"json": map[string]any{"success": true}}},
+			})
+		case "/trpc/council.sessions.list":
+			_ = json.NewEncoder(w).Encode(map[string]any{
+				"result": map[string]any{"data": map[string]any{"json": []any{map[string]any{"id": "sess-1"}}}},
+			})
+		case "/trpc/council.sessions.active":
+			_ = json.NewEncoder(w).Encode(map[string]any{
+				"result": map[string]any{"data": map[string]any{"json": []any{map[string]any{"id": "sess-1", "status": "running"}}}},
+			})
+		case "/trpc/council.sessions.stats":
+			_ = json.NewEncoder(w).Encode(map[string]any{
+				"result": map[string]any{"data": map[string]any{"json": map[string]any{"total": 1, "active": 1}}},
+			})
+		case "/trpc/council.sessions.get":
+			body, _ := io.ReadAll(r.Body)
+			if !strings.Contains(string(body), `"id":"sess-1"`) {
+				t.Fatalf("expected council.sessions.get payload, got %s", string(body))
+			}
+			_ = json.NewEncoder(w).Encode(map[string]any{
+				"result": map[string]any{"data": map[string]any{"json": map[string]any{"id": "sess-1"}}},
+			})
+		case "/trpc/council.sessions.start":
+			_ = json.NewEncoder(w).Encode(map[string]any{
+				"result": map[string]any{"data": map[string]any{"json": map[string]any{"id": "sess-2"}}},
+			})
+		case "/trpc/council.sessions.stop":
+			_ = json.NewEncoder(w).Encode(map[string]any{
+				"result": map[string]any{"data": map[string]any{"json": map[string]any{"id": "sess-1", "status": "stopped"}}},
+			})
+		case "/trpc/council.sessions.resume":
+			_ = json.NewEncoder(w).Encode(map[string]any{
+				"result": map[string]any{"data": map[string]any{"json": map[string]any{"id": "sess-1", "status": "running"}}},
+			})
+		case "/trpc/council.sessions.delete":
+			_ = json.NewEncoder(w).Encode(map[string]any{
+				"result": map[string]any{"data": map[string]any{"json": map[string]any{"success": true}}},
+			})
+		case "/trpc/council.sessions.getLogs":
+			body, _ := io.ReadAll(r.Body)
+			if !strings.Contains(string(body), `"id":"sess-1"`) {
+				t.Fatalf("expected council.sessions.getLogs payload, got %s", string(body))
+			}
+			_ = json.NewEncoder(w).Encode(map[string]any{
+				"result": map[string]any{"data": map[string]any{"json": []any{"log line"}}},
+			})
+		case "/trpc/council.sessions.templates":
+			_ = json.NewEncoder(w).Encode(map[string]any{
+				"result": map[string]any{"data": map[string]any{"json": []any{map[string]any{"name": "default"}}}},
+			})
+		case "/trpc/council.quota.status":
+			_ = json.NewEncoder(w).Encode(map[string]any{
+				"result": map[string]any{"data": map[string]any{"json": map[string]any{"enabled": true}}},
+			})
+		case "/trpc/council.quota.getConfig":
+			_ = json.NewEncoder(w).Encode(map[string]any{
+				"result": map[string]any{"data": map[string]any{"json": map[string]any{"windowMs": 60000}}},
+			})
+		case "/trpc/council.quota.updateConfig":
+			_ = json.NewEncoder(w).Encode(map[string]any{
+				"result": map[string]any{"data": map[string]any{"json": map[string]any{"success": true}}},
+			})
+		case "/trpc/council.quota.enable":
+			_ = json.NewEncoder(w).Encode(map[string]any{
+				"result": map[string]any{"data": map[string]any{"json": map[string]any{"success": true, "enabled": true}}},
+			})
+		case "/trpc/council.quota.disable":
+			_ = json.NewEncoder(w).Encode(map[string]any{
+				"result": map[string]any{"data": map[string]any{"json": map[string]any{"success": true, "enabled": false}}},
+			})
+		case "/trpc/council.quota.check":
+			body, _ := io.ReadAll(r.Body)
+			if !strings.Contains(string(body), `"provider":"openai"`) {
+				t.Fatalf("expected council.quota.check payload, got %s", string(body))
+			}
+			_ = json.NewEncoder(w).Encode(map[string]any{
+				"result": map[string]any{"data": map[string]any{"json": map[string]any{"allowed": true}}},
+			})
+		case "/trpc/council.quota.allStats":
+			_ = json.NewEncoder(w).Encode(map[string]any{
+				"result": map[string]any{"data": map[string]any{"json": map[string]any{"providers": 1}}},
+			})
+		case "/trpc/council.quota.providerStats":
+			body, _ := io.ReadAll(r.Body)
+			if !strings.Contains(string(body), `"provider":"openai"`) {
+				t.Fatalf("expected council.quota.providerStats payload, got %s", string(body))
+			}
+			_ = json.NewEncoder(w).Encode(map[string]any{
+				"result": map[string]any{"data": map[string]any{"json": map[string]any{"provider": "openai"}}},
+			})
+		case "/trpc/council.quota.getLimits":
+			_ = json.NewEncoder(w).Encode(map[string]any{
+				"result": map[string]any{"data": map[string]any{"json": map[string]any{"rpm": 60}}},
+			})
+		case "/trpc/council.quota.setLimits":
+			body, _ := io.ReadAll(r.Body)
+			if !strings.Contains(string(body), `"provider":"openai"`) {
+				t.Fatalf("expected council.quota.setLimits payload, got %s", string(body))
+			}
+			_ = json.NewEncoder(w).Encode(map[string]any{
+				"result": map[string]any{"data": map[string]any{"json": map[string]any{"success": true}}},
+			})
+		case "/trpc/council.quota.resetProvider":
+			_ = json.NewEncoder(w).Encode(map[string]any{
+				"result": map[string]any{"data": map[string]any{"json": map[string]any{"success": true}}},
+			})
+		case "/trpc/council.quota.resetAll":
+			_ = json.NewEncoder(w).Encode(map[string]any{
+				"result": map[string]any{"data": map[string]any{"json": map[string]any{"success": true}}},
+			})
+		case "/trpc/council.quota.unthrottle":
+			_ = json.NewEncoder(w).Encode(map[string]any{
+				"result": map[string]any{"data": map[string]any{"json": map[string]any{"success": true}}},
+			})
+		case "/trpc/council.quota.recordRequest":
+			_ = json.NewEncoder(w).Encode(map[string]any{
+				"result": map[string]any{"data": map[string]any{"json": map[string]any{"success": true}}},
+			})
+		case "/trpc/council.quota.recordRateLimitError":
+			_ = json.NewEncoder(w).Encode(map[string]any{
+				"result": map[string]any{"data": map[string]any{"json": map[string]any{"success": true}}},
+			})
+		default:
+			t.Fatalf("unexpected upstream path %s", r.URL.Path)
+		}
+	}))
+	defer upstream.Close()
+
+	t.Setenv("BORG_TRPC_UPSTREAM", upstream.URL+"/trpc")
+
+	cfg := config.Default()
+	cfg.MainConfigDir = t.TempDir()
+	server := New(cfg, stubDetector{})
+
+	cases := []struct {
+		name      string
+		method    string
+		path      string
+		body      string
+		contains  string
+		procedure string
+	}{
+		{name: "council members", method: http.MethodGet, path: "/api/council/members", contains: `"planner"`, procedure: `"procedure":"council.members"`},
+		{name: "council update members", method: http.MethodPost, path: "/api/council/members/update", body: `[{"name":"planner","provider":"openai","modelId":"gpt-5","systemPrompt":"plan"}]`, contains: `"success":true`, procedure: `"procedure":"council.updateMembers"`},
+		{name: "council sessions list", method: http.MethodGet, path: "/api/council/sessions", contains: `"sess-1"`, procedure: `"procedure":"council.sessions.list"`},
+		{name: "council sessions active", method: http.MethodGet, path: "/api/council/sessions/active", contains: `"running"`, procedure: `"procedure":"council.sessions.active"`},
+		{name: "council sessions stats", method: http.MethodGet, path: "/api/council/sessions/stats", contains: `"total":1`, procedure: `"procedure":"council.sessions.stats"`},
+		{name: "council sessions get", method: http.MethodGet, path: "/api/council/sessions/get?id=sess-1", contains: `"sess-1"`, procedure: `"procedure":"council.sessions.get"`},
+		{name: "council sessions start", method: http.MethodPost, path: "/api/council/sessions/start", body: `{"cliType":"hypercode"}`, contains: `"sess-2"`, procedure: `"procedure":"council.sessions.start"`},
+		{name: "council sessions stop", method: http.MethodPost, path: "/api/council/sessions/stop", body: `{"id":"sess-1"}`, contains: `"stopped"`, procedure: `"procedure":"council.sessions.stop"`},
+		{name: "council sessions resume", method: http.MethodPost, path: "/api/council/sessions/resume", body: `{"id":"sess-1"}`, contains: `"running"`, procedure: `"procedure":"council.sessions.resume"`},
+		{name: "council sessions delete", method: http.MethodPost, path: "/api/council/sessions/delete", body: `{"id":"sess-1"}`, contains: `"success":true`, procedure: `"procedure":"council.sessions.delete"`},
+		{name: "council sessions logs", method: http.MethodGet, path: "/api/council/sessions/logs?id=sess-1", contains: `"log line"`, procedure: `"procedure":"council.sessions.getLogs"`},
+		{name: "council sessions templates", method: http.MethodGet, path: "/api/council/sessions/templates", contains: `"default"`, procedure: `"procedure":"council.sessions.templates"`},
+		{name: "council quota status", method: http.MethodGet, path: "/api/council/quota/status", contains: `"enabled":true`, procedure: `"procedure":"council.quota.status"`},
+		{name: "council quota get config", method: http.MethodGet, path: "/api/council/quota/config", contains: `"windowMs":60000`, procedure: `"procedure":"council.quota.getConfig"`},
+		{name: "council quota update config", method: http.MethodPost, path: "/api/council/quota/config", body: `{"windowMs":120000}`, contains: `"success":true`, procedure: `"procedure":"council.quota.updateConfig"`},
+		{name: "council quota enable", method: http.MethodPost, path: "/api/council/quota/enabled?enabled=true", body: `null`, contains: `"enabled":true`, procedure: `"procedure":"council.quota.enable"`},
+		{name: "council quota disable", method: http.MethodPost, path: "/api/council/quota/enabled?enabled=false", body: `null`, contains: `"enabled":false`, procedure: `"procedure":"council.quota.disable"`},
+		{name: "council quota check", method: http.MethodGet, path: "/api/council/quota/check?provider=openai", contains: `"allowed":true`, procedure: `"procedure":"council.quota.check"`},
+		{name: "council quota all stats", method: http.MethodGet, path: "/api/council/quota/stats", contains: `"providers":1`, procedure: `"procedure":"council.quota.allStats"`},
+		{name: "council quota provider stats", method: http.MethodGet, path: "/api/council/quota/stats?provider=openai", contains: `"provider":"openai"`, procedure: `"procedure":"council.quota.providerStats"`},
+		{name: "council quota get limits", method: http.MethodGet, path: "/api/council/quota/limits?provider=openai", contains: `"rpm":60`, procedure: `"procedure":"council.quota.getLimits"`},
+		{name: "council quota set limits", method: http.MethodPost, path: "/api/council/quota/limits?provider=openai", body: `{"limits":{"rpm":120}}`, contains: `"success":true`, procedure: `"procedure":"council.quota.setLimits"`},
+		{name: "council quota reset provider", method: http.MethodPost, path: "/api/council/quota/reset?provider=openai", body: `null`, contains: `"success":true`, procedure: `"procedure":"council.quota.resetProvider"`},
+		{name: "council quota reset all", method: http.MethodPost, path: "/api/council/quota/reset", body: `null`, contains: `"success":true`, procedure: `"procedure":"council.quota.resetAll"`},
+		{name: "council quota unthrottle", method: http.MethodPost, path: "/api/council/quota/unthrottle?provider=openai", body: `null`, contains: `"success":true`, procedure: `"procedure":"council.quota.unthrottle"`},
+		{name: "council quota record request", method: http.MethodPost, path: "/api/council/quota/record-request", body: `{"provider":"openai","tokensUsed":10}`, contains: `"success":true`, procedure: `"procedure":"council.quota.recordRequest"`},
+		{name: "council quota rate limit error", method: http.MethodPost, path: "/api/council/quota/rate-limit-error", body: `{"provider":"openai"}`, contains: `"success":true`, procedure: `"procedure":"council.quota.recordRateLimitError"`},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			var body io.Reader
+			if tc.body != "" {
+				body = strings.NewReader(tc.body)
+			}
+			request := httptest.NewRequest(tc.method, tc.path, body)
+			if tc.body != "" {
+				request.Header.Set("content-type", "application/json")
+			}
+			recorder := httptest.NewRecorder()
+			server.Handler().ServeHTTP(recorder, request)
+			if recorder.Code != http.StatusOK {
+				t.Fatalf("expected status 200, got %d with body %s", recorder.Code, recorder.Body.String())
+			}
+			if !strings.Contains(recorder.Body.String(), tc.contains) {
+				t.Fatalf("expected response to contain %s, got %s", tc.contains, recorder.Body.String())
+			}
+			if !strings.Contains(recorder.Body.String(), tc.procedure) {
+				t.Fatalf("expected bridge metadata %s, got %s", tc.procedure, recorder.Body.String())
+			}
+		})
+	}
+}
+
 func TestConfigStatusEndpoint(t *testing.T) {
 	workspaceRoot := t.TempDir()
 	cfg := config.Default()
