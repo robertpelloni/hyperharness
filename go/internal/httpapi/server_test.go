@@ -4301,6 +4301,63 @@ func TestMCPJsoncEditorSaveFallsBackToLocalWrite(t *testing.T) {
 	}
 }
 
+func TestMCPConfiguredServersFallBackToLocalJsonc(t *testing.T) {
+	mainConfigDir := t.TempDir()
+	jsoncContent := `// Borg MCP configuration
+{
+  "mcpServers": {
+    "core": {
+      "command": "node",
+      "args": ["server.js"],
+      "description": "Core server",
+      "_meta": {
+        "toolCount": 1
+      }
+    }
+  }
+}
+`
+	if err := os.WriteFile(filepath.Join(mainConfigDir, "mcp.jsonc"), []byte(jsoncContent), 0o644); err != nil {
+		t.Fatalf("failed to write local mcp jsonc: %v", err)
+	}
+
+	t.Setenv("BORG_TRPC_UPSTREAM", "http://127.0.0.1:1/trpc")
+
+	cfg := config.Default()
+	cfg.WorkspaceRoot = t.TempDir()
+	cfg.MainConfigDir = mainConfigDir
+	server := New(cfg, stubDetector{})
+
+	listRequest := httptest.NewRequest(http.MethodGet, "/api/mcp/servers/configured", nil)
+	listRecorder := httptest.NewRecorder()
+	server.Handler().ServeHTTP(listRecorder, listRequest)
+
+	if listRecorder.Code != http.StatusOK {
+		t.Fatalf("expected fallback list status 200, got %d with body %s", listRecorder.Code, listRecorder.Body.String())
+	}
+	if !strings.Contains(listRecorder.Body.String(), `"fallback":"go-local-jsonc"`) {
+		t.Fatalf("expected go-local-jsonc fallback metadata, got %s", listRecorder.Body.String())
+	}
+	if !strings.Contains(listRecorder.Body.String(), `"name":"core"`) || !strings.Contains(listRecorder.Body.String(), `"command":"node"`) {
+		t.Fatalf("expected configured server from local jsonc, got %s", listRecorder.Body.String())
+	}
+
+	expectedUUID := syntheticServerUUID("core")
+	getRequest := httptest.NewRequest(http.MethodGet, "/api/mcp/servers/get?uuid="+expectedUUID, nil)
+	getRecorder := httptest.NewRecorder()
+	server.Handler().ServeHTTP(getRecorder, getRequest)
+
+	if getRecorder.Code != http.StatusOK {
+		t.Fatalf("expected fallback get status 200, got %d with body %s", getRecorder.Code, getRecorder.Body.String())
+	}
+	if !strings.Contains(getRecorder.Body.String(), `"uuid":"`+expectedUUID+`"`) {
+		t.Fatalf("expected synthetic uuid %s, got %s", expectedUUID, getRecorder.Body.String())
+	}
+	if !strings.Contains(getRecorder.Body.String(), `"name":"core"`) {
+		t.Fatalf("expected configured server get payload, got %s", getRecorder.Body.String())
+	}
+}
+
 func TestImportedSessionBridgeRoutes(t *testing.T) {
 	upstream := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("content-type", "application/json")

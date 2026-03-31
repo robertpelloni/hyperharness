@@ -1826,7 +1826,47 @@ func (s *Server) handleMCPRuntimeServers(w http.ResponseWriter, r *http.Request)
 }
 
 func (s *Server) handleMCPConfiguredServers(w http.ResponseWriter, r *http.Request) {
-	s.handleTRPCBridgeCall(w, r, http.MethodGet, "mcpServers.list", nil)
+	if r.Method != http.MethodGet {
+		writeJSON(w, http.StatusMethodNotAllowed, map[string]any{
+			"success": false,
+			"error":   "method not allowed",
+		})
+		return
+	}
+
+	var servers []map[string]any
+	upstreamBase, err := s.callUpstreamJSON(r.Context(), "mcpServers.list", nil, &servers)
+	if err == nil {
+		writeJSON(w, http.StatusOK, map[string]any{
+			"success": true,
+			"data":    servers,
+			"bridge": map[string]any{
+				"upstreamBase": upstreamBase,
+				"procedure":    "mcpServers.list",
+			},
+		})
+		return
+	}
+
+	fallbackServers, fallbackErr := s.localConfiguredMCPServers()
+	if fallbackErr != nil {
+		writeJSON(w, http.StatusServiceUnavailable, map[string]any{
+			"success": false,
+			"error":   err.Error(),
+			"detail":  fallbackErr.Error(),
+		})
+		return
+	}
+
+	writeJSON(w, http.StatusOK, map[string]any{
+		"success": true,
+		"data":    fallbackServers,
+		"bridge": map[string]any{
+			"fallback":  "go-local-jsonc",
+			"procedure": "mcpServers.list",
+			"reason":    err.Error(),
+		},
+	})
 }
 
 func (s *Server) handleMCPConfiguredServerGet(w http.ResponseWriter, r *http.Request) {
@@ -1838,7 +1878,54 @@ func (s *Server) handleMCPConfiguredServerGet(w http.ResponseWriter, r *http.Req
 		})
 		return
 	}
-	s.handleTRPCBridgeCall(w, r, http.MethodGet, "mcpServers.get", map[string]any{"uuid": uuid})
+
+	var server map[string]any
+	upstreamBase, err := s.callUpstreamJSON(r.Context(), "mcpServers.get", map[string]any{"uuid": uuid}, &server)
+	if err == nil {
+		writeJSON(w, http.StatusOK, map[string]any{
+			"success": true,
+			"data":    server,
+			"bridge": map[string]any{
+				"upstreamBase": upstreamBase,
+				"procedure":    "mcpServers.get",
+			},
+		})
+		return
+	}
+
+	fallbackServers, fallbackErr := s.localConfiguredMCPServers()
+	if fallbackErr != nil {
+		writeJSON(w, http.StatusServiceUnavailable, map[string]any{
+			"success": false,
+			"error":   err.Error(),
+			"detail":  fallbackErr.Error(),
+		})
+		return
+	}
+	for _, fallbackServer := range fallbackServers {
+		if fallbackUUID, _ := fallbackServer["uuid"].(string); fallbackUUID == uuid {
+			writeJSON(w, http.StatusOK, map[string]any{
+				"success": true,
+				"data":    fallbackServer,
+				"bridge": map[string]any{
+					"fallback":  "go-local-jsonc",
+					"procedure": "mcpServers.get",
+					"reason":    err.Error(),
+				},
+			})
+			return
+		}
+	}
+
+	writeJSON(w, http.StatusOK, map[string]any{
+		"success": true,
+		"data":    nil,
+		"bridge": map[string]any{
+			"fallback":  "go-local-jsonc",
+			"procedure": "mcpServers.get",
+			"reason":    err.Error(),
+		},
+	})
 }
 
 func (s *Server) handleMCPConfiguredServerCreate(w http.ResponseWriter, r *http.Request) {
@@ -4705,6 +4792,73 @@ func (s *Server) saveLocalMCPJsonc(content string) error {
 	return os.WriteFile(jsonPath, []byte(prettyJSON(compatibility)+"\n"), 0o644)
 }
 
+func (s *Server) localConfiguredMCPServers() ([]map[string]any, error) {
+	editor, err := s.localMCPJsoncEditor()
+	if err != nil {
+		return nil, err
+	}
+	content, _ := editor["content"].(string)
+	var parsed map[string]any
+	if err := json.Unmarshal([]byte(stripJSONCLineComments(content)), &parsed); err != nil {
+		return nil, err
+	}
+
+	rawServers, _ := parsed["mcpServers"].(map[string]any)
+	results := make([]map[string]any, 0, len(rawServers))
+	for name, rawServer := range rawServers {
+		serverMap, _ := rawServer.(map[string]any)
+		serverType, _ := serverMap["type"].(string)
+		if serverType == "" {
+			if url, _ := serverMap["url"].(string); strings.TrimSpace(url) != "" {
+				serverType = "STREAMABLE_HTTP"
+			} else {
+				serverType = "STDIO"
+			}
+		}
+
+		command := nullableString(serverMap["command"])
+		url := nullableString(serverMap["url"])
+		description := nullableString(serverMap["description"])
+		args := stringSlice(serverMap["args"])
+		env := stringMap(serverMap["env"])
+		headers := stringMap(serverMap["headers"])
+		alwaysOn, _ := serverMap["always_on"].(bool)
+		if !alwaysOn {
+			if metaMap, ok := serverMap["_meta"].(map[string]any); ok {
+				if metaAlwaysOn, ok := metaMap["alwaysOn"].(bool); ok {
+					alwaysOn = metaAlwaysOn
+				}
+			}
+		}
+
+		results = append(results, map[string]any{
+			"uuid":                         syntheticServerUUID(name),
+			"name":                         name,
+			"description":                  description,
+			"type":                         serverType,
+			"command":                      command,
+			"args":                         args,
+			"env":                          env,
+			"url":                          url,
+			"error_status":                 "unknown",
+			"created_at":                   nil,
+			"bearerToken":                  nullableString(serverMap["bearerToken"]),
+			"headers":                      headers,
+			"always_on":                    alwaysOn,
+			"user_id":                      nil,
+			"source_published_server_uuid": nullableString(serverMap["source_published_server_uuid"]),
+			"_meta":                        serverMap["_meta"],
+		})
+	}
+
+	sort.Slice(results, func(i, j int) bool {
+		leftName, _ := results[i]["name"].(string)
+		rightName, _ := results[j]["name"].(string)
+		return leftName < rightName
+	})
+	return results, nil
+}
+
 func stripServerMeta(value any) any {
 	servers, ok := value.(map[string]any)
 	if !ok {
@@ -4735,6 +4889,61 @@ func prettyJSON(value any) string {
 		return "{}"
 	}
 	return string(encoded)
+}
+
+func syntheticServerUUID(name string) string {
+	hash := stableHash("mcp-server\n" + name)
+	return hash[:8] + "-" + hash[8:12] + "-" + hash[12:16] + "-" + hash[16:20] + "-" + hash[20:32]
+}
+
+func nullableString(value any) any {
+	text, _ := value.(string)
+	if strings.TrimSpace(text) == "" {
+		return nil
+	}
+	return text
+}
+
+func stringSlice(value any) []string {
+	values, ok := value.([]any)
+	if !ok {
+		if stringsValue, ok := value.([]string); ok {
+			return append([]string(nil), stringsValue...)
+		}
+		return []string{}
+	}
+	result := make([]string, 0, len(values))
+	for _, raw := range values {
+		text, _ := raw.(string)
+		if strings.TrimSpace(text) == "" {
+			continue
+		}
+		result = append(result, text)
+	}
+	return result
+}
+
+func stringMap(value any) map[string]string {
+	record, ok := value.(map[string]any)
+	if !ok {
+		if typedRecord, ok := value.(map[string]string); ok {
+			copyMap := make(map[string]string, len(typedRecord))
+			for key, entry := range typedRecord {
+				copyMap[key] = entry
+			}
+			return copyMap
+		}
+		return map[string]string{}
+	}
+	result := make(map[string]string, len(record))
+	for key, raw := range record {
+		text, _ := raw.(string)
+		if key == "" || text == "" {
+			continue
+		}
+		result[key] = text
+	}
+	return result
 }
 
 func stripJSONCLineComments(content string) string {
