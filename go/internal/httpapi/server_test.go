@@ -736,6 +736,68 @@ func TestCouncilBridgeRoutes(t *testing.T) {
 	}
 }
 
+func TestDeerFlowBridgeRoutes(t *testing.T) {
+	upstream := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("content-type", "application/json")
+		switch r.URL.Path {
+		case "/trpc/deerFlow.status":
+			_ = json.NewEncoder(w).Encode(map[string]any{
+				"result": map[string]any{"data": map[string]any{"json": map[string]any{"active": true}}},
+			})
+		case "/trpc/deerFlow.models":
+			_ = json.NewEncoder(w).Encode(map[string]any{
+				"result": map[string]any{"data": map[string]any{"json": map[string]any{"models": []any{"deepseek-chat", "gpt-4.1"}}}},
+			})
+		case "/trpc/deerFlow.skills":
+			_ = json.NewEncoder(w).Encode(map[string]any{
+				"result": map[string]any{"data": map[string]any{"json": map[string]any{"skills": []any{"research", "summarize"}}}},
+			})
+		case "/trpc/deerFlow.memory":
+			_ = json.NewEncoder(w).Encode(map[string]any{
+				"result": map[string]any{"data": map[string]any{"json": map[string]any{"memory": map[string]any{"enabled": true, "entries": 3}}}},
+			})
+		default:
+			t.Fatalf("unexpected upstream path %s", r.URL.Path)
+		}
+	}))
+	defer upstream.Close()
+
+	t.Setenv("BORG_TRPC_UPSTREAM", upstream.URL+"/trpc")
+
+	cfg := config.Default()
+	cfg.MainConfigDir = t.TempDir()
+	server := New(cfg, stubDetector{})
+
+	cases := []struct {
+		name      string
+		path      string
+		contains  string
+		procedure string
+	}{
+		{name: "deerflow status", path: "/api/deerflow/status", contains: `"active":true`, procedure: `"procedure":"deerFlow.status"`},
+		{name: "deerflow models", path: "/api/deerflow/models", contains: `"deepseek-chat"`, procedure: `"procedure":"deerFlow.models"`},
+		{name: "deerflow skills", path: "/api/deerflow/skills", contains: `"research"`, procedure: `"procedure":"deerFlow.skills"`},
+		{name: "deerflow memory", path: "/api/deerflow/memory", contains: `"entries":3`, procedure: `"procedure":"deerFlow.memory"`},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			request := httptest.NewRequest(http.MethodGet, tc.path, nil)
+			recorder := httptest.NewRecorder()
+			server.Handler().ServeHTTP(recorder, request)
+			if recorder.Code != http.StatusOK {
+				t.Fatalf("expected status 200, got %d with body %s", recorder.Code, recorder.Body.String())
+			}
+			if !strings.Contains(recorder.Body.String(), tc.contains) {
+				t.Fatalf("expected response to contain %s, got %s", tc.contains, recorder.Body.String())
+			}
+			if !strings.Contains(recorder.Body.String(), tc.procedure) {
+				t.Fatalf("expected bridge metadata %s, got %s", tc.procedure, recorder.Body.String())
+			}
+		})
+	}
+}
+
 func TestConfigStatusEndpoint(t *testing.T) {
 	workspaceRoot := t.TempDir()
 	cfg := config.Default()

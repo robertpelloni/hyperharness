@@ -359,6 +359,10 @@ func (s *Server) registerRoutes() {
 	s.mux.HandleFunc("/api/council/quota/unthrottle", s.handleCouncilQuotaUnthrottle)
 	s.mux.HandleFunc("/api/council/quota/record-request", s.handleCouncilQuotaRecordRequest)
 	s.mux.HandleFunc("/api/council/quota/rate-limit-error", s.handleCouncilQuotaRecordRateLimitError)
+	s.mux.HandleFunc("/api/deerflow/status", s.handleDeerFlowStatus)
+	s.mux.HandleFunc("/api/deerflow/models", s.handleDeerFlowModels)
+	s.mux.HandleFunc("/api/deerflow/skills", s.handleDeerFlowSkills)
+	s.mux.HandleFunc("/api/deerflow/memory", s.handleDeerFlowMemory)
 	s.mux.HandleFunc("/api/metrics/stats", s.handleMetricsStats)
 	s.mux.HandleFunc("/api/metrics/track", s.handleMetricsTrack)
 	s.mux.HandleFunc("/api/metrics/system-snapshot", s.handleMetricsSystemSnapshot)
@@ -830,6 +834,10 @@ func (s *Server) handleAPIIndex(w http.ResponseWriter, _ *http.Request) {
 				{Path: "/api/council/quota/unthrottle", Category: "governance", Description: "Unthrottle a council quota provider through the TypeScript council router."},
 				{Path: "/api/council/quota/record-request", Category: "governance", Description: "Record a council quota request through the TypeScript council router."},
 				{Path: "/api/council/quota/rate-limit-error", Category: "governance", Description: "Record a council quota rate-limit error through the TypeScript council router."},
+				{Path: "/api/deerflow/status", Category: "operator", Description: "Read DeerFlow bridge availability through the TypeScript DeerFlow router."},
+				{Path: "/api/deerflow/models", Category: "operator", Description: "List DeerFlow models through the TypeScript DeerFlow router."},
+				{Path: "/api/deerflow/skills", Category: "operator", Description: "List DeerFlow skills through the TypeScript DeerFlow router."},
+				{Path: "/api/deerflow/memory", Category: "operator", Description: "Read DeerFlow memory status through the TypeScript DeerFlow router."},
 				{Path: "/api/policies", Category: "governance", Description: "List policies through the TypeScript policies router."},
 				{Path: "/api/policies/get", Category: "governance", Description: "Read a policy through the TypeScript policies router."},
 				{Path: "/api/policies/create", Category: "governance", Description: "Create a policy through the TypeScript policies router."},
