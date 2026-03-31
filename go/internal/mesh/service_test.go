@@ -1,4 +1,4 @@
-package mesh
+﻿package mesh
 
 import (
 	"context"
@@ -7,7 +7,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/borghq/borg-go/internal/config"
+	"github.com/borghq/hypercode-go/internal/config"
 )
 
 func TestCapabilitiesIncludesLocalAndUpstreamNodes(t *testing.T) {

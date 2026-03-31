@@ -147,7 +147,6 @@ type SkillSummary struct {
 	ID     string `json:"id"`
 	Name   string `json:"name"`
 	Folder string `json:"folder"`
-	Path   string `json:"path,omitempty"`
 }
 
 type ImportedInstructionsSummary struct {
@@ -1030,7 +1029,7 @@ func (s *Server) handleAPIIndex(w http.ResponseWriter, _ *http.Request) {
 				{Path: "/api/commands/execute", Category: "agents", Description: "Execute a TypeScript command-registry entry."},
 				{Path: "/api/commands", Category: "agents", Description: "Bridge to the TypeScript command registry list."},
 				{Path: "/api/skills", Category: "agents", Description: "Bridge to the TypeScript skill registry list."},
-				{Path: "/api/skills/summary", Category: "agents", Description: "List skills with progressive-disclosure metadata only (id, name, folder, path)."},
+				{Path: "/api/skills/summary", Category: "agents", Description: "List skills with progressive-disclosure metadata only (id, name, folder)."},
 				{Path: "/api/skills/read", Category: "agents", Description: "Read a skill through the TypeScript skill registry."},
 				{Path: "/api/skills/create", Category: "agents", Description: "Create a skill through the TypeScript skill registry."},
 				{Path: "/api/skills/save", Category: "agents", Description: "Save skill content through the TypeScript skill registry."},
@@ -2456,10 +2455,9 @@ func (s *Server) handleSkillsSummary(w http.ResponseWriter, r *http.Request) {
 			ID:     skill.ID,
 			Name:   skill.Name,
 			Folder: folder,
-			Path:   skill.Path,
 		}
 		if query != "" {
-			haystack := strings.ToLower(strings.Join([]string{summary.ID, summary.Name, summary.Folder, summary.Path}, " "))
+			haystack := strings.ToLower(strings.Join([]string{summary.ID, summary.Name, summary.Folder}, " "))
 			if !strings.Contains(haystack, query) {
 				continue
 			}

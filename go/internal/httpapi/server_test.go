@@ -265,7 +265,27 @@ func TestSessionContextEndpoint(t *testing.T) {
 					"prompt":                 "Memory bootstrap:\nCurrent goal: ship the go sidecar",
 				}}},
 			})
+		case "/trpc/mcp.searchTools":
+			body, err := io.ReadAll(r.Body)
+			if err != nil {
+				t.Fatalf("failed to read searchTools body: %v", err)
+			}
+			if !strings.Contains(string(body), `"query":"surface current context ship the go sidecar"`) || !strings.Contains(string(body), `"profile":"repo-coding"`) {
+				t.Fatalf("expected contextual searchTools payload, got %s", string(body))
+			}
+			_ = json.NewEncoder(w).Encode(map[string]any{
+				"result": map[string]any{"data": map[string]any{"json": []map[string]any{
+					{"name": "search_tools", "alwaysShow": true, "matchReason": "recommended for the current topic"},
+				}}},
+			})
 		case "/trpc/mcp.callTool":
+			body, err := io.ReadAll(r.Body)
+			if err != nil {
+				t.Fatalf("failed to read callTool body: %v", err)
+			}
+			if !strings.Contains(string(body), `"name":"list_all_tools"`) || !strings.Contains(string(body), `"query":"surface current context ship the go sidecar"`) {
+				t.Fatalf("expected list_all_tools payload, got %s", string(body))
+			}
 			_ = json.NewEncoder(w).Encode(map[string]any{
 				"result": map[string]any{"data": map[string]any{"json": map[string]any{
 					"ok": true,
@@ -318,6 +338,9 @@ func TestSessionContextEndpoint(t *testing.T) {
 	if !strings.Contains(recorder.Body.String(), "\"Memory bootstrap:\\nCurrent goal: ship the go sidecar\"") {
 		t.Fatalf("expected bootstrap prompt, got %s", recorder.Body.String())
 	}
+	if !strings.Contains(recorder.Body.String(), "\"recommendedTools\"") || !strings.Contains(recorder.Body.String(), "\"procedure\":\"mcp.searchTools\"") {
+		t.Fatalf("expected recommended tools payload, got %s", recorder.Body.String())
+	}
 	if !strings.Contains(recorder.Body.String(), "\"toolName\":\"list_all_tools\"") {
 		t.Fatalf("expected tool ads bridge metadata, got %s", recorder.Body.String())
 	}
@@ -345,7 +368,27 @@ func TestToolsContextEndpoint(t *testing.T) {
 					"prompt":           "JIT tool context for search_tools:",
 				}}},
 			})
+		case "/trpc/mcp.searchTools":
+			body, err := io.ReadAll(r.Body)
+			if err != nil {
+				t.Fatalf("failed to read searchTools body: %v", err)
+			}
+			if !strings.Contains(string(body), `"query":"search_tools borg go session"`) || !strings.Contains(string(body), `"profile":"repo-coding"`) {
+				t.Fatalf("expected contextual searchTools payload, got %s", string(body))
+			}
+			_ = json.NewEncoder(w).Encode(map[string]any{
+				"result": map[string]any{"data": map[string]any{"json": []map[string]any{
+					{"name": "search_tools", "alwaysShow": true, "matchReason": "recommended for the current topic"},
+				}}},
+			})
 		case "/trpc/mcp.callTool":
+			body, err := io.ReadAll(r.Body)
+			if err != nil {
+				t.Fatalf("failed to read callTool body: %v", err)
+			}
+			if !strings.Contains(string(body), `"name":"list_all_tools"`) || !strings.Contains(string(body), `"query":"search_tools borg go session"`) {
+				t.Fatalf("expected list_all_tools payload, got %s", string(body))
+			}
 			_ = json.NewEncoder(w).Encode(map[string]any{
 				"result": map[string]any{"data": map[string]any{"json": map[string]any{
 					"ok": true,
@@ -397,6 +440,9 @@ func TestToolsContextEndpoint(t *testing.T) {
 	}
 	if !strings.Contains(recorder.Body.String(), "\"JIT tool context for search_tools:\"") {
 		t.Fatalf("expected tool context prompt, got %s", recorder.Body.String())
+	}
+	if !strings.Contains(recorder.Body.String(), "\"recommendedTools\"") || !strings.Contains(recorder.Body.String(), "\"procedure\":\"mcp.searchTools\"") {
+		t.Fatalf("expected recommended tools bridge payload, got %s", recorder.Body.String())
 	}
 	if !strings.Contains(recorder.Body.String(), "\"toolName\":\"list_all_tools\"") {
 		t.Fatalf("expected related tools bridge metadata, got %s", recorder.Body.String())
@@ -6130,8 +6176,8 @@ func TestImportRootsEndpoint(t *testing.T) {
 	if !payload.Success {
 		t.Fatalf("expected success payload, got %s", recorder.Body.String())
 	}
-	if len(payload.Data) != 12 {
-		t.Fatalf("expected 12 import roots, got %+v", payload.Data)
+	if len(payload.Data) != 26 {
+		t.Fatalf("expected 26 import roots after expanded discovery coverage, got %+v", payload.Data)
 	}
 
 	rootsByKey := make(map[string]sessionimport.RootStatus, len(payload.Data))
@@ -6600,8 +6646,8 @@ func demo() {
 	if len(payload.Data.Sessions.ByModelHint) < 1 {
 		t.Fatalf("expected runtime session model-hint breakdown, got %+v", payload.Data.Sessions.ByModelHint)
 	}
-	if payload.Data.ImportRoots.Count != 12 {
-		t.Fatalf("expected 12 import roots, got %d", payload.Data.ImportRoots.Count)
+	if payload.Data.ImportRoots.Count != 26 {
+		t.Fatalf("expected 26 import roots after expanded discovery coverage, got %d", payload.Data.ImportRoots.Count)
 	}
 	if payload.Data.ImportRoots.ExistingCount != 1 {
 		t.Fatalf("expected 1 existing import root, got %d", payload.Data.ImportRoots.ExistingCount)

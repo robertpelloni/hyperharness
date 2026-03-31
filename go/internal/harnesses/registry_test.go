@@ -1,11 +1,11 @@
-package harnesses
+﻿package harnesses
 
 import (
 	"os"
 	"path/filepath"
 	"testing"
 
-	"github.com/borghq/borg-go/internal/controlplane"
+	"github.com/borghq/hypercode-go/internal/controlplane"
 )
 
 func TestListBuildsHarnessDefinitions(t *testing.T) {

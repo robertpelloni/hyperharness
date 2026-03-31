@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/borghq/borg-go/internal/interop"
+	"github.com/borghq/hypercode-go/internal/interop"
 )
 
 type SessionBootstrapPayload struct {
@@ -19,12 +19,13 @@ type SessionBootstrapPayload struct {
 }
 
 type SessionContext struct {
-	ActiveGoal    string                  `json:"activeGoal,omitempty"`
-	LastObjective string                  `json:"lastObjective,omitempty"`
-	Startup       StartupStatus           `json:"startup"`
-	Bootstrap     SessionBootstrapPayload `json:"bootstrap"`
-	ToolAds       any                     `json:"toolAds"`
-	Bridge        map[string]any          `json:"bridge"`
+	ActiveGoal       string                  `json:"activeGoal,omitempty"`
+	LastObjective    string                  `json:"lastObjective,omitempty"`
+	Startup          StartupStatus           `json:"startup"`
+	Bootstrap        SessionBootstrapPayload `json:"bootstrap"`
+	RecommendedTools any                     `json:"recommendedTools"`
+	ToolAds          any                     `json:"toolAds"`
+	Bridge           map[string]any          `json:"bridge"`
 }
 
 func (s *Server) handleSessionContext(w http.ResponseWriter, r *http.Request) {
@@ -58,15 +59,7 @@ func (s *Server) handleSessionContext(w http.ResponseWriter, r *http.Request) {
 	}
 
 	query := strings.TrimSpace(strings.Join([]string{lastObjective, activeGoal}, " "))
-	toolAdsPayload := map[string]any{
-		"name": "list_all_tools",
-		"args": map[string]any{
-			"query": query,
-			"limit": 8,
-		},
-	}
-	var toolAds any
-	toolAdsBase, err := s.callUpstreamJSON(r.Context(), "mcp.callTool", toolAdsPayload, &toolAds)
+	toolSuggestions, err := s.buildToolSuggestionSnapshot(r, query)
 	if err != nil {
 		writeJSON(w, http.StatusServiceUnavailable, map[string]any{"success": false, "error": err.Error()})
 		return
@@ -75,21 +68,19 @@ func (s *Server) handleSessionContext(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusOK, map[string]any{
 		"success": true,
 		"data": SessionContext{
-			ActiveGoal:    activeGoal,
-			LastObjective: lastObjective,
-			Startup:       startup,
-			Bootstrap:     bootstrap,
-			ToolAds:       toolAds,
+			ActiveGoal:       activeGoal,
+			LastObjective:    lastObjective,
+			Startup:          startup,
+			Bootstrap:        bootstrap,
+			RecommendedTools: toolSuggestions.RecommendedTools,
+			ToolAds:          toolSuggestions.RelatedTools,
 			Bridge: map[string]any{
 				"bootstrap": map[string]any{
 					"upstreamBase": bootstrapBase,
 					"procedure":    "memory.getSessionBootstrap",
 				},
-				"toolAds": map[string]any{
-					"upstreamBase": toolAdsBase,
-					"procedure":    "mcp.callTool",
-					"toolName":     "list_all_tools",
-				},
+				"recommendedTools": toolSuggestions.Bridge["recommendedTools"],
+				"toolAds":          toolSuggestions.Bridge["relatedTools"],
 			},
 		},
 	})

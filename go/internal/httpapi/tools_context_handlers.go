@@ -15,13 +15,14 @@ type ToolContextPayload struct {
 }
 
 type ToolsContext struct {
-	ToolName      string             `json:"toolName"`
-	ActiveGoal    string             `json:"activeGoal,omitempty"`
-	LastObjective string             `json:"lastObjective,omitempty"`
-	Startup       StartupStatus      `json:"startup"`
-	ToolContext   ToolContextPayload `json:"toolContext"`
-	RelatedTools  any                `json:"relatedTools"`
-	Bridge        map[string]any     `json:"bridge"`
+	ToolName         string             `json:"toolName"`
+	ActiveGoal       string             `json:"activeGoal,omitempty"`
+	LastObjective    string             `json:"lastObjective,omitempty"`
+	Startup          StartupStatus      `json:"startup"`
+	ToolContext      ToolContextPayload `json:"toolContext"`
+	RecommendedTools any                `json:"recommendedTools"`
+	RelatedTools     any                `json:"relatedTools"`
+	Bridge           map[string]any     `json:"bridge"`
 }
 
 func (s *Server) handleToolsContext(w http.ResponseWriter, r *http.Request) {
@@ -65,14 +66,7 @@ func (s *Server) handleToolsContext(w http.ResponseWriter, r *http.Request) {
 		toolAdsQuery = strings.TrimSpace(strings.Join([]string{toolName, lastObjective, activeGoal}, " "))
 	}
 
-	var relatedTools any
-	relatedToolsBase, err := s.callUpstreamJSON(r.Context(), "mcp.callTool", map[string]any{
-		"name": "list_all_tools",
-		"args": map[string]any{
-			"query": toolAdsQuery,
-			"limit": 8,
-		},
-	}, &relatedTools)
+	toolSuggestions, err := s.buildToolSuggestionSnapshot(r, toolAdsQuery)
 	if err != nil {
 		writeJSON(w, http.StatusServiceUnavailable, map[string]any{"success": false, "error": err.Error()})
 		return
@@ -81,22 +75,20 @@ func (s *Server) handleToolsContext(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusOK, map[string]any{
 		"success": true,
 		"data": ToolsContext{
-			ToolName:      toolName,
-			ActiveGoal:    activeGoal,
-			LastObjective: lastObjective,
-			Startup:       startup,
-			ToolContext:   toolContext,
-			RelatedTools:  relatedTools,
+			ToolName:         toolName,
+			ActiveGoal:       activeGoal,
+			LastObjective:    lastObjective,
+			Startup:          startup,
+			ToolContext:      toolContext,
+			RecommendedTools: toolSuggestions.RecommendedTools,
+			RelatedTools:     toolSuggestions.RelatedTools,
 			Bridge: map[string]any{
 				"toolContext": map[string]any{
 					"upstreamBase": toolContextBase,
 					"procedure":    "memory.getToolContext",
 				},
-				"relatedTools": map[string]any{
-					"upstreamBase": relatedToolsBase,
-					"procedure":    "mcp.callTool",
-					"toolName":     "list_all_tools",
-				},
+				"recommendedTools": toolSuggestions.Bridge["recommendedTools"],
+				"relatedTools":     toolSuggestions.Bridge["relatedTools"],
 			},
 		},
 	})

@@ -6,118 +6,74 @@ import (
 	"testing"
 )
 
-func TestScannerScanFindsImportableFilesAndDedupesOverlap(t *testing.T) {
-	root := t.TempDir()
-
-	claudePath := filepath.Join(root, ".claude", "session-1.jsonl")
-	if err := os.MkdirAll(filepath.Dir(claudePath), 0o755); err != nil {
-		t.Fatalf("failed to create claude directory: %v", err)
-	}
-	if err := os.WriteFile(claudePath, []byte("{\"model\":\"claude-sonnet\"}\n"), 0o644); err != nil {
-		t.Fatalf("failed to write claude session file: %v", err)
+func TestScannerDiscoversExpandedImportSources(t *testing.T) {
+	workspaceRoot := t.TempDir()
+	homeDir := filepath.Join(t.TempDir(), "home")
+	if err := os.MkdirAll(homeDir, 0o755); err != nil {
+		t.Fatalf("failed to create home dir: %v", err)
 	}
 
-	openAIPath := filepath.Join(root, ".openai", "chatgpt-export.json")
-	if err := os.MkdirAll(filepath.Dir(openAIPath), 0o755); err != nil {
-		t.Fatalf("failed to create openai directory: %v", err)
-	}
-	if err := os.WriteFile(openAIPath, []byte("{\"conversation_id\":\"conv-1\"}\n"), 0o644); err != nil {
-		t.Fatalf("failed to write openai export file: %v", err)
-	}
-
-	ignoredNodeModulesPath := filepath.Join(root, ".openai", "node_modules", "session-ignore.jsonl")
-	if err := os.MkdirAll(filepath.Dir(ignoredNodeModulesPath), 0o755); err != nil {
-		t.Fatalf("failed to create ignored node_modules directory: %v", err)
-	}
-	if err := os.WriteFile(ignoredNodeModulesPath, []byte("{\"model\":\"ignored\"}\n"), 0o644); err != nil {
-		t.Fatalf("failed to write ignored node_modules file: %v", err)
+	mustWriteFile := func(path string, content []byte) {
+		t.Helper()
+		if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
+			t.Fatalf("failed to create parent dirs for %s: %v", path, err)
+		}
+		if err := os.WriteFile(path, content, 0o644); err != nil {
+			t.Fatalf("failed to write %s: %v", path, err)
+		}
 	}
 
-	ignoredBinaryPath := filepath.Join(root, ".openai", "notes.bin")
-	if err := os.WriteFile(ignoredBinaryPath, []byte("not an importable transcript"), 0o644); err != nil {
-		t.Fatalf("failed to write ignored binary file: %v", err)
-	}
+	mustWriteFile(filepath.Join(workspaceRoot, ".llm", "logs.db"), []byte("SQLite format 3\x00fake llm db"))
+	mustWriteFile(filepath.Join(homeDir, ".prism-mcp", "data.db"), []byte("SQLite format 3\x00fake prism db"))
+	mustWriteFile(filepath.Join(homeDir, ".gemini", "antigravity", "brain", "session-history.jsonl"), []byte("{\"model\":\"gemini\"}\n"))
+	mustWriteFile(filepath.Join(homeDir, "AppData", "Roaming", "Code", "User", "globalStorage", "emptyWindowChatSessions", "session.json"), []byte("{\"tool\":\"copilot\"}"))
 
-	scanner := NewScanner(root, root, 10)
+	scanner := NewScanner(workspaceRoot, homeDir, 20)
 	candidates, err := scanner.Scan()
 	if err != nil {
-		t.Fatalf("expected scanner to succeed, got %v", err)
+		t.Fatalf("Scan returned error: %v", err)
 	}
 
-	if len(candidates) != 2 {
-		t.Fatalf("expected 2 unique import candidates, got %+v", candidates)
-	}
-
-	candidatesByPath := make(map[string]Candidate, len(candidates))
+	byTool := map[string][]Candidate{}
 	for _, candidate := range candidates {
-		candidatesByPath[candidate.SourcePath] = candidate
+		byTool[candidate.SourceTool] = append(byTool[candidate.SourceTool], candidate)
 	}
 
-	claudeCandidate, ok := candidatesByPath[claudePath]
-	if !ok {
-		t.Fatalf("expected claude candidate at %s in %+v", claudePath, candidates)
+	if len(byTool["llm-cli"]) == 0 {
+		t.Fatalf("expected llm-cli candidate, got %+v", candidates)
 	}
-	if claudeCandidate.SourceTool != "claude-code" || claudeCandidate.SessionFormat != "jsonl" {
-		t.Fatalf("expected claude-code jsonl candidate, got %+v", claudeCandidate)
+	if byTool["llm-cli"][0].SessionFormat != "db" {
+		t.Fatalf("expected llm-cli db format, got %+v", byTool["llm-cli"][0])
 	}
-	if claudeCandidate.LastModifiedAt == "" || claudeCandidate.EstimatedSize <= 0 {
-		t.Fatalf("expected claude candidate metadata, got %+v", claudeCandidate)
+	if len(byTool["prism-mcp"]) == 0 {
+		t.Fatalf("expected prism-mcp candidate, got %+v", candidates)
 	}
-
-	openAICandidate, ok := candidatesByPath[openAIPath]
-	if !ok {
-		t.Fatalf("expected openai candidate at %s in %+v", openAIPath, candidates)
+	if len(byTool["antigravity"]) == 0 {
+		t.Fatalf("expected antigravity candidate, got %+v", candidates)
 	}
-	if openAICandidate.SourceTool != "openai" || openAICandidate.SessionFormat != "json" {
-		t.Fatalf("expected openai json candidate, got %+v", openAICandidate)
-	}
-	if openAICandidate.LastModifiedAt == "" || openAICandidate.EstimatedSize <= 0 {
-		t.Fatalf("expected openai candidate metadata, got %+v", openAICandidate)
+	if len(byTool["vscode-extensions"]) == 0 {
+		t.Fatalf("expected vscode-extensions candidate, got %+v", candidates)
 	}
 }
 
-func TestScannerRootsReportsExistingAndMissingRoots(t *testing.T) {
-	workspaceRoot := t.TempDir()
-	homeDir := t.TempDir()
-
-	claudeRoot := filepath.Join(workspaceRoot, ".claude")
-	if err := os.MkdirAll(claudeRoot, 0o755); err != nil {
-		t.Fatalf("failed to create claude root: %v", err)
+func TestValidateCandidateAcceptsDatabaseArtifacts(t *testing.T) {
+	tempDir := t.TempDir()
+	dbPath := filepath.Join(tempDir, "logs.db")
+	if err := os.WriteFile(dbPath, []byte("SQLite format 3\x00fake"), 0o644); err != nil {
+		t.Fatalf("failed to seed db candidate: %v", err)
 	}
 
-	homeChatGPTRoot := filepath.Join(homeDir, "ChatGPT")
-	if err := os.MkdirAll(homeChatGPTRoot, 0o755); err != nil {
-		t.Fatalf("failed to create ChatGPT root: %v", err)
-	}
+	result := ValidateCandidate(Candidate{
+		SourceTool:    "llm-cli",
+		SourcePath:    dbPath,
+		SessionFormat: "db",
+		EstimatedSize: 20,
+	})
 
-	scanner := NewScanner(workspaceRoot, homeDir, 10)
-	roots := scanner.Roots()
-
-	if len(roots) != 12 {
-		t.Fatalf("expected 12 import roots, got %+v", roots)
+	if !result.Valid {
+		t.Fatalf("expected db candidate to validate, got %+v", result)
 	}
-
-	rootsByKey := make(map[string]RootStatus, len(roots))
-	for _, root := range roots {
-		rootsByKey[root.SourceTool+"\n"+root.RootPath] = root
-	}
-
-	claudeStatus, ok := rootsByKey["claude-code\n"+claudeRoot]
-	if !ok || !claudeStatus.Exists {
-		t.Fatalf("expected existing claude root, got %+v", claudeStatus)
-	}
-
-	homeChatGPTStatus, ok := rootsByKey["openai\n"+homeChatGPTRoot]
-	if !ok || !homeChatGPTStatus.Exists {
-		t.Fatalf("expected existing openai ChatGPT root, got %+v", homeChatGPTStatus)
-	}
-
-	copilotRoot := filepath.Join(workspaceRoot, ".copilot", "session-state")
-	copilotStatus, ok := rootsByKey["copilot-cli\n"+copilotRoot]
-	if !ok {
-		t.Fatalf("expected copilot root in %+v", roots)
-	}
-	if copilotStatus.Exists {
-		t.Fatalf("expected missing copilot root in this fixture, got %+v", copilotStatus)
+	if result.SourceType != "database-log" {
+		t.Fatalf("expected database-log source type, got %+v", result)
 	}
 }

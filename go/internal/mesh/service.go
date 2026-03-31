@@ -1,4 +1,4 @@
-package mesh
+﻿package mesh
 
 import (
 	"context"
@@ -10,8 +10,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/borghq/borg-go/internal/config"
-	"github.com/borghq/borg-go/internal/interop"
+	"github.com/borghq/hypercode-go/internal/config"
+	"github.com/borghq/hypercode-go/internal/interop"
 )
 
 var (

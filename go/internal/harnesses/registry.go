@@ -1,4 +1,4 @@
-package harnesses
+﻿package harnesses
 
 import (
 	"os"
@@ -6,7 +6,7 @@ import (
 	"regexp"
 	"sort"
 
-	"github.com/borghq/borg-go/internal/controlplane"
+	"github.com/borghq/hypercode-go/internal/controlplane"
 )
 
 type Definition struct {

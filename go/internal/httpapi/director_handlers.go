@@ -18,6 +18,18 @@ func (s *Server) handleDirectorUpdateConfig(w http.ResponseWriter, r *http.Reque
 	s.handleTRPCBridgeBodyCall(w, r, "director.updateConfig")
 }
 
+func (s *Server) handleDirectorConfigGet(w http.ResponseWriter, r *http.Request) {
+	s.handleTRPCBridgeCall(w, r, http.MethodGet, "directorConfig.get", nil)
+}
+
+func (s *Server) handleDirectorConfigTest(w http.ResponseWriter, r *http.Request) {
+	s.handleTRPCBridgeCall(w, r, http.MethodGet, "directorConfig.test", nil)
+}
+
+func (s *Server) handleDirectorConfigUpdate(w http.ResponseWriter, r *http.Request) {
+	s.handleTRPCBridgeBodyCall(w, r, "directorConfig.update")
+}
+
 func (s *Server) handleDirectorStopAutoDrive(w http.ResponseWriter, r *http.Request) {
 	s.handleTRPCBridgeCall(w, r, http.MethodPost, "director.stopAutoDrive", nil)
 }

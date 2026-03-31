@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/borghq/borg-go/internal/mesh"
+	"github.com/borghq/hypercode-go/internal/mesh"
 )
 
 func (s *Server) handleMeshStatus(w http.ResponseWriter, r *http.Request) {
@@ -88,6 +88,10 @@ func (s *Server) handleMeshFindPeer(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	writeJSON(w, http.StatusOK, map[string]any{"success": true, "data": match})
+}
+
+func (s *Server) handleMeshBroadcast(w http.ResponseWriter, r *http.Request) {
+	s.handleTRPCBridgeBodyCall(w, r, "mesh.broadcast")
 }
 
 func parseMeshTimeoutMs(r *http.Request) int {
