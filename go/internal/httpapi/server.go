@@ -6,6 +6,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"errors"
+	"io/fs"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -3311,7 +3312,40 @@ func (s *Server) handleCommandsList(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) handleSkillsList(w http.ResponseWriter, r *http.Request) {
-	s.handleTRPCBridgeCall(w, r, http.MethodGet, "skills.list", nil)
+	if r.Method != http.MethodGet {
+		writeJSON(w, http.StatusMethodNotAllowed, map[string]any{"success": false, "error": "method not allowed"})
+		return
+	}
+
+	var skills []map[string]any
+	upstreamBase, err := s.callUpstreamJSON(r.Context(), "skills.list", nil, &skills)
+	if err == nil {
+		writeJSON(w, http.StatusOK, map[string]any{
+			"success": true,
+			"data":    skills,
+			"bridge": map[string]any{
+				"upstreamBase": upstreamBase,
+				"procedure":    "skills.list",
+			},
+		})
+		return
+	}
+
+	fallbackSkills, fallbackErr := s.localSkillsMetadata()
+	if fallbackErr != nil {
+		writeJSON(w, http.StatusServiceUnavailable, map[string]any{"success": false, "error": err.Error(), "detail": fallbackErr.Error()})
+		return
+	}
+
+	writeJSON(w, http.StatusOK, map[string]any{
+		"success": true,
+		"data":    fallbackSkills,
+		"bridge": map[string]any{
+			"fallback":  "go-local-skills",
+			"procedure": "skills.list",
+			"reason":    err.Error(),
+		},
+	})
 }
 
 func (s *Server) handleSkillsSummary(w http.ResponseWriter, r *http.Request) {
@@ -3326,38 +3360,52 @@ func (s *Server) handleSkillsSummary(w http.ResponseWriter, r *http.Request) {
 		Path string `json:"path"`
 	}
 	upstreamBase, err := s.callUpstreamJSON(r.Context(), "skills.list", nil, &rawSkills)
-	if err != nil {
-		writeJSON(w, http.StatusServiceUnavailable, map[string]any{"success": false, "error": err.Error()})
+	if err == nil {
+		query := strings.ToLower(strings.TrimSpace(r.URL.Query().Get("query")))
+		summaries := make([]SkillSummary, 0, len(rawSkills))
+		for _, skill := range rawSkills {
+			folder := strings.TrimSpace(filepath.Base(filepath.Dir(skill.Path)))
+			if folder == "." || folder == string(filepath.Separator) {
+				folder = ""
+			}
+			summary := SkillSummary{
+				ID:     skill.ID,
+				Name:   skill.Name,
+				Folder: folder,
+			}
+			if query != "" {
+				haystack := strings.ToLower(strings.Join([]string{summary.ID, summary.Name, summary.Folder}, " "))
+				if !strings.Contains(haystack, query) {
+					continue
+				}
+			}
+			summaries = append(summaries, summary)
+		}
+
+		writeJSON(w, http.StatusOK, map[string]any{
+			"success": true,
+			"data":    summaries,
+			"bridge": map[string]any{
+				"upstreamBase": upstreamBase,
+				"procedure":    "skills.list",
+			},
+		})
 		return
 	}
 
-	query := strings.ToLower(strings.TrimSpace(r.URL.Query().Get("query")))
-	summaries := make([]SkillSummary, 0, len(rawSkills))
-	for _, skill := range rawSkills {
-		folder := strings.TrimSpace(filepath.Base(filepath.Dir(skill.Path)))
-		if folder == "." || folder == string(filepath.Separator) {
-			folder = ""
-		}
-		summary := SkillSummary{
-			ID:     skill.ID,
-			Name:   skill.Name,
-			Folder: folder,
-		}
-		if query != "" {
-			haystack := strings.ToLower(strings.Join([]string{summary.ID, summary.Name, summary.Folder}, " "))
-			if !strings.Contains(haystack, query) {
-				continue
-			}
-		}
-		summaries = append(summaries, summary)
+	fallbackSummaries, fallbackErr := s.localSkillSummaries(strings.TrimSpace(r.URL.Query().Get("query")))
+	if fallbackErr != nil {
+		writeJSON(w, http.StatusServiceUnavailable, map[string]any{"success": false, "error": err.Error(), "detail": fallbackErr.Error()})
+		return
 	}
 
 	writeJSON(w, http.StatusOK, map[string]any{
 		"success": true,
-		"data":    summaries,
+		"data":    fallbackSummaries,
 		"bridge": map[string]any{
-			"upstreamBase": upstreamBase,
-			"procedure":    "skills.list",
+			"fallback":  "go-local-skills",
+			"procedure": "skills.list",
+			"reason":    err.Error(),
 		},
 	})
 }
@@ -3368,19 +3416,95 @@ func (s *Server) handleSkillsRead(w http.ResponseWriter, r *http.Request) {
 		writeJSON(w, http.StatusBadRequest, map[string]any{"success": false, "error": "missing name query parameter"})
 		return
 	}
-	s.handleTRPCBridgeCall(w, r, http.MethodGet, "skills.read", map[string]any{"name": name})
+
+	var result map[string]any
+	upstreamBase, err := s.callUpstreamJSON(r.Context(), "skills.read", map[string]any{"name": name}, &result)
+	if err == nil {
+		writeJSON(w, http.StatusOK, map[string]any{
+			"success": true,
+			"data":    result,
+			"bridge": map[string]any{
+				"upstreamBase": upstreamBase,
+				"procedure":    "skills.read",
+			},
+		})
+		return
+	}
+
+	fallbackResult, fallbackErr := s.localReadSkill(name)
+	if fallbackErr != nil {
+		writeJSON(w, http.StatusServiceUnavailable, map[string]any{"success": false, "error": err.Error(), "detail": fallbackErr.Error()})
+		return
+	}
+
+	writeJSON(w, http.StatusOK, map[string]any{
+		"success": true,
+		"data":    fallbackResult,
+		"bridge": map[string]any{
+			"fallback":  "go-local-skills",
+			"procedure": "skills.read",
+			"reason":    err.Error(),
+		},
+	})
 }
 
 func (s *Server) handleSkillsCreate(w http.ResponseWriter, r *http.Request) {
-	s.handleTRPCBridgeBodyCall(w, r, "skills.create")
+	s.handleSkillMutation(w, r, "skills.create", func(payload map[string]any) (any, error) {
+		return s.localCreateSkill(payload)
+	})
 }
 
 func (s *Server) handleSkillsSave(w http.ResponseWriter, r *http.Request) {
-	s.handleTRPCBridgeBodyCall(w, r, "skills.save")
+	s.handleSkillMutation(w, r, "skills.save", func(payload map[string]any) (any, error) {
+		return s.localSaveSkill(payload)
+	})
 }
 
 func (s *Server) handleSkillsAssimilate(w http.ResponseWriter, r *http.Request) {
 	s.handleTRPCBridgeBodyCall(w, r, "skills.assimilate")
+}
+
+func (s *Server) handleSkillMutation(w http.ResponseWriter, r *http.Request, procedure string, fallback func(map[string]any) (any, error)) {
+	if r.Method != http.MethodPost {
+		writeJSON(w, http.StatusMethodNotAllowed, map[string]any{"success": false, "error": "method not allowed"})
+		return
+	}
+
+	var payload map[string]any
+	if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
+		writeJSON(w, http.StatusBadRequest, map[string]any{"success": false, "error": "invalid JSON body"})
+		return
+	}
+
+	var result any
+	upstreamBase, err := s.callUpstreamJSON(r.Context(), procedure, payload, &result)
+	if err == nil {
+		writeJSON(w, http.StatusOK, map[string]any{
+			"success": true,
+			"data":    result,
+			"bridge": map[string]any{
+				"upstreamBase": upstreamBase,
+				"procedure":    procedure,
+			},
+		})
+		return
+	}
+
+	fallbackResult, fallbackErr := fallback(payload)
+	if fallbackErr != nil {
+		writeJSON(w, http.StatusServiceUnavailable, map[string]any{"success": false, "error": err.Error(), "detail": fallbackErr.Error()})
+		return
+	}
+
+	writeJSON(w, http.StatusOK, map[string]any{
+		"success": true,
+		"data":    fallbackResult,
+		"bridge": map[string]any{
+			"fallback":  "go-local-skills",
+			"procedure": procedure,
+			"reason":    err.Error(),
+		},
+	})
 }
 
 func (s *Server) handleWorkflowList(w http.ResponseWriter, r *http.Request) {
@@ -5132,6 +5256,252 @@ func (s *Server) localConfiguredMCPServers() ([]map[string]any, error) {
 		return leftName < rightName
 	})
 	return results, nil
+}
+
+func (s *Server) localSkillsMetadata() ([]map[string]any, error) {
+	skills, err := s.scanLocalSkills()
+	if err != nil {
+		return nil, err
+	}
+	results := make([]map[string]any, 0, len(skills))
+	for _, skill := range skills {
+		results = append(results, map[string]any{
+			"id":          skill.ID,
+			"name":        skill.Name,
+			"description": skill.Description,
+			"content":     skill.Content,
+			"path":        skill.Path,
+		})
+	}
+	return results, nil
+}
+
+func (s *Server) localSkillSummaries(query string) ([]SkillSummary, error) {
+	skills, err := s.scanLocalSkills()
+	if err != nil {
+		return nil, err
+	}
+	query = strings.ToLower(strings.TrimSpace(query))
+	results := make([]SkillSummary, 0, len(skills))
+	for _, skill := range skills {
+		summary := SkillSummary{
+			ID:     skill.ID,
+			Name:   skill.Name,
+			Folder: filepath.Base(filepath.Dir(skill.Path)),
+		}
+		if query != "" {
+			haystack := strings.ToLower(strings.Join([]string{summary.ID, summary.Name, summary.Folder}, " "))
+			if !strings.Contains(haystack, query) {
+				continue
+			}
+		}
+		results = append(results, summary)
+	}
+	sort.Slice(results, func(i, j int) bool {
+		if results[i].Folder == results[j].Folder {
+			return results[i].Name < results[j].Name
+		}
+		return results[i].Folder < results[j].Folder
+	})
+	return results, nil
+}
+
+func (s *Server) localReadSkill(name string) (map[string]any, error) {
+	skills, err := s.scanLocalSkills()
+	if err != nil {
+		return nil, err
+	}
+	for _, skill := range skills {
+		if skill.ID == name || skill.Name == name || filepath.Base(filepath.Dir(skill.Path)) == name {
+			return map[string]any{
+				"content": []map[string]any{
+					{
+						"type": "text",
+						"text": skill.Content,
+					},
+				},
+			}, nil
+		}
+	}
+	return map[string]any{
+		"content": []map[string]any{
+			{
+				"type": "text",
+				"text": "Skill '" + name + "' not found.",
+			},
+		},
+	}, nil
+}
+
+func (s *Server) localCreateSkill(payload map[string]any) (map[string]any, error) {
+	id, _ := payload["id"].(string)
+	name, _ := payload["name"].(string)
+	description, _ := payload["description"].(string)
+	if strings.TrimSpace(id) == "" {
+		return nil, errors.New("missing skill id")
+	}
+	if strings.TrimSpace(name) == "" {
+		name = id
+	}
+	skillDir := filepath.Join(s.localSkillRoots()[1], id)
+	if err := os.MkdirAll(skillDir, 0o755); err != nil {
+		return nil, err
+	}
+	skillFile := filepath.Join(skillDir, "SKILL.md")
+	body := strings.TrimSpace(description)
+	if body == "" {
+		body = name
+	}
+	content := "---\nname: " + name + "\ndescription: " + description + "\n---\n\n# " + name + "\n\n" + body + "\n\n## Instructions\n1. ...\n"
+	if err := os.WriteFile(skillFile, []byte(content), 0o644); err != nil {
+		return nil, err
+	}
+	return map[string]any{
+		"content": []map[string]any{
+			{
+				"type": "text",
+				"text": "Created skill '" + name + "' at " + skillFile,
+			},
+		},
+	}, nil
+}
+
+func (s *Server) localSaveSkill(payload map[string]any) (map[string]any, error) {
+	id, _ := payload["id"].(string)
+	content, _ := payload["content"].(string)
+	if strings.TrimSpace(id) == "" {
+		return nil, errors.New("missing skill id")
+	}
+	skills, err := s.scanLocalSkills()
+	if err != nil {
+		return nil, err
+	}
+	for _, skill := range skills {
+		if skill.ID != id {
+			continue
+		}
+		if err := os.WriteFile(skill.Path, []byte(content), 0o644); err != nil {
+			return nil, err
+		}
+		return map[string]any{
+			"content": []map[string]any{
+				{
+					"type": "text",
+					"text": "Saved skill '" + id + "'.",
+				},
+			},
+		}, nil
+	}
+	return map[string]any{
+		"content": []map[string]any{
+			{
+				"type": "text",
+				"text": "Skill '" + id + "' not found.",
+			},
+		},
+	}, nil
+}
+
+func (s *Server) localSkillRoots() []string {
+	return []string{
+		filepath.Join(s.cfg.WorkspaceRoot, "packages", "core", "src", "skills"),
+		filepath.Join(s.cfg.WorkspaceRoot, ".borg", "skills"),
+	}
+}
+
+type localSkillRecord struct {
+	ID          string
+	Name        string
+	Description string
+	Content     string
+	Path        string
+}
+
+func (s *Server) scanLocalSkills() ([]localSkillRecord, error) {
+	results := make([]localSkillRecord, 0)
+	seen := make(map[string]struct{})
+	for _, root := range s.localSkillRoots() {
+		if strings.TrimSpace(root) == "" {
+			continue
+		}
+		if _, err := os.Stat(root); err != nil {
+			if os.IsNotExist(err) {
+				continue
+			}
+			return nil, err
+		}
+		err := filepath.WalkDir(root, func(path string, d fs.DirEntry, err error) error {
+			if err != nil {
+				return err
+			}
+			if d.IsDir() {
+				return nil
+			}
+			if !strings.EqualFold(d.Name(), "SKILL.md") {
+				return nil
+			}
+			record, err := parseLocalSkill(path)
+			if err != nil {
+				return nil
+			}
+			if _, ok := seen[record.Path]; ok {
+				return nil
+			}
+			seen[record.Path] = struct{}{}
+			results = append(results, record)
+			return nil
+		})
+		if err != nil {
+			return nil, err
+		}
+	}
+	sort.Slice(results, func(i, j int) bool {
+		if results[i].ID == results[j].ID {
+			return results[i].Path < results[j].Path
+		}
+		return results[i].ID < results[j].ID
+	})
+	return results, nil
+}
+
+func parseLocalSkill(path string) (localSkillRecord, error) {
+	contentBytes, err := os.ReadFile(path)
+	if err != nil {
+		return localSkillRecord{}, err
+	}
+	raw := string(contentBytes)
+	name := filepath.Base(filepath.Dir(path))
+	description := "No description provided"
+	body := raw
+	if strings.HasPrefix(raw, "---\n") {
+		parts := strings.SplitN(raw, "\n---\n", 2)
+		if len(parts) == 2 {
+			frontmatter := strings.TrimPrefix(parts[0], "---\n")
+			body = parts[1]
+			for _, line := range strings.Split(frontmatter, "\n") {
+				line = strings.TrimSpace(line)
+				if strings.HasPrefix(line, "name:") {
+					value := strings.TrimSpace(strings.TrimPrefix(line, "name:"))
+					if value != "" {
+						name = value
+					}
+				}
+				if strings.HasPrefix(line, "description:") {
+					value := strings.TrimSpace(strings.TrimPrefix(line, "description:"))
+					if value != "" {
+						description = value
+					}
+				}
+			}
+		}
+	}
+	return localSkillRecord{
+		ID:          name,
+		Name:        name,
+		Description: description,
+		Content:     body,
+		Path:        path,
+	}, nil
 }
 
 func (s *Server) localCreateConfiguredServer(payload map[string]any) (any, error) {

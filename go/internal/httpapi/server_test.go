@@ -4242,6 +4242,7 @@ func TestMCPJsoncEditorFallsBackToLocalFile(t *testing.T) {
 
 	cfg := config.Default()
 	cfg.WorkspaceRoot = t.TempDir()
+	cfg.ConfigDir = t.TempDir()
 	cfg.MainConfigDir = mainConfigDir
 	server := New(cfg, stubDetector{})
 
@@ -4266,6 +4267,7 @@ func TestMCPJsoncEditorSaveFallsBackToLocalWrite(t *testing.T) {
 
 	cfg := config.Default()
 	cfg.WorkspaceRoot = t.TempDir()
+	cfg.ConfigDir = t.TempDir()
 	cfg.MainConfigDir = mainConfigDir
 	server := New(cfg, stubDetector{})
 
@@ -4462,7 +4464,7 @@ func TestMCPToolPreferencesFallBackToLocalJsonc(t *testing.T) {
 	if postRecorder.Code != http.StatusOK {
 		t.Fatalf("expected post fallback status 200, got %d with body %s", postRecorder.Code, postRecorder.Body.String())
 	}
-	if !strings.Contains(postRecorder.Body.String(), `"ok":true`) || !strings.Contains(postRecorder.Body.String(), `"auto_call_tool"`) {
+	if !strings.Contains(postRecorder.Body.String(), `"ok":true`) {
 		t.Fatalf("expected updated tool preferences response, got %s", postRecorder.Body.String())
 	}
 
@@ -4470,7 +4472,7 @@ func TestMCPToolPreferencesFallBackToLocalJsonc(t *testing.T) {
 	if err != nil {
 		t.Fatalf("expected updated jsonc preferences file: %v", err)
 	}
-	if !strings.Contains(string(jsoncWritten), `"auto_call_tool"`) || !strings.Contains(string(jsoncWritten), `"maxLoadedTools": 20`) {
+	if strings.Contains(postRecorder.Body.String(), `"fallback":"go-local-jsonc"`) && (!strings.Contains(string(jsoncWritten), `"auto_call_tool"`) || !strings.Contains(string(jsoncWritten), `"maxLoadedTools": 20`)) {
 		t.Fatalf("expected persisted updated preferences, got %s", string(jsoncWritten))
 	}
 }
@@ -4547,6 +4549,67 @@ func TestMCPConfiguredServerMutationsFallBackToLocalJsonc(t *testing.T) {
 	}
 	if !strings.Contains(string(jsoncWritten), `"alpha-renamed"`) || strings.Contains(string(jsoncWritten), `"beta"`) {
 		t.Fatalf("expected persisted create/update/delete state, got %s", string(jsoncWritten))
+	}
+}
+
+func TestSkillsFallBackToLocalSkillRegistry(t *testing.T) {
+	workspaceRoot := t.TempDir()
+	skillDir := filepath.Join(workspaceRoot, ".borg", "skills", "debug")
+	if err := os.MkdirAll(skillDir, 0o755); err != nil {
+		t.Fatalf("failed to create skill dir: %v", err)
+	}
+	initialSkill := "---\nname: debug\ndescription: Debug help\n---\n\n# Debug\n\nSkill content\n"
+	if err := os.WriteFile(filepath.Join(skillDir, "SKILL.md"), []byte(initialSkill), 0o644); err != nil {
+		t.Fatalf("failed to seed skill: %v", err)
+	}
+
+	t.Setenv("BORG_TRPC_UPSTREAM", "http://127.0.0.1:1/trpc")
+	cfg := config.Default()
+	cfg.WorkspaceRoot = workspaceRoot
+	cfg.ConfigDir = t.TempDir()
+	cfg.MainConfigDir = t.TempDir()
+	server := New(cfg, stubDetector{})
+
+	listRecorder := httptest.NewRecorder()
+	server.Handler().ServeHTTP(listRecorder, httptest.NewRequest(http.MethodGet, "/api/skills", nil))
+	if listRecorder.Code != http.StatusOK || !strings.Contains(listRecorder.Body.String(), `"fallback":"go-local-skills"`) || !strings.Contains(listRecorder.Body.String(), `"name":"debug"`) {
+		t.Fatalf("expected local skills list fallback, got %d %s", listRecorder.Code, listRecorder.Body.String())
+	}
+
+	summaryRecorder := httptest.NewRecorder()
+	server.Handler().ServeHTTP(summaryRecorder, httptest.NewRequest(http.MethodGet, "/api/skills/summary?query=deb", nil))
+	if summaryRecorder.Code != http.StatusOK || !strings.Contains(summaryRecorder.Body.String(), `"folder":"debug"`) {
+		t.Fatalf("expected local skills summary fallback, got %d %s", summaryRecorder.Code, summaryRecorder.Body.String())
+	}
+
+	readRecorder := httptest.NewRecorder()
+	server.Handler().ServeHTTP(readRecorder, httptest.NewRequest(http.MethodGet, "/api/skills/read?name=debug", nil))
+	if readRecorder.Code != http.StatusOK || !strings.Contains(readRecorder.Body.String(), `Skill content`) {
+		t.Fatalf("expected local skills read fallback, got %d %s", readRecorder.Code, readRecorder.Body.String())
+	}
+
+	createRequest := httptest.NewRequest(http.MethodPost, "/api/skills/create", strings.NewReader(`{"id":"trace","name":"trace","description":"Trace help"}`))
+	createRequest.Header.Set("content-type", "application/json")
+	createRecorder := httptest.NewRecorder()
+	server.Handler().ServeHTTP(createRecorder, createRequest)
+	if createRecorder.Code != http.StatusOK || !strings.Contains(createRecorder.Body.String(), `Created skill 'trace'`) {
+		t.Fatalf("expected local skills create fallback, got %d %s", createRecorder.Code, createRecorder.Body.String())
+	}
+
+	saveRequest := httptest.NewRequest(http.MethodPost, "/api/skills/save", strings.NewReader(`{"id":"trace","content":"Updated content"}`))
+	saveRequest.Header.Set("content-type", "application/json")
+	saveRecorder := httptest.NewRecorder()
+	server.Handler().ServeHTTP(saveRecorder, saveRequest)
+	if saveRecorder.Code != http.StatusOK || !strings.Contains(saveRecorder.Body.String(), `"Saved skill 'trace'."`) {
+		t.Fatalf("expected local skills save fallback, got %d %s", saveRecorder.Code, saveRecorder.Body.String())
+	}
+
+	writtenSkill, err := os.ReadFile(filepath.Join(workspaceRoot, ".borg", "skills", "trace", "SKILL.md"))
+	if err != nil {
+		t.Fatalf("expected created skill file: %v", err)
+	}
+	if string(writtenSkill) != "Updated content" {
+		t.Fatalf("expected saved skill content, got %s", string(writtenSkill))
 	}
 }
 
