@@ -4232,6 +4232,75 @@ func TestMCPRegistrySnapshotFallsBackToMasterIndex(t *testing.T) {
 	}
 }
 
+func TestMCPJsoncEditorFallsBackToLocalFile(t *testing.T) {
+	mainConfigDir := t.TempDir()
+	if err := os.WriteFile(filepath.Join(mainConfigDir, "mcp.jsonc"), []byte("// Borg MCP configuration\n{\n  \"mcpServers\": {}\n}\n"), 0o644); err != nil {
+		t.Fatalf("failed to write local mcp jsonc: %v", err)
+	}
+
+	t.Setenv("BORG_TRPC_UPSTREAM", "http://127.0.0.1:1/trpc")
+
+	cfg := config.Default()
+	cfg.WorkspaceRoot = t.TempDir()
+	cfg.MainConfigDir = mainConfigDir
+	server := New(cfg, stubDetector{})
+
+	request := httptest.NewRequest(http.MethodGet, "/api/mcp/config/jsonc", nil)
+	recorder := httptest.NewRecorder()
+	server.Handler().ServeHTTP(recorder, request)
+
+	if recorder.Code != http.StatusOK {
+		t.Fatalf("expected fallback status 200, got %d with body %s", recorder.Code, recorder.Body.String())
+	}
+	if !strings.Contains(recorder.Body.String(), `"fallback":"go-local-jsonc"`) {
+		t.Fatalf("expected go-local-jsonc fallback metadata, got %s", recorder.Body.String())
+	}
+	if !strings.Contains(recorder.Body.String(), `"path":"`) || !strings.Contains(recorder.Body.String(), `"content":"// Borg MCP configuration`) {
+		t.Fatalf("expected local editor payload, got %s", recorder.Body.String())
+	}
+}
+
+func TestMCPJsoncEditorSaveFallsBackToLocalWrite(t *testing.T) {
+	mainConfigDir := t.TempDir()
+	t.Setenv("BORG_TRPC_UPSTREAM", "http://127.0.0.1:1/trpc")
+
+	cfg := config.Default()
+	cfg.WorkspaceRoot = t.TempDir()
+	cfg.MainConfigDir = mainConfigDir
+	server := New(cfg, stubDetector{})
+
+	request := httptest.NewRequest(http.MethodPost, "/api/mcp/config/jsonc", strings.NewReader(`{"content":"// comment\n{\"mcpServers\":{\"core\":{\"command\":\"node\",\"_meta\":{\"toolCount\":1}}},\"settings\":{\"x\":1}}"}`))
+	request.Header.Set("content-type", "application/json")
+	recorder := httptest.NewRecorder()
+	server.Handler().ServeHTTP(recorder, request)
+
+	if recorder.Code != http.StatusOK {
+		t.Fatalf("expected fallback status 200, got %d with body %s", recorder.Code, recorder.Body.String())
+	}
+	if !strings.Contains(recorder.Body.String(), `"fallback":"go-local-jsonc"`) {
+		t.Fatalf("expected go-local-jsonc fallback metadata, got %s", recorder.Body.String())
+	}
+	if !strings.Contains(recorder.Body.String(), `"ok":true`) {
+		t.Fatalf("expected ok response, got %s", recorder.Body.String())
+	}
+
+	jsoncContent, err := os.ReadFile(filepath.Join(mainConfigDir, "mcp.jsonc"))
+	if err != nil {
+		t.Fatalf("expected local mcp.jsonc to be written: %v", err)
+	}
+	if !strings.Contains(string(jsoncContent), `"settings"`) || !strings.Contains(string(jsoncContent), `"_meta"`) {
+		t.Fatalf("expected jsonc file to preserve settings and _meta, got %s", string(jsoncContent))
+	}
+
+	jsonContent, err := os.ReadFile(filepath.Join(mainConfigDir, "mcp.json"))
+	if err != nil {
+		t.Fatalf("expected compatibility mcp.json to be written: %v", err)
+	}
+	if strings.Contains(string(jsonContent), `"_meta"`) || strings.Contains(string(jsonContent), `"settings"`) {
+		t.Fatalf("expected compatibility json to strip _meta and settings, got %s", string(jsonContent))
+	}
+}
+
 func TestImportedSessionBridgeRoutes(t *testing.T) {
 	upstream := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("content-type", "application/json")

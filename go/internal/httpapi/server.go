@@ -2181,9 +2181,91 @@ func (s *Server) handleMCPRemoveServer(w http.ResponseWriter, r *http.Request) {
 func (s *Server) handleMCPJsoncConfig(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
-		s.handleTRPCBridgeCall(w, r, http.MethodGet, "mcp.getJsoncEditor", nil)
+		var editor map[string]any
+		upstreamBase, err := s.callUpstreamJSON(r.Context(), "mcp.getJsoncEditor", nil, &editor)
+		if err == nil {
+			writeJSON(w, http.StatusOK, map[string]any{
+				"success": true,
+				"data":    editor,
+				"bridge": map[string]any{
+					"upstreamBase": upstreamBase,
+					"procedure":    "mcp.getJsoncEditor",
+				},
+			})
+			return
+		}
+
+		editor, fallbackErr := s.localMCPJsoncEditor()
+		if fallbackErr != nil {
+			writeJSON(w, http.StatusServiceUnavailable, map[string]any{
+				"success": false,
+				"error":   err.Error(),
+				"detail":  fallbackErr.Error(),
+			})
+			return
+		}
+
+		writeJSON(w, http.StatusOK, map[string]any{
+			"success": true,
+			"data":    editor,
+			"bridge": map[string]any{
+				"fallback":  "go-local-jsonc",
+				"procedure": "mcp.getJsoncEditor",
+				"reason":    err.Error(),
+			},
+		})
 	case http.MethodPost:
-		s.handleTRPCBridgeBodyCall(w, r, "mcp.saveJsoncEditor")
+		var payload map[string]any
+		if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
+			writeJSON(w, http.StatusBadRequest, map[string]any{
+				"success": false,
+				"error":   "invalid JSON body",
+			})
+			return
+		}
+
+		var result map[string]any
+		upstreamBase, err := s.callUpstreamJSON(r.Context(), "mcp.saveJsoncEditor", payload, &result)
+		if err == nil {
+			writeJSON(w, http.StatusOK, map[string]any{
+				"success": true,
+				"data":    result,
+				"bridge": map[string]any{
+					"upstreamBase": upstreamBase,
+					"procedure":    "mcp.saveJsoncEditor",
+				},
+			})
+			return
+		}
+
+		content, _ := payload["content"].(string)
+		if strings.TrimSpace(content) == "" {
+			writeJSON(w, http.StatusBadRequest, map[string]any{
+				"success": false,
+				"error":   "missing content",
+			})
+			return
+		}
+		if fallbackErr := s.saveLocalMCPJsonc(content); fallbackErr != nil {
+			writeJSON(w, http.StatusServiceUnavailable, map[string]any{
+				"success": false,
+				"error":   err.Error(),
+				"detail":  fallbackErr.Error(),
+			})
+			return
+		}
+
+		writeJSON(w, http.StatusOK, map[string]any{
+			"success": true,
+			"data": map[string]any{
+				"ok": true,
+			},
+			"bridge": map[string]any{
+				"fallback":  "go-local-jsonc",
+				"procedure": "mcp.saveJsoncEditor",
+				"reason":    err.Error(),
+			},
+		})
 	default:
 		writeJSON(w, http.StatusMethodNotAllowed, map[string]any{
 			"success": false,
@@ -4564,6 +4646,95 @@ func isMCPLikeRegistryEntry(category string, item map[string]any) bool {
 		}
 	}
 	return false
+}
+
+func (s *Server) localMCPJsoncEditor() (map[string]any, error) {
+	jsoncPath := filepath.Join(s.cfg.MainConfigDir, "mcp.jsonc")
+	content, err := os.ReadFile(jsoncPath)
+	if err == nil {
+		return map[string]any{
+			"path":    jsoncPath,
+			"content": string(content),
+		}, nil
+	}
+	if !os.IsNotExist(err) {
+		return nil, err
+	}
+
+	fallback := map[string]any{
+		"mcpServers": map[string]any{},
+	}
+	return map[string]any{
+		"path":    jsoncPath,
+		"content": "// Borg MCP configuration\n" + prettyJSON(fallback) + "\n",
+	}, nil
+}
+
+func (s *Server) saveLocalMCPJsonc(content string) error {
+	sanitized := stripJSONCLineComments(content)
+	var parsed map[string]any
+	if err := json.Unmarshal([]byte(sanitized), &parsed); err != nil {
+		return err
+	}
+	if _, ok := parsed["mcpServers"]; !ok {
+		parsed["mcpServers"] = map[string]any{}
+	}
+
+	jsoncPath := filepath.Join(s.cfg.MainConfigDir, "mcp.jsonc")
+	jsonPath := filepath.Join(s.cfg.MainConfigDir, "mcp.json")
+	if err := os.MkdirAll(s.cfg.MainConfigDir, 0o755); err != nil {
+		return err
+	}
+
+	jsoncBody := "// Borg MCP configuration\n// This file is Borg-owned and may include cached server metadata under mcpServers.<name>._meta.\n" + prettyJSON(parsed) + "\n"
+	if err := os.WriteFile(jsoncPath, []byte(jsoncBody), 0o644); err != nil {
+		return err
+	}
+
+	compatibility := make(map[string]any, len(parsed))
+	for key, value := range parsed {
+		if key == "settings" {
+			continue
+		}
+		if key == "mcpServers" {
+			compatibility[key] = stripServerMeta(value)
+			continue
+		}
+		compatibility[key] = value
+	}
+	return os.WriteFile(jsonPath, []byte(prettyJSON(compatibility)+"\n"), 0o644)
+}
+
+func stripServerMeta(value any) any {
+	servers, ok := value.(map[string]any)
+	if !ok {
+		return value
+	}
+	stripped := make(map[string]any, len(servers))
+	for name, rawServer := range servers {
+		serverMap, ok := rawServer.(map[string]any)
+		if !ok {
+			stripped[name] = rawServer
+			continue
+		}
+		copyMap := make(map[string]any, len(serverMap))
+		for key, fieldValue := range serverMap {
+			if key == "_meta" {
+				continue
+			}
+			copyMap[key] = fieldValue
+		}
+		stripped[name] = copyMap
+	}
+	return stripped
+}
+
+func prettyJSON(value any) string {
+	encoded, err := json.MarshalIndent(value, "", "  ")
+	if err != nil {
+		return "{}"
+	}
+	return string(encoded)
 }
 
 func stripJSONCLineComments(content string) string {
