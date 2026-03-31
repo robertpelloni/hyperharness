@@ -877,6 +877,25 @@ func TestMCPLifecycleModesFallBackToLocalState(t *testing.T) {
 	}
 }
 
+func TestMCPLoadAndUnloadToolReturnExplicitUnavailableFallback(t *testing.T) {
+	t.Setenv("BORG_TRPC_UPSTREAM", "http://127.0.0.1:1/trpc")
+	cfg := config.Default()
+	cfg.WorkspaceRoot = t.TempDir()
+	cfg.ConfigDir = t.TempDir()
+	cfg.MainConfigDir = t.TempDir()
+	server := New(cfg, stubDetector{})
+
+	for _, path := range []string{"/api/mcp/working-set/load", "/api/mcp/working-set/unload"} {
+		req := httptest.NewRequest(http.MethodPost, path, strings.NewReader(`{"name":"search_tools"}`))
+		req.Header.Set("content-type", "application/json")
+		recorder := httptest.NewRecorder()
+		server.Handler().ServeHTTP(recorder, req)
+		if recorder.Code != http.StatusOK || !strings.Contains(recorder.Body.String(), `"fallback":"go-local-mcp"`) || !strings.Contains(recorder.Body.String(), `MCP Server not initialized`) {
+			t.Fatalf("%s: expected explicit unavailable fallback, got %d %s", path, recorder.Code, recorder.Body.String())
+		}
+	}
+}
+
 func TestAutonomyBridgeRoutes(t *testing.T) {
 	upstream := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("content-type", "application/json")

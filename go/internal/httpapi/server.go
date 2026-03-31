@@ -3062,11 +3062,11 @@ func (s *Server) handleMCPClearWorkingSetEvictions(w http.ResponseWriter, r *htt
 }
 
 func (s *Server) handleMCPLoadTool(w http.ResponseWriter, r *http.Request) {
-	s.handleTRPCBridgeBodyCall(w, r, "mcp.loadTool")
+	s.handleMCPManualToolMutation(w, r, "mcp.loadTool")
 }
 
 func (s *Server) handleMCPUnloadTool(w http.ResponseWriter, r *http.Request) {
-	s.handleTRPCBridgeBodyCall(w, r, "mcp.unloadTool")
+	s.handleMCPManualToolMutation(w, r, "mcp.unloadTool")
 }
 
 func (s *Server) handleMemorySearch(w http.ResponseWriter, r *http.Request) {
@@ -6316,6 +6316,41 @@ func (s *Server) handleReadOnlyMemoryBodyFallback(w http.ResponseWriter, r *http
 		"data":    []map[string]any{},
 		"bridge": map[string]any{
 			"fallback":  "go-local-memory",
+			"procedure": procedure,
+			"reason":    err.Error(),
+		},
+	})
+}
+
+func (s *Server) handleMCPManualToolMutation(w http.ResponseWriter, r *http.Request, procedure string) {
+	var payload map[string]any
+	if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
+		writeJSON(w, http.StatusBadRequest, map[string]any{"success": false, "error": "invalid JSON body"})
+		return
+	}
+
+	var result any
+	upstreamBase, err := s.callUpstreamJSON(r.Context(), procedure, payload, &result)
+	if err == nil {
+		writeJSON(w, http.StatusOK, map[string]any{
+			"success": true,
+			"data":    result,
+			"bridge": map[string]any{
+				"upstreamBase": upstreamBase,
+				"procedure":    procedure,
+			},
+		})
+		return
+	}
+
+	writeJSON(w, http.StatusOK, map[string]any{
+		"success": true,
+		"data": map[string]any{
+			"ok":      false,
+			"message": "MCP Server not initialized",
+		},
+		"bridge": map[string]any{
+			"fallback":  "go-local-mcp",
 			"procedure": procedure,
 			"reason":    err.Error(),
 		},
