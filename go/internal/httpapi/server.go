@@ -359,6 +359,9 @@ func (s *Server) registerRoutes() {
 	s.mux.HandleFunc("/api/council/quota/unthrottle", s.handleCouncilQuotaUnthrottle)
 	s.mux.HandleFunc("/api/council/quota/record-request", s.handleCouncilQuotaRecordRequest)
 	s.mux.HandleFunc("/api/council/quota/rate-limit-error", s.handleCouncilQuotaRecordRateLimitError)
+	s.mux.HandleFunc("/api/council/visual/system-diagram", s.handleCouncilVisualSystemDiagram)
+	s.mux.HandleFunc("/api/council/visual/plan-diagram", s.handleCouncilVisualPlanDiagram)
+	s.mux.HandleFunc("/api/council/visual/parse-plan", s.handleCouncilVisualParsePlan)
 	s.mux.HandleFunc("/api/deerflow/status", s.handleDeerFlowStatus)
 	s.mux.HandleFunc("/api/deerflow/models", s.handleDeerFlowModels)
 	s.mux.HandleFunc("/api/deerflow/skills", s.handleDeerFlowSkills)
@@ -837,6 +840,9 @@ func (s *Server) handleAPIIndex(w http.ResponseWriter, _ *http.Request) {
 				{Path: "/api/council/quota/unthrottle", Category: "governance", Description: "Unthrottle a council quota provider through the TypeScript council router."},
 				{Path: "/api/council/quota/record-request", Category: "governance", Description: "Record a council quota request through the TypeScript council router."},
 				{Path: "/api/council/quota/rate-limit-error", Category: "governance", Description: "Record a council quota rate-limit error through the TypeScript council router."},
+				{Path: "/api/council/visual/system-diagram", Category: "governance", Description: "Read the council system diagram through the TypeScript visual router."},
+				{Path: "/api/council/visual/plan-diagram", Category: "governance", Description: "Render a council plan diagram through the TypeScript visual router."},
+				{Path: "/api/council/visual/parse-plan", Category: "governance", Description: "Parse a council Mermaid plan through the TypeScript visual router."},
 				{Path: "/api/deerflow/status", Category: "operator", Description: "Read DeerFlow bridge availability through the TypeScript DeerFlow router."},
 				{Path: "/api/deerflow/models", Category: "operator", Description: "List DeerFlow models through the TypeScript DeerFlow router."},
 				{Path: "/api/deerflow/skills", Category: "operator", Description: "List DeerFlow skills through the TypeScript DeerFlow router."},

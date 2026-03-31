@@ -872,6 +872,80 @@ func TestHealerBridgeRoutes(t *testing.T) {
 	}
 }
 
+func TestCouncilVisualBridgeRoutes(t *testing.T) {
+	upstream := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("content-type", "application/json")
+		switch r.URL.Path {
+		case "/trpc/council.visual.systemDiagram":
+			_ = json.NewEncoder(w).Encode(map[string]any{
+				"result": map[string]any{"data": map[string]any{"json": map[string]any{"mermaid": "graph TD; A-->B;"}}},
+			})
+		case "/trpc/council.visual.planDiagram":
+			body, _ := io.ReadAll(r.Body)
+			if !strings.Contains(string(body), `"task":"Ship it"`) {
+				t.Fatalf("expected council.visual.planDiagram payload, got %s", string(body))
+			}
+			_ = json.NewEncoder(w).Encode(map[string]any{
+				"result": map[string]any{"data": map[string]any{"json": map[string]any{"mermaid": "graph TD; Plan-->Done;"}}},
+			})
+		case "/trpc/council.visual.parsePlan":
+			body, _ := io.ReadAll(r.Body)
+			if !strings.Contains(string(body), `"mermaid":"graph TD; A--\u003eB;"`) {
+				t.Fatalf("expected council.visual.parsePlan payload, got %s", string(body))
+			}
+			_ = json.NewEncoder(w).Encode(map[string]any{
+				"result": map[string]any{"data": map[string]any{"json": map[string]any{"nodes": []any{map[string]any{"id": "A"}}}}},
+			})
+		default:
+			t.Fatalf("unexpected upstream path %s", r.URL.Path)
+		}
+	}))
+	defer upstream.Close()
+
+	t.Setenv("BORG_TRPC_UPSTREAM", upstream.URL+"/trpc")
+
+	cfg := config.Default()
+	cfg.MainConfigDir = t.TempDir()
+	server := New(cfg, stubDetector{})
+
+	cases := []struct {
+		name      string
+		method    string
+		path      string
+		body      string
+		contains  string
+		procedure string
+	}{
+		{name: "council visual system diagram", method: http.MethodGet, path: "/api/council/visual/system-diagram", contains: `"graph TD; A--\u003eB;"`, procedure: `"procedure":"council.visual.systemDiagram"`},
+		{name: "council visual plan diagram", method: http.MethodPost, path: "/api/council/visual/plan-diagram", body: `{"task":"Ship it"}`, contains: `"graph TD; Plan--\u003eDone;"`, procedure: `"procedure":"council.visual.planDiagram"`},
+		{name: "council visual parse plan", method: http.MethodPost, path: "/api/council/visual/parse-plan", body: `{"mermaid":"graph TD; A-->B;"}`, contains: `"id":"A"`, procedure: `"procedure":"council.visual.parsePlan"`},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			var body io.Reader
+			if tc.body != "" {
+				body = strings.NewReader(tc.body)
+			}
+			request := httptest.NewRequest(tc.method, tc.path, body)
+			if tc.body != "" {
+				request.Header.Set("content-type", "application/json")
+			}
+			recorder := httptest.NewRecorder()
+			server.Handler().ServeHTTP(recorder, request)
+			if recorder.Code != http.StatusOK {
+				t.Fatalf("expected status 200, got %d with body %s", recorder.Code, recorder.Body.String())
+			}
+			if !strings.Contains(recorder.Body.String(), tc.contains) {
+				t.Fatalf("expected response to contain %s, got %s", tc.contains, recorder.Body.String())
+			}
+			if !strings.Contains(recorder.Body.String(), tc.procedure) {
+				t.Fatalf("expected bridge metadata %s, got %s", tc.procedure, recorder.Body.String())
+			}
+		})
+	}
+}
+
 func TestConfigStatusEndpoint(t *testing.T) {
 	workspaceRoot := t.TempDir()
 	cfg := config.Default()
