@@ -1,0 +1,369 @@
+{
+  "version": "0.99.1",
+  "timestamp": 1774997827802,
+  "sessionId": "current",
+  "stats": {
+    "totalCount": 8055,
+    "sessionCount": 64,
+    "workingCount": 500,
+    "longTermCount": 7491,
+    "observationCount": 500,
+    "uniqueObservationCount": 175,
+    "promptCount": 0,
+    "sessionSummaryCount": 1351,
+    "session": 64,
+    "working": 500,
+    "long_term": 7491,
+    "user": 0,
+    "agent": 0,
+    "project": 8055,
+    "discovery": 0,
+    "decision": 0,
+    "progress": 500,
+    "warning": 0,
+    "fix": 0
+  },
+  "recentContext": [
+    {
+      "content": "JIT tool context for set_capacity:\nFocus query: set_capacity\nPotentially relevant observations:\n- set_capacity completed — set_capacity completed in 584ms. Working-set capacity updated: maxLoadedTools=16, maxHydratedSchemas=8, idleEvictionThresholdMs=300000 (progress · set_capacity)\n- set_capacity completed — set_capacity completed in 605ms. Working-set capacity updated: maxLoadedTools=16, maxHydratedSchemas=8, idleEvictionThresholdMs=300000 (progress · set_capacity)\n- set_capacity completed — set_capacity completed in 586ms. Working-set capacity updated: maxLoadedTools=16, maxHydratedSchemas=8, idleEvictionThresholdMs=300000 (progress · set_capacity)\n- set_capacity completed — set_capacity completed in 606ms. Working-set capacity updated: maxLoadedTools=16, maxHydratedSchemas=8, idleEvictionThresholdMs=300000 (progress · set_capacity)\nPotentially relevant session summaries:\n- { (borg) ended with status imported. Working directory: C:/Users/hyper/workspace/borg/.borg/agent_memory Log tail: \"toolName\": \"set_capacity\", | \"filesRead\": [], | \"filesModified\": [], | \"rawInput\": \"{\\n \\\"maxLoadedTools\\\": 16,\\n \\\"maxHydra\n- { (borg) ended with status imported. Working directory: C:/Users/hyper/workspace/borg/.borg/handoffs Log tail: ], | \"toolName\": \"set_capacity\", | \"query\": \"set_capacity\", | \"matchedPaths\": [], | \"observationCount\": 4, | \"summaryCount\": 2, |\nUse only the parts that still match the current intent; ignore stale context.",
+      "metadata": {
+        "source": "pre_tool_context",
+        "tags": [
+          "tool-context",
+          "pre-tool",
+          "set_capacity"
+        ],
+        "toolName": "set_capacity",
+        "query": "set_capacity",
+        "matchedPaths": [],
+        "observationCount": 4,
+        "summaryCount": 2,
+        "preview": "JIT context: 4 observations · 2 summarysummaries"
+      }
+    },
+    {
+      "content": "JIT tool context for clear_eviction_history:\nFocus query: clear_eviction_history\nPotentially relevant observations:\n- clear_eviction_history completed — clear_eviction_history completed in 228ms. Cleared 0 eviction history entries. (progress · clear_eviction_history)\n- clear_eviction_history completed — clear_eviction_history completed in 209ms. Cleared 0 eviction history entries. (progress · clear_eviction_history)\n- clear_eviction_history completed — clear_eviction_history completed in 491ms. Cleared 0 eviction history entries. (progress · clear_eviction_history)\n- clear_eviction_history completed — clear_eviction_history completed in 321ms. Cleared 0 eviction history entries. (progress · clear_eviction_history)\nPotentially relevant session summaries:\n- { (borg) ended with status imported. Working directory: C:/Users/hyper/workspace/borg/.borg/handoffs Log tail: ], | \"toolName\": \"clear_eviction_history\", | \"query\": \"clear_eviction_history\", | \"matchedPaths\": [], | \"observationCount\": 4, | \n- { (borg) ended with status imported. Working directory: C:/Users/hyper/workspace/borg/.borg/handoffs Log tail: ], | \"toolName\": \"clear_eviction_history\", | \"query\": \"clear_eviction_history\", | \"matchedPaths\": [], | \"observationCount\": 4, | \nUse only the parts that still match the current intent; ignore stale context.",
+      "metadata": {
+        "source": "pre_tool_context",
+        "tags": [
+          "tool-context",
+          "pre-tool",
+          "clear_eviction_history"
+        ],
+        "toolName": "clear_eviction_history",
+        "query": "clear_eviction_history",
+        "matchedPaths": [],
+        "observationCount": 4,
+        "summaryCount": 2,
+        "preview": "JIT context: 4 observations · 2 summarysummaries"
+      }
+    },
+    {
+      "content": "JIT tool context for set_capacity:\nFocus query: set_capacity\nPotentially relevant observations:\n- set_capacity completed — set_capacity completed in 605ms. Working-set capacity updated: maxLoadedTools=16, maxHydratedSchemas=8, idleEvictionThresholdMs=300000 (progress · set_capacity)\n- set_capacity completed — set_capacity completed in 586ms. Working-set capacity updated: maxLoadedTools=16, maxHydratedSchemas=8, idleEvictionThresholdMs=300000 (progress · set_capacity)\n- set_capacity completed — set_capacity completed in 606ms. Working-set capacity updated: maxLoadedTools=16, maxHydratedSchemas=8, idleEvictionThresholdMs=300000 (progress · set_capacity)\n- set_capacity completed — set_capacity completed in 594ms. Working-set capacity updated: maxLoadedTools=16, maxHydratedSchemas=8, idleEvictionThresholdMs=300000 (progress · set_capacity)\nPotentially relevant session summaries:\n- { (borg) ended with status imported. Working directory: C:/Users/hyper/workspace/borg/.borg/handoffs Log tail: ], | \"toolName\": \"set_capacity\", | \"query\": \"set_capacity\", | \"matchedPaths\": [], | \"observationCount\": 4, | \"summaryCount\": 2, |\n- { (borg) ended with status imported. Working directory: C:/Users/hyper/workspace/borg/.borg/agent_memory Log tail: \"toolName\": \"set_capacity\", | \"filesRead\": [], | \"filesModified\": [], | \"rawInput\": \"{\\n \\\"maxLoadedTools\\\": 16,\\n \\\"maxHydra\nUse only the parts that still match the current intent; ignore stale context.",
+      "metadata": {
+        "source": "pre_tool_context",
+        "tags": [
+          "tool-context",
+          "pre-tool",
+          "set_capacity"
+        ],
+        "toolName": "set_capacity",
+        "query": "set_capacity",
+        "matchedPaths": [],
+        "observationCount": 4,
+        "summaryCount": 2,
+        "preview": "JIT context: 4 observations · 2 summarysummaries"
+      }
+    },
+    {
+      "content": "JIT tool context for clear_eviction_history:\nFocus query: clear_eviction_history\nPotentially relevant observations:\n- clear_eviction_history completed — clear_eviction_history completed in 209ms. Cleared 0 eviction history entries. (progress · clear_eviction_history)\n- clear_eviction_history completed — clear_eviction_history completed in 491ms. Cleared 0 eviction history entries. (progress · clear_eviction_history)\n- clear_eviction_history completed — clear_eviction_history completed in 321ms. Cleared 0 eviction history entries. (progress · clear_eviction_history)\n- clear_eviction_history completed — clear_eviction_history completed in 402ms. Cleared 0 eviction history entries. (progress · clear_eviction_history)\nPotentially relevant session summaries:\n- { (borg) ended with status imported. Working directory: C:/Users/hyper/workspace/borg/.borg/handoffs Log tail: ], | \"toolName\": \"clear_eviction_history\", | \"query\": \"clear_eviction_history\", | \"matchedPaths\": [], | \"observationCount\": 4, | \n- { (borg) ended with status imported. Working directory: C:/Users/hyper/workspace/borg/.borg/handoffs Log tail: ], | \"toolName\": \"clear_eviction_history\", | \"query\": \"clear_eviction_history\", | \"matchedPaths\": [], | \"observationCount\": 4, | \nUse only the parts that still match the current intent; ignore stale context.",
+      "metadata": {
+        "source": "pre_tool_context",
+        "tags": [
+          "tool-context",
+          "pre-tool",
+          "clear_eviction_history"
+        ],
+        "toolName": "clear_eviction_history",
+        "query": "clear_eviction_history",
+        "matchedPaths": [],
+        "observationCount": 4,
+        "summaryCount": 2,
+        "preview": "JIT context: 4 observations · 2 summarysummaries"
+      }
+    },
+    {
+      "content": "JIT tool context for set_capacity:\nFocus query: set_capacity\nPotentially relevant observations:\n- set_capacity completed — set_capacity completed in 586ms. Working-set capacity updated: maxLoadedTools=16, maxHydratedSchemas=8, idleEvictionThresholdMs=300000 (progress · set_capacity)\n- set_capacity completed — set_capacity completed in 606ms. Working-set capacity updated: maxLoadedTools=16, maxHydratedSchemas=8, idleEvictionThresholdMs=300000 (progress · set_capacity)\n- set_capacity completed — set_capacity completed in 594ms. Working-set capacity updated: maxLoadedTools=16, maxHydratedSchemas=8, idleEvictionThresholdMs=300000 (progress · set_capacity)\n- set_capacity completed — set_capacity completed in 589ms. Working-set capacity updated: maxLoadedTools=16, maxHydratedSchemas=8, idleEvictionThresholdMs=300000 (progress · set_capacity)\nPotentially relevant session summaries:\n- { (borg) ended with status imported. Working directory: C:/Users/hyper/workspace/borg/.borg/handoffs Log tail: ], | \"toolName\": \"set_capacity\", | \"query\": \"set_capacity\", | \"matchedPaths\": [], | \"observationCount\": 4, | \"summaryCount\": 2, |\n- { (borg) ended with status imported. Working directory: C:/Users/hyper/workspace/borg/.borg/agent_memory Log tail: \"toolName\": \"set_capacity\", | \"filesRead\": [], | \"filesModified\": [], | \"rawInput\": \"{\\n \\\"maxLoadedTools\\\": 16,\\n \\\"maxHydra\nUse only the parts that still match the current intent; ignore stale context.",
+      "metadata": {
+        "source": "pre_tool_context",
+        "tags": [
+          "tool-context",
+          "pre-tool",
+          "set_capacity"
+        ],
+        "toolName": "set_capacity",
+        "query": "set_capacity",
+        "matchedPaths": [],
+        "observationCount": 4,
+        "summaryCount": 2,
+        "preview": "JIT context: 4 observations · 2 summarysummaries"
+      }
+    },
+    {
+      "content": "JIT tool context for clear_eviction_history:\nFocus query: clear_eviction_history\nPotentially relevant observations:\n- clear_eviction_history completed — clear_eviction_history completed in 491ms. Cleared 0 eviction history entries. (progress · clear_eviction_history)\n- clear_eviction_history completed — clear_eviction_history completed in 321ms. Cleared 0 eviction history entries. (progress · clear_eviction_history)\n- clear_eviction_history completed — clear_eviction_history completed in 402ms. Cleared 0 eviction history entries. (progress · clear_eviction_history)\n- clear_eviction_history completed — clear_eviction_history completed in 387ms. Cleared 0 eviction history entries. (progress · clear_eviction_history)\nPotentially relevant session summaries:\n- { (borg) ended with status imported. Working directory: C:/Users/hyper/workspace/borg/.borg/handoffs Log tail: ], | \"toolName\": \"clear_eviction_history\", | \"query\": \"clear_eviction_history\", | \"matchedPaths\": [], | \"observationCount\": 4, | \n- { (borg) ended with status imported. Working directory: C:/Users/hyper/workspace/borg/.borg/handoffs Log tail: ], | \"toolName\": \"clear_eviction_history\", | \"query\": \"clear_eviction_history\", | \"matchedPaths\": [], | \"observationCount\": 4, | \nUse only the parts that still match the current intent; ignore stale context.",
+      "metadata": {
+        "source": "pre_tool_context",
+        "tags": [
+          "tool-context",
+          "pre-tool",
+          "clear_eviction_history"
+        ],
+        "toolName": "clear_eviction_history",
+        "query": "clear_eviction_history",
+        "matchedPaths": [],
+        "observationCount": 4,
+        "summaryCount": 2,
+        "preview": "JIT context: 4 observations · 2 summarysummaries"
+      }
+    },
+    {
+      "content": "JIT tool context for set_capacity:\nFocus query: set_capacity\nPotentially relevant observations:\n- set_capacity completed — set_capacity completed in 606ms. Working-set capacity updated: maxLoadedTools=16, maxHydratedSchemas=8, idleEvictionThresholdMs=300000 (progress · set_capacity)\n- set_capacity completed — set_capacity completed in 594ms. Working-set capacity updated: maxLoadedTools=16, maxHydratedSchemas=8, idleEvictionThresholdMs=300000 (progress · set_capacity)\n- set_capacity completed — set_capacity completed in 589ms. Working-set capacity updated: maxLoadedTools=16, maxHydratedSchemas=8, idleEvictionThresholdMs=300000 (progress · set_capacity)\n- set_capacity completed — set_capacity completed in 554ms. Working-set capacity updated: maxLoadedTools=16, maxHydratedSchemas=8, idleEvictionThresholdMs=300000 (progress · set_capacity)\nPotentially relevant session summaries:\n- { (borg) ended with status imported. Working directory: C:/Users/hyper/workspace/borg/.borg/agent_memory Log tail: \"toolName\": \"set_capacity\", | \"filesRead\": [], | \"filesModified\": [], | \"rawInput\": \"{\\n \\\"maxLoadedTools\\\": 16,\\n \\\"maxHydra\n- { (borg) ended with status imported. Working directory: C:/Users/hyper/workspace/borg/.borg/agent_memory Log tail: \"toolName\": \"set_capacity\", | \"filesRead\": [], | \"filesModified\": [], | \"rawInput\": \"{\\n \\\"maxLoadedTools\\\": 16,\\n \\\"maxHydra\nUse only the parts that still match the current intent; ignore stale context.",
+      "metadata": {
+        "source": "pre_tool_context",
+        "tags": [
+          "tool-context",
+          "pre-tool",
+          "set_capacity"
+        ],
+        "toolName": "set_capacity",
+        "query": "set_capacity",
+        "matchedPaths": [],
+        "observationCount": 4,
+        "summaryCount": 2,
+        "preview": "JIT context: 4 observations · 2 summarysummaries"
+      }
+    },
+    {
+      "content": "JIT tool context for clear_eviction_history:\nFocus query: clear_eviction_history\nPotentially relevant observations:\n- clear_eviction_history completed — clear_eviction_history completed in 321ms. Cleared 0 eviction history entries. (progress · clear_eviction_history)\n- clear_eviction_history completed — clear_eviction_history completed in 402ms. Cleared 0 eviction history entries. (progress · clear_eviction_history)\n- clear_eviction_history completed — clear_eviction_history completed in 387ms. Cleared 0 eviction history entries. (progress · clear_eviction_history)\n- clear_eviction_history completed — clear_eviction_history completed in 402ms. Cleared 0 eviction history entries. (progress · clear_eviction_history)\nPotentially relevant session summaries:\n- { (borg) ended with status imported. Working directory: C:/Users/hyper/workspace/borg/.borg/handoffs Log tail: ], | \"toolName\": \"clear_eviction_history\", | \"query\": \"clear_eviction_history\", | \"matchedPaths\": [], | \"observationCount\": 4, | \n- { (borg) ended with status imported. Working directory: C:/Users/hyper/workspace/borg/.borg/handoffs Log tail: ], | \"toolName\": \"clear_eviction_history\", | \"query\": \"clear_eviction_history\", | \"matchedPaths\": [], | \"observationCount\": 4, | \nUse only the parts that still match the current intent; ignore stale context.",
+      "metadata": {
+        "source": "pre_tool_context",
+        "tags": [
+          "tool-context",
+          "pre-tool",
+          "clear_eviction_history"
+        ],
+        "toolName": "clear_eviction_history",
+        "query": "clear_eviction_history",
+        "matchedPaths": [],
+        "observationCount": 4,
+        "summaryCount": 2,
+        "preview": "JIT context: 4 observations · 2 summarysummaries"
+      }
+    },
+    {
+      "content": "JIT tool context for set_capacity:\nFocus query: set_capacity\nPotentially relevant observations:\n- set_capacity completed — set_capacity completed in 594ms. Working-set capacity updated: maxLoadedTools=16, maxHydratedSchemas=8, idleEvictionThresholdMs=300000 (progress · set_capacity)\n- set_capacity completed — set_capacity completed in 589ms. Working-set capacity updated: maxLoadedTools=16, maxHydratedSchemas=8, idleEvictionThresholdMs=300000 (progress · set_capacity)\n- set_capacity completed — set_capacity completed in 554ms. Working-set capacity updated: maxLoadedTools=16, maxHydratedSchemas=8, idleEvictionThresholdMs=300000 (progress · set_capacity)\n- set_capacity completed — set_capacity completed in 536ms. Working-set capacity updated: maxLoadedTools=16, maxHydratedSchemas=8, idleEvictionThresholdMs=300000 (progress · set_capacity)\nPotentially relevant session summaries:\n- { (borg) ended with status imported. Working directory: C:/Users/hyper/workspace/borg/.borg/agent_memory Log tail: \"toolName\": \"set_capacity\", | \"filesRead\": [], | \"filesModified\": [], | \"rawInput\": \"{\\n \\\"maxLoadedTools\\\": 16,\\n \\\"maxHydra\n- { (borg) ended with status imported. Working directory: C:/Users/hyper/workspace/borg/.borg/handoffs Log tail: ], | \"toolName\": \"set_capacity\", | \"query\": \"set_capacity\", | \"matchedPaths\": [], | \"observationCount\": 4, | \"summaryCount\": 2, |\nUse only the parts that still match the current intent; ignore stale context.",
+      "metadata": {
+        "source": "pre_tool_context",
+        "tags": [
+          "tool-context",
+          "pre-tool",
+          "set_capacity"
+        ],
+        "toolName": "set_capacity",
+        "query": "set_capacity",
+        "matchedPaths": [],
+        "observationCount": 4,
+        "summaryCount": 2,
+        "preview": "JIT context: 4 observations · 2 summarysummaries"
+      }
+    },
+    {
+      "content": "JIT tool context for clear_eviction_history:\nFocus query: clear_eviction_history\nPotentially relevant observations:\n- clear_eviction_history completed — clear_eviction_history completed in 402ms. Cleared 0 eviction history entries. (progress · clear_eviction_history)\n- clear_eviction_history completed — clear_eviction_history completed in 387ms. Cleared 0 eviction history entries. (progress · clear_eviction_history)\n- clear_eviction_history completed — clear_eviction_history completed in 402ms. Cleared 0 eviction history entries. (progress · clear_eviction_history)\n- clear_eviction_history completed — clear_eviction_history completed in 452ms. Cleared 0 eviction history entries. (progress · clear_eviction_history)\nPotentially relevant session summaries:\n- { (borg) ended with status imported. Working directory: C:/Users/hyper/workspace/borg/.borg/handoffs Log tail: ], | \"toolName\": \"clear_eviction_history\", | \"query\": \"clear_eviction_history\", | \"matchedPaths\": [], | \"observationCount\": 4, | \n- { (borg) ended with status imported. Working directory: C:/Users/hyper/workspace/borg/.borg/handoffs Log tail: ], | \"toolName\": \"clear_eviction_history\", | \"query\": \"clear_eviction_history\", | \"matchedPaths\": [], | \"observationCount\": 4, | \nUse only the parts that still match the current intent; ignore stale context.",
+      "metadata": {
+        "source": "pre_tool_context",
+        "tags": [
+          "tool-context",
+          "pre-tool",
+          "clear_eviction_history"
+        ],
+        "toolName": "clear_eviction_history",
+        "query": "clear_eviction_history",
+        "matchedPaths": [],
+        "observationCount": 4,
+        "summaryCount": 2,
+        "preview": "JIT context: 4 observations · 2 summarysummaries"
+      }
+    },
+    {
+      "content": "JIT tool context for set_capacity:\nFocus query: set_capacity\nPotentially relevant observations:\n- set_capacity completed — set_capacity completed in 589ms. Working-set capacity updated: maxLoadedTools=16, maxHydratedSchemas=8, idleEvictionThresholdMs=300000 (progress · set_capacity)\n- set_capacity completed — set_capacity completed in 554ms. Working-set capacity updated: maxLoadedTools=16, maxHydratedSchemas=8, idleEvictionThresholdMs=300000 (progress · set_capacity)\n- set_capacity completed — set_capacity completed in 536ms. Working-set capacity updated: maxLoadedTools=16, maxHydratedSchemas=8, idleEvictionThresholdMs=300000 (progress · set_capacity)\n- set_capacity completed — set_capacity completed in 393ms. Working-set capacity updated: maxLoadedTools=16, maxHydratedSchemas=8, idleEvictionThresholdMs=300000 (progress · set_capacity)\nPotentially relevant session summaries:\n- { (borg) ended with status imported. Working directory: C:/Users/hyper/workspace/borg/.borg/handoffs Log tail: ], | \"toolName\": \"set_capacity\", | \"query\": \"set_capacity\", | \"matchedPaths\": [], | \"observationCount\": 4, | \"summaryCount\": 2, |\n- { (borg) ended with status imported. Working directory: C:/Users/hyper/workspace/borg/.borg/agent_memory Log tail: \"toolName\": \"set_capacity\", | \"filesRead\": [], | \"filesModified\": [], | \"rawInput\": \"{\\n \\\"maxLoadedTools\\\": 16,\\n \\\"maxHydra\nUse only the parts that still match the current intent; ignore stale context.",
+      "metadata": {
+        "source": "pre_tool_context",
+        "tags": [
+          "tool-context",
+          "pre-tool",
+          "set_capacity"
+        ],
+        "toolName": "set_capacity",
+        "query": "set_capacity",
+        "matchedPaths": [],
+        "observationCount": 4,
+        "summaryCount": 2,
+        "preview": "JIT context: 4 observations · 2 summarysummaries"
+      }
+    },
+    {
+      "content": "JIT tool context for clear_eviction_history:\nFocus query: clear_eviction_history\nPotentially relevant observations:\n- clear_eviction_history completed — clear_eviction_history completed in 387ms. Cleared 0 eviction history entries. (progress · clear_eviction_history)\n- clear_eviction_history completed — clear_eviction_history completed in 402ms. Cleared 0 eviction history entries. (progress · clear_eviction_history)\n- clear_eviction_history completed — clear_eviction_history completed in 452ms. Cleared 0 eviction history entries. (progress · clear_eviction_history)\n- clear_eviction_history completed — clear_eviction_history completed in 473ms. Cleared 0 eviction history entries. (progress · clear_eviction_history)\nPotentially relevant session summaries:\n- { (borg) ended with status imported. Working directory: C:/Users/hyper/workspace/borg/.borg/handoffs Log tail: ], | \"toolName\": \"clear_eviction_history\", | \"query\": \"clear_eviction_history\", | \"matchedPaths\": [], | \"observationCount\": 4, | \n- { (borg) ended with status imported. Working directory: C:/Users/hyper/workspace/borg/.borg/handoffs Log tail: ], | \"toolName\": \"clear_eviction_history\", | \"query\": \"clear_eviction_history\", | \"matchedPaths\": [], | \"observationCount\": 4, | \nUse only the parts that still match the current intent; ignore stale context.",
+      "metadata": {
+        "source": "pre_tool_context",
+        "tags": [
+          "tool-context",
+          "pre-tool",
+          "clear_eviction_history"
+        ],
+        "toolName": "clear_eviction_history",
+        "query": "clear_eviction_history",
+        "matchedPaths": [],
+        "observationCount": 4,
+        "summaryCount": 2,
+        "preview": "JIT context: 4 observations · 2 summarysummaries"
+      }
+    },
+    {
+      "content": "JIT tool context for set_capacity:\nFocus query: set_capacity\nPotentially relevant observations:\n- set_capacity completed — set_capacity completed in 554ms. Working-set capacity updated: maxLoadedTools=16, maxHydratedSchemas=8, idleEvictionThresholdMs=300000 (progress · set_capacity)\n- set_capacity completed — set_capacity completed in 536ms. Working-set capacity updated: maxLoadedTools=16, maxHydratedSchemas=8, idleEvictionThresholdMs=300000 (progress · set_capacity)\n- set_capacity completed — set_capacity completed in 393ms. Working-set capacity updated: maxLoadedTools=16, maxHydratedSchemas=8, idleEvictionThresholdMs=300000 (progress · set_capacity)\n- set_capacity completed — set_capacity completed in 444ms. Working-set capacity updated: maxLoadedTools=16, maxHydratedSchemas=8, idleEvictionThresholdMs=300000 (progress · set_capacity)\nPotentially relevant session summaries:\n- { (borg) ended with status imported. Working directory: C:/Users/hyper/workspace/borg/.borg/agent_memory Log tail: \"toolName\": \"set_capacity\", | \"filesRead\": [], | \"filesModified\": [], | \"rawInput\": \"{\\n \\\"maxLoadedTools\\\": 16,\\n \\\"maxHydra\n- { (borg) ended with status imported. Working directory: C:/Users/hyper/workspace/borg/.borg/agent_memory Log tail: \"toolName\": \"set_capacity\", | \"filesRead\": [], | \"filesModified\": [], | \"rawInput\": \"{\\n \\\"maxLoadedTools\\\": 16,\\n \\\"maxHydra\nUse only the parts that still match the current intent; ignore stale context.",
+      "metadata": {
+        "source": "pre_tool_context",
+        "tags": [
+          "tool-context",
+          "pre-tool",
+          "set_capacity"
+        ],
+        "toolName": "set_capacity",
+        "query": "set_capacity",
+        "matchedPaths": [],
+        "observationCount": 4,
+        "summaryCount": 2,
+        "preview": "JIT context: 4 observations · 2 summarysummaries"
+      }
+    },
+    {
+      "content": "JIT tool context for clear_eviction_history:\nFocus query: clear_eviction_history\nPotentially relevant observations:\n- clear_eviction_history completed — clear_eviction_history completed in 402ms. Cleared 0 eviction history entries. (progress · clear_eviction_history)\n- clear_eviction_history completed — clear_eviction_history completed in 452ms. Cleared 0 eviction history entries. (progress · clear_eviction_history)\n- clear_eviction_history completed — clear_eviction_history completed in 473ms. Cleared 0 eviction history entries. (progress · clear_eviction_history)\n- clear_eviction_history completed — clear_eviction_history completed in 348ms. Cleared 0 eviction history entries. (progress · clear_eviction_history)\nPotentially relevant session summaries:\n- { (borg) ended with status imported. Working directory: C:/Users/hyper/workspace/borg/.borg/handoffs Log tail: ], | \"toolName\": \"clear_eviction_history\", | \"query\": \"clear_eviction_history\", | \"matchedPaths\": [], | \"observationCount\": 4, | \n- { (borg) ended with status imported. Working directory: C:/Users/hyper/workspace/borg/.borg/handoffs Log tail: ], | \"toolName\": \"clear_eviction_history\", | \"query\": \"clear_eviction_history\", | \"matchedPaths\": [], | \"observationCount\": 4, | \nUse only the parts that still match the current intent; ignore stale context.",
+      "metadata": {
+        "source": "pre_tool_context",
+        "tags": [
+          "tool-context",
+          "pre-tool",
+          "clear_eviction_history"
+        ],
+        "toolName": "clear_eviction_history",
+        "query": "clear_eviction_history",
+        "matchedPaths": [],
+        "observationCount": 4,
+        "summaryCount": 2,
+        "preview": "JIT context: 4 observations · 2 summarysummaries"
+      }
+    },
+    {
+      "content": "JIT tool context for set_capacity:\nFocus query: set_capacity\nPotentially relevant observations:\n- set_capacity completed — set_capacity completed in 536ms. Working-set capacity updated: maxLoadedTools=16, maxHydratedSchemas=8, idleEvictionThresholdMs=300000 (progress · set_capacity)\n- set_capacity completed — set_capacity completed in 393ms. Working-set capacity updated: maxLoadedTools=16, maxHydratedSchemas=8, idleEvictionThresholdMs=300000 (progress · set_capacity)\n- set_capacity completed — set_capacity completed in 444ms. Working-set capacity updated: maxLoadedTools=16, maxHydratedSchemas=8, idleEvictionThresholdMs=300000 (progress · set_capacity)\n- set_capacity completed — set_capacity completed in 425ms. Working-set capacity updated: maxLoadedTools=16, maxHydratedSchemas=8, idleEvictionThresholdMs=300000 (progress · set_capacity)\nPotentially relevant session summaries:\n- { (borg) ended with status imported. Working directory: C:/Users/hyper/workspace/borg/.borg/agent_memory Log tail: \"toolName\": \"set_capacity\", | \"filesRead\": [], | \"filesModified\": [], | \"rawInput\": \"{\\n \\\"maxLoadedTools\\\": 16,\\n \\\"maxHydra\n- { (borg) ended with status imported. Working directory: C:/Users/hyper/workspace/borg/.borg/handoffs Log tail: ], | \"toolName\": \"set_capacity\", | \"query\": \"set_capacity\", | \"matchedPaths\": [], | \"observationCount\": 4, | \"summaryCount\": 2, |\nUse only the parts that still match the current intent; ignore stale context.",
+      "metadata": {
+        "source": "pre_tool_context",
+        "tags": [
+          "tool-context",
+          "pre-tool",
+          "set_capacity"
+        ],
+        "toolName": "set_capacity",
+        "query": "set_capacity",
+        "matchedPaths": [],
+        "observationCount": 4,
+        "summaryCount": 2,
+        "preview": "JIT context: 4 observations · 2 summarysummaries"
+      }
+    },
+    {
+      "content": "JIT tool context for clear_eviction_history:\nFocus query: clear_eviction_history\nPotentially relevant observations:\n- clear_eviction_history completed — clear_eviction_history completed in 452ms. Cleared 0 eviction history entries. (progress · clear_eviction_history)\n- clear_eviction_history completed — clear_eviction_history completed in 473ms. Cleared 0 eviction history entries. (progress · clear_eviction_history)\n- clear_eviction_history completed — clear_eviction_history completed in 348ms. Cleared 0 eviction history entries. (progress · clear_eviction_history)\n- clear_eviction_history completed — clear_eviction_history completed in 389ms. Cleared 0 eviction history entries. (progress · clear_eviction_history)\nPotentially relevant session summaries:\n- { (borg) ended with status imported. Working directory: C:/Users/hyper/workspace/borg/.borg/handoffs Log tail: ], | \"toolName\": \"clear_eviction_history\", | \"query\": \"clear_eviction_history\", | \"matchedPaths\": [], | \"observationCount\": 4, | \n- { (borg) ended with status imported. Working directory: C:/Users/hyper/workspace/borg/.borg/handoffs Log tail: ], | \"toolName\": \"clear_eviction_history\", | \"query\": \"clear_eviction_history\", | \"matchedPaths\": [], | \"observationCount\": 4, | \nUse only the parts that still match the current intent; ignore stale context.",
+      "metadata": {
+        "source": "pre_tool_context",
+        "tags": [
+          "tool-context",
+          "pre-tool",
+          "clear_eviction_history"
+        ],
+        "toolName": "clear_eviction_history",
+        "query": "clear_eviction_history",
+        "matchedPaths": [],
+        "observationCount": 4,
+        "summaryCount": 2,
+        "preview": "JIT context: 4 observations · 2 summarysummaries"
+      }
+    },
+    {
+      "content": "JIT tool context for set_capacity:\nFocus query: set_capacity\nPotentially relevant observations:\n- set_capacity completed — set_capacity completed in 393ms. Working-set capacity updated: maxLoadedTools=16, maxHydratedSchemas=8, idleEvictionThresholdMs=300000 (progress · set_capacity)\n- set_capacity completed — set_capacity completed in 444ms. Working-set capacity updated: maxLoadedTools=16, maxHydratedSchemas=8, idleEvictionThresholdMs=300000 (progress · set_capacity)\n- set_capacity completed — set_capacity completed in 425ms. Working-set capacity updated: maxLoadedTools=16, maxHydratedSchemas=8, idleEvictionThresholdMs=300000 (progress · set_capacity)\n- set_capacity completed — set_capacity completed in 285ms. Working-set capacity updated: maxLoadedTools=16, maxHydratedSchemas=8, idleEvictionThresholdMs=300000 (progress · set_capacity)\nPotentially relevant session summaries:\n- { (borg) ended with status imported. Working directory: C:/Users/hyper/workspace/borg/.borg/handoffs Log tail: ], | \"toolName\": \"set_capacity\", | \"query\": \"set_capacity\", | \"matchedPaths\": [], | \"observationCount\": 4, | \"summaryCount\": 2, |\n- { (borg) ended with status imported. Working directory: C:/Users/hyper/workspace/borg/.borg/agent_memory Log tail: \"toolName\": \"set_capacity\", | \"filesRead\": [], | \"filesModified\": [], | \"rawInput\": \"{\\n \\\"maxLoadedTools\\\": 16,\\n \\\"maxHydra\nUse only the parts that still match the current intent; ignore stale context.",
+      "metadata": {
+        "source": "pre_tool_context",
+        "tags": [
+          "tool-context",
+          "pre-tool",
+          "set_capacity"
+        ],
+        "toolName": "set_capacity",
+        "query": "set_capacity",
+        "matchedPaths": [],
+        "observationCount": 4,
+        "summaryCount": 2,
+        "preview": "JIT context: 4 observations · 2 summarysummaries"
+      }
+    },
+    {
+      "content": "JIT tool context for clear_eviction_history:\nFocus query: clear_eviction_history\nPotentially relevant observations:\n- clear_eviction_history completed — clear_eviction_history completed in 473ms. Cleared 0 eviction history entries. (progress · clear_eviction_history)\n- clear_eviction_history completed — clear_eviction_history completed in 348ms. Cleared 0 eviction history entries. (progress · clear_eviction_history)\n- clear_eviction_history completed — clear_eviction_history completed in 389ms. Cleared 0 eviction history entries. (progress · clear_eviction_history)\n- clear_eviction_history completed — clear_eviction_history completed in 368ms. Cleared 0 eviction history entries. (progress · clear_eviction_history)\nPotentially relevant session summaries:\n- { (borg) ended with status imported. Working directory: C:/Users/hyper/workspace/borg/.borg/handoffs Log tail: ], | \"toolName\": \"clear_eviction_history\", | \"query\": \"clear_eviction_history\", | \"matchedPaths\": [], | \"observationCount\": 4, | \n- { (borg) ended with status imported. Working directory: C:/Users/hyper/workspace/borg/.borg/handoffs Log tail: ], | \"toolName\": \"clear_eviction_history\", | \"query\": \"clear_eviction_history\", | \"matchedPaths\": [], | \"observationCount\": 4, | \nUse only the parts that still match the current intent; ignore stale context.",
+      "metadata": {
+        "source": "pre_tool_context",
+        "tags": [
+          "tool-context",
+          "pre-tool",
+          "clear_eviction_history"
+        ],
+        "toolName": "clear_eviction_history",
+        "query": "clear_eviction_history",
+        "matchedPaths": [],
+        "observationCount": 4,
+        "summaryCount": 2,
+        "preview": "JIT context: 4 observations · 2 summarysummaries"
+      }
+    },
+    {
+      "content": "JIT tool context for set_capacity:\nFocus query: set_capacity\nPotentially relevant observations:\n- set_capacity completed — set_capacity completed in 444ms. Working-set capacity updated: maxLoadedTools=16, maxHydratedSchemas=8, idleEvictionThresholdMs=300000 (progress · set_capacity)\n- set_capacity completed — set_capacity completed in 425ms. Working-set capacity updated: maxLoadedTools=16, maxHydratedSchemas=8, idleEvictionThresholdMs=300000 (progress · set_capacity)\n- set_capacity completed — set_capacity completed in 285ms. Working-set capacity updated: maxLoadedTools=16, maxHydratedSchemas=8, idleEvictionThresholdMs=300000 (progress · set_capacity)\n- set_capacity completed — set_capacity completed in 252ms. Working-set capacity updated: maxLoadedTools=16, maxHydratedSchemas=8, idleEvictionThresholdMs=300000 (progress · set_capacity)\nPotentially relevant session summaries:\n- { (borg) ended with status imported. Working directory: C:/Users/hyper/workspace/borg/.borg/handoffs Log tail: ], | \"toolName\": \"set_capacity\", | \"query\": \"set_capacity\", | \"matchedPaths\": [], | \"observationCount\": 2, | \"summaryCount\": 2, |\n- { (borg) ended with status imported. Working directory: C:/Users/hyper/workspace/borg/.borg/agent_memory Log tail: \"toolName\": \"set_capacity\", | \"filesRead\": [], | \"filesModified\": [], | \"rawInput\": \"{\\n \\\"maxLoadedTools\\\": 16,\\n \\\"maxHydra\nUse only the parts that still match the current intent; ignore stale context.",
+      "metadata": {
+        "source": "pre_tool_context",
+        "tags": [
+          "tool-context",
+          "pre-tool",
+          "set_capacity"
+        ],
+        "toolName": "set_capacity",
+        "query": "set_capacity",
+        "matchedPaths": [],
+        "observationCount": 4,
+        "summaryCount": 2,
+        "preview": "JIT context: 4 observations · 2 summarysummaries"
+      }
+    },
+    {
+      "content": "JIT tool context for clear_eviction_history:\nFocus query: clear_eviction_history\nPotentially relevant observations:\n- clear_eviction_history completed — clear_eviction_history completed in 348ms. Cleared 0 eviction history entries. (progress · clear_eviction_history)\n- clear_eviction_history completed — clear_eviction_history completed in 389ms. Cleared 0 eviction history entries. (progress · clear_eviction_history)\n- clear_eviction_history completed — clear_eviction_history completed in 368ms. Cleared 0 eviction history entries. (progress · clear_eviction_history)\n- get_eviction_history completed — get_eviction_history completed in 783ms. [] (progress · get_eviction_history)\nPotentially relevant session summaries:\n- { (borg) ended with status imported. Working directory: C:/Users/hyper/workspace/borg/.borg/handoffs Log tail: ], | \"toolName\": \"clear_eviction_history\", | \"query\": \"clear_eviction_history\", | \"matchedPaths\": [], | \"observationCount\": 4, | \n- { (borg) ended with status imported. Working directory: C:/Users/hyper/workspace/borg/.borg/handoffs Log tail: ], | \"toolName\": \"clear_eviction_history\", | \"query\": \"clear_eviction_history\", | \"matchedPaths\": [], | \"observationCount\": 4, | \nUse only the parts that still match the current intent; ignore stale context.",
+      "metadata": {
+        "source": "pre_tool_context",
+        "tags": [
+          "tool-context",
+          "pre-tool",
+          "clear_eviction_history"
+        ],
+        "toolName": "clear_eviction_history",
+        "query": "clear_eviction_history",
+        "matchedPaths": [],
+        "observationCount": 4,
+        "summaryCount": 2,
+        "preview": "JIT context: 4 observations · 2 summarysummaries"
+      }
+    }
+  ],
+  "notes": "Automatic background handoff"
+}
