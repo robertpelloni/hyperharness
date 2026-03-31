@@ -5,6 +5,7 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import type { ConnectionType } from '@src/types/stores';
+import { createExtensionStateStorage } from './extension-storage';
 
 export interface ConnectionProfile {
   id: string;
@@ -64,7 +65,7 @@ export const useProfileStore = create<ProfileStore>()(
     }),
     {
       name: 'mcp-connection-profiles',
-      storage: createJSONStorage(() => localStorage),
+      storage: createJSONStorage(createExtensionStateStorage),
     },
   ),
 );

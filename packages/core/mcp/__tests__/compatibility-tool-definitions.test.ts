@@ -48,6 +48,8 @@ describe('compatibilityToolDefinitions', () => {
 
         expect(names).toEqual([
             'search_tools',
+            'search_published_catalog',
+            'install_published_server',
             'load_tool',
             'auto_call_tool',
             'get_tool_schema',

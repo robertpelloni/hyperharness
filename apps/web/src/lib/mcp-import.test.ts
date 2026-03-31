@@ -86,4 +86,23 @@ describe('buildBulkImportServers', () => {
             'my-server-2',
         ]);
     });
+
+    it('accepts a single server snippet without surrounding braces', () => {
+        const preview = buildBulkImportServers(`
+            "prism-mcp": {
+                "command": "npx",
+                "args": ["-y", "prism-mcp-server"]
+            }
+        `);
+
+        expect(preview.importedNames).toEqual(['prism-mcp']);
+        expect(preview.servers).toEqual([
+            expect.objectContaining({
+                name: 'prism-mcp',
+                type: 'STDIO',
+                command: 'npx',
+                args: ['-y', 'prism-mcp-server'],
+            }),
+        ]);
+    });
 });

@@ -92,9 +92,7 @@ function fmtDuration(seconds: number): string {
     return `${Math.floor(seconds / 3600)}h ${Math.floor((seconds % 3600) / 60)}m`;
 }
 
-const BASE = typeof window !== "undefined"
-    ? (process.env.NEXT_PUBLIC_BORG_ORCHESTRATOR_URL ?? process.env.NEXT_PUBLIC_AUTOPILOT_URL ?? "http://localhost:3847")
-    : "http://localhost:3847";
+const BASE = "/api/orchestrator";
 
 interface ApResult<T> {
     ok: boolean;
@@ -103,6 +101,10 @@ interface ApResult<T> {
 }
 
 async function apFetch<T>(path: string, opts?: RequestInit): Promise<ApResult<T>> {
+    if (!BASE) {
+        return { ok: false, error: "Orchestrator endpoint is not configured." };
+    }
+
     try {
         const res = await fetch(`${BASE}${path}`, {
             headers: { "Content-Type": "application/json" },
@@ -146,6 +148,7 @@ function SectionCard({ title, icon, children, defaultOpen = true }: { title: str
 }
 
 export function BorgOrchestratorWidget() {
+    const isConfigured = Boolean(BASE);
     const [online, setOnline] = useState<boolean | null>(null);
     const [council, setCouncil] = useState<CouncilStatus | null>(null);
     const [sessions, setSessions] = useState<AutopilotSession[]>([]);
@@ -167,9 +170,16 @@ export function BorgOrchestratorWidget() {
 
     const [settingMode, setSettingMode] = useState(false);
 
-    const serverUrl = BASE;
+    const serverUrl = BASE ?? "not configured";
 
     const refresh = useCallback(async () => {
+        if (!BASE) {
+            setOnline(false);
+            setLoading(false);
+            setLastError(null);
+            return;
+        }
+
         setLoading(true);
         setLastError(null);
 
@@ -229,6 +239,11 @@ export function BorgOrchestratorWidget() {
     }, []);
 
     useEffect(() => {
+        if (!BASE) {
+            setOnline(false);
+            return;
+        }
+
         void refresh();
         const t = setInterval(() => void refresh(), 8000);
         return () => clearInterval(t);
@@ -301,7 +316,7 @@ export function BorgOrchestratorWidget() {
         <section className="rounded-3xl border border-slate-800 bg-slate-900/70 p-6 shadow-lg shadow-slate-950/20 flex flex-col gap-6 h-full">
             <div className="flex items-start justify-between gap-4">
                 <div>
-                    <p className="text-xs font-semibold uppercase tracking-[0.24em] text-cyan-400">Borg Orchestrator</p>
+                    <p className="text-xs font-semibold uppercase tracking-[0.24em] text-cyan-400">CLI Orchestrator</p>
                     <h2 className="mt-2 text-xl font-semibold text-white flex items-center gap-2">
                         <Bot className="h-5 w-5 text-purple-400" />
                         Supervised Swarm
@@ -312,7 +327,7 @@ export function BorgOrchestratorWidget() {
                     <div className="flex items-center gap-2 bg-slate-950/70 px-3 py-1.5 rounded-full border border-slate-700">
                         <StatusDot online={online === true} />
                         <span className="text-xs font-medium text-slate-300">
-                            {online === null ? "Connecting…" : online ? "Connected" : "Offline"}
+                            {!isConfigured ? "Not configured" : online === null ? "Connecting…" : online ? "Connected" : "Offline"}
                         </span>
                         <button onClick={() => void refresh()} className="ml-1 text-slate-400 hover:text-white transition">
                             <RefreshCw className={`h-3 w-3 ${loading ? "animate-spin" : ""}`} />
@@ -324,7 +339,23 @@ export function BorgOrchestratorWidget() {
                 </div>
             </div>
 
-            {online === false && (
+            {!isConfigured && (
+                <div className="rounded-2xl border border-amber-500/30 bg-amber-500/10 p-4 text-sm flex gap-3">
+                    <AlertCircle className="h-4 w-4 text-amber-300 mt-0.5 shrink-0" />
+                    <div>
+                        <p className="text-amber-100 font-medium">Orchestrator endpoint not configured</p>
+                        <div className="text-amber-200/80 text-xs mt-1 space-y-1">
+                            <p>Set one of these env vars to enable this surface:</p>
+                            <ul className="list-disc pl-4 space-y-1">
+                                <li><code className="bg-amber-950/40 px-1 rounded">NEXT_PUBLIC_BORG_ORCHESTRATOR_URL</code></li>
+                                <li><code className="bg-amber-950/40 px-1 rounded">NEXT_PUBLIC_AUTOPILOT_URL</code> <span className="text-amber-300/70">(legacy alias)</span></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {isConfigured && online === false && (
                 <div className="rounded-2xl border border-rose-500/30 bg-rose-500/10 p-4 text-sm flex gap-3">
                     <AlertCircle className="h-4 w-4 text-rose-400 mt-0.5 shrink-0" />
                     <div>
@@ -379,9 +410,9 @@ export function BorgOrchestratorWidget() {
                             </select>
                             <button
                                 onClick={() => void toggleCouncil()}
-                                disabled={!online}
-                                className="px-3 py-1 bg-slate-800 hover:bg-slate-700 disabled:opacity-40 rounded-md text-xs font-medium transition"
-                            >
+                                    disabled={!online}
+                                    className="px-3 py-1 bg-slate-800 hover:bg-slate-700 disabled:opacity-40 rounded-md text-xs font-medium transition"
+                                >
                                 {council?.enabled ? "Disable" : "Enable"}
                             </button>
                         </div>

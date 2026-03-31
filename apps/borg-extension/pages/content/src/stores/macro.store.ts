@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import type { Node, Edge } from '@xyflow/react';
+import { createExtensionStateStorage } from './extension-storage';
 
 export interface Macro {
   id: string;
@@ -51,7 +52,7 @@ export const useMacroStore = create<MacroStore>()(
     }),
     {
       name: 'mcp-macros-v2', // Changed storage key to drop old incompatible state
-      storage: createJSONStorage(() => localStorage),
+      storage: createJSONStorage(createExtensionStateStorage),
     }
   )
 );

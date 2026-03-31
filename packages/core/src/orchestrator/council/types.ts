@@ -148,7 +148,7 @@ export interface ApiResponse<T> {
 }
 
 export interface WebSocketMessage {
-  type: 'session_update' | 'council_decision' | 'log' | 'error' | 'bulk_update' | 'supervisor_fallback';
+  type: 'session_update' | 'council_decision' | 'log' | 'error' | 'bulk_update' | 'supervisor_fallback' | 'rotation_room';
   payload: unknown;
   timestamp: number;
 }
@@ -174,6 +174,7 @@ export interface SessionPersistenceConfig {
 }
 
 export type CLIType =
+  | 'hypercode'
   | 'opencode'
   | 'claude'
   | 'aider'

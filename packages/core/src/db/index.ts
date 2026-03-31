@@ -595,6 +595,47 @@ function initializeSchema(database: InstanceType<typeof Database>): void {
             updated_at INTEGER NOT NULL DEFAULT (strftime('%s', 'now'))
         );
 
+        CREATE TABLE IF NOT EXISTS imported_sessions (
+            uuid TEXT PRIMARY KEY,
+            source_tool TEXT NOT NULL,
+            source_path TEXT NOT NULL,
+            external_session_id TEXT,
+            title TEXT,
+            session_format TEXT NOT NULL DEFAULT 'generic',
+            transcript TEXT NOT NULL,
+            excerpt TEXT,
+            working_directory TEXT,
+            transcript_hash TEXT NOT NULL UNIQUE,
+            normalized_session TEXT NOT NULL,
+            metadata TEXT NOT NULL DEFAULT '{}',
+            discovered_at INTEGER NOT NULL,
+            imported_at INTEGER NOT NULL,
+            last_modified_at INTEGER,
+            created_at INTEGER NOT NULL DEFAULT (strftime('%s', 'now')),
+            updated_at INTEGER NOT NULL DEFAULT (strftime('%s', 'now'))
+        );
+
+        CREATE INDEX IF NOT EXISTS idx_imported_sessions_tool ON imported_sessions(source_tool);
+        CREATE INDEX IF NOT EXISTS idx_imported_sessions_path ON imported_sessions(source_path);
+        CREATE INDEX IF NOT EXISTS idx_imported_sessions_hash ON imported_sessions(transcript_hash);
+
+        CREATE TABLE IF NOT EXISTS imported_session_memories (
+            uuid TEXT PRIMARY KEY,
+            imported_session_uuid TEXT NOT NULL,
+            memory_index INTEGER NOT NULL,
+            kind TEXT NOT NULL DEFAULT 'memory',
+            content TEXT NOT NULL,
+            tags TEXT NOT NULL DEFAULT '[]',
+            source TEXT NOT NULL DEFAULT 'heuristic',
+            metadata TEXT NOT NULL DEFAULT '{}',
+            created_at INTEGER NOT NULL DEFAULT (strftime('%s', 'now')),
+            FOREIGN KEY (imported_session_uuid) REFERENCES imported_sessions(uuid) ON DELETE CASCADE,
+            UNIQUE (imported_session_uuid, memory_index)
+        );
+
+        CREATE INDEX IF NOT EXISTS idx_imported_session_memories_session ON imported_session_memories(imported_session_uuid);
+        CREATE INDEX IF NOT EXISTS idx_imported_session_memories_kind ON imported_session_memories(kind);
+
         CREATE INDEX IF NOT EXISTS idx_council_workspaces_status ON council_workspaces(status);
     `);
 

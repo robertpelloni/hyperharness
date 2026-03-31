@@ -736,7 +736,7 @@ function BulkImportForm({ onDone, existingServerNames }: { onDone: () => void; e
                         placeholder='{ "mcpServers": { "memory": { "command": "npx", "args": ["-y", "@modelcontextprotocol/server-memory"] } } }'
                     />
                     <div className="rounded-md border border-zinc-800 bg-zinc-950/60 p-3 text-xs text-zinc-400">
-                        Paste a full MCP config, JSONC with comments/trailing commas, or just the raw <span className="font-semibold text-white">mcpServers</span> object.
+                        Paste a full MCP config, JSONC with comments/trailing commas, the raw <span className="font-semibold text-white">mcpServers</span> object, or a single server entry without outer braces.
                     </div>
                     <div className="rounded-md border border-zinc-800 bg-zinc-950/60 p-3 text-xs text-zinc-400">
                         Imports currently <span className="font-semibold text-white">merge by server name</span>: matching names are updated, untouched servers stay in place.

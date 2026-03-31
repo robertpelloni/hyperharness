@@ -1,13 +1,13 @@
 {
-    "name":  "borg-extension",
+    "name":  "hypercode-extension",
     "version": "0.99.1",
-    "description":  "Borg Extension",
+    "description":  "HyperCode Extension",
     "license":  "MIT",
     "private":  true,
     "sideEffects":  false,
     "repository":  {
                        "type":  "git",
-                       "url":  "https://github.com/srbhptl39/Borg-Extension.git"
+                       "url":  "https://github.com/srbhptl39/HyperCode-Extension.git"
                    },
     "type":  "module",
     "scripts":  {

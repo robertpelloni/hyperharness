@@ -1,9 +1,9 @@
 import type React from 'react';
 import { useState, useEffect } from 'react';
-import { useUserPreferences } from '@src/hooks';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@src/components/ui/card';
 import { Typography, Button, Icon } from '../ui';
 import { cn } from '@src/lib/utils';
+import { getExtensionStorageValue, setExtensionStorageValue } from '@src/stores/extension-storage';
 
 interface OnboardingStep {
   title: string;
@@ -14,7 +14,7 @@ interface OnboardingStep {
 
 const steps: OnboardingStep[] = [
   {
-    title: 'Welcome to Borg Extension',
+    title: 'Welcome to HyperCode Extension',
     description:
       'Empower your AI with real-world tools. This sidebar is your control center for connecting local data, files, and APIs to ChatGPT, Claude, and more.',
     icon: 'lightning',
@@ -40,22 +40,24 @@ const steps: OnboardingStep[] = [
 ];
 
 const Onboarding: React.FC = () => {
-  const { preferences, updatePreferences } = useUserPreferences();
   const [currentStep, setCurrentStep] = useState(0);
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
-    // Show if onboarding not completed (assuming a flag 'hasCompletedOnboarding' in prefs,
-    // or we can infer from null trustedTools if strictly new user, but explicit flag is better.
-    // For now, let's use a local storage key to avoid polluting global prefs if not strictly necessary,
-    // or add it to the store. Let's assume we add it to store or just check a key here.)
+    let timeoutId: ReturnType<typeof setTimeout> | null = null;
 
-    // Check localStorage directly for simplicity in this "polish" phase
-    const completed = localStorage.getItem('mcpOnboardingCompleted');
-    if (!completed) {
-      // Delay slightly to appear after sidebar render
-      setTimeout(() => setIsVisible(true), 1000);
-    }
+    void (async () => {
+      const completed = await getExtensionStorageValue('mcpOnboardingCompleted');
+      if (!completed) {
+        timeoutId = setTimeout(() => setIsVisible(true), 1000);
+      }
+    })();
+
+    return () => {
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+    };
   }, []);
 
   const handleNext = () => {
@@ -68,7 +70,7 @@ const Onboarding: React.FC = () => {
 
   const handleComplete = () => {
     setIsVisible(false);
-    localStorage.setItem('mcpOnboardingCompleted', 'true');
+    void setExtensionStorageValue('mcpOnboardingCompleted', 'true');
     // Optionally open Help tab?
   };
 

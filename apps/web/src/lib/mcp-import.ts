@@ -222,7 +222,18 @@ export function buildBulkImportServers(jsonConfig: string): BulkImportPreview {
         throw new Error('Paste an MCP config to preview and import');
     }
 
-    const parsed = JSON.parse(sanitized) as BulkImportInput | Record<string, ImportableServerConfig>;
+    let parsed: BulkImportInput | Record<string, ImportableServerConfig>;
+
+    try {
+        parsed = JSON.parse(sanitized) as BulkImportInput | Record<string, ImportableServerConfig>;
+    } catch (error) {
+        try {
+            parsed = JSON.parse(`{${sanitized}}`) as BulkImportInput | Record<string, ImportableServerConfig>;
+        } catch {
+            throw error;
+        }
+    }
+
     const serverMap = extractBulkImportServerMap(parsed);
     const usedNames = new Set<string>();
 

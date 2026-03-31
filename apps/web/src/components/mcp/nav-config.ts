@@ -207,7 +207,7 @@ export const MCP_TESTING_NAV: NavItem[] = [
     },
 ];
 
-export const META_MCP_NAV: NavItem[] = [
+export const BORG_MCP_NAV: NavItem[] = [
     ...MCP_CONTROL_PLANE_NAV,
     ...MCP_TESTING_NAV,
 ];
@@ -230,26 +230,26 @@ export const INTEGRATIONS_NAV: NavItem[] = [
         badge: "embed",
     },
     {
-        title: "Borg Orchestrator",
+        title: "CLI Orchestrator",
         href: "/dashboard/orchestrator",
         icon: Sparkles,
-        description: "Council governance and session-supervision control plane for Borg Orchestrator, with legacy autopilot compatibility.",
+        description: "Council governance and session-supervision control plane for the CLI orchestrator, with legacy autopilot compatibility.",
         variant: "ghost",
         badge: "experimental",
     },
     {
-        title: "Jules",
+        title: "cloud-orchestrator",
         href: "/dashboard/jules",
         icon: Rocket,
-        description: "Jules integration dashboard and remote orchestration controls.",
+        description: "cloud-orchestrator controls for Jules, Spark, Copilot Cloud, Codex Cloud, and Blocks.",
         variant: "ghost",
         badge: "experimental",
     },
     {
-        title: "Maestro",
+        title: "electron-orchestrator",
         href: "/dashboard/maestro",
         icon: MonitorPlay,
-        description: "Maestro Electron desktop shell — system tray controls, deep OS integration, and native orchestration.",
+        description: "Electron desktop orchestrator shell with system tray controls, deep OS integration, and native orchestration.",
         variant: "ghost",
         badge: "experimental",
     },

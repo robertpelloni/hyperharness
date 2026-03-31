@@ -754,7 +754,7 @@ onMessage('mcp:save-context', async ({ data }) => {
     const memoryPayload = {
       text: content,
       title: name || sourceTitle,
-      project: 'borg-browser-memory',
+      project: 'hypercode-browser-memory',
       metadata: {
         source,
         url: sourceUrl,

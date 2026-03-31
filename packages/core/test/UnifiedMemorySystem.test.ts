@@ -1,4 +1,4 @@
-import { describe, test, expect, mock } from 'bun:test';
+import { describe, test, expect, mock } from 'vitest';
 import { UnifiedMemorySystem } from '../src/memory/UnifiedMemorySystem.js';
 import { MemorySubsystemAdapter, MemorySearchResult } from '../src/memory/UnifiedMemorySystem.js';
 

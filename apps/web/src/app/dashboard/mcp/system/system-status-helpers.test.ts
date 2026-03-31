@@ -75,6 +75,7 @@ function createStartupStatus(overrides?: StartupCheckOverrides): DashboardStartu
             },
             extensionBridge: {
                 ready: true,
+                port: 3001,
                 acceptingConnections: true,
                 clientCount: 0,
                 hasConnectedClients: false,
@@ -259,6 +260,10 @@ describe('system status startup helpers', () => {
             extensionArtifacts: {
                 status: 'Ready',
                 detail: 'Chromium/Edge and Firefox extension bundles are ready to load.',
+            },
+            network: {
+                status: 'Partial',
+                detail: 'Dashboard unavailable · Extension bridge :3001',
             },
             startupReadiness: {
                 status: 'Ready',
@@ -454,6 +459,40 @@ describe('system status startup helpers', () => {
         });
     });
 
+    it('reports actual dashboard and bridge ports in the network card', () => {
+        const startupStatus = createStartupStatus({
+            extensionBridge: {
+                ready: true,
+                acceptingConnections: true,
+                port: 3011,
+            },
+        });
+
+        expect(buildSystemStatusCards(startupStatus, true, readyBrowserArtifacts, 3010)).toMatchObject({
+            network: {
+                status: 'Active',
+                detail: 'Dashboard :3010 · Extension bridge :3011',
+            },
+        });
+    });
+
+    it('marks the network card partial when the dashboard is up but the bridge is offline', () => {
+        const startupStatus = createStartupStatus({
+            extensionBridge: {
+                ready: false,
+                acceptingConnections: false,
+                port: null,
+            },
+        });
+
+        expect(buildSystemStatusCards(startupStatus, true, readyBrowserArtifacts, 3010)).toMatchObject({
+            network: {
+                status: 'Partial',
+                detail: 'Dashboard :3010 · Extension bridge listener offline',
+            },
+        });
+    });
+
     it('surfaces a neutral connecting notice before the first startup snapshot arrives', () => {
         expect(buildSystemStartupNotice(undefined)).toEqual({
             title: 'Connecting to live telemetry',
@@ -477,6 +516,10 @@ describe('system status startup helpers', () => {
             extensionArtifacts: {
                 status: 'Connecting',
                 detail: 'Detecting Chromium and Firefox extension install artifacts from the workspace.',
+            },
+            network: {
+                status: 'Connecting',
+                detail: 'Waiting for runtime port telemetry from the dashboard and extension bridge.',
             },
             startupReadiness: {
                 status: 'Connecting',

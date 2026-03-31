@@ -9,6 +9,7 @@
  */
 
 import { EventEmitter } from 'events';
+import { resolveSwarmOrchestratorBase } from './orchestrator-base.js';
 
 export type DebateMode = 'standard' | 'adversarial';
 export type DebateTopicType = 'general' | 'mission-plan';
@@ -57,7 +58,7 @@ export interface DebateResult {
 export class DebateProtocol extends EventEmitter {
     private history: DebateTurn[] = [];
     private config: DebateConfig & { mode: DebateMode; topicType: DebateTopicType };
-    private councilUrl: string;
+    private councilUrl: string | null;
 
     constructor(config: DebateConfig) {
         super();
@@ -66,7 +67,7 @@ export class DebateProtocol extends EventEmitter {
             mode: config.mode || 'standard',
             topicType: config.topicType || 'general'
         };
-        this.councilUrl = config.councilUrl || 'http://localhost:3847';
+        this.councilUrl = resolveSwarmOrchestratorBase(config.councilUrl);
     }
 
     /**
@@ -109,6 +110,9 @@ export class DebateProtocol extends EventEmitter {
         const profile = this.getPersonaProfile(persona);
 
         try {
+            if (!this.councilUrl) {
+                throw new Error('No Borg Orchestrator base configured.');
+            }
             const supervisorName = this.modelToSupervisor(model);
             const systemPrompt = this.buildSystemPrompt(profile);
 
@@ -169,6 +173,9 @@ export class DebateProtocol extends EventEmitter {
         const personas = this.getPersonaProfiles();
 
         try {
+            if (!this.councilUrl) {
+                throw new Error('No Borg Orchestrator base configured.');
+            }
             const judgeSupervisor = this.modelToSupervisor(this.config.judgeModel);
             const res = await fetch(`${this.councilUrl}/api/supervisors/${judgeSupervisor}/chat`, {
                 method: 'POST',

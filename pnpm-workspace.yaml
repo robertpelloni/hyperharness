@@ -5,4 +5,7 @@ packages:
   - 'packages/*'
   - 'external/MetaMCP/packages/*'
   - 'external/MetaMCP/apps/*'
+  - 'apps/cloud-orchestrator/apps/*'
+  - 'apps/cloud-orchestrator/packages/*'
+  - 'apps/cloud-orchestrator/server'
   - '!archive/**'

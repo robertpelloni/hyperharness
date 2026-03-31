@@ -134,6 +134,8 @@ describe('billing page normalizers', () => {
         lastError: null,
         quotaConfidence: 'estimated' as BillingQuotaConfidence,
         quotaRefreshedAt: null,
+        resetDate: null,
+        windows: [],
       },
     ]);
 

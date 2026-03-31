@@ -3,6 +3,7 @@
 import { Card, CardContent } from "@borg/ui";
 import { Button } from "@borg/ui";
 import { Activity, Server, Cpu, HardDrive, Network, Globe, Radio, Puzzle } from "lucide-react";
+import { useEffect, useState } from 'react';
 import { trpc } from '@/utils/trpc';
 import { toast } from 'sonner';
 import type { ComponentType } from 'react';
@@ -10,7 +11,7 @@ import type { DashboardStartupStatus } from '../../dashboard-home-view';
 import { buildSystemComponentHealthRows, buildSystemEnvironmentRows, buildSystemStartupChecks, buildSystemStartupNotice, buildSystemStatusCards } from './system-status-helpers';
 
 function getStatusCardColor(status: string): string {
-    if (status === 'Healthy' || status === 'Ready' || status === 'Listening') {
+    if (status === 'Healthy' || status === 'Ready' || status === 'Listening' || status === 'Active') {
         return 'text-green-500';
     }
 
@@ -22,6 +23,7 @@ function getStatusCardColor(status: string): string {
 }
 
 export default function SystemStatusDashboard() {
+    const [dashboardPort, setDashboardPort] = useState<number | null>(null);
     const { data: status, refetch } = trpc.mcp.getStatus.useQuery();
     const toolsClient = trpc.tools as any;
     const { data: startupStatus, refetch: refetchStartup } = trpc.startupStatus.useQuery(undefined, { refetchInterval: 5000 });
@@ -50,7 +52,12 @@ export default function SystemStatusDashboard() {
     const componentHealthRows = buildSystemComponentHealthRows(startupSnapshot, browserStatus ?? undefined, installArtifactsQuery.data);
     const environmentRows = buildSystemEnvironmentRows(startupSnapshot);
     const startupNotice = buildSystemStartupNotice(startupSnapshot);
-    const statusCards = buildSystemStatusCards(startupSnapshot, Boolean(status?.initialized), installArtifactsQuery.data);
+    const statusCards = buildSystemStatusCards(startupSnapshot, Boolean(status?.initialized), installArtifactsQuery.data, dashboardPort);
+
+    useEffect(() => {
+        const currentPort = Number(window.location.port);
+        setDashboardPort(Number.isInteger(currentPort) && currentPort > 0 ? currentPort : null);
+    }, []);
 
     return (
         <div className="p-8 space-y-8 h-full overflow-y-auto">
@@ -97,10 +104,10 @@ export default function SystemStatusDashboard() {
                 />
                 <StatusCard
                     title="Network"
-                    status="Active"
+                    status={statusCards.network.status}
                     icon={Network}
-                    color="text-blue-500"
-                    detail="Port 3000 / 3001"
+                    color={getStatusCardColor(statusCards.network.status)}
+                    detail={statusCards.network.detail}
                 />
                 <StatusCard
                     title="Startup Readiness"

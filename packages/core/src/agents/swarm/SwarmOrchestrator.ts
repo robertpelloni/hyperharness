@@ -18,6 +18,7 @@ import { MeshService, SwarmMessageType, SwarmMessage } from '../../mesh/MeshServ
 import { MissionService, SwarmMission } from '../../services/MissionService.js';
 import { RateLimiter } from './RateLimiter.js';
 import { GitWorktreeManager } from '../../orchestrator/GitWorktreeManager.js';
+import { resolveSwarmOrchestratorBase } from './orchestrator-base.js';
 
 export interface SwarmToolPolicy {
     allow?: string[];
@@ -126,7 +127,7 @@ export interface SwarmConfig {
 export class SwarmOrchestrator extends EventEmitter {
     private tasks: Map<string, SwarmTask> = new Map();
     private config: Required<Pick<SwarmConfig, 'maxConcurrency' | 'defaultModel' | 'timeoutMs' | 'maxRetries' | 'maxTokensPerMission' | 'maxTokensPerTask' | 'rpmLimit' | 'tpmLimit'>>;
-    private opencodeUrl: string;
+    private opencodeUrl: string | null;
     private mesh: MeshService;
     private rateLimiter: RateLimiter;
     private missionService?: MissionService;
@@ -150,7 +151,7 @@ export class SwarmOrchestrator extends EventEmitter {
             tpmLimit: config.tpmLimit || 40000
         };
         this.rateLimiter = new RateLimiter(this.config.rpmLimit, this.config.tpmLimit);
-        this.opencodeUrl = config.opencodeUrl || 'http://localhost:3847';
+        this.opencodeUrl = resolveSwarmOrchestratorBase(config.opencodeUrl);
         this.mesh = new MeshService();
         this.missionService = missionService;
         this.healerService = healerService;
@@ -237,6 +238,9 @@ export class SwarmOrchestrator extends EventEmitter {
         let subTasks: SwarmTask[] = [];
 
         try {
+            if (!this.opencodeUrl) {
+                throw new Error('No Borg Orchestrator base configured.');
+            }
             // Use the Autopilot Council to decompose the goal via multi-model debate.
             const res = await fetch(`${this.opencodeUrl}/api/council/debate`, {
                 method: 'POST',

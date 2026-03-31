@@ -1,6 +1,7 @@
-import { describe, test, expect, beforeAll, afterAll } from 'bun:test';
+import { describe, test, expect, beforeAll, afterAll } from 'vitest';
 
 const API_BASE = process.env.TEST_API_BASE || 'http://localhost:3847';
+const describeApiIntegration = process.env.RUN_API_INTEGRATION_TESTS === '1' ? describe : describe.skip;
 
 async function waitForServer(timeout = 10000): Promise<boolean> {
   const start = Date.now();
@@ -15,11 +16,11 @@ async function waitForServer(timeout = 10000): Promise<boolean> {
   return false;
 }
 
-describe('API Integration Tests', () => {
+describeApiIntegration('API Integration Tests', () => {
   beforeAll(async () => {
     const ready = await waitForServer();
     if (!ready) {
-      throw new Error('Server not available. Start with: cd packages/server && bun run dev');
+      throw new Error('Server not available. Set RUN_API_INTEGRATION_TESTS=1 and point TEST_API_BASE at a live Borg API.');
     }
   });
 
@@ -38,7 +39,7 @@ describe('API Integration Tests', () => {
       const res = await fetch(`${API_BASE}/`);
       expect(res.ok).toBe(true);
       const data = await res.json();
-      expect(data.name).toBe('borg-orchestrator');
+      expect(data.name).toBe('cli-orchestrator');
       expect(data.endpoints).toBeDefined();
       expect(data.endpoints.sessions).toBe('/api/sessions');
       expect(data.endpoints.council).toBe('/api/council');

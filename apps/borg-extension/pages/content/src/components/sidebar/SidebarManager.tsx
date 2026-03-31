@@ -4,15 +4,12 @@ import { BaseSidebarManager } from './base/BaseSidebarManager';
 import { logMessage } from '@src/utils/helpers';
 import Sidebar from './Sidebar';
 import type { UserPreferences } from '@src/types/stores';
-import { useUIStore } from '@src/stores';
+import { useRootStore } from '@src/stores';
 
 // Helper function to get preferences from Zustand store
 const getZustandPreferences = (): UserPreferences => {
   try {
-    const zustandState = JSON.parse(localStorage.getItem('mcp-super-assistant-ui-store') || '{}');
-    if (zustandState.state && zustandState.state.preferences) {
-      return zustandState.state.preferences;
-    }
+    return useRootStore.getState().ui.preferences;
   } catch (error) {
     logMessage(`[SidebarManager] Error reading Zustand store: ${error}`);
   }
@@ -231,18 +228,12 @@ export class SidebarManager extends BaseSidebarManager {
         }
 
         // Check MCP state and sidebar visibility preference separately
-        const zustandState = JSON.parse(localStorage.getItem('mcp-super-assistant-ui-store') || '{}');
-        const mcpEnabled = zustandState.state?.mcpEnabled ?? true; // Default to enabled for first-time users
-
-        // Check if sidebar visibility state exists in storage
-        // If it doesn't exist (first-time user), default to true
-        // If it exists, use the stored value
-        const sidebarState = zustandState.state?.sidebar;
-        const lastVisibleState =
-          sidebarState && typeof sidebarState.isVisible === 'boolean' ? sidebarState.isVisible : true; // Default to true only for first-time users
+        const uiState = useRootStore.getState().ui;
+        const mcpEnabled = uiState.mcpEnabled ?? true;
+        const lastVisibleState = uiState.sidebar?.isVisible ?? true;
 
         logMessage(
-          `[SidebarManager] MCP enabled: ${mcpEnabled}, Last visibility state: ${lastVisibleState}, Storage exists: ${!!sidebarState}`,
+          `[SidebarManager] MCP enabled: ${mcpEnabled}, Last visibility state: ${lastVisibleState}`,
         );
 
         if (!mcpEnabled) {
@@ -581,26 +572,11 @@ export class SidebarManager extends BaseSidebarManager {
    */
   private syncZustandVisibilityState(isVisible: boolean): void {
     try {
-      // Use the proper Zustand action to update visibility
-      const store = useUIStore.getState();
+      const store = useRootStore.getState();
       store.setSidebarVisibility(isVisible, 'sidebar-manager-sync');
       logMessage(`[SidebarManager] Synced Zustand visibility state to: ${isVisible}`);
     } catch (error) {
       logMessage(`[SidebarManager] Error syncing Zustand visibility state: ${error}`);
-
-      // Fallback to direct localStorage manipulation if store access fails
-      try {
-        const zustandState = JSON.parse(localStorage.getItem('mcp-super-assistant-ui-store') || '{}');
-        if (zustandState.state && zustandState.state.sidebar) {
-          zustandState.state.sidebar.isVisible = isVisible;
-          localStorage.setItem('mcp-super-assistant-ui-store', JSON.stringify(zustandState));
-          logMessage(`[SidebarManager] Fallback: Synced Zustand visibility state to: ${isVisible}`);
-        } else {
-          logMessage('[SidebarManager] Could not find Zustand sidebar state to update');
-        }
-      } catch (fallbackError) {
-        logMessage(`[SidebarManager] Fallback sync also failed: ${fallbackError}`);
-      }
     }
   }
 

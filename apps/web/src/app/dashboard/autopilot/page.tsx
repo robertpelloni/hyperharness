@@ -1,9 +1,9 @@
 "use client";
 
 /**
- * autopilot/page.tsx – Borg Orchestrator Dashboard (legacy compatibility route)
+ * autopilot/page.tsx – CLI Orchestrator Dashboard (compatibility route)
  *
- * Native Borg-integrated control panel for the Borg Orchestrator council runtime.
+ * Native Borg-integrated control panel for the CLI orchestrator council runtime.
  *
  * Provides:
  *  - Council status: supervisor roster, consensus mode, enable/disable toggle
@@ -13,9 +13,10 @@
  *  - Debate history log
  *  - Server health bar
  *
- * The orchestrator service exposes a REST API at NEXT_PUBLIC_BORG_ORCHESTRATOR_URL
- * (default: http://localhost:3847). The legacy NEXT_PUBLIC_AUTOPILOT_URL
- * variable remains supported for compatibility during migration.
+ * The orchestrator service exposes a REST API at NEXT_PUBLIC_BORG_ORCHESTRATOR_URL.
+ * The legacy NEXT_PUBLIC_AUTOPILOT_URL variable remains supported for
+ * compatibility during migration. When neither is configured, this page stays
+ * quiet instead of probing a stale localhost default.
  *
  * If the service is unreachable the page shows a clear "offline" banner and
  * all controls are disabled – we never render fake/stale data.
@@ -157,9 +158,7 @@ function fmtDuration(seconds: number): string {
 
 // ─── Hook: orchestrator API client ─────────────────────────────────────────
 
-const BASE = typeof window !== "undefined"
-    ? (process.env.NEXT_PUBLIC_BORG_ORCHESTRATOR_URL ?? process.env.NEXT_PUBLIC_AUTOPILOT_URL ?? "http://localhost:3847")
-    : "http://localhost:3847";
+const BASE = "/api/orchestrator";
 
 /** Simple result container — avoids discriminant-union narrowing issues. */
 interface ApResult<T> {
@@ -172,6 +171,10 @@ async function apFetch<T>(
     path: string,
     opts?: RequestInit
 ): Promise<ApResult<T>> {
+    if (!BASE) {
+        return { ok: false, error: "Orchestrator endpoint is not configured." };
+    }
+
     try {
         const res = await fetch(`${BASE}${path}`, {
             headers: { "Content-Type": "application/json" },
@@ -231,6 +234,7 @@ function SectionCard({
 // ─── Main Page ────────────────────────────────────────────────────────────────
 
 export default function BorgOrchestratorDashboardPage() {
+    const isConfigured = Boolean(BASE);
     // ── state ──────────────────────────────────────────────────────────────
     const [online, setOnline] = useState<boolean | null>(null);
     const [council, setCouncil] = useState<CouncilStatus | null>(null);
@@ -256,11 +260,18 @@ export default function BorgOrchestratorDashboardPage() {
     // Consensus mode setter
     const [settingMode, setSettingMode] = useState(false);
 
-    const serverUrl = BASE;
+    const serverUrl = BASE ?? "not configured";
 
     // ── data fetching ──────────────────────────────────────────────────────
 
     const refresh = useCallback(async () => {
+        if (!BASE) {
+            setOnline(false);
+            setLoading(false);
+            setLastError(null);
+            return;
+        }
+
         setLoading(true);
         setLastError(null);
 
@@ -351,6 +362,11 @@ export default function BorgOrchestratorDashboardPage() {
 
     // Auto-refresh every 8 s while mounted
     useEffect(() => {
+        if (!BASE) {
+            setOnline(false);
+            return;
+        }
+
         void refresh();
         const t = setInterval(() => void refresh(), 8000);
         return () => clearInterval(t);
@@ -447,14 +463,14 @@ export default function BorgOrchestratorDashboardPage() {
                 <div>
                     <h1 className="text-xl font-bold flex items-center gap-2">
                         <Bot className="h-5 w-5 text-purple-400" />
-                        Borg Orchestrator
+                        CLI Orchestrator
                     </h1>
                     <p className="text-zinc-400 text-sm">Multi-model AI council governance &amp; session management</p>
                 </div>
                 <div className="flex items-center gap-2 flex-wrap">
                     <StatusDot online={online === true} />
                     <span className="text-xs text-zinc-500">
-                        {online === null ? "Connecting…" : online ? `Online — ${serverUrl}` : "Offline"}
+                        {!isConfigured ? "Not configured" : online === null ? "Connecting…" : online ? `Online — ${serverUrl}` : "Offline"}
                     </span>
                     {health?.uptime !== undefined && (
                         <span className="text-xs text-zinc-600">uptime {fmtDuration(health.uptime)}</span>
@@ -466,14 +482,16 @@ export default function BorgOrchestratorDashboardPage() {
                     >
                         <RefreshCw className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`} />
                     </button>
-                    <a
-                        href={serverUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 rounded text-xs flex items-center gap-1.5"
-                    >
-                        <ExternalLink className="h-3 w-3" /> Open Standalone UI
-                    </a>
+                    {isConfigured && (
+                        <a
+                            href={serverUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 rounded text-xs flex items-center gap-1.5"
+                        >
+                            <ExternalLink className="h-3 w-3" /> Open Standalone UI
+                        </a>
+                    )}
                     <a
                         href="https://github.com/robertpelloni/borg"
                         target="_blank"
@@ -486,29 +504,44 @@ export default function BorgOrchestratorDashboardPage() {
             </div>
 
             {/* ── Status banner ── */}
-            {online === false && (
-                <div className="mx-4 mt-3 px-3 py-2.5 bg-red-950/30 border border-red-700/50 rounded-lg flex flex-wrap items-start gap-2 text-sm">
-                    <AlertCircle className="h-4 w-4 text-red-400 mt-0.5 shrink-0" />
+            {!isConfigured && (
+                <div className="mx-4 mt-3 px-3 py-2.5 bg-amber-950/30 border border-amber-700/50 rounded-lg flex flex-wrap items-start gap-2 text-sm">
+                    <AlertCircle className="h-4 w-4 text-amber-300 mt-0.5 shrink-0" />
                     <div>
-                        <p className="text-red-300 font-medium">Borg Orchestrator is not reachable.</p>
-                        <p className="text-red-400/70 text-xs mt-0.5">
-                            Configure <code className="bg-red-950/50 px-1 rounded">NEXT_PUBLIC_BORG_ORCHESTRATOR_URL</code> (current: {serverUrl}).
-                            The legacy <code className="bg-red-950/50 px-1 rounded">NEXT_PUBLIC_AUTOPILOT_URL</code> alias still works during migration.
-                        </p>
+                        <p className="text-amber-200 font-medium">CLI Orchestrator endpoint not configured.</p>
+                        <div className="text-amber-300/80 text-xs mt-1 space-y-1">
+                            <p>Set one of these env vars to enable this compatibility route:</p>
+                            <ul className="list-disc pl-4 space-y-1">
+                                <li><code className="bg-amber-950/50 px-1 rounded">NEXT_PUBLIC_BORG_ORCHESTRATOR_URL</code></li>
+                                <li><code className="bg-amber-950/50 px-1 rounded">NEXT_PUBLIC_AUTOPILOT_URL</code> <span className="text-amber-400/70">(legacy alias)</span></li>
+                            </ul>
+                        </div>
                     </div>
                 </div>
             )}
-            {online === null && (
+            {isConfigured && online === false && (
+                <div className="mx-4 mt-3 px-3 py-2.5 bg-red-950/30 border border-red-700/50 rounded-lg flex flex-wrap items-start gap-2 text-sm">
+                    <AlertCircle className="h-4 w-4 text-red-400 mt-0.5 shrink-0" />
+                    <div>
+                        <p className="text-red-300 font-medium">CLI Orchestrator is not reachable.</p>
+                        <div className="text-red-400/70 text-xs mt-1 space-y-1">
+                            <p>Configure <code className="bg-red-950/50 px-1 rounded">NEXT_PUBLIC_BORG_ORCHESTRATOR_URL</code> (current: {serverUrl}).</p>
+                            <p><code className="bg-red-950/50 px-1 rounded">NEXT_PUBLIC_AUTOPILOT_URL</code> still works as the legacy alias during migration.</p>
+                        </div>
+                    </div>
+                </div>
+            )}
+            {isConfigured && online === null && (
                 <div className="mx-4 mt-3 px-3 py-2.5 bg-zinc-900 border border-zinc-700 rounded-lg flex items-center gap-2 text-sm text-zinc-400">
                     <Loader2 className="h-4 w-4 animate-spin shrink-0" />
-                    Connecting to Borg Orchestrator at {serverUrl}…
+                    Connecting to CLI Orchestrator at {serverUrl}…
                 </div>
             )}
             {online && (
                 <div className="px-4 pt-3">
                     <PageStatusBanner
                         status="experimental"
-                        message="Borg Orchestrator integration"
+                        message="CLI Orchestrator integration"
                         note="Native Borg dashboard for council governance, session supervision, and smart-pilot workflows. Legacy autopilot env names remain supported during migration."
                     />
                 </div>
@@ -617,7 +650,7 @@ export default function BorgOrchestratorDashboardPage() {
                                 ))}
                             </div>
                         ) : (
-                            <p className="text-xs text-zinc-600">No supervisors registered. Add provider credentials so Borg Orchestrator can auto-register supervisors.</p>
+                            <p className="text-xs text-zinc-600">No supervisors registered. Add provider credentials so the CLI orchestrator can auto-register supervisors.</p>
                         )}
                     </div>
                 </SectionCard>

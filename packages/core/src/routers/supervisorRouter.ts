@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { t, getMcpServer } from '../lib/trpc-core.js';
+import { resolveOrchestratorBase } from '../lib/borg-orchestrator.js';
 
 interface SupervisorTaskRuntime {
     status?: 'pending' | 'active' | 'completed' | 'failed' | string;
@@ -17,32 +18,33 @@ export const supervisorRouter = t.router({
         goal: z.string(),
         maxSteps: z.number().default(20)
     })).mutation(async ({ input }) => {
-        // Phase 76 Integration: delegate to Borg Orchestrator when its council runtime is available
-        try {
-            const res = await fetch(`http://localhost:3847/api/sessions`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                // The orchestrator session manager accepts task + workingDirectory
-                body: JSON.stringify({
-                    task: { description: input.goal },
-                    workingDirectory: process.cwd()
-                })
-            });
-            if (res.ok) {
-                const sessionData = await res.json();
+        const orchestratorBase = resolveOrchestratorBase();
 
-                // Start the session
-                await fetch(`http://localhost:3847/api/sessions/${sessionData.id}/start`, {
-                    method: 'POST'
+        if (orchestratorBase) {
+            try {
+                const res = await fetch(`${orchestratorBase}/api/sessions`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        task: { description: input.goal },
+                        workingDirectory: process.cwd()
+                    })
                 });
-                return {
-                    success: true,
-                    sessionId: sessionData.id,
-                    message: "Goal successfully delegated to Borg Orchestrator."
-                };
+                if (res.ok) {
+                    const sessionData = await res.json();
+
+                    await fetch(`${orchestratorBase}/api/sessions/${sessionData.id}/start`, {
+                        method: 'POST'
+                    });
+                    return {
+                        success: true,
+                        sessionId: sessionData.id,
+                        message: "Goal successfully delegated to Borg Orchestrator."
+                    };
+                }
+            } catch (e: any) {
+                console.warn(`[Supervisor] Borg Orchestrator unavailable (${e.message}). Falling back to native supervisor.`);
             }
-        } catch (e: any) {
-            console.warn(`[Supervisor] Borg Orchestrator unavailable (${e.message}). Falling back to native supervisor.`);
         }
 
         const server = getMcpServer();
@@ -51,16 +53,18 @@ export const supervisorRouter = t.router({
 
     /** Get current supervisor status - active tasks, workers, queue depth */
     status: t.procedure.query(async () => {
-        // Attempt to aggregate stats from Borg Orchestrator
         let orchestratorActive = 0;
-        try {
-            const res = await fetch(`http://localhost:3847/api/health`);
-            if (res.ok) {
-                const data = await res.json();
-                orchestratorActive = data.sessions?.active || 0;
+        const orchestratorBase = resolveOrchestratorBase();
+        if (orchestratorBase) {
+            try {
+                const res = await fetch(`${orchestratorBase}/api/health`);
+                if (res.ok) {
+                    const data = await res.json();
+                    orchestratorActive = data.sessions?.active || 0;
+                }
+            } catch {
+                // Keep native supervisor status truthful even when the external orchestrator is unavailable.
             }
-        } catch (e) {
-            // Ignore if down
         }
 
         const server = getMcpServer();
@@ -80,17 +84,20 @@ export const supervisorRouter = t.router({
         status: z.enum(['all', 'pending', 'active', 'completed', 'failed']).default('all'),
     }).optional()).query(async ({ input }) => {
         let orchestratorTasks: any[] = [];
-        try {
-            const res = await fetch(`http://localhost:3847/api/sessions`);
-            if (res.ok) {
-                const data = await res.json();
-                orchestratorTasks = data.map((d: any) => ({
-                    id: d.id,
-                    description: d.currentTask || 'Orchestrator Session',
-                    status: d.status === 'running' ? 'active' : d.status
-                }));
-            }
-        } catch (e) { }
+        const orchestratorBase = resolveOrchestratorBase();
+        if (orchestratorBase) {
+            try {
+                const res = await fetch(`${orchestratorBase}/api/sessions`);
+                if (res.ok) {
+                    const data = await res.json();
+                    orchestratorTasks = data.map((d: any) => ({
+                        id: d.id,
+                        description: d.currentTask || 'Orchestrator Session',
+                        status: d.status === 'running' ? 'active' : d.status
+                    }));
+                }
+            } catch { }
+        }
 
         const server = getMcpServer();
         const sup = server.supervisor;
@@ -107,11 +114,14 @@ export const supervisorRouter = t.router({
     cancel: t.procedure.input(z.object({
         taskId: z.string()
     })).mutation(async ({ input }) => {
+        const orchestratorBase = resolveOrchestratorBase();
         if (input.taskId.startsWith('session-')) {
-            try {
-                const res = await fetch(`http://localhost:3847/api/sessions/${input.taskId}/stop`, { method: 'POST' });
-                if (res.ok) return { success: true, taskId: input.taskId };
-            } catch (e) { }
+            if (orchestratorBase) {
+                try {
+                    const res = await fetch(`${orchestratorBase}/api/sessions/${input.taskId}/stop`, { method: 'POST' });
+                    if (res.ok) return { success: true, taskId: input.taskId };
+                } catch { }
+            }
         }
 
         const server = getMcpServer();

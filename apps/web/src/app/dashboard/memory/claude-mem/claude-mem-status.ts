@@ -59,27 +59,27 @@ export type ClaudeMemOperatorGuidance = {
 
 export const CLAUDE_MEM_CAPABILITIES: ClaudeMemCapability[] = [
     {
-        title: 'Schema-inspired claude-mem adapter',
+        title: 'Schema-inspired borg-memory adapter',
         status: 'shipped',
-        note: 'Borg ships a dedicated `ClaudeMemAdapter` that mirrors claude-mem-style sections inside a Borg-managed local store.',
+        note: 'Borg ships a dedicated `ClaudeMemAdapter` that mirrors borg-memory-style sections inside a Borg-managed local store.',
         evidence: 'packages/core/src/services/memory/ClaudeMemAdapter.ts',
     },
     {
         title: 'Redundant fan-out persistence',
         status: 'shipped',
-        note: 'The default memory manager can fan out writes to both Borg JSON memory and the claude-mem-inspired adapter.',
+        note: 'The default memory manager can fan out writes to both Borg JSON memory and the borg-memory-inspired adapter.',
         evidence: 'packages/core/src/services/memory/RedundantMemoryManager.ts',
     },
     {
         title: 'Section-aware memory buckets',
         status: 'shipped',
-        note: 'Current storage models project context, user facts, style preferences, commands, and general notes as claude-mem-shaped sections.',
+        note: 'Current storage models project context, user facts, style preferences, commands, and general notes as borg-memory-shaped sections.',
         evidence: 'packages/core/src/services/memory/ClaudeMemAdapter.ts',
     },
     {
         title: 'Dedicated operator parity surface',
         status: 'shipped',
-        note: 'Borg now exposes a route that tells the truth about current claude-mem assimilation instead of quietly forwarding to the generic vector explorer.',
+        note: 'Borg now exposes a route that tells the truth about current borg-memory assimilation instead of quietly forwarding to the generic vector explorer.',
         evidence: 'apps/web/src/app/dashboard/memory/claude-mem/page.tsx',
     },
     {
@@ -91,43 +91,43 @@ export const CLAUDE_MEM_CAPABILITIES: ClaudeMemCapability[] = [
     {
         title: 'Structured prompt and session summary capture',
         status: 'shipped',
-        note: 'Borg natively records structured user prompts and supervised-session summaries alongside the adapter layer, instead of relying on the claude-mem store alone.',
+        note: 'Borg natively records structured user prompts and supervised-session summaries alongside the adapter layer, instead of relying on the borg-memory store alone.',
         evidence: 'packages/core/src/services/AgentMemoryService.ts',
     },
     {
         title: 'Generic Borg memory search foundation',
         status: 'partial',
-        note: 'Borg can already search observations, prompts, summaries, and raw memory records from the main memory dashboard, but that is not yet a dedicated claude-mem search/timeline workflow.',
+        note: 'Borg can already search observations, prompts, summaries, and raw memory records from the main memory dashboard, but that is not yet a dedicated borg-memory search/timeline workflow.',
         evidence: 'apps/web/src/app/dashboard/memory/page.tsx',
     },
     {
         title: 'Vector and graph memory primitives adjacent to the adapter',
         status: 'partial',
-        note: 'Borg has broader memory infrastructure around the adapter, but it is not yet wired into a native claude-mem runtime story.',
+        note: 'Borg has broader memory infrastructure around the adapter, but it is not yet wired into a native borg-memory runtime story.',
         evidence: 'apps/web/src/app/dashboard/memory/page.tsx',
     },
     {
         title: 'Claude Code lifecycle hooks',
         status: 'missing',
         note: 'Borg does not currently register SessionStart, UserPromptSubmit, PreToolUse, PostToolUse, Stop, or SessionEnd hooks into Claude Code.',
-        evidence: 'Gap vs upstream claude-mem hook system',
+        evidence: 'Gap vs upstream borg-memory hook system',
     },
     {
         title: 'Structured observation compression pipeline',
         status: 'partial',
-        note: 'Borg already records heuristic typed observations with facts, concepts, files, and deduplicated hashes, but it does not yet have claude-mem-style model-driven observation workers or response processors.',
+        note: 'Borg already records heuristic typed observations with facts, concepts, files, and deduplicated hashes, but it does not yet have borg-memory-style model-driven observation workers or response processors.',
         evidence: 'packages/core/src/services/AgentMemoryService.ts',
     },
     {
         title: 'Progressive-disclosure memory injection',
         status: 'missing',
-        note: 'Borg does not yet assemble claude-mem-style session context with index/detail/source layers and token-budgeted injection.',
+        note: 'Borg does not yet assemble borg-memory-style session context with index/detail/source layers and token-budgeted injection.',
         evidence: 'Gap vs upstream ContextBuilder / ObservationCompiler pipeline',
     },
     {
         title: 'Observation-centric search and timeline workflow',
         status: 'missing',
-        note: 'Upstream tools like `search`, `timeline`, and `get_observations` do not have Borg-native claude-mem equivalents yet.',
+        note: 'Upstream tools like `search`, `timeline`, and `get_observations` do not have Borg-native borg-memory equivalents yet.',
         evidence: 'Gap vs upstream memory MCP toolset',
     },
     {
@@ -139,7 +139,7 @@ export const CLAUDE_MEM_CAPABILITIES: ClaudeMemCapability[] = [
     {
         title: 'Relational session-observation storage model',
         status: 'missing',
-        note: 'There is no Borg-native claude-mem schema yet for sessions, observations, summaries, prompts, correlations, and a persistent pending queue.',
+        note: 'There is no Borg-native borg-memory schema yet for sessions, observations, summaries, prompts, correlations, and a persistent pending queue.',
         evidence: 'Gap vs upstream SQLite schema and queueing model',
     },
 ];
@@ -148,12 +148,12 @@ export const CLAUDE_MEM_IMPLEMENTATION_FILES = [
     {
         label: 'Current adapter implementation',
         path: 'packages/core/src/services/memory/ClaudeMemAdapter.ts',
-        note: 'Flat-file JSON provider inspired by claude-mem sections, not the full upstream runtime.',
+        note: 'Flat-file JSON provider inspired by borg-memory sections, not the full upstream runtime.',
     },
     {
         label: 'Redundant write manager',
         path: 'packages/core/src/services/memory/RedundantMemoryManager.ts',
-        note: 'Fans out reads/writes across Borg JSON memory and the claude-mem-inspired adapter.',
+        note: 'Fans out reads/writes across Borg JSON memory and the borg-memory-inspired adapter.',
     },
     {
         label: 'Primary Borg memory dashboard',
@@ -163,7 +163,7 @@ export const CLAUDE_MEM_IMPLEMENTATION_FILES = [
     {
         label: 'This parity page',
         path: 'apps/web/src/app/dashboard/memory/claude-mem/page.tsx',
-        note: 'Operator-facing truth table for what Borg has and has not assimilated from claude-mem yet.',
+        note: 'Operator-facing truth table for what Borg has and has not assimilated from borg-memory yet.',
     },
 ];
 
@@ -199,7 +199,7 @@ export function getClaudeMemOperatorGuidance(storeStatus?: ClaudeMemStoreSnapsho
     if (!storeStatus) {
         return {
             title: 'Reading adapter state',
-            detail: 'Waiting for core to report whether the Borg-managed claude-mem store exists and how many default buckets are already seeded.',
+            detail: 'Waiting for core to report whether the Borg-managed borg-memory store exists and how many default buckets are already seeded.',
             tone: 'warming',
         };
     }
@@ -213,8 +213,8 @@ export function getClaudeMemOperatorGuidance(storeStatus?: ClaudeMemStoreSnapsho
     if (runtimePipeline && runtimePipeline.claudeMemEnabled === false) {
         const providerLabel = runtimePipeline.providerNames?.length ? runtimePipeline.providerNames.join(', ') : 'no active providers reported';
         return {
-            title: 'Claude-mem adapter not active in the runtime pipeline',
-            detail: `Core reports the active memory pipeline as ${runtimePipeline.configuredMode ?? 'unknown'} with ${providerLabel}. The adapter file can still exist on disk, but Borg is not currently writing new memories through claude-mem.`,
+            title: 'borg-memory adapter not active in the runtime pipeline',
+            detail: `Core reports the active memory pipeline as ${runtimePipeline.configuredMode ?? 'unknown'} with ${providerLabel}. The adapter file can still exist on disk, but Borg is not currently writing new memories through borg-memory.`,
             tone: 'warning',
         };
     }
@@ -245,7 +245,7 @@ export function getClaudeMemOperatorGuidance(storeStatus?: ClaudeMemStoreSnapsho
 
     return {
         title: 'Adapter store active',
-        detail: `${populatedSectionCount} populated bucket${populatedSectionCount === 1 ? '' : 's'} across all ${presentDefaultSectionCount}/${defaultSectionCount} default claude-mem buckets.`,
+        detail: `${populatedSectionCount} populated bucket${populatedSectionCount === 1 ? '' : 's'} across all ${presentDefaultSectionCount}/${defaultSectionCount} default borg-memory buckets.`,
         tone: 'ready',
     };
 }

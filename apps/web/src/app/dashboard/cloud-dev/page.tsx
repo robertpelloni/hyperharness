@@ -129,7 +129,7 @@ const ROLE_COLORS: Record<ChatRole, string> = {
 };
 
 const PROVIDER_LABELS: Record<CloudDevProvider, string> = {
-    jules: "Jules (Google)",
+    jules: "Cloud Orchestrator (Google Jules, Spark, Copilot)",
     codex: "Codex (OpenAI)",
     "copilot-workspace": "Copilot Workspace",
     devin: "Devin",

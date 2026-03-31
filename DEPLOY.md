@@ -36,7 +36,7 @@ _This document contains the latest deployment instructions for the Borg Universa
 
 Borg is designed as a long-running service that manages PC memory, CPU, disk, and bandwidth usage.
 
-### Start the Dashboard & Core Server
+### Start the Borg Hub
 Use the provided startup scripts:
 
 **Windows**:
@@ -45,6 +45,8 @@ Use the provided startup scripts:
 ```
 
 `start.bat` defaults to `pnpm run build:workspace` (faster startup, skips extension-only build stages).
+It starts Borg only; Maestro is now launched separately.
+It also runs a native-runtime preflight that repairs missing `better-sqlite3` and Electron runtime artifacts when possible.
 To force a full build before startup, set:
 
 ```bash
@@ -66,9 +68,24 @@ set BORG_SKIP_BUILD=1
 .\start.bat
 ```
 
+If you need to bypass the native preflight explicitly, set:
+
+```bash
+set BORG_SKIP_NATIVE_PREFLIGHT=1
+.\start.bat
+```
+
 **Linux/macOS**:
 ```bash
 ./start.sh
+```
+
+### Start Maestro Separately
+
+When you want the Electron app, launch it explicitly:
+
+```bash
+pnpm -C apps/maestro start
 ```
 
 Alternatively, run via pnpm:
@@ -92,7 +109,7 @@ pnpm start
 Once the dashboard is running, navigate to the **Integrations** tab in the WebUI to install:
 *   Browser Extensions (Chrome, Firefox).
 *   IDE Plugins (VSCode, Cursor, Windsurf).
-*   CLI Harnesses.
+*   CLI Harnesses, with `hypercode` now tracked as Borg's primary CLI harness lane via `submodules/hypercode` and surfaced as a Go/Cobra runtime with REPL + `pipe` metadata (still **Experimental**).
 
 ## Package Manager Requirement
 
@@ -155,7 +172,7 @@ Always On tools are permanently advertised to clients and available for the sema
 
 | Service | Default Port | Override |
 |---------|-------------|----------|
-| Core API (tRPC + REST) | 3001 | `BORG_PORT` |
+| Core API (Borg CLI control plane) | 4000 | `borg start --port <number>` |
 | Web Dashboard (Next.js) | 3000 | `PORT` |
 | Orchestrator | 3847 | `BORG_ORCHESTRATOR_PORT` |
 | MCP Proxy (stdio) | stdin/stdout | N/A |

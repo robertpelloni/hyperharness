@@ -10,6 +10,7 @@
  */
 
 import { EventEmitter } from 'events';
+import { resolveSwarmOrchestratorBase } from './orchestrator-base.js';
 
 export interface ConsensusQuery {
     prompt: string;
@@ -26,11 +27,11 @@ export interface CandidateResponse {
 }
 
 export class ConsensusEngine extends EventEmitter {
-    private councilUrl: string;
+    private councilUrl: string | null;
 
     constructor(councilUrl?: string) {
         super();
-        this.councilUrl = councilUrl || 'http://localhost:3847';
+        this.councilUrl = resolveSwarmOrchestratorBase(councilUrl);
     }
 
     /**
@@ -44,7 +45,7 @@ export class ConsensusEngine extends EventEmitter {
         candidates: CandidateResponse[];
     }> {
         const agreementFactor = query.requiredAgreementPercentage || 0.66;
-        const url = query.councilUrl || this.councilUrl;
+        const url = resolveSwarmOrchestratorBase(query.councilUrl) || this.councilUrl;
         this.emit('consensus:seeking', { prompt: query.prompt, models: query.models });
 
         // 1. Dispatch prompt to all models simultaneously
@@ -97,8 +98,11 @@ export class ConsensusEngine extends EventEmitter {
      * Queries a single model via its corresponding Autopilot Council supervisor.
      * Maps model name to supervisor, then calls the chat endpoint.
      */
-    private async queryModel(model: string, prompt: string, councilUrl: string): Promise<string> {
+    private async queryModel(model: string, prompt: string, councilUrl: string | null): Promise<string> {
         try {
+            if (!councilUrl) {
+                throw new Error('No Borg Orchestrator base configured.');
+            }
             const supervisor = this.modelToSupervisor(model);
             const res = await fetch(`${councilUrl}/api/supervisors/${supervisor}/chat`, {
                 method: 'POST',
@@ -131,13 +135,16 @@ export class ConsensusEngine extends EventEmitter {
     private async synthesizePlurality(
         candidates: CandidateResponse[],
         originalPrompt: string,
-        councilUrl: string
+        councilUrl: string | null
     ): Promise<{ verdict: string; scores: number[] }> {
         const candidateBlock = candidates
             .map((c, i) => `--- Model ${i + 1} (${c.model}) ---\n${c.result}`)
             .join('\n\n');
 
         try {
+            if (!councilUrl) {
+                throw new Error('No Borg Orchestrator base configured.');
+            }
             const res = await fetch(`${councilUrl}/api/supervisors/GPT-4o/chat`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },

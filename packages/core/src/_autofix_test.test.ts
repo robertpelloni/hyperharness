@@ -8,7 +8,7 @@ import { describe, it, expect } from 'vitest';
 describe('AutoDev Verification', () => {
     it('should be fixed by the agent', () => {
         const actual = "fixed";
-        const expected = "broken"; // Agent should change this to "fixed"
+        const expected = "fixed";
         expect(actual).toBe(expected);
     });
 });

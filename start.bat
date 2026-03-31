@@ -18,6 +18,17 @@ if "%SKIP_INSTALL%"=="1" (
     if errorlevel 1 exit /b 1
 )
 
+set SKIP_NATIVE_PREFLIGHT=0
+if /I "%BORG_SKIP_NATIVE_PREFLIGHT%"=="1" set SKIP_NATIVE_PREFLIGHT=1
+
+if "%SKIP_NATIVE_PREFLIGHT%"=="1" (
+    echo Skipping native runtime preflight ^(BORG_SKIP_NATIVE_PREFLIGHT=1^)...
+) else (
+    echo Checking native runtime prerequisites...
+    call node scripts\ensure_native_runtime.mjs
+    if errorlevel 1 exit /b 1
+)
+
 set BUILD_TARGET=build:workspace
 if /I "%BORG_FULL_BUILD%"=="1" set BUILD_TARGET=build
 set SKIP_BUILD=0
@@ -31,9 +42,7 @@ if "%SKIP_BUILD%"=="1" (
     if errorlevel 1 exit /b 1
 )
 
-echo Starting Maestro Dashboard...
-start /B cmd /c "pnpm -C apps/maestro start"
-
 echo Starting Hub...
-call pnpm start
-if errorlevel 1 exit /b 1
+echo Maestro is now launched separately. Use "pnpm -C apps/maestro start" when needed.
+pnpm start
+exit /b %errorlevel%

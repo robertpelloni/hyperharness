@@ -10,7 +10,7 @@
  *  1. Quick-nav by action type (API keys / billing / plans / cloud consoles)
  *  2. Per-provider cards showing auth status + all portal actions
  *  3. Subscription / Pro plan links (Copilot+, Claude Pro, ChatGPT Plus, etc.)
- *  4. Cloud coding tool dashboards – direct links to Jules, Copilot Workspace,
+ *  4. Cloud coding tool dashboards – direct links to Cloud Orchestrator, Copilot Workspace,
  *     Claude for cloud, OpenAI Codex Cloud, Devin, Blocks, Cursor, etc.
  *
  * Auth status is pulled from the Borg billing router (`getProviderQuotas`)
@@ -29,6 +29,7 @@ import {
     Key,
     Layers,
     RefreshCw,
+    Rocket,
     Search,
     Settings,
     Shield,
@@ -49,16 +50,18 @@ import {
 const CLOUD_CODING_TOOLS: Array<{
     id: string;
     name: string;
+    icon?: any;
     description: string;
     links: Array<{ label: string; href: string; primary?: boolean }>;
     color: string;
 }> = [
     {
         id: "jules",
-        name: "Jules (Google)",
-        description: "Google's async AI developer agent for background coding tasks.",
+        name: "Cloud Orchestrator (Jules/Spark)",
+        icon: Rocket,
+        description: "Google's internal multi-agent coding system and Spark environment.",
         links: [
-            { label: "Open Jules", href: "https://jules.google.com/", primary: true },
+            { label: "Open Cloud Orchestrator", href: "https://jules.google.com/", primary: true },
             { label: "Settings", href: "https://jules.google.com/settings" },
             { label: "Docs", href: "https://jules.google.com/docs" },
         ],

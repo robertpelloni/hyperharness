@@ -426,6 +426,77 @@ export const workspaceSecretsTable = sqliteTable("workspace_secrets", {
         .default(sql`(strftime('%s', 'now'))`),
 });
 
+export const importedSessionsTable = sqliteTable(
+    "imported_sessions",
+    {
+        uuid: text("uuid").primaryKey(),
+        source_tool: text("source_tool").notNull(),
+        source_path: text("source_path").notNull(),
+        external_session_id: text("external_session_id"),
+        title: text("title"),
+        session_format: text("session_format").notNull().default("generic"),
+        transcript: text("transcript").notNull(),
+        excerpt: text("excerpt"),
+        working_directory: text("working_directory"),
+        transcript_hash: text("transcript_hash").notNull(),
+        normalized_session: text("normalized_session", { mode: "json" })
+            .$type<Record<string, unknown>>()
+            .notNull(),
+        metadata: text("metadata", { mode: "json" })
+            .$type<Record<string, unknown>>()
+            .notNull()
+            .default(sql`'{}'`),
+        discovered_at: integer("discovered_at", { mode: "timestamp" }).notNull(),
+        imported_at: integer("imported_at", { mode: "timestamp" }).notNull(),
+        last_modified_at: integer("last_modified_at", { mode: "timestamp" }),
+        created_at: integer("created_at", { mode: "timestamp" })
+            .notNull()
+            .default(sql`(strftime('%s', 'now'))`),
+        updated_at: integer("updated_at", { mode: "timestamp" })
+            .notNull()
+            .default(sql`(strftime('%s', 'now'))`),
+    },
+    (table) => ({
+        transcriptHashIdx: index("imported_sessions_transcript_hash_idx").on(table.transcript_hash),
+        sourceToolIdx: index("imported_sessions_source_tool_idx").on(table.source_tool),
+        sourcePathIdx: index("imported_sessions_source_path_idx").on(table.source_path),
+        uniqueTranscript: unique("imported_sessions_transcript_hash_unique").on(table.transcript_hash),
+    })
+);
+
+export const importedSessionMemoriesTable = sqliteTable(
+    "imported_session_memories",
+    {
+        uuid: text("uuid").primaryKey(),
+        imported_session_uuid: text("imported_session_uuid")
+            .notNull()
+            .references(() => importedSessionsTable.uuid, { onDelete: "cascade" }),
+        memory_index: integer("memory_index").notNull(),
+        kind: text("kind").notNull().default("memory"),
+        content: text("content").notNull(),
+        tags: text("tags", { mode: "json" })
+            .$type<string[]>()
+            .notNull()
+            .default(sql`'[]'`),
+        source: text("source").notNull().default("heuristic"),
+        metadata: text("metadata", { mode: "json" })
+            .$type<Record<string, unknown>>()
+            .notNull()
+            .default(sql`'{}'`),
+        created_at: integer("created_at", { mode: "timestamp" })
+            .notNull()
+            .default(sql`(strftime('%s', 'now'))`),
+    },
+    (table) => ({
+        sessionIdx: index("imported_session_memories_session_idx").on(table.imported_session_uuid),
+        kindIdx: index("imported_session_memories_kind_idx").on(table.kind),
+        uniqueMemoryPerSession: unique("imported_session_memories_session_index_unique").on(
+            table.imported_session_uuid,
+            table.memory_index
+        ),
+    })
+);
+
 // -- OAUTH PROVIDER TABLES --
 
 export const oauthClientsTable = sqliteTable("oauth_clients", {

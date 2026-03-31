@@ -11,7 +11,7 @@ Instead of relying strictly on IDE file-save hooks, Borg could deploy an eBPF (L
 *Impact:* Zero-friction debugging. The AI knows the error before you open the dashboard.
 
 ## 3. Sandboxed Wasm/Deno Execution for MCP Tools
-Currently, we flag `stdio` MCP tools as "unsafe" and skip them during catalog ingestion. We could embed a Rust-based Wasmtime runtime or Deno sandbox inside of `@borg/core`. When an MCP server is fetched, we compile it to Wasm or run it via Deno with strict network/file capabilities.
+Currently, we flag `stdio` MCP tools as "unsafe" during catalog ingestion. We could embed a Rust-based Wasmtime runtime or Deno sandbox inside of `@borg/core`. When an MCP server is fetched, we compile it to Wasm or run it via Deno with strict network/file capabilities.
 *Impact:* We can safely install and test any MCP server from the public internet without risk of remote code execution escaping the vault.
 
 ## 4. Visual "Node-Graph" Workflow Editor

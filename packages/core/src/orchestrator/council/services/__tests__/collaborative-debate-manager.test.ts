@@ -1,5 +1,33 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { CollaborativeDebateManagerService } from '../collaborative-debate-manager.js';
+import type { CouncilDecision, DevelopmentTask } from '../types.js';
+
+vi.mock('../db.js', () => ({
+  dbService: {
+    getDb: vi.fn(),
+    getDrizzle: vi.fn(() => {
+      const dbMock: any = {
+        insert: vi.fn().mockReturnThis(),
+        values: vi.fn().mockReturnThis(),
+        select: vi.fn().mockReturnThis(),
+        from: vi.fn().mockReturnThis(),
+        where: vi.fn().mockReturnThis(),
+        returning: vi.fn().mockReturnThis(),
+        delete: vi.fn().mockReturnThis(),
+        update: vi.fn().mockReturnThis(),
+        set: vi.fn().mockReturnThis(),
+        limit: vi.fn().mockReturnThis(),
+        orderBy: vi.fn().mockReturnThis(),
+        then: vi.fn((resolve) => resolve([])),
+      };
+      return dbMock;
+    }),
+    getSchema: vi.fn(() => new Proxy({}, {
+      get: (target, prop) => ({ name: prop })
+    })),
+    close: vi.fn(),
+  }
+}));
 
 describe('CollaborativeDebateManagerService', () => {
   let manager: CollaborativeDebateManagerService;
@@ -18,7 +46,7 @@ describe('CollaborativeDebateManagerService', () => {
         ownerName: 'User One',
       });
 
-      expect(debate.id).toStartWith('collab_');
+      expect(debate.id.startsWith('collab_')).toBe(true);
       expect(debate.title).toBe('Test Debate');
       expect(debate.status).toBe('draft');
       expect(debate.participants.size).toBe(1);
@@ -170,7 +198,7 @@ describe('CollaborativeDebateManagerService', () => {
         role: 'voter',
       });
 
-      expect(token.token).toStartWith('inv_');
+      expect(token.token.startsWith('inv_')).toBe(true);
       expect(token.debateId).toBe(debate.id);
       expect(token.role).toBe('voter');
     });
@@ -315,7 +343,7 @@ describe('CollaborativeDebateManagerService', () => {
         content: 'Hello world!',
       });
 
-      expect(message.id).toStartWith('msg_');
+      expect(message.id.startsWith('msg_')).toBe(true);
       expect(message.content).toBe('Hello world!');
     });
 

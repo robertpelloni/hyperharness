@@ -1,4 +1,4 @@
-import { describe, test, expect, beforeEach, mock } from 'bun:test';
+import { describe, test, expect, beforeEach, mock } from 'vitest';
 import { RemoteSupervisor } from '../../src/supervisors/RemoteSupervisor.ts';
 
 describe('RemoteSupervisor', () => {

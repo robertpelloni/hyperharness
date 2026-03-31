@@ -6,8 +6,12 @@
  * Tests normalization logic, transport inference, and catalog deduplication.
  */
 
-import { describe, expect, it } from 'vitest';
-import { buildBaselineRecipe } from './published-catalog-ingestor.js';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { buildBaselineRecipe, GlamaAiAdapter, NpmRegistryAdapter } from './published-catalog-ingestor.js';
+
+afterEach(() => {
+    vi.restoreAllMocks();
+});
 
 /**
  * Test transport normalization across different inputs.
@@ -264,6 +268,41 @@ describe('CatalogIngestor — Baseline Recipe Generation', () => {
             url: 'https://example.com/mcp',
         });
         expect(recipe.confidence).toBeLessThan(30);
+    });
+});
+
+describe('CatalogIngestor — Error Reporting', () => {
+    it('records HTTP fetch failures in adapter errors instead of silently returning zero errors', async () => {
+        vi.stubGlobal(
+            'fetch',
+            vi.fn().mockResolvedValue({
+                ok: false,
+                status: 404,
+            })
+        );
+
+        const result = await new GlamaAiAdapter().ingest();
+
+        expect(result.fetched).toBe(0);
+        expect(result.upserted).toBe(0);
+        expect(result.errors).toHaveLength(1);
+        expect(result.errors[0]).toContain('Request to https://glama.ai/api/mcp/servers?limit=200 failed: HTTP 404');
+    });
+
+    it('records per-query fetch failures for npm ingestion summaries', async () => {
+        vi.stubGlobal(
+            'fetch',
+            vi.fn().mockRejectedValue(new Error('network down'))
+        );
+
+        const result = await new NpmRegistryAdapter().ingest();
+
+        expect(result.fetched).toBe(0);
+        expect(result.upserted).toBe(0);
+        expect(result.errors).toHaveLength(3);
+        expect(result.errors[0]).toContain('npm query "scope:modelcontextprotocol" failed');
+        expect(result.errors[1]).toContain('npm query "keywords:mcp-server" failed');
+        expect(result.errors[2]).toContain('npm query "mcp-server" failed');
     });
 });
 

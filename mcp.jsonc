@@ -1234,6 +1234,13 @@
         "crashCount": 0,
         "maxAttempts": 0
       }
+    },
+    "prism-mcp": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "prism-mcp-server"
+      ]
     }
   }
 }

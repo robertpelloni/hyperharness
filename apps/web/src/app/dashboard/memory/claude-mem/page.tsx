@@ -64,7 +64,7 @@ export default function ClaudeMemDashboardPage() {
 			const payload = await response.json();
 			setClaudeMemStatus((payload?.result?.data ?? null) as ClaudeMemStoreStatus | null);
 		} catch (error) {
-			setClaudeMemStatusError(error instanceof Error ? error.message : 'Failed to read claude-mem store status');
+			setClaudeMemStatusError(error instanceof Error ? error.message : 'Failed to read borg-memory store status');
 		} finally {
 			setClaudeMemStatusLoading(false);
 		}
@@ -79,10 +79,10 @@ export default function ClaudeMemDashboardPage() {
 			<div className="p-4 border-b border-gray-800 flex justify-between items-center bg-gray-900">
 				<div>
 					<h1 className="text-xl font-bold text-white flex items-center gap-2">
-						<BrainCircuit className="w-5 h-5 text-cyan-400" /> claude-mem Integration (Adapter)
+						<BrainCircuit className="w-5 h-5 text-cyan-400" /> borg-memory Integration (Adapter)
 					</h1>
 					<p className="text-gray-400 text-sm">
-						Borg&apos;s memory system is sovereign. The claude-mem layer is an adapter around Borg-native observations, prompts, summaries, and interchange workflows.
+						Borg&apos;s memory system is sovereign. The borg-memory layer is an adapter around Borg-native observations, prompts, summaries, and interchange workflows.
 					</p>
 				</div>
 				<div className="flex gap-2 items-center">
@@ -139,7 +139,7 @@ export default function ClaudeMemDashboardPage() {
 							<p className="text-xs text-gray-400 mt-1">{claudeMemStatus?.exists
 								? claudeMemStatus.runtimePipeline?.claudeMemEnabled
 									? `${claudeMemStatus.sectionCount} section buckets under Borg-managed claude_mem.json`
-									: 'Existing claude_mem.json detected, but the active runtime pipeline is not currently writing through claude-mem'
+									: 'Existing claude_mem.json detected, but the active runtime pipeline is not currently writing through borg-memory'
 								: 'The adapter file has not been created yet for this workspace'}</p>
 							{claudeMemStatus ? (
 								<div className="mt-2">
@@ -158,10 +158,10 @@ export default function ClaudeMemDashboardPage() {
 						</CardHeader>
 						<CardContent className="space-y-3 text-sm text-zinc-300">
 							<p>
-								Borg already captures <strong>typed observations, structured prompts, and session summaries</strong> natively. The claude-mem layer exists to mirror and exchange that data with adjacent tools when needed.
+								Borg already captures <strong>typed observations, structured prompts, and session summaries</strong> natively. The borg-memory layer exists to mirror and exchange that data with adjacent tools when needed.
 							</p>
 							<p>
-								What is still missing is the deeper claude-mem runtime story: Claude Code lifecycle hooks, richer model-driven compression workers, observation timelines, progressive context injection, and transcript rewriting.
+								What is still missing is the deeper borg-memory runtime story: Claude Code lifecycle hooks, richer model-driven compression workers, observation timelines, progressive context injection, and transcript rewriting.
 							</p>
 							<div className="flex flex-wrap gap-2 pt-1">
 								<Link href="/dashboard/memory" className="inline-flex items-center gap-2 rounded-md border border-cyan-500/30 bg-cyan-500/10 px-3 py-2 text-xs font-medium text-cyan-200 hover:bg-cyan-500/15">
@@ -177,7 +177,7 @@ export default function ClaudeMemDashboardPage() {
 						<CardHeader>
 							<CardTitle>Live adapter state</CardTitle>
 							<CardDescription>
-								Actual Borg-managed claude-mem store status from core.
+								Actual Borg-managed borg-memory store status from core.
 							</CardDescription>
 						</CardHeader>
 						<CardContent className="space-y-3 text-sm text-zinc-300">
@@ -218,7 +218,7 @@ export default function ClaudeMemDashboardPage() {
 								</div>
 								<div className="mt-2">
 									<Badge variant="outline" className={claudeMemStatus?.runtimePipeline?.claudeMemEnabled ? 'border-emerald-500/30 text-emerald-300' : 'border-amber-500/30 text-amber-300'}>
-										{claudeMemStatus?.runtimePipeline?.claudeMemEnabled ? 'claude-mem active' : 'claude-mem inactive'}
+										{claudeMemStatus?.runtimePipeline?.claudeMemEnabled ? 'borg-memory active' : 'borg-memory inactive'}
 									</Badge>
 								</div>
 							</div>
@@ -239,7 +239,7 @@ export default function ClaudeMemDashboardPage() {
 							<div className="rounded border border-cyan-500/20 bg-cyan-950/10 px-3 py-3">
 								<div className="font-medium text-white">Recommended engineering next slice</div>
 								<div className="text-xs text-gray-400 mt-2">
-									Finish the observation search, session timeline, and provenance workflow so Borg&apos;s native memory model is visible end to end before deeper claude-mem hook parity work.
+									Finish the observation search, session timeline, and provenance workflow so Borg&apos;s native memory model is visible end to end before deeper borg-memory hook parity work.
 								</div>
 							</div>
 						</CardContent>

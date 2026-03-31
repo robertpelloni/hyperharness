@@ -4,7 +4,7 @@
 Single-model code generation is fragile. LLMs hallucinate, miss context, and struggle with complex architectural reasoning. Developers spend more time verifying AI code than writing it.
 
 ## The Solution: Orchestration via Debate
-`borg-orchestrator-council` introduces a **Multi-Model Consensus Engine**. Instead of trusting one model, we convene a "Council" of specialized Supervisors (GPT-4, Claude 3.5 Sonnet, Gemini Pro) to:
+`cli-orchestrator-council` introduces a **Multi-Model Consensus Engine**. Instead of trusting one model, we convene a "Council" of specialized Supervisors (GPT-4, Claude 3.5 Sonnet, Gemini Pro) to:
 
 1. **Debate**: Models critique each other's proposed solutions.
 2. **Refine**: Iterative rounds of improvement based on cross-model feedback.

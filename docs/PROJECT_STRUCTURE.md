@@ -26,9 +26,9 @@ At a product level, the repo currently centers on:
 
 ```text
 borg/
-├─ apps/                  Operator-facing applications
-├─ packages/              Shared libraries and main TypeScript backend
-├─ go/                    Experimental Go sidecar / port
+├─ apps/                  Operator-facing applications and shells
+├─ packages/              Shared libraries and the main TypeScript backend
+├─ go/                    Experimental Go sidecar / cli-orchestrator port
 ├─ cli/                   Legacy/compatibility CLI wrapper area
 ├─ data/                  Local data assets, bookmarks, imported knowledge
 ├─ docs/                  Project and contributor documentation
@@ -43,7 +43,23 @@ borg/
 └─ pnpm-workspace.yaml    Workspace boundaries
 ```
 
-## 3. Main architectural picture
+## 3. Workspace boundaries
+
+The repository is not one flat package list. The root workspace includes:
+
+- `apps/*`
+- `packages/*`
+- the nested cloud workspace under `apps/cloud-orchestrator/apps/*`, `apps/cloud-orchestrator/packages/*`, and `apps/cloud-orchestrator/server`
+
+It explicitly excludes:
+
+- `apps/borg-extension`
+- `apps/vscode`
+- everything under `archive/**`
+
+That means some directories in `apps/` exist as product surfaces without being first-class root workspace packages.
+
+## 4. Main architectural picture
 
 ```mermaid
 flowchart TD
@@ -76,7 +92,7 @@ flowchart TD
     GO --> DATA
 ```
 
-## 4. Runtime lanes
+## 5. Runtime lanes
 
 The repo exposes three main orchestrator identities plus one experimental sidecar:
 
@@ -87,55 +103,59 @@ The repo exposes three main orchestrator identities plus one experimental sideca
 | Desktop lane | `apps/maestro` | Electron-based desktop shell |
 | Experimental Go lane | `go/` | Go sidecar and bridge-first port work |
 
-There is also a nested web stack under `apps/cloud-orchestrator/`, which is its own sub-workspace rather than the primary root dashboard.
+There is also a nested cloud stack under `apps/cloud-orchestrator/`, which is its own sub-workspace rather than the primary root dashboard, plus `apps/maestro-go`, which is a Go-adjacent desktop lane rather than the main desktop implementation.
 
-## 5. `apps/` — operator-facing applications
+## 6. `apps/` — operator-facing applications
 
 ### Main apps
 
-| Path | Package name | Purpose |
+| Path | Purpose | Notes |
 | --- | --- | --- |
-| `apps/web` | `@borg/web` | Main Next.js dashboard and operator UI |
-| `apps/maestro` | `maestro` | Desktop Electron shell / desktop orchestrator lane |
-| `apps/mobile` | `@borg/mobile` | Mobile-facing surface |
-| `apps/cloud-orchestrator` | `jules-ui` | Nested cloud orchestrator stack |
-| `apps/borg-extension` | `borg-extension` | Browser extension application |
-| `apps/vscode` | `borg-vscode-extension` | VS Code extension app |
+| `apps/web` | Main Next.js dashboard and operator UI | Primary browser-facing operator surface |
+| `apps/maestro` | Electron desktop shell | Main `electron-orchestrator` lane |
+| `apps/maestro-go` | Go-adjacent desktop/port lane | Supplementary experimental area |
+| `apps/mobile` | Mobile-facing surface | Companion app lane |
+| `apps/cloud-orchestrator` | Nested cloud orchestrator stack | Separate mini-workspace with its own apps/packages/server |
+| `apps/borg-extension` | Browser extension application | Exists in repo but excluded from root `pnpm-workspace.yaml` |
+| `apps/vscode` | VS Code extension app | Exists in repo but excluded from root `pnpm-workspace.yaml` |
 
 ### How `apps/` connect
 
 - `apps/web` depends directly on `@borg/core` and `@borg/ui`
 - `apps/web` is the main browser-facing dashboard for the TypeScript control plane
 - `apps/maestro` is the broader desktop/operator shell
+- `apps/maestro-go` is an experimental Go-adjacent lane, not the main desktop runtime
 - `apps/cloud-orchestrator` is its own nested ecosystem with its own `apps/`, `packages/`, and `server/`
 - extension apps connect editor/browser environments back to the main control-plane concepts
 
-## 6. `packages/` — shared libraries and the main control plane
+## 7. `packages/` — shared libraries and the main control plane
 
 ### Key packages
 
-| Path | Package name | Purpose |
-| --- | --- | --- |
-| `packages/core` | `@borg/core` | Main TypeScript control plane, routers, services, orchestration |
-| `packages/cli` | `@borg/cli` | Main CLI entrypoint and command surface |
-| `packages/ui` | `@borg/ui` | Shared React UI components and dashboard widgets |
-| `packages/ai` | `@borg/ai` | Model/provider SDK integration layer |
-| `packages/memory` | `@borg/memory` | Memory storage, retrieval, embeddings, vector DB integration |
-| `packages/types` | `@borg/types` | Shared types |
-| `packages/tools` | `@borg/tools` | Tool definitions/helpers |
-| `packages/mcp-registry` | `@borg/mcp-registry` | MCP metadata/registry surfaces |
-| `packages/mcp-client` | `@borg/mcp-client` | MCP client integration |
-| `packages/agents` | `@borg/agents` | Agent-related logic and adapters |
-| `packages/adk` | `@borg/adk` | Agent development kit layer |
-| `packages/search` | `@borg/search` | Search/indexing support |
-| `packages/borg-supervisor` | `@borg/supervisor` | Supervisor-related package |
-| `packages/supervisor-plugin` | `@borg/supervisor-plugin` | Supervisor plugin integration |
-| `packages/browser` | `@borg/browser-legacy` | Legacy browser support package |
-| `packages/browser-extension` | `@borg/browser-extension-pkg` | Browser-extension shared package |
-| `packages/claude-mem` | `borg-extension` | Claude/Borg memory-related package surface |
-| `packages/vscode` | `borg-vscode-extension` | VS Code shared extension package |
-| `packages/mcp-router-cli` | `@borg/mcp-router-cli` | MCP router CLI package |
-| `packages/tsconfig` | `@borg/tsconfig` | Shared TS config package |
+| Path | Purpose |
+| --- | --- |
+| `packages/core` | Main TypeScript control plane, routers, services, orchestration |
+| `packages/cli` | Main CLI entrypoint and command surface |
+| `packages/ui` | Shared React UI components and dashboard widgets |
+| `packages/ai` | Model/provider SDK integration layer |
+| `packages/memory` | Memory storage, retrieval, embeddings, vector DB integration |
+| `packages/types` | Shared types |
+| `packages/tools` | Tool definitions/helpers |
+| `packages/mcp-registry` | MCP metadata and registry surfaces |
+| `packages/mcp-client` | MCP client integration |
+| `packages/mcp-router-cli` | MCP router CLI package |
+| `packages/agents` | Agent-related logic and adapters |
+| `packages/adk` | Agent development kit layer |
+| `packages/search` | Search and indexing support |
+| `packages/borg-supervisor` | Supervisor-related package |
+| `packages/supervisor-plugin` | Supervisor plugin integration |
+| `packages/browser` | Legacy browser support package |
+| `packages/browser-extension` | Shared browser-extension package |
+| `packages/claude-mem` | Claude/Borg memory-related package surface |
+| `packages/jetbrains` | JetBrains integration package surface |
+| `packages/vscode` | VS Code shared extension package |
+| `packages/zed-extension` | Zed extension package surface |
+| `packages/tsconfig` | Shared TypeScript configuration |
 
 ### The most important dependency chain
 
@@ -180,7 +200,7 @@ It contains:
 
 If you want to understand “where the system comes together,” start in `packages/core`.
 
-## 7. `apps/web` and `packages/ui`
+## 8. `apps/web` and `packages/ui`
 
 `apps/web` is the main browser dashboard.
 
@@ -191,7 +211,7 @@ It depends on:
 
 `packages/ui` is the shared component layer used to avoid duplicating operator UI across apps. In this repo, the documented convention is that `apps/web` should import shared UI from `@borg/ui`.
 
-## 8. `packages/cli`
+## 9. `packages/cli`
 
 `packages/cli` is the main CLI lane and publishes the `borg` command.
 
@@ -211,7 +231,7 @@ flowchart TD
     CORE --> Services
 ```
 
-## 9. `go/` — experimental sidecar and bridge-first port
+## 10. `go/` — experimental sidecar and bridge-first port
 
 The `go/` workspace is a separate Go module:
 
@@ -247,7 +267,7 @@ flowchart LR
 
 Important truth: the Go workspace is still an **Experimental** sidecar/port lane, not the sole default runtime for the whole project.
 
-## 10. `apps/cloud-orchestrator/` — nested sub-workspace
+## 11. `apps/cloud-orchestrator/` — nested sub-workspace
 
 `apps/cloud-orchestrator` is effectively its own mini-monorepo inside the main repository.
 
@@ -267,17 +287,18 @@ This means the repo has:
 
 That nested stack should be understood as adjacent infrastructure, not the same thing as `apps/web`.
 
-## 11. `submodules/` and external assimilation
+## 12. `submodules/` and external assimilation
 
-One especially important external lane is:
+The current submodules directory includes at least two important external lanes:
 
 | Path | Purpose |
 | --- | --- |
 | `submodules/hypercode` | Experimental external CLI harness/upstream assimilation lane |
+| `submodules/prism-mcp` | External Prism MCP reference lane |
 
 This submodule matters because the CLI/session/harness story is no longer only local handwritten code; it also depends on tracked external harness contracts and source-backed tool inventories.
 
-## 12. `data/` and knowledge assets
+## 13. `data/` and knowledge assets
 
 `data/` holds local knowledge assets, ingestion material, and bookmark ecosystems.
 
@@ -288,8 +309,24 @@ It connects mainly to:
 - import and indexing logic in `packages/core`
 - memory/retrieval logic in `packages/memory`
 - bookmark and registry workflows
+- persistent local artifacts such as `data/bobbybookmarks`, `borg.db`, and `cipher-sessions.db`
 
-## 13. How the main pieces connect in practice
+## 14. Connection map by responsibility
+
+| Area | Primary module(s) | Connected to |
+| --- | --- | --- |
+| Operator UI | `apps/web`, `apps/maestro`, `packages/ui` | `packages/core` |
+| CLI orchestration | `packages/cli` | `packages/core`, `submodules/hypercode` |
+| Core control plane | `packages/core` | nearly everything |
+| Provider routing | `packages/ai`, `packages/core` | model/provider SDKs, memory, dashboard |
+| Memory and retrieval | `packages/memory`, `packages/core` | sessions, imports, dashboard, providers |
+| MCP registry and client flows | `packages/mcp-registry`, `packages/mcp-client`, `packages/core` | dashboard, CLI, imported catalogs |
+| Tool execution/helpers | `packages/tools`, `packages/core` | CLI, session runtime, MCP/tool UX |
+| Editor and extension bridges | `packages/vscode`, `packages/browser-extension`, `packages/jetbrains`, `packages/zed-extension`, `apps/vscode`, `apps/borg-extension` | `packages/core` |
+| Go coexistence lane | `go/internal/httpapi`, `go/internal/*` | `packages/core`, workspace state, lock/config files |
+| Local knowledge assets | `data/bobbybookmarks` and other `data/` files | `packages/core`, `packages/memory` |
+
+## 15. How the main pieces connect in practice
 
 ### Request flow: dashboard
 
@@ -327,7 +364,33 @@ sequenceDiagram
     Go-->>Client: Structured Go-side response
 ```
 
-## 14. Where to start reading
+## 16. Repo relationship diagram
+
+```mermaid
+flowchart TD
+    ROOT["Repository root"]
+
+    APPS["apps/\nweb, maestro, maestro-go, mobile,\ncloud-orchestrator, browser/editor apps"]
+    PKGS["packages/\ncore, cli, ui, ai, memory,\nmcp, tools, agents, extensions"]
+    GO["go/\nexperimental sidecar"]
+    SUBS["submodules/\nhypercode, prism-mcp"]
+    DATA["data/\nbobbybookmarks, local DBs"]
+    DOCS["docs/\nREADME, roadmap, contributor guidance"]
+
+    ROOT --> APPS
+    ROOT --> PKGS
+    ROOT --> GO
+    ROOT --> SUBS
+    ROOT --> DATA
+    ROOT --> DOCS
+
+    APPS --> PKGS
+    GO --> PKGS
+    PKGS --> DATA
+    PKGS --> SUBS
+```
+
+## 17. Where to start reading
 
 If you are new to the repo, the best reading order is:
 
@@ -340,7 +403,7 @@ If you are new to the repo, the best reading order is:
 7. `packages/memory`
 8. `go/`
 
-## 15. Practical mental model
+## 18. Practical mental model
 
 The shortest accurate mental model is:
 
@@ -352,7 +415,7 @@ The shortest accurate mental model is:
 - `apps/cloud-orchestrator` is a separate nested stack, not the same thing as the main dashboard
 - `submodules/` and `data/` extend the system with external harnesses and local knowledge assets
 
-## 16. Status framing
+## 19. Status framing
 
 Truthfully:
 

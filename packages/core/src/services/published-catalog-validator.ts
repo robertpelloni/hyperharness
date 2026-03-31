@@ -29,7 +29,9 @@
  *
  * Isolation: Future phases will run these in Docker containers.
  * For now, only URL-based (SSE/Streamable HTTP) servers are probed.
- * STDIO servers get `skipped` outcome with failure_class = 'stdio_unsafe'.
+ * STDIO servers remain catalog-visible and get `skipped` outcome with
+ * failure_class = 'stdio_transport' so operators can distinguish transport
+ * shape from actual validation failure.
  */
 
 import { publishedCatalogRepository } from "../db/repositories/published-catalog.repo.js";
@@ -85,11 +87,16 @@ export async function validatePublishedServer(serverUuid: string): Promise<Valid
         const template = recipe.template as Record<string, unknown>;
         const transport = String(server.transport ?? template.type ?? "unknown");
 
-        // Safety: only attempt URL-based transports (SSE / StreamableHTTP)
-        // STDIO validation requires sandboxing — not implemented in this phase
+        // Validation currently only probes URL-based transports.
+        // STDIO entries are preserved and labeled as stdio transport, but not
+        // actively probed until sandboxed validation is available.
         if (transport === "stdio" || transport === "STDIO") {
             output.outcome = "skipped";
-            output.failure_class = "stdio_unsafe";
+            output.failure_class = "stdio_transport";
+            output.findings_summary = {
+                transport: "stdio",
+                validation_mode: "not_probed",
+            };
             await _finishRun(run.uuid, output);
             return output;
         }

@@ -21,6 +21,7 @@ import { Badge } from "@borg/ui";
 import { Button } from "@borg/ui";
 import { Card, CardContent, CardHeader, CardTitle } from "@borg/ui";
 import { trpc } from '@/utils/trpc';
+import { RotationRoomsPanel } from './rotation-rooms-panel';
 
 // Sub-components (to be implemented)
 // import { SessionGrid } from './components/SessionGrid';
@@ -68,7 +69,10 @@ export function RoundtableView() {
             <ShieldCheck className="h-4 w-4" />
             Evidence Lock: {councilStatus.data?.availableCount ?? 0}
           </Button>
-          <Button className="bg-purple-600 hover:bg-purple-700 gap-2">
+          <Button
+            className="bg-purple-600 hover:bg-purple-700 gap-2"
+            onClick={() => document.getElementById('rotation-room-composer')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
+          >
             <Plus className="h-4 w-4" />
             New Session
           </Button>
@@ -140,13 +144,13 @@ export function RoundtableView() {
             <div className="lg:col-span-2 space-y-6">
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between">
-                  <CardTitle className="text-sm font-medium">Terminal Fleet</CardTitle>
-                  <Button variant="ghost" size="sm">View All</Button>
+                  <CardTitle className="text-sm font-medium">Rotation rooms</CardTitle>
+                  <Badge variant="outline" className="border-purple-500/30 text-purple-400">
+                    Experimental
+                  </Badge>
                 </CardHeader>
                 <CardContent>
-                  <div className="h-[400px] flex items-center justify-center border border-dashed rounded-lg text-muted-foreground">
-                    Session Grid Placeholder
-                  </div>
+                  <RotationRoomsPanel />
                 </CardContent>
               </Card>
               

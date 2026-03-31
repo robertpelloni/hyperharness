@@ -106,6 +106,7 @@ export interface DashboardStartupStatus {
         };
         extensionBridge: {
             ready: boolean;
+            port?: number | null;
             acceptingConnections?: boolean;
             clientCount: number;
             hasConnectedClients?: boolean;
@@ -319,6 +320,7 @@ const DEFAULT_DASHBOARD_STARTUP_CHECKS: DashboardStartupChecks = {
     },
     extensionBridge: {
         ready: false,
+        port: null,
         acceptingConnections: false,
         clientCount: 0,
         hasConnectedClients: false,
@@ -972,6 +974,40 @@ function getSessionTone(status: DashboardSessionSummary['status']): string {
     }
 }
 
+function getSessionStatusLabel(status: DashboardSessionSummary['status']): string {
+    switch (status) {
+        case 'running':
+            return 'Running';
+        case 'starting':
+            return 'Starting';
+        case 'restarting':
+            return 'Restarting';
+        case 'stopping':
+            return 'Stopping';
+        case 'stopped':
+            return 'Stopped';
+        case 'error':
+            return 'Error';
+        default:
+            return 'Created';
+    }
+}
+
+function getLatestSessionLogMessage(session: DashboardSessionSummary): string | null {
+    if (session.logs.length === 0) {
+        return null;
+    }
+
+    return [...session.logs]
+        .sort((left, right) => right.timestamp - left.timestamp)[0]
+        ?.message
+        ?.trim() || null;
+}
+
+function getSessionRestartPolicyLabel(session: DashboardSessionSummary): string {
+    return session.autoRestart === false ? 'Manual restart only' : 'Auto-restart enabled';
+}
+
 function getProviderTone(provider: DashboardProviderSummary): string {
     if (!provider.configured) {
         return 'border-slate-500/30 bg-slate-500/10 text-slate-200';
@@ -1438,7 +1474,108 @@ export function DashboardHomeView({
                     </div>
 
                     <div className="flex flex-col gap-6">
-                        <BorgOrchestratorWidget />
+                    <section className="rounded-3xl border border-slate-800 bg-slate-900/70 p-6 shadow-lg shadow-slate-950/20">
+                        <div className="flex items-start justify-between gap-4">
+                            <div>
+                                <p className="text-xs font-semibold uppercase tracking-[0.24em] text-cyan-200">Sessions</p>
+                                <h2 className="mt-2 text-xl font-semibold text-white">Supervised CLI runtime</h2>
+                                <p className="mt-2 text-sm text-slate-400">Live posture for supervised coding sessions, restart policy, and the most recent activity.</p>
+                            </div>
+                            <Link
+                                href="/dashboard/session"
+                                title="Open the supervised session dashboard with logs, restart controls, and runtime details"
+                                aria-label="Open sessions dashboard"
+                                className="text-sm font-medium text-cyan-200 transition hover:text-cyan-100"
+                            >
+                                Open sessions →
+                            </Link>
+                        </div>
+
+                        <div className="mt-6 space-y-3">
+                            {sessions.length === 0 ? (
+                                <div className="rounded-2xl border border-dashed border-slate-700 bg-slate-950/50 p-4 text-sm text-slate-400">
+                                    No supervised sessions are active yet.
+                                </div>
+                            ) : sessions.map((session) => {
+                                const latestLogMessage = getLatestSessionLogMessage(session);
+                                const isPendingAction = pendingSessionActionId === session.id;
+
+                                return (
+                                    <div key={session.id} className="rounded-2xl border border-slate-800 bg-slate-950/70 p-4">
+                                        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                                            <div className="min-w-0">
+                                                <div className="flex flex-wrap items-center gap-3">
+                                                    <h3 className="text-base font-semibold text-white">{session.name}</h3>
+                                                    <span className={`rounded-full border px-2.5 py-1 text-xs font-medium ${getSessionTone(session.status)}`}>
+                                                        {getSessionStatusLabel(session.status)}
+                                                    </span>
+                                                    <span className="rounded-full border border-slate-700 px-2.5 py-1 text-xs text-slate-300">
+                                                        {session.cliType}
+                                                    </span>
+                                                </div>
+                                                <p className="mt-2 break-all font-mono text-xs text-slate-500">{session.workingDirectory}</p>
+                                                {session.lastError ? (
+                                                    <p className="mt-2 text-sm text-rose-300">{session.lastError}</p>
+                                                ) : null}
+                                            </div>
+                                            <div className="text-right text-sm text-slate-300">
+                                                <div>{formatRelativeTimestamp(session.lastActivityAt, currentTimestamp)}</div>
+                                                <div className="text-xs text-slate-500">
+                                                    Restarts {session.restartCount}/{session.maxRestartAttempts}
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div className="mt-4 grid gap-3 lg:grid-cols-2">
+                                            <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-3 text-sm text-slate-300">
+                                                <div className="font-medium text-white">Restart posture</div>
+                                                <p className="mt-2 text-slate-400">{getSessionRestartPolicyLabel(session)}</p>
+                                                {session.scheduledRestartAt ? (
+                                                    <p className="mt-2 text-cyan-200">Restart queued {formatRestartCountdown(session.scheduledRestartAt, currentTimestamp)}</p>
+                                                ) : null}
+                                            </div>
+                                            <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-3 text-sm text-slate-300">
+                                                <div className="font-medium text-white">Latest activity</div>
+                                                <p className="mt-2 text-slate-400">{latestLogMessage ?? 'No session logs captured yet.'}</p>
+                                            </div>
+                                        </div>
+
+                                        {(onStartSession || onStopSession || onRestartSession) ? (
+                                            <div className="mt-4 flex flex-wrap gap-2">
+                                                {session.status === 'stopped' || session.status === 'created' ? (
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => onStartSession?.(session.id)}
+                                                        disabled={isPendingAction}
+                                                        className="rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1.5 text-sm font-medium text-emerald-100 transition hover:bg-emerald-500/20 disabled:cursor-not-allowed disabled:opacity-60"
+                                                    >
+                                                        {isPendingAction ? 'Starting…' : 'Start session'}
+                                                    </button>
+                                                ) : (
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => onStopSession?.(session.id)}
+                                                        disabled={isPendingAction}
+                                                        className="rounded-full border border-slate-700 bg-slate-900/70 px-3 py-1.5 text-sm font-medium text-slate-100 transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
+                                                    >
+                                                        {isPendingAction ? 'Stopping…' : 'Stop session'}
+                                                    </button>
+                                                )}
+                                                <button
+                                                    type="button"
+                                                    onClick={() => onRestartSession?.(session.id)}
+                                                    disabled={isPendingAction}
+                                                    className="rounded-full border border-cyan-500/30 bg-cyan-500/10 px-3 py-1.5 text-sm font-medium text-cyan-100 transition hover:bg-cyan-500/20 disabled:cursor-not-allowed disabled:opacity-60"
+                                                >
+                                                    {isPendingAction ? 'Working…' : 'Restart session'}
+                                                </button>
+                                            </div>
+                                        ) : null}
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </section>
 
                     <section className="rounded-3xl border border-slate-800 bg-slate-900/70 p-6 shadow-lg shadow-slate-950/20">
                         <div className="flex items-start justify-between gap-4">
@@ -1521,6 +1658,8 @@ export function DashboardHomeView({
                             </div>
                         </div>
                     </section>
+
+                        <BorgOrchestratorWidget />
 
                     </div>
 

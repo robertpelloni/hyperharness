@@ -9,6 +9,7 @@ import { Typography, Icon, Button, ToggleWithoutLabel, Toggle } from '../ui';
 import { AutomationService } from '@src/services/automation.service';
 import { cn } from '@src/lib/utils';
 import { createLogger } from '@extension/shared/lib/logger';
+import { getExtensionStorageJson, setExtensionStorageJson } from '@src/stores/extension-storage';
 
 const logger = createLogger('Settings');
 
@@ -32,19 +33,17 @@ const Settings: React.FC = () => {
     // Update user preferences store with the new delay
     updatePreferences({ [`${type}Delay`]: delay });
 
-    // Store in localStorage
-    try {
-      const storedDelays = JSON.parse(localStorage.getItem('mcpDelaySettings') || '{}');
-      localStorage.setItem(
-        'mcpDelaySettings',
-        JSON.stringify({
+    void (async () => {
+      try {
+        const storedDelays = await getExtensionStorageJson<Record<string, number>>('mcpDelaySettings', {});
+        await setExtensionStorageJson('mcpDelaySettings', {
           ...storedDelays,
           [`${type}Delay`]: delay,
-        }),
-      );
-    } catch (error) {
-      logger.error('[Settings] Error storing delay settings:', error);
-    }
+        });
+      } catch (error) {
+        logger.error('[Settings] Error storing delay settings:', error);
+      }
+    })();
 
     // Update automation state on window
     AutomationService.getInstance().updateAutomationStateOnWindow().catch(console.error);
@@ -52,37 +51,36 @@ const Settings: React.FC = () => {
 
   // Load stored delays on component mount, set default to 2 seconds if not set
   React.useEffect(() => {
-    try {
-      const storedDelays = JSON.parse(localStorage.getItem('mcpDelaySettings') || '{}');
-      // If no stored delays, use defaults
-      if (Object.keys(storedDelays).length === 0) {
+    void (async () => {
+      try {
+        const storedDelays = await getExtensionStorageJson<Record<string, number>>('mcpDelaySettings', {});
+        if (Object.keys(storedDelays).length === 0) {
+          updatePreferences(DEFAULT_DELAYS);
+          await setExtensionStorageJson('mcpDelaySettings', DEFAULT_DELAYS);
+        } else {
+          updatePreferences(storedDelays);
+        }
+      } catch (error) {
+        logger.error('[Settings] Error loading stored delay settings:', error);
         updatePreferences(DEFAULT_DELAYS);
-        localStorage.setItem('mcpDelaySettings', JSON.stringify(DEFAULT_DELAYS));
-      } else {
-        // Use stored delays
-        updatePreferences(storedDelays);
+        await setExtensionStorageJson('mcpDelaySettings', DEFAULT_DELAYS);
       }
-    } catch (error) {
-      logger.error('[Settings] Error loading stored delay settings:', error);
-      // Set defaults on error
-      updatePreferences(DEFAULT_DELAYS);
-      localStorage.setItem('mcpDelaySettings', JSON.stringify(DEFAULT_DELAYS));
-    }
+    })();
   }, [updatePreferences]);
 
   const handleResetDefaults = () => {
     updatePreferences(DEFAULT_DELAYS);
-    localStorage.setItem('mcpDelaySettings', JSON.stringify(DEFAULT_DELAYS));
+    void setExtensionStorageJson('mcpDelaySettings', DEFAULT_DELAYS);
     logger.debug('[Settings] Reset to defaults');
   };
 
-  const handleExportData = () => {
+  const handleExportData = async () => {
     const data = {
       preferences: preferences,
       profiles: useProfileStore.getState().profiles,
       activeProfileId: useProfileStore.getState().activeProfileIds?.[0] || null,
       logs: useActivityStore.getState().logs,
-      favorites: JSON.parse(localStorage.getItem('mcpFavorites') || '[]'),
+      favorites: await getExtensionStorageJson<string[]>('mcpFavorites', []),
       version: '0.7.0',
       timestamp: new Date().toISOString(),
     };
@@ -91,7 +89,7 @@ const Settings: React.FC = () => {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `borg-extension-backup-${new Date().toISOString().slice(0, 10)}.json`;
+    a.download = `hypercode-extension-backup-${new Date().toISOString().slice(0, 10)}.json`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -109,14 +107,14 @@ const Settings: React.FC = () => {
     if (!file) return;
 
     const reader = new FileReader();
-    reader.onload = e => {
+    reader.onload = async e => {
       try {
         const data = JSON.parse(e.target?.result as string);
 
         if (data.preferences) updatePreferences(data.preferences);
         if (data.profiles) useProfileStore.setState({ profiles: data.profiles, activeProfileIds: data.activeProfileId ? [data.activeProfileId] : [] });
         if (data.logs) useActivityStore.setState({ logs: data.logs });
-        if (data.favorites) localStorage.setItem('mcpFavorites', JSON.stringify(data.favorites));
+        if (data.favorites) await setExtensionStorageJson('mcpFavorites', data.favorites);
 
         useToastStore.getState().addToast({
           title: 'Import Successful',

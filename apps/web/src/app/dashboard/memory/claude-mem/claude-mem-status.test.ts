@@ -2,8 +2,8 @@ import { describe, expect, it } from 'vitest';
 
 import { CLAUDE_MEM_CAPABILITIES, getClaudeMemOperatorGuidance, getClaudeMemStatusSummary } from './claude-mem-status';
 
-describe('claude-mem status helpers', () => {
-    it('summarizes the current Borg claude-mem parity state honestly', () => {
+describe('borg-memory status helpers', () => {
+    it('summarizes the current Borg borg-memory parity state honestly', () => {
         expect(getClaudeMemStatusSummary({ ready: true }, [
             { id: 'browser-extension-chromium', status: 'ready' },
             { id: 'browser-extension-firefox', status: 'ready' },
@@ -144,7 +144,7 @@ describe('claude-mem status helpers', () => {
         });
     });
 
-    it('warns when claude-mem is not part of the active memory pipeline', () => {
+    it('warns when borg-memory is not part of the active memory pipeline', () => {
         expect(getClaudeMemOperatorGuidance({
             exists: true,
             totalEntries: 3,
@@ -159,8 +159,8 @@ describe('claude-mem status helpers', () => {
                 claudeMemEnabled: false,
             },
         })).toEqual({
-            title: 'Claude-mem adapter not active in the runtime pipeline',
-            detail: 'Core reports the active memory pipeline as json with json. The adapter file can still exist on disk, but Borg is not currently writing new memories through claude-mem.',
+            title: 'borg-memory adapter not active in the runtime pipeline',
+            detail: 'Core reports the active memory pipeline as json with json. The adapter file can still exist on disk, but Borg is not currently writing new memories through borg-memory.',
             tone: 'warning',
         });
     });

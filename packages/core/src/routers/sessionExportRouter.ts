@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { t, publicProcedure, adminProcedure } from '../lib/trpc-core.js';
+import { resolveOrchestratorBase } from '../lib/borg-orchestrator.js';
 
 /**
  * Session Export/Import Router
@@ -78,6 +79,13 @@ export interface ImportReport {
     }>;
 }
 
+type OrchestratorSessionRecord = {
+    id?: string;
+    currentTask?: string;
+    status?: string;
+    startTime?: number;
+};
+
 // Session format auto-detection
 const SESSION_FORMAT_SIGNATURES: Record<string, { paths: string[]; type: string }> = {
     'claude-code': { paths: ['.claude', '.claude/sessions'], type: 'claude-code' },
@@ -146,6 +154,66 @@ function parseImportData(rawData: string): { format: string; sessions: ExportedS
     return { format, sessions: [] };
 }
 
+export async function loadExportableOrchestratorSessions(
+    fetchImpl: typeof fetch = fetch,
+    orchestratorBase: string | null = resolveOrchestratorBase(),
+): Promise<ExportedSession[]> {
+    if (!orchestratorBase) {
+        return [];
+    }
+
+    const res = await fetchImpl(`${orchestratorBase}/api/sessions`);
+    if (!res.ok) {
+        return [];
+    }
+
+    const data = await res.json();
+    if (!Array.isArray(data)) {
+        return [];
+    }
+
+    return (data as OrchestratorSessionRecord[]).map((record) => ({
+        id: String(record.id ?? `exported_${Date.now()}`),
+        name: String(record.currentTask || 'Borg Session'),
+        cliType: 'borg',
+        status: String(record.status || 'unknown'),
+        createdAt: typeof record.startTime === 'number' ? record.startTime : Date.now(),
+        workingDirectory: process.cwd(),
+        metadata: {},
+        logs: [],
+        memories: [],
+    }));
+}
+
+export async function restoreSessionViaOrchestrator(
+    session: ExportedSession,
+    fetchImpl: typeof fetch = fetch,
+    orchestratorBase: string | null = resolveOrchestratorBase(),
+): Promise<{ ok: true } | { ok: false; reason: string }> {
+    if (!orchestratorBase) {
+        return { ok: false, reason: 'No Borg Orchestrator base configured.' };
+    }
+
+    try {
+        const res = await fetchImpl(`${orchestratorBase}/api/sessions`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                task: { description: `Restore of ${session.name}` },
+                workingDirectory: session.workingDirectory || process.cwd()
+            })
+        });
+
+        if (res.ok) {
+            return { ok: true };
+        }
+
+        return { ok: false, reason: `API returned ${res.status}` };
+    } catch (e: any) {
+        return { ok: false, reason: e.message };
+    }
+}
+
 // In-memory export store
 const exportHistory: Array<{ id: string; format: string; sessionCount: number; exportedAt: number }> = [];
 
@@ -166,26 +234,9 @@ export const sessionExportRouter = t.router({
                 globalMemories: [],
             };
 
-            // Query the Borg Orchestrator API for real sessions
             try {
-                const res = await fetch(`http://localhost:3847/api/sessions`);
-                if (res.ok) {
-                    const data = await res.json();
-                    if (Array.isArray(data)) {
-                        pkg.sessions = data.map((d: any) => ({
-                            id: d.id,
-                            name: d.currentTask || 'Borg Session',
-                            cliType: 'borg',
-                            status: d.status,
-                            createdAt: d.startTime || Date.now(),
-                            workingDirectory: process.cwd(),
-                            metadata: {},
-                            logs: [],
-                            memories: [],
-                        }));
-                        pkg.sessionCount = pkg.sessions.length;
-                    }
-                }
+                pkg.sessions = await loadExportableOrchestratorSessions();
+                pkg.sessionCount = pkg.sessions.length;
             } catch (e: any) {
                 console.warn(`[SessionExport] Borg Orchestrator unavailable (${e.message}). Exporting empty sessions list.`);
             }
@@ -228,27 +279,14 @@ export const sessionExportRouter = t.router({
                     report.details.push({ sessionId: session.id, action: 'imported', reason: 'dry-run preview' });
                     report.imported++;
                 } else {
-                    // Send to Borg Orchestrator API
-                    try {
-                        const res = await fetch(`http://localhost:3847/api/sessions`, {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({
-                                task: { description: `Restore of ${session.name}` },
-                                workingDirectory: session.workingDirectory || process.cwd()
-                            })
-                        });
-                        
-                        if (res.ok) {
-                            report.details.push({ sessionId: session.id, action: 'imported' });
-                            report.imported++;
-                        } else {
-                            report.details.push({ sessionId: session.id, action: 'error', reason: `API returned ${res.status}` });
-                            report.errors.push(`Failed to import session ${session.id}`);
-                        }
-                    } catch (e: any) {
-                        report.details.push({ sessionId: session.id, action: 'error', reason: e.message });
-                        report.errors.push(`Network error importing session ${session.id}: ${e.message}`);
+                    const result = await restoreSessionViaOrchestrator(session);
+
+                    if (result.ok) {
+                        report.details.push({ sessionId: session.id, action: 'imported' });
+                        report.imported++;
+                    } else {
+                        report.details.push({ sessionId: session.id, action: 'error', reason: result.reason });
+                        report.errors.push(`Failed to import session ${session.id}: ${result.reason}`);
                     }
                 }
             }

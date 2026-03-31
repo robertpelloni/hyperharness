@@ -7,6 +7,7 @@ import { devtools, persist, createJSONStorage } from 'zustand/middleware';
 import { eventBus, initializeEventBus } from '../events'; // Assuming initializeEventBus might be called here or in a main initializer
 import type { GlobalSettings } from '../types/stores';
 import { createLogger } from '@extension/shared/lib/logger';
+import { createExtensionStateStorage } from './extension-storage';
 
 const logger = createLogger('AppStore');
 
@@ -95,8 +96,8 @@ export const useAppStore = create<AppState>()(
         },
       }),
       {
-        name: 'mcp-super-assistant-app-store', // Unique name for localStorage
-        storage: createJSONStorage(() => localStorage), // Specify localStorage
+        name: 'mcp-super-assistant-app-store',
+        storage: createJSONStorage(createExtensionStateStorage),
         partialize: state => ({
           // Only persist globalSettings and sidebarWidth from uiStore (example)
           globalSettings: state.globalSettings,

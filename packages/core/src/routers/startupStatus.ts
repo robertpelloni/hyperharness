@@ -174,8 +174,15 @@ export async function buildStartupStatusSnapshot(input: StartupStatusInput) {
 
     const bridgeClientCount = Number(bridgeStatus.clientCount ?? 0);
     const bridgeReady = Boolean(bridgeStatus.ready);
-    const bridgePort = Number.isInteger(bridgeStatus.port) ? Number(bridgeStatus.port) : null;
-    const hasConnectedBridgeClients = bridgeClientCount > 0;
+    const visibleBridgeClientCount = bridgeReady ? bridgeClientCount : 0;
+    const bridgePort = bridgeReady && Number.isInteger(bridgeStatus.port) ? Number(bridgeStatus.port) : null;
+    const hasConnectedBridgeClients = visibleBridgeClientCount > 0;
+    const bridgeClients = bridgeReady ? bridgeStatus.clients ?? [] : [];
+    const bridgeSupportedCapabilities = bridgeReady ? bridgeStatus.supportedCapabilities ?? [] : [];
+    const bridgeSupportedHookPhases = bridgeReady ? bridgeStatus.supportedHookPhases ?? [] : [];
+    const bridgeWebsocketUrl = bridgeReady ? bridgeStatus.websocketUrl ?? null : null;
+    const bridgeHealthUrl = bridgeReady ? bridgeStatus.healthUrl ?? null : null;
+    const bridgeStreamUrl = bridgeReady ? bridgeStatus.streamUrl ?? null : null;
     const memoryInitialized = Boolean(mcpServerRuntime.isMemoryInitialized);
     const memoryReady = Boolean(mcpServerRuntime.memoryManager && agentMemory && memoryInitialized);
     const sessionReady = Boolean(sessionSupervisor);
@@ -401,14 +408,14 @@ export async function buildStartupStatusSnapshot(input: StartupStatusInput) {
                 port: bridgePort,
                 ready: bridgeReady,
                 acceptingConnections: bridgeReady,
-                clientCount: bridgeClientCount,
+                clientCount: visibleBridgeClientCount,
                 hasConnectedClients: hasConnectedBridgeClients,
-                clients: bridgeStatus.clients ?? [],
-                supportedCapabilities: bridgeStatus.supportedCapabilities ?? [],
-                supportedHookPhases: bridgeStatus.supportedHookPhases ?? [],
-                websocketUrl: bridgeStatus.websocketUrl ?? null,
-                healthUrl: bridgeStatus.healthUrl ?? null,
-                streamUrl: bridgeStatus.streamUrl ?? null,
+                clients: bridgeClients,
+                supportedCapabilities: bridgeSupportedCapabilities,
+                supportedHookPhases: bridgeSupportedHookPhases,
+                websocketUrl: bridgeWebsocketUrl,
+                healthUrl: bridgeHealthUrl,
+                streamUrl: bridgeStreamUrl,
             },
             executionEnvironment: {
                 ready: executionReady,

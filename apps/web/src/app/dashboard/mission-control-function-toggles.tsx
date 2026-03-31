@@ -11,7 +11,7 @@ export interface MissionControlFunctionEntry extends NavItem {
 
 export const MISSION_CONTROL_FUNCTION_TOGGLE_STORAGE_KEY = 'borg_mission_control_function_toggles_v1';
 const QUICK_LAUNCH_PREVIEW_LIMIT = 12;
-const CORE_SECTION_TITLE = 'Borg 1.0 Core';
+const CORE_SECTION_TITLE_SUFFIX = 'Core';
 
 function getSafeLocalStorage(): Storage | null {
     if (typeof window === 'undefined') {
@@ -100,7 +100,7 @@ export function countEnabledMissionControlFunctions(
 
 export function createCoreMissionControlToggleState(entries: MissionControlFunctionEntry[]): Record<string, boolean> {
     return entries.reduce<Record<string, boolean>>((state, entry) => {
-        state[entry.href] = entry.sectionTitle === CORE_SECTION_TITLE;
+        state[entry.href] = entry.sectionTitle.trim().endsWith(CORE_SECTION_TITLE_SUFFIX);
         return state;
     }, {});
 }

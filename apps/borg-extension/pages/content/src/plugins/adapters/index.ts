@@ -1,7 +1,7 @@
 /**
  * Adapter Plugins Export Module
  *
- * This file exports all available adapter plugins for the Borg-Extension.
+ * This file exports all available adapter plugins for the HyperCode-Extension.
  */
 
 export { BaseAdapterPlugin } from './base.adapter';

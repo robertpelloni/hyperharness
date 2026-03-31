@@ -62,6 +62,7 @@ export interface SystemStartupStatusInput {
         };
         extensionBridge?: {
             ready?: boolean;
+            port?: number | null;
             acceptingConnections?: boolean;
             clientCount?: number;
             hasConnectedClients?: boolean;
@@ -94,6 +95,12 @@ export interface SystemComponentHealthRow {
 export interface SystemStatusCardSummary {
     status: string;
     detail: string;
+}
+
+function formatPortDetail(label: string, port: number | null): string {
+    return port === null
+        ? `${label} unavailable`
+        : `${label} :${port}`;
 }
 
 export interface SystemBrowserStatusInput {
@@ -429,11 +436,13 @@ export function buildSystemStatusCards(
     startupStatus: SystemStartupStatusInput | undefined,
     mcpInitialized: boolean,
     installSurfaceArtifacts?: SystemInstallSurfaceArtifactInput[] | null,
+    dashboardPort?: number | null,
 ): {
     mcpServer: SystemStatusCardSummary;
     cachedInventory: SystemStatusCardSummary;
     extensionBridge: SystemStatusCardSummary;
     extensionArtifacts: SystemStatusCardSummary;
+    network: SystemStatusCardSummary;
     startupReadiness: SystemStatusCardSummary;
 } {
     const startupChecks = startupStatus ? buildSystemStartupChecks(startupStatus, installSurfaceArtifacts) : [];
@@ -451,6 +460,24 @@ export function buildSystemStatusCards(
         ?? 0;
     const bridgeOperational = bridge?.acceptingConnections ?? bridge?.ready;
     const bridgeClientCount = bridge?.clientCount ?? 0;
+    const bridgePort = Number.isInteger(bridge?.port) ? Number(bridge?.port) : null;
+    const hasDashboardPort = Number.isInteger(dashboardPort);
+    const hasBridgePort = bridgePort !== null;
+    const networkStatus = startupTelemetryConnecting && !hasDashboardPort && !hasBridgePort
+        ? 'Connecting'
+        : hasDashboardPort && hasBridgePort
+        ? 'Active'
+        : hasDashboardPort || hasBridgePort
+        ? 'Partial'
+        : 'Pending';
+    const networkDetail = startupTelemetryConnecting && !hasDashboardPort && !hasBridgePort
+        ? 'Waiting for runtime port telemetry from the dashboard and extension bridge.'
+        : [
+            formatPortDetail('Dashboard', hasDashboardPort ? Number(dashboardPort) : null),
+            bridgeOperational
+                ? formatPortDetail('Extension bridge', bridgePort)
+                : 'Extension bridge listener offline',
+        ].join(' · ');
 
     return {
         mcpServer: {
@@ -484,6 +511,10 @@ export function buildSystemStatusCards(
                         ? 'Partial'
                         : 'Pending',
             detail: getBrowserExtensionArtifactDetail(installSurfaceArtifacts),
+        },
+        network: {
+            status: networkStatus,
+            detail: networkDetail,
         },
         startupReadiness: {
             status: startupTelemetryConnecting

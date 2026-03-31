@@ -95,11 +95,22 @@ describe('buildStartupStatusSnapshot', () => {
                 memoryManager: {},
                 isMemoryInitialized: true,
                 getBridgeStatus: () => ({
+                    port: 3011,
                     ready: false,
-                    clientCount: 0,
-                    clients: [],
-                    supportedCapabilities: [],
-                    supportedHookPhases: [],
+                    clientCount: 2,
+                    clients: [
+                        {
+                            clientId: 'stale-client',
+                            clientName: 'Stale bridge client',
+                            connectedAt: '2026-03-25T00:00:00.000Z',
+                            lastSeenAt: '2026-03-25T00:00:30.000Z',
+                        },
+                    ],
+                    supportedCapabilities: ['tool.execute'],
+                    supportedHookPhases: ['before'],
+                    websocketUrl: 'ws://127.0.0.1:3011',
+                    healthUrl: 'http://127.0.0.1:3011/health',
+                    streamUrl: 'http://127.0.0.1:3011/api/mesh/stream',
                 }),
             },
             aggregator: {
@@ -160,6 +171,12 @@ describe('buildStartupStatusSnapshot', () => {
                 expect.objectContaining({ code: 'extension_bridge_not_ready' }),
             ]),
         );
+        expect(snapshot.checks.extensionBridge.port).toBeNull();
+        expect(snapshot.checks.extensionBridge.clientCount).toBe(0);
+        expect(snapshot.checks.extensionBridge.clients).toEqual([]);
+        expect(snapshot.checks.extensionBridge.websocketUrl).toBeNull();
+        expect(snapshot.checks.extensionBridge.healthUrl).toBeNull();
+        expect(snapshot.checks.extensionBridge.streamUrl).toBeNull();
     });
 
     it('reports a clear startup summary with blocking reason codes when checks are pending', async () => {

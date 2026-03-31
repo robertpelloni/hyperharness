@@ -1,4 +1,4 @@
-import { describe, test, expect, beforeEach, afterEach, mock } from 'bun:test';
+import { describe, test, expect, beforeEach, afterEach, mock } from 'vitest';
 import { AgentMemoryService } from '../../src/services/AgentMemoryService.ts';
 import { MemoryManager } from '../../src/services/MemoryManager.ts';
 import * as fs from 'fs';

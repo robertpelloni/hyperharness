@@ -1,4 +1,4 @@
-import { describe, test, expect } from 'bun:test';
+import { describe, test, expect } from 'vitest';
 import { EventEmitter } from 'events';
 import { HubServer } from '../src/hub/HubServer.js';
 

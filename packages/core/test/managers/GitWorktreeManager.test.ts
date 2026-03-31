@@ -1,4 +1,4 @@
-import { describe, test, expect, beforeEach, afterEach } from 'bun:test';
+import { describe, test, expect, beforeEach, afterEach } from 'vitest';
 import { GitWorktreeManager, type Worktree } from '../../src/managers/GitWorktreeManager.ts';
 import { execSync } from 'child_process';
 import * as fs from 'fs';

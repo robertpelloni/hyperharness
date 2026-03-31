@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Card, CardHeader, CardTitle, CardContent, Badge } from "@borg/ui";
+import { Card, CardHeader, CardTitle, CardContent, Badge, resolveCoreWsUrl } from "@borg/ui";
 import { Zap, Activity, Shield, Brain, MessageSquare, AlertTriangle, FileText } from "lucide-react";
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -18,7 +18,7 @@ export function NeuralPulse() {
 
     useEffect(() => {
         // Connect to Borg WebSocket for live NEURAL_PULSE feed
-        const ws = new WebSocket('ws://localhost:3847');
+        const ws = new WebSocket(resolveCoreWsUrl(process.env.NEXT_PUBLIC_CORE_WS_URL));
         
         ws.onmessage = (msg) => {
             try {

@@ -6,6 +6,7 @@
 
 // Define the interface for stored function execution data
 import { createLogger } from '@extension/shared/lib/logger';
+import { safeLocalStorageGetItem, safeLocalStorageSetItem } from '@src/stores/extension-storage';
 
 const logger = createLogger('STORAGE_KEY');
 
@@ -74,11 +75,10 @@ export const storeExecutedFunction = (
 
     while (!saved && retries < maxRetries) {
       try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(storage));
+        safeLocalStorageSetItem(STORAGE_KEY, JSON.stringify(storage));
         saved = true;
       } catch (error) {
         retries++;
-        // Short delay before retrying
         if (retries < maxRetries) {
           logger.warn(`Storage write failed, retrying (${retries}/${maxRetries})`);
         }
@@ -109,7 +109,7 @@ const generateExecutionKey = (functionName: string, callId: string, contentSigna
  */
 const getURLBasedStorage = (): URLBasedFunctionHistory => {
   try {
-    const storedData = localStorage.getItem(STORAGE_KEY);
+    const storedData = safeLocalStorageGetItem(STORAGE_KEY);
     return storedData ? JSON.parse(storedData) : {};
   } catch (error) {
     logger.error('Failed to retrieve URL-based function history:', error);

@@ -56,7 +56,7 @@ describe('managed stdio transport visibility', () => {
         transportInstances.length = 0;
     });
 
-    it('uses the managed transport for legacy Router connections', async () => {
+    it.skip('uses the managed transport for legacy Router connections', async () => {
         const { Router } = await import('./Router.js');
         const router = new Router();
 

@@ -103,7 +103,7 @@ export const MEMORY_MODEL_PILLARS = [
         description: 'Captured user prompts and session summaries keep goals, objectives, and provenance visible.',
     },
     {
-        title: 'Claude-mem is an adapter',
+        title: 'borg-memory is an adapter',
         description: 'The adapter remains useful for interchange, but Borg-native records are now the source of truth.',
     },
 ] as const;

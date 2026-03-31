@@ -52,12 +52,25 @@ async function readOptionalFile(filePath: string): Promise<string | null> {
 
 describe('resolveUpstreamBases', () => {
   const originalUpstream = process.env.BORG_TRPC_UPSTREAM;
+  const originalBorgConfigDir = process.env.BORG_CONFIG_DIR;
+  let tempConfigDir = '';
+
+  beforeEach(async () => {
+    tempConfigDir = await fs.mkdtemp(path.join(os.tmpdir(), 'borg-trpc-upstream-'));
+    process.env.BORG_CONFIG_DIR = tempConfigDir;
+  });
 
   afterEach(() => {
     if (originalUpstream === undefined) {
       delete process.env.BORG_TRPC_UPSTREAM;
     } else {
       process.env.BORG_TRPC_UPSTREAM = originalUpstream;
+    }
+
+    if (originalBorgConfigDir === undefined) {
+      delete process.env.BORG_CONFIG_DIR;
+    } else {
+      process.env.BORG_CONFIG_DIR = originalBorgConfigDir;
     }
   });
 
@@ -67,6 +80,8 @@ describe('resolveUpstreamBases', () => {
     expect(resolveUpstreamBases()).toEqual([
       'http://127.0.0.1:3100/trpc',
       'http://127.0.0.1:4000/trpc',
+      'http://127.0.0.1:4001/trpc',
+      'http://127.0.0.1:3847/trpc',
       'http://127.0.0.1:3001/trpc',
     ]);
   });
@@ -77,6 +92,25 @@ describe('resolveUpstreamBases', () => {
     expect(resolveUpstreamBases()).toEqual([
       'http://127.0.0.1:4000/trpc',
       'http://127.0.0.1:3100/trpc',
+      'http://127.0.0.1:4001/trpc',
+      'http://127.0.0.1:3847/trpc',
+      'http://127.0.0.1:3001/trpc',
+    ]);
+  });
+
+  it('prefers the live Borg lock port over stale configured upstreams', async () => {
+    process.env.BORG_TRPC_UPSTREAM = 'http://127.0.0.1:4000/trpc';
+    await fs.writeFile(
+      path.join(tempConfigDir, 'lock'),
+      JSON.stringify({ host: '0.0.0.0', port: 4001 }),
+      'utf8',
+    );
+
+    expect(resolveUpstreamBases()).toEqual([
+      'http://127.0.0.1:4001/trpc',
+      'http://127.0.0.1:4000/trpc',
+      'http://127.0.0.1:3100/trpc',
+      'http://127.0.0.1:3847/trpc',
       'http://127.0.0.1:3001/trpc',
     ]);
   });

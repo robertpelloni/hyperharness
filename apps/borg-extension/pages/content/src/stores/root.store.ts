@@ -6,6 +6,7 @@ import { createConnectionSlice, type ConnectionSlice } from './slices/createConn
 import { createToolSlice, type ToolSlice } from './slices/createToolSlice';
 import { createResourceSlice, type ResourceSlice } from './slices/createResourceSlice';
 import { createAdapterSlice, type AdapterSlice } from './slices/createAdapterSlice';
+import { createExtensionStateStorage } from './extension-storage';
 
 export type RootState = UISlice & ConfigSlice & ConnectionSlice & ToolSlice & ResourceSlice & AdapterSlice;
 
@@ -21,8 +22,8 @@ export const useRootStore = create<RootState>()(
         ...createAdapterSlice(...a),
       }),
       {
-        name: 'borg-extension-root-store',
-        storage: createJSONStorage(() => localStorage),
+        name: 'hypercode-extension-root-store',
+        storage: createJSONStorage(createExtensionStateStorage),
         partialize: (state) => ({
           ui: {
             sidebar: {

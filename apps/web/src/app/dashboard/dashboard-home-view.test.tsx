@@ -1167,7 +1167,7 @@ describe('dashboard home helpers', () => {
     });
   });
 
-  it('surfaces claude-mem seeding state in memory/context startup details', () => {
+  it('surfaces borg-memory seeding state in memory/context startup details', () => {
     const startupStatus = {
       status: 'running',
       ready: false,
@@ -1194,7 +1194,7 @@ describe('dashboard home helpers', () => {
           ready: false,
           initialized: true,
           agentMemory: true,
-          claudeMem: {
+          sectionedMemory: {
             ready: false,
             enabled: true,
             storeExists: true,
@@ -1242,7 +1242,7 @@ describe('dashboard home helpers', () => {
     expect(buildStartupChecklist(startupStatus)).toContainEqual({
       label: 'Memory / context',
       ready: false,
-      detail: 'Memory manager is initialized, but claude-mem is still seeding default sections (3/7 present)',
+      detail: 'Memory manager is initialized, but sectioned memory is still seeding default sections (3/7 present)',
     });
   });
 
@@ -1307,7 +1307,7 @@ describe('dashboard home helpers', () => {
   it('deduplicates startup blocking actions while preserving first-seen order', () => {
     expect(getStartupBlockingReasonActions([
       { code: 'memory_not_ready', detail: 'Memory pending' },
-      { code: 'claude_mem_not_ready', detail: 'Claude-mem pending' },
+      { code: 'sectioned_memory_not_ready', detail: 'Sectioned memory pending' },
       { code: 'extension_bridge_not_ready', detail: 'Bridge offline' },
       { code: 'browser_service_not_ready', detail: 'Browser service offline' },
     ])).toEqual([
@@ -1329,12 +1329,12 @@ describe('dashboard home helpers', () => {
       { code: 'memory_not_ready', detail: 'Memory pending' },
       { code: 'extension_bridge_not_ready', detail: 'Bridge offline' },
       { code: 'mcp_aggregator_not_initialized', detail: 'Aggregator offline' },
-      { code: 'claude_mem_not_ready', detail: 'Claude mem pending' },
+      { code: 'sectioned_memory_not_ready', detail: 'Sectioned memory pending' },
     ])).toEqual([
       { code: 'mcp_aggregator_not_initialized', detail: 'Aggregator offline', priority: 100 },
       { code: 'extension_bridge_not_ready', detail: 'Bridge offline', priority: 80 },
       { code: 'memory_not_ready', detail: 'Memory pending', priority: 60 },
-      { code: 'claude_mem_not_ready', detail: 'Claude mem pending', priority: 60 },
+      { code: 'sectioned_memory_not_ready', detail: 'Sectioned memory pending', priority: 60 },
     ]);
   });
 
@@ -1640,7 +1640,7 @@ describe('DashboardHomeView', () => {
     expect(html).toContain('Cached inventory');
     expect(html).toContain('Resident MCP runtime');
     expect(html).toContain('Memory / context');
-    expect(html).toContain('Supervised CLI runtime');
+    expect(html).toContain('Router posture');
     expect(html).toContain('Quota and fallback posture');
     expect(html).toContain('Detailed MCP view');
     expect(html).toContain('Detailed provider view');

@@ -6,8 +6,7 @@ import express from 'express';
 console.log("[Core:Orchestrator] ✓ express");
 import cors from 'cors';
 console.log("[Core:Orchestrator] ✓ cors");
-import { createHTTPHandler } from '@trpc/server/adapters/node-http';
-console.log("[Core:Orchestrator] ✓ @trpc/server/adapters/node-http");
+import { createExpressMiddleware } from '@trpc/server/adapters/express';
 import { appRouter } from './trpc.js';
 console.log("[Core:Orchestrator] ✓ trpc.js");
 import { ingestPublishedCatalog } from './services/published-catalog-ingestor.js';
@@ -16,7 +15,7 @@ import { MCPServer } from './MCPServer.js';
 import { listenExpress } from './orchestrator-listen.js';
 import { resolveSupervisorEntryPath } from './orchestratorPaths.js';
 import { resolveBridgePort } from './bridge/bridgePort.js';
-console.log("[Core:Orchestrator] ✓ MCPServer.js");
+import { councilApp } from './orchestrator/council/node-index.js';
 
 export const name = "@borg/core";
 
@@ -37,20 +36,53 @@ export async function startOrchestrator(options: StartOrchestratorOptions = {}) 
     const startMcp = options.startMcp ?? true;
     const autoDrive = options.autoDrive ?? false;
 
-    console.log("[Core] 1. Starting Express/tRPC...");
+    console.log("[Core] 1. Starting Express/tRPC/REST...");
     // 1. Start tRPC Server (Dashboard API)
     const app = express();
+    
+    // Standard CORS for Express (handles tRPC and static routes)
     app.use(cors({
         origin: (origin, callback) => {
-            // allow requests with no origin (like mobile apps or curl requests)
             if (!origin) return callback(null, true);
             if (origin.includes('localhost') || origin.includes('127.0.0.1')) {
                 return callback(null, true);
             }
-            return callback(null, true); // Fallback to allow all during transition
+            return callback(null, true);
         },
         credentials: true,
     }));
+
+    // Bridge REST API from Council (Hono) into Express
+    // This unifies both systems on the same port (3847)
+    app.all('/api/*', async (req, res) => {
+        try {
+            // Convert Express Request to Web Standard Request for Hono
+            const protocol = req.protocol;
+            const host = req.get('host');
+            const url = `${protocol}://${host}${req.originalUrl}`;
+            
+            const webReq = new Request(url, {
+                method: req.method,
+                headers: new Headers(req.headers as Record<string, string>),
+                body: ['POST', 'PUT', 'PATCH'].includes(req.method) ? JSON.stringify(req.body) : undefined,
+            });
+
+            // Call Hono's fetch handler
+            const honoRes = await (councilApp as any).fetch(webReq);
+            
+            // Convert Web Standard Response back to Express Response
+            res.status(honoRes.status);
+            honoRes.headers.forEach((value: string, key: string) => {
+                res.setHeader(key, value);
+            });
+            
+            const body = await honoRes.text();
+            res.send(body);
+        } catch (error) {
+            console.error('[Core:Bridge] Hono bridging error:', error);
+            res.status(500).json({ success: false, error: 'Internal server error in API bridge' });
+        }
+    });
 
     // Health endpoint — must precede TRPC so probes don't fall through to
     // middleware that calls getMcpServer() (which throws before init).
@@ -64,17 +96,14 @@ export async function startOrchestrator(options: StartOrchestratorOptions = {}) 
         });
     });
 
-    const trpcHandler = createHTTPHandler({
+    // tRPC middleware
+    app.use('/trpc', createExpressMiddleware({
         router: appRouter,
         createContext: () => ({}),
-    });
-
-    app.all('/trpc*', (req, res) => {
-        trpcHandler(req, res);
-    });
+    }));
 
     await listenExpress(app, trpcPort, host);
-    console.log(`[Core] tRPC Server running at http://${host}:${trpcPort}/trpc`);
+    console.log(`[Core] Unified API Server running at http://${host}:${trpcPort}/trpc and /api`);
 
     // 1.1. Schedule automatic catalog ingestion (startup + 24h interval)
     scheduleCatalogIngestion();

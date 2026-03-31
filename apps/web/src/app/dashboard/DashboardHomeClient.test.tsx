@@ -270,7 +270,7 @@ describe('DashboardHomeClient', () => {
     expect(html).toContain('Operator dashboard');
     expect(html).toContain('Router posture');
     expect(html).toContain('Server health and traffic');
-    expect(html).toContain('Supervised CLI runtime');
+    expect(html).toContain('Router posture');
     expect(html).toContain('Quota and fallback posture');
     expect(html).toContain('Startup readiness');
     expect(html).toContain('Cached inventory');

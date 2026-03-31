@@ -20,14 +20,14 @@ const packageJson = JSON.parse(readFileSync('./package.json', 'utf8'));
 const manifest = {
   manifest_version: 3,
   default_locale: 'en',
-  name: 'Borg Extension',
+  name: 'HyperCode Extension',
   browser_specific_settings: {
     gecko: {
-      id: 'extension@borg.local',
+      id: 'extension@hypercode.local',
     },
   },
   version: packageJson.version,
-  description: 'Borg Extension',
+  description: 'HyperCode Extension',
   host_permissions: [
     '*://*.perplexity.ai/*',
     '*://*.chat.openai.com/*',

@@ -8,6 +8,7 @@ import SchemaRenderer from '../ui/SchemaRenderer';
 import { cn } from '@src/lib/utils';
 import { Card, CardHeader, CardContent } from '@src/components/ui/card';
 import { createLogger } from '@extension/shared/lib/logger';
+import { getExtensionStorageJson, setExtensionStorageJson } from '@src/stores/extension-storage';
 
 const logger = createLogger('AvailableTools');
 
@@ -48,14 +49,16 @@ const AvailableTools: React.FC<AvailableToolsProps> = ({ tools, onExecute, onRef
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
   const [sortBy, setSortBy] = useState<'name' | 'favorite'>('name');
 
-  // Load favorites from local storage
+  // Load favorites from extension-backed storage
   useEffect(() => {
-    try {
-      const storedFavorites = JSON.parse(localStorage.getItem('mcpFavorites') || '[]');
-      setFavorites(new Set(storedFavorites));
-    } catch (e) {
-      logger.error('Failed to load favorites', e);
-    }
+    void (async () => {
+      try {
+        const storedFavorites = await getExtensionStorageJson<string[]>('mcpFavorites', []);
+        setFavorites(new Set(storedFavorites));
+      } catch (e) {
+        logger.error('Failed to load favorites', e);
+      }
+    })();
   }, []);
 
   // Save favorites to local storage
@@ -67,7 +70,7 @@ const AvailableTools: React.FC<AvailableToolsProps> = ({ tools, onExecute, onRef
       newFavorites.add(toolName);
     }
     setFavorites(newFavorites);
-    localStorage.setItem('mcpFavorites', JSON.stringify(Array.from(newFavorites)));
+    void setExtensionStorageJson('mcpFavorites', Array.from(newFavorites));
   };
 
   // Use tools from store if available, fallback to props

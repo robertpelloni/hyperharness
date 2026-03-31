@@ -16,7 +16,7 @@ describe('FineTunedModelManagerService', () => {
         taskTypes: ['code-review', 'security-audit'],
       });
 
-      expect(dataset.id).toStartWith('dataset_');
+      expect(dataset.id).toMatch(/^dataset_/);
       expect(dataset.name).toBe('test-dataset');
       expect(dataset.taskTypes).toEqual(['code-review', 'security-audit']);
       expect(dataset.exampleCount).toBe(0);
@@ -109,7 +109,7 @@ describe('FineTunedModelManagerService', () => {
         suffix: 'test-model',
       });
 
-      expect(job.id).toStartWith('ftjob_');
+      expect(job.id).toMatch(/^ftjob_/);
       expect(job.status).toBe('pending');
       expect(job.baseModel).toBe('gpt-4o-mini');
     });
@@ -178,7 +178,7 @@ describe('FineTunedModelManagerService', () => {
         version: '1.0.0',
       });
 
-      expect(model.id).toStartWith('ftmodel_');
+      expect(model.id).toMatch(/^ftmodel_/);
       expect(model.name).toBe('my-fine-tuned-model');
       expect(model.deploymentStatus).toBe('inactive');
     });

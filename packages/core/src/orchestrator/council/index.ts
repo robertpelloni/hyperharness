@@ -100,7 +100,7 @@ app.onError((err, c) => {
 });
 
 app.get('/', (c) => c.json({ 
-  name: 'borg-orchestrator', 
+  name: 'cli-orchestrator', 
   version: '0.2.0',
   config: {
     supervisors: council.getSupervisors().map(s => s.name),

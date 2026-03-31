@@ -1,7 +1,7 @@
 # Borg Core Assimilation Guide
 
 ## System Overview
-`borg-orchestrator` has undergone a massive architectural overhaul to transition from a standalone monolithic orchestration tool into a resilient, self-healing, distributed sub-component ready for direct assimilation into the **Borg Core**.
+`cli-orchestrator` has undergone a massive architectural overhaul to transition from a standalone monolithic orchestration tool into a resilient, self-healing, distributed sub-component ready for direct assimilation into the **Borg Core**.
 
 ## Core Capabilities for Borg
 
@@ -35,7 +35,7 @@ A persistent SQLite "Knowledge Base" is maintained by the `CollectiveMemoryServi
 - `SelfEvolutionService` adjusts supervisor trust weights dynamically based on historical debate outcomes and can spawn high-privilege meta-sessions to rewrite the Borg orchestration source code.
 
 ## Assimilation Next Steps
-1. **Repository Merge:** Move the `borg-orchestrator` package into the Borg Core monorepo structure.
+1. **Repository Merge:** Move the `cli-orchestrator` package into the Borg Core monorepo structure.
 2. **Global Telemetry:** Hook the `wsManager` broadcast events to the Borg Core global telemetry bus.
 3. **Database Unification:** Migrate the `bun:sqlite` implementation to Borg's central high-availability datastore if required.
 4. **Service Discovery:** Replace hardcoded `127.0.0.1` PTY ports with Borg Core's dynamic service mesh/discovery network.

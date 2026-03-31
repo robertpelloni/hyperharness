@@ -1,5 +1,32 @@
-import { describe, test, expect, beforeEach, mock } from 'vitest';
+import { describe, test, expect, beforeEach, vi } from 'vitest';
 import { SupervisorCouncil } from '../council.js';
+
+vi.mock('../db.js', () => ({
+  dbService: {
+    getDb: vi.fn(),
+    getDrizzle: vi.fn(() => {
+      const dbMock: any = {
+        insert: vi.fn().mockReturnThis(),
+        values: vi.fn().mockReturnThis(),
+        select: vi.fn().mockReturnThis(),
+        from: vi.fn().mockReturnThis(),
+        where: vi.fn().mockReturnThis(),
+        returning: vi.fn().mockReturnThis(),
+        delete: vi.fn().mockReturnThis(),
+        update: vi.fn().mockReturnThis(),
+        set: vi.fn().mockReturnThis(),
+        limit: vi.fn().mockReturnThis(),
+        orderBy: vi.fn().mockReturnThis(),
+        then: vi.fn((resolve) => resolve([])),
+      };
+      return dbMock;
+    }),
+    getSchema: vi.fn(() => new Proxy({}, {
+      get: (target, prop) => ({ name: prop })
+    })),
+    close: vi.fn(),
+  }
+}));
 import type { Supervisor, Message, DevelopmentTask } from '../types.js';
 
 function createMockSupervisor(name: string, responses: string[]): Supervisor {

@@ -1,4 +1,4 @@
-import { describe, test, expect, beforeEach, mock } from 'bun:test';
+import { describe, test, expect, beforeEach, mock } from 'vitest';
 import { ArchitectMode, type ArchitectSession, type EditPlan } from '../../src/agents/ArchitectMode.ts';
 
 describe('ArchitectMode', () => {

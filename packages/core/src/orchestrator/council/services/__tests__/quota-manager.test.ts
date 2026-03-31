@@ -323,35 +323,41 @@ describe('QuotaManagerService', () => {
   });
 
   describe('events', () => {
-    it('should emit request event', (done) => {
-      quotaManager.once('request', (data: { provider: string; tokensUsed: number }) => {
-        expect(data.provider).toBe('openai');
-        expect(data.tokensUsed).toBe(100);
-        done();
-      });
+    it('should emit request event', () => {
+      return new Promise<void>((resolve) => {
+        quotaManager.once('request', (data: { provider: string; tokensUsed: number }) => {
+          expect(data.provider).toBe('openai');
+          expect(data.tokensUsed).toBe(100);
+          resolve();
+        });
 
-      quotaManager.recordRequest('openai', 100, 50, true);
+        quotaManager.recordRequest('openai', 100, 50, true);
+      });
     });
 
-    it('should emit throttled event', (done) => {
-      quotaManager.once('throttled', (data: { provider: string; durationSeconds: number }) => {
-        expect(data.provider).toBe('openai');
-        expect(data.durationSeconds).toBe(60);
-        done();
-      });
+    it('should emit throttled event', () => {
+      return new Promise<void>((resolve) => {
+        quotaManager.once('throttled', (data: { provider: string; durationSeconds: number }) => {
+          expect(data.provider).toBe('openai');
+          expect(data.durationSeconds).toBe(60);
+          resolve();
+        });
 
-      quotaManager.recordRateLimitError('openai');
+        quotaManager.recordRateLimitError('openai');
+      });
     });
 
-    it('should emit unthrottled event', (done) => {
-      quotaManager.recordRateLimitError('openai');
+    it('should emit unthrottled event', () => {
+      return new Promise<void>((resolve) => {
+        quotaManager.recordRateLimitError('openai');
 
-      quotaManager.once('unthrottled', (data: { provider: string }) => {
-        expect(data.provider).toBe('openai');
-        done();
+        quotaManager.once('unthrottled', (data: { provider: string }) => {
+          expect(data.provider).toBe('openai');
+          resolve();
+        });
+
+        quotaManager.unthrottleProvider('openai');
       });
-
-      quotaManager.unthrottleProvider('openai');
     });
   });
 

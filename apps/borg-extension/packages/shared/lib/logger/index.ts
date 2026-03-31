@@ -1,5 +1,5 @@
 /**
- * Centralized logging system for Borg Extension
+ * Centralized logging system for HyperCode Extension
  *
  * Features:
  * - Granular log level control (DEBUG, INFO, WARN, ERROR, NONE)

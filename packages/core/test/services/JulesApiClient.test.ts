@@ -1,4 +1,4 @@
-import { describe, test, expect } from 'bun:test';
+import { describe, test, expect } from 'vitest';
 import { JulesApiClient } from '../../src/services/JulesApiClient.js';
 
 describe('JulesApiClient', () => {

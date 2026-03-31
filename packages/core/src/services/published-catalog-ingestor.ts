@@ -300,6 +300,10 @@ export interface CatalogSourceAdapter {
 
 const FETCH_TIMEOUT_MS = 15_000;
 
+function toErrorMessage(error: unknown): string {
+    return error instanceof Error ? error.message : String(error);
+}
+
 async function safeFetch(url: string): Promise<unknown> {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
@@ -309,18 +313,15 @@ async function safeFetch(url: string): Promise<unknown> {
             headers: { "Accept": "application/json", "User-Agent": "Borg/MCP-Catalog-Ingestor" },
         });
         if (!response.ok) {
-            console.warn(`[CatalogIngestor] HTTP ${response.status} from ${url}`);
-            return null; // Graceful degradation for rate limits/404s
+            throw new Error(`HTTP ${response.status}`);
         }
         try {
             return await response.json();
         } catch (e) {
-            console.warn(`[CatalogIngestor] Failed to parse JSON from ${url}:`, e);
-            return null;
+            throw new Error(`Failed to parse JSON: ${toErrorMessage(e)}`);
         }
     } catch (err) {
-        console.warn(`[CatalogIngestor] Request to ${url} failed:`, err instanceof Error ? err.message : String(err));
-        return null; // Suppress DNS / Abort errors to prevent crash
+        throw new Error(`Request to ${url} failed: ${toErrorMessage(err)}`);
     } finally {
         clearTimeout(timeout);
     }

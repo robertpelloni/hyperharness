@@ -1,4 +1,4 @@
-# Handoff: Borg Extension v0.7.2
+# Handoff: HyperCode Extension v0.7.2
 
 > **Read [AGENTS.md](./AGENTS.md) first.** It contains all universal instructions.
 > This file documents the latest session state for incoming agents.

@@ -10,6 +10,7 @@ import { evolutionRouter } from './evolutionRouter.js';
 import { hooksRouter } from './hooksRouter.js';
 import { fineTuneRouter } from './fineTuneRouter.js';
 import { ideRouter } from './ideRouter.js';
+import { rotationRouter } from './rotationRouter.js';
 import { readFileSync, writeFileSync, existsSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
@@ -51,6 +52,7 @@ function getCouncilConfigPath(): string {
  *   - `hooks` — event hook registrations
  *   - `fineTuning` — fine-tuning experiment management
  *   - `ide` — IDE extension hooks
+ *   - `rotation` — shared-context rotating multi-model rooms
  */
 export const councilRouter = t.router({
   /**
@@ -103,4 +105,5 @@ export const councilRouter = t.router({
   hooks: hooksRouter,
   fineTuning: fineTuneRouter,
   ide: ideRouter,
+  rotation: rotationRouter,
 });

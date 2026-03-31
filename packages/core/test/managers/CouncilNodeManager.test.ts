@@ -1,4 +1,4 @@
-import { describe, test, expect, beforeEach, mock } from 'bun:test';
+import { describe, test, expect, beforeEach, mock } from 'vitest';
 import { CouncilNodeManager } from '../../src/managers/CouncilNodeManager.ts';
 
 describe('CouncilNodeManager', () => {

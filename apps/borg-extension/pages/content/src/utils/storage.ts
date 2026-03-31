@@ -1,4 +1,5 @@
 import { logMessage } from './helpers';
+import { safeLocalStorageGetItem, safeLocalStorageSetItem } from '@src/stores/extension-storage';
 
 // Types
 export interface SidebarPreferences {
@@ -91,11 +92,11 @@ export const saveSidebarPreferences = async (preferences: Partial<SidebarPrefere
 };
 
 /**
- * Get tool permissions from localStorage
+ * Get tool permissions from guarded local storage access
  */
 export const getToolPermissions = (): ToolPermission[] => {
   try {
-    const storedData = localStorage.getItem(TOOL_PERMISSIONS_KEY);
+    const storedData = safeLocalStorageGetItem(TOOL_PERMISSIONS_KEY);
     if (!storedData) {
       return [];
     }
@@ -109,7 +110,7 @@ export const getToolPermissions = (): ToolPermission[] => {
 };
 
 /**
- * Save a tool permission to localStorage
+ * Save a tool permission through guarded local storage access
  * Only 'always' permissions are stored, 'once' and 'never' are not stored
  */
 export const saveToolPermission = (permission: ToolPermission): void => {
@@ -137,7 +138,7 @@ export const saveToolPermission = (permission: ToolPermission): void => {
       );
     }
 
-    localStorage.setItem(TOOL_PERMISSIONS_KEY, JSON.stringify(filteredPermissions));
+    safeLocalStorageSetItem(TOOL_PERMISSIONS_KEY, JSON.stringify(filteredPermissions));
   } catch (error) {
     logMessage(`[Storage] Error saving tool permission: ${error instanceof Error ? error.message : String(error)}`);
   }
@@ -179,7 +180,7 @@ export const clearToolPermission = (serverName: string, toolName: string, url: s
     const updatedPermissions = permissions.filter(
       p => !(p.serverName === serverName && p.toolName === toolName && p.url === url),
     );
-    localStorage.setItem(TOOL_PERMISSIONS_KEY, JSON.stringify(updatedPermissions));
+    safeLocalStorageSetItem(TOOL_PERMISSIONS_KEY, JSON.stringify(updatedPermissions));
     logMessage(`[Storage] Cleared permission for ${serverName}.${toolName} on URL: ${url}`);
   } catch (error) {
     logMessage(`[Storage] Error clearing tool permission: ${error instanceof Error ? error.message : String(error)}`);

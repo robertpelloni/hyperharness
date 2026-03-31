@@ -1,4 +1,4 @@
-import { describe, test, expect, beforeEach, mock } from 'bun:test';
+import { describe, test, expect, beforeEach, mock } from 'vitest';
 import { PolicyService, type PolicyContext } from '../../src/services/PolicyService.ts';
 
 // Mock DatabaseManager to avoid better-sqlite3 binding issues in tests

@@ -1,13 +1,14 @@
 /**
  * Prompt Templates Store
  *
- * Persists reusable prompt templates to localStorage via Zustand.
+ * Persists reusable prompt templates via guarded extension storage.
  * Supports CRUD operations, search, and clipboard insertion.
  */
 
 import { create } from 'zustand';
 import { devtools, persist, createJSONStorage } from 'zustand/middleware';
 import { createLogger } from '@extension/shared/lib/logger';
+import { createExtensionStateStorage } from './extension-storage';
 
 const logger = createLogger('PromptStore');
 
@@ -75,7 +76,7 @@ export const usePromptStore = create<PromptState>()(
             }),
             {
                 name: 'mcp-prompt-templates-store',
-                storage: createJSONStorage(() => localStorage),
+                storage: createJSONStorage(createExtensionStateStorage),
             },
         ),
         { name: 'PromptStore' },

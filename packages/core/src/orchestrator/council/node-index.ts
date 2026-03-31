@@ -111,7 +111,7 @@ app.onError((err, c) => {
 });
 
 app.get('/', (c) => c.json({ 
-  name: 'borg-orchestrator', 
+  name: 'cli-orchestrator', 
   version: '0.90.0',
   config: {
     supervisors: council.getSupervisors().map(s => s.name),
@@ -328,17 +328,21 @@ process.on('SIGTERM', async () => {
   process.exit(0);
 });
 
-console.log(`Server starting on http://${host}:${port}`);
-console.log(`Health check: http://${host}:${port}/health`);
+export const startCouncilServer = async () => {
+  console.log(`Server starting on http://${host}:${port}`);
+  console.log(`Health check: http://${host}:${port}/health`);
 
-serve({
-  fetch: app.fetch,
-  port: Number(port),
-  hostname: host === '0.0.0.0' ? undefined : host,
-});
+  serve({
+    fetch: app.fetch,
+    port: Number(port),
+    hostname: host === '0.0.0.0' ? undefined : host,
+  });
 
-if (council.getSupervisors().length > 0) {
-  console.log(`Council supervisors: ${council.getSupervisors().map(s => s.name).join(', ')}`);
-} else {
-  console.log('No supervisors configured. Add via API or set API keys in environment.');
-}
+  if (council.getSupervisors().length > 0) {
+    console.log(`Council supervisors: ${council.getSupervisors().map(s => s.name).join(', ')}`);
+  } else {
+    console.log('No supervisors configured. Add via API or set API keys in environment.');
+  }
+};
+
+export { app as councilApp };

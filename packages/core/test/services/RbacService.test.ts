@@ -1,4 +1,4 @@
-import { describe, test, expect, beforeEach } from 'bun:test';
+import { describe, test, expect, beforeEach } from 'vitest';
 import { RbacService, type UserRole, type Permission } from '../../src/services/RbacService.ts';
 
 describe('RbacService', () => {

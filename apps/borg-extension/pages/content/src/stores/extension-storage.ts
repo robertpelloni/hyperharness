@@ -12,6 +12,18 @@ interface BrowserStorageArea {
   remove(key: string): Promise<void>;
 }
 
+let hasLoggedExtensionStorageFallbackWarning = false;
+
+function logExtensionStorageFallback(error: unknown): void {
+  if (hasLoggedExtensionStorageFallbackWarning) {
+    return;
+  }
+
+  hasLoggedExtensionStorageFallbackWarning = true;
+  const message = error instanceof Error ? error.message : String(error);
+  console.warn(`[extension-storage] Falling back to localStorage because extension storage is unavailable: ${message}`);
+}
+
 function hasLocalStorage(): boolean {
   try {
     return typeof localStorage !== 'undefined';
@@ -54,6 +66,18 @@ function removeLocalStorageValue(key: string): void {
   } catch {
     // Ignore cleanup failures.
   }
+}
+
+export function safeLocalStorageGetItem(key: string): string | null {
+  return getLocalStorageValue(key);
+}
+
+export function safeLocalStorageSetItem(key: string, value: string): void {
+  setLocalStorageValue(key, value);
+}
+
+export function safeLocalStorageRemoveItem(key: string): void {
+  removeLocalStorageValue(key);
 }
 
 function createChromeStorageArea(): ExtensionStorageArea | null {
@@ -151,6 +175,76 @@ function getExtensionStorageArea(): ExtensionStorageArea | null {
   return createBrowserStorageArea() ?? createChromeStorageArea();
 }
 
+export async function getExtensionStorageValue(name: string): Promise<string | null> {
+  const extensionStorage = getExtensionStorageArea();
+
+  if (!extensionStorage) {
+    return getLocalStorageValue(name);
+  }
+
+  const legacyValue = getLocalStorageValue(name);
+
+  try {
+    const extensionValue = await extensionStorage.get(name);
+    if (typeof extensionValue === 'string') {
+      return extensionValue;
+    }
+
+    if (legacyValue !== null) {
+      await extensionStorage.set({ [name]: legacyValue });
+      return legacyValue;
+    }
+  } catch (error) {
+    logExtensionStorageFallback(error);
+    return legacyValue;
+  }
+
+  return null;
+}
+
+export async function setExtensionStorageValue(name: string, value: string): Promise<void> {
+  const extensionStorage = getExtensionStorageArea();
+  if (extensionStorage) {
+    try {
+      await extensionStorage.set({ [name]: value });
+    } catch (error) {
+      logExtensionStorageFallback(error);
+    }
+  }
+
+  setLocalStorageValue(name, value);
+}
+
+export async function removeExtensionStorageValue(name: string): Promise<void> {
+  const extensionStorage = getExtensionStorageArea();
+  if (extensionStorage) {
+    try {
+      await extensionStorage.remove(name);
+    } catch (error) {
+      logExtensionStorageFallback(error);
+    }
+  }
+
+  removeLocalStorageValue(name);
+}
+
+export async function getExtensionStorageJson<T>(name: string, fallback: T): Promise<T> {
+  const rawValue = await getExtensionStorageValue(name);
+  if (rawValue === null) {
+    return fallback;
+  }
+
+  try {
+    return JSON.parse(rawValue) as T;
+  } catch {
+    return fallback;
+  }
+}
+
+export async function setExtensionStorageJson(name: string, value: unknown): Promise<void> {
+  await setExtensionStorageValue(name, JSON.stringify(value));
+}
+
 /**
  * Persist state in extension-scoped storage when available.
  *
@@ -161,40 +255,13 @@ function getExtensionStorageArea(): ExtensionStorageArea | null {
 export function createExtensionStateStorage(): StateStorage {
   return {
     async getItem(name: string) {
-      const extensionStorage = getExtensionStorageArea();
-
-      if (!extensionStorage) {
-        return getLocalStorageValue(name);
-      }
-
-      const extensionValue = await extensionStorage.get(name);
-      if (typeof extensionValue === 'string') {
-        return extensionValue;
-      }
-
-      const legacyValue = getLocalStorageValue(name);
-      if (legacyValue !== null) {
-        await extensionStorage.set({ [name]: legacyValue });
-        return legacyValue;
-      }
-
-      return null;
+      return await getExtensionStorageValue(name);
     },
     async setItem(name: string, value: string) {
-      const extensionStorage = getExtensionStorageArea();
-      if (extensionStorage) {
-        await extensionStorage.set({ [name]: value });
-      }
-
-      setLocalStorageValue(name, value);
+      await setExtensionStorageValue(name, value);
     },
     async removeItem(name: string) {
-      const extensionStorage = getExtensionStorageArea();
-      if (extensionStorage) {
-        await extensionStorage.remove(name);
-      }
-
-      removeLocalStorageValue(name);
+      await removeExtensionStorageValue(name);
     },
   };
 }

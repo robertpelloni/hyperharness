@@ -27,10 +27,30 @@ function sanitizeMetadataForArrow(metadata: Record<string, unknown>): Record<str
     return result;
 }
 
+function isMissingTableError(error: unknown): boolean {
+    const text = error instanceof Error ? error.message : String(error ?? '');
+    const normalized = text.toLowerCase();
+    return normalized.includes('not found')
+        || normalized.includes('does not exist')
+        || normalized.includes('no such table');
+}
+
+function isTableAlreadyExistsError(error: unknown): boolean {
+    const text = error instanceof Error ? error.message : String(error ?? '');
+    const normalized = text.toLowerCase();
+    return normalized.includes('already exists');
+}
+
+function isFieldNotInSchemaError(error: unknown): boolean {
+    const text = error instanceof Error ? error.message : String(error ?? '');
+    return text.toLowerCase().includes('found field not in schema');
+}
+
 export class LanceDBStore implements IVectorStore {
     private dbPath: string;
     private db: any; // Type as any for now to avoid strict typing issues with lancedb
     private embedder: any;
+    private initializePromise: Promise<void> | null = null;
 
     constructor(rootPath: string) {
         this.dbPath = path.join(rootPath, 'data', 'lancedb');
@@ -40,19 +60,86 @@ export class LanceDBStore implements IVectorStore {
     }
 
     async initialize() {
-        console.log(`[VectorStore] Connecting to ${this.dbPath}...`);
-        this.db = await connect(this.dbPath);
+        if (this.db && this.embedder) {
+            return;
+        }
 
-        console.log(`[VectorStore] Loading embedding model (Xenova/all-MiniLM-L6-v2)...`);
-        // Use feature-extraction pipeline
-        this.embedder = await pipeline('feature-extraction', 'Xenova/all-MiniLM-L6-v2');
-        console.log(`[VectorStore] Ready.`);
+        if (!this.initializePromise) {
+            this.initializePromise = (async () => {
+                console.log(`[VectorStore] Connecting to ${this.dbPath}...`);
+                this.db = await connect(this.dbPath);
+
+                console.log(`[VectorStore] Loading embedding model (Xenova/all-MiniLM-L6-v2)...`);
+                // Use feature-extraction pipeline
+                this.embedder = await pipeline('feature-extraction', 'Xenova/all-MiniLM-L6-v2');
+                console.log(`[VectorStore] Ready.`);
+            })().finally(() => {
+                this.initializePromise = null;
+            });
+        }
+
+        await this.initializePromise;
     }
 
     async createEmbeddings(text: string): Promise<number[]> {
         if (!this.embedder) await this.initialize();
         const output = await this.embedder(text, { pooling: 'mean', normalize: true });
         return Array.from(output.data);
+    }
+
+    private async constrainRowsToExistingSchema(table: { schema: () => Promise<{ fields?: Array<{ name?: string }> }> }, rows: Array<Record<string, unknown>>) {
+        const schema = await table.schema();
+        const schemaFields = Array.isArray(schema?.fields) ? schema.fields : [];
+        const allowedColumns = schemaFields
+            .map((field) => typeof field?.name === 'string' ? field.name : null)
+            .filter((name): name is string => Boolean(name));
+
+        if (allowedColumns.length === 0) {
+            return rows;
+        }
+
+        return rows.map((row) => {
+            const constrained: Record<string, unknown> = {};
+            for (const column of allowedColumns) {
+                constrained[column] = column in row ? row[column] : null;
+            }
+            return constrained;
+        });
+    }
+
+    private async addRows(rows: Array<Record<string, unknown>>) {
+        if (!this.db) await this.initialize();
+
+        try {
+            const table = await this.db.openTable('memories');
+            try {
+                await table.add(rows);
+            } catch (addError) {
+                if (!isFieldNotInSchemaError(addError)) {
+                    throw addError;
+                }
+
+                const constrainedRows = await this.constrainRowsToExistingSchema(table, rows);
+                await table.add(constrainedRows);
+            }
+            return;
+        } catch (openError) {
+            if (!isMissingTableError(openError)) {
+                throw openError;
+            }
+        }
+
+        try {
+            await this.db.createTable('memories', rows);
+            return;
+        } catch (createError) {
+            if (!isTableAlreadyExistsError(createError)) {
+                throw createError;
+            }
+        }
+
+        const table = await this.db.openTable('memories');
+        await table.add(rows);
     }
 
     async addMemory(content: string, metadata: any) {
@@ -69,15 +156,7 @@ export class LanceDBStore implements IVectorStore {
             ...sanitizedMeta,
             timestamp: Date.now()
         }];
-
-        let table;
-        try {
-            table = await this.db.openTable('memories');
-            await table.add(data);
-        } catch (e) {
-            // Table doesn't exist, create it; schema is inferred from data.
-            table = await this.db.createTable('memories', data);
-        }
+        await this.addRows(data);
     }
 
     async addDocuments(docs: any[]) {
@@ -94,14 +173,7 @@ export class LanceDBStore implements IVectorStore {
                 timestamp: Date.now()
             };
         }));
-
-        let table;
-        try {
-            table = await this.db.openTable('memories');
-            await table.add(processed);
-        } catch (e) {
-            table = await this.db.createTable('memories', processed);
-        }
+        await this.addRows(processed);
     }
 
     async get(id: string) {

@@ -221,8 +221,8 @@ async function main() {
 
   const command = process.platform === "win32" ? "cmd.exe" : "pnpm";
   const args = process.platform === "win32"
-    ? ["/d", "/s", "/c", "pnpm", "exec", "next", "dev", "--webpack", ...effectiveArgs]
-    : ["exec", "next", "dev", "--webpack", ...effectiveArgs];
+    ? ["/d", "/s", "/c", "pnpm", "exec", "next", "dev", ...effectiveArgs]
+    : ["exec", "next", "dev", ...effectiveArgs];
 
   const child = spawn(command, args, {
     cwd: process.cwd(),

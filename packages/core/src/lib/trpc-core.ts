@@ -411,6 +411,13 @@ export type LLMServiceRuntime = {
     getCostStats: () => CostStatsRuntime;
     modelSelector: ModelSelectorRuntime;
     generate?: (prompt: string, options?: Record<string, unknown>) => Promise<{ text?: string; latencyMs?: number }>;
+    generateText?: (
+        provider: string,
+        model: string,
+        systemPrompt: string,
+        prompt: string,
+        options?: Record<string, unknown>,
+    ) => Promise<{ content?: string; text?: string; latencyMs?: number }>;
 };
 
 export type ResearchServiceRuntime = {

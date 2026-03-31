@@ -4,6 +4,7 @@
  */
 import { create } from 'zustand';
 import { devtools, persist, createJSONStorage } from 'zustand/middleware';
+import { createExtensionStateStorage } from './extension-storage';
 
 export interface FeatureFlag {
   enabled: boolean;
@@ -328,7 +329,7 @@ export const useConfigStore = create<ConfigState>()(
       }),
       {
         name: 'config-store',
-        storage: createJSONStorage(() => localStorage),
+        storage: createJSONStorage(createExtensionStateStorage),
         partialize: state => ({
           featureFlags: state.featureFlags,
           userProperties: state.userProperties,

@@ -11,6 +11,7 @@ import type { RemoteNotification, NotificationAction } from './config.store';
 import { useConfigStore } from './config.store';
 import { useAppStore, type AppState } from './app.store'; // Assuming AppState includes theme
 import { createLogger } from '@extension/shared/lib/logger';
+import { createExtensionStateStorage } from './extension-storage';
 
 const logger = createLogger('useUIStore');
 
@@ -339,7 +340,7 @@ export const useUIStore = create<UIState>()(
       }),
       {
         name: 'mcp-super-assistant-ui-store',
-        storage: createJSONStorage(() => localStorage),
+        storage: createJSONStorage(createExtensionStateStorage),
         partialize: state => ({
           // Persist sidebar state and user preferences
           sidebar: {
