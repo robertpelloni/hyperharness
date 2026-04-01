@@ -5391,8 +5391,18 @@ func TestImportedSessionScanFallsBackToGoScanner(t *testing.T) {
 func TestImportedSessionScanFallsBackToArchivedRecords(t *testing.T) {
 	workspaceRoot := t.TempDir()
 	seedArchivedImportedSession(t, workspaceRoot)
+	if err := os.MkdirAll(filepath.Join(workspaceRoot, ".copilot", "session-state"), 0o755); err != nil {
+		t.Fatalf("failed to create copilot session dir: %v", err)
+	}
+	if err := os.WriteFile(filepath.Join(workspaceRoot, ".copilot", "session-state", "checkpoint-history.json"), []byte(`{"history":[]}`), 0o644); err != nil {
+		t.Fatalf("failed to seed extra discovered session: %v", err)
+	}
 
 	t.Setenv("BORG_TRPC_UPSTREAM", "http://127.0.0.1:1/trpc")
+	t.Setenv("HOME", workspaceRoot)
+	t.Setenv("USERPROFILE", workspaceRoot)
+	t.Setenv("APPDATA", workspaceRoot)
+	t.Setenv("LOCALAPPDATA", workspaceRoot)
 
 	cfg := config.Default()
 	cfg.WorkspaceRoot = workspaceRoot
@@ -5413,8 +5423,14 @@ func TestImportedSessionScanFallsBackToArchivedRecords(t *testing.T) {
 	if !strings.Contains(recorder.Body.String(), `"importedCount":1`) {
 		t.Fatalf("expected archived importedCount=1, got %s", recorder.Body.String())
 	}
+	if !strings.Contains(recorder.Body.String(), `"discoveredCount":2`) {
+		t.Fatalf("expected merged discoveredCount=2, got %s", recorder.Body.String())
+	}
 	if !strings.Contains(recorder.Body.String(), `"storedMemoryCount":3`) {
 		t.Fatalf("expected archived storedMemoryCount=3, got %s", recorder.Body.String())
+	}
+	if !strings.Contains(recorder.Body.String(), `"copilot-cli"`) {
+		t.Fatalf("expected merged tool list to include discovery candidates, got %s", recorder.Body.String())
 	}
 }
 

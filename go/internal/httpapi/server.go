@@ -1718,8 +1718,31 @@ func (s *Server) handleImportedSessionScan(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
+	candidates, scanErr := s.scanValidatedImportSources()
+	if scanErr != nil {
+		if archivedRecords, archiveErr := s.loadArchivedImportedSessionRecords(); archiveErr == nil && len(archivedRecords) > 0 {
+			fallbackSummary := s.archivedImportedSessionScanSummary(archivedRecords)
+			writeJSON(w, http.StatusOK, map[string]any{
+				"success": true,
+				"data":    fallbackSummary,
+				"bridge": map[string]any{
+					"fallback":  "go-sessionimport",
+					"procedure": "session.importedScan",
+					"reason":    err.Error(),
+				},
+			})
+			return
+		}
+		writeJSON(w, http.StatusServiceUnavailable, map[string]any{
+			"success": false,
+			"error":   err.Error(),
+			"detail":  scanErr.Error(),
+		})
+		return
+	}
+
 	if archivedRecords, archiveErr := s.loadArchivedImportedSessionRecords(); archiveErr == nil && len(archivedRecords) > 0 {
-		fallbackSummary := s.archivedImportedSessionScanSummary(archivedRecords)
+		fallbackSummary := s.mergedImportedSessionScanSummary(archivedRecords, candidates)
 		writeJSON(w, http.StatusOK, map[string]any{
 			"success": true,
 			"data":    fallbackSummary,
@@ -1728,16 +1751,6 @@ func (s *Server) handleImportedSessionScan(w http.ResponseWriter, r *http.Reques
 				"procedure": "session.importedScan",
 				"reason":    err.Error(),
 			},
-		})
-		return
-	}
-
-	candidates, scanErr := s.scanValidatedImportSources()
-	if scanErr != nil {
-		writeJSON(w, http.StatusServiceUnavailable, map[string]any{
-			"success": false,
-			"error":   err.Error(),
-			"detail":  scanErr.Error(),
 		})
 		return
 	}
@@ -7774,6 +7787,49 @@ func (s *Server) archivedImportedSessionScanSummary(records []ImportedSessionRec
 		"discoveredCount":    len(records),
 		"importedCount":      len(records),
 		"skippedCount":       0,
+		"storedMemoryCount":  storedMemoryCount,
+		"instructionDocPath": s.importedInstructionDocPath(),
+		"tools":              tools,
+	}
+}
+
+func (s *Server) mergedImportedSessionScanSummary(records []ImportedSessionRecord, candidates []sessionimport.ValidationResult) map[string]any {
+	seenSourcePaths := make(map[string]struct{}, len(records))
+	toolsSet := make(map[string]struct{})
+	storedMemoryCount := 0
+	for _, record := range records {
+		seenSourcePaths[record.SourcePath] = struct{}{}
+		if record.SourceTool != "" {
+			toolsSet[record.SourceTool] = struct{}{}
+		}
+		storedMemoryCount += intNumber(record.Metadata["durableMemoryCount"])
+		storedMemoryCount += intNumber(record.Metadata["durableInstructionCount"])
+	}
+
+	discoveredCount := len(records)
+	skippedCount := 0
+	for _, candidate := range candidates {
+		if _, seen := seenSourcePaths[candidate.SourcePath]; !seen {
+			discoveredCount++
+		}
+		if candidate.Valid {
+			skippedCount++
+		}
+		if candidate.SourceTool != "" {
+			toolsSet[candidate.SourceTool] = struct{}{}
+		}
+	}
+
+	tools := make([]string, 0, len(toolsSet))
+	for tool := range toolsSet {
+		tools = append(tools, tool)
+	}
+	sort.Strings(tools)
+
+	return map[string]any{
+		"discoveredCount":    discoveredCount,
+		"importedCount":      len(records),
+		"skippedCount":       skippedCount,
 		"storedMemoryCount":  storedMemoryCount,
 		"instructionDocPath": s.importedInstructionDocPath(),
 		"tools":              tools,
