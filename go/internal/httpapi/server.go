@@ -7878,19 +7878,25 @@ func (s *Server) handleBrowserExtensionParseDOM(w http.ResponseWriter, r *http.R
 
 func (s *Server) handleBrowserExtensionListMemories(w http.ResponseWriter, r *http.Request) {
 	payload := map[string]any{}
-	if search := strings.TrimSpace(r.URL.Query().Get("search")); search != "" {
-		payload["search"] = search
+	searchValue := strings.TrimSpace(r.URL.Query().Get("search"))
+	tagValue := strings.TrimSpace(r.URL.Query().Get("tag"))
+	limitValue := 50
+	offsetValue := 0
+	if searchValue != "" {
+		payload["search"] = searchValue
 	}
-	if tag := strings.TrimSpace(r.URL.Query().Get("tag")); tag != "" {
-		payload["tag"] = tag
+	if tagValue != "" {
+		payload["tag"] = tagValue
 	}
 	if limit := strings.TrimSpace(r.URL.Query().Get("limit")); limit != "" {
 		if parsed, err := strconv.Atoi(limit); err == nil {
+			limitValue = parsed
 			payload["limit"] = parsed
 		}
 	}
 	if offset := strings.TrimSpace(r.URL.Query().Get("offset")); offset != "" {
 		if parsed, err := strconv.Atoi(offset); err == nil {
+			offsetValue = parsed
 			payload["offset"] = parsed
 		}
 	}
@@ -7908,16 +7914,22 @@ func (s *Server) handleBrowserExtensionListMemories(w http.ResponseWriter, r *ht
 		return
 	}
 
+	memories, fallbackErr := s.localBrowserExtensionMemories(searchValue, tagValue, limitValue, offsetValue)
+	if fallbackErr != nil {
+		writeJSON(w, http.StatusInternalServerError, map[string]any{
+			"success": false,
+			"error":   fallbackErr.Error(),
+		})
+		return
+	}
+
 	writeJSON(w, http.StatusOK, map[string]any{
 		"success": true,
-		"data": map[string]any{
-			"items": []map[string]any{},
-			"total": 0,
-		},
+		"data":    memories,
 		"bridge": map[string]any{
 			"fallback":  "go-local-browser-memory",
 			"procedure": "browserExtension.listMemories",
-			"reason":    "upstream unavailable; using local empty browser memory list",
+			"reason":    "upstream unavailable; using local browser memories from metamcp.db",
 		},
 	})
 }
@@ -7941,17 +7953,22 @@ func (s *Server) handleBrowserExtensionStats(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
+	stats, fallbackErr := s.localBrowserExtensionStats()
+	if fallbackErr != nil {
+		writeJSON(w, http.StatusInternalServerError, map[string]any{
+			"success": false,
+			"error":   fallbackErr.Error(),
+		})
+		return
+	}
+
 	writeJSON(w, http.StatusOK, map[string]any{
 		"success": true,
-		"data": map[string]any{
-			"totalMemories": 0,
-			"uniqueUrls":    0,
-			"topTags":       []map[string]any{},
-		},
+		"data":    stats,
 		"bridge": map[string]any{
 			"fallback":  "go-local-browser-memory",
 			"procedure": "browserExtension.stats",
-			"reason":    "upstream unavailable; using local zero-state browser memory stats",
+			"reason":    "upstream unavailable; using local browser memory stats from metamcp.db",
 		},
 	})
 }
@@ -10837,6 +10854,183 @@ func (s *Server) localBrowserControlsStats() (any, error) {
 	}, nil
 }
 
+func (s *Server) localBrowserExtensionMemories(search, tag string, limit, offset int) (any, error) {
+	if limit <= 0 {
+		limit = 50
+	}
+	if offset < 0 {
+		offset = 0
+	}
+
+	db, err := sql.Open("sqlite", s.localMetaMCPDBPath())
+	if err != nil {
+		return nil, err
+	}
+	defer db.Close()
+
+	rows, err := db.Query(`
+		SELECT id, url, normalized_url, title, content, selected_text, tags, favicon, source, content_hash, saved_at
+		FROM web_memories
+		ORDER BY saved_at DESC
+	`)
+	if err != nil {
+		if strings.Contains(err.Error(), "no such table: web_memories") {
+			return map[string]any{
+				"items": []map[string]any{},
+				"total": 0,
+			}, nil
+		}
+		return nil, err
+	}
+	defer rows.Close()
+
+	searchLower := strings.ToLower(strings.TrimSpace(search))
+	tagValue := strings.TrimSpace(tag)
+	items := make([]map[string]any, 0)
+	for rows.Next() {
+		var (
+			id           string
+			urlValue     string
+			normalized   string
+			title        string
+			content      string
+			selectedText sql.NullString
+			tagsRaw      string
+			favicon      sql.NullString
+			source       string
+			contentHash  string
+			savedAt      int64
+		)
+		if err := rows.Scan(&id, &urlValue, &normalized, &title, &content, &selectedText, &tagsRaw, &favicon, &source, &contentHash, &savedAt); err != nil {
+			return nil, err
+		}
+
+		tagsValue := jsonArrayOrEmpty(tagsRaw)
+		tagList := jsonArrayStrings(tagsValue)
+		if searchLower != "" &&
+			!strings.Contains(strings.ToLower(title), searchLower) &&
+			!strings.Contains(strings.ToLower(urlValue), searchLower) &&
+			!strings.Contains(strings.ToLower(content), searchLower) {
+			continue
+		}
+		if tagValue != "" && !stringSliceContains(tagList, tagValue) {
+			continue
+		}
+
+		items = append(items, map[string]any{
+			"id":            id,
+			"url":           urlValue,
+			"normalizedUrl": normalized,
+			"title":         title,
+			"content":       content,
+			"selectedText":  nullStringToAny(selectedText),
+			"tags":          tagsValue,
+			"favicon":       nullStringToAny(favicon),
+			"savedAt":       unixTimestampToRFC3339(savedAt),
+			"source":        source,
+			"contentHash":   contentHash,
+		})
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	total := len(items)
+	if offset >= total {
+		return map[string]any{
+			"items": []map[string]any{},
+			"total": total,
+		}, nil
+	}
+
+	end := offset + limit
+	if end > total {
+		end = total
+	}
+
+	return map[string]any{
+		"items": items[offset:end],
+		"total": total,
+	}, nil
+}
+
+func (s *Server) localBrowserExtensionStats() (any, error) {
+	db, err := sql.Open("sqlite", s.localMetaMCPDBPath())
+	if err != nil {
+		return nil, err
+	}
+	defer db.Close()
+
+	rows, err := db.Query(`
+		SELECT normalized_url, tags
+		FROM web_memories
+	`)
+	if err != nil {
+		if strings.Contains(err.Error(), "no such table: web_memories") {
+			return map[string]any{
+				"totalMemories": 0,
+				"uniqueUrls":    0,
+				"topTags":       []map[string]any{},
+			}, nil
+		}
+		return nil, err
+	}
+	defer rows.Close()
+
+	totalMemories := 0
+	uniqueURLs := make(map[string]struct{})
+	tagCounts := make(map[string]int)
+	for rows.Next() {
+		var (
+			normalized string
+			tagsRaw    string
+		)
+		if err := rows.Scan(&normalized, &tagsRaw); err != nil {
+			return nil, err
+		}
+		totalMemories++
+		uniqueURLs[normalized] = struct{}{}
+		for _, tag := range jsonArrayStrings(jsonArrayOrEmpty(tagsRaw)) {
+			tagCounts[tag]++
+		}
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	type tagCount struct {
+		tag   string
+		count int
+	}
+	topTags := make([]tagCount, 0, len(tagCounts))
+	for tag, count := range tagCounts {
+		topTags = append(topTags, tagCount{tag: tag, count: count})
+	}
+	sort.Slice(topTags, func(i, j int) bool {
+		if topTags[i].count == topTags[j].count {
+			return topTags[i].tag < topTags[j].tag
+		}
+		return topTags[i].count > topTags[j].count
+	})
+	if len(topTags) > 20 {
+		topTags = topTags[:20]
+	}
+
+	serializedTopTags := make([]map[string]any, 0, len(topTags))
+	for _, entry := range topTags {
+		serializedTopTags = append(serializedTopTags, map[string]any{
+			"tag":   entry.tag,
+			"count": entry.count,
+		})
+	}
+
+	return map[string]any{
+		"totalMemories": totalMemories,
+		"uniqueUrls":    len(uniqueURLs),
+		"topTags":       serializedTopTags,
+	}, nil
+}
+
 func (s *Server) localUnifiedDirectoryList(limit, offset int, search, source string, showDuplicates, duplicatesOnly bool, researchStatus string) (any, error) {
 	if limit <= 0 {
 		limit = 50
@@ -11093,6 +11287,31 @@ func jsonArrayOrEmpty(raw string) any {
 		return []any{}
 	}
 	return value
+}
+
+func jsonArrayStrings(value any) []string {
+	items, ok := value.([]any)
+	if !ok {
+		return []string{}
+	}
+	results := make([]string, 0, len(items))
+	for _, item := range items {
+		text, ok := item.(string)
+		if !ok {
+			continue
+		}
+		results = append(results, text)
+	}
+	return results
+}
+
+func stringSliceContains(values []string, target string) bool {
+	for _, value := range values {
+		if value == target {
+			return true
+		}
+	}
+	return false
 }
 
 func jsonObjectOrEmpty(raw string) any {

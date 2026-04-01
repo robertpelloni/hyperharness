@@ -7502,7 +7502,7 @@ func TestPulseAndBrowserStatsFallBackToLocalPreview(t *testing.T) {
 			contains: []string{
 				`"fallback":"go-local-browser-memory"`,
 				`"procedure":"browserExtension.stats"`,
-				`using local zero-state browser memory stats`,
+				`using local browser memory stats from metamcp.db`,
 				`"totalMemories":0`,
 				`"uniqueUrls":0`,
 			},
@@ -7529,7 +7529,38 @@ func TestPulseAndBrowserStatsFallBackToLocalPreview(t *testing.T) {
 func TestPulseEventsAndBrowserMemoriesFallBackToEmptyState(t *testing.T) {
 	t.Setenv("BORG_TRPC_UPSTREAM", "http://127.0.0.1:1/trpc")
 
-	server := New(config.Default(), stubDetector{})
+	workspaceRoot := t.TempDir()
+	dbPath := filepath.Join(workspaceRoot, "metamcp.db")
+	db, err := sql.Open("sqlite", dbPath)
+	if err != nil {
+		t.Fatalf("failed to open sqlite db: %v", err)
+	}
+	defer db.Close()
+	if _, err := db.Exec(`
+		CREATE TABLE web_memories (
+			id TEXT PRIMARY KEY,
+			url TEXT NOT NULL,
+			normalized_url TEXT NOT NULL,
+			title TEXT NOT NULL,
+			content TEXT NOT NULL,
+			selected_text TEXT,
+			tags TEXT NOT NULL DEFAULT '[]',
+			favicon TEXT,
+			source TEXT NOT NULL,
+			content_hash TEXT NOT NULL,
+			saved_at INTEGER NOT NULL
+		);
+		INSERT INTO web_memories (id, url, normalized_url, title, content, selected_text, tags, favicon, source, content_hash, saved_at)
+		VALUES
+			('mem-local-1', 'https://example.com/mcp', 'https://example.com/mcp', 'MCP article', 'Model context and tools', 'context', '["tool","mcp"]', NULL, 'browser-extension', 'hash-1', 1711958400),
+			('mem-local-2', 'https://example.com/agent', 'https://example.com/agent', 'Agent notes', 'Agent orchestration and tools', NULL, '["agent","tool"]', NULL, 'browser-extension', 'hash-2', 1711958460);
+	`); err != nil {
+		t.Fatalf("failed to seed sqlite db: %v", err)
+	}
+
+	cfg := config.Default()
+	cfg.WorkspaceRoot = workspaceRoot
+	server := New(cfg, stubDetector{})
 
 	cases := []struct {
 		name     string
@@ -7548,13 +7579,25 @@ func TestPulseEventsAndBrowserMemoriesFallBackToEmptyState(t *testing.T) {
 		},
 		{
 			name: "browser memories",
-			path: "/api/browser-extension/memories?limit=5&offset=0",
+			path: "/api/browser-extension/memories?search=tools&tag=tool&limit=5&offset=0",
 			contains: []string{
 				`"fallback":"go-local-browser-memory"`,
 				`"procedure":"browserExtension.listMemories"`,
-				`using local empty browser memory list`,
-				`"items":[]`,
-				`"total":0`,
+				`using local browser memories from metamcp.db`,
+				`"mem-local-2"`,
+				`"total":2`,
+			},
+		},
+		{
+			name: "browser memory stats",
+			path: "/api/browser-extension/stats",
+			contains: []string{
+				`"fallback":"go-local-browser-memory"`,
+				`"procedure":"browserExtension.stats"`,
+				`using local browser memory stats from metamcp.db`,
+				`"totalMemories":2`,
+				`"uniqueUrls":2`,
+				`"tag":"tool"`,
 			},
 		},
 	}
