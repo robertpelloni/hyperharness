@@ -5565,7 +5565,7 @@ func (s *Server) handleHarnesses(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		writeJSON(w, http.StatusGatewayTimeout, map[string]any{
 			"success": false,
-			"error":   err.Error(),
+			"error":   "failed to detect CLI harnesses: " + err.Error(),
 		})
 		return
 	}
@@ -5581,7 +5581,7 @@ func (s *Server) handleCLISummary(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		writeJSON(w, http.StatusGatewayTimeout, map[string]any{
 			"success": false,
-			"error":   err.Error(),
+			"error":   "failed to detect CLI tools: " + err.Error(),
 		})
 		return
 	}
@@ -5708,7 +5708,7 @@ func (s *Server) handleMemoryStatus(w http.ResponseWriter, _ *http.Request) {
 	if err != nil {
 		writeJSON(w, http.StatusInternalServerError, map[string]any{
 			"success": false,
-			"error":   err.Error(),
+			"error":   "failed to read memory status: " + err.Error(),
 		})
 		return
 	}

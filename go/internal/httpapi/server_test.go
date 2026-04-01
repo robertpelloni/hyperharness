@@ -7749,6 +7749,21 @@ func demo() {
 	}
 }
 
+func TestCLIHarnessesEndpointReportsDetectorFailure(t *testing.T) {
+	server := New(config.Default(), stubDetector{err: io.EOF})
+	request := httptest.NewRequest(http.MethodGet, "/api/cli/harnesses", nil)
+	recorder := httptest.NewRecorder()
+
+	server.Handler().ServeHTTP(recorder, request)
+
+	if recorder.Code != http.StatusGatewayTimeout {
+		t.Fatalf("expected status 504, got %d with body %s", recorder.Code, recorder.Body.String())
+	}
+	if !strings.Contains(recorder.Body.String(), `failed to detect CLI harnesses: EOF`) {
+		t.Fatalf("expected harness detector error, got %s", recorder.Body.String())
+	}
+}
+
 func TestCLISummaryEndpoint(t *testing.T) {
 	workspaceRoot := t.TempDir()
 	if err := os.MkdirAll(filepath.Join(workspaceRoot, "submodules", "hypercode"), 0o755); err != nil {
@@ -8284,6 +8299,33 @@ func TestMemoryStatusEndpoint(t *testing.T) {
 	}
 	if payload.Data.TotalEntries != 1 {
 		t.Fatalf("expected 1 memory entry, got %d", payload.Data.TotalEntries)
+	}
+}
+
+func TestMemoryStatusEndpointReportsReadFailure(t *testing.T) {
+	tempDir := t.TempDir()
+	cfg := config.Default()
+	cfg.WorkspaceRoot = tempDir
+
+	storePath := filepath.Join(tempDir, ".hypercode", "sectioned_memory.json")
+	if err := os.MkdirAll(filepath.Dir(storePath), 0o755); err != nil {
+		t.Fatalf("failed to create memory dir: %v", err)
+	}
+	if err := os.WriteFile(storePath, []byte("{"), 0o644); err != nil {
+		t.Fatalf("failed to write malformed memory store: %v", err)
+	}
+
+	server := New(cfg, stubDetector{})
+	request := httptest.NewRequest(http.MethodGet, "/api/memory/hypercode-memory/status", nil)
+	recorder := httptest.NewRecorder()
+
+	server.Handler().ServeHTTP(recorder, request)
+
+	if recorder.Code != http.StatusInternalServerError {
+		t.Fatalf("expected status 500, got %d with body %s", recorder.Code, recorder.Body.String())
+	}
+	if !strings.Contains(recorder.Body.String(), `failed to read memory status:`) {
+		t.Fatalf("expected memory status read error, got %s", recorder.Body.String())
 	}
 }
 
