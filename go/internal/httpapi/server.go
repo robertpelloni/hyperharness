@@ -1161,7 +1161,7 @@ func (s *Server) handleAPIIndex(w http.ResponseWriter, _ *http.Request) {
 				{Path: "/api/links-backlog/stats", Category: "operator", Description: "Read BobbyBookmarks backlog stats through the TypeScript links backlog router."},
 				{Path: "/api/links-backlog/get", Category: "operator", Description: "Read a BobbyBookmarks backlog item through the TypeScript links backlog router."},
 				{Path: "/api/links-backlog/sync", Category: "operator", Description: "Sync BobbyBookmarks backlog data through the TypeScript links backlog router."},
-				{Path: "/api/infrastructure", Category: "operator", Description: "Read infrastructure daemon status through the TypeScript infrastructure router."},
+				{Path: "/api/infrastructure", Category: "operator", Description: "Read infrastructure daemon status through the TypeScript infrastructure router, with a local binary/config fallback when the router is unavailable."},
 				{Path: "/api/infrastructure/doctor", Category: "operator", Description: "Run the infrastructure doctor command through the TypeScript infrastructure router."},
 				{Path: "/api/infrastructure/apply", Category: "operator", Description: "Apply infrastructure configuration through the TypeScript infrastructure router."},
 				{Path: "/api/expert/research", Category: "agents", Description: "Dispatch a research task through the TypeScript expert router."},
@@ -5609,7 +5609,29 @@ func (s *Server) handleLinksBacklogSync(w http.ResponseWriter, r *http.Request) 
 }
 
 func (s *Server) handleInfrastructureStatus(w http.ResponseWriter, r *http.Request) {
-	s.handleTRPCBridgeCall(w, r, http.MethodGet, "infrastructure.getInfrastructureStatus", nil)
+	var result any
+	upstreamBase, err := s.callUpstreamJSON(r.Context(), "infrastructure.getInfrastructureStatus", nil, &result)
+	if err == nil {
+		writeJSON(w, http.StatusOK, map[string]any{
+			"success": true,
+			"data":    result,
+			"bridge": map[string]any{
+				"upstreamBase": upstreamBase,
+				"procedure":    "infrastructure.getInfrastructureStatus",
+			},
+		})
+		return
+	}
+
+	writeJSON(w, http.StatusOK, map[string]any{
+		"success": true,
+		"data":    localInfrastructureStatus(s.cfg.WorkspaceRoot),
+		"bridge": map[string]any{
+			"fallback":  "go-local-infrastructure",
+			"procedure": "infrastructure.getInfrastructureStatus",
+			"reason":    "upstream unavailable; using local infrastructure binary/config visibility",
+		},
+	})
 }
 
 func (s *Server) handleInfrastructureDoctor(w http.ResponseWriter, r *http.Request) {
@@ -7093,6 +7115,42 @@ func localProjectHandoffs(workspaceRoot string) []map[string]any {
 	}
 
 	return handoffs
+}
+
+func localInfrastructureStatus(workspaceRoot string) map[string]any {
+	infraBinary := strings.TrimSpace(os.Getenv("BORG_INFRA_BINARY"))
+	if infraBinary == "" {
+		infraBinary = "mcpetes"
+	}
+
+	infraSubmoduleDir := strings.TrimSpace(os.Getenv("BORG_INFRA_SUBMODULE"))
+	if infraSubmoduleDir == "" {
+		infraSubmoduleDir = infraBinary
+	}
+
+	binPath := filepath.Join(workspaceRoot, "..", "..", "submodules", infraSubmoduleDir, "bin", infraBinary)
+	_, binErr := os.Stat(binPath)
+	isInstalled := binErr == nil
+
+	configPath := filepath.Join(os.Getenv("USERPROFILE"), ".config", "mcpetes", "config.yaml")
+	if strings.TrimSpace(os.Getenv("USERPROFILE")) == "" {
+		if home, err := os.UserHomeDir(); err == nil {
+			configPath = filepath.Join(home, ".config", "mcpetes", "config.yaml")
+		}
+	}
+	_, configErr := os.Stat(configPath)
+
+	return map[string]any{
+		"installed":    isInstalled,
+		"hasConfig":    configErr == nil,
+		"daemonActive": false,
+		"version": func() any {
+			if isInstalled {
+				return "latest"
+			}
+			return nil
+		}(),
+	}
 }
 
 func (s *Server) localMCPSummary(ctx context.Context) ([]controlplane.Tool, CLISummary, error) {

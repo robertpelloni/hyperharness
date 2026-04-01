@@ -5531,6 +5531,57 @@ func TestStatusReadEndpointsFallBackToLocalPreview(t *testing.T) {
 	}
 }
 
+func TestInfrastructureStatusFallsBackToLocalProbe(t *testing.T) {
+	workspaceRoot := t.TempDir()
+	userProfile := t.TempDir()
+	infraBinary := "mcpetes"
+	infraSubmoduleDir := "mcpetes"
+
+	binDir := filepath.Join(workspaceRoot, "..", "..", "submodules", infraSubmoduleDir, "bin")
+	if err := os.MkdirAll(binDir, 0o755); err != nil {
+		t.Fatalf("failed to create infra bin dir: %v", err)
+	}
+	if err := os.WriteFile(filepath.Join(binDir, infraBinary), []byte("binary"), 0o644); err != nil {
+		t.Fatalf("failed to write infra binary: %v", err)
+	}
+
+	configDir := filepath.Join(userProfile, ".config", "mcpetes")
+	if err := os.MkdirAll(configDir, 0o755); err != nil {
+		t.Fatalf("failed to create infra config dir: %v", err)
+	}
+	if err := os.WriteFile(filepath.Join(configDir, "config.yaml"), []byte("daemon: false"), 0o644); err != nil {
+		t.Fatalf("failed to write infra config: %v", err)
+	}
+
+	t.Setenv("BORG_TRPC_UPSTREAM", "http://127.0.0.1:1/trpc")
+	t.Setenv("BORG_INFRA_BINARY", infraBinary)
+	t.Setenv("BORG_INFRA_SUBMODULE", infraSubmoduleDir)
+	t.Setenv("USERPROFILE", userProfile)
+
+	cfg := config.Default()
+	cfg.WorkspaceRoot = workspaceRoot
+	server := New(cfg, stubDetector{})
+
+	recorder := httptest.NewRecorder()
+	server.Handler().ServeHTTP(recorder, httptest.NewRequest(http.MethodGet, "/api/infrastructure", nil))
+
+	if recorder.Code != http.StatusOK {
+		t.Fatalf("expected status 200, got %d with body %s", recorder.Code, recorder.Body.String())
+	}
+
+	for _, needle := range []string{
+		`"fallback":"go-local-infrastructure"`,
+		`"procedure":"infrastructure.getInfrastructureStatus"`,
+		`using local infrastructure binary/config visibility`,
+		`"installed":true`,
+		`"hasConfig":true`,
+	} {
+		if !strings.Contains(recorder.Body.String(), needle) {
+			t.Fatalf("expected response to contain %s, got %s", needle, recorder.Body.String())
+		}
+	}
+}
+
 func TestMCPSearchToolsFallsBackToLocalInventory(t *testing.T) {
 	workspaceRoot := t.TempDir()
 	toolsDir := filepath.Join(workspaceRoot, "submodules", "hypercode", "tools")
