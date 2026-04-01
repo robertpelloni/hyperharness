@@ -5459,6 +5459,78 @@ func TestAuditReadEndpointsFallBackToEmptyState(t *testing.T) {
 	}
 }
 
+func TestStatusReadEndpointsFallBackToLocalPreview(t *testing.T) {
+	t.Setenv("BORG_TRPC_UPSTREAM", "http://127.0.0.1:1/trpc")
+	t.Setenv("OPEN_WEBUI_URL", "http://localhost:8080")
+
+	server := New(config.Default(), stubDetector{})
+
+	cases := []struct {
+		name     string
+		path     string
+		contains []string
+	}{
+		{
+			name: "expert status",
+			path: "/api/expert/status",
+			contains: []string{
+				`"fallback":"go-local-status"`,
+				`"procedure":"expert.getStatus"`,
+				`using local offline expert status`,
+				`"researcher":"offline"`,
+				`"coder":"offline"`,
+			},
+		},
+		{
+			name: "openwebui status",
+			path: "/api/open-webui/status",
+			contains: []string{
+				`"fallback":"go-local-status"`,
+				`"procedure":"openWebUI.getStatus"`,
+				`using local Open WebUI preview`,
+				`"status":"inactive"`,
+			},
+		},
+		{
+			name: "openwebui embed",
+			path: "/api/open-webui/embed-url",
+			contains: []string{
+				`"fallback":"go-local-status"`,
+				`"procedure":"openWebUI.getEmbedUrl"`,
+				`using local Open WebUI URL fallback`,
+				`"url":"http://localhost:8080"`,
+			},
+		},
+		{
+			name: "code mode status",
+			path: "/api/code-mode/status",
+			contains: []string{
+				`"fallback":"go-local-status"`,
+				`"procedure":"codeMode.getStatus"`,
+				`using local zero-state Code Mode status`,
+				`"enabled":false`,
+				`"toolCount":0`,
+			},
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			recorder := httptest.NewRecorder()
+			server.Handler().ServeHTTP(recorder, httptest.NewRequest(http.MethodGet, tc.path, nil))
+
+			if recorder.Code != http.StatusOK {
+				t.Fatalf("expected status 200, got %d with body %s", recorder.Code, recorder.Body.String())
+			}
+			for _, needle := range tc.contains {
+				if !strings.Contains(recorder.Body.String(), needle) {
+					t.Fatalf("expected response to contain %s, got %s", needle, recorder.Body.String())
+				}
+			}
+		})
+	}
+}
+
 func TestMCPSearchToolsFallsBackToLocalInventory(t *testing.T) {
 	workspaceRoot := t.TempDir()
 	toolsDir := filepath.Join(workspaceRoot, "submodules", "hypercode", "tools")

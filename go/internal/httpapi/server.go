@@ -1166,7 +1166,7 @@ func (s *Server) handleAPIIndex(w http.ResponseWriter, _ *http.Request) {
 				{Path: "/api/infrastructure/apply", Category: "operator", Description: "Apply infrastructure configuration through the TypeScript infrastructure router."},
 				{Path: "/api/expert/research", Category: "agents", Description: "Dispatch a research task through the TypeScript expert router."},
 				{Path: "/api/expert/code", Category: "agents", Description: "Dispatch a coding task through the TypeScript expert router."},
-				{Path: "/api/expert/status", Category: "agents", Description: "Read TypeScript expert agent status."},
+				{Path: "/api/expert/status", Category: "agents", Description: "Read TypeScript expert agent status, with a local offline-state fallback when the expert agents are unavailable."},
 				{Path: "/api/autonomy/get-level", Category: "governance", Description: "Read the current autonomy level through the TypeScript autonomy router."},
 				{Path: "/api/autonomy/set-level", Category: "governance", Description: "Set autonomy level through the TypeScript autonomy router."},
 				{Path: "/api/autonomy/activate-full", Category: "governance", Description: "Activate full autonomy through the TypeScript autonomy router."},
@@ -1346,9 +1346,9 @@ func (s *Server) handleAPIIndex(w http.ResponseWriter, _ *http.Request) {
 				{Path: "/api/browser-extension/memories", Category: "ui", Description: "List browser-extension memories through the TypeScript browser extension router."},
 				{Path: "/api/browser-extension/delete-memory", Category: "ui", Description: "Delete a browser-extension memory through the TypeScript browser extension router."},
 				{Path: "/api/browser-extension/stats", Category: "ui", Description: "Read browser-extension memory stats through the TypeScript browser extension router."},
-				{Path: "/api/open-webui/status", Category: "ui", Description: "Read Open WebUI status through the TypeScript OpenWebUI router."},
-				{Path: "/api/open-webui/embed-url", Category: "ui", Description: "Read Open WebUI embed URL through the TypeScript OpenWebUI router."},
-				{Path: "/api/code-mode/status", Category: "ui", Description: "Read Code Mode status through the TypeScript code mode router."},
+				{Path: "/api/open-webui/status", Category: "ui", Description: "Read Open WebUI status through the TypeScript OpenWebUI router, with a local preview fallback when the integration is unavailable."},
+				{Path: "/api/open-webui/embed-url", Category: "ui", Description: "Read Open WebUI embed URL through the TypeScript OpenWebUI router, with a local environment-backed fallback when the integration is unavailable."},
+				{Path: "/api/code-mode/status", Category: "ui", Description: "Read Code Mode status through the TypeScript code mode router, with a local zero-state fallback when Code Mode is unavailable."},
 				{Path: "/api/code-mode/enable", Category: "ui", Description: "Enable Code Mode through the TypeScript code mode router."},
 				{Path: "/api/code-mode/disable", Category: "ui", Description: "Disable Code Mode through the TypeScript code mode router."},
 				{Path: "/api/code-mode/execute", Category: "ui", Description: "Execute Code Mode code through the TypeScript code mode router."},
@@ -5629,7 +5629,32 @@ func (s *Server) handleExpertCode(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) handleExpertStatus(w http.ResponseWriter, r *http.Request) {
-	s.handleTRPCBridgeCall(w, r, http.MethodGet, "expert.getStatus", nil)
+	var result any
+	upstreamBase, err := s.callUpstreamJSON(r.Context(), "expert.getStatus", nil, &result)
+	if err == nil {
+		writeJSON(w, http.StatusOK, map[string]any{
+			"success": true,
+			"data":    result,
+			"bridge": map[string]any{
+				"upstreamBase": upstreamBase,
+				"procedure":    "expert.getStatus",
+			},
+		})
+		return
+	}
+
+	writeJSON(w, http.StatusOK, map[string]any{
+		"success": true,
+		"data": map[string]any{
+			"researcher": "offline",
+			"coder":      "offline",
+		},
+		"bridge": map[string]any{
+			"fallback":  "go-local-status",
+			"procedure": "expert.getStatus",
+			"reason":    "upstream unavailable; using local offline expert status",
+		},
+	})
 }
 
 func (s *Server) handlePoliciesList(w http.ResponseWriter, r *http.Request) {
@@ -6025,15 +6050,102 @@ func (s *Server) handleBrowserExtensionStats(w http.ResponseWriter, r *http.Requ
 }
 
 func (s *Server) handleOpenWebUIStatus(w http.ResponseWriter, r *http.Request) {
-	s.handleTRPCBridgeCall(w, r, http.MethodGet, "openWebUI.getStatus", nil)
+	var result any
+	upstreamBase, err := s.callUpstreamJSON(r.Context(), "openWebUI.getStatus", nil, &result)
+	if err == nil {
+		writeJSON(w, http.StatusOK, map[string]any{
+			"success": true,
+			"data":    result,
+			"bridge": map[string]any{
+				"upstreamBase": upstreamBase,
+				"procedure":    "openWebUI.getStatus",
+			},
+		})
+		return
+	}
+
+	writeJSON(w, http.StatusOK, map[string]any{
+		"success": true,
+		"data": map[string]any{
+			"status":          "inactive",
+			"version":         nil,
+			"connected_tools": 0,
+			"message":         "Open-WebUI integration is unavailable.",
+			"timestamp":       time.Now().UTC().Format(time.RFC3339),
+		},
+		"bridge": map[string]any{
+			"fallback":  "go-local-status",
+			"procedure": "openWebUI.getStatus",
+			"reason":    "upstream unavailable; using local Open WebUI preview",
+		},
+	})
 }
 
 func (s *Server) handleOpenWebUIEmbedURL(w http.ResponseWriter, r *http.Request) {
-	s.handleTRPCBridgeCall(w, r, http.MethodGet, "openWebUI.getEmbedUrl", nil)
+	var result any
+	upstreamBase, err := s.callUpstreamJSON(r.Context(), "openWebUI.getEmbedUrl", nil, &result)
+	if err == nil {
+		writeJSON(w, http.StatusOK, map[string]any{
+			"success": true,
+			"data":    result,
+			"bridge": map[string]any{
+				"upstreamBase": upstreamBase,
+				"procedure":    "openWebUI.getEmbedUrl",
+			},
+		})
+		return
+	}
+
+	url := strings.TrimSpace(os.Getenv("OPEN_WEBUI_URL"))
+	if url == "" {
+		url = "http://localhost:8080"
+	}
+	writeJSON(w, http.StatusOK, map[string]any{
+		"success": true,
+		"data": map[string]any{
+			"url": url,
+		},
+		"bridge": map[string]any{
+			"fallback":  "go-local-status",
+			"procedure": "openWebUI.getEmbedUrl",
+			"reason":    "upstream unavailable; using local Open WebUI URL fallback",
+		},
+	})
 }
 
 func (s *Server) handleCodeModeStatus(w http.ResponseWriter, r *http.Request) {
-	s.handleTRPCBridgeCall(w, r, http.MethodGet, "codeMode.getStatus", nil)
+	var result any
+	upstreamBase, err := s.callUpstreamJSON(r.Context(), "codeMode.getStatus", nil, &result)
+	if err == nil {
+		writeJSON(w, http.StatusOK, map[string]any{
+			"success": true,
+			"data":    result,
+			"bridge": map[string]any{
+				"upstreamBase": upstreamBase,
+				"procedure":    "codeMode.getStatus",
+			},
+		})
+		return
+	}
+
+	writeJSON(w, http.StatusOK, map[string]any{
+		"success": true,
+		"data": map[string]any{
+			"enabled":   false,
+			"toolCount": 0,
+			"tools":     []map[string]any{},
+			"reduction": map[string]any{
+				"traditional":  0,
+				"codeMode":     0,
+				"reductionPct": 0,
+			},
+		},
+		"bridge": map[string]any{
+			"fallback":  "go-local-status",
+			"procedure": "codeMode.getStatus",
+			"reason":    "upstream unavailable; using local zero-state Code Mode status",
+		},
+	})
 }
 
 func (s *Server) handleCodeModeEnable(w http.ResponseWriter, r *http.Request) {
