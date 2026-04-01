@@ -902,7 +902,7 @@ func (s *Server) handleAPIIndex(w http.ResponseWriter, _ *http.Request) {
 				{Path: "/api/config/basic-auth-disabled", Category: "config", Description: "Read basic-auth-disabled state through the TypeScript config router."},
 				{Path: "/api/config/basic-auth-disabled/set", Category: "config", Description: "Update basic-auth-disabled state through the TypeScript config router."},
 				{Path: "/api/config/auth-providers", Category: "config", Description: "Read auth providers, with a local Go OIDC availability fallback when the TypeScript config router is unavailable."},
-				{Path: "/api/config/always-visible-tools", Category: "config", Description: "Read always-visible tools through the TypeScript config router."},
+				{Path: "/api/config/always-visible-tools", Category: "config", Description: "Read always-visible tools, with a local JSONC fallback that mirrors TypeScript tool-selection precedence when the config router is unavailable."},
 				{Path: "/api/config/always-visible-tools/set", Category: "config", Description: "Update always-visible tools through the TypeScript config router."},
 				{Path: "/api/providers/status", Category: "providers", Description: "Provider credential presence and auth-method hints."},
 				{Path: "/api/providers/catalog", Category: "providers", Description: "Provider catalog metadata including default models and preferred tasks."},

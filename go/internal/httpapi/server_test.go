@@ -3484,6 +3484,48 @@ func TestMetricsReadEndpointsFallBackToLocalPreview(t *testing.T) {
 	}
 }
 
+func TestConfigAlwaysVisibleToolsFallsBackToLocalJSONCPreferences(t *testing.T) {
+	mainConfigDir := t.TempDir()
+	jsoncContent := `// HyperCode MCP configuration
+{
+  "mcpServers": {},
+  "alwaysVisibleTools": ["legacy__tool"],
+  "settings": {
+    "toolSelection": {
+      "alwaysLoadedTools": ["modern__tool", "search_tools"]
+    }
+  }
+}
+`
+	if err := os.WriteFile(filepath.Join(mainConfigDir, "mcp.jsonc"), []byte(jsoncContent), 0o644); err != nil {
+		t.Fatalf("failed to write local mcp jsonc: %v", err)
+	}
+
+	t.Setenv("BORG_TRPC_UPSTREAM", "http://127.0.0.1:1/trpc")
+
+	cfg := config.Default()
+	cfg.WorkspaceRoot = t.TempDir()
+	cfg.MainConfigDir = mainConfigDir
+	server := New(cfg, stubDetector{})
+
+	recorder := httptest.NewRecorder()
+	request := httptest.NewRequest(http.MethodGet, "/api/config/always-visible-tools", nil)
+	server.Handler().ServeHTTP(recorder, request)
+
+	if recorder.Code != http.StatusOK {
+		t.Fatalf("expected always-visible-tools fallback 200, got %d with body %s", recorder.Code, recorder.Body.String())
+	}
+	if !strings.Contains(recorder.Body.String(), `"fallback":"go-local-jsonc"`) {
+		t.Fatalf("expected go-local-jsonc fallback metadata, got %s", recorder.Body.String())
+	}
+	if !strings.Contains(recorder.Body.String(), `using local JSONC always-visible tool preferences`) {
+		t.Fatalf("expected local JSONC fallback reason, got %s", recorder.Body.String())
+	}
+	if !strings.Contains(recorder.Body.String(), `"modern__tool"`) || !strings.Contains(recorder.Body.String(), `"search_tools"`) || strings.Contains(recorder.Body.String(), `"legacy__tool"`) {
+		t.Fatalf("expected alwaysLoadedTools to take precedence over legacy alwaysVisibleTools, got %s", recorder.Body.String())
+	}
+}
+
 func TestBrowserBridgeRoutes(t *testing.T) {
 	upstream := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("content-type", "application/json")

@@ -131,7 +131,47 @@ func (s *Server) handleConfigGetAuthProviders(w http.ResponseWriter, r *http.Req
 }
 
 func (s *Server) handleConfigGetAlwaysVisibleTools(w http.ResponseWriter, r *http.Request) {
-	s.handleTRPCBridgeCall(w, r, http.MethodGet, "config.getAlwaysVisibleTools", nil)
+	var result any
+	upstreamBase, err := s.callUpstreamJSON(r.Context(), "config.getAlwaysVisibleTools", nil, &result)
+	if err == nil {
+		writeJSON(w, http.StatusOK, map[string]any{
+			"success": true,
+			"data":    result,
+			"bridge": map[string]any{
+				"upstreamBase": upstreamBase,
+				"procedure":    "config.getAlwaysVisibleTools",
+			},
+		})
+		return
+	}
+
+	parsed, fallbackErr := s.readLocalMCPConfigObject()
+	if fallbackErr != nil {
+		writeJSON(w, http.StatusServiceUnavailable, map[string]any{
+			"success": false,
+			"error":   fallbackErr.Error(),
+			"detail":  fallbackErr.Error(),
+		})
+		return
+	}
+
+	settings, _ := parsed["settings"].(map[string]any)
+	toolSelection, _ := settings["toolSelection"].(map[string]any)
+	preferences := normalizeToolPreferences(toolSelection)
+	alwaysVisible := normalizeAlwaysLoadedTools(preferences["alwaysLoadedTools"])
+	if len(alwaysVisible) == 0 {
+		alwaysVisible = normalizeToolNameList(parsed["alwaysVisibleTools"])
+	}
+
+	writeJSON(w, http.StatusOK, map[string]any{
+		"success": true,
+		"data":    alwaysVisible,
+		"bridge": map[string]any{
+			"fallback":  "go-local-jsonc",
+			"procedure": "config.getAlwaysVisibleTools",
+			"reason":    "upstream unavailable; using local JSONC always-visible tool preferences",
+		},
+	})
 }
 
 func (s *Server) handleConfigSetAlwaysVisibleTools(w http.ResponseWriter, r *http.Request) {
