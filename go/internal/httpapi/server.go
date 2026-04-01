@@ -18,6 +18,7 @@ import (
 	"path/filepath"
 	"regexp"
 	"runtime"
+	"slices"
 	"sort"
 	"strconv"
 	"strings"
@@ -1364,13 +1365,13 @@ func (s *Server) handleAPIIndex(w http.ResponseWriter, _ *http.Request) {
 				{Path: "/api/suggestions", Category: "ui", Description: "List suggestions through the TypeScript suggestions router, with a local empty-state fallback when suggestions are unavailable."},
 				{Path: "/api/suggestions/resolve", Category: "ui", Description: "Resolve a suggestion through the TypeScript suggestions router."},
 				{Path: "/api/suggestions/clear", Category: "ui", Description: "Clear suggestions through the TypeScript suggestions router."},
-				{Path: "/api/plan/mode", Category: "ui", Description: "Read or update plan mode through the TypeScript plan router."},
-				{Path: "/api/plan/diffs", Category: "ui", Description: "List pending plan diffs through the TypeScript plan router."},
+				{Path: "/api/plan/mode", Category: "ui", Description: "Read or update plan mode through the TypeScript plan router, with a local default-mode fallback when the runtime is unavailable."},
+				{Path: "/api/plan/diffs", Category: "ui", Description: "List pending plan diffs through the TypeScript plan router, with a local sandbox-file fallback when the runtime is unavailable."},
 				{Path: "/api/plan/approve-diff", Category: "ui", Description: "Approve a plan diff through the TypeScript plan router."},
 				{Path: "/api/plan/reject-diff", Category: "ui", Description: "Reject a plan diff through the TypeScript plan router."},
 				{Path: "/api/plan/apply-all", Category: "ui", Description: "Apply approved plan diffs through the TypeScript plan router."},
-				{Path: "/api/plan/summary", Category: "ui", Description: "Read plan sandbox summary through the TypeScript plan router."},
-				{Path: "/api/plan/checkpoints", Category: "ui", Description: "List plan checkpoints through the TypeScript plan router."},
+				{Path: "/api/plan/summary", Category: "ui", Description: "Read plan sandbox summary through the TypeScript plan router, with a local sandbox-file fallback when the runtime is unavailable."},
+				{Path: "/api/plan/checkpoints", Category: "ui", Description: "List plan checkpoints through the TypeScript plan router, with a local sandbox-file fallback when the runtime is unavailable."},
 				{Path: "/api/plan/create-checkpoint", Category: "ui", Description: "Create a plan checkpoint through the TypeScript plan router."},
 				{Path: "/api/plan/rollback", Category: "ui", Description: "Rollback a plan checkpoint through the TypeScript plan router."},
 				{Path: "/api/plan/clear", Category: "ui", Description: "Clear plan sandbox state through the TypeScript plan router."},
@@ -7302,14 +7303,60 @@ func (s *Server) handleSuggestionsClear(w http.ResponseWriter, r *http.Request) 
 
 func (s *Server) handlePlanMode(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodGet {
-		s.handleTRPCBridgeCall(w, r, http.MethodGet, "plan.getMode", nil)
+		var result any
+		upstreamBase, err := s.callUpstreamJSON(r.Context(), "plan.getMode", nil, &result)
+		if err == nil {
+			writeJSON(w, http.StatusOK, map[string]any{
+				"success": true,
+				"data":    result,
+				"bridge": map[string]any{
+					"upstreamBase": upstreamBase,
+					"procedure":    "plan.getMode",
+				},
+			})
+			return
+		}
+
+		writeJSON(w, http.StatusOK, map[string]any{
+			"success": true,
+			"data": map[string]any{
+				"mode": "PLAN",
+			},
+			"bridge": map[string]any{
+				"fallback":  "go-local-plan",
+				"procedure": "plan.getMode",
+				"reason":    "upstream unavailable; plan mode is not persisted locally so defaulting to PLAN",
+			},
+		})
 		return
 	}
 	s.handleTRPCBridgeBodyCall(w, r, "plan.setMode")
 }
 
 func (s *Server) handlePlanDiffs(w http.ResponseWriter, r *http.Request) {
-	s.handleTRPCBridgeCall(w, r, http.MethodGet, "plan.getDiffs", nil)
+	var result any
+	upstreamBase, err := s.callUpstreamJSON(r.Context(), "plan.getDiffs", nil, &result)
+	if err == nil {
+		writeJSON(w, http.StatusOK, map[string]any{
+			"success": true,
+			"data":    result,
+			"bridge": map[string]any{
+				"upstreamBase": upstreamBase,
+				"procedure":    "plan.getDiffs",
+			},
+		})
+		return
+	}
+
+	writeJSON(w, http.StatusOK, map[string]any{
+		"success": true,
+		"data":    s.localPlanDiffs(),
+		"bridge": map[string]any{
+			"fallback":  "go-local-plan",
+			"procedure": "plan.getDiffs",
+			"reason":    "upstream unavailable; using local sandbox diffs",
+		},
+	})
 }
 
 func (s *Server) handlePlanApproveDiff(w http.ResponseWriter, r *http.Request) {
@@ -7325,11 +7372,55 @@ func (s *Server) handlePlanApplyAll(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) handlePlanSummary(w http.ResponseWriter, r *http.Request) {
-	s.handleTRPCBridgeCall(w, r, http.MethodGet, "plan.getSummary", nil)
+	var result any
+	upstreamBase, err := s.callUpstreamJSON(r.Context(), "plan.getSummary", nil, &result)
+	if err == nil {
+		writeJSON(w, http.StatusOK, map[string]any{
+			"success": true,
+			"data":    result,
+			"bridge": map[string]any{
+				"upstreamBase": upstreamBase,
+				"procedure":    "plan.getSummary",
+			},
+		})
+		return
+	}
+
+	writeJSON(w, http.StatusOK, map[string]any{
+		"success": true,
+		"data":    s.localPlanSummary(),
+		"bridge": map[string]any{
+			"fallback":  "go-local-plan",
+			"procedure": "plan.getSummary",
+			"reason":    "upstream unavailable; using local sandbox summary",
+		},
+	})
 }
 
 func (s *Server) handlePlanCheckpoints(w http.ResponseWriter, r *http.Request) {
-	s.handleTRPCBridgeCall(w, r, http.MethodGet, "plan.getCheckpoints", nil)
+	var result any
+	upstreamBase, err := s.callUpstreamJSON(r.Context(), "plan.getCheckpoints", nil, &result)
+	if err == nil {
+		writeJSON(w, http.StatusOK, map[string]any{
+			"success": true,
+			"data":    result,
+			"bridge": map[string]any{
+				"upstreamBase": upstreamBase,
+				"procedure":    "plan.getCheckpoints",
+			},
+		})
+		return
+	}
+
+	writeJSON(w, http.StatusOK, map[string]any{
+		"success": true,
+		"data":    s.localPlanCheckpoints(),
+		"bridge": map[string]any{
+			"fallback":  "go-local-plan",
+			"procedure": "plan.getCheckpoints",
+			"reason":    "upstream unavailable; using local sandbox checkpoints",
+		},
+	})
 }
 
 func (s *Server) handlePlanCreateCheckpoint(w http.ResponseWriter, r *http.Request) {
@@ -8359,6 +8450,95 @@ func localKnowledgeResources(workspaceRoot string) any {
 		}
 	}
 	return parsed
+}
+
+func (s *Server) localPlanSandboxDir() string {
+	return filepath.Join(s.cfg.WorkspaceRoot, ".hypercode", "sandbox")
+}
+
+func (s *Server) localPlanAllDiffs() []map[string]any {
+	sandboxDir := s.localPlanSandboxDir()
+	entries, err := os.ReadDir(sandboxDir)
+	if err != nil {
+		return []map[string]any{}
+	}
+
+	results := make([]map[string]any, 0)
+	for _, entry := range entries {
+		if entry.IsDir() || !strings.HasSuffix(strings.ToLower(entry.Name()), ".json") || strings.EqualFold(entry.Name(), "checkpoints.json") {
+			continue
+		}
+
+		raw, err := os.ReadFile(filepath.Join(sandboxDir, entry.Name()))
+		if err != nil {
+			continue
+		}
+
+		var parsed map[string]any
+		if err := json.Unmarshal(raw, &parsed); err != nil {
+			continue
+		}
+		results = append(results, parsed)
+	}
+
+	slices.SortStableFunc(results, func(a, b map[string]any) int {
+		return strings.Compare(fmt.Sprint(a["id"]), fmt.Sprint(b["id"]))
+	})
+	return results
+}
+
+func (s *Server) localPlanDiffs() []map[string]any {
+	all := s.localPlanAllDiffs()
+	results := make([]map[string]any, 0, len(all))
+	for _, diff := range all {
+		if status, _ := diff["status"].(string); status == "pending" {
+			results = append(results, diff)
+		}
+	}
+	return results
+}
+
+func (s *Server) localPlanCheckpoints() []map[string]any {
+	raw, err := os.ReadFile(filepath.Join(s.localPlanSandboxDir(), "checkpoints.json"))
+	if err != nil {
+		return []map[string]any{}
+	}
+
+	var parsed []map[string]any
+	if err := json.Unmarshal(raw, &parsed); err != nil {
+		return []map[string]any{}
+	}
+	return parsed
+}
+
+func (s *Server) localPlanSummary() string {
+	diffs := s.localPlanAllDiffs()
+	checkpoints := s.localPlanCheckpoints()
+	pending := 0
+	approved := 0
+	applied := 0
+	rejected := 0
+	for _, diff := range diffs {
+		switch fmt.Sprint(diff["status"]) {
+		case "pending":
+			pending++
+		case "approved":
+			approved++
+		case "applied":
+			applied++
+		case "rejected":
+			rejected++
+		}
+	}
+
+	return strings.Join([]string{
+		"Diff Sandbox Summary:",
+		fmt.Sprintf("  Pending: %d", pending),
+		fmt.Sprintf("  Approved: %d", approved),
+		fmt.Sprintf("  Applied: %d", applied),
+		fmt.Sprintf("  Rejected: %d", rejected),
+		fmt.Sprintf("  Checkpoints: %d", len(checkpoints)),
+	}, "\n")
 }
 
 func (s *Server) localServerHealth(serverUUID string) map[string]any {

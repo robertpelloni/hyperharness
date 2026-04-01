@@ -185,13 +185,68 @@ func TestBridgeRouteReportsProcedureFailure(t *testing.T) {
 	server := New(config.Default(), stubDetector{})
 	recorder := httptest.NewRecorder()
 
-	server.Handler().ServeHTTP(recorder, httptest.NewRequest(http.MethodGet, "/api/plan/summary", nil))
+	server.Handler().ServeHTTP(recorder, httptest.NewRequest(http.MethodGet, "/api/tool-chains/get?id=chain-1", nil))
 
 	if recorder.Code != http.StatusServiceUnavailable {
 		t.Fatalf("expected status 503, got %d with body %s", recorder.Code, recorder.Body.String())
 	}
-	if !strings.Contains(recorder.Body.String(), `failed to call upstream procedure plan.getSummary:`) {
+	if !strings.Contains(recorder.Body.String(), `failed to call upstream procedure toolChaining.getChain:`) {
 		t.Fatalf("expected bridge procedure error, got %s", recorder.Body.String())
+	}
+}
+
+func TestPlanReadRoutesFallBackToLocalSandboxState(t *testing.T) {
+	t.Setenv("BORG_TRPC_UPSTREAM", "http://127.0.0.1:1/trpc")
+
+	workspace := t.TempDir()
+	sandboxDir := filepath.Join(workspace, ".hypercode", "sandbox")
+	if err := os.MkdirAll(sandboxDir, 0o755); err != nil {
+		t.Fatalf("failed to create sandbox dir: %v", err)
+	}
+
+	pendingDiff := `{"id":"diff-pending","filePath":"src/demo.ts","status":"pending","proposedContent":"new","originalContent":"old"}`
+	approvedDiff := `{"id":"diff-approved","filePath":"src/other.ts","status":"approved","proposedContent":"new","originalContent":"old"}`
+	checkpoints := `[{"id":"cp-1","name":"checkpoint-1","diffIds":["diff-pending","diff-approved"]}]`
+	if err := os.WriteFile(filepath.Join(sandboxDir, "diff-pending.json"), []byte(pendingDiff), 0o644); err != nil {
+		t.Fatalf("failed to write pending diff: %v", err)
+	}
+	if err := os.WriteFile(filepath.Join(sandboxDir, "diff-approved.json"), []byte(approvedDiff), 0o644); err != nil {
+		t.Fatalf("failed to write approved diff: %v", err)
+	}
+	if err := os.WriteFile(filepath.Join(sandboxDir, "checkpoints.json"), []byte(checkpoints), 0o644); err != nil {
+		t.Fatalf("failed to write checkpoints: %v", err)
+	}
+
+	cfg := config.Default()
+	cfg.WorkspaceRoot = workspace
+	cfg.ConfigDir = t.TempDir()
+	cfg.MainConfigDir = t.TempDir()
+	server := New(cfg, stubDetector{})
+
+	cases := []struct {
+		name     string
+		path     string
+		contains []string
+	}{
+		{name: "mode", path: "/api/plan/mode", contains: []string{`"fallback":"go-local-plan"`, `"procedure":"plan.getMode"`, `"mode":"PLAN"`}},
+		{name: "diffs", path: "/api/plan/diffs", contains: []string{`"fallback":"go-local-plan"`, `"procedure":"plan.getDiffs"`, `"diff-pending"`}},
+		{name: "summary", path: "/api/plan/summary", contains: []string{`"fallback":"go-local-plan"`, `"procedure":"plan.getSummary"`, `Diff Sandbox Summary:`, `Pending: 1`, `Approved: 1`, `Checkpoints: 1`}},
+		{name: "checkpoints", path: "/api/plan/checkpoints", contains: []string{`"fallback":"go-local-plan"`, `"procedure":"plan.getCheckpoints"`, `"cp-1"`}},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			recorder := httptest.NewRecorder()
+			server.Handler().ServeHTTP(recorder, httptest.NewRequest(http.MethodGet, tc.path, nil))
+			if recorder.Code != http.StatusOK {
+				t.Fatalf("expected %s 200, got %d with body %s", tc.name, recorder.Code, recorder.Body.String())
+			}
+			for _, needle := range tc.contains {
+				if !strings.Contains(recorder.Body.String(), needle) {
+					t.Fatalf("expected %s fallback to contain %s, got %s", tc.name, needle, recorder.Body.String())
+				}
+			}
+		})
 	}
 }
 
