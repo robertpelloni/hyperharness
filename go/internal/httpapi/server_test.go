@@ -5380,6 +5380,9 @@ func TestImportedSessionScanFallsBackToGoScanner(t *testing.T) {
 	if !strings.Contains(recorder.Body.String(), `"fallback":"go-sessionimport"`) {
 		t.Fatalf("expected go-sessionimport fallback metadata, got %s", recorder.Body.String())
 	}
+	if !strings.Contains(recorder.Body.String(), `"instructionDocPath":null`) {
+		t.Fatalf("expected no instruction doc path in raw scan fallback, got %s", recorder.Body.String())
+	}
 	if !strings.Contains(recorder.Body.String(), `"discoveredCount":`) {
 		t.Fatalf("expected discoveredCount in fallback summary, got %s", recorder.Body.String())
 	}
@@ -5419,6 +5422,9 @@ func TestImportedSessionScanFallsBackToArchivedRecords(t *testing.T) {
 	}
 	if !strings.Contains(recorder.Body.String(), `"procedure":"session.importedScan"`) {
 		t.Fatalf("expected imported scan fallback metadata, got %s", recorder.Body.String())
+	}
+	if !strings.Contains(recorder.Body.String(), `merged persisted imported sessions with validated scan candidates`) {
+		t.Fatalf("expected merged scan fallback reason, got %s", recorder.Body.String())
 	}
 	if !strings.Contains(recorder.Body.String(), `"importedCount":1`) {
 		t.Fatalf("expected archived importedCount=1, got %s", recorder.Body.String())

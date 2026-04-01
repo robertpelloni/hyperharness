@@ -1728,14 +1728,14 @@ func (s *Server) handleImportedSessionScan(w http.ResponseWriter, r *http.Reques
 				"bridge": map[string]any{
 					"fallback":  "go-sessionimport",
 					"procedure": "session.importedScan",
-					"reason":    err.Error(),
+					"reason":    "upstream unavailable; using archived imported sessions because validated scan fallback failed: " + scanErr.Error(),
 				},
 			})
 			return
 		}
 		writeJSON(w, http.StatusServiceUnavailable, map[string]any{
 			"success": false,
-			"error":   err.Error(),
+			"error":   scanErr.Error(),
 			"detail":  scanErr.Error(),
 		})
 		return
@@ -1749,7 +1749,7 @@ func (s *Server) handleImportedSessionScan(w http.ResponseWriter, r *http.Reques
 			"bridge": map[string]any{
 				"fallback":  "go-sessionimport",
 				"procedure": "session.importedScan",
-				"reason":    err.Error(),
+				"reason":    "upstream unavailable; merged persisted imported sessions with validated scan candidates",
 			},
 		})
 		return
