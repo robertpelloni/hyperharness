@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { TRPCError } from '@trpc/server';
 import { t, publicProcedure, adminProcedure } from '../lib/trpc-core.js';
 import { mcpServersRepository } from '../db/repositories/index.js';
 import fs from 'node:fs/promises';
@@ -9,6 +10,7 @@ import {
 } from '../types/mcp-admin/index.js';
 import { loadBorgMcpConfig } from '../mcp/mcpJsonConfig.js';
 import { clientConfigSyncService, SUPPORTED_MCP_CLIENTS } from '../mcp/clientConfigSync.js';
+import { formatOptionalSqliteFailure, isSqliteUnavailableError } from '../db/sqliteAvailability.js';
 
 const MASTER_INDEX_PATH = path.join(process.cwd(), 'BORG_MASTER_INDEX.jsonc');
 
@@ -36,51 +38,78 @@ function getContextUserId(ctx: unknown): string | undefined {
         : undefined;
 }
 
+function rethrowSqliteUnavailableAsTrpc(action: string, error: unknown): never {
+    if (isSqliteUnavailableError(error)) {
+        throw new TRPCError({
+            code: 'INTERNAL_SERVER_ERROR',
+            message: formatOptionalSqliteFailure(action, error),
+        });
+    }
+
+    throw error;
+}
+
 export const mcpServersRouter = t.router({
     list: publicProcedure.query(async ({ ctx }) => {
-        const userId = getContextUserId(ctx);
-        const [servers, config] = await Promise.all([
-            mcpServersRepository.findAll(userId),
-            loadBorgMcpConfig(),
-        ]);
+        try {
+            const userId = getContextUserId(ctx);
+            const [servers, config] = await Promise.all([
+                mcpServersRepository.findAll(userId),
+                loadBorgMcpConfig(),
+            ]);
 
-        return servers.map((server) => ({
-            ...server,
-            _meta: config.mcpServers?.[server.name]?._meta ?? null,
-        }));
+            return servers.map((server) => ({
+                ...server,
+                _meta: config.mcpServers?.[server.name]?._meta ?? null,
+            }));
+        } catch (error) {
+            rethrowSqliteUnavailableAsTrpc('MCP server registry is unavailable', error);
+        }
     }),
 
     get: publicProcedure
         .input(z.object({ uuid: z.string() }))
         .query(async ({ input }) => {
-            const [server, config] = await Promise.all([
-                mcpServersRepository.findByUuid(input.uuid),
-                loadBorgMcpConfig(),
-            ]);
+            try {
+                const [server, config] = await Promise.all([
+                    mcpServersRepository.findByUuid(input.uuid),
+                    loadBorgMcpConfig(),
+                ]);
 
-            if (!server) {
-                return undefined;
+                if (!server) {
+                    return undefined;
+                }
+
+                return {
+                    ...server,
+                    _meta: config.mcpServers?.[server.name]?._meta ?? null,
+                };
+            } catch (error) {
+                rethrowSqliteUnavailableAsTrpc('MCP server registry is unavailable', error);
             }
-
-            return {
-                ...server,
-                _meta: config.mcpServers?.[server.name]?._meta ?? null,
-            };
         }),
 
     create: adminProcedure
         .input(McpServerCreateInputSchema)
         .mutation(async ({ input }) => {
-            const { metadataStrategy, ...serverInput } = input;
-            return await mcpServersRepository.create(serverInput, { metadataStrategy });
+            try {
+                const { metadataStrategy, ...serverInput } = input;
+                return await mcpServersRepository.create(serverInput, { metadataStrategy });
+            } catch (error) {
+                rethrowSqliteUnavailableAsTrpc('MCP server registry is unavailable', error);
+            }
         }),
 
     update: adminProcedure
         .input(McpServerUpdateInputSchema)
         .mutation(async ({ input }) => {
-            if (!input.uuid) throw new Error("UUID required for update");
-            const { metadataStrategy, ...serverInput } = input;
-            return await mcpServersRepository.update(serverInput, { metadataStrategy });
+            try {
+                if (!input.uuid) throw new Error("UUID required for update");
+                const { metadataStrategy, ...serverInput } = input;
+                return await mcpServersRepository.update(serverInput, { metadataStrategy });
+            } catch (error) {
+                rethrowSqliteUnavailableAsTrpc('MCP server registry is unavailable', error);
+            }
         }),
 
     reloadMetadata: adminProcedure
@@ -89,25 +118,41 @@ export const mcpServersRouter = t.router({
             mode: z.enum(['auto', 'binary', 'cache']).default('binary'),
         }))
         .mutation(async ({ input }) => {
-            return await mcpServersRepository.reloadMetadata(input.uuid, input.mode);
+            try {
+                return await mcpServersRepository.reloadMetadata(input.uuid, input.mode);
+            } catch (error) {
+                rethrowSqliteUnavailableAsTrpc('MCP server registry is unavailable', error);
+            }
         }),
 
     clearMetadataCache: adminProcedure
         .input(z.object({ uuid: z.string() }))
         .mutation(async ({ input }) => {
-            return await mcpServersRepository.clearMetadataCache(input.uuid);
+            try {
+                return await mcpServersRepository.clearMetadataCache(input.uuid);
+            } catch (error) {
+                rethrowSqliteUnavailableAsTrpc('MCP server registry is unavailable', error);
+            }
         }),
 
     delete: adminProcedure
         .input(z.object({ uuid: z.string() }))
         .mutation(async ({ input }) => {
-            return await mcpServersRepository.deleteByUuid(input.uuid);
+            try {
+                return await mcpServersRepository.deleteByUuid(input.uuid);
+            } catch (error) {
+                rethrowSqliteUnavailableAsTrpc('MCP server registry is unavailable', error);
+            }
         }),
 
     bulkImport: adminProcedure
         .input(z.array(McpServerCreateInputSchema))
         .mutation(async ({ input }) => {
-            return await mcpServersRepository.bulkCreate(input);
+            try {
+                return await mcpServersRepository.bulkCreate(input);
+            } catch (error) {
+                rethrowSqliteUnavailableAsTrpc('MCP server registry is unavailable', error);
+            }
         }),
 
     syncTargets: publicProcedure.query(async () => {

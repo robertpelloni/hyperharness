@@ -7,6 +7,7 @@ import Database from 'better-sqlite3';
 import fg from 'fast-glob';
 
 import { LLMService } from '@hypercode/ai';
+import { formatOptionalSqliteFailure } from '../db/sqliteAvailability.js';
 
 import AgentMemoryService from './AgentMemoryService.js';
 import {
@@ -754,11 +755,10 @@ export class SessionImportService {
             try {
                 this.store.compactInlineTranscripts(250);
             } catch (error) {
-                console.warn(
-                    `[SessionImport] Failed to compact inline imported transcripts: ${
-                        error instanceof Error ? error.message : String(error)
-                    }`,
-                );
+                console.warn(formatOptionalSqliteFailure(
+                    '[SessionImport] Failed to compact inline imported transcripts',
+                    error,
+                ));
             }
         }
 
@@ -808,11 +808,10 @@ export class SessionImportService {
                     };
                 }, 250);
             } catch (error) {
-                console.warn(
-                    `[SessionImport] Failed to backfill imported transcript retention summaries: ${
-                        error instanceof Error ? error.message : String(error)
-                    }`,
-                );
+                console.warn(formatOptionalSqliteFailure(
+                    '[SessionImport] Failed to backfill imported transcript retention summaries',
+                    error,
+                ));
             }
         }
     }

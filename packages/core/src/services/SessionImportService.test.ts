@@ -24,6 +24,15 @@ type FakeImportedSession = {
 };
 
 const tempRoots: string[] = [];
+const sqliteAvailable = (() => {
+    try {
+        const db = new Database(':memory:');
+        db.close();
+        return true;
+    } catch {
+        return false;
+    }
+})();
 
 async function createTempRoot(): Promise<string> {
     const root = await fs.mkdtemp(path.join(os.tmpdir(), 'hypercode-session-import-'));
@@ -73,6 +82,8 @@ function createFakeStore() {
             .flatMap((session) => session.parsedMemories)
             .filter((memory) => memory.kind === 'instruction')
             .slice(0, limit)),
+        compactInlineTranscripts: vi.fn(),
+        backfillRetentionSummaries: vi.fn(),
     };
 }
 
@@ -167,6 +178,42 @@ describe('SessionImportService', () => {
         expect(second.importedCount).toBe(0);
         expect(second.skippedCount).toBe(1);
         expect(forced.importedCount).toBe(1);
+    });
+
+    it('logs concise degraded-mode warnings when imported-session SQLite maintenance is unavailable', async () => {
+        const root = await createTempRoot();
+        const store = createFakeStore();
+        const sqliteUnavailable = new Error(
+            'SQLite runtime is unavailable for HyperCode DB-backed features (Could not locate the bindings file. Tried: better-sqlite3.node)',
+        );
+        store.compactInlineTranscripts.mockImplementation(() => {
+            throw sqliteUnavailable;
+        });
+        store.backfillRetentionSummaries.mockImplementation(() => {
+            throw sqliteUnavailable;
+        });
+        const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+        new SessionImportService({
+            generateText: vi.fn(async () => {
+                throw new Error('no llm');
+            }),
+        } as any, {
+            addLongTerm: vi.fn(async () => ({})),
+            captureSessionSummary: vi.fn(async () => ({})),
+        } as any, root, {
+            store: store as any,
+            includeHomeDirectories: false,
+            maxFilesPerRoot: 20,
+        });
+
+        expect(warnSpy).toHaveBeenCalledWith(
+            '[SessionImport] Failed to compact inline imported transcripts: SQLite runtime is unavailable for this run.',
+        );
+        expect(warnSpy).toHaveBeenCalledWith(
+            '[SessionImport] Failed to backfill imported transcript retention summaries: SQLite runtime is unavailable for this run.',
+        );
+        expect(warnSpy.mock.calls.flat().join('\n')).not.toContain('Could not locate the bindings file');
     });
 
     it('imports VS Code Copilot Chat home-directory sessions with UUID filenames', async () => {
@@ -681,7 +728,7 @@ describe('SessionImportService', () => {
         expect(store.sessions).toHaveLength(0);
     });
 
-    it('imports Prism ledger and handoff entries from the local data.db store', async () => {
+    (sqliteAvailable ? it : it.skip)('imports Prism ledger and handoff entries from the local data.db store', async () => {
         const root = await createTempRoot();
         const fakeHome = await createTempRoot();
         const prismDir = path.join(fakeHome, '.prism-mcp');
@@ -807,7 +854,7 @@ describe('SessionImportService', () => {
         expect(captureSessionSummary).toHaveBeenCalledTimes(2);
     });
 
-    it('imports llm CLI conversations from logs.db', async () => {
+    (sqliteAvailable ? it : it.skip)('imports llm CLI conversations from logs.db', async () => {
         const root = await createTempRoot();
         const fakeHome = await createTempRoot();
         const llmDir = path.join(fakeHome, '.llm');

@@ -1,15 +1,15 @@
 /**
- * `borg start` - Start the HyperCode backend server
+ * `hypercode start` - Start the HyperCode backend server
  *
  * Launches the HyperCode core server with Express/tRPC/WebSocket/MCP endpoints.
  * The server provides the API backend for the WebUI dashboard, CLI commands,
  * and external MCP clients.
  *
  * @example
- *   borg start                    # Start on default port 3000
- *   borg start --port 8080        # Start on custom port
- *   borg start --no-mcp           # Start without MCP server
- *   borg start --config ./my.json # Use custom config file
+ *   hypercode start                    # Start on default port 3000
+ *   hypercode start --port 8080        # Start on custom port
+ *   hypercode start --no-mcp           # Start without MCP server
+ *   hypercode start --config ./my.json # Use custom config file
  */
 
 import { spawn, type ChildProcess } from 'node:child_process';
@@ -184,7 +184,7 @@ export async function acquireSingleInstanceLock(
   mkdirSync(resolvedDataDir, { recursive: true });
 
   const pid = getPid();
-  const instanceId = `borg-${pid}-${now().getTime()}`;
+  const instanceId = `hypercode-${pid}-${now().getTime()}`;
   let selectedPort = options.requestedPort;
   let clearedStaleLock = false;
   let reusedStalePort = false;
@@ -297,7 +297,7 @@ export async function startCoreRuntime(
     supervisor?: boolean;
     autoDrive?: boolean;
   },
-  loadCore: () => Promise<CoreRuntimeModule> = async () => await import('@borg/core'),
+  loadCore: () => Promise<CoreRuntimeModule> = async () => await import('@hypercode/core/orchestrator'),
 ) {
   const core = await loadCore();
 
@@ -555,16 +555,16 @@ export function registerStartCommand(program: Command): void {
     .option('--no-dashboard', 'Disable serving the WebUI dashboard')
     .option('--no-open-dashboard', 'Start the dashboard runtime without opening the browser')
     .option('-c, --config <path>', 'Path to config file')
-    .option('-d, --data-dir <path>', 'Data directory for HyperCode state (compat path: ~/.borg)', '~/.borg')
+    .option('-d, --data-dir <path>', 'Data directory for HyperCode state (compat path: ~/.hypercode)', '~/.hypercode')
     .option('--daemon', 'Run as background daemon')
     .addHelpText('after', `
 Examples:
-  $ borg start                     Start with defaults (tRPC on port 4000)
-  $ borg start -p 8080             Start on port 8080
-  $ borg start --no-mcp            Start without MCP server
-  $ borg start --auto-drive        Start the Director after boot completes
-  $ borg start --daemon            Run as background service
-  $ borg start --host 127.0.0.1    Bind to localhost only
+  $ hypercode start                     Start with defaults (tRPC on port 4000)
+  $ hypercode start -p 8080             Start on port 8080
+  $ hypercode start --no-mcp            Start without MCP server
+  $ hypercode start --auto-drive        Start the Director after boot completes
+  $ hypercode start --daemon            Run as background service
+  $ hypercode start --host 127.0.0.1    Bind to localhost only
     `)
     .action(async (opts) => {
       const chalk = (await import('chalk')).default;

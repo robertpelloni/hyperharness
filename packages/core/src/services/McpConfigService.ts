@@ -2,6 +2,7 @@
 import * as fs from 'fs/promises';
 import { mcpServersRepository } from '../db/repositories/mcp-servers.repo.js';
 import { toolsRepository } from '../db/repositories/tools.repo.js';
+import { formatOptionalSqliteFailure, isSqliteUnavailableError, sqliteErrorMessage } from '../db/sqliteAvailability.js';
 import { loadBorgMcpConfig } from '../mcp/mcpJsonConfig.js';
 
 export class McpConfigService {
@@ -20,8 +21,8 @@ export class McpConfigService {
     };
 
     /**
-     * Reads Borg's mcp.jsonc (falling back to mcp.json) and updates the database to match.
-     * This makes Borg's config file the authoritative source for config entry existence/content.
+     * Reads HyperCode's mcp.jsonc (falling back to mcp.json) and updates the database to match.
+     * This makes HyperCode's config file the authoritative source for config entry existence/content.
      */
     async syncWithDatabase() {
         console.log('[McpConfigService] Syncing Database with mcp.jsonc...');
@@ -93,8 +94,15 @@ export class McpConfigService {
 
         } catch (error) {
             this.syncState.lastCompletedAt = Date.now();
-            this.syncState.lastError = error instanceof Error ? error.message : String(error);
-            console.error('[McpConfigService] Sync failed:', error);
+            this.syncState.lastError = isSqliteUnavailableError(error)
+                ? 'SQLite runtime is unavailable for this run.'
+                : sqliteErrorMessage(error);
+            const message = formatOptionalSqliteFailure('[McpConfigService] Sync failed', error);
+            if (isSqliteUnavailableError(error)) {
+                console.warn(message);
+            } else {
+                console.error('[McpConfigService] Sync failed:', error);
+            }
         } finally {
             this.syncState.inProgress = false;
         }

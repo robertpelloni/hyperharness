@@ -11,16 +11,21 @@
  * though predominantly targets SQLite for this local-first architecture.
  */
 
-import { drizzle } from "drizzle-orm/better-sqlite3";
-import Database from "better-sqlite3";
+import { createRequire } from "node:module";
 import * as schema from "./mcp-admin-schema.js";
 import * as dotenv from "dotenv";
 import path from "path";
 import fs from "fs";
+import { drizzle } from "drizzle-orm/better-sqlite3";
+import { isSqliteUnavailableError } from "./sqliteAvailability.js";
 
 dotenv.config();
 
-function initializeSchema(database: InstanceType<typeof Database>): void {
+const require = createRequire(import.meta.url);
+type BetterSqlite3Database = import("better-sqlite3").Database;
+type BetterSqlite3Constructor = typeof import("better-sqlite3");
+
+function initializeSchema(database: BetterSqlite3Database): void {
     database.pragma("foreign_keys = ON");
 
     database.exec(`
@@ -692,24 +697,109 @@ function initializeSchema(database: InstanceType<typeof Database>): void {
     }
 }
 
-// Default to SQLite local file
 const dbPath = process.env.DATABASE_URL || "metamcp.db";
-
-// Ensure we are using absolute path if it is a local file
 const resolvedDbPath = dbPath.startsWith("file:")
     ? dbPath.slice(5)
     : path.resolve(process.cwd(), dbPath);
-
-// Ensure the parent directory exists before opening the database
 const dbDir = path.dirname(resolvedDbPath);
-if (!fs.existsSync(dbDir)) {
-    fs.mkdirSync(dbDir, { recursive: true });
+
+function createDrizzleDatabase(sqlite: BetterSqlite3Database) {
+    return drizzle(sqlite, { schema });
 }
 
-const sqlite = new Database(resolvedDbPath);
-initializeSchema(sqlite);
-export const sqliteInstance: import('better-sqlite3').Database = sqlite;
-export const db = drizzle(sqlite, { schema });
+type HyperDb = ReturnType<typeof createDrizzleDatabase>;
+
+type SqliteRuntime = {
+    sqlite: BetterSqlite3Database;
+    db: HyperDb;
+};
+
+let sqliteRuntime: SqliteRuntime | null = null;
+let sqliteInitializationError: unknown = null;
+
+function buildSqliteUnavailableError(error: unknown): Error {
+    const reason = error instanceof Error ? error.message : String(error);
+    const wrapped = new Error(
+        `SQLite runtime is unavailable for HyperCode DB-backed features (${reason}). ` +
+        `The control plane can still start, but SQLite-backed routes and services remain unavailable until better-sqlite3 loads successfully.`,
+    );
+    if (error instanceof Error) {
+        Object.defineProperty(wrapped, "cause", {
+            value: error,
+            enumerable: false,
+            configurable: true,
+            writable: true,
+        });
+    }
+
+    return wrapped;
+}
+
+function ensureSqliteRuntime(): SqliteRuntime {
+    if (sqliteRuntime) {
+        return sqliteRuntime;
+    }
+
+    if (sqliteInitializationError) {
+        throw buildSqliteUnavailableError(sqliteInitializationError);
+    }
+
+    try {
+        if (!fs.existsSync(dbDir)) {
+            fs.mkdirSync(dbDir, { recursive: true });
+        }
+
+        const Database = require("better-sqlite3") as BetterSqlite3Constructor;
+        const sqlite = new Database(resolvedDbPath);
+        initializeSchema(sqlite);
+
+        sqliteRuntime = {
+            sqlite,
+            db: createDrizzleDatabase(sqlite),
+        };
+
+        return sqliteRuntime;
+    } catch (error) {
+        sqliteInitializationError = error;
+        if (isSqliteUnavailableError(error)) {
+            throw buildSqliteUnavailableError(error);
+        }
+        throw error;
+    }
+}
+
+function createLazyProxy<T extends object>(resolveValue: () => T): T {
+    const target = {} as T;
+
+    return new Proxy(target, {
+        get(_target, property, receiver) {
+            return Reflect.get(resolveValue(), property, receiver);
+        },
+        set(_target, property, value, receiver) {
+            return Reflect.set(resolveValue(), property, value, receiver);
+        },
+        has(_target, property) {
+            return Reflect.has(resolveValue(), property);
+        },
+        ownKeys() {
+            return Reflect.ownKeys(resolveValue());
+        },
+        getOwnPropertyDescriptor(_target, property) {
+            const descriptor = Object.getOwnPropertyDescriptor(resolveValue(), property);
+            if (!descriptor) {
+                return undefined;
+            }
+
+            return {
+                ...descriptor,
+                configurable: true,
+            };
+        },
+    });
+}
+
+export const sqliteInstance: BetterSqlite3Database = createLazyProxy(() => ensureSqliteRuntime().sqlite);
+export const db: HyperDb = createLazyProxy(() => ensureSqliteRuntime().db);
 
 // Export the schema for convenience
 export { schema };

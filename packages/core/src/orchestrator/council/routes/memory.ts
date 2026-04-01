@@ -1,36 +1,57 @@
-import { Hono } from 'hono';
+import { Hono, type Context } from 'hono';
 import { z } from 'zod';
 import { collectiveMemory } from '../services/collective-memory.js';
 import { apiRateLimit } from '../middleware/rate-limit.js';
 
 const app = new Hono();
 
-app.get('/facts', apiRateLimit(), async (c) => {
-  const query = c.req.query('q');
-  let facts;
-  
-  if (query) {
-    facts = await collectiveMemory.searchFacts(query);
-  } else {
-    facts = await collectiveMemory.getAllFacts();
+function handleMemoryRouteError(c: Context, error: unknown) {
+  const message = error instanceof Error ? error.message : String(error);
+  if (message.includes('Collective memory is unavailable:')) {
+    return c.json({ success: false, error: message }, 503);
   }
-  
-  return c.json({ success: true, data: facts });
+
+  throw error;
+}
+
+app.get('/facts', apiRateLimit(), async (c) => {
+  try {
+    const query = c.req.query('q');
+    let facts;
+    
+    if (query) {
+      facts = await collectiveMemory.searchFacts(query);
+    } else {
+      facts = await collectiveMemory.getAllFacts();
+    }
+    
+    return c.json({ success: true, data: facts });
+  } catch (error) {
+    return handleMemoryRouteError(c, error);
+  }
 });
 
 app.post('/facts', apiRateLimit(), async (c) => {
-  const body = factSchema.parse(await c.req.json());
-  const fact = await collectiveMemory.storeFact({
-    ...body,
-    tags: body.tags || []
-  });
-  return c.json({ success: true, data: fact });
+  try {
+    const body = factSchema.parse(await c.req.json());
+    const fact = await collectiveMemory.storeFact({
+      ...body,
+      tags: body.tags || []
+    });
+    return c.json({ success: true, data: fact });
+  } catch (error) {
+    return handleMemoryRouteError(c, error);
+  }
 });
 
 app.get('/recall/:key', apiRateLimit(), async (c) => {
-  const key = c.req.param('key');
-  const facts = await collectiveMemory.recallFact(key);
-  return c.json({ success: true, data: facts });
+  try {
+    const key = c.req.param('key');
+    const facts = await collectiveMemory.recallFact(key);
+    return c.json({ success: true, data: facts });
+  } catch (error) {
+    return handleMemoryRouteError(c, error);
+  }
 });
 
 export default app;

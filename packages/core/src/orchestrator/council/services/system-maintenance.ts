@@ -1,6 +1,7 @@
 import { sessionManager } from './session-manager.js';
 import { logRotation } from './log-rotation.js';
 import { dbService } from './db.js';
+import { isSqliteUnavailableError, formatOptionalSqliteFailure } from '../../../db/sqliteAvailability.js';
 import * as fs from 'fs';
 import * as path from 'path';
 import { spawn } from 'child_process';
@@ -40,7 +41,7 @@ class AutonomousMaintenanceService {
    */
   private async cleanupOrphanedSidecars(): Promise<void> {
     // This is OS specific. For now, we rely on sessionManager.cleanup() on exit,
-    // but a robust Borg system would scan the process tree.
+    // but a robust HyperCode system would scan the process tree.
     // implementation planned for next sub-phase.
   }
 
@@ -48,10 +49,19 @@ class AutonomousMaintenanceService {
    * Runs SQLite VACUUM and ANALYZE to keep the persistence layer fast.
    */
   private async optimizeDatabase(): Promise<void> {
-    const db = dbService.getDb();
-    db.exec('VACUUM');
-    db.exec('ANALYZE');
-    console.log('[Maintenance] Database optimized.');
+    try {
+      const db = dbService.getDb();
+      db.exec('VACUUM');
+      db.exec('ANALYZE');
+      console.log('[Maintenance] Database optimized.');
+    } catch (error) {
+      if (isSqliteUnavailableError(error)) {
+        console.warn(formatOptionalSqliteFailure('[Maintenance] Skipping database optimization', error));
+        return;
+      }
+
+      throw error;
+    }
   }
 
   /**

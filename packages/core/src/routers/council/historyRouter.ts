@@ -78,7 +78,7 @@ export const historyRouter = t.router({
   }),
 
   initialize: adminProcedure.mutation(async () => {
-    debateHistory.initialize();
+    await debateHistory.initialize();
     return {
       initialized: true,
       recordCount: await debateHistory.getRecordCount(),

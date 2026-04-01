@@ -23,7 +23,7 @@ mcpServerDebugLog('[MCPServer] ✓ path/url/fs');
 import { Router } from "./Router.js";
 mcpServerDebugLog('[MCPServer] ✓ Router');
 
-import { ModelSelector, LLMService } from "@borg/ai";
+import { ModelSelector, LLMService } from "@hypercode/ai";
 import { CoreModelSelector } from './providers/CoreModelSelector.js';
 mcpServerDebugLog('[MCPServer] ✓ ModelSelector');
 
@@ -33,8 +33,8 @@ import http from 'http';
 mcpServerDebugLog('[MCPServer] ✓ ws/http');
 
 import { McpmInstaller } from "./skills/McpmInstaller.js";
-import { Director } from "@borg/agents";
-import { Council, CouncilRole } from "@borg/agents";
+import { Director } from "@hypercode/agents";
+import { Council, CouncilRole } from "@hypercode/agents";
 import { GeminiAgent } from "./agents/GeminiAgent.js";
 import { ClaudeAgent } from "./agents/ClaudeAgent.js";
 import { MetaArchitectAgent } from "./agents/MetaArchitectAgent.js";
@@ -52,7 +52,7 @@ import { MeshService, SwarmMessageType } from './mesh/MeshService.js';
 import { GitWorktreeManager } from "./orchestrator/GitWorktreeManager.js";
 import { AuditService } from "./security/AuditService.js";
 import { GitService } from "./services/GitService.js";
-import { Supervisor } from "@borg/agents";
+import { Supervisor } from "@hypercode/agents";
 import { SkillRegistry } from "./skills/SkillRegistry.js";
 import { SuggestionService } from "./suggestions/SuggestionService.js";
 import { ResearchService } from "./services/ResearchService.js";
@@ -125,7 +125,7 @@ import {
     SystemStatusTool,
     ChainExecutor,
     type ChainRequest
-} from "@borg/tools";
+} from "@hypercode/tools";
 mcpServerDebugLog('[MCPServer] ✓ All Tools & ChainExecutor');
 
 mcpServerDebugLog('[MCPServer] ✓ All Tools & ChainExecutor');
@@ -154,8 +154,8 @@ import { EmbeddingService } from './services/rag/EmbeddingService.js';
 
 
 import { PermissionManager, AutonomyLevel } from "./security/PermissionManager.js";
-import { BrowserTool } from "@borg/tools";
-import { SearchService } from "@borg/search";
+import { BrowserTool } from "@hypercode/tools";
+import { SearchService } from "@hypercode/search";
 import { CouncilService } from "./services/CouncilService.js";
 import { BrowserService } from "./services/BrowserService.js";
 import type { ConnectedClient } from './services/mcp-client.service.js';
@@ -401,10 +401,10 @@ export class MCPServer {
     }
 
     /**
-     * Reason: Borg now captures session-start and stop-time memory, but still needs
+     * Reason: HyperCode now captures session-start and stop-time memory, but still needs
      * post-tool lifecycle observations without wiring every caller individually.
      * What: best-effort bridge from centralized tool execution into structured memory observations.
-     * Why: keeps claude-mem-style lifecycle capture native to Borg while never blocking tool execution.
+     * Why: keeps claude-mem-style lifecycle capture native to HyperCode while never blocking tool execution.
      */
     private async captureToolObservation(event: {
         toolName: string;
@@ -426,11 +426,11 @@ export class MCPServer {
     }
 
     /**
-     * Reason: Borg can already rank relevant memories for a tool call, but until now
+     * Reason: HyperCode can already rank relevant memories for a tool call, but until now
      * that JIT context stayed behind an explicit helper instead of being used automatically.
      * What: resolves compact pre-tool context using current session goal/objective state,
      * broadcasts a short preview to the inspector, and stores deduped session memory.
-     * Why: gives Borg a native PreToolUse-style lifecycle seam without mutating downstream schemas.
+     * Why: gives HyperCode a native PreToolUse-style lifecycle seam without mutating downstream schemas.
      */
     private async resolveAutomaticToolContext(toolName: string, args: unknown): Promise<ToolContextPayload | null> {
         if (!shouldResolveAutomaticToolContext(toolName) || !this.agentMemoryService?.getToolContext) {
@@ -530,7 +530,7 @@ export class MCPServer {
         this.systemStatusTool = options.systemStatusTool || new SystemStatusTool();
         this.processRegistry = options.processRegistry || new ProcessRegistry();
         this.terminalService = new TerminalService(this.processRegistry);
-        this.mcpmInstaller = new McpmInstaller(path.join(process.cwd(), '.borg', 'skills'));
+        this.mcpmInstaller = new McpmInstaller(path.join(process.cwd(), '.hypercode', 'skills'));
         this.spawnerService = SpawnerService.getInstance();
         this.configManager = new ConfigManager();
         this.mcpConfigService = new McpConfigService();
@@ -581,8 +581,8 @@ export class MCPServer {
                 return { success: true, message: `Successfully installed and connected server: ${server.display_name} as '${nameAlias}'.\nTools from this server are now available in your working set!` };
             }
         });
-        // Fire and forget config sync
-        this.mcpConfigService.syncWithDatabase().catch(err => console.error("[MCPServer] Config Sync Failed:", err));
+        // Fire and forget config sync; the service itself reports degraded SQLite state truthfully.
+        void this.mcpConfigService.syncWithDatabase();
 
         this.autoTestService = new AutoTestService(process.cwd());
         this.sandboxService = new SandboxService();
@@ -590,12 +590,12 @@ export class MCPServer {
         this.promptRegistry = new PromptRegistry();
         this.skillRegistry = new SkillRegistry([
             path.join(process.cwd(), 'packages', 'core', 'src', 'skills'),
-            path.join(process.cwd(), '.borg', 'skills')
+            path.join(process.cwd(), '.hypercode', 'skills')
         ]);
         // SearchService is needed for DeepResearchService types
         const searchService = new SearchService();
         this.memoryManager = new MemoryManager(process.cwd());
-        this.agentMemoryService = new AgentMemoryService({ persistDir: path.join(process.cwd(), '.borg', 'agent_memory') }, this.memoryManager);
+        this.agentMemoryService = new AgentMemoryService({ persistDir: path.join(process.cwd(), '.hypercode', 'agent_memory') }, this.memoryManager);
         this.deepResearchService = new DeepResearchService(this, this.llmService, searchService, this.memoryManager); // Initialize FIRST
         this.skillAssimilationService = new SkillAssimilationService(
             this.skillRegistry,
@@ -647,7 +647,7 @@ export class MCPServer {
         this.lspService = new LSPService(process.cwd());
         this.planService = new PlanService({ rootPath: process.cwd() });
         this.codeModeService = new CodeModeService({ timeout: 30000, allowAsync: true });
-        this.workflowEngine = new WorkflowEngine({ persistDir: path.join(process.cwd(), '.borg', 'workflows') });
+        this.workflowEngine = new WorkflowEngine({ persistDir: path.join(process.cwd(), '.hypercode', 'workflows') });
         this.lspTools = new LSPTools(process.cwd());
         // MemoryManager + AgentMemoryService initialized early
         this.sessionImportService = new SessionImportService(this.llmService, this.agentMemoryService, process.cwd());
@@ -743,7 +743,7 @@ export class MCPServer {
 
         // Phase 65: Marketplace (Depends on Mesh)
         this.marketplaceService = new MarketplaceService(
-            path.join(process.cwd(), '.borg', 'skills'),
+            path.join(process.cwd(), '.hypercode', 'skills'),
             undefined // this.meshService
         );
 
@@ -792,7 +792,7 @@ export class MCPServer {
 
     private createServerInstance(): { server: Server; ready: Promise<void> } {
         const s = new Server(
-            { name: "borg-core", version: "0.99.1" },
+            { name: "hypercode-core", version: "0.99.1" },
             {
                 capabilities: {
                     tools: {},
@@ -918,21 +918,21 @@ export class MCPServer {
             }
 
             if (permission === 'NEEDS_CONSULTATION') {
-                console.log(`[Borg Core] Consulting Council for: ${name}`);
+                console.log(`[HyperCode Core] Consulting Council for: ${name}`);
                 this.auditService.log('TOOL_CONSULTATION', { tool: name, args }, 'WARN');
                 const debate = await this.council.runConsensusSession(`Execute tool '${name}' with args: ${JSON.stringify(args)}`);
 
                 if (!debate.approved) {
                     throw new Error(`Council Denied Execution: ${debate.summary}`);
                 }
-                console.log(`[Borg Core] Council Approved: ${debate.summary}`);
+                console.log(`[HyperCode Core] Council Approved: ${debate.summary}`);
             }
 
             // 1. Internal Status / Config Tools
             let result;
             if (name === "router_status") {
                 result = {
-                    content: [{ type: "text", text: "Borg Router is active." }],
+                    content: [{ type: "text", text: "HyperCode Router is active." }],
                 };
             }
             else if (name === "set_autonomy") {
@@ -946,7 +946,7 @@ export class MCPServer {
                 const text = args?.text as string;
                 // SAFETY: Default to false to prevent feedback loops. Explicitly set true if needed.
                 const submit = args?.submit as boolean ?? false;
-                console.log(`[Borg Core] Chat Reply Requested: ${text} (submit: ${submit})`);
+                console.log(`[HyperCode Core] Chat Reply Requested: ${text} (submit: ${submit})`);
 
                 if (this.wssInstance) {
                     this.wssInstance.clients.forEach((client: any) => {
@@ -1729,7 +1729,7 @@ export class MCPServer {
             else if (name === "analyze_screenshot") {
                 const prompt = args.prompt as string;
                 try {
-                    console.log(`[Borg Core] 👁️ Analyzing screenshot with prompt: "${prompt}"...`);
+                    console.log(`[HyperCode Core] 👁️ Analyzing screenshot with prompt: "${prompt}"...`);
                     const data = await this.captureScreenshotFromBrowser();
                     const base64 = data.split(',')[1];
                     const mimeType = "image/jpeg";
@@ -1874,7 +1874,7 @@ export class MCPServer {
             }
             else if (name === "index_codebase") {
                 const dir = args?.path || process.cwd();
-                console.log(`[Borg Core] Indexing codebase at ${dir}...`);
+                console.log(`[HyperCode Core] Indexing codebase at ${dir}...`);
                 const count = await this.memoryManager.indexCodebase(dir);
                 result = {
                     content: [{ type: "text", text: `Indexed ${count} documents/chunks from ${dir}.` }]
@@ -1882,7 +1882,7 @@ export class MCPServer {
             }
             else if (name === "search_codebase") {
                 const query = args?.query as string;
-                console.log(`[Borg Core] Semantic Searching for: ${query}`);
+                console.log(`[HyperCode Core] Semantic Searching for: ${query}`);
                 const matches = await this.memoryManager.search(query);
 
                 let text = `Searching for: "${query}"\n\n`;
@@ -2197,7 +2197,7 @@ export class MCPServer {
                 result = { content: [{ type: "text", text: success ? "Healer successfully fixed the error." : "Healer could not fix this error autonomously." }] };
             }
             else if (name === "get_project_context") {
-                const contextPath = path.join(process.cwd(), '.borg', 'project_context.md');
+                const contextPath = path.join(process.cwd(), '.hypercode', 'project_context.md');
                 let projectContent = "";
                 if (fs.existsSync(contextPath)) {
                     projectContent = await fs.promises.readFile(contextPath, 'utf-8');
@@ -2220,8 +2220,8 @@ ${env.tools.filter((tool) => tool.installed).map((tool) => `- **${tool.name}**: 
                 result = { content: [{ type: "text", text: `${projectContent}\n\n---\n${envReport}` }] };
             }
             else if (name === "update_project_context") {
-                const contextPath = path.join(process.cwd(), '.borg', 'project_context.md');
-                const borgDir = path.join(process.cwd(), '.borg');
+                const contextPath = path.join(process.cwd(), '.hypercode', 'project_context.md');
+                const borgDir = path.join(process.cwd(), '.hypercode');
                 if (!fs.existsSync(borgDir)) fs.mkdirSync(borgDir, { recursive: true });
                 
                 await fs.promises.writeFile(contextPath, args.content as string);
@@ -2307,9 +2307,9 @@ ${env.tools.filter((tool) => tool.installed).map((tool) => `- **${tool.name}**: 
                                 }
                             }
 
-                            // Skip proxy routing once the Borg-native aggregator path has run.
+                            // Skip proxy routing once the HyperCode-native aggregator path has run.
                         } else {
-                            // Borg-native fallback path for unscoped tools.
+                            // HyperCode-native fallback path for unscoped tools.
                             try {
                                 this.nativeSessionMetaTools.touchLoadedTool(name);
                                 result = await this.mcpAggregator.executeTool(name, args);
@@ -2410,7 +2410,7 @@ ${env.tools.filter((tool) => tool.installed).map((tool) => `- **${tool.name}**: 
         const internalTools: any[] = [
             {
                 name: "router_status",
-                description: "Check the status of the Borg Router",
+                description: "Check the status of the HyperCode Router",
                 inputSchema: { type: "object", properties: {} },
             },
             {
@@ -2462,7 +2462,7 @@ ${env.tools.filter((tool) => tool.installed).map((tool) => `- **${tool.name}**: 
             },
             {
                 name: "assimilate_skill",
-                description: "Convert a research item into a functional Borg Skill (runbook)",
+                description: "Convert a research item into a functional HyperCode Skill (runbook)",
                 inputSchema: {
                     type: "object",
                     properties: {
@@ -3201,7 +3201,7 @@ ${env.tools.filter((tool) => tool.installed).map((tool) => `- **${tool.name}**: 
             },
             {
                 name: "auto_heal",
-                description: "Hands off a technical error or failing test to the Borg Healer. The system will autonomously diagnose the error, generate a fix, and apply it to the source code.",
+                description: "Hands off a technical error or failing test to the HyperCode Healer. The system will autonomously diagnose the error, generate a fix, and apply it to the source code.",
                 inputSchema: {
                     type: "object",
                     properties: {
@@ -3231,7 +3231,7 @@ ${env.tools.filter((tool) => tool.installed).map((tool) => `- **${tool.name}**: 
             // Phase 60: The Mesh tools
             {
                 name: "swarm_broadcast",
-                description: "Broadcast a message to the Borg P2P Swarm",
+                description: "Broadcast a message to the HyperCode P2P Swarm",
                 inputSchema: {
                     type: "object",
                     properties: {
@@ -3284,7 +3284,7 @@ ${env.tools.filter((tool) => tool.installed).map((tool) => `- **${tool.name}**: 
     }
 
     private async setupHandlers(serverInstance: Server) {
-        mcpServerDebugLog('[MCPServer] Using Borg-native MCP handlers.');
+        mcpServerDebugLog('[MCPServer] Using HyperCode-native MCP handlers.');
         await this.setupDirectHandlers(serverInstance);
     }
 
@@ -3327,8 +3327,8 @@ ${env.tools.filter((tool) => tool.installed).map((tool) => `- **${tool.name}**: 
 
     private setupDirectDiscoveryHandlers(serverInstance: Server): void {
         const context = {
-            namespaceUuid: 'borg-core-namespace',
-            sessionId: 'borg-core-session',
+            namespaceUuid: 'hypercode-core-namespace',
+            sessionId: 'hypercode-core-session',
             includeInactiveServers: false,
         };
 
@@ -3479,8 +3479,7 @@ ${env.tools.filter((tool) => tool.installed).map((tool) => `- **${tool.name}**: 
 
     async start() {
         mcpServerDebugLog('[MCPServer] Loading Skills...');
-        // Non-blocking initialization of aggregator to prevent stalling Stdio/WS start
-        this.mcpAggregator.initialize()
+        const aggregatorStartup = this.mcpAggregator.initialize()
             .then(async () => {
                 const inventory = await getCachedToolInventory();
                 const toolCountsByName = new Map(
@@ -3511,6 +3510,7 @@ ${env.tools.filter((tool) => tool.installed).map((tool) => `- **${tool.name}**: 
         // is actually set. The current memory bootstrap is lightweight, so we prime
         // it during core startup instead of advertising a false-positive ready state.
         await this.initializeMemorySystem();
+        await Promise.all([this.serverSetupPromise, aggregatorStartup]);
 
         // Start Services
         // this.director.startChatDaemon(); // Removed, auto-drive handles this
@@ -3521,16 +3521,15 @@ ${env.tools.filter((tool) => tool.installed).map((tool) => `- **${tool.name}**: 
         // Build Graph in Background
         this.autoTestService.repoGraph.buildGraph().catch(e => console.error("Graph build failed", e));
 
-        mcpServerDebugLog('[MCPServer] 🚀 Borg Core ready.');
+        mcpServerDebugLog('[MCPServer] 🚀 HyperCode Core ready.');
         mcpServerDebugLog('[MCPServer] Preparing request handlers...');
-        await this.serverSetupPromise;
 
         // 1. Start Stdio (for local CLI usage)
         if (!this.options.skipStdio) {
             mcpServerDebugLog('[MCPServer] Connecting Stdio...');
             const stdioTransport = new StdioServerTransport();
             await this.server.connect(stdioTransport);
-            mcpServerDebugLog('Borg Core: Stdio Transport Active');
+            mcpServerDebugLog('HyperCode Core: Stdio Transport Active');
         } else {
             mcpServerDebugLog('[MCPServer] Skipping Stdio transport (managed by external loader).');
         }
@@ -3785,7 +3784,7 @@ ${env.tools.filter((tool) => tool.installed).map((tool) => `- **${tool.name}**: 
                 }
 
                 bridgePortConflictHandled = true;
-                console.warn(`[Borg Core] ⚠️ WebSocket bridge port ${PORT} is already in use. Skipping bridge startup while keeping the rest of Borg online.`);
+                console.warn(`[HyperCode Core] ⚠️ WebSocket bridge port ${PORT} is already in use. Skipping bridge startup while keeping the rest of HyperCode online.`);
                 this.wssInstance = null;
             };
 
@@ -3795,7 +3794,7 @@ ${env.tools.filter((tool) => tool.installed).map((tool) => `- **${tool.name}**: 
                     return;
                 }
 
-                console.error(`[Borg Core] ❌ WebSocket Server Error (Port ${PORT}):`, err.message);
+                console.error(`[HyperCode Core] ❌ WebSocket Server Error (Port ${PORT}):`, err.message);
             });
 
             wss.on('error', (err: any) => {
@@ -3804,7 +3803,7 @@ ${env.tools.filter((tool) => tool.installed).map((tool) => `- **${tool.name}**: 
                     return;
                 }
 
-                console.error(`[Borg Core] ❌ WebSocket bridge runtime error (Port ${PORT}):`, err.message);
+                console.error(`[HyperCode Core] ❌ WebSocket bridge runtime error (Port ${PORT}):`, err.message);
             });
 
             const bridgeListening = await new Promise<boolean>((resolve) => {
@@ -3820,7 +3819,7 @@ ${env.tools.filter((tool) => tool.installed).map((tool) => `- **${tool.name}**: 
                 };
 
                 httpServer.once('listening', () => {
-                    mcpServerDebugLog(`Borg Core: WebSocket Transport Active on ws://localhost:${PORT}`);
+                    mcpServerDebugLog(`HyperCode Core: WebSocket Transport Active on ws://localhost:${PORT}`);
                     finalize(true);
                 });
 
@@ -4038,24 +4037,24 @@ ${env.tools.filter((tool) => tool.installed).map((tool) => `- **${tool.name}**: 
             const rootDir = this.findMonorepoRoot(__dirname);
             mcpServerDebugLog(`[MCPServer] DEBUG rootDir: ${rootDir}`);
             if (rootDir) {
-                const supervisorPath = path.join(rootDir, 'packages', 'borg-supervisor', 'dist', 'index.js');
+                const supervisorPath = path.join(rootDir, 'packages', 'hypercode-supervisor', 'dist', 'index.js');
                 mcpServerDebugLog(`[MCPServer] Supervisor Path Resolved: ${supervisorPath}`);
 
-                await this.router.connectToServer('borg-supervisor', 'node', [supervisorPath]);
-                mcpServerDebugLog(`Borg Core: Connected to Supervisor at ${supervisorPath}`);
+                await this.router.connectToServer('hypercode-supervisor', 'node', [supervisorPath]);
+                mcpServerDebugLog(`HyperCode Core: Connected to Supervisor at ${supervisorPath}`);
 
                 // Phase 16: Google Workspace Integration
                 const workspacePath = path.join(rootDir, 'external', 'mcp-servers', 'workspace', 'workspace-server', 'dist', 'index.js');
                 mcpServerDebugLog(`[MCPServer] Google Workspace Server Path: ${workspacePath}`);
                 if (fs.existsSync(workspacePath)) {
                     await this.router.connectToServer('google-workspace', 'node', [workspacePath]);
-                    mcpServerDebugLog('Borg Core: Connected to Google Workspace Server (GMail/Calendar)');
+                    mcpServerDebugLog('HyperCode Core: Connected to Google Workspace Server (GMail/Calendar)');
                 }
             } else {
                 console.error("[MCPServer] Failed to locate Monorepo Root. Skipping Supervisor.");
             }
         } catch (e: any) {
-            console.error("Borg Core: Failed to connect to Supervisor. Native automation disabled.", e.message);
+            console.error("HyperCode Core: Failed to connect to Supervisor. Native automation disabled.", e.message);
         }
 
         if (this.wsServer && this.wssInstance) {
@@ -4115,20 +4114,20 @@ async function startDirectlyIfExecuted(): Promise<void> {
     redirectProtocolUnsafeConsoleMethodsForDirectExecution();
 
     process.on('unhandledRejection', (reason) => {
-        console.error('[Borg Core] Unhandled promise rejection:', reason);
+        console.error('[HyperCode Core] Unhandled promise rejection:', reason);
     });
 
     process.on('uncaughtException', (error) => {
-        console.error('[Borg Core] Uncaught exception:', error);
+        console.error('[HyperCode Core] Uncaught exception:', error);
         process.exit(1);
     });
 
     try {
         const mcp = new MCPServer({ skipWebsocket: true });
         await mcp.start();
-        console.error('[Borg Core] MCPServer direct entrypoint started.');
+        console.error('[HyperCode Core] MCPServer direct entrypoint started.');
     } catch (error) {
-        console.error('[Borg Core] Failed to start direct MCP entrypoint:', error);
+        console.error('[HyperCode Core] Failed to start direct MCP entrypoint:', error);
         process.exit(1);
     }
 }

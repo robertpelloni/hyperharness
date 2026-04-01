@@ -295,7 +295,7 @@ const host = config.server.host;
 sessionManager.startPolling();
 healthMonitor.start();
 logRotation.start();
-debateHistory.initialize();
+await debateHistory.initialize();
 selfEvolution.start();
 checkpointService.start();
 autonomousMaintenance.start();

@@ -2,6 +2,7 @@ import { EventEmitter } from 'events';
 import { dbService } from './db.js';
 import type { CouncilDecision, DevelopmentTask, Vote, ConsensusMode, TaskType } from './types.js';
 import { eq, lt, and, gte, lte, desc, asc, sql } from 'drizzle-orm';
+import { formatOptionalSqliteFailure, isSqliteUnavailableError } from '../../../db/sqliteAvailability.js';
 
 /**
  * A complete record of a council debate
@@ -91,6 +92,7 @@ export class DebateHistoryService extends EventEmitter {
   };
 
   private initialized = false;
+  private storageAvailable = true;
 
   constructor() {
     super();
@@ -99,10 +101,24 @@ export class DebateHistoryService extends EventEmitter {
   /**
    * Initialize the service and load existing records
    */
-  initialize(): void {
+  async initialize(): Promise<void> {
     if (this.initialized) return;
     this.initialized = true;
-    this.emit('initialized', { recordCount: this.getRecordCount() });
+
+    try {
+      const recordCount = await this.getRecordCount();
+      this.storageAvailable = true;
+      this.emit('initialized', { recordCount });
+    } catch (error) {
+      this.storageAvailable = false;
+      this.config.enabled = false;
+      this.emit('storage_error', { action: 'initialize', error });
+      const message = isSqliteUnavailableError(error)
+        ? '[DebateHistory] Disabling debate history persistence for this run because SQLite is unavailable:'
+        : '[DebateHistory] Disabling debate history persistence for this run due to initialization failure:';
+      console.warn(message, formatOptionalSqliteFailure('Debate history initialization failed', error));
+      this.emit('initialized', { recordCount: 0, storageAvailable: false });
+    }
   }
 
   /**
@@ -142,7 +158,7 @@ export class DebateHistoryService extends EventEmitter {
       },
     };
 
-    if (this.config.enabled) {
+    if (this.config.enabled && this.storageAvailable) {
       await this.persistRecord(record);
       await this.pruneOldRecords();
     }
@@ -200,7 +216,7 @@ export class DebateHistoryService extends EventEmitter {
         data: record
       });
     } catch (error) {
-      this.emit('error', { action: 'persist', recordId: record.id, error });
+      this.emit('storage_error', { action: 'persist', recordId: record.id, error });
     }
   }
 
@@ -208,7 +224,7 @@ export class DebateHistoryService extends EventEmitter {
    * Delete a record from SQLite
    */
   async deleteRecord(id: string): Promise<boolean> {
-    if (!this.config.enabled) return false;
+    if (!this.config.enabled || !this.storageAvailable) return false;
     
     const db = dbService.getDrizzle();
     const schema = dbService.getSchema();
@@ -506,7 +522,7 @@ export class DebateHistoryService extends EventEmitter {
    * Check if service is enabled
    */
   isEnabled(): boolean {
-    return this.config.enabled;
+    return this.config.enabled && this.storageAvailable;
   }
 
   /**

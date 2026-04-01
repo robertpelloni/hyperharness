@@ -7,11 +7,16 @@ import { resetMockDb, createDrizzleMock, createSchemaMock } from './mock-db.js';
 vi.mock('../db.js', () => ({
   dbService: {
     getDb: vi.fn(),
-    getDrizzle: () => createDrizzleMock(),
-    getSchema: () => createSchemaMock(),
+    getDrizzle: vi.fn(() => createDrizzleMock()),
+    getSchema: vi.fn(() => createSchemaMock()),
     close: vi.fn(),
   }
 }));
+
+const { dbService } = await import('../db.js');
+const mockGetDb = vi.mocked(dbService.getDb);
+const mockGetDrizzle = vi.mocked(dbService.getDrizzle);
+const mockGetSchema = vi.mocked(dbService.getSchema);
 
 describe('DebateHistoryService', () => {
   let service: DebateHistoryService;
@@ -41,6 +46,8 @@ describe('DebateHistoryService', () => {
   beforeEach(async () => {
     vi.clearAllMocks();
     resetMockDb();
+    mockGetDrizzle.mockImplementation(() => createDrizzleMock());
+    mockGetSchema.mockImplementation(() => createSchemaMock());
     service = new DebateHistoryService();
     service.updateConfig({ enabled: true, autoSave: true });
     await service.clearAll();
@@ -358,6 +365,51 @@ describe('DebateHistoryService', () => {
 
       await service.saveDebate({ ...mockTask, id: 'task-2' }, mockDecision, {});
       expect(await service.getRecordCount()).toBe(2);
+    });
+
+    test('initialize disables persistence cleanly when SQLite is unavailable', async () => {
+      const sqliteUnavailable = new Error('SQLite runtime is unavailable');
+      mockGetDrizzle.mockImplementation(() => {
+        throw sqliteUnavailable;
+      });
+      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+      const storageErrors: Array<{ action: string; error: unknown }> = [];
+      const initializedEvents: Array<{ recordCount: number; storageAvailable?: boolean }> = [];
+      service.on('storage_error', (event) => {
+        storageErrors.push(event as { action: string; error: unknown });
+      });
+      service.on('initialized', (event) => {
+        initializedEvents.push(event as { recordCount: number; storageAvailable?: boolean });
+      });
+
+      await expect(service.initialize()).resolves.toBeUndefined();
+
+      expect(service.isEnabled()).toBe(false);
+      expect(storageErrors).toEqual([
+        { action: 'initialize', error: sqliteUnavailable },
+      ]);
+      expect(initializedEvents).toContainEqual({ recordCount: 0, storageAvailable: false });
+      expect(warnSpy).toHaveBeenCalledWith(
+        '[DebateHistory] Disabling debate history persistence for this run because SQLite is unavailable:',
+        'Debate history initialization failed: SQLite runtime is unavailable for this run.',
+      );
+    });
+
+    test('initialize reports non-SQLite failures honestly', async () => {
+      const initializationFailure = new Error('schema mismatch');
+      mockGetDrizzle.mockImplementation(() => {
+        throw initializationFailure;
+      });
+      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+      await expect(service.initialize()).resolves.toBeUndefined();
+
+      expect(service.isEnabled()).toBe(false);
+      expect(warnSpy).toHaveBeenCalledWith(
+        '[DebateHistory] Disabling debate history persistence for this run due to initialization failure:',
+        'Debate history initialization failed: schema mismatch',
+      );
     });
   });
 
