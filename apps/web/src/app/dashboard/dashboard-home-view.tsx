@@ -5,7 +5,7 @@ import SuggestionsPanel from '../../components/SuggestionsPanel';
 import { SessionHandoffWidget } from '../../components/SessionHandoffWidget';
 import { ContextHealthWidget } from '../../components/ContextHealthWidget';
 import { NeuralPulse } from '../../components/NeuralPulse';
-import { BorgOrchestratorWidget } from '../../components/HyperCodeOrchestratorWidget';
+import { HyperCodeOrchestratorWidget } from '../../components/HyperCodeOrchestratorWidget';
 
 export interface DashboardStatusSummary {
     initialized: boolean;
@@ -1665,12 +1665,12 @@ export function DashboardHomeView({
                         </div>
                     </section>
 
-                        <BorgOrchestratorWidget />
+                        <HyperCodeOrchestratorWidget />
 
                     </div>
 
                     <div className="flex flex-col gap-6">
-                        <BorgOrchestratorWidget />
+                        <HyperCodeOrchestratorWidget />
                     </div>
                 </div>
             </div>
