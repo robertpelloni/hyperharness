@@ -5755,7 +5755,7 @@ func (s *Server) handleConfiguredServerMutation(w http.ResponseWriter, r *http.R
 	if fallbackErr != nil {
 		writeJSON(w, http.StatusServiceUnavailable, map[string]any{
 			"success": false,
-			"error":   err.Error(),
+			"error":   fallbackErr.Error(),
 			"detail":  fallbackErr.Error(),
 		})
 		return
@@ -5767,7 +5767,7 @@ func (s *Server) handleConfiguredServerMutation(w http.ResponseWriter, r *http.R
 		"bridge": map[string]any{
 			"fallback":  "go-local-jsonc",
 			"procedure": procedure,
-			"reason":    err.Error(),
+			"reason":    "upstream unavailable; applying local JSONC metadata placeholder fallback",
 		},
 	})
 }

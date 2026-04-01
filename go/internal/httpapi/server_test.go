@@ -5211,6 +5211,9 @@ func TestMCPConfiguredServerMetadataMutationsFallBackToLocalJsonc(t *testing.T) 
 	if reloadRecorder.Code != http.StatusOK || !strings.Contains(reloadRecorder.Body.String(), `"reloadDecision":"go-local-placeholder"`) || !strings.Contains(reloadRecorder.Body.String(), `"fallback":"go-local-jsonc"`) {
 		t.Fatalf("expected reload metadata fallback response, got %d %s", reloadRecorder.Code, reloadRecorder.Body.String())
 	}
+	if !strings.Contains(reloadRecorder.Body.String(), `applying local JSONC metadata placeholder fallback`) {
+		t.Fatalf("expected reload metadata fallback reason, got %s", reloadRecorder.Body.String())
+	}
 
 	clearRequest := httptest.NewRequest(http.MethodPost, "/api/mcp/servers/clear-metadata-cache", strings.NewReader(`{"uuid":"`+uuid+`"}`))
 	clearRequest.Header.Set("content-type", "application/json")
@@ -5218,6 +5221,9 @@ func TestMCPConfiguredServerMetadataMutationsFallBackToLocalJsonc(t *testing.T) 
 	server.Handler().ServeHTTP(clearRecorder, clearRequest)
 	if clearRecorder.Code != http.StatusOK || !strings.Contains(clearRecorder.Body.String(), `"toolCount":0`) || !strings.Contains(clearRecorder.Body.String(), `"ok":true`) {
 		t.Fatalf("expected clear metadata fallback response, got %d %s", clearRecorder.Code, clearRecorder.Body.String())
+	}
+	if !strings.Contains(clearRecorder.Body.String(), `applying local JSONC metadata placeholder fallback`) {
+		t.Fatalf("expected clear metadata fallback reason, got %s", clearRecorder.Body.String())
 	}
 
 	written, err := os.ReadFile(filepath.Join(mainConfigDir, "mcp.jsonc"))
