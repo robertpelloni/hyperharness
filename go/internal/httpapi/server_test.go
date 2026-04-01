@@ -6874,6 +6874,123 @@ func TestConfigReadRoutesFallBackToLocalDB(t *testing.T) {
 	}
 }
 
+func TestUnifiedDirectoryRoutesFallBackToLocalDB(t *testing.T) {
+	t.Setenv("BORG_TRPC_UPSTREAM", "http://127.0.0.1:1/trpc")
+
+	workspace := t.TempDir()
+	dbPath := filepath.Join(workspace, "metamcp.db")
+	db, err := sql.Open("sqlite", dbPath)
+	if err != nil {
+		t.Fatalf("failed to open sqlite db: %v", err)
+	}
+	defer db.Close()
+
+	now := time.Now().UTC().Unix()
+	if _, err := db.Exec(fmt.Sprintf(`
+		CREATE TABLE published_mcp_servers (
+			uuid TEXT PRIMARY KEY,
+			canonical_id TEXT NOT NULL UNIQUE,
+			display_name TEXT NOT NULL,
+			description TEXT,
+			author TEXT,
+			repository_url TEXT,
+			homepage_url TEXT,
+			icon_url TEXT,
+			transport TEXT NOT NULL DEFAULT 'unknown',
+			install_method TEXT NOT NULL DEFAULT 'unknown',
+			auth_model TEXT NOT NULL DEFAULT 'unknown',
+			status TEXT NOT NULL DEFAULT 'discovered',
+			confidence INTEGER NOT NULL DEFAULT 0,
+			tags TEXT NOT NULL DEFAULT '[]',
+			categories TEXT NOT NULL DEFAULT '[]',
+			stars INTEGER,
+			last_seen_at INTEGER,
+			last_verified_at INTEGER,
+			created_at INTEGER NOT NULL,
+			updated_at INTEGER NOT NULL
+		);
+		CREATE TABLE links_backlog (
+			uuid TEXT PRIMARY KEY,
+			url TEXT NOT NULL,
+			normalized_url TEXT NOT NULL UNIQUE,
+			title TEXT,
+			description TEXT,
+			tags TEXT NOT NULL DEFAULT '[]',
+			source TEXT NOT NULL DEFAULT 'manual',
+			is_duplicate INTEGER NOT NULL DEFAULT 0,
+			duplicate_of TEXT,
+			research_status TEXT NOT NULL DEFAULT 'pending',
+			http_status INTEGER,
+			page_title TEXT,
+			page_description TEXT,
+			favicon_url TEXT,
+			researched_at INTEGER,
+			cluster_id TEXT,
+			bobbybookmarks_bookmark_id INTEGER,
+			import_session_id INTEGER,
+			raw_payload TEXT,
+			synced_at INTEGER,
+			created_at INTEGER NOT NULL,
+			updated_at INTEGER NOT NULL
+		);
+		INSERT INTO published_mcp_servers (
+			uuid, canonical_id, display_name, description, transport, install_method, auth_model, status, confidence, tags, categories, repository_url, created_at, updated_at
+		) VALUES
+			('dir-1', 'registry/dir-1', 'MCP Catalog', 'catalog entry', 'STDIO', 'npm', 'none', 'validated', 99, '["mcp"]', '["tools"]', 'https://example.com/repo', %d, %d),
+			('dir-2', 'registry/dir-2', 'Other Catalog', 'other entry', 'SSE', 'docker', 'oauth', 'broken', 10, '[]', '[]', NULL, %d, %d);
+		INSERT INTO links_backlog (
+			uuid, url, normalized_url, title, description, tags, source, is_duplicate, duplicate_of, research_status, created_at, updated_at
+		) VALUES
+			('backlog-1', 'https://example.com/mcp', 'https://example.com/mcp', 'MCP Backlog', 'backlog entry', '["mcp"]', 'bobby', 0, NULL, 'pending', %d, %d),
+			('backlog-2', 'https://example.com/dup', 'https://example.com/dup', 'Dup Backlog', 'dup', '[]', 'bobby', 1, 'backlog-1', 'pending', %d, %d);
+	`, now-10, now-5, now-30, now-20, now-15, now-1, now-25, now-2)); err != nil {
+		t.Fatalf("failed to seed sqlite db: %v", err)
+	}
+
+	cfg := config.Default()
+	cfg.WorkspaceRoot = workspace
+	cfg.ConfigDir = t.TempDir()
+	cfg.MainConfigDir = t.TempDir()
+	server := New(cfg, stubDetector{})
+
+	listRecorder := httptest.NewRecorder()
+	server.Handler().ServeHTTP(listRecorder, httptest.NewRequest(http.MethodGet, "/api/directory?limit=10&offset=0&search=mcp&source=all&show_duplicates=true&duplicates_only=false&research_status=pending", nil))
+	if listRecorder.Code != http.StatusOK {
+		t.Fatalf("expected directory list 200, got %d with body %s", listRecorder.Code, listRecorder.Body.String())
+	}
+	for _, needle := range []string{
+		`"procedure":"unifiedDirectory.list"`,
+		`"fallback":"go-local-unified-directory"`,
+		`"id":"dir-1"`,
+		`"id":"backlog-1"`,
+		`"total":2`,
+		`"catalog":1`,
+		`"backlog":1`,
+	} {
+		if !strings.Contains(listRecorder.Body.String(), needle) {
+			t.Fatalf("expected unified directory list fallback to contain %s, got %s", needle, listRecorder.Body.String())
+		}
+	}
+
+	statsRecorder := httptest.NewRecorder()
+	server.Handler().ServeHTTP(statsRecorder, httptest.NewRequest(http.MethodGet, "/api/directory/stats", nil))
+	if statsRecorder.Code != http.StatusOK {
+		t.Fatalf("expected directory stats 200, got %d with body %s", statsRecorder.Code, statsRecorder.Body.String())
+	}
+	for _, needle := range []string{
+		`"procedure":"unifiedDirectory.stats"`,
+		`"combined_total":4`,
+		`"validated":1`,
+		`"broken":1`,
+		`"updated_24h":2`,
+		`"backlog":{"duplicates":1`,
+	} {
+		if !strings.Contains(statsRecorder.Body.String(), needle) {
+			t.Fatalf("expected unified directory stats fallback to contain %s, got %s", needle, statsRecorder.Body.String())
+		}
+	}
+}
+
 func TestInfrastructureStatusFallsBackToLocalProbe(t *testing.T) {
 	workspaceRoot := t.TempDir()
 	userProfile := t.TempDir()

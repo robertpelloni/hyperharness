@@ -8017,36 +8017,114 @@ func (s *Server) handleRAGIngestText(w http.ResponseWriter, r *http.Request) {
 
 func (s *Server) handleUnifiedDirectoryList(w http.ResponseWriter, r *http.Request) {
 	payload := map[string]any{}
+	limitValue := 50
+	offsetValue := 0
+	searchValue := ""
+	sourceValue := "all"
+	showDuplicatesValue := false
+	duplicatesOnlyValue := false
+	researchStatusValue := ""
 	if limit := strings.TrimSpace(r.URL.Query().Get("limit")); limit != "" {
 		if parsed, err := strconv.Atoi(limit); err == nil {
+			limitValue = parsed
 			payload["limit"] = parsed
 		}
 	}
 	if offset := strings.TrimSpace(r.URL.Query().Get("offset")); offset != "" {
 		if parsed, err := strconv.Atoi(offset); err == nil {
+			offsetValue = parsed
 			payload["offset"] = parsed
 		}
 	}
 	if search := strings.TrimSpace(r.URL.Query().Get("search")); search != "" {
+		searchValue = search
 		payload["search"] = search
 	}
 	if source := strings.TrimSpace(r.URL.Query().Get("source")); source != "" {
+		sourceValue = source
 		payload["source"] = source
 	}
 	if showDuplicates := strings.TrimSpace(r.URL.Query().Get("show_duplicates")); showDuplicates != "" {
-		payload["show_duplicates"] = strings.EqualFold(showDuplicates, "true") || showDuplicates == "1"
+		showDuplicatesValue = strings.EqualFold(showDuplicates, "true") || showDuplicates == "1"
+		payload["show_duplicates"] = showDuplicatesValue
 	}
 	if duplicatesOnly := strings.TrimSpace(r.URL.Query().Get("duplicates_only")); duplicatesOnly != "" {
-		payload["duplicates_only"] = strings.EqualFold(duplicatesOnly, "true") || duplicatesOnly == "1"
+		duplicatesOnlyValue = strings.EqualFold(duplicatesOnly, "true") || duplicatesOnly == "1"
+		payload["duplicates_only"] = duplicatesOnlyValue
 	}
 	if researchStatus := strings.TrimSpace(r.URL.Query().Get("research_status")); researchStatus != "" {
+		researchStatusValue = researchStatus
 		payload["research_status"] = researchStatus
 	}
-	s.handleTRPCBridgeCall(w, r, http.MethodGet, "unifiedDirectory.list", payload)
+	var result any
+	upstreamBase, err := s.callUpstreamJSON(r.Context(), "unifiedDirectory.list", payload, &result)
+	if err == nil {
+		writeJSON(w, http.StatusOK, map[string]any{
+			"success": true,
+			"data":    result,
+			"bridge": map[string]any{
+				"upstreamBase": upstreamBase,
+				"procedure":    "unifiedDirectory.list",
+			},
+		})
+		return
+	}
+
+	listPayload, fallbackErr := s.localUnifiedDirectoryList(limitValue, offsetValue, searchValue, sourceValue, showDuplicatesValue, duplicatesOnlyValue, researchStatusValue)
+	if fallbackErr != nil {
+		writeJSON(w, http.StatusServiceUnavailable, map[string]any{
+			"success": false,
+			"error":   fallbackErr.Error(),
+			"detail":  fallbackErr.Error(),
+		})
+		return
+	}
+
+	writeJSON(w, http.StatusOK, map[string]any{
+		"success": true,
+		"data":    listPayload,
+		"bridge": map[string]any{
+			"fallback":  "go-local-unified-directory",
+			"procedure": "unifiedDirectory.list",
+			"reason":    "upstream unavailable; using local published catalog and links backlog data",
+		},
+	})
 }
 
 func (s *Server) handleUnifiedDirectoryStats(w http.ResponseWriter, r *http.Request) {
-	s.handleTRPCBridgeCall(w, r, http.MethodGet, "unifiedDirectory.stats", nil)
+	var result any
+	upstreamBase, err := s.callUpstreamJSON(r.Context(), "unifiedDirectory.stats", nil, &result)
+	if err == nil {
+		writeJSON(w, http.StatusOK, map[string]any{
+			"success": true,
+			"data":    result,
+			"bridge": map[string]any{
+				"upstreamBase": upstreamBase,
+				"procedure":    "unifiedDirectory.stats",
+			},
+		})
+		return
+	}
+
+	stats, fallbackErr := s.localUnifiedDirectoryStats()
+	if fallbackErr != nil {
+		writeJSON(w, http.StatusServiceUnavailable, map[string]any{
+			"success": false,
+			"error":   fallbackErr.Error(),
+			"detail":  fallbackErr.Error(),
+		})
+		return
+	}
+
+	writeJSON(w, http.StatusOK, map[string]any{
+		"success": true,
+		"data":    stats,
+		"bridge": map[string]any{
+			"fallback":  "go-local-unified-directory",
+			"procedure": "unifiedDirectory.stats",
+			"reason":    "upstream unavailable; using local published catalog and links backlog stats",
+		},
+	})
 }
 
 func (s *Server) handleToolChainAliases(w http.ResponseWriter, r *http.Request) {
@@ -10059,6 +10137,122 @@ func (s *Server) localBrowserControlsStats() (any, error) {
 	}, nil
 }
 
+func (s *Server) localUnifiedDirectoryList(limit, offset int, search, source string, showDuplicates, duplicatesOnly bool, researchStatus string) (any, error) {
+	if limit <= 0 {
+		limit = 50
+	}
+	if offset < 0 {
+		offset = 0
+	}
+
+	wantCatalog := source == "" || source == "all" || source == "catalog"
+	wantBacklog := source == "" || source == "all" || source == "backlog"
+	effectiveShowDuplicates := showDuplicates || duplicatesOnly
+	fetchWindow := offset + limit*3
+	if fetchWindow < 200 {
+		fetchWindow = 200
+	}
+	if fetchWindow > 1000 {
+		fetchWindow = 1000
+	}
+
+	catalogItems := []map[string]any{}
+	backlogItems := []map[string]any{}
+	catalogTotal := int64(0)
+	backlogTotal := int64(0)
+
+	if wantCatalog {
+		catalogListRaw, err := s.localCatalogList(fetchWindow, 0, search, "", "", "")
+		if err != nil {
+			return nil, err
+		}
+		catalogList := catalogListRaw.(map[string]any)
+		if servers, ok := catalogList["servers"].([]map[string]any); ok {
+			for _, server := range servers {
+				catalogItems = append(catalogItems, normalizeUnifiedCatalogItem(server))
+			}
+		}
+		catalogTotal = anyInt64(catalogList["total"])
+	}
+
+	if wantBacklog {
+		backlogListRaw, err := s.localLinksBacklogList(fetchWindow, 0, search, "", researchStatus, "", effectiveShowDuplicates)
+		if err != nil {
+			return nil, err
+		}
+		backlogList := backlogListRaw.(map[string]any)
+		if items, ok := backlogList["items"].([]map[string]any); ok {
+			for _, item := range items {
+				if duplicatesOnly && !anyBool(item["is_duplicate"]) {
+					continue
+				}
+				backlogItems = append(backlogItems, normalizeUnifiedBacklogItem(item))
+			}
+		}
+		backlogTotal = anyInt64(backlogList["total"])
+		if duplicatesOnly {
+			backlogTotal = int64(len(backlogItems))
+		}
+	}
+
+	merged := append([]map[string]any{}, catalogItems...)
+	merged = append(merged, backlogItems...)
+	slices.SortStableFunc(merged, func(a, b map[string]any) int {
+		bTime := unifiedDirectoryTimeValue(b)
+		aTime := unifiedDirectoryTimeValue(a)
+		if bTime < aTime {
+			return -1
+		}
+		if bTime > aTime {
+			return 1
+		}
+		return 0
+	})
+
+	start := offset
+	if start > len(merged) {
+		start = len(merged)
+	}
+	end := offset + limit
+	if end > len(merged) {
+		end = len(merged)
+	}
+
+	return map[string]any{
+		"items": merged[start:end],
+		"total": catalogTotal + backlogTotal,
+		"totals": map[string]any{
+			"catalog": catalogTotal,
+			"backlog": backlogTotal,
+		},
+	}, nil
+}
+
+func (s *Server) localUnifiedDirectoryStats() (any, error) {
+	catalogStatsRaw, err := s.localCatalogStats()
+	if err != nil {
+		return nil, err
+	}
+	backlogStatsRaw, err := s.localLinksBacklogStats()
+	if err != nil {
+		return nil, err
+	}
+
+	catalogStats := catalogStatsRaw.(map[string]any)
+	backlogStats := backlogStatsRaw.(map[string]any)
+
+	return map[string]any{
+		"catalog": map[string]any{
+			"total":       catalogStats["total"],
+			"validated":   catalogStats["validated"],
+			"broken":      catalogStats["broken"],
+			"updated_24h": catalogStats["recentlyUpdated"],
+		},
+		"backlog":        backlogStats,
+		"combined_total": anyInt64(catalogStats["total"]) + anyInt64(backlogStats["total"]),
+	}, nil
+}
+
 func unixTimestampToRFC3339(value int64) string {
 	if value <= 0 {
 		return time.Unix(0, 0).UTC().Format(time.RFC3339)
@@ -10342,6 +10536,131 @@ func countPublishedCatalogRecentlyUpdated(db *sql.DB, hours int) (int64, error) 
 		return 0, err
 	}
 	return count, nil
+}
+
+func normalizeUnifiedCatalogItem(server map[string]any) map[string]any {
+	return map[string]any{
+		"source":         "catalog",
+		"id":             anyString(server["uuid"]),
+		"updated_at":     server["updated_at"],
+		"created_at":     server["created_at"],
+		"title":          anyString(server["display_name"]),
+		"subtitle":       anyStringOrNil(server["canonical_id"]),
+		"description":    anyStringOrNil(server["description"]),
+		"status":         anyStringOrNil(server["status"]),
+		"transport":      anyStringOrNil(server["transport"]),
+		"install_method": anyStringOrNil(server["install_method"]),
+		"url":            firstNonEmptyString(server["repository_url"], server["homepage_url"]),
+		"tags":           mergeStringLists(server["categories"], server["tags"]),
+		"confidence":     server["confidence"],
+		"is_duplicate":   nil,
+		"duplicate_of":   nil,
+	}
+}
+
+func normalizeUnifiedBacklogItem(item map[string]any) map[string]any {
+	title := firstNonEmptyString(item["title"], item["page_title"], item["normalized_url"])
+	description := firstNonEmptyString(item["description"], item["page_description"])
+	return map[string]any{
+		"source":         "backlog",
+		"id":             anyString(item["uuid"]),
+		"updated_at":     item["updated_at"],
+		"created_at":     item["created_at"],
+		"title":          title,
+		"subtitle":       anyStringOrNil(item["normalized_url"]),
+		"description":    description,
+		"status":         anyStringOrNil(item["research_status"]),
+		"transport":      nil,
+		"install_method": nil,
+		"url":            anyStringOrNil(item["url"]),
+		"tags":           normalizeStringList(item["tags"]),
+		"confidence":     nil,
+		"is_duplicate":   item["is_duplicate"],
+		"duplicate_of":   item["duplicate_of"],
+	}
+}
+
+func unifiedDirectoryTimeValue(item map[string]any) int64 {
+	if updated := parseRFC3339Any(item["updated_at"]); updated != 0 {
+		return updated
+	}
+	return parseRFC3339Any(item["created_at"])
+}
+
+func parseRFC3339Any(value any) int64 {
+	if s, ok := value.(string); ok && strings.TrimSpace(s) != "" {
+		parsed, err := time.Parse(time.RFC3339, s)
+		if err == nil {
+			return parsed.UnixMilli()
+		}
+	}
+	return 0
+}
+
+func firstNonEmptyString(values ...any) any {
+	for _, value := range values {
+		if s, ok := value.(string); ok && strings.TrimSpace(s) != "" {
+			return s
+		}
+	}
+	return nil
+}
+
+func normalizeStringList(value any) []string {
+	switch typed := value.(type) {
+	case []string:
+		return typed
+	case []any:
+		out := []string{}
+		for _, item := range typed {
+			if s, ok := item.(string); ok && strings.TrimSpace(s) != "" {
+				out = append(out, s)
+			}
+		}
+		return out
+	default:
+		return []string{}
+	}
+}
+
+func mergeStringLists(a, b any) []string {
+	out := append([]string{}, normalizeStringList(a)...)
+	out = append(out, normalizeStringList(b)...)
+	return out
+}
+
+func anyString(value any) string {
+	if s, ok := value.(string); ok {
+		return s
+	}
+	return ""
+}
+
+func anyStringOrNil(value any) any {
+	if s, ok := value.(string); ok && strings.TrimSpace(s) != "" {
+		return s
+	}
+	return nil
+}
+
+func anyInt64(value any) int64 {
+	switch typed := value.(type) {
+	case int64:
+		return typed
+	case int:
+		return int64(typed)
+	case float64:
+		return int64(typed)
+	default:
+		return 0
+	}
+}
+
+func anyBool(value any) bool {
+	if b, ok := value.(bool); ok {
+		return b
+	}
+	return false
 }
 
 type localMCPServerScanner interface {
