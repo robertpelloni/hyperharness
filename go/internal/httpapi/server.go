@@ -1041,7 +1041,7 @@ func (s *Server) handleAPIIndex(w http.ResponseWriter, _ *http.Request) {
 				{Path: "/api/context/prompt", Category: "code", Description: "Bridge to the TypeScript context prompt output, with a local empty-state fallback when the TypeScript context manager is unavailable."},
 				{Path: "/api/git/modules", Category: "code", Description: "Bridge to parsed git submodule metadata, with a local .gitmodules fallback when the TypeScript control plane is unavailable."},
 				{Path: "/api/git/log", Category: "code", Description: "Bridge to git log output from the TypeScript control plane."},
-				{Path: "/api/git/status", Category: "code", Description: "Bridge to git status output from the TypeScript control plane."},
+				{Path: "/api/git/status", Category: "code", Description: "Read git status through the TypeScript control plane, with a local Go git fallback when the router is unavailable."},
 				{Path: "/api/git/revert", Category: "code", Description: "Request a git revert through the TypeScript control plane."},
 				{Path: "/api/tests/status", Category: "code", Description: "Bridge to TypeScript auto-test service status, with a local zero-state fallback when the auto-test service is unavailable."},
 				{Path: "/api/tests/start", Category: "code", Description: "Start the TypeScript auto-test service."},
@@ -4185,7 +4185,29 @@ func (s *Server) handleGitLog(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) handleGitStatus(w http.ResponseWriter, r *http.Request) {
-	s.handleTRPCBridgeCall(w, r, http.MethodGet, "git.getStatus", nil)
+	var result any
+	upstreamBase, err := s.callUpstreamJSON(r.Context(), "git.getStatus", nil, &result)
+	if err == nil {
+		writeJSON(w, http.StatusOK, map[string]any{
+			"success": true,
+			"data":    result,
+			"bridge": map[string]any{
+				"upstreamBase": upstreamBase,
+				"procedure":    "git.getStatus",
+			},
+		})
+		return
+	}
+
+	writeJSON(w, http.StatusOK, map[string]any{
+		"success": true,
+		"data":    localGitStatus(s.cfg.WorkspaceRoot),
+		"bridge": map[string]any{
+			"fallback":  "go-local-git",
+			"procedure": "git.getStatus",
+			"reason":    "upstream unavailable; using local git status fallback",
+		},
+	})
 }
 
 func (s *Server) handleGitRevert(w http.ResponseWriter, r *http.Request) {
@@ -7387,6 +7409,56 @@ func localGitModules(workspaceRoot string) []map[string]any {
 		})
 	}
 	return modules
+}
+
+func localGitStatus(workspaceRoot string) map[string]any {
+	branchCommand := exec.Command("git", "rev-parse", "--abbrev-ref", "HEAD")
+	branchCommand.Dir = workspaceRoot
+	branchOut, branchErr := branchCommand.Output()
+	if branchErr != nil {
+		return map[string]any{
+			"branch":   "unknown",
+			"clean":    false,
+			"modified": []string{},
+			"staged":   []string{},
+		}
+	}
+
+	statusCommand := exec.Command("git", "status", "--porcelain")
+	statusCommand.Dir = workspaceRoot
+	statusOut, statusErr := statusCommand.Output()
+	if statusErr != nil {
+		return map[string]any{
+			"branch":   "unknown",
+			"clean":    false,
+			"modified": []string{},
+			"staged":   []string{},
+		}
+	}
+
+	modified := []string{}
+	staged := []string{}
+	lines := strings.Split(strings.TrimSpace(string(statusOut)), "\n")
+	for _, line := range lines {
+		if strings.TrimSpace(line) == "" || len(line) < 4 {
+			continue
+		}
+		code := line[:2]
+		file := strings.TrimSpace(line[3:])
+		if strings.Contains(code, "M") || strings.Contains(code, "?") {
+			modified = append(modified, file)
+		}
+		if strings.Contains(code, "A") || (strings.Contains(code, "M") && code[0] != ' ') {
+			staged = append(staged, file)
+		}
+	}
+
+	return map[string]any{
+		"branch":   strings.TrimSpace(string(branchOut)),
+		"clean":    strings.TrimSpace(string(statusOut)) == "",
+		"modified": modified,
+		"staged":   staged,
+	}
 }
 
 func localProjectContext(workspaceRoot string) string {

@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"runtime"
 	"strings"
@@ -5955,6 +5956,78 @@ func TestToolsRuntimeDetectionFallsBackLocally(t *testing.T) {
 	} {
 		if !strings.Contains(installRecorder.Body.String(), needle) {
 			t.Fatalf("expected install surfaces response to contain %s, got %s", needle, installRecorder.Body.String())
+		}
+	}
+}
+
+func TestGitStatusFallsBackLocally(t *testing.T) {
+	workspaceRoot := t.TempDir()
+	initRepo := exec.Command("git", "init", "-b", "main")
+	initRepo.Dir = workspaceRoot
+	if output, err := initRepo.CombinedOutput(); err != nil {
+		t.Fatalf("failed to init git repo: %v (%s)", err, string(output))
+	}
+	configName := exec.Command("git", "config", "user.name", "HyperCode Test")
+	configName.Dir = workspaceRoot
+	if output, err := configName.CombinedOutput(); err != nil {
+		t.Fatalf("failed to configure git user.name: %v (%s)", err, string(output))
+	}
+	configEmail := exec.Command("git", "config", "user.email", "test@hypercode.local")
+	configEmail.Dir = workspaceRoot
+	if output, err := configEmail.CombinedOutput(); err != nil {
+		t.Fatalf("failed to configure git user.email: %v (%s)", err, string(output))
+	}
+
+	trackedPath := filepath.Join(workspaceRoot, "tracked.txt")
+	if err := os.WriteFile(trackedPath, []byte("hello\n"), 0o644); err != nil {
+		t.Fatalf("failed to write tracked file: %v", err)
+	}
+	addTracked := exec.Command("git", "add", "tracked.txt")
+	addTracked.Dir = workspaceRoot
+	if output, err := addTracked.CombinedOutput(); err != nil {
+		t.Fatalf("failed to stage tracked file: %v (%s)", err, string(output))
+	}
+	commitTracked := exec.Command("git", "commit", "-m", "seed tracked file")
+	commitTracked.Dir = workspaceRoot
+	if output, err := commitTracked.CombinedOutput(); err != nil {
+		t.Fatalf("failed to commit tracked file: %v (%s)", err, string(output))
+	}
+
+	modifiedPath := filepath.Join(workspaceRoot, "modified.txt")
+	if err := os.WriteFile(modifiedPath, []byte("first\n"), 0o644); err != nil {
+		t.Fatalf("failed to write modified file: %v", err)
+	}
+	addModified := exec.Command("git", "add", "modified.txt")
+	addModified.Dir = workspaceRoot
+	if output, err := addModified.CombinedOutput(); err != nil {
+		t.Fatalf("failed to add modified file: %v (%s)", err, string(output))
+	}
+	if err := os.WriteFile(modifiedPath, []byte("first\nsecond\n"), 0o644); err != nil {
+		t.Fatalf("failed to modify tracked file: %v", err)
+	}
+
+	t.Setenv("BORG_TRPC_UPSTREAM", "http://127.0.0.1:1/trpc")
+
+	cfg := config.Default()
+	cfg.WorkspaceRoot = workspaceRoot
+	server := New(cfg, stubDetector{})
+
+	recorder := httptest.NewRecorder()
+	server.Handler().ServeHTTP(recorder, httptest.NewRequest(http.MethodGet, "/api/git/status", nil))
+	if recorder.Code != http.StatusOK {
+		t.Fatalf("expected git status 200, got %d with body %s", recorder.Code, recorder.Body.String())
+	}
+
+	for _, needle := range []string{
+		`"fallback":"go-local-git"`,
+		`"procedure":"git.getStatus"`,
+		`using local git status fallback`,
+		`"branch":"main"`,
+		`"clean":false`,
+		`"modified.txt"`,
+	} {
+		if !strings.Contains(recorder.Body.String(), needle) {
+			t.Fatalf("expected git status response to contain %s, got %s", needle, recorder.Body.String())
 		}
 	}
 }
