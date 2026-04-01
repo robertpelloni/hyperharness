@@ -1384,7 +1384,7 @@ func (s *Server) handleAPIIndex(w http.ResponseWriter, _ *http.Request) {
 				{Path: "/api/tool-chains/aliases", Category: "tools", Description: "List tool aliases through the TypeScript tool chaining router, with a local empty-state fallback when aliases are unavailable."},
 				{Path: "/api/tool-chains/aliases/create", Category: "tools", Description: "Create a tool alias through the TypeScript tool chaining router."},
 				{Path: "/api/tool-chains/aliases/remove", Category: "tools", Description: "Remove a tool alias through the TypeScript tool chaining router."},
-				{Path: "/api/tool-chains/aliases/resolve", Category: "tools", Description: "Resolve a tool alias through the TypeScript tool chaining router."},
+				{Path: "/api/tool-chains/aliases/resolve", Category: "tools", Description: "Resolve a tool alias through the TypeScript tool chaining router, with a local unresolved fallback when aliases are unavailable."},
 				{Path: "/api/tool-chains", Category: "tools", Description: "List tool chains through the TypeScript tool chaining router, with a local empty-state fallback when chains are unavailable."},
 				{Path: "/api/tool-chains/get", Category: "tools", Description: "Read a tool chain through the TypeScript tool chaining router."},
 				{Path: "/api/tool-chains/create", Category: "tools", Description: "Create a tool chain through the TypeScript tool chaining router."},
@@ -6900,7 +6900,32 @@ func (s *Server) handleToolChainResolveAlias(w http.ResponseWriter, r *http.Requ
 		writeJSON(w, http.StatusBadRequest, map[string]any{"success": false, "error": "missing name query parameter"})
 		return
 	}
-	s.handleTRPCBridgeCall(w, r, http.MethodGet, "toolChaining.resolveAlias", map[string]any{"name": name})
+	payload := map[string]any{"name": name}
+	var result any
+	upstreamBase, err := s.callUpstreamJSON(r.Context(), "toolChaining.resolveAlias", payload, &result)
+	if err == nil {
+		writeJSON(w, http.StatusOK, map[string]any{
+			"success": true,
+			"data":    result,
+			"bridge": map[string]any{
+				"upstreamBase": upstreamBase,
+				"procedure":    "toolChaining.resolveAlias",
+			},
+		})
+		return
+	}
+
+	writeJSON(w, http.StatusOK, map[string]any{
+		"success": true,
+		"data": map[string]any{
+			"resolved": false,
+		},
+		"bridge": map[string]any{
+			"fallback":  "go-local-registry",
+			"procedure": "toolChaining.resolveAlias",
+			"reason":    "upstream unavailable; using local unresolved alias fallback",
+		},
+	})
 }
 
 func (s *Server) handleToolChainsList(w http.ResponseWriter, r *http.Request) {
