@@ -3181,6 +3181,42 @@ func TestBillingBridgeRoutes(t *testing.T) {
 	}
 }
 
+func TestBillingRoutingReadEndpointsFallBackToLocalProviderRouting(t *testing.T) {
+	t.Setenv("BORG_TRPC_UPSTREAM", "http://127.0.0.1:1/trpc")
+	t.Setenv("GOOGLE_API_KEY", "google")
+	t.Setenv("ANTHROPIC_API_KEY", "anthropic")
+
+	server := New(config.Default(), stubDetector{})
+
+	fallbackChainRecorder := httptest.NewRecorder()
+	fallbackChainRequest := httptest.NewRequest(http.MethodGet, "/api/billing/fallback-chain?taskType=coding", nil)
+	server.Handler().ServeHTTP(fallbackChainRecorder, fallbackChainRequest)
+
+	if fallbackChainRecorder.Code != http.StatusOK {
+		t.Fatalf("expected local fallback chain status 200, got %d with body %s", fallbackChainRecorder.Code, fallbackChainRecorder.Body.String())
+	}
+	if !strings.Contains(fallbackChainRecorder.Body.String(), `"fallback":"go-local-provider-routing"`) {
+		t.Fatalf("expected local provider-routing fallback metadata, got %s", fallbackChainRecorder.Body.String())
+	}
+	if !strings.Contains(fallbackChainRecorder.Body.String(), `"selectedTaskType":"coding"`) || !strings.Contains(fallbackChainRecorder.Body.String(), `"provider":"google"`) {
+		t.Fatalf("expected local coding fallback chain payload, got %s", fallbackChainRecorder.Body.String())
+	}
+
+	routingRulesRecorder := httptest.NewRecorder()
+	routingRulesRequest := httptest.NewRequest(http.MethodGet, "/api/billing/task-routing-rules", nil)
+	server.Handler().ServeHTTP(routingRulesRecorder, routingRulesRequest)
+
+	if routingRulesRecorder.Code != http.StatusOK {
+		t.Fatalf("expected local routing rules status 200, got %d with body %s", routingRulesRecorder.Code, routingRulesRecorder.Body.String())
+	}
+	if !strings.Contains(routingRulesRecorder.Body.String(), `"fallback":"go-local-provider-routing"`) {
+		t.Fatalf("expected local provider-routing rules fallback metadata, got %s", routingRulesRecorder.Body.String())
+	}
+	if !strings.Contains(routingRulesRecorder.Body.String(), `"defaultStrategy":"best"`) || !strings.Contains(routingRulesRecorder.Body.String(), `"taskType":"coding"`) {
+		t.Fatalf("expected local task routing rules payload, got %s", routingRulesRecorder.Body.String())
+	}
+}
+
 func TestBrowserBridgeRoutes(t *testing.T) {
 	upstream := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("content-type", "application/json")
