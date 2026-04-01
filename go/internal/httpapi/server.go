@@ -1053,13 +1053,13 @@ func (s *Server) handleAPIIndex(w http.ResponseWriter, _ *http.Request) {
 				{Path: "/api/supervisor/status", Category: "agents", Description: "Read supervisor status through the TypeScript supervisor router."},
 				{Path: "/api/supervisor/tasks", Category: "agents", Description: "List supervisor tasks through the TypeScript supervisor router."},
 				{Path: "/api/supervisor/cancel", Category: "agents", Description: "Cancel a supervisor task through the TypeScript supervisor router."},
-				{Path: "/api/metrics/stats", Category: "ops", Description: "Bridge to aggregated TypeScript metrics stats for a time window."},
+				{Path: "/api/metrics/stats", Category: "ops", Description: "Read aggregated metrics stats for a time window, with a local zero-state Go fallback when the TypeScript metrics router is unavailable."},
 				{Path: "/api/metrics/track", Category: "ops", Description: "Track a custom metric event through the TypeScript control plane."},
 				{Path: "/api/metrics/system-snapshot", Category: "ops", Description: "Read a real-time system resource snapshot, with a native Go fallback when the TypeScript metrics router is unavailable."},
-				{Path: "/api/metrics/timeline", Category: "ops", Description: "Bridge to downsampled TypeScript metrics timeline data."},
-				{Path: "/api/metrics/provider-breakdown", Category: "ops", Description: "Bridge to TypeScript provider request, latency, and cost breakdowns."},
+				{Path: "/api/metrics/timeline", Category: "ops", Description: "Read downsampled metrics timeline data, with a local zero-state Go fallback when the TypeScript metrics router is unavailable."},
+				{Path: "/api/metrics/provider-breakdown", Category: "ops", Description: "Read provider request, latency, and cost breakdowns, with a local zero-usage Go fallback when the TypeScript metrics router is unavailable."},
 				{Path: "/api/metrics/monitoring", Category: "ops", Description: "Toggle TypeScript metrics monitoring state."},
-				{Path: "/api/metrics/routing-history", Category: "ops", Description: "Bridge to recent TypeScript LLM routing and failover decisions."},
+				{Path: "/api/metrics/routing-history", Category: "ops", Description: "Read recent LLM routing and failover decisions, with a local empty-state Go fallback when the TypeScript metrics router is unavailable."},
 				{Path: "/api/logs", Category: "ops", Description: "List observability logs, with an honest empty-state Go fallback when the TypeScript log store is unavailable."},
 				{Path: "/api/logs/summary", Category: "ops", Description: "Read the observability summary rollup, with an honest empty-state Go fallback when the TypeScript log store is unavailable."},
 				{Path: "/api/logs/clear", Category: "ops", Description: "Clear observability logs, with a local no-op fallback when the TypeScript log store is unavailable."},
@@ -4134,12 +4134,42 @@ func (s *Server) handleTestsResults(w http.ResponseWriter, r *http.Request) {
 
 func (s *Server) handleMetricsStats(w http.ResponseWriter, r *http.Request) {
 	payload := map[string]any{}
-	if windowMs := strings.TrimSpace(r.URL.Query().Get("windowMs")); windowMs != "" {
-		if parsed, err := strconv.Atoi(windowMs); err == nil {
+	windowMs := 3600000
+	if windowParam := strings.TrimSpace(r.URL.Query().Get("windowMs")); windowParam != "" {
+		if parsed, err := strconv.Atoi(windowParam); err == nil {
 			payload["windowMs"] = parsed
+			windowMs = parsed
 		}
 	}
-	s.handleTRPCBridgeCall(w, r, http.MethodGet, "metrics.getStats", payload)
+	var result any
+	upstreamBase, err := s.callUpstreamJSON(r.Context(), "metrics.getStats", payload, &result)
+	if err == nil {
+		writeJSON(w, http.StatusOK, map[string]any{
+			"success": true,
+			"data":    result,
+			"bridge": map[string]any{
+				"upstreamBase": upstreamBase,
+				"procedure":    "metrics.getStats",
+			},
+		})
+		return
+	}
+
+	writeJSON(w, http.StatusOK, map[string]any{
+		"success": true,
+		"data": map[string]any{
+			"windowMs":    windowMs,
+			"totalEvents": 0,
+			"counts":      map[string]any{},
+			"averages":    map[string]any{},
+			"series":      []any{},
+		},
+		"bridge": map[string]any{
+			"fallback":  "go-local-metrics-preview",
+			"procedure": "metrics.getStats",
+			"reason":    "upstream unavailable; local metrics event store is not implemented",
+		},
+	})
 }
 
 func (s *Server) handleMetricsTrack(w http.ResponseWriter, r *http.Request) {
@@ -4204,24 +4234,97 @@ func (s *Server) handleMetricsSystemSnapshot(w http.ResponseWriter, r *http.Requ
 
 func (s *Server) handleMetricsTimeline(w http.ResponseWriter, r *http.Request) {
 	payload := map[string]any{}
-	if windowMs := strings.TrimSpace(r.URL.Query().Get("windowMs")); windowMs != "" {
-		if parsed, err := strconv.Atoi(windowMs); err == nil {
+	windowMs := 3600000
+	if windowParam := strings.TrimSpace(r.URL.Query().Get("windowMs")); windowParam != "" {
+		if parsed, err := strconv.Atoi(windowParam); err == nil {
 			payload["windowMs"] = parsed
+			windowMs = parsed
 		}
 	}
-	if buckets := strings.TrimSpace(r.URL.Query().Get("buckets")); buckets != "" {
-		if parsed, err := strconv.Atoi(buckets); err == nil {
+	buckets := 60
+	if bucketParam := strings.TrimSpace(r.URL.Query().Get("buckets")); bucketParam != "" {
+		if parsed, err := strconv.Atoi(bucketParam); err == nil {
 			payload["buckets"] = parsed
+			buckets = parsed
 		}
 	}
-	if metricType := strings.TrimSpace(r.URL.Query().Get("metricType")); metricType != "" {
-		payload["metricType"] = metricType
+	metricType := "all"
+	if metricTypeParam := strings.TrimSpace(r.URL.Query().Get("metricType")); metricTypeParam != "" {
+		payload["metricType"] = metricTypeParam
+		metricType = metricTypeParam
 	}
-	s.handleTRPCBridgeCall(w, r, http.MethodGet, "metrics.getTimeline", payload)
+	var result any
+	upstreamBase, err := s.callUpstreamJSON(r.Context(), "metrics.getTimeline", payload, &result)
+	if err == nil {
+		writeJSON(w, http.StatusOK, map[string]any{
+			"success": true,
+			"data":    result,
+			"bridge": map[string]any{
+				"upstreamBase": upstreamBase,
+				"procedure":    "metrics.getTimeline",
+			},
+		})
+		return
+	}
+
+	writeJSON(w, http.StatusOK, map[string]any{
+		"success": true,
+		"data": map[string]any{
+			"windowMs":   windowMs,
+			"buckets":    buckets,
+			"metricType": metricType,
+			"series":     []any{},
+			"counts":     map[string]any{},
+			"averages":   map[string]any{},
+		},
+		"bridge": map[string]any{
+			"fallback":  "go-local-metrics-preview",
+			"procedure": "metrics.getTimeline",
+			"reason":    "upstream unavailable; local metrics event store is not implemented",
+		},
+	})
 }
 
 func (s *Server) handleMetricsProviderBreakdown(w http.ResponseWriter, r *http.Request) {
-	s.handleTRPCBridgeCall(w, r, http.MethodGet, "metrics.getProviderBreakdown", nil)
+	var result any
+	upstreamBase, err := s.callUpstreamJSON(r.Context(), "metrics.getProviderBreakdown", nil, &result)
+	if err == nil {
+		writeJSON(w, http.StatusOK, map[string]any{
+			"success": true,
+			"data":    result,
+			"bridge": map[string]any{
+				"upstreamBase": upstreamBase,
+				"procedure":    "metrics.getProviderBreakdown",
+			},
+		})
+		return
+	}
+
+	statuses := providers.Snapshot()
+	catalog := providers.Catalog(statuses)
+	providersPreview := make([]map[string]any, 0, len(catalog))
+	for _, provider := range catalog {
+		providersPreview = append(providersPreview, map[string]any{
+			"provider": provider.Name,
+			"cost":     0,
+			"requests": 0,
+		})
+	}
+
+	writeJSON(w, http.StatusOK, map[string]any{
+		"success": true,
+		"data": map[string]any{
+			"totalCost":      0,
+			"totalRequests":  0,
+			"averageLatency": 0,
+			"providers":      providersPreview,
+		},
+		"bridge": map[string]any{
+			"fallback":  "go-local-metrics-preview",
+			"procedure": "metrics.getProviderBreakdown",
+			"reason":    "upstream unavailable; using local provider catalog with zeroed usage",
+		},
+	})
 }
 
 func (s *Server) handleMetricsMonitoring(w http.ResponseWriter, r *http.Request) {
@@ -4235,7 +4338,29 @@ func (s *Server) handleMetricsRoutingHistory(w http.ResponseWriter, r *http.Requ
 			payload["limit"] = parsed
 		}
 	}
-	s.handleTRPCBridgeCall(w, r, http.MethodGet, "metrics.getRoutingHistory", payload)
+	var result any
+	upstreamBase, err := s.callUpstreamJSON(r.Context(), "metrics.getRoutingHistory", payload, &result)
+	if err == nil {
+		writeJSON(w, http.StatusOK, map[string]any{
+			"success": true,
+			"data":    result,
+			"bridge": map[string]any{
+				"upstreamBase": upstreamBase,
+				"procedure":    "metrics.getRoutingHistory",
+			},
+		})
+		return
+	}
+
+	writeJSON(w, http.StatusOK, map[string]any{
+		"success": true,
+		"data":    []any{},
+		"bridge": map[string]any{
+			"fallback":  "go-local-metrics-preview",
+			"procedure": "metrics.getRoutingHistory",
+			"reason":    "upstream unavailable; local routing history buffer is not implemented",
+		},
+	})
 }
 
 func (s *Server) handleLogsList(w http.ResponseWriter, r *http.Request) {

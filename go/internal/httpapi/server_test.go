@@ -3437,6 +3437,53 @@ func TestObservabilityReadEndpointsFallBackToLocalPreview(t *testing.T) {
 	}
 }
 
+func TestMetricsReadEndpointsFallBackToLocalPreview(t *testing.T) {
+	t.Setenv("BORG_TRPC_UPSTREAM", "http://127.0.0.1:1/trpc")
+	t.Setenv("OPENAI_API_KEY", "test-openai-key")
+
+	server := New(config.Default(), stubDetector{})
+
+	statsRecorder := httptest.NewRecorder()
+	statsRequest := httptest.NewRequest(http.MethodGet, "/api/metrics/stats?windowMs=60000", nil)
+	server.Handler().ServeHTTP(statsRecorder, statsRequest)
+	if statsRecorder.Code != http.StatusOK {
+		t.Fatalf("expected metrics stats fallback 200, got %d with body %s", statsRecorder.Code, statsRecorder.Body.String())
+	}
+	if !strings.Contains(statsRecorder.Body.String(), `"fallback":"go-local-metrics-preview"`) || !strings.Contains(statsRecorder.Body.String(), `"windowMs":60000`) || !strings.Contains(statsRecorder.Body.String(), `"totalEvents":0`) {
+		t.Fatalf("expected metrics stats local preview, got %s", statsRecorder.Body.String())
+	}
+
+	timelineRecorder := httptest.NewRecorder()
+	timelineRequest := httptest.NewRequest(http.MethodGet, "/api/metrics/timeline?windowMs=60000&buckets=10&metricType=requests", nil)
+	server.Handler().ServeHTTP(timelineRecorder, timelineRequest)
+	if timelineRecorder.Code != http.StatusOK {
+		t.Fatalf("expected metrics timeline fallback 200, got %d with body %s", timelineRecorder.Code, timelineRecorder.Body.String())
+	}
+	if !strings.Contains(timelineRecorder.Body.String(), `"fallback":"go-local-metrics-preview"`) || !strings.Contains(timelineRecorder.Body.String(), `"buckets":10`) || !strings.Contains(timelineRecorder.Body.String(), `"metricType":"requests"`) {
+		t.Fatalf("expected metrics timeline local preview, got %s", timelineRecorder.Body.String())
+	}
+
+	providerBreakdownRecorder := httptest.NewRecorder()
+	providerBreakdownRequest := httptest.NewRequest(http.MethodGet, "/api/metrics/provider-breakdown", nil)
+	server.Handler().ServeHTTP(providerBreakdownRecorder, providerBreakdownRequest)
+	if providerBreakdownRecorder.Code != http.StatusOK {
+		t.Fatalf("expected provider breakdown fallback 200, got %d with body %s", providerBreakdownRecorder.Code, providerBreakdownRecorder.Body.String())
+	}
+	if !strings.Contains(providerBreakdownRecorder.Body.String(), `"fallback":"go-local-metrics-preview"`) || !strings.Contains(providerBreakdownRecorder.Body.String(), `"provider":"OpenAI"`) || !strings.Contains(providerBreakdownRecorder.Body.String(), `"requests":0`) {
+		t.Fatalf("expected provider breakdown local preview, got %s", providerBreakdownRecorder.Body.String())
+	}
+
+	routingHistoryRecorder := httptest.NewRecorder()
+	routingHistoryRequest := httptest.NewRequest(http.MethodGet, "/api/metrics/routing-history?limit=7", nil)
+	server.Handler().ServeHTTP(routingHistoryRecorder, routingHistoryRequest)
+	if routingHistoryRecorder.Code != http.StatusOK {
+		t.Fatalf("expected routing history fallback 200, got %d with body %s", routingHistoryRecorder.Code, routingHistoryRecorder.Body.String())
+	}
+	if !strings.Contains(routingHistoryRecorder.Body.String(), `"fallback":"go-local-metrics-preview"`) || !strings.Contains(routingHistoryRecorder.Body.String(), `"data":[]`) {
+		t.Fatalf("expected routing history local preview, got %s", routingHistoryRecorder.Body.String())
+	}
+}
+
 func TestBrowserBridgeRoutes(t *testing.T) {
 	upstream := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("content-type", "application/json")
