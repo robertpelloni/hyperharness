@@ -1,6 +1,7 @@
 import fs from 'fs/promises';
 import os from 'os';
 import path from 'path';
+import zlib from 'zlib';
 
 import Database from 'better-sqlite3';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -255,5 +256,35 @@ describe('ImportedSessionStore', () => {
         expect(Number(row.transcript_stored_bytes ?? 0)).toBeGreaterThan(0);
         expect(fetched?.transcript).toContain('keep compact storage truthful');
         expect(fetched?.transcript).toContain('valuable memories');
+    });
+
+    it('writes retention summary into compressed archive metadata sidecars', async () => {
+        const { ImportedSessionStore } = await import('./ImportedSessionStore.js') as ImportedSessionStoreModule;
+        const archiveRoot = await createTempRoot();
+        const store = new ImportedSessionStore(archiveRoot);
+
+        const created = store.upsertSession({
+            ...createSessionInput('hash-retention', 'User: discuss implementation detail.\nAssistant: keep only durable defaults.', 'Keep only durable defaults.'),
+            metadata: {
+                retentionSummary: {
+                    archiveDisposition: 'archive_only',
+                    summary: 'Keep defaults durable; archive the rest.',
+                },
+            },
+        });
+
+        const row = sqliteForTest
+            .prepare('SELECT transcript_metadata_archive_path FROM imported_sessions WHERE uuid = ?')
+            .get(created.id) as Record<string, unknown>;
+        const relativePath = String(row.transcript_metadata_archive_path ?? '');
+        const metadataPath = path.join(archiveRoot, ...relativePath.split('/'));
+        const archiveMetadata = JSON.parse(
+            zlib.gunzipSync(await fs.readFile(metadataPath)).toString('utf-8'),
+        ) as Record<string, unknown>;
+
+        expect(archiveMetadata.retentionSummary).toMatchObject({
+            archiveDisposition: 'archive_only',
+            summary: 'Keep defaults durable; archive the rest.',
+        });
     });
 });

@@ -149,6 +149,7 @@ export class ImportedSessionStore {
             durableMemoryCount: input.parsedMemories.length,
             durableInstructionCount: input.parsedMemories.filter((memory) => memory.kind === 'instruction').length,
             memoryTags: Array.from(new Set(input.parsedMemories.flatMap((memory) => memory.tags ?? []))).slice(0, 24),
+            retentionSummary: input.metadata?.retentionSummary ?? null,
             archivedAt: Date.now(),
         };
     }

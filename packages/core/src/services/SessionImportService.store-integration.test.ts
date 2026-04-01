@@ -1,6 +1,7 @@
 import fs from 'fs/promises';
 import os from 'os';
 import path from 'path';
+import zlib from 'zlib';
 
 import Database from 'better-sqlite3';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -98,10 +99,11 @@ describe('SessionImportService with ImportedSessionStore', () => {
 
         const addLongTerm = vi.fn(async () => ({}));
         const captureSessionSummary = vi.fn(async () => ({}));
+        const archiveRoot = path.join(root, '.hypercode', 'imported_sessions', 'archive');
 
         const { ImportedSessionStore } = await import('./ImportedSessionStore.js') as ImportedSessionStoreModule;
         const { SessionImportService } = await import('./SessionImportService.js') as SessionImportServiceModule;
-        const store = new ImportedSessionStore();
+        const store = new ImportedSessionStore(archiveRoot);
         const service = new SessionImportService({
             generateText: vi.fn(async () => {
                 throw new Error('no llm');
@@ -129,10 +131,36 @@ describe('SessionImportService with ImportedSessionStore', () => {
             antigravityImportSurface: 'experimental',
             antigravityDiscoveryRoot: 'brain',
             antigravitySource: 'reverse-engineered',
+            retentionSummary: {
+                archiveDisposition: 'archive_only',
+                strategy: 'heuristic',
+            },
         });
         expect(sessions[0]?.parsedMemories.some((memory) => memory.kind === 'instruction')).toBe(true);
+        const archiveSidecars = await findFiles(archiveRoot, '.meta.json.gz');
+        expect(archiveSidecars.length).toBeGreaterThan(0);
+        const sidecar = JSON.parse(
+            zlib.gunzipSync(await fs.readFile(archiveSidecars[0]!)).toString('utf-8'),
+        ) as Record<string, unknown>;
+        expect(sidecar.retentionSummary).toMatchObject({
+            archiveDisposition: 'archive_only',
+        });
         expect(instructionDocs).toHaveLength(1);
         expect(addLongTerm).toHaveBeenCalled();
         expect(captureSessionSummary).toHaveBeenCalledTimes(1);
     });
 });
+
+async function findFiles(root: string, suffix: string): Promise<string[]> {
+    const entries = await fs.readdir(root, { withFileTypes: true });
+    const files = await Promise.all(entries.map(async (entry) => {
+        const fullPath = path.join(root, entry.name);
+        if (entry.isDirectory()) {
+            return findFiles(fullPath, suffix);
+        }
+
+        return entry.name.endsWith(suffix) ? [fullPath] : [];
+    }));
+
+    return files.flat();
+}

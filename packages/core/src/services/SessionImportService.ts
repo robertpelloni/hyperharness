@@ -63,6 +63,24 @@ interface NormalizedImportedSession {
     metadata: Record<string, unknown>;
 }
 
+interface ImportedSessionRetentionSummary {
+    strategy: ImportedSessionMemorySource;
+    transcriptLength: number;
+    analyzedChars: number;
+    durableMemoryCount: number;
+    durableInstructionCount: number;
+    archiveDisposition: 'archive_only';
+    summary: string;
+    salientTags: string[];
+    keepArchivedCategories: string[];
+    discardableCategories: string[];
+}
+
+interface ImportedSessionAnalysis {
+    memories: ImportedSessionMemoryInput[];
+    retentionSummary: ImportedSessionRetentionSummary;
+}
+
 interface ImportedInstructionDoc {
     path: string;
     updatedAt: number;
@@ -428,6 +446,42 @@ function heuristicMemoryExtraction(text: string, sourceTool: string): ImportedSe
             extraction: 'heuristic',
         },
     }));
+}
+
+function buildRetentionSummary(
+    session: NormalizedImportedSession,
+    parsedMemories: ImportedSessionMemoryInput[],
+    analyzedChars: number,
+    strategy: ImportedSessionMemorySource,
+    overrides?: Partial<ImportedSessionRetentionSummary>,
+): ImportedSessionRetentionSummary {
+    const durableInstructionCount = parsedMemories.filter((memory) => memory.kind === 'instruction').length;
+    const durableMemoryCount = parsedMemories.length - durableInstructionCount;
+    const defaultSummary = parsedMemories.length > 0
+        ? `Archived full transcript; promoted ${parsedMemories.length} durable item(s) to fast memory while keeping the remaining context compressed.`
+        : 'Archived full transcript for historical reference only; no durable memories were promoted.';
+
+    return {
+        strategy,
+        transcriptLength: session.transcript.length,
+        analyzedChars,
+        durableMemoryCount,
+        durableInstructionCount,
+        archiveDisposition: 'archive_only',
+        summary: sanitizeSentence(overrides?.summary ?? defaultSummary, 240),
+        salientTags: uniqueStrings(
+            overrides?.salientTags ?? parsedMemories.flatMap((memory) => memory.tags ?? []),
+            10,
+        ),
+        keepArchivedCategories: uniqueStrings(
+            overrides?.keepArchivedCategories ?? ['conversational-context', 'implementation-detail', 'historical-trace'],
+            8,
+        ),
+        discardableCategories: uniqueStrings(
+            overrides?.discardableCategories ?? ['greetings', 'small-talk', 'duplicate-restatements'],
+            8,
+        ),
+    };
 }
 
 function parseJsonStringArray(value: unknown): string[] {
@@ -1553,7 +1607,8 @@ export class SessionImportService {
         }
 
         const normalizedSession = this.buildNormalizedSession(candidate, transcript, transcriptHash);
-        const parsedMemories = (await this.extractValuableMemories(normalizedSession)).map((memory) => ({
+        const analysis = await this.analyzeImportedSession(normalizedSession);
+        const parsedMemories = analysis.memories.map((memory) => ({
             ...memory,
             metadata: {
                 ...(memory.metadata ?? {}),
@@ -1573,7 +1628,10 @@ export class SessionImportService {
             workingDirectory: normalizedSession.workingDirectory,
             transcriptHash: normalizedSession.transcriptHash,
             normalizedSession: normalizedSession.normalizedSession,
-            metadata: normalizedSession.metadata,
+            metadata: {
+                ...normalizedSession.metadata,
+                retentionSummary: analysis.retentionSummary,
+            },
             discoveredAt: normalizedSession.discoveredAt,
             importedAt: normalizedSession.importedAt,
             lastModifiedAt: normalizedSession.lastModifiedAt,
@@ -1665,36 +1723,49 @@ export class SessionImportService {
         };
     }
 
-    private async extractValuableMemories(session: NormalizedImportedSession): Promise<ImportedSessionMemoryInput[]> {
+    private async analyzeImportedSession(session: NormalizedImportedSession): Promise<ImportedSessionAnalysis> {
         const transcriptTail = session.transcript.length > 16_000
             ? session.transcript.slice(-16_000)
             : session.transcript;
+        const heuristicMemories = heuristicMemoryExtraction(session.transcript, session.sourceTool);
 
         if (!process.env.OPENAI_API_KEY?.trim()) {
-            return heuristicMemoryExtraction(session.transcript, session.sourceTool);
+            return {
+                memories: heuristicMemories,
+                retentionSummary: buildRetentionSummary(session, heuristicMemories, transcriptTail.length, 'heuristic'),
+            };
         }
 
         const prompt = `
-You are HyperCode's session-import memory extractor.
-Given an imported transcript from ${session.sourceTool}, extract up to 6 durable technical memories or operator instructions.
+You are HyperCode's session-import memory extractor and archive-retention analyst.
+Given an imported transcript from ${session.sourceTool}, extract up to 6 durable technical memories or operator instructions and summarize what should remain archive-only.
 Project context:
 - working directory: ${session.workingDirectory}
 - source path: ${session.sourcePath}
 - session title: ${session.title}
 - session format: ${session.sessionFormat}
-Return JSON only as an array:
-[
-  {
-    "fact": "Use port 4000 for the HyperCode control plane.",
-    "tags": ["networking", "runtime"],
-    "kind": "instruction"
+Return JSON only as an object:
+{
+  "memories": [
+    {
+      "fact": "Use port 4000 for the HyperCode control plane.",
+      "tags": ["networking", "runtime"],
+      "kind": "instruction"
+    }
+  ],
+  "retention": {
+    "summary": "Promote operator defaults; keep the rest in compressed archive storage.",
+    "salientTags": ["networking", "runtime"],
+    "keepArchivedCategories": ["conversational-context", "historical-trace"],
+    "discardableCategories": ["greetings", "duplicate-restatements"]
   }
-]
+}
 
 Rules:
 - Only emit durable facts, decisions, defaults, paths, ports, operational guidance, or architectural instructions.
 - kind must be "memory" or "instruction".
-- Return [] if nothing durable exists.
+- Return an empty memories array if nothing durable exists.
+- Assume the full transcript remains archived in compressed form.
 
 Transcript:
 ${transcriptTail}
@@ -1703,17 +1774,25 @@ ${transcriptTail}
         try {
             const response = await this.llmService.generateText('openai', 'gpt-4o-mini', 'Extract durable memories and instructions.', prompt);
             const jsonText = typeof response.content === 'string' ? response.content : '';
-            const start = jsonText.indexOf('[');
-            const end = jsonText.lastIndexOf(']');
+            const start = jsonText.indexOf('{');
+            const end = jsonText.lastIndexOf('}');
 
             if (start !== -1 && end !== -1) {
-                const parsed = JSON.parse(jsonText.slice(start, end + 1)) as Array<{
-                    fact?: string;
-                    tags?: string[];
-                    kind?: string;
-                }>;
+                const parsed = JSON.parse(jsonText.slice(start, end + 1)) as {
+                    memories?: Array<{
+                        fact?: string;
+                        tags?: string[];
+                        kind?: string;
+                    }>;
+                    retention?: {
+                        summary?: string;
+                        salientTags?: string[];
+                        keepArchivedCategories?: string[];
+                        discardableCategories?: string[];
+                    };
+                };
 
-                const normalized = parsed
+                const normalized = (parsed.memories ?? [])
                     .filter((entry) => typeof entry.fact === 'string' && entry.fact.trim().length > 0)
                     .map((entry) => {
                         const fact = sanitizeSentence(entry.fact as string, 240);
@@ -1728,15 +1807,36 @@ ${transcriptTail}
                         };
                     });
 
-                if (normalized.length > 0) {
-                    return normalized;
-                }
+                return {
+                    memories: normalized,
+                    retentionSummary: buildRetentionSummary(
+                        session,
+                        normalized,
+                        transcriptTail.length,
+                        'llm',
+                        {
+                            summary: parsed.retention?.summary,
+                            salientTags: uniqueStrings(
+                                [
+                                    ...(parsed.retention?.salientTags ?? []),
+                                    ...normalized.flatMap((memory) => memory.tags ?? []),
+                                ],
+                                10,
+                            ),
+                            keepArchivedCategories: parsed.retention?.keepArchivedCategories,
+                            discardableCategories: parsed.retention?.discardableCategories,
+                        },
+                    ),
+                };
             }
         } catch (error) {
             console.warn(`[SessionImport] LLM extraction failed for ${session.sourcePath}: ${error instanceof Error ? error.message : String(error)}`);
         }
 
-        return heuristicMemoryExtraction(session.transcript, session.sourceTool);
+        return {
+            memories: heuristicMemories,
+            retentionSummary: buildRetentionSummary(session, heuristicMemories, transcriptTail.length, 'heuristic'),
+        };
     }
 
     private async writeInstructionDocs(): Promise<string | null> {

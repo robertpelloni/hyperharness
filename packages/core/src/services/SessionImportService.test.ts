@@ -119,6 +119,12 @@ describe('SessionImportService', () => {
         expect(result.importedCount).toBe(1);
         expect(result.storedMemoryCount).toBeGreaterThan(0);
         expect(store.upsertSession).toHaveBeenCalledTimes(1);
+        expect(store.sessions[0]?.metadata).toMatchObject({
+            retentionSummary: {
+                archiveDisposition: 'archive_only',
+                strategy: 'heuristic',
+            },
+        });
         expect(addLongTerm).toHaveBeenCalled();
         expect(captureSessionSummary).toHaveBeenCalledTimes(1);
 
