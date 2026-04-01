@@ -760,6 +760,60 @@ export class SessionImportService {
                 );
             }
         }
+
+        if (typeof (this.store as ImportedSessionStore & { backfillRetentionSummaries?: unknown }).backfillRetentionSummaries === 'function') {
+            try {
+                this.store.backfillRetentionSummaries((session) => {
+                    const summary = buildRetentionSummary(
+                        {
+                            sessionId: session.id,
+                            title: session.title ?? path.basename(session.sourcePath),
+                            sourceTool: session.sourceTool,
+                            sourcePath: session.sourcePath,
+                            sessionFormat: session.sessionFormat,
+                            externalSessionId: session.externalSessionId,
+                            workingDirectory: session.workingDirectory ?? this.workspaceRoot,
+                            transcript: session.transcript,
+                            excerpt: session.excerpt ?? '',
+                            transcriptHash: session.transcriptHash,
+                            discoveredAt: session.discoveredAt,
+                            importedAt: session.importedAt,
+                            lastModifiedAt: session.lastModifiedAt,
+                            normalizedSession: session.normalizedSession,
+                            metadata: session.metadata,
+                        },
+                        session.parsedMemories.map((memory) => ({
+                            kind: memory.kind,
+                            content: memory.content,
+                            tags: memory.tags,
+                            source: memory.source,
+                            metadata: memory.metadata,
+                        })),
+                        session.transcript.length > 16_000 ? 16_000 : session.transcript.length,
+                        'heuristic',
+                    );
+
+                    return {
+                        strategy: summary.strategy,
+                        transcriptLength: summary.transcriptLength,
+                        analyzedChars: summary.analyzedChars,
+                        durableMemoryCount: summary.durableMemoryCount,
+                        durableInstructionCount: summary.durableInstructionCount,
+                        archiveDisposition: summary.archiveDisposition,
+                        summary: summary.summary,
+                        salientTags: summary.salientTags,
+                        keepArchivedCategories: summary.keepArchivedCategories,
+                        discardableCategories: summary.discardableCategories,
+                    };
+                }, 250);
+            } catch (error) {
+                console.warn(
+                    `[SessionImport] Failed to backfill imported transcript retention summaries: ${
+                        error instanceof Error ? error.message : String(error)
+                    }`,
+                );
+            }
+        }
     }
 
     public startAutoImport(): void {

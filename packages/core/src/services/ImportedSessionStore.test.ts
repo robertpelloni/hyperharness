@@ -287,4 +287,48 @@ describe('ImportedSessionStore', () => {
             summary: 'Keep defaults durable; archive the rest.',
         });
     });
+
+    it('backfills retention summaries for legacy archived sessions', async () => {
+        const { ImportedSessionStore } = await import('./ImportedSessionStore.js') as ImportedSessionStoreModule;
+        const archiveRoot = await createTempRoot();
+        const store = new ImportedSessionStore(archiveRoot);
+
+        const created = store.upsertSession(createSessionInput(
+            'hash-legacy-retention',
+            'User: keep durable defaults.\nAssistant: archive the rest.',
+            'Keep durable defaults.',
+        ));
+
+        sqliteForTest.prepare('UPDATE imported_sessions SET metadata = ? WHERE uuid = ?').run(
+            JSON.stringify({ antigravityImportSurface: 'experimental' }),
+            created.id,
+        );
+
+        const updated = store.backfillRetentionSummaries((session) => ({
+            archiveDisposition: 'archive_only',
+            summary: `Backfilled for ${session.sourceTool}`,
+            strategy: 'heuristic',
+        }), 10);
+
+        const fetched = store.getImportedSession(created.id);
+        const row = sqliteForTest
+            .prepare('SELECT transcript_metadata_archive_path, metadata FROM imported_sessions WHERE uuid = ?')
+            .get(created.id) as Record<string, unknown>;
+        const metadataPath = path.join(archiveRoot, ...String(row.transcript_metadata_archive_path ?? '').split('/'));
+        const archiveMetadata = JSON.parse(
+            zlib.gunzipSync(await fs.readFile(metadataPath)).toString('utf-8'),
+        ) as Record<string, unknown>;
+
+        expect(updated).toBe(1);
+        expect(fetched?.metadata).toMatchObject({
+            retentionSummary: {
+                archiveDisposition: 'archive_only',
+                summary: 'Backfilled for antigravity',
+            },
+        });
+        expect(archiveMetadata.retentionSummary).toMatchObject({
+            archiveDisposition: 'archive_only',
+            summary: 'Backfilled for antigravity',
+        });
+    });
 });

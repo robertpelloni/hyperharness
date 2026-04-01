@@ -280,6 +280,64 @@ export class ImportedSessionStore {
         return compacted;
     }
 
+    backfillRetentionSummaries(
+        buildRetentionSummary: (session: ImportedSessionRecord) => Record<string, unknown>,
+        limit: number = 100,
+    ): number {
+        const rows = sqliteInstance.prepare(`
+            SELECT uuid
+            FROM imported_sessions
+            WHERE json_extract(metadata, '$.retentionSummary') IS NULL
+            ORDER BY imported_at ASC
+            LIMIT ?
+        `).all(limit) as Array<{ uuid?: string }>;
+
+        let updated = 0;
+        for (const row of rows) {
+            const sessionId = typeof row.uuid === 'string' ? row.uuid : '';
+            if (!sessionId) {
+                continue;
+            }
+
+            const session = this.getImportedSession(sessionId);
+            if (!session) {
+                continue;
+            }
+
+            const metadata = {
+                ...(session.metadata ?? {}),
+                retentionSummary: buildRetentionSummary(session),
+            };
+
+            this.upsertSession({
+                sourceTool: session.sourceTool,
+                sourcePath: session.sourcePath,
+                externalSessionId: session.externalSessionId,
+                title: session.title,
+                sessionFormat: session.sessionFormat,
+                transcript: session.transcript,
+                excerpt: session.excerpt,
+                workingDirectory: session.workingDirectory,
+                transcriptHash: session.transcriptHash,
+                normalizedSession: session.normalizedSession,
+                metadata,
+                discoveredAt: session.discoveredAt,
+                importedAt: session.importedAt,
+                lastModifiedAt: session.lastModifiedAt,
+                parsedMemories: session.parsedMemories.map((memory) => ({
+                    kind: memory.kind,
+                    content: memory.content,
+                    tags: memory.tags,
+                    source: memory.source,
+                    metadata: memory.metadata,
+                })),
+            });
+            updated += 1;
+        }
+
+        return updated;
+    }
+
     upsertSession(input: ImportedSessionRecordInput): ImportedSessionRecord {
         const now = Date.now();
         const existing = sqliteInstance
