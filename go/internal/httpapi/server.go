@@ -1083,14 +1083,14 @@ func (s *Server) handleAPIIndex(w http.ResponseWriter, _ *http.Request) {
 				{Path: "/api/settings/environment", Category: "control", Description: "Bridge to TypeScript environment diagnostics."},
 				{Path: "/api/settings/mcp-servers", Category: "control", Description: "Bridge to configured MCP servers from the TypeScript settings layer."},
 				{Path: "/api/settings/provider-key", Category: "control", Description: "Persist a provider key through the TypeScript settings layer."},
-				{Path: "/api/tools", Category: "control", Description: "Bridge to the TypeScript tool registry list."},
-				{Path: "/api/tools/by-server", Category: "control", Description: "Bridge to TypeScript tools filtered by MCP server."},
-				{Path: "/api/tools/search", Category: "control", Description: "Bridge to TypeScript tool search."},
+				{Path: "/api/tools", Category: "control", Description: "List tools, with a local source-backed Go inventory fallback when the TypeScript tools router is unavailable."},
+				{Path: "/api/tools/by-server", Category: "control", Description: "List tools filtered by MCP server, with a local source-backed Go inventory fallback when the TypeScript tools router is unavailable."},
+				{Path: "/api/tools/search", Category: "control", Description: "Search tools, with a local source-backed Go inventory fallback when the TypeScript tools router is unavailable."},
 				{Path: "/api/tools/context", Category: "control", Description: "Go-owned tool guidance snapshot combining startup readiness, tool context memory, and related tool advertisements."},
 				{Path: "/api/tools/detect-cli-harnesses", Category: "control", Description: "Bridge to TypeScript CLI harness detection."},
 				{Path: "/api/tools/detect-execution-environment", Category: "control", Description: "Bridge to TypeScript execution-environment detection."},
 				{Path: "/api/tools/detect-install-surfaces", Category: "control", Description: "Bridge to TypeScript install-surface detection."},
-				{Path: "/api/tools/get", Category: "control", Description: "Bridge to a specific TypeScript tool definition."},
+				{Path: "/api/tools/get", Category: "control", Description: "Read a specific tool definition, with a local source-backed Go inventory fallback when the TypeScript tools router is unavailable."},
 				{Path: "/api/tools/create", Category: "control", Description: "Create a tool through the TypeScript control plane."},
 				{Path: "/api/tools/upsert-batch", Category: "control", Description: "Upsert a batch of tools through the TypeScript control plane."},
 				{Path: "/api/tools/delete", Category: "control", Description: "Delete a tool through the TypeScript control plane."},
@@ -4547,7 +4547,39 @@ func (s *Server) handleSettingsProviderKey(w http.ResponseWriter, r *http.Reques
 }
 
 func (s *Server) handleToolsList(w http.ResponseWriter, r *http.Request) {
-	s.handleTRPCBridgeCall(w, r, http.MethodGet, "tools.list", nil)
+	var result any
+	upstreamBase, err := s.callUpstreamJSON(r.Context(), "tools.list", nil, &result)
+	if err == nil {
+		writeJSON(w, http.StatusOK, map[string]any{
+			"success": true,
+			"data":    result,
+			"bridge": map[string]any{
+				"upstreamBase": upstreamBase,
+				"procedure":    "tools.list",
+			},
+		})
+		return
+	}
+
+	_, summary, fallbackErr := s.localMCPSummary(r.Context())
+	if fallbackErr != nil {
+		writeJSON(w, http.StatusServiceUnavailable, map[string]any{
+			"success": false,
+			"error":   fallbackErr.Error(),
+			"detail":  fallbackErr.Error(),
+		})
+		return
+	}
+
+	writeJSON(w, http.StatusOK, map[string]any{
+		"success": true,
+		"data":    fallbackControlTools(summary.InstalledHarnesses),
+		"bridge": map[string]any{
+			"fallback":  "go-local-tools",
+			"procedure": "tools.list",
+			"reason":    "upstream unavailable; using local source-backed tool inventory",
+		},
+	})
 }
 
 func (s *Server) handleToolsByServer(w http.ResponseWriter, r *http.Request) {
@@ -4556,7 +4588,49 @@ func (s *Server) handleToolsByServer(w http.ResponseWriter, r *http.Request) {
 		writeJSON(w, http.StatusBadRequest, map[string]any{"success": false, "error": "missing mcpServerUuid query parameter"})
 		return
 	}
-	s.handleTRPCBridgeCall(w, r, http.MethodGet, "tools.listByServer", map[string]any{"mcpServerUuid": serverID})
+	payload := map[string]any{"mcpServerUuid": serverID}
+	var result any
+	upstreamBase, err := s.callUpstreamJSON(r.Context(), "tools.listByServer", payload, &result)
+	if err == nil {
+		writeJSON(w, http.StatusOK, map[string]any{
+			"success": true,
+			"data":    result,
+			"bridge": map[string]any{
+				"upstreamBase": upstreamBase,
+				"procedure":    "tools.listByServer",
+			},
+		})
+		return
+	}
+
+	_, summary, fallbackErr := s.localMCPSummary(r.Context())
+	if fallbackErr != nil {
+		writeJSON(w, http.StatusServiceUnavailable, map[string]any{
+			"success": false,
+			"error":   fallbackErr.Error(),
+			"detail":  fallbackErr.Error(),
+		})
+		return
+	}
+
+	filtered := make([]map[string]any, 0)
+	for _, tool := range fallbackControlTools(summary.InstalledHarnesses) {
+		serverName, _ := tool["server"].(string)
+		serverUUID, _ := tool["mcpServerUuid"].(string)
+		if serverID == serverName || serverID == serverUUID {
+			filtered = append(filtered, tool)
+		}
+	}
+
+	writeJSON(w, http.StatusOK, map[string]any{
+		"success": true,
+		"data":    filtered,
+		"bridge": map[string]any{
+			"fallback":  "go-local-tools",
+			"procedure": "tools.listByServer",
+			"reason":    "upstream unavailable; filtering local source-backed tool inventory by server",
+		},
+	})
 }
 
 func (s *Server) handleToolsSearch(w http.ResponseWriter, r *http.Request) {
@@ -4571,7 +4645,44 @@ func (s *Server) handleToolsSearch(w http.ResponseWriter, r *http.Request) {
 			payload["limit"] = parsed
 		}
 	}
-	s.handleTRPCBridgeCall(w, r, http.MethodGet, "tools.search", payload)
+	var result any
+	upstreamBase, err := s.callUpstreamJSON(r.Context(), "tools.search", payload, &result)
+	if err == nil {
+		writeJSON(w, http.StatusOK, map[string]any{
+			"success": true,
+			"data":    result,
+			"bridge": map[string]any{
+				"upstreamBase": upstreamBase,
+				"procedure":    "tools.search",
+			},
+		})
+		return
+	}
+
+	_, summary, fallbackErr := s.localMCPSummary(r.Context())
+	if fallbackErr != nil {
+		writeJSON(w, http.StatusServiceUnavailable, map[string]any{
+			"success": false,
+			"error":   fallbackErr.Error(),
+			"detail":  fallbackErr.Error(),
+		})
+		return
+	}
+
+	limit := 30
+	if rawLimit, ok := payload["limit"].(int); ok && rawLimit > 0 {
+		limit = rawLimit
+	}
+	results := fallbackControlToolSearch(summary.InstalledHarnesses, query, limit)
+	writeJSON(w, http.StatusOK, map[string]any{
+		"success": true,
+		"data":    results,
+		"bridge": map[string]any{
+			"fallback":  "go-local-tools",
+			"procedure": "tools.search",
+			"reason":    "upstream unavailable; searching local source-backed tool inventory",
+		},
+	})
 }
 
 func (s *Server) handleToolsDetectCLIHarnesses(w http.ResponseWriter, r *http.Request) {
@@ -4592,7 +4703,50 @@ func (s *Server) handleToolsGet(w http.ResponseWriter, r *http.Request) {
 		writeJSON(w, http.StatusBadRequest, map[string]any{"success": false, "error": "missing uuid query parameter"})
 		return
 	}
-	s.handleTRPCBridgeCall(w, r, http.MethodGet, "tools.get", map[string]any{"uuid": uuid})
+	payload := map[string]any{"uuid": uuid}
+	var result any
+	upstreamBase, err := s.callUpstreamJSON(r.Context(), "tools.get", payload, &result)
+	if err == nil {
+		writeJSON(w, http.StatusOK, map[string]any{
+			"success": true,
+			"data":    result,
+			"bridge": map[string]any{
+				"upstreamBase": upstreamBase,
+				"procedure":    "tools.get",
+			},
+		})
+		return
+	}
+
+	_, summary, fallbackErr := s.localMCPSummary(r.Context())
+	if fallbackErr != nil {
+		writeJSON(w, http.StatusServiceUnavailable, map[string]any{
+			"success": false,
+			"error":   fallbackErr.Error(),
+			"detail":  fallbackErr.Error(),
+		})
+		return
+	}
+
+	var fallbackTool any
+	for _, tool := range fallbackControlTools(summary.InstalledHarnesses) {
+		toolUUID, _ := tool["uuid"].(string)
+		toolName, _ := tool["name"].(string)
+		if uuid == toolUUID || uuid == toolName {
+			fallbackTool = tool
+			break
+		}
+	}
+
+	writeJSON(w, http.StatusOK, map[string]any{
+		"success": true,
+		"data":    fallbackTool,
+		"bridge": map[string]any{
+			"fallback":  "go-local-tools",
+			"procedure": "tools.get",
+			"reason":    "upstream unavailable; using local source-backed tool inventory",
+		},
+	})
 }
 
 func (s *Server) handleToolsCreate(w http.ResponseWriter, r *http.Request) {
@@ -6468,6 +6622,36 @@ func fallbackMCPTools(definitions []harnesses.Definition) []map[string]any {
 	return tools
 }
 
+func fallbackControlTools(definitions []harnesses.Definition) []map[string]any {
+	tools := make([]map[string]any, 0)
+	for _, definition := range sourceBackedInstalledHarnesses(definitions) {
+		for _, name := range definition.ToolCallNames {
+			tools = append(tools, map[string]any{
+				"uuid":             name,
+				"name":             name,
+				"description":      definition.Description,
+				"server":           definition.ID,
+				"inputSchema":      map[string]any{"type": "object"},
+				"isDeferred":       false,
+				"schemaParamCount": 0,
+				"mcpServerUuid":    definition.ID,
+				"always_on":        false,
+			})
+		}
+	}
+	sort.Slice(tools, func(i, j int) bool {
+		leftServer, _ := tools[i]["server"].(string)
+		rightServer, _ := tools[j]["server"].(string)
+		if leftServer == rightServer {
+			leftName, _ := tools[i]["name"].(string)
+			rightName, _ := tools[j]["name"].(string)
+			return leftName < rightName
+		}
+		return leftServer < rightServer
+	})
+	return tools
+}
+
 func fallbackSearchMCPTools(definitions []harnesses.Definition, query string) []map[string]any {
 	allTools := fallbackMCPTools(definitions)
 	terms := strings.Fields(strings.ToLower(query))
@@ -6525,6 +6709,60 @@ func fallbackSearchMCPTools(definitions []harnesses.Definition, query string) []
 			"matchReason": "Matched local source-backed tool inventory.",
 			"score":       item.score,
 		})
+	}
+	return results
+}
+
+func fallbackControlToolSearch(definitions []harnesses.Definition, query string, limit int) []map[string]any {
+	allTools := fallbackControlTools(definitions)
+	terms := strings.Fields(strings.ToLower(query))
+	if len(terms) == 0 {
+		if limit > 0 && len(allTools) > limit {
+			return allTools[:limit]
+		}
+		return allTools
+	}
+
+	type rankedTool struct {
+		tool  map[string]any
+		score int
+	}
+	ranked := make([]rankedTool, 0, len(allTools))
+	for _, tool := range allTools {
+		name, _ := tool["name"].(string)
+		server, _ := tool["server"].(string)
+		description, _ := tool["description"].(string)
+		haystack := strings.ToLower(name + " " + server + " " + description)
+		score := 0
+		for _, term := range terms {
+			if term == "" {
+				continue
+			}
+			if strings.Contains(haystack, term) {
+				score++
+			}
+		}
+		if score == 0 {
+			continue
+		}
+		ranked = append(ranked, rankedTool{tool: tool, score: score})
+	}
+
+	sort.Slice(ranked, func(i, j int) bool {
+		if ranked[i].score == ranked[j].score {
+			leftName, _ := ranked[i].tool["name"].(string)
+			rightName, _ := ranked[j].tool["name"].(string)
+			return leftName < rightName
+		}
+		return ranked[i].score > ranked[j].score
+	})
+
+	results := make([]map[string]any, 0, len(ranked))
+	for _, item := range ranked {
+		results = append(results, item.tool)
+		if limit > 0 && len(results) >= limit {
+			break
+		}
 	}
 	return results
 }

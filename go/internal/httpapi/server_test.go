@@ -183,12 +183,12 @@ func TestBridgeRouteReportsProcedureFailure(t *testing.T) {
 	server := New(config.Default(), stubDetector{})
 	recorder := httptest.NewRecorder()
 
-	server.Handler().ServeHTTP(recorder, httptest.NewRequest(http.MethodGet, "/api/tools", nil))
+	server.Handler().ServeHTTP(recorder, httptest.NewRequest(http.MethodGet, "/api/suggestions", nil))
 
 	if recorder.Code != http.StatusServiceUnavailable {
 		t.Fatalf("expected status 503, got %d with body %s", recorder.Code, recorder.Body.String())
 	}
-	if !strings.Contains(recorder.Body.String(), `failed to call upstream procedure tools.list:`) {
+	if !strings.Contains(recorder.Body.String(), `failed to call upstream procedure suggestions.list:`) {
 		t.Fatalf("expected bridge procedure error, got %s", recorder.Body.String())
 	}
 }
@@ -5073,6 +5073,64 @@ var AutoCallTool = struct{
 				}
 			}
 		})
+	}
+}
+
+func TestToolsReadEndpointsFallBackToLocalInventory(t *testing.T) {
+	workspaceRoot := t.TempDir()
+	toolsDir := filepath.Join(workspaceRoot, "submodules", "hypercode", "tools")
+	if err := os.MkdirAll(toolsDir, 0o755); err != nil {
+		t.Fatalf("failed to create hypercode tools dir: %v", err)
+	}
+
+	toolSource := `package tools
+
+var SearchTool = struct{
+	Name string
+}{
+	Name: "search_tools",
+}
+
+var ReadTool = struct{
+	Name string
+}{
+	Name: "read_file",
+}
+`
+	if err := os.WriteFile(filepath.Join(toolsDir, "registry.go"), []byte(toolSource), 0o644); err != nil {
+		t.Fatalf("failed to write hypercode tool source: %v", err)
+	}
+
+	t.Setenv("BORG_TRPC_UPSTREAM", "http://127.0.0.1:1/trpc")
+	cfg := config.Default()
+	cfg.WorkspaceRoot = workspaceRoot
+	cfg.MainConfigDir = t.TempDir()
+	server := New(cfg, stubDetector{tools: []controlplane.Tool{
+		{Type: "go", Name: "Go", Command: "go", Available: true},
+	}})
+
+	listRecorder := httptest.NewRecorder()
+	server.Handler().ServeHTTP(listRecorder, httptest.NewRequest(http.MethodGet, "/api/tools", nil))
+	if listRecorder.Code != http.StatusOK || !strings.Contains(listRecorder.Body.String(), `"fallback":"go-local-tools"`) || !strings.Contains(listRecorder.Body.String(), `"name":"search_tools"`) {
+		t.Fatalf("expected local tools list fallback, got %d %s", listRecorder.Code, listRecorder.Body.String())
+	}
+
+	byServerRecorder := httptest.NewRecorder()
+	server.Handler().ServeHTTP(byServerRecorder, httptest.NewRequest(http.MethodGet, "/api/tools/by-server?mcpServerUuid=hypercode", nil))
+	if byServerRecorder.Code != http.StatusOK || !strings.Contains(byServerRecorder.Body.String(), `"fallback":"go-local-tools"`) || !strings.Contains(byServerRecorder.Body.String(), `"server":"hypercode"`) {
+		t.Fatalf("expected local tools by-server fallback, got %d %s", byServerRecorder.Code, byServerRecorder.Body.String())
+	}
+
+	searchRecorder := httptest.NewRecorder()
+	server.Handler().ServeHTTP(searchRecorder, httptest.NewRequest(http.MethodGet, "/api/tools/search?query=search&limit=5", nil))
+	if searchRecorder.Code != http.StatusOK || !strings.Contains(searchRecorder.Body.String(), `"fallback":"go-local-tools"`) || !strings.Contains(searchRecorder.Body.String(), `"name":"search_tools"`) {
+		t.Fatalf("expected local tools search fallback, got %d %s", searchRecorder.Code, searchRecorder.Body.String())
+	}
+
+	getRecorder := httptest.NewRecorder()
+	server.Handler().ServeHTTP(getRecorder, httptest.NewRequest(http.MethodGet, "/api/tools/get?uuid=search_tools", nil))
+	if getRecorder.Code != http.StatusOK || !strings.Contains(getRecorder.Body.String(), `"fallback":"go-local-tools"`) || !strings.Contains(getRecorder.Body.String(), `"uuid":"search_tools"`) {
+		t.Fatalf("expected local tools get fallback, got %d %s", getRecorder.Code, getRecorder.Body.String())
 	}
 }
 
