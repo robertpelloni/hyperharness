@@ -6341,6 +6341,71 @@ func TestCatalogGetFallsBackToLocalDB(t *testing.T) {
 	}
 }
 
+func TestCatalogRunsFallsBackToLocalDB(t *testing.T) {
+	t.Setenv("BORG_TRPC_UPSTREAM", "http://127.0.0.1:1/trpc")
+
+	workspace := t.TempDir()
+	dbPath := filepath.Join(workspace, "metamcp.db")
+	db, err := sql.Open("sqlite", dbPath)
+	if err != nil {
+		t.Fatalf("failed to open sqlite db: %v", err)
+	}
+	defer db.Close()
+
+	if _, err := db.Exec(`
+		CREATE TABLE published_mcp_validation_runs (
+			uuid TEXT PRIMARY KEY,
+			server_uuid TEXT NOT NULL,
+			run_mode TEXT NOT NULL,
+			started_at INTEGER NOT NULL,
+			finished_at INTEGER,
+			outcome TEXT NOT NULL DEFAULT 'pending',
+			failure_class TEXT,
+			tool_count INTEGER,
+			findings_summary TEXT,
+			performed_by TEXT NOT NULL DEFAULT 'Verifier',
+			created_at INTEGER NOT NULL
+		);
+		INSERT INTO published_mcp_validation_runs (
+			uuid, server_uuid, run_mode, started_at, finished_at, outcome, failure_class, tool_count, findings_summary, performed_by, created_at
+		) VALUES
+			('run-2', 'catalog-1', 'full_validation', 1711958500, 1711958600, 'failed', 'network', 3, '{"summary":"bad"}', 'Verifier', 1711958600),
+			('run-1', 'catalog-1', 'tools_list', 1711958300, 1711958460, 'passed', NULL, 12, '{"summary":"ok"}', 'Verifier', 1711958460),
+			('run-0', 'catalog-2', 'tools_list', 1711958200, 1711958250, 'passed', NULL, 2, '{"summary":"other"}', 'Verifier', 1711958250);
+	`); err != nil {
+		t.Fatalf("failed to seed sqlite db: %v", err)
+	}
+
+	cfg := config.Default()
+	cfg.WorkspaceRoot = workspace
+	cfg.ConfigDir = t.TempDir()
+	cfg.MainConfigDir = t.TempDir()
+	server := New(cfg, stubDetector{})
+
+	recorder := httptest.NewRecorder()
+	server.Handler().ServeHTTP(recorder, httptest.NewRequest(http.MethodGet, "/api/catalog/runs?server_uuid=catalog-1&limit=1", nil))
+
+	if recorder.Code != http.StatusOK {
+		t.Fatalf("expected 200, got %d with body %s", recorder.Code, recorder.Body.String())
+	}
+
+	for _, needle := range []string{
+		`"fallback":"go-local-published-catalog-db"`,
+		`"procedure":"catalog.listRuns"`,
+		`using local metamcp published catalog validation runs`,
+		`"uuid":"run-2"`,
+		`"outcome":"failed"`,
+		`"failure_class":"network"`,
+	} {
+		if !strings.Contains(recorder.Body.String(), needle) {
+			t.Fatalf("expected catalog runs fallback to contain %s, got %s", needle, recorder.Body.String())
+		}
+	}
+	if strings.Contains(recorder.Body.String(), `"uuid":"run-1"`) {
+		t.Fatalf("expected limit=1 to exclude older run, got %s", recorder.Body.String())
+	}
+}
+
 func TestInfrastructureStatusFallsBackToLocalProbe(t *testing.T) {
 	workspaceRoot := t.TempDir()
 	userProfile := t.TempDir()

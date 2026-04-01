@@ -6855,12 +6855,46 @@ func (s *Server) handleCatalogRuns(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	payload := map[string]any{"server_uuid": serverUUID}
+	limitValue := 10
 	if limit := strings.TrimSpace(r.URL.Query().Get("limit")); limit != "" {
 		if parsed, err := strconv.Atoi(limit); err == nil {
+			limitValue = parsed
 			payload["limit"] = parsed
 		}
 	}
-	s.handleTRPCBridgeCall(w, r, http.MethodGet, "catalog.listRuns", payload)
+	var result any
+	upstreamBase, err := s.callUpstreamJSON(r.Context(), "catalog.listRuns", payload, &result)
+	if err == nil {
+		writeJSON(w, http.StatusOK, map[string]any{
+			"success": true,
+			"data":    result,
+			"bridge": map[string]any{
+				"upstreamBase": upstreamBase,
+				"procedure":    "catalog.listRuns",
+			},
+		})
+		return
+	}
+
+	runs, fallbackErr := s.localCatalogRuns(serverUUID, limitValue)
+	if fallbackErr != nil {
+		writeJSON(w, http.StatusServiceUnavailable, map[string]any{
+			"success": false,
+			"error":   fallbackErr.Error(),
+			"detail":  fallbackErr.Error(),
+		})
+		return
+	}
+
+	writeJSON(w, http.StatusOK, map[string]any{
+		"success": true,
+		"data":    runs,
+		"bridge": map[string]any{
+			"fallback":  "go-local-published-catalog-db",
+			"procedure": "catalog.listRuns",
+			"reason":    "upstream unavailable; using local metamcp published catalog validation runs",
+		},
+	})
 }
 
 func (s *Server) handleCatalogIngest(w http.ResponseWriter, r *http.Request) {
@@ -9302,6 +9336,45 @@ func (s *Server) localCatalogGet(uuid string) (any, error) {
 	}, nil
 }
 
+func (s *Server) localCatalogRuns(serverUUID string, limit int) ([]map[string]any, error) {
+	if limit <= 0 {
+		limit = 10
+	}
+
+	db, err := sql.Open("sqlite", s.localMetaMCPDBPath())
+	if err != nil {
+		return nil, err
+	}
+	defer db.Close()
+
+	rows, err := db.Query(`
+		SELECT uuid, server_uuid, run_mode, started_at, finished_at, outcome, failure_class, tool_count,
+		       findings_summary, performed_by, created_at
+		FROM published_mcp_validation_runs
+		WHERE server_uuid = ?
+		ORDER BY created_at DESC
+		LIMIT ?
+	`, serverUUID, limit)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	runs := []map[string]any{}
+	for rows.Next() {
+		run, scanErr := scanPublishedCatalogRun(rows)
+		if scanErr != nil {
+			return nil, scanErr
+		}
+		runs = append(runs, run)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return runs, nil
+}
+
 func unixTimestampToRFC3339(value int64) string {
 	if value <= 0 {
 		return time.Unix(0, 0).UTC().Format(time.RFC3339)
@@ -9422,20 +9495,6 @@ func localPublishedCatalogServer(db *sql.DB, uuid string) (any, error) {
 }
 
 func localPublishedCatalogLatestRun(db *sql.DB, serverUUID string) (any, error) {
-	var (
-		uuid          string
-		runServerUUID string
-		runMode       string
-		startedAtRaw  int64
-		finishedAt    sql.NullInt64
-		outcome       string
-		failureClass  sql.NullString
-		toolCount     sql.NullInt64
-		findingsRaw   sql.NullString
-		performedBy   string
-		createdAtRaw  int64
-	)
-
 	row := db.QueryRow(`
 		SELECT uuid, server_uuid, run_mode, started_at, finished_at, outcome, failure_class, tool_count,
 		       findings_summary, performed_by, created_at
@@ -9444,34 +9503,14 @@ func localPublishedCatalogLatestRun(db *sql.DB, serverUUID string) (any, error) 
 		ORDER BY created_at DESC
 		LIMIT 1
 	`, serverUUID)
-	if err := row.Scan(
-		&uuid, &runServerUUID, &runMode, &startedAtRaw, &finishedAt, &outcome, &failureClass, &toolCount,
-		&findingsRaw, &performedBy, &createdAtRaw,
-	); err != nil {
+	run, err := scanPublishedCatalogRun(row)
+	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, nil
 		}
 		return nil, err
 	}
-
-	var findings any
-	if findingsRaw.Valid {
-		findings = jsonObjectOrNil(findingsRaw.String)
-	}
-
-	return map[string]any{
-		"uuid":             uuid,
-		"server_uuid":      runServerUUID,
-		"run_mode":         runMode,
-		"started_at":       unixTimestampToRFC3339(startedAtRaw),
-		"finished_at":      nullTimestampToAny(finishedAt),
-		"outcome":          outcome,
-		"failure_class":    nullStringToAny(failureClass),
-		"tool_count":       nullInt64ToAny(toolCount),
-		"findings_summary": findings,
-		"performed_by":     performedBy,
-		"created_at":       unixTimestampToRFC3339(createdAtRaw),
-	}, nil
+	return run, nil
 }
 
 func localPublishedCatalogActiveRecipe(db *sql.DB, serverUUID string) (any, error) {
@@ -9559,6 +9598,52 @@ func localPublishedCatalogSources(db *sql.DB, serverUUID string) ([]map[string]a
 		return nil, err
 	}
 	return sources, nil
+}
+
+type publishedCatalogRunScanner interface {
+	Scan(dest ...any) error
+}
+
+func scanPublishedCatalogRun(scanner publishedCatalogRunScanner) (map[string]any, error) {
+	var (
+		uuid          string
+		runServerUUID string
+		runMode       string
+		startedAtRaw  int64
+		finishedAt    sql.NullInt64
+		outcome       string
+		failureClass  sql.NullString
+		toolCount     sql.NullInt64
+		findingsRaw   sql.NullString
+		performedBy   string
+		createdAtRaw  int64
+	)
+
+	if err := scanner.Scan(
+		&uuid, &runServerUUID, &runMode, &startedAtRaw, &finishedAt, &outcome, &failureClass, &toolCount,
+		&findingsRaw, &performedBy, &createdAtRaw,
+	); err != nil {
+		return nil, err
+	}
+
+	var findings any
+	if findingsRaw.Valid {
+		findings = jsonObjectOrNil(findingsRaw.String)
+	}
+
+	return map[string]any{
+		"uuid":             uuid,
+		"server_uuid":      runServerUUID,
+		"run_mode":         runMode,
+		"started_at":       unixTimestampToRFC3339(startedAtRaw),
+		"finished_at":      nullTimestampToAny(finishedAt),
+		"outcome":          outcome,
+		"failure_class":    nullStringToAny(failureClass),
+		"tool_count":       nullInt64ToAny(toolCount),
+		"findings_summary": findings,
+		"performed_by":     performedBy,
+		"created_at":       unixTimestampToRFC3339(createdAtRaw),
+	}, nil
 }
 
 func (s *Server) localServerHealth(serverUUID string) map[string]any {
