@@ -258,7 +258,29 @@ func (s *Server) handleBillingFallbackHistory(w http.ResponseWriter, r *http.Req
 }
 
 func (s *Server) handleBillingClearFallbackHistory(w http.ResponseWriter, r *http.Request) {
-	s.handleTRPCBridgeCall(w, r, http.MethodPost, "billing.clearFallbackHistory", nil)
+	var result map[string]any
+	upstreamBase, err := s.callUpstreamJSON(r.Context(), "billing.clearFallbackHistory", nil, &result)
+	if err == nil {
+		writeJSON(w, http.StatusOK, map[string]any{
+			"success": true,
+			"data":    result,
+			"bridge": map[string]any{
+				"upstreamBase": upstreamBase,
+				"procedure":    "billing.clearFallbackHistory",
+			},
+		})
+		return
+	}
+
+	writeJSON(w, http.StatusOK, map[string]any{
+		"success": true,
+		"data":    map[string]any{"ok": true},
+		"bridge": map[string]any{
+			"fallback":  "go-local-provider-routing",
+			"procedure": "billing.clearFallbackHistory",
+			"reason":    "upstream unavailable; local provider routing preview has no persisted fallback history to clear",
+		},
+	})
 }
 
 func buildLocalFallbackChainResponse(taskType string) map[string]any {

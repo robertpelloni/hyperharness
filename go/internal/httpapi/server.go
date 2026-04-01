@@ -941,7 +941,7 @@ func (s *Server) handleAPIIndex(w http.ResponseWriter, _ *http.Request) {
 				{Path: "/api/billing/task-routing-rule", Category: "providers", Description: "Update task-specific routing through the TypeScript billing router."},
 				{Path: "/api/billing/depleted-models", Category: "providers", Description: "Read depleted model state, with a local Go empty-state preview when the TypeScript billing router is unavailable."},
 				{Path: "/api/billing/fallback-history", Category: "providers", Description: "Read provider fallback history, with a local Go empty-state preview when the TypeScript billing router is unavailable."},
-				{Path: "/api/billing/fallback-history/clear", Category: "providers", Description: "Clear provider fallback history through the TypeScript billing router."},
+				{Path: "/api/billing/fallback-history/clear", Category: "providers", Description: "Clear provider fallback history, with a local Go no-op when the TypeScript billing router is unavailable."},
 				{Path: "/api/mcp/status", Category: "mcp", Description: "Bridge to TypeScript MCP runtime status and pool state."},
 				{Path: "/api/mcp/servers/runtime", Category: "mcp", Description: "Bridge to TypeScript runtime MCP server visibility."},
 				{Path: "/api/mcp/servers/configured", Category: "mcp", Description: "Bridge to configured MCP server records managed by the TypeScript control plane."},
