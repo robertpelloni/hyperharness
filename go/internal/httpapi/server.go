@@ -5,6 +5,7 @@ import (
 	"compress/gzip"
 	"context"
 	"crypto/sha256"
+	"database/sql"
 	"encoding/hex"
 	"encoding/json"
 	"errors"
@@ -33,6 +34,7 @@ import (
 	"github.com/borghq/hypercode-go/internal/mesh"
 	"github.com/borghq/hypercode-go/internal/providers"
 	"github.com/borghq/hypercode-go/internal/sessionimport"
+	_ "modernc.org/sqlite"
 )
 
 var sessionExportKnownFormats = []map[string]any{
@@ -6543,7 +6545,39 @@ func (s *Server) handlePoliciesGet(w http.ResponseWriter, r *http.Request) {
 		writeJSON(w, http.StatusBadRequest, map[string]any{"success": false, "error": "missing uuid query parameter"})
 		return
 	}
-	s.handleTRPCBridgeCall(w, r, http.MethodGet, "policies.get", map[string]any{"uuid": uuid})
+	var result any
+	upstreamBase, err := s.callUpstreamJSON(r.Context(), "policies.get", map[string]any{"uuid": uuid}, &result)
+	if err == nil {
+		writeJSON(w, http.StatusOK, map[string]any{
+			"success": true,
+			"data":    result,
+			"bridge": map[string]any{
+				"upstreamBase": upstreamBase,
+				"procedure":    "policies.get",
+			},
+		})
+		return
+	}
+
+	policy, fallbackErr := s.localPolicy(uuid)
+	if fallbackErr != nil {
+		writeJSON(w, http.StatusServiceUnavailable, map[string]any{
+			"success": false,
+			"error":   fallbackErr.Error(),
+			"detail":  fallbackErr.Error(),
+		})
+		return
+	}
+
+	writeJSON(w, http.StatusOK, map[string]any{
+		"success": true,
+		"data":    policy,
+		"bridge": map[string]any{
+			"fallback":  "go-local-policy-db",
+			"procedure": "policies.get",
+			"reason":    "upstream unavailable; using local metamcp policy record",
+		},
+	})
 }
 
 func (s *Server) handlePoliciesCreate(w http.ResponseWriter, r *http.Request) {
@@ -8561,6 +8595,68 @@ func (s *Server) localPlanSummary() string {
 		fmt.Sprintf("  Rejected: %d", rejected),
 		fmt.Sprintf("  Checkpoints: %d", len(checkpoints)),
 	}, "\n")
+}
+
+func (s *Server) localMetaMCPDBPath() string {
+	return filepath.Join(s.cfg.WorkspaceRoot, "metamcp.db")
+}
+
+func (s *Server) localPolicy(uuid string) (any, error) {
+	db, err := sql.Open("sqlite", s.localMetaMCPDBPath())
+	if err != nil {
+		return nil, err
+	}
+	defer db.Close()
+
+	var (
+		policyUUID   string
+		name         string
+		description  sql.NullString
+		rulesRaw     string
+		createdAtRaw int64
+		updatedAtRaw int64
+	)
+
+	row := db.QueryRow(`
+		SELECT uuid, name, description, rules, created_at, updated_at
+		FROM policies
+		WHERE uuid = ?
+		LIMIT 1
+	`, uuid)
+	if err := row.Scan(&policyUUID, &name, &description, &rulesRaw, &createdAtRaw, &updatedAtRaw); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, nil
+		}
+		return nil, err
+	}
+
+	var rules any
+	if err := json.Unmarshal([]byte(rulesRaw), &rules); err != nil {
+		rules = map[string]any{}
+	}
+
+	return map[string]any{
+		"uuid":        policyUUID,
+		"name":        name,
+		"description": nullStringToAny(description),
+		"rules":       rules,
+		"createdAt":   unixTimestampToRFC3339(createdAtRaw),
+		"updatedAt":   unixTimestampToRFC3339(updatedAtRaw),
+	}, nil
+}
+
+func unixTimestampToRFC3339(value int64) string {
+	if value <= 0 {
+		return time.Unix(0, 0).UTC().Format(time.RFC3339)
+	}
+	return time.Unix(value, 0).UTC().Format(time.RFC3339)
+}
+
+func nullStringToAny(value sql.NullString) any {
+	if value.Valid {
+		return value.String
+	}
+	return nil
 }
 
 func (s *Server) localServerHealth(serverUUID string) map[string]any {

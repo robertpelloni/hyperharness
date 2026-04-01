@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"compress/gzip"
 	"context"
+	"database/sql"
 	"encoding/json"
 	"io"
 	"net/http"
@@ -22,6 +23,7 @@ import (
 	"github.com/borghq/hypercode-go/internal/memorystore"
 	"github.com/borghq/hypercode-go/internal/providers"
 	"github.com/borghq/hypercode-go/internal/sessionimport"
+	_ "modernc.org/sqlite"
 )
 
 type stubDetector struct {
@@ -5752,6 +5754,60 @@ func TestMarketplaceListFallsBackToEmptyList(t *testing.T) {
 	} {
 		if !strings.Contains(recorder.Body.String(), needle) {
 			t.Fatalf("expected marketplace fallback to contain %s, got %s", needle, recorder.Body.String())
+		}
+	}
+}
+
+func TestPoliciesGetFallsBackToLocalDB(t *testing.T) {
+	t.Setenv("BORG_TRPC_UPSTREAM", "http://127.0.0.1:1/trpc")
+
+	workspace := t.TempDir()
+	dbPath := filepath.Join(workspace, "metamcp.db")
+	db, err := sql.Open("sqlite", dbPath)
+	if err != nil {
+		t.Fatalf("failed to open sqlite db: %v", err)
+	}
+	defer db.Close()
+
+	if _, err := db.Exec(`
+		CREATE TABLE policies (
+			uuid TEXT PRIMARY KEY,
+			name TEXT NOT NULL,
+			description TEXT,
+			rules TEXT NOT NULL DEFAULT '{}',
+			created_at INTEGER NOT NULL,
+			updated_at INTEGER NOT NULL
+		);
+		INSERT INTO policies (uuid, name, description, rules, created_at, updated_at)
+		VALUES ('policy-1', 'Default', 'baseline policy', '{"allow":["tool.read"],"deny":["tool.delete"]}', 1711958400, 1711958460);
+	`); err != nil {
+		t.Fatalf("failed to seed sqlite db: %v", err)
+	}
+
+	cfg := config.Default()
+	cfg.WorkspaceRoot = workspace
+	cfg.ConfigDir = t.TempDir()
+	cfg.MainConfigDir = t.TempDir()
+	server := New(cfg, stubDetector{})
+
+	recorder := httptest.NewRecorder()
+	server.Handler().ServeHTTP(recorder, httptest.NewRequest(http.MethodGet, "/api/policies/get?uuid=policy-1", nil))
+
+	if recorder.Code != http.StatusOK {
+		t.Fatalf("expected 200, got %d with body %s", recorder.Code, recorder.Body.String())
+	}
+
+	for _, needle := range []string{
+		`"fallback":"go-local-policy-db"`,
+		`"procedure":"policies.get"`,
+		`using local metamcp policy record`,
+		`"uuid":"policy-1"`,
+		`"name":"Default"`,
+		`"allow":["tool.read"]`,
+		`"deny":["tool.delete"]`,
+	} {
+		if !strings.Contains(recorder.Body.String(), needle) {
+			t.Fatalf("expected policy fallback to contain %s, got %s", needle, recorder.Body.String())
 		}
 	}
 }
