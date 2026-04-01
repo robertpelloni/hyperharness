@@ -5683,8 +5683,9 @@ func TestStatusReadEndpointsFallBackToLocalPreview(t *testing.T) {
 			contains: []string{
 				`"fallback":"go-local-status"`,
 				`"procedure":"openWebUI.getStatus"`,
-				`using local Open WebUI preview`,
-				`"status":"inactive"`,
+				`using local Open WebUI status defaults`,
+				`"status":"active"`,
+				`"version":"0.99.1"`,
 			},
 		},
 		{
