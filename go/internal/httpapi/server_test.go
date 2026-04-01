@@ -5812,6 +5812,61 @@ func TestPoliciesGetFallsBackToLocalDB(t *testing.T) {
 	}
 }
 
+func TestSecretsListFallsBackToLocalDB(t *testing.T) {
+	t.Setenv("BORG_TRPC_UPSTREAM", "http://127.0.0.1:1/trpc")
+
+	workspace := t.TempDir()
+	dbPath := filepath.Join(workspace, "metamcp.db")
+	db, err := sql.Open("sqlite", dbPath)
+	if err != nil {
+		t.Fatalf("failed to open sqlite db: %v", err)
+	}
+	defer db.Close()
+
+	if _, err := db.Exec(`
+		CREATE TABLE workspace_secrets (
+			key TEXT PRIMARY KEY,
+			value TEXT NOT NULL,
+			created_at INTEGER NOT NULL,
+			updated_at INTEGER NOT NULL
+		);
+		INSERT INTO workspace_secrets (key, value, created_at, updated_at)
+		VALUES
+			('OPENAI_API_KEY', 'secret-one', 1711958400, 1711958460),
+			('ANTHROPIC_API_KEY', 'secret-two', 1711958500, 1711958560);
+	`); err != nil {
+		t.Fatalf("failed to seed sqlite db: %v", err)
+	}
+
+	cfg := config.Default()
+	cfg.WorkspaceRoot = workspace
+	cfg.ConfigDir = t.TempDir()
+	cfg.MainConfigDir = t.TempDir()
+	server := New(cfg, stubDetector{})
+
+	recorder := httptest.NewRecorder()
+	server.Handler().ServeHTTP(recorder, httptest.NewRequest(http.MethodGet, "/api/secrets", nil))
+
+	if recorder.Code != http.StatusOK {
+		t.Fatalf("expected 200, got %d with body %s", recorder.Code, recorder.Body.String())
+	}
+
+	for _, needle := range []string{
+		`"fallback":"go-local-policy-db"`,
+		`"procedure":"secrets.list"`,
+		`using local metamcp workspace secrets metadata`,
+		`"OPENAI_API_KEY"`,
+		`"ANTHROPIC_API_KEY"`,
+	} {
+		if !strings.Contains(recorder.Body.String(), needle) {
+			t.Fatalf("expected secrets fallback to contain %s, got %s", needle, recorder.Body.String())
+		}
+	}
+	if strings.Contains(recorder.Body.String(), "secret-one") || strings.Contains(recorder.Body.String(), "secret-two") {
+		t.Fatalf("expected secrets fallback to omit secret values, got %s", recorder.Body.String())
+	}
+}
+
 func TestInfrastructureStatusFallsBackToLocalProbe(t *testing.T) {
 	workspaceRoot := t.TempDir()
 	userProfile := t.TempDir()

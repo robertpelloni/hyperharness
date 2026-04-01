@@ -6593,7 +6593,39 @@ func (s *Server) handlePoliciesDelete(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) handleSecretsList(w http.ResponseWriter, r *http.Request) {
-	s.handleTRPCBridgeCall(w, r, http.MethodGet, "secrets.list", nil)
+	var result any
+	upstreamBase, err := s.callUpstreamJSON(r.Context(), "secrets.list", nil, &result)
+	if err == nil {
+		writeJSON(w, http.StatusOK, map[string]any{
+			"success": true,
+			"data":    result,
+			"bridge": map[string]any{
+				"upstreamBase": upstreamBase,
+				"procedure":    "secrets.list",
+			},
+		})
+		return
+	}
+
+	secrets, fallbackErr := s.localSecrets()
+	if fallbackErr != nil {
+		writeJSON(w, http.StatusServiceUnavailable, map[string]any{
+			"success": false,
+			"error":   fallbackErr.Error(),
+			"detail":  fallbackErr.Error(),
+		})
+		return
+	}
+
+	writeJSON(w, http.StatusOK, map[string]any{
+		"success": true,
+		"data":    secrets,
+		"bridge": map[string]any{
+			"fallback":  "go-local-policy-db",
+			"procedure": "secrets.list",
+			"reason":    "upstream unavailable; using local metamcp workspace secrets metadata",
+		},
+	})
 }
 
 func (s *Server) handleSecretsSet(w http.ResponseWriter, r *http.Request) {
@@ -8643,6 +8675,45 @@ func (s *Server) localPolicy(uuid string) (any, error) {
 		"createdAt":   unixTimestampToRFC3339(createdAtRaw),
 		"updatedAt":   unixTimestampToRFC3339(updatedAtRaw),
 	}, nil
+}
+
+func (s *Server) localSecrets() ([]map[string]any, error) {
+	db, err := sql.Open("sqlite", s.localMetaMCPDBPath())
+	if err != nil {
+		return nil, err
+	}
+	defer db.Close()
+
+	rows, err := db.Query(`
+		SELECT key, created_at, updated_at
+		FROM workspace_secrets
+		ORDER BY updated_at DESC, created_at DESC, key ASC
+	`)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	results := make([]map[string]any, 0)
+	for rows.Next() {
+		var (
+			key          string
+			createdAtRaw int64
+			updatedAtRaw int64
+		)
+		if err := rows.Scan(&key, &createdAtRaw, &updatedAtRaw); err != nil {
+			return nil, err
+		}
+		results = append(results, map[string]any{
+			"key":        key,
+			"created_at": unixTimestampToRFC3339(createdAtRaw),
+			"updated_at": unixTimestampToRFC3339(updatedAtRaw),
+		})
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return results, nil
 }
 
 func unixTimestampToRFC3339(value int64) string {
