@@ -6002,6 +6002,82 @@ func TestLinksBacklogGetFallsBackToLocalDB(t *testing.T) {
 	}
 }
 
+func TestLinksBacklogStatsFallsBackToLocalDB(t *testing.T) {
+	t.Setenv("BORG_TRPC_UPSTREAM", "http://127.0.0.1:1/trpc")
+
+	workspace := t.TempDir()
+	dbPath := filepath.Join(workspace, "metamcp.db")
+	db, err := sql.Open("sqlite", dbPath)
+	if err != nil {
+		t.Fatalf("failed to open sqlite db: %v", err)
+	}
+	defer db.Close()
+
+	if _, err := db.Exec(`
+		CREATE TABLE links_backlog (
+			uuid TEXT PRIMARY KEY,
+			url TEXT NOT NULL,
+			normalized_url TEXT NOT NULL UNIQUE,
+			title TEXT,
+			description TEXT,
+			tags TEXT NOT NULL DEFAULT '[]',
+			source TEXT NOT NULL DEFAULT 'manual',
+			is_duplicate INTEGER NOT NULL DEFAULT 0,
+			duplicate_of TEXT,
+			research_status TEXT NOT NULL DEFAULT 'pending',
+			http_status INTEGER,
+			page_title TEXT,
+			page_description TEXT,
+			favicon_url TEXT,
+			researched_at INTEGER,
+			cluster_id TEXT,
+			bobbybookmarks_bookmark_id INTEGER,
+			import_session_id INTEGER,
+			raw_payload TEXT,
+			synced_at INTEGER,
+			created_at INTEGER NOT NULL,
+			updated_at INTEGER NOT NULL
+		);
+		INSERT INTO links_backlog (uuid, url, normalized_url, source, is_duplicate, research_status, created_at, updated_at) VALUES
+			('link-1', 'https://example.com/1', 'https://example.com/1', 'bobby', 0, 'pending', 1711958300, 1711958460),
+			('link-2', 'https://example.com/2', 'https://example.com/2', 'bobby', 1, 'done', 1711958300, 1711958460),
+			('link-3', 'https://example.com/3', 'https://example.com/3', 'manual', 0, 'failed', 1711958300, 1711958460),
+			('link-4', 'https://example.com/4', 'https://example.com/4', 'manual', 0, 'done', 1711958300, 1711958460);
+	`); err != nil {
+		t.Fatalf("failed to seed sqlite db: %v", err)
+	}
+
+	cfg := config.Default()
+	cfg.WorkspaceRoot = workspace
+	cfg.ConfigDir = t.TempDir()
+	cfg.MainConfigDir = t.TempDir()
+	server := New(cfg, stubDetector{})
+
+	recorder := httptest.NewRecorder()
+	server.Handler().ServeHTTP(recorder, httptest.NewRequest(http.MethodGet, "/api/links-backlog/stats", nil))
+
+	if recorder.Code != http.StatusOK {
+		t.Fatalf("expected 200, got %d with body %s", recorder.Code, recorder.Body.String())
+	}
+
+	for _, needle := range []string{
+		`"fallback":"go-local-links-db"`,
+		`"procedure":"linksBacklog.stats"`,
+		`using local metamcp links backlog aggregates`,
+		`"total":4`,
+		`"unique":3`,
+		`"duplicates":1`,
+		`"pending":1`,
+		`"researched":2`,
+		`"failed":1`,
+		`"sources":2`,
+	} {
+		if !strings.Contains(recorder.Body.String(), needle) {
+			t.Fatalf("expected links backlog stats fallback to contain %s, got %s", needle, recorder.Body.String())
+		}
+	}
+}
+
 func TestOAuthClientGetFallsBackToLocalDB(t *testing.T) {
 	t.Setenv("BORG_TRPC_UPSTREAM", "http://127.0.0.1:1/trpc")
 

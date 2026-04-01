@@ -6458,7 +6458,39 @@ func (s *Server) handleLinksBacklogList(w http.ResponseWriter, r *http.Request) 
 }
 
 func (s *Server) handleLinksBacklogStats(w http.ResponseWriter, r *http.Request) {
-	s.handleTRPCBridgeCall(w, r, http.MethodGet, "linksBacklog.stats", nil)
+	var result any
+	upstreamBase, err := s.callUpstreamJSON(r.Context(), "linksBacklog.stats", nil, &result)
+	if err == nil {
+		writeJSON(w, http.StatusOK, map[string]any{
+			"success": true,
+			"data":    result,
+			"bridge": map[string]any{
+				"upstreamBase": upstreamBase,
+				"procedure":    "linksBacklog.stats",
+			},
+		})
+		return
+	}
+
+	stats, fallbackErr := s.localLinksBacklogStats()
+	if fallbackErr != nil {
+		writeJSON(w, http.StatusServiceUnavailable, map[string]any{
+			"success": false,
+			"error":   fallbackErr.Error(),
+			"detail":  fallbackErr.Error(),
+		})
+		return
+	}
+
+	writeJSON(w, http.StatusOK, map[string]any{
+		"success": true,
+		"data":    stats,
+		"bridge": map[string]any{
+			"fallback":  "go-local-links-db",
+			"procedure": "linksBacklog.stats",
+			"reason":    "upstream unavailable; using local metamcp links backlog aggregates",
+		},
+	})
 }
 
 func (s *Server) handleLinksBacklogGet(w http.ResponseWriter, r *http.Request) {
@@ -9031,6 +9063,52 @@ func (s *Server) localLinksBacklogItem(uuid string) (any, error) {
 		"synced_at":                  nullTimestampToAny(syncedAt),
 		"created_at":                 unixTimestampToRFC3339(createdAtRaw),
 		"updated_at":                 unixTimestampToRFC3339(updatedAtRaw),
+	}, nil
+}
+
+func (s *Server) localLinksBacklogStats() (any, error) {
+	db, err := sql.Open("sqlite", s.localMetaMCPDBPath())
+	if err != nil {
+		return nil, err
+	}
+	defer db.Close()
+
+	var (
+		total      int64
+		duplicates int64
+		pending    int64
+		researched int64
+		failed     int64
+		sources    int64
+	)
+
+	row := db.QueryRow(`
+		SELECT
+			count(*) AS total,
+			coalesce(sum(case when is_duplicate = 1 then 1 else 0 end), 0) AS duplicates,
+			coalesce(sum(case when research_status = 'pending' then 1 else 0 end), 0) AS pending,
+			coalesce(sum(case when research_status = 'done' then 1 else 0 end), 0) AS researched,
+			coalesce(sum(case when research_status = 'failed' then 1 else 0 end), 0) AS failed,
+			count(distinct source) AS sources
+		FROM links_backlog
+	`)
+	if err := row.Scan(&total, &duplicates, &pending, &researched, &failed, &sources); err != nil {
+		return nil, err
+	}
+
+	unique := total - duplicates
+	if unique < 0 {
+		unique = 0
+	}
+
+	return map[string]any{
+		"total":      total,
+		"unique":     unique,
+		"duplicates": duplicates,
+		"pending":    pending,
+		"researched": researched,
+		"failed":     failed,
+		"sources":    sources,
 	}, nil
 }
 
