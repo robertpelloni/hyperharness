@@ -6080,6 +6080,84 @@ func TestLinksBacklogStatsFallsBackToLocalDB(t *testing.T) {
 	}
 }
 
+func TestLinksBacklogListFallsBackToLocalDB(t *testing.T) {
+	t.Setenv("BORG_TRPC_UPSTREAM", "http://127.0.0.1:1/trpc")
+
+	workspace := t.TempDir()
+	dbPath := filepath.Join(workspace, "metamcp.db")
+	db, err := sql.Open("sqlite", dbPath)
+	if err != nil {
+		t.Fatalf("failed to open sqlite db: %v", err)
+	}
+	defer db.Close()
+
+	if _, err := db.Exec(`
+		CREATE TABLE links_backlog (
+			uuid TEXT PRIMARY KEY,
+			url TEXT NOT NULL,
+			normalized_url TEXT NOT NULL UNIQUE,
+			title TEXT,
+			description TEXT,
+			tags TEXT NOT NULL DEFAULT '[]',
+			source TEXT NOT NULL DEFAULT 'manual',
+			is_duplicate INTEGER NOT NULL DEFAULT 0,
+			duplicate_of TEXT,
+			research_status TEXT NOT NULL DEFAULT 'pending',
+			http_status INTEGER,
+			page_title TEXT,
+			page_description TEXT,
+			favicon_url TEXT,
+			researched_at INTEGER,
+			cluster_id TEXT,
+			bobbybookmarks_bookmark_id INTEGER,
+			import_session_id INTEGER,
+			raw_payload TEXT,
+			synced_at INTEGER,
+			created_at INTEGER NOT NULL,
+			updated_at INTEGER NOT NULL
+		);
+		INSERT INTO links_backlog (
+			uuid, url, normalized_url, title, description, tags, source, is_duplicate, duplicate_of,
+			research_status, http_status, page_title, page_description, favicon_url, researched_at,
+			cluster_id, bobbybookmarks_bookmark_id, import_session_id, raw_payload, synced_at, created_at, updated_at
+		) VALUES
+			('link-1', 'https://example.com/mcp', 'https://example.com/mcp', 'MCP', 'metadata', '["mcp"]', 'bobby', 0, NULL, 'pending', 200, 'MCP Page', 'desc', NULL, 1711958400, 'cluster-1', 1, 1, '{"score":1}', 1711958460, 1711958300, 1711958460),
+			('link-2', 'https://example.com/dup', 'https://example.com/dup', 'Dup', 'dup', '[]', 'bobby', 1, 'link-1', 'pending', 200, NULL, NULL, NULL, NULL, 'cluster-1', NULL, NULL, NULL, 1711958460, 1711958200, 1711958450),
+			('link-3', 'https://other.com/nope', 'https://other.com/nope', 'Other', 'other', '[]', 'manual', 0, NULL, 'done', 200, NULL, NULL, NULL, NULL, 'cluster-2', NULL, NULL, NULL, 1711958460, 1711958100, 1711958440);
+	`); err != nil {
+		t.Fatalf("failed to seed sqlite db: %v", err)
+	}
+
+	cfg := config.Default()
+	cfg.WorkspaceRoot = workspace
+	cfg.ConfigDir = t.TempDir()
+	cfg.MainConfigDir = t.TempDir()
+	server := New(cfg, stubDetector{})
+
+	recorder := httptest.NewRecorder()
+	server.Handler().ServeHTTP(recorder, httptest.NewRequest(http.MethodGet, "/api/links-backlog?limit=5&offset=0&search=mcp&source=bobby&research_status=pending&cluster_id=cluster-1&show_duplicates=true", nil))
+
+	if recorder.Code != http.StatusOK {
+		t.Fatalf("expected 200, got %d with body %s", recorder.Code, recorder.Body.String())
+	}
+
+	for _, needle := range []string{
+		`"fallback":"go-local-links-db"`,
+		`"procedure":"linksBacklog.list"`,
+		`using local metamcp links backlog list`,
+		`"uuid":"link-1"`,
+		`"title":"MCP"`,
+		`"total":1`,
+	} {
+		if !strings.Contains(recorder.Body.String(), needle) {
+			t.Fatalf("expected links backlog list fallback to contain %s, got %s", needle, recorder.Body.String())
+		}
+	}
+	if strings.Contains(recorder.Body.String(), `"uuid":"link-2"`) || strings.Contains(recorder.Body.String(), `"uuid":"link-3"`) {
+		t.Fatalf("expected filtered links backlog list to exclude non-matching rows, got %s", recorder.Body.String())
+	}
+}
+
 func TestOAuthClientGetFallsBackToLocalDB(t *testing.T) {
 	t.Setenv("BORG_TRPC_UPSTREAM", "http://127.0.0.1:1/trpc")
 

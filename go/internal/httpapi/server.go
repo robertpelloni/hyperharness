@@ -6429,32 +6429,78 @@ func (s *Server) handleSavedScriptsExecute(w http.ResponseWriter, r *http.Reques
 
 func (s *Server) handleLinksBacklogList(w http.ResponseWriter, r *http.Request) {
 	payload := map[string]any{}
+	limitValue := 50
+	offsetValue := 0
+	searchValue := ""
+	sourceValue := ""
+	statusValue := ""
+	clusterIDValue := ""
+	showDuplicatesValue := false
 	if limit := strings.TrimSpace(r.URL.Query().Get("limit")); limit != "" {
 		if parsed, err := strconv.Atoi(limit); err == nil {
+			limitValue = parsed
 			payload["limit"] = parsed
 		}
 	}
 	if offset := strings.TrimSpace(r.URL.Query().Get("offset")); offset != "" {
 		if parsed, err := strconv.Atoi(offset); err == nil {
+			offsetValue = parsed
 			payload["offset"] = parsed
 		}
 	}
 	if search := strings.TrimSpace(r.URL.Query().Get("search")); search != "" {
+		searchValue = search
 		payload["search"] = search
 	}
 	if source := strings.TrimSpace(r.URL.Query().Get("source")); source != "" {
+		sourceValue = source
 		payload["source"] = source
 	}
 	if status := strings.TrimSpace(r.URL.Query().Get("research_status")); status != "" {
+		statusValue = status
 		payload["research_status"] = status
 	}
 	if clusterID := strings.TrimSpace(r.URL.Query().Get("cluster_id")); clusterID != "" {
+		clusterIDValue = clusterID
 		payload["cluster_id"] = clusterID
 	}
 	if showDuplicates := strings.TrimSpace(r.URL.Query().Get("show_duplicates")); showDuplicates != "" {
-		payload["show_duplicates"] = strings.EqualFold(showDuplicates, "true") || showDuplicates == "1"
+		showDuplicatesValue = strings.EqualFold(showDuplicates, "true") || showDuplicates == "1"
+		payload["show_duplicates"] = showDuplicatesValue
 	}
-	s.handleTRPCBridgeCall(w, r, http.MethodGet, "linksBacklog.list", payload)
+	var result any
+	upstreamBase, err := s.callUpstreamJSON(r.Context(), "linksBacklog.list", payload, &result)
+	if err == nil {
+		writeJSON(w, http.StatusOK, map[string]any{
+			"success": true,
+			"data":    result,
+			"bridge": map[string]any{
+				"upstreamBase": upstreamBase,
+				"procedure":    "linksBacklog.list",
+			},
+		})
+		return
+	}
+
+	listPayload, fallbackErr := s.localLinksBacklogList(limitValue, offsetValue, searchValue, sourceValue, statusValue, clusterIDValue, showDuplicatesValue)
+	if fallbackErr != nil {
+		writeJSON(w, http.StatusServiceUnavailable, map[string]any{
+			"success": false,
+			"error":   fallbackErr.Error(),
+			"detail":  fallbackErr.Error(),
+		})
+		return
+	}
+
+	writeJSON(w, http.StatusOK, map[string]any{
+		"success": true,
+		"data":    listPayload,
+		"bridge": map[string]any{
+			"fallback":  "go-local-links-db",
+			"procedure": "linksBacklog.list",
+			"reason":    "upstream unavailable; using local metamcp links backlog list",
+		},
+	})
 }
 
 func (s *Server) handleLinksBacklogStats(w http.ResponseWriter, r *http.Request) {
@@ -9268,31 +9314,6 @@ func (s *Server) localLinksBacklogItem(uuid string) (any, error) {
 	}
 	defer db.Close()
 
-	var (
-		itemUUID                 string
-		urlValue                 string
-		normalizedURL            string
-		title                    sql.NullString
-		description              sql.NullString
-		tagsRaw                  string
-		source                   string
-		isDuplicate              bool
-		duplicateOf              sql.NullString
-		researchStatus           string
-		httpStatus               sql.NullInt64
-		pageTitle                sql.NullString
-		pageDescription          sql.NullString
-		faviconURL               sql.NullString
-		researchedAt             sql.NullInt64
-		clusterID                sql.NullString
-		bobbyBookmarksBookmarkID sql.NullInt64
-		importSessionID          sql.NullInt64
-		rawPayloadText           sql.NullString
-		syncedAt                 sql.NullInt64
-		createdAtRaw             int64
-		updatedAtRaw             int64
-	)
-
 	row := db.QueryRow(`
 		SELECT uuid, url, normalized_url, title, description, tags, source, is_duplicate, duplicate_of,
 		       research_status, http_status, page_title, page_description, favicon_url, researched_at,
@@ -9301,53 +9322,14 @@ func (s *Server) localLinksBacklogItem(uuid string) (any, error) {
 		WHERE uuid = ?
 		LIMIT 1
 	`, uuid)
-	if err := row.Scan(
-		&itemUUID, &urlValue, &normalizedURL, &title, &description, &tagsRaw, &source, &isDuplicate, &duplicateOf,
-		&researchStatus, &httpStatus, &pageTitle, &pageDescription, &faviconURL, &researchedAt,
-		&clusterID, &bobbyBookmarksBookmarkID, &importSessionID, &rawPayloadText, &syncedAt, &createdAtRaw, &updatedAtRaw,
-	); err != nil {
+	item, err := scanLinksBacklogItem(row)
+	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, nil
 		}
 		return nil, err
 	}
-
-	var tags any
-	if err := json.Unmarshal([]byte(tagsRaw), &tags); err != nil {
-		tags = []any{}
-	}
-
-	var rawPayload any
-	if rawPayloadText.Valid {
-		if err := json.Unmarshal([]byte(rawPayloadText.String), &rawPayload); err != nil {
-			rawPayload = nil
-		}
-	}
-
-	return map[string]any{
-		"uuid":                       itemUUID,
-		"url":                        urlValue,
-		"normalized_url":             normalizedURL,
-		"title":                      nullStringToAny(title),
-		"description":                nullStringToAny(description),
-		"tags":                       tags,
-		"source":                     source,
-		"is_duplicate":               isDuplicate,
-		"duplicate_of":               nullStringToAny(duplicateOf),
-		"research_status":            researchStatus,
-		"http_status":                nullInt64ToAny(httpStatus),
-		"page_title":                 nullStringToAny(pageTitle),
-		"page_description":           nullStringToAny(pageDescription),
-		"favicon_url":                nullStringToAny(faviconURL),
-		"researched_at":              nullTimestampToAny(researchedAt),
-		"cluster_id":                 nullStringToAny(clusterID),
-		"bobbybookmarks_bookmark_id": nullInt64ToAny(bobbyBookmarksBookmarkID),
-		"import_session_id":          nullInt64ToAny(importSessionID),
-		"raw_payload":                rawPayload,
-		"synced_at":                  nullTimestampToAny(syncedAt),
-		"created_at":                 unixTimestampToRFC3339(createdAtRaw),
-		"updated_at":                 unixTimestampToRFC3339(updatedAtRaw),
-	}, nil
+	return item, nil
 }
 
 func (s *Server) localLinksBacklogStats() (any, error) {
@@ -9393,6 +9375,35 @@ func (s *Server) localLinksBacklogStats() (any, error) {
 		"researched": researched,
 		"failed":     failed,
 		"sources":    sources,
+	}, nil
+}
+
+func (s *Server) localLinksBacklogList(limit, offset int, search, source, researchStatus, clusterID string, showDuplicates bool) (any, error) {
+	if limit <= 0 {
+		limit = 50
+	}
+	if offset < 0 {
+		offset = 0
+	}
+
+	db, err := sql.Open("sqlite", s.localMetaMCPDBPath())
+	if err != nil {
+		return nil, err
+	}
+	defer db.Close()
+
+	items, err := listLinksBacklogRows(db, limit, offset, search, source, researchStatus, clusterID, showDuplicates)
+	if err != nil {
+		return nil, err
+	}
+	total, err := countLinksBacklogRows(db, search, source, researchStatus, clusterID, showDuplicates)
+	if err != nil {
+		return nil, err
+	}
+
+	return map[string]any{
+		"items": items,
+		"total": total,
 	}, nil
 }
 
@@ -9698,6 +9709,158 @@ func (s *Server) localCatalogList(limit, offset int, search, status, transport, 
 	return map[string]any{
 		"servers": items,
 		"total":   total,
+	}, nil
+}
+
+func listLinksBacklogRows(db *sql.DB, limit, offset int, search, source, researchStatus, clusterID string, showDuplicates bool) ([]map[string]any, error) {
+	args := []any{}
+	where := buildLinksBacklogWhere(&args, search, source, researchStatus, clusterID, showDuplicates)
+	query := `
+		SELECT uuid, url, normalized_url, title, description, tags, source, is_duplicate, duplicate_of,
+		       research_status, http_status, page_title, page_description, favicon_url, researched_at,
+		       cluster_id, bobbybookmarks_bookmark_id, import_session_id, raw_payload, synced_at, created_at, updated_at
+		FROM links_backlog`
+	if where != "" {
+		query += " WHERE " + where
+	}
+	query += " ORDER BY updated_at DESC, created_at DESC LIMIT ? OFFSET ?"
+	args = append(args, limit, offset)
+
+	rows, err := db.Query(query, args...)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	items := []map[string]any{}
+	for rows.Next() {
+		item, scanErr := scanLinksBacklogItem(rows)
+		if scanErr != nil {
+			return nil, scanErr
+		}
+		items = append(items, item)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return items, nil
+}
+
+func countLinksBacklogRows(db *sql.DB, search, source, researchStatus, clusterID string, showDuplicates bool) (int64, error) {
+	args := []any{}
+	where := buildLinksBacklogWhere(&args, search, source, researchStatus, clusterID, showDuplicates)
+	query := `SELECT count(*) FROM links_backlog`
+	if where != "" {
+		query += " WHERE " + where
+	}
+
+	row := db.QueryRow(query, args...)
+	var count int64
+	if err := row.Scan(&count); err != nil {
+		return 0, err
+	}
+	return count, nil
+}
+
+func buildLinksBacklogWhere(args *[]any, search, source, researchStatus, clusterID string, showDuplicates bool) string {
+	conditions := []string{}
+	if !showDuplicates {
+		conditions = append(conditions, "is_duplicate = 0")
+	}
+	if strings.TrimSpace(source) != "" {
+		conditions = append(conditions, "source = ?")
+		*args = append(*args, source)
+	}
+	if strings.TrimSpace(researchStatus) != "" {
+		conditions = append(conditions, "research_status = ?")
+		*args = append(*args, researchStatus)
+	}
+	if strings.TrimSpace(clusterID) != "" {
+		conditions = append(conditions, "cluster_id = ?")
+		*args = append(*args, clusterID)
+	}
+	if trimmed := strings.TrimSpace(search); trimmed != "" {
+		term := "%" + trimmed + "%"
+		conditions = append(conditions, "(url LIKE ? OR normalized_url LIKE ? OR title LIKE ? OR description LIKE ?)")
+		*args = append(*args, term, term, term, term)
+	}
+	return strings.Join(conditions, " AND ")
+}
+
+type linksBacklogScanner interface {
+	Scan(dest ...any) error
+}
+
+func scanLinksBacklogItem(scanner linksBacklogScanner) (map[string]any, error) {
+	var (
+		itemUUID                 string
+		urlValue                 string
+		normalizedURL            string
+		title                    sql.NullString
+		description              sql.NullString
+		tagsRaw                  string
+		source                   string
+		isDuplicate              bool
+		duplicateOf              sql.NullString
+		researchStatus           string
+		httpStatus               sql.NullInt64
+		pageTitle                sql.NullString
+		pageDescription          sql.NullString
+		faviconURL               sql.NullString
+		researchedAt             sql.NullInt64
+		clusterID                sql.NullString
+		bobbyBookmarksBookmarkID sql.NullInt64
+		importSessionID          sql.NullInt64
+		rawPayloadText           sql.NullString
+		syncedAt                 sql.NullInt64
+		createdAtRaw             int64
+		updatedAtRaw             int64
+	)
+
+	if err := scanner.Scan(
+		&itemUUID, &urlValue, &normalizedURL, &title, &description, &tagsRaw, &source, &isDuplicate, &duplicateOf,
+		&researchStatus, &httpStatus, &pageTitle, &pageDescription, &faviconURL, &researchedAt,
+		&clusterID, &bobbyBookmarksBookmarkID, &importSessionID, &rawPayloadText, &syncedAt, &createdAtRaw, &updatedAtRaw,
+	); err != nil {
+		return nil, err
+	}
+
+	var tags any
+	if err := json.Unmarshal([]byte(tagsRaw), &tags); err != nil {
+		tags = []any{}
+	}
+
+	var rawPayload any
+	if rawPayloadText.Valid {
+		if err := json.Unmarshal([]byte(rawPayloadText.String), &rawPayload); err != nil {
+			rawPayload = nil
+		}
+	}
+
+	return map[string]any{
+		"uuid":                       itemUUID,
+		"url":                        urlValue,
+		"normalized_url":             normalizedURL,
+		"title":                      nullStringToAny(title),
+		"description":                nullStringToAny(description),
+		"tags":                       tags,
+		"source":                     source,
+		"is_duplicate":               isDuplicate,
+		"duplicate_of":               nullStringToAny(duplicateOf),
+		"research_status":            researchStatus,
+		"http_status":                nullInt64ToAny(httpStatus),
+		"page_title":                 nullStringToAny(pageTitle),
+		"page_description":           nullStringToAny(pageDescription),
+		"favicon_url":                nullStringToAny(faviconURL),
+		"researched_at":              nullTimestampToAny(researchedAt),
+		"cluster_id":                 nullStringToAny(clusterID),
+		"bobbybookmarks_bookmark_id": nullInt64ToAny(bobbyBookmarksBookmarkID),
+		"import_session_id":          nullInt64ToAny(importSessionID),
+		"raw_payload":                rawPayload,
+		"synced_at":                  nullTimestampToAny(syncedAt),
+		"created_at":                 unixTimestampToRFC3339(createdAtRaw),
+		"updated_at":                 unixTimestampToRFC3339(updatedAtRaw),
 	}, nil
 }
 
