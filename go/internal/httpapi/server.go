@@ -5660,7 +5660,7 @@ func (s *Server) handleImportCandidates(w http.ResponseWriter, _ *http.Request) 
 	if err != nil {
 		writeJSON(w, http.StatusInternalServerError, map[string]any{
 			"success": false,
-			"error":   err.Error(),
+			"error":   "failed to scan validated import candidates: " + err.Error(),
 		})
 		return
 	}
@@ -5676,7 +5676,7 @@ func (s *Server) handleImportManifest(w http.ResponseWriter, _ *http.Request) {
 	if err != nil {
 		writeJSON(w, http.StatusInternalServerError, map[string]any{
 			"success": false,
-			"error":   err.Error(),
+			"error":   "failed to build import manifest: " + err.Error(),
 		})
 		return
 	}
@@ -5692,7 +5692,7 @@ func (s *Server) handleImportSummary(w http.ResponseWriter, _ *http.Request) {
 	if err != nil {
 		writeJSON(w, http.StatusInternalServerError, map[string]any{
 			"success": false,
-			"error":   err.Error(),
+			"error":   "failed to summarize validated import sources: " + err.Error(),
 		})
 		return
 	}

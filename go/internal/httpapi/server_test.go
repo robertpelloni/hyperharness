@@ -8227,6 +8227,24 @@ func TestImportCandidatesAndManifestEndpoints(t *testing.T) {
 	})
 }
 
+func TestImportCandidatesEndpointReportsValidatedScanFailure(t *testing.T) {
+	cfg := config.Default()
+	cfg.WorkspaceRoot = string([]byte{0})
+
+	server := New(cfg, stubDetector{})
+	request := httptest.NewRequest(http.MethodGet, "/api/import/candidates", nil)
+	recorder := httptest.NewRecorder()
+
+	server.Handler().ServeHTTP(recorder, request)
+
+	if recorder.Code != http.StatusInternalServerError {
+		t.Fatalf("expected status 500, got %d with body %s", recorder.Code, recorder.Body.String())
+	}
+	if !strings.Contains(recorder.Body.String(), `failed to scan validated import candidates:`) {
+		t.Fatalf("expected validated import candidate error, got %s", recorder.Body.String())
+	}
+}
+
 func TestMemoryStatusEndpoint(t *testing.T) {
 	tempDir := t.TempDir()
 	cfg := config.Default()
