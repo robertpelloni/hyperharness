@@ -6003,7 +6003,35 @@ func (s *Server) handleWorkflowReject(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) handleWorkflowCanvases(w http.ResponseWriter, r *http.Request) {
-	s.handleTRPCBridgeCall(w, r, http.MethodGet, "workflow.listCanvases", nil)
+	var result any
+	upstreamBase, err := s.callUpstreamJSON(r.Context(), "workflow.listCanvases", nil, &result)
+	if err == nil {
+		writeJSON(w, http.StatusOK, map[string]any{
+			"success": true,
+			"data":    result,
+			"bridge": map[string]any{
+				"upstreamBase": upstreamBase,
+				"procedure":    "workflow.listCanvases",
+			},
+		})
+		return
+	}
+
+	workflows, fallbackErr := s.localWorkflowCanvases()
+	if fallbackErr != nil {
+		writeJSON(w, http.StatusServiceUnavailable, map[string]any{"success": false, "error": fallbackErr.Error(), "detail": fallbackErr.Error()})
+		return
+	}
+
+	writeJSON(w, http.StatusOK, map[string]any{
+		"success": true,
+		"data":    workflows,
+		"bridge": map[string]any{
+			"fallback":  "go-local-workflows-db",
+			"procedure": "workflow.listCanvases",
+			"reason":    "upstream unavailable; using local metamcp workflow canvases",
+		},
+	})
 }
 
 func (s *Server) handleWorkflowCanvas(w http.ResponseWriter, r *http.Request) {
@@ -6012,7 +6040,35 @@ func (s *Server) handleWorkflowCanvas(w http.ResponseWriter, r *http.Request) {
 		writeJSON(w, http.StatusBadRequest, map[string]any{"success": false, "error": "missing id query parameter"})
 		return
 	}
-	s.handleTRPCBridgeCall(w, r, http.MethodGet, "workflow.loadCanvas", map[string]any{"id": id})
+	var result any
+	upstreamBase, err := s.callUpstreamJSON(r.Context(), "workflow.loadCanvas", map[string]any{"id": id}, &result)
+	if err == nil {
+		writeJSON(w, http.StatusOK, map[string]any{
+			"success": true,
+			"data":    result,
+			"bridge": map[string]any{
+				"upstreamBase": upstreamBase,
+				"procedure":    "workflow.loadCanvas",
+			},
+		})
+		return
+	}
+
+	workflow, fallbackErr := s.localWorkflowCanvas(id)
+	if fallbackErr != nil {
+		writeJSON(w, http.StatusServiceUnavailable, map[string]any{"success": false, "error": fallbackErr.Error(), "detail": fallbackErr.Error()})
+		return
+	}
+
+	writeJSON(w, http.StatusOK, map[string]any{
+		"success": true,
+		"data":    workflow,
+		"bridge": map[string]any{
+			"fallback":  "go-local-workflows-db",
+			"procedure": "workflow.loadCanvas",
+			"reason":    "upstream unavailable; using local metamcp workflow canvas",
+		},
+	})
 }
 
 func (s *Server) handleWorkflowCanvasSave(w http.ResponseWriter, r *http.Request) {
@@ -10253,6 +10309,60 @@ func (s *Server) localUnifiedDirectoryStats() (any, error) {
 	}, nil
 }
 
+func (s *Server) localWorkflowCanvases() ([]map[string]any, error) {
+	db, err := sql.Open("sqlite", s.localMetaMCPDBPath())
+	if err != nil {
+		return nil, err
+	}
+	defer db.Close()
+
+	rows, err := db.Query(`
+		SELECT id, name, description, nodes_json, edges_json, user_id, created_at, updated_at
+		FROM workflows
+		ORDER BY updated_at DESC
+	`)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	workflows := []map[string]any{}
+	for rows.Next() {
+		workflow, scanErr := scanWorkflowCanvas(rows)
+		if scanErr != nil {
+			return nil, scanErr
+		}
+		workflows = append(workflows, workflow)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return workflows, nil
+}
+
+func (s *Server) localWorkflowCanvas(id string) (any, error) {
+	db, err := sql.Open("sqlite", s.localMetaMCPDBPath())
+	if err != nil {
+		return nil, err
+	}
+	defer db.Close()
+
+	row := db.QueryRow(`
+		SELECT id, name, description, nodes_json, edges_json, user_id, created_at, updated_at
+		FROM workflows
+		WHERE id = ?
+		LIMIT 1
+	`, id)
+	workflow, err := scanWorkflowCanvas(row)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, nil
+		}
+		return nil, err
+	}
+	return workflow, nil
+}
+
 func unixTimestampToRFC3339(value int64) string {
 	if value <= 0 {
 		return time.Unix(0, 0).UTC().Format(time.RFC3339)
@@ -10661,6 +10771,37 @@ func anyBool(value any) bool {
 		return b
 	}
 	return false
+}
+
+type workflowCanvasScanner interface {
+	Scan(dest ...any) error
+}
+
+func scanWorkflowCanvas(scanner workflowCanvasScanner) (map[string]any, error) {
+	var (
+		id          string
+		name        string
+		description sql.NullString
+		nodesRaw    string
+		edgesRaw    string
+		userID      string
+		createdAt   int64
+		updatedAt   int64
+	)
+	if err := scanner.Scan(&id, &name, &description, &nodesRaw, &edgesRaw, &userID, &createdAt, &updatedAt); err != nil {
+		return nil, err
+	}
+
+	return map[string]any{
+		"id":          id,
+		"name":        name,
+		"description": nullStringToAny(description),
+		"nodes_json":  jsonArrayOrEmpty(nodesRaw),
+		"edges_json":  jsonArrayOrEmpty(edgesRaw),
+		"user_id":     userID,
+		"created_at":  unixTimestampToRFC3339(createdAt),
+		"updated_at":  unixTimestampToRFC3339(updatedAt),
+	}, nil
 }
 
 type localMCPServerScanner interface {

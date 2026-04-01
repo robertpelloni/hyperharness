@@ -6991,6 +6991,74 @@ func TestUnifiedDirectoryRoutesFallBackToLocalDB(t *testing.T) {
 	}
 }
 
+func TestWorkflowCanvasRoutesFallBackToLocalDB(t *testing.T) {
+	t.Setenv("BORG_TRPC_UPSTREAM", "http://127.0.0.1:1/trpc")
+
+	workspace := t.TempDir()
+	dbPath := filepath.Join(workspace, "metamcp.db")
+	db, err := sql.Open("sqlite", dbPath)
+	if err != nil {
+		t.Fatalf("failed to open sqlite db: %v", err)
+	}
+	defer db.Close()
+
+	if _, err := db.Exec(`
+		CREATE TABLE workflows (
+			id TEXT PRIMARY KEY,
+			name TEXT NOT NULL,
+			description TEXT,
+			nodes_json TEXT NOT NULL DEFAULT '[]',
+			edges_json TEXT NOT NULL DEFAULT '[]',
+			user_id TEXT NOT NULL,
+			created_at INTEGER NOT NULL,
+			updated_at INTEGER NOT NULL
+		);
+		INSERT INTO workflows (id, name, description, nodes_json, edges_json, user_id, created_at, updated_at) VALUES
+			('canvas-1', 'Canvas One', 'primary canvas', '[{"id":"n1"}]', '[{"id":"e1"}]', 'system', 1711958300, 1711958460),
+			('canvas-2', 'Canvas Two', 'secondary canvas', '[]', '[]', 'system', 1711958200, 1711958400);
+	`); err != nil {
+		t.Fatalf("failed to seed sqlite db: %v", err)
+	}
+
+	cfg := config.Default()
+	cfg.WorkspaceRoot = workspace
+	cfg.ConfigDir = t.TempDir()
+	cfg.MainConfigDir = t.TempDir()
+	server := New(cfg, stubDetector{})
+
+	listRecorder := httptest.NewRecorder()
+	server.Handler().ServeHTTP(listRecorder, httptest.NewRequest(http.MethodGet, "/api/workflows/canvases", nil))
+	if listRecorder.Code != http.StatusOK {
+		t.Fatalf("expected canvases 200, got %d with body %s", listRecorder.Code, listRecorder.Body.String())
+	}
+	for _, needle := range []string{
+		`"procedure":"workflow.listCanvases"`,
+		`"fallback":"go-local-workflows-db"`,
+		`"id":"canvas-1"`,
+		`"name":"Canvas One"`,
+	} {
+		if !strings.Contains(listRecorder.Body.String(), needle) {
+			t.Fatalf("expected workflow canvases fallback to contain %s, got %s", needle, listRecorder.Body.String())
+		}
+	}
+
+	loadRecorder := httptest.NewRecorder()
+	server.Handler().ServeHTTP(loadRecorder, httptest.NewRequest(http.MethodGet, "/api/workflows/canvas?id=canvas-1", nil))
+	if loadRecorder.Code != http.StatusOK {
+		t.Fatalf("expected canvas load 200, got %d with body %s", loadRecorder.Code, loadRecorder.Body.String())
+	}
+	for _, needle := range []string{
+		`"procedure":"workflow.loadCanvas"`,
+		`"id":"canvas-1"`,
+		`"nodes_json":[{"id":"n1"}]`,
+		`"edges_json":[{"id":"e1"}]`,
+	} {
+		if !strings.Contains(loadRecorder.Body.String(), needle) {
+			t.Fatalf("expected workflow canvas fallback to contain %s, got %s", needle, loadRecorder.Body.String())
+		}
+	}
+}
+
 func TestInfrastructureStatusFallsBackToLocalProbe(t *testing.T) {
 	workspaceRoot := t.TempDir()
 	userProfile := t.TempDir()
