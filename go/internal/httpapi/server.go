@@ -3223,7 +3223,7 @@ func (s *Server) handleMCPClearWorkingSetEvictions(w http.ResponseWriter, r *htt
 		"bridge": map[string]any{
 			"fallback":  "go-local-mcp",
 			"procedure": "mcp.clearWorkingSetEvictionHistory",
-			"reason":    err.Error(),
+			"reason":    "upstream unavailable; clearing local empty MCP eviction history",
 		},
 	})
 }
@@ -6519,7 +6519,7 @@ func (s *Server) handleMCPManualToolMutation(w http.ResponseWriter, r *http.Requ
 		"bridge": map[string]any{
 			"fallback":  "go-local-mcp",
 			"procedure": procedure,
-			"reason":    err.Error(),
+			"reason":    "upstream unavailable; local MCP working set manager is not initialized",
 		},
 	})
 }

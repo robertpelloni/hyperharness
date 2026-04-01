@@ -721,7 +721,7 @@ func TestMCPEmptyStateRoutesFallBackLocally(t *testing.T) {
 		{path: "/api/mcp/tool-selection-telemetry/clear", method: http.MethodPost, containsAny: []string{`"ok":true`, `clearing local empty tool-selection telemetry`}},
 		{path: "/api/mcp/working-set", method: http.MethodGet, containsAny: []string{`"maxLoadedTools":0`, `using local empty MCP working set`}},
 		{path: "/api/mcp/working-set/evictions", method: http.MethodGet, containsAny: []string{`"fallback":"go-local-mcp"`, `using local empty MCP eviction history`}},
-		{path: "/api/mcp/working-set/evictions/clear", method: http.MethodPost, containsAny: []string{`already empty`, `Cleared 0 eviction history entries.`}},
+		{path: "/api/mcp/working-set/evictions/clear", method: http.MethodPost, containsAny: []string{`already empty`, `clearing local empty MCP eviction history`}},
 	}
 
 	for _, tc := range cases {
@@ -940,6 +940,9 @@ func TestMCPLoadAndUnloadToolReturnExplicitUnavailableFallback(t *testing.T) {
 		server.Handler().ServeHTTP(recorder, req)
 		if recorder.Code != http.StatusOK || !strings.Contains(recorder.Body.String(), `"fallback":"go-local-mcp"`) || !strings.Contains(recorder.Body.String(), `MCP Server not initialized`) {
 			t.Fatalf("%s: expected explicit unavailable fallback, got %d %s", path, recorder.Code, recorder.Body.String())
+		}
+		if !strings.Contains(recorder.Body.String(), `local MCP working set manager is not initialized`) {
+			t.Fatalf("%s: expected local working-set fallback reason, got %s", path, recorder.Body.String())
 		}
 	}
 }
