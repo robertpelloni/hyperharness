@@ -1041,11 +1041,11 @@ func (s *Server) handleAPIIndex(w http.ResponseWriter, _ *http.Request) {
 				{Path: "/api/git/log", Category: "code", Description: "Bridge to git log output from the TypeScript control plane."},
 				{Path: "/api/git/status", Category: "code", Description: "Bridge to git status output from the TypeScript control plane."},
 				{Path: "/api/git/revert", Category: "code", Description: "Request a git revert through the TypeScript control plane."},
-				{Path: "/api/tests/status", Category: "code", Description: "Bridge to TypeScript auto-test service status."},
+				{Path: "/api/tests/status", Category: "code", Description: "Bridge to TypeScript auto-test service status, with a local zero-state fallback when the auto-test service is unavailable."},
 				{Path: "/api/tests/start", Category: "code", Description: "Start the TypeScript auto-test service."},
 				{Path: "/api/tests/stop", Category: "code", Description: "Stop the TypeScript auto-test service."},
 				{Path: "/api/tests/run", Category: "code", Description: "Run the relevant TypeScript test file for a given source path."},
-				{Path: "/api/tests/results", Category: "code", Description: "Bridge to recent TypeScript auto-test results."},
+				{Path: "/api/tests/results", Category: "code", Description: "Bridge to recent TypeScript auto-test results, with a local empty-state fallback when the auto-test service is unavailable."},
 				{Path: "/api/autodev/start-loop", Category: "code", Description: "Start an autoDev loop through the TypeScript autoDev router."},
 				{Path: "/api/autodev/cancel-loop", Category: "code", Description: "Cancel an autoDev loop through the TypeScript autoDev router."},
 				{Path: "/api/autodev/loops", Category: "code", Description: "List autoDev loops through the TypeScript autoDev router."},
@@ -4191,7 +4191,32 @@ func (s *Server) handleGitRevert(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) handleTestsStatus(w http.ResponseWriter, r *http.Request) {
-	s.handleTRPCBridgeCall(w, r, http.MethodGet, "tests.status", nil)
+	var result any
+	upstreamBase, err := s.callUpstreamJSON(r.Context(), "tests.status", nil, &result)
+	if err == nil {
+		writeJSON(w, http.StatusOK, map[string]any{
+			"success": true,
+			"data":    result,
+			"bridge": map[string]any{
+				"upstreamBase": upstreamBase,
+				"procedure":    "tests.status",
+			},
+		})
+		return
+	}
+
+	writeJSON(w, http.StatusOK, map[string]any{
+		"success": true,
+		"data": map[string]any{
+			"isRunning": false,
+			"results":   map[string]any{},
+		},
+		"bridge": map[string]any{
+			"fallback":  "go-local-tests",
+			"procedure": "tests.status",
+			"reason":    "upstream unavailable; using local zero-state test status",
+		},
+	})
 }
 
 func (s *Server) handleTestsStart(w http.ResponseWriter, r *http.Request) {
@@ -4207,7 +4232,29 @@ func (s *Server) handleTestsRun(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) handleTestsResults(w http.ResponseWriter, r *http.Request) {
-	s.handleTRPCBridgeCall(w, r, http.MethodGet, "tests.results", nil)
+	var result any
+	upstreamBase, err := s.callUpstreamJSON(r.Context(), "tests.results", nil, &result)
+	if err == nil {
+		writeJSON(w, http.StatusOK, map[string]any{
+			"success": true,
+			"data":    result,
+			"bridge": map[string]any{
+				"upstreamBase": upstreamBase,
+				"procedure":    "tests.results",
+			},
+		})
+		return
+	}
+
+	writeJSON(w, http.StatusOK, map[string]any{
+		"success": true,
+		"data":    []map[string]any{},
+		"bridge": map[string]any{
+			"fallback":  "go-local-tests",
+			"procedure": "tests.results",
+			"reason":    "upstream unavailable; using local empty test results",
+		},
+	})
 }
 
 func (s *Server) handleMetricsStats(w http.ResponseWriter, r *http.Request) {
