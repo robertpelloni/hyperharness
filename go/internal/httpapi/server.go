@@ -1280,7 +1280,7 @@ func (s *Server) handleAPIIndex(w http.ResponseWriter, _ *http.Request) {
 				{Path: "/api/deerflow/memory", Category: "operator", Description: "Read DeerFlow memory status through the TypeScript DeerFlow router."},
 				{Path: "/api/healer/diagnose", Category: "operator", Description: "Analyze an error through the TypeScript healer router."},
 				{Path: "/api/healer/heal", Category: "operator", Description: "Attempt a heal action through the TypeScript healer router."},
-				{Path: "/api/healer/history", Category: "operator", Description: "Read healer history through the TypeScript healer router."},
+				{Path: "/api/healer/history", Category: "operator", Description: "Read healer history through the TypeScript healer router, with an explicit empty-history fallback when the healer runtime is unavailable."},
 				{Path: "/api/clouddev/providers", Category: "operator", Description: "List cloud development providers through the TypeScript cloudDev router."},
 				{Path: "/api/clouddev/sessions/create", Category: "operator", Description: "Create a cloud development session through the TypeScript cloudDev router."},
 				{Path: "/api/clouddev/sessions", Category: "operator", Description: "List cloud development sessions through the TypeScript cloudDev router."},
