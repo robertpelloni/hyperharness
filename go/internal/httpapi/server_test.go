@@ -5510,6 +5510,9 @@ func TestImportedSessionListFallsBackToGoScanner(t *testing.T) {
 	if !strings.Contains(recorder.Body.String(), `"fallback":"go-sessionimport"`) {
 		t.Fatalf("expected go-sessionimport fallback metadata, got %s", recorder.Body.String())
 	}
+	if !strings.Contains(recorder.Body.String(), `using scan-only imported session records`) {
+		t.Fatalf("expected scan-only list fallback reason, got %s", recorder.Body.String())
+	}
 	if !strings.Contains(recorder.Body.String(), `"sourceTool":"`) {
 		t.Fatalf("expected at least one fallback sourceTool entry, got %s", recorder.Body.String())
 	}
@@ -5589,6 +5592,9 @@ func TestImportedSessionListFallsBackToArchivedRecords(t *testing.T) {
 	if recorder.Code != http.StatusOK {
 		t.Fatalf("expected fallback status 200, got %d with body %s", recorder.Code, recorder.Body.String())
 	}
+	if !strings.Contains(recorder.Body.String(), `using archived imported session records`) {
+		t.Fatalf("expected archived list fallback reason, got %s", recorder.Body.String())
+	}
 	if !strings.Contains(recorder.Body.String(), `"id":"`+sessionID+`"`) {
 		t.Fatalf("expected archived imported session id %s, got %s", sessionID, recorder.Body.String())
 	}
@@ -5632,6 +5638,9 @@ func TestImportedSessionGetFallsBackToGoScanner(t *testing.T) {
 	if !strings.Contains(recorder.Body.String(), `"fallback":"go-sessionimport"`) {
 		t.Fatalf("expected go-sessionimport fallback metadata, got %s", recorder.Body.String())
 	}
+	if !strings.Contains(recorder.Body.String(), `using scan-only imported session record`) {
+		t.Fatalf("expected scan-only get fallback reason, got %s", recorder.Body.String())
+	}
 	if !strings.Contains(recorder.Body.String(), `"id":"`+records[0].ID+`"`) {
 		t.Fatalf("expected fallback imported session id %s, got %s", records[0].ID, recorder.Body.String())
 	}
@@ -5658,6 +5667,9 @@ func TestImportedSessionGetFallsBackToArchivedRecords(t *testing.T) {
 	if recorder.Code != http.StatusOK {
 		t.Fatalf("expected fallback status 200, got %d with body %s", recorder.Code, recorder.Body.String())
 	}
+	if !strings.Contains(recorder.Body.String(), `using archived imported session record`) {
+		t.Fatalf("expected archived get fallback reason, got %s", recorder.Body.String())
+	}
 	if !strings.Contains(recorder.Body.String(), `"id":"`+sessionID+`"`) {
 		t.Fatalf("expected archived imported session id %s, got %s", sessionID, recorder.Body.String())
 	}
@@ -5683,6 +5695,9 @@ func TestImportedInstructionDocsFallsBackToEmptyList(t *testing.T) {
 	}
 	if !strings.Contains(recorder.Body.String(), `"fallback":"go-sessionimport"`) {
 		t.Fatalf("expected go-sessionimport fallback metadata, got %s", recorder.Body.String())
+	}
+	if !strings.Contains(recorder.Body.String(), `using workspace imported instruction documents`) {
+		t.Fatalf("expected workspace docs fallback reason, got %s", recorder.Body.String())
 	}
 	if !strings.Contains(recorder.Body.String(), `"data":[]`) {
 		t.Fatalf("expected empty instruction doc fallback list, got %s", recorder.Body.String())
@@ -5712,6 +5727,9 @@ func TestImportedInstructionDocsFallsBackToWorkspaceDoc(t *testing.T) {
 
 	if recorder.Code != http.StatusOK {
 		t.Fatalf("expected fallback status 200, got %d with body %s", recorder.Code, recorder.Body.String())
+	}
+	if !strings.Contains(recorder.Body.String(), `using workspace imported instruction documents`) {
+		t.Fatalf("expected workspace docs fallback reason, got %s", recorder.Body.String())
 	}
 	if !strings.Contains(recorder.Body.String(), `"auto-imported-agent-instructions.md"`) {
 		t.Fatalf("expected workspace imported instructions doc, got %s", recorder.Body.String())

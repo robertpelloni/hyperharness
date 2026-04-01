@@ -1571,7 +1571,7 @@ func (s *Server) handleImportedSessionList(w http.ResponseWriter, r *http.Reques
 			"bridge": map[string]any{
 				"fallback":  "go-sessionimport",
 				"procedure": "session.importedList",
-				"reason":    bridgeErr.Error(),
+				"reason":    "upstream unavailable; using archived imported session records",
 			},
 		})
 		return
@@ -1581,7 +1581,7 @@ func (s *Server) handleImportedSessionList(w http.ResponseWriter, r *http.Reques
 	if scanErr != nil {
 		writeJSON(w, http.StatusServiceUnavailable, map[string]any{
 			"success": false,
-			"error":   bridgeErr.Error(),
+			"error":   scanErr.Error(),
 			"detail":  scanErr.Error(),
 		})
 		return
@@ -1596,7 +1596,7 @@ func (s *Server) handleImportedSessionList(w http.ResponseWriter, r *http.Reques
 		"bridge": map[string]any{
 			"fallback":  "go-sessionimport",
 			"procedure": "session.importedList",
-			"reason":    bridgeErr.Error(),
+			"reason":    "upstream unavailable; using scan-only imported session records",
 		},
 	})
 }
@@ -1636,7 +1636,7 @@ func (s *Server) handleImportedSessionGet(w http.ResponseWriter, r *http.Request
 				"bridge": map[string]any{
 					"fallback":  "go-sessionimport",
 					"procedure": "session.importedGet",
-					"reason":    bridgeErr.Error(),
+					"reason":    "upstream unavailable; using archived imported session record",
 				},
 			})
 			return
@@ -1647,7 +1647,7 @@ func (s *Server) handleImportedSessionGet(w http.ResponseWriter, r *http.Request
 	if scanErr != nil {
 		writeJSON(w, http.StatusServiceUnavailable, map[string]any{
 			"success": false,
-			"error":   bridgeErr.Error(),
+			"error":   scanErr.Error(),
 			"detail":  scanErr.Error(),
 		})
 		return
@@ -1662,7 +1662,7 @@ func (s *Server) handleImportedSessionGet(w http.ResponseWriter, r *http.Request
 			"bridge": map[string]any{
 				"fallback":  "go-sessionimport",
 				"procedure": "session.importedGet",
-				"reason":    bridgeErr.Error(),
+				"reason":    "upstream unavailable; using scan-only imported session record",
 			},
 		})
 		return
@@ -1674,7 +1674,7 @@ func (s *Server) handleImportedSessionGet(w http.ResponseWriter, r *http.Request
 		"bridge": map[string]any{
 			"fallback":  "go-sessionimport",
 			"procedure": "session.importedGet",
-			"reason":    bridgeErr.Error(),
+			"reason":    "upstream unavailable; imported session not present in archived or scan-only fallback records",
 		},
 	})
 }
@@ -1833,7 +1833,7 @@ func (s *Server) handleImportedSessionInstructionDocs(w http.ResponseWriter, r *
 		"bridge": map[string]any{
 			"fallback":  "go-sessionimport",
 			"procedure": "session.importedInstructionDocs",
-			"reason":    err.Error(),
+			"reason":    "upstream unavailable; using workspace imported instruction documents",
 		},
 	})
 }
