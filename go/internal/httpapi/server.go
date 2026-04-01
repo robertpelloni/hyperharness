@@ -1292,7 +1292,7 @@ func (s *Server) handleAPIIndex(w http.ResponseWriter, _ *http.Request) {
 				{Path: "/api/clouddev/messages/get", Category: "operator", Description: "Read cloud development session messages through the TypeScript cloudDev router."},
 				{Path: "/api/clouddev/logs", Category: "operator", Description: "Read cloud development session logs through the TypeScript cloudDev router."},
 				{Path: "/api/clouddev/stats", Category: "operator", Description: "Read aggregate cloud development stats through the TypeScript cloudDev router."},
-				{Path: "/api/policies", Category: "governance", Description: "List policies through the TypeScript policies router."},
+				{Path: "/api/policies", Category: "governance", Description: "List policies through the TypeScript policies router, with a local empty-state fallback when the policy store is unavailable."},
 				{Path: "/api/policies/get", Category: "governance", Description: "Read a policy through the TypeScript policies router."},
 				{Path: "/api/policies/create", Category: "governance", Description: "Create a policy through the TypeScript policies router."},
 				{Path: "/api/policies/update", Category: "governance", Description: "Update a policy through the TypeScript policies router."},
@@ -5680,7 +5680,29 @@ func (s *Server) handleExpertStatus(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) handlePoliciesList(w http.ResponseWriter, r *http.Request) {
-	s.handleTRPCBridgeCall(w, r, http.MethodGet, "policies.list", nil)
+	var result any
+	upstreamBase, err := s.callUpstreamJSON(r.Context(), "policies.list", nil, &result)
+	if err == nil {
+		writeJSON(w, http.StatusOK, map[string]any{
+			"success": true,
+			"data":    result,
+			"bridge": map[string]any{
+				"upstreamBase": upstreamBase,
+				"procedure":    "policies.list",
+			},
+		})
+		return
+	}
+
+	writeJSON(w, http.StatusOK, map[string]any{
+		"success": true,
+		"data":    []map[string]any{},
+		"bridge": map[string]any{
+			"fallback":  "go-local-governance",
+			"procedure": "policies.list",
+			"reason":    "upstream unavailable; using local empty policy list",
+		},
+	})
 }
 
 func (s *Server) handlePoliciesGet(w http.ResponseWriter, r *http.Request) {
