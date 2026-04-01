@@ -675,6 +675,9 @@ func TestMemoryContextsFallsBackToLocalRegistry(t *testing.T) {
 	if !strings.Contains(body, `"ctx-local-1"`) || !strings.Contains(body, `"fallback":"go-local-memory"`) {
 		t.Fatalf("expected local contexts fallback response, got %s", body)
 	}
+	if !strings.Contains(body, `using local memory context list`) {
+		t.Fatalf("expected local context-list fallback reason, got %s", body)
+	}
 }
 
 func TestMemoryAgentStatsFallsBackToZeroState(t *testing.T) {
@@ -694,6 +697,9 @@ func TestMemoryAgentStatsFallsBackToZeroState(t *testing.T) {
 	body := recorder.Body.String()
 	if !strings.Contains(body, `"fallback":"go-local-memory"`) || !strings.Contains(body, `"totalCount":0`) || !strings.Contains(body, `"sessionSummaryCount":0`) {
 		t.Fatalf("expected local zero-state agent stats fallback, got %s", body)
+	}
+	if !strings.Contains(body, `using local zero-state memory agent stats`) {
+		t.Fatalf("expected zero-state agent stats fallback reason, got %s", body)
 	}
 }
 
@@ -751,8 +757,8 @@ func TestReadOnlyMemoryRoutesFallBackLocally(t *testing.T) {
 		containsAny []string
 	}{
 		{path: "/api/memory/search?query=bootstrap&limit=3", method: http.MethodGet, containsAny: []string{`"fallback":"go-local-memory"`, `"data":[]`}},
-		{path: "/api/memory/context/get?id=ctx-missing", method: http.MethodGet, containsAny: []string{`"fallback":"go-local-memory"`, `"data":null`}},
-		{path: "/api/memory/agent-search?query=memory&type=working&limit=5", method: http.MethodGet, containsAny: []string{`"fallback":"go-local-memory"`, `"data":[]`}},
+		{path: "/api/memory/context/get?id=ctx-missing", method: http.MethodGet, containsAny: []string{`"fallback":"go-local-memory"`, `local memory context fallback has no persisted context body`}},
+		{path: "/api/memory/agent-search?query=memory&type=working&limit=5", method: http.MethodGet, containsAny: []string{`"fallback":"go-local-memory"`, `local memory fallback has no agent search index`}},
 		{path: "/api/memory/observations/recent?limit=5&namespace=ops&type=fact", method: http.MethodGet, containsAny: []string{`"fallback":"go-local-memory"`, `"data":[]`}},
 		{path: "/api/memory/observations/search?query=signal&limit=5&namespace=ops&type=fact", method: http.MethodGet, containsAny: []string{`"fallback":"go-local-memory"`, `"data":[]`}},
 		{path: "/api/memory/user-prompts/recent?limit=4&role=user", method: http.MethodGet, containsAny: []string{`"fallback":"go-local-memory"`, `"data":[]`}},
@@ -793,9 +799,9 @@ func TestMemoryServiceBackedMutationsFallBackLocally(t *testing.T) {
 		body        string
 		containsAny []string
 	}{
-		{path: "/api/memory/context/delete", body: `{"id":"ctx-1"}`, containsAny: []string{`"fallback":"go-local-memory"`, `"success":false`, `"procedure":"memory.deleteContext"`}},
-		{path: "/api/memory/facts/add", body: `{"content":"remember this","type":"working"}`, containsAny: []string{`"fallback":"go-local-memory"`, `"success":false`, `"procedure":"memory.addFact"`}},
-		{path: "/api/memory/observations/record", body: `{"content":"Observation","type":"fact","namespace":"ops"}`, containsAny: []string{`"fallback":"go-local-memory"`, `"success":false`, `"procedure":"memory.recordObservation"`}},
+		{path: "/api/memory/context/delete", body: `{"id":"ctx-1"}`, containsAny: []string{`"fallback":"go-local-memory"`, `local memory fallback cannot delete persisted contexts`}},
+		{path: "/api/memory/facts/add", body: `{"content":"remember this","type":"working"}`, containsAny: []string{`"fallback":"go-local-memory"`, `local memory fallback cannot persist facts`}},
+		{path: "/api/memory/observations/record", body: `{"content":"Observation","type":"fact","namespace":"ops"}`, containsAny: []string{`"fallback":"go-local-memory"`, `local memory fallback cannot persist observations`}},
 		{path: "/api/memory/user-prompts/capture", body: `{"content":"Need help","role":"user"}`, containsAny: []string{`"fallback":"go-local-memory"`, `"success":false`, `"procedure":"memory.captureUserPrompt"`}},
 		{path: "/api/memory/pivot/search", body: `{"pivotMemoryId":"mem-1","limit":5}`, containsAny: []string{`"fallback":"go-local-memory"`, `"data":[]`}},
 		{path: "/api/memory/timeline/window", body: `{"centerMemoryId":"mem-1","before":2,"after":2}`, containsAny: []string{`"fallback":"go-local-memory"`, `"data":[]`}},

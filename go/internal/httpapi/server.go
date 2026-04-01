@@ -3295,7 +3295,7 @@ func (s *Server) handleMemoryContexts(w http.ResponseWriter, r *http.Request) {
 	if fallbackErr != nil {
 		writeJSON(w, http.StatusServiceUnavailable, map[string]any{
 			"success": false,
-			"error":   err.Error(),
+			"error":   fallbackErr.Error(),
 			"detail":  fallbackErr.Error(),
 		})
 		return
@@ -3307,7 +3307,7 @@ func (s *Server) handleMemoryContexts(w http.ResponseWriter, r *http.Request) {
 		"bridge": map[string]any{
 			"fallback":  "go-local-memory",
 			"procedure": "memory.listContexts",
-			"reason":    err.Error(),
+			"reason":    "upstream unavailable; using local memory context list",
 		},
 	})
 }
@@ -3345,7 +3345,7 @@ func (s *Server) handleMemoryContextGet(w http.ResponseWriter, r *http.Request) 
 		"bridge": map[string]any{
 			"fallback":  "go-local-memory",
 			"procedure": "memory.getContext",
-			"reason":    err.Error(),
+			"reason":    "upstream unavailable; local memory context fallback has no persisted context body",
 		},
 	})
 }
@@ -3362,7 +3362,7 @@ func (s *Server) handleMemoryContextDelete(w http.ResponseWriter, r *http.Reques
 		writeJSON(w, http.StatusOK, map[string]any{"success": true, "data": result, "bridge": map[string]any{"upstreamBase": upstreamBase, "procedure": "memory.deleteContext"}})
 		return
 	}
-	writeJSON(w, http.StatusOK, map[string]any{"success": true, "data": map[string]any{"success": false}, "bridge": map[string]any{"fallback": "go-local-memory", "procedure": "memory.deleteContext", "reason": err.Error()}})
+	writeJSON(w, http.StatusOK, map[string]any{"success": true, "data": map[string]any{"success": false}, "bridge": map[string]any{"fallback": "go-local-memory", "procedure": "memory.deleteContext", "reason": "upstream unavailable; local memory fallback cannot delete persisted contexts"}})
 }
 
 func (s *Server) handleMemoryAgentStats(w http.ResponseWriter, r *http.Request) {
@@ -3406,7 +3406,7 @@ func (s *Server) handleMemoryAgentStats(w http.ResponseWriter, r *http.Request) 
 		"bridge": map[string]any{
 			"fallback":  "go-local-memory",
 			"procedure": "memory.getAgentStats",
-			"reason":    err.Error(),
+			"reason":    "upstream unavailable; using local zero-state memory agent stats",
 		},
 	})
 }
@@ -3449,7 +3449,7 @@ func (s *Server) handleMemoryAgentSearch(w http.ResponseWriter, r *http.Request)
 		"bridge": map[string]any{
 			"fallback":  "go-local-memory",
 			"procedure": "memory.searchAgentMemory",
-			"reason":    err.Error(),
+			"reason":    "upstream unavailable; local memory fallback has no agent search index",
 		},
 	})
 }
@@ -3466,7 +3466,7 @@ func (s *Server) handleMemoryAddFact(w http.ResponseWriter, r *http.Request) {
 		writeJSON(w, http.StatusOK, map[string]any{"success": true, "data": result, "bridge": map[string]any{"upstreamBase": upstreamBase, "procedure": "memory.addFact"}})
 		return
 	}
-	writeJSON(w, http.StatusOK, map[string]any{"success": true, "data": map[string]any{"success": false}, "bridge": map[string]any{"fallback": "go-local-memory", "procedure": "memory.addFact", "reason": err.Error()}})
+	writeJSON(w, http.StatusOK, map[string]any{"success": true, "data": map[string]any{"success": false}, "bridge": map[string]any{"fallback": "go-local-memory", "procedure": "memory.addFact", "reason": "upstream unavailable; local memory fallback cannot persist facts"}})
 }
 
 func (s *Server) handleMemoryRecordObservation(w http.ResponseWriter, r *http.Request) {
@@ -3481,7 +3481,7 @@ func (s *Server) handleMemoryRecordObservation(w http.ResponseWriter, r *http.Re
 		writeJSON(w, http.StatusOK, map[string]any{"success": true, "data": result, "bridge": map[string]any{"upstreamBase": upstreamBase, "procedure": "memory.recordObservation"}})
 		return
 	}
-	writeJSON(w, http.StatusOK, map[string]any{"success": true, "data": map[string]any{"success": false}, "bridge": map[string]any{"fallback": "go-local-memory", "procedure": "memory.recordObservation", "reason": err.Error()}})
+	writeJSON(w, http.StatusOK, map[string]any{"success": true, "data": map[string]any{"success": false}, "bridge": map[string]any{"fallback": "go-local-memory", "procedure": "memory.recordObservation", "reason": "upstream unavailable; local memory fallback cannot persist observations"}})
 }
 
 func (s *Server) handleMemoryRecentObservations(w http.ResponseWriter, r *http.Request) {
