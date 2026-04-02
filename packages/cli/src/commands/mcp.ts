@@ -61,6 +61,17 @@ type ConfigEntry = {
   value: string;
 };
 
+type McpTrafficEvent = {
+  timestamp?: number;
+  serverName?: string;
+  server?: string;
+  method?: string;
+  direction?: string;
+  latencyMs?: number;
+  success?: boolean;
+  error?: string | null;
+};
+
 function normalizeText(value: string | null | undefined): string {
   return typeof value === 'string' && value.trim().length > 0 ? value.trim() : '—';
 }
@@ -410,13 +421,72 @@ Examples:
   mcp
     .command('traffic')
     .description('Show live MCP traffic log (JSON-RPC messages with latency and direction)')
+    .option('--json', 'Output as JSON')
     .option('--server <name>', 'Filter by server name')
     .option('--method <method>', 'Filter by JSON-RPC method')
     .option('-n, --limit <count>', 'Max messages to show', '50')
-    .action(async (_opts) => {
-      const chalk = (await import('chalk')).default;
-      console.log(chalk.bold.cyan('  MCP Traffic Inspector'));
-      console.log(chalk.dim('  Watching for MCP traffic... (Ctrl+C to stop)\n'));
+    .action(async (opts) => {
+      await withMcpErrorHandling(async () => {
+        const limit = parsePositiveInt(opts.limit, 'limit');
+        const events = await queryTrpc<McpTrafficEvent[]>('mcp.traffic');
+        const filtered = events
+          .filter((event) => {
+            const serverName = event.serverName ?? event.server ?? '';
+            if (opts.server && serverName.toLowerCase() !== opts.server.toLowerCase()) {
+              return false;
+            }
+            if (opts.method && event.method?.toLowerCase() !== opts.method.toLowerCase()) {
+              return false;
+            }
+            return true;
+          })
+          .slice(-limit)
+          .reverse();
+
+        if (opts.json) {
+          console.log(JSON.stringify({
+            server: opts.server ?? null,
+            method: opts.method ?? null,
+            events: filtered,
+          }, null, 2));
+          return;
+        }
+
+        const chalk = (await import('chalk')).default;
+        const Table = (await import('cli-table3')).default;
+        console.log(chalk.bold.cyan('\n  MCP Traffic Inspector\n'));
+
+        if (filtered.length === 0) {
+          console.log(chalk.dim('  No matching MCP traffic events found.\n'));
+          return;
+        }
+
+        const table = new Table({
+          head: ['When', 'Server', 'Method', 'Direction', 'Latency', 'Status'],
+          style: { head: ['cyan'] },
+          wordWrap: true,
+          colWidths: [26, 20, 28, 12, 10, 20],
+        });
+
+        for (const event of filtered) {
+          const status = event.error
+            ? `error: ${event.error}`
+            : event.success === false
+              ? 'error'
+              : 'ok';
+          table.push([
+            event.timestamp ? new Date(event.timestamp).toISOString() : '—',
+            normalizeText(event.serverName ?? event.server),
+            normalizeText(event.method),
+            normalizeText(event.direction),
+            typeof event.latencyMs === 'number' ? `${event.latencyMs}ms` : '—',
+            status,
+          ]);
+        }
+
+        console.log(table.toString());
+        console.log('');
+      }, opts);
     });
 
   mcp

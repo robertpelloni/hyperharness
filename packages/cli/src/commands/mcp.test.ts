@@ -203,6 +203,46 @@ describe('registerMcpCommand', () => {
     }, null, 2));
   });
 
+  it('shows MCP traffic as JSON from the live control plane', async () => {
+    queryTrpcMock.mockResolvedValue([
+      {
+        timestamp: 1712052000000,
+        serverName: 'filesystem',
+        method: 'tools/call',
+        direction: 'outbound',
+        latencyMs: 18,
+        success: true,
+      },
+      {
+        timestamp: 1712052001000,
+        serverName: 'github',
+        method: 'resources/list',
+        direction: 'outbound',
+        latencyMs: 24,
+        success: true,
+      },
+    ]);
+
+    const program = createProgram();
+    await program.parseAsync(['mcp', 'traffic', '--server', 'filesystem', '--limit', '5', '--json'], { from: 'user' });
+
+    expect(queryTrpcMock).toHaveBeenCalledWith('mcp.traffic');
+    expect(logSpy).toHaveBeenCalledWith(JSON.stringify({
+      server: 'filesystem',
+      method: null,
+      events: [
+        {
+          timestamp: 1712052000000,
+          serverName: 'filesystem',
+          method: 'tools/call',
+          direction: 'outbound',
+          latencyMs: 18,
+          success: true,
+        },
+      ],
+    }, null, 2));
+  });
+
   it('reports control-plane failures without throwing out of the command', async () => {
     queryTrpcMock.mockRejectedValue(new Error('control plane unavailable'));
 
