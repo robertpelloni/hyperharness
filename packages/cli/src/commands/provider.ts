@@ -55,6 +55,13 @@ type ProviderKeyMutationResult = {
   removedAny?: boolean;
 };
 
+type BillingRoutingStrategy = 'cheapest' | 'best' | 'round-robin';
+
+type BillingRoutingStrategyResult = {
+  ok: boolean;
+  strategy: BillingRoutingStrategy;
+};
+
 function normalizeText(value: string | null | undefined): string {
   return typeof value === 'string' && value.trim().length > 0 ? value.trim() : '—';
 }
@@ -92,6 +99,15 @@ async function withProviderErrorHandling(
     }
     process.exitCode = 1;
   }
+}
+
+function parseRoutingStrategy(value: string): BillingRoutingStrategy {
+  const normalized = value.trim().toLowerCase();
+  if (normalized === 'cheapest' || normalized === 'best' || normalized === 'round-robin') {
+    return normalized;
+  }
+
+  throw new Error(`Unsupported fallback strategy '${value}'. Supported strategies: cheapest, best, round-robin.`);
 }
 
 export function registerProviderCommand(program: Command): void {
@@ -365,7 +381,7 @@ OAuth-capable subscription services:
     .option('--json', 'Output as JSON')
     .option('--set <models...>', 'Set fallback chain (ordered list)')
     .option('--task-type <type>', 'Show the fallback chain for a specific task type')
-    .option('--strategy <strategy>', 'Fallback strategy: priority, cost-optimized, quota-aware, round-robin', 'quota-aware')
+    .option('--strategy <strategy>', 'Routing strategy: cheapest, best, round-robin')
     .addHelpText('after', `
 The fallback chain determines which model to use when the primary model's
 quota is exhausted. Models are tried in order.
@@ -373,11 +389,28 @@ quota is exhausted. Models are tried in order.
 Examples:
   $ hypercode provider fallback --show
   $ hypercode provider fallback --set claude-opus-4 gpt-5.2 gemini-3-pro grok-4
-  $ hypercode provider fallback --strategy cost-optimized
+  $ hypercode provider fallback --strategy cheapest
     `)
     .action(async (opts) => {
       await withProviderErrorHandling(async () => {
         const chalk = (await import('chalk')).default;
+
+        if (opts.set?.length) {
+          throw new Error('Live provider fallback --set is unavailable: the control plane does not expose a fallback-chain mutation route yet.');
+        }
+
+        if (opts.strategy) {
+          const strategy = parseRoutingStrategy(String(opts.strategy));
+          const result = await queryTrpc<BillingRoutingStrategyResult>('billing.setRoutingStrategy', { strategy });
+
+          if (opts.json) {
+            console.log(JSON.stringify(result, null, 2));
+            return;
+          }
+
+          console.log(chalk.green(`  ✓ Provider routing strategy set to ${result.strategy}`));
+          return;
+        }
 
         if (opts.show || !opts.set) {
           const fallback = await queryTrpc<BillingFallbackResponse>('billing.getFallbackChain', opts.taskType
@@ -420,8 +453,7 @@ Examples:
         }
 
         console.log(chalk.bold.cyan('\n  Model Fallback Chain\n'));
-        console.log(chalk.dim('  Strategy: ') + (opts.strategy || 'quota-aware'));
-        console.log(chalk.dim('\n  Use --set to configure the fallback order.\n'));
+        console.log(chalk.dim('\n  Use --show to inspect the live fallback order.\n'));
       }, opts);
     });
 }

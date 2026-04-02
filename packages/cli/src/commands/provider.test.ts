@@ -256,6 +256,46 @@ describe('registerProviderCommand', () => {
     }, null, 2));
   });
 
+  it('sets the live routing strategy through the billing router', async () => {
+    queryTrpcMock.mockResolvedValue({
+      ok: true,
+      strategy: 'cheapest',
+    });
+
+    const program = createProgram();
+    await program.parseAsync(['provider', 'fallback', '--strategy', 'cheapest', '--json'], { from: 'user' });
+
+    expect(queryTrpcMock).toHaveBeenCalledWith('billing.setRoutingStrategy', {
+      strategy: 'cheapest',
+    });
+    expect(logSpy).toHaveBeenCalledWith(JSON.stringify({
+      ok: true,
+      strategy: 'cheapest',
+    }, null, 2));
+  });
+
+  it('rejects unsupported fallback strategy names explicitly', async () => {
+    const program = createProgram();
+    await program.parseAsync(['provider', 'fallback', '--strategy', 'quota-aware', '--json'], { from: 'user' });
+
+    expect(queryTrpcMock).not.toHaveBeenCalled();
+    expect(logSpy).toHaveBeenCalledWith(JSON.stringify({
+      error: "Unsupported fallback strategy 'quota-aware'. Supported strategies: cheapest, best, round-robin.",
+    }, null, 2));
+    expect(process.exitCode).toBe(1);
+  });
+
+  it('fails fallback chain mutation explicitly instead of pretending --set works', async () => {
+    const program = createProgram();
+    await program.parseAsync(['provider', 'fallback', '--set', 'claude-opus-4', 'gpt-5.2', '--json'], { from: 'user' });
+
+    expect(queryTrpcMock).not.toHaveBeenCalled();
+    expect(logSpy).toHaveBeenCalledWith(JSON.stringify({
+      error: 'Live provider fallback --set is unavailable: the control plane does not expose a fallback-chain mutation route yet.',
+    }, null, 2));
+    expect(process.exitCode).toBe(1);
+  });
+
   it('shows live provider readiness as JSON from control-plane data', async () => {
     queryTrpcMock
       .mockResolvedValueOnce([

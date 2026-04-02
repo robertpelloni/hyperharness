@@ -855,6 +855,23 @@ Validation:
 - `pnpm -C packages\cli exec tsc --noEmit`
 - `pnpm -C packages\cli exec vitest run src\commands\session.test.ts src\commands\mcp.test.ts src\commands\tools.test.ts src\control-plane.test.ts`
 
+### 38. `fix-cli-provider-fallback-mutations`
+
+Status: **completed**
+
+What changed:
+
+- `packages/cli/src/commands/provider.ts` no longer treats `hypercode provider fallback --strategy` as display-only text; it now calls the live `billing.setRoutingStrategy` mutation
+- the CLI help and argument parsing now match the backend's real routing strategy contract: supported values are `cheapest`, `best`, and `round-robin`
+- previously advertised placeholder names like `quota-aware`, `cost-optimized`, and `priority` are now rejected explicitly instead of being accepted and then doing nothing useful
+- `hypercode provider fallback --set ...` still has no live fallback-chain mutation route behind it, so it now fails explicitly instead of printing guidance that looked like configuration succeeded or was actionable
+- focused CLI coverage in `packages/cli/src/commands/provider.test.ts` now locks in live routing-strategy mutation plus explicit unsupported-strategy and unsupported-`--set` failures
+
+Validation:
+
+- `pnpm -C packages\cli exec tsc --noEmit`
+- `pnpm -C packages\cli exec vitest run src\commands\provider.test.ts src\commands\config.test.ts src\commands\mcp.test.ts src\commands\tools.test.ts src\commands\session.test.ts src\control-plane.test.ts`
+
 ### 9. `workflow-canvas-save-truthfulness`
 
 Status: **completed**
