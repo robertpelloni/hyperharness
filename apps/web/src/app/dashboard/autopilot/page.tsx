@@ -3,7 +3,7 @@
 /**
  * autopilot/page.tsx – CLI Orchestrator Dashboard (compatibility route)
  *
- * Native Borg-integrated control panel for the CLI orchestrator council runtime.
+ * Native HyperCode-integrated control panel for the CLI orchestrator council runtime.
  *
  * Provides:
  *  - Council status: supervisor roster, consensus mode, enable/disable toggle
@@ -13,10 +13,10 @@
  *  - Debate history log
  *  - Server health bar
  *
- * The orchestrator service exposes a REST API at NEXT_PUBLIC_BORG_ORCHESTRATOR_URL.
- * The legacy NEXT_PUBLIC_AUTOPILOT_URL variable remains supported for
- * compatibility during migration. When neither is configured, this page stays
- * quiet instead of probing a stale localhost default.
+ * The orchestrator dashboard defaults to the in-app proxy route at
+ * `/api/orchestrator`. NEXT_PUBLIC_BORG_ORCHESTRATOR_URL can override that
+ * proxy when operators need to target a different control-plane base. The
+ * legacy NEXT_PUBLIC_AUTOPILOT_URL variable remains supported during migration.
  *
  * If the service is unreachable the page shows a clear "offline" banner and
  * all controls are disabled – we never render fake/stale data.
@@ -124,6 +124,124 @@ interface ServerHealth {
     memoryUsedMb?: number;
     memoryTotalMb?: number;
     version?: string;
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+    return typeof value === "object" && value !== null;
+}
+
+function isSupervisorInfo(value: unknown): value is SupervisorInfo {
+    return isRecord(value)
+        && typeof value.id === "string"
+        && typeof value.name === "string"
+        && (value.model === undefined || typeof value.model === "string")
+        && (value.provider === undefined || typeof value.provider === "string")
+        && (value.enabled === undefined || typeof value.enabled === "boolean")
+        && (value.weight === undefined || typeof value.weight === "number");
+}
+
+function isCouncilStatusPayload(value: unknown): value is CouncilStatus {
+    return isRecord(value)
+        && typeof value.enabled === "boolean"
+        && Array.isArray(value.supervisors)
+        && value.supervisors.every(isSupervisorInfo)
+        && typeof value.consensusMode === "string"
+        && (value.consensusThreshold === undefined || typeof value.consensusThreshold === "number")
+        && (value.leadSupervisor === undefined || value.leadSupervisor === null || typeof value.leadSupervisor === "string")
+        && (value.smartPilot === undefined || typeof value.smartPilot === "boolean");
+}
+
+function isAutopilotSession(value: unknown): value is AutopilotSession {
+    return isRecord(value)
+        && typeof value.id === "string"
+        && typeof value.cliType === "string"
+        && typeof value.status === "string"
+        && (value.task === undefined || typeof value.task === "string")
+        && (value.template === undefined || typeof value.template === "string")
+        && (value.tags === undefined || (Array.isArray(value.tags) && value.tags.every((tag) => typeof tag === "string")))
+        && (value.startedAt === undefined || typeof value.startedAt === "string")
+        && (value.lastActivity === undefined || typeof value.lastActivity === "string")
+        && (value.pid === undefined || typeof value.pid === "number");
+}
+
+function isCliTool(value: unknown): value is CliTool {
+    return isRecord(value)
+        && typeof value.type === "string"
+        && typeof value.name === "string"
+        && typeof value.installed === "boolean"
+        && (value.version === undefined || typeof value.version === "string")
+        && (value.path === undefined || typeof value.path === "string");
+}
+
+function isVetoPending(value: unknown): value is VetoPending {
+    return isRecord(value)
+        && typeof value.id === "string"
+        && (value.sessionId === undefined || typeof value.sessionId === "string")
+        && (value.description === undefined || typeof value.description === "string")
+        && (value.createdAt === undefined || typeof value.createdAt === "string");
+}
+
+function isDebateEntry(value: unknown): value is DebateEntry {
+    return isRecord(value)
+        && (value.id === undefined || typeof value.id === "string")
+        && (value.task === undefined || typeof value.task === "string")
+        && (value.consensus === undefined || typeof value.consensus === "string")
+        && (value.outcome === undefined || typeof value.outcome === "string")
+        && (value.timestamp === undefined || typeof value.timestamp === "string")
+        && (value.rounds === undefined || typeof value.rounds === "number");
+}
+
+function readCouncilStatus(value: unknown): CouncilStatus | null {
+    if (isCouncilStatusPayload(value)) {
+        return value;
+    }
+    if (isRecord(value) && isCouncilStatusPayload(value.council)) {
+        return value.council;
+    }
+    return null;
+}
+
+function readSessionList(value: unknown): AutopilotSession[] | null {
+    if (Array.isArray(value) && value.every(isAutopilotSession)) {
+        return value;
+    }
+    if (isRecord(value) && Array.isArray(value.sessions) && value.sessions.every(isAutopilotSession)) {
+        return value.sessions;
+    }
+    return null;
+}
+
+function readCliTools(value: unknown): CliTool[] | null {
+    if (Array.isArray(value) && value.every(isCliTool)) {
+        return value;
+    }
+    if (isRecord(value) && Array.isArray(value.tools) && value.tools.every(isCliTool)) {
+        return value.tools;
+    }
+    return null;
+}
+
+function readVetoPending(value: unknown): VetoPending[] | null {
+    if (Array.isArray(value) && value.every(isVetoPending)) {
+        return value;
+    }
+    if (isRecord(value) && Array.isArray(value.pending) && value.pending.every(isVetoPending)) {
+        return value.pending;
+    }
+    return null;
+}
+
+function readDebateHistory(value: unknown): DebateEntry[] | null {
+    if (Array.isArray(value) && value.every(isDebateEntry)) {
+        return value;
+    }
+    if (isRecord(value) && Array.isArray(value.entries) && value.entries.every(isDebateEntry)) {
+        return value.entries;
+    }
+    if (isRecord(value) && Array.isArray(value.debates) && value.debates.every(isDebateEntry)) {
+        return value.debates;
+    }
+    return null;
 }
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -242,6 +360,11 @@ export default function BorgOrchestratorDashboardPage() {
     const [cliTools, setCliTools] = useState<CliTool[]>([]);
     const [vetoPending, setVetoPending] = useState<VetoPending[]>([]);
     const [debateHistory, setDebateHistory] = useState<DebateEntry[]>([]);
+    const [councilError, setCouncilError] = useState<string | null>(null);
+    const [sessionsError, setSessionsError] = useState<string | null>(null);
+    const [cliToolsError, setCliToolsError] = useState<string | null>(null);
+    const [vetoPendingError, setVetoPendingError] = useState<string | null>(null);
+    const [debateHistoryError, setDebateHistoryError] = useState<string | null>(null);
     const [health, setHealth] = useState<ServerHealth | null>(null);
     const [loading, setLoading] = useState(false);
     const [lastError, setLastError] = useState<string | null>(null);
@@ -260,7 +383,7 @@ export default function BorgOrchestratorDashboardPage() {
     // Consensus mode setter
     const [settingMode, setSettingMode] = useState(false);
 
-    const serverUrl = BASE ?? "not configured";
+    const serverUrl = BASE;
 
     // ── data fetching ──────────────────────────────────────────────────────
 
@@ -274,6 +397,11 @@ export default function BorgOrchestratorDashboardPage() {
 
         setLoading(true);
         setLastError(null);
+        setCouncilError(null);
+        setSessionsError(null);
+        setCliToolsError(null);
+        setVetoPendingError(null);
+        setDebateHistoryError(null);
 
         const [
             healthRes,
@@ -312,49 +440,72 @@ export default function BorgOrchestratorDashboardPage() {
 
         // council
         if (councilRes.ok) {
-            const d = councilRes.data;
-            const c: CouncilStatus = {
-                enabled: (d as any)?.enabled ?? (d as any)?.council?.enabled ?? false,
-                supervisors: (d as any)?.supervisors ?? (d as any)?.council?.supervisors ?? [],
-                consensusMode: (d as any)?.consensusMode ?? (d as any)?.council?.consensusMode ?? "simple-majority",
-            };
-            setCouncil(c);
+            const councilStatus = readCouncilStatus(councilRes.data);
+            if (councilStatus) {
+                setCouncil(councilStatus);
+            } else {
+                setCouncil(null);
+                setCouncilError("Council status is unavailable due to malformed data.");
+            }
+        } else {
+            setCouncil(null);
+            setCouncilError(councilRes.error ?? "Council status is unavailable.");
         }
 
         // sessions
         if (sessionsRes.ok) {
-            const d = sessionsRes.data;
-            const list: AutopilotSession[] = Array.isArray(d)
-                ? (d as AutopilotSession[])
-                : ((d as any)?.sessions ?? []);
-            setSessions(list);
+            const list = readSessionList(sessionsRes.data);
+            if (list) {
+                setSessions(list);
+            } else {
+                setSessions([]);
+                setSessionsError("Session inventory is unavailable due to malformed data.");
+            }
+        } else {
+            setSessions([]);
+            setSessionsError(sessionsRes.error ?? "Session inventory is unavailable.");
         }
 
         // cli tools
         if (cliRes.ok) {
-            const d = cliRes.data;
-            const list: CliTool[] = Array.isArray(d)
-                ? (d as CliTool[])
-                : ((d as any)?.tools ?? []);
-            setCliTools(list);
+            const list = readCliTools(cliRes.data);
+            if (list) {
+                setCliTools(list);
+            } else {
+                setCliTools([]);
+                setCliToolsError("CLI tool inventory is unavailable due to malformed data.");
+            }
+        } else {
+            setCliTools([]);
+            setCliToolsError(cliRes.error ?? "CLI tool inventory is unavailable.");
         }
 
         // veto pending
         if (vetoRes.ok) {
-            const d = vetoRes.data;
-            const list: VetoPending[] = Array.isArray(d)
-                ? (d as VetoPending[])
-                : ((d as any)?.pending ?? []);
-            setVetoPending(list);
+            const list = readVetoPending(vetoRes.data);
+            if (list) {
+                setVetoPending(list);
+            } else {
+                setVetoPending([]);
+                setVetoPendingError("Pending veto inventory is unavailable due to malformed data.");
+            }
+        } else {
+            setVetoPending([]);
+            setVetoPendingError(vetoRes.error ?? "Pending veto inventory is unavailable.");
         }
 
         // debate history
         if (debateRes.ok) {
-            const d = debateRes.data;
-            const list: DebateEntry[] = Array.isArray(d)
-                ? (d as DebateEntry[])
-                : ((d as any)?.entries ?? (d as any)?.debates ?? []);
-            setDebateHistory(list.slice(0, 20)); // keep most recent 20
+            const list = readDebateHistory(debateRes.data);
+            if (list) {
+                setDebateHistory(list.slice(0, 20)); // keep most recent 20
+            } else {
+                setDebateHistory([]);
+                setDebateHistoryError("Debate history is unavailable due to malformed data.");
+            }
+        } else {
+            setDebateHistory([]);
+            setDebateHistoryError(debateRes.error ?? "Debate history is unavailable.");
         }
 
         setLoading(false);
@@ -453,6 +604,32 @@ export default function BorgOrchestratorDashboardPage() {
         () => cliTools.filter((t) => t.installed),
         [cliTools]
     );
+    const statsCards = [
+        {
+            label: "Active Sessions",
+            value: sessionsError ? "—" : String(activeSessions.length),
+            icon: <Activity className="h-4 w-4 text-emerald-400" />,
+            color: sessionsError ? "text-zinc-500" : "text-emerald-300",
+        },
+        {
+            label: "Total Sessions",
+            value: sessionsError ? "—" : String(sessions.length),
+            icon: <Terminal className="h-4 w-4 text-blue-400" />,
+            color: sessionsError ? "text-zinc-500" : "text-blue-300",
+        },
+        {
+            label: "Supervisors",
+            value: councilError ? "—" : String(council?.supervisors?.length ?? 0),
+            icon: <Users className="h-4 w-4 text-purple-400" />,
+            color: councilError ? "text-zinc-500" : "text-purple-300",
+        },
+        {
+            label: "Pending Vetoes",
+            value: vetoPendingError ? "—" : String(vetoPending.length),
+            icon: <Gavel className="h-4 w-4 text-amber-400" />,
+            color: vetoPendingError ? "text-zinc-500" : (vetoPending.length > 0 ? "text-amber-300" : "text-zinc-500"),
+        },
+    ];
 
     // ── render ─────────────────────────────────────────────────────────────
 
@@ -493,7 +670,7 @@ export default function BorgOrchestratorDashboardPage() {
                         </a>
                     )}
                     <a
-                        href="https://github.com/robertpelloni/borg"
+                        href="https://github.com/robertpelloni/hypercode"
                         target="_blank"
                         rel="noopener noreferrer"
                         className="px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 rounded text-xs flex items-center gap-1.5"
@@ -525,7 +702,8 @@ export default function BorgOrchestratorDashboardPage() {
                     <div>
                         <p className="text-red-300 font-medium">CLI Orchestrator is not reachable.</p>
                         <div className="text-red-400/70 text-xs mt-1 space-y-1">
-                            <p>Configure <code className="bg-red-950/50 px-1 rounded">NEXT_PUBLIC_BORG_ORCHESTRATOR_URL</code> (current: {serverUrl}).</p>
+                            <p>The built-in proxy route <code className="bg-red-950/50 px-1 rounded">{serverUrl}</code> is enabled, but the orchestrator did not answer.</p>
+                            <p>Set <code className="bg-red-950/50 px-1 rounded">NEXT_PUBLIC_BORG_ORCHESTRATOR_URL</code> only if you need to target a different orchestrator base.</p>
                             <p><code className="bg-red-950/50 px-1 rounded">NEXT_PUBLIC_AUTOPILOT_URL</code> still works as the legacy alias during migration.</p>
                         </div>
                     </div>
@@ -542,7 +720,7 @@ export default function BorgOrchestratorDashboardPage() {
                     <PageStatusBanner
                         status="experimental"
                         message="CLI Orchestrator integration"
-                        note="Native Borg dashboard for council governance, session supervision, and smart-pilot workflows. Legacy autopilot env names remain supported during migration."
+                        note="Native HyperCode dashboard for council governance, session supervision, and smart-pilot workflows. Legacy autopilot env names remain supported during migration."
                     />
                 </div>
             )}
@@ -561,32 +739,7 @@ export default function BorgOrchestratorDashboardPage() {
 
                 {/* ── Stats bar ── */}
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                    {[
-                        {
-                            label: "Active Sessions",
-                            value: activeSessions.length,
-                            icon: <Activity className="h-4 w-4 text-emerald-400" />,
-                            color: "text-emerald-300",
-                        },
-                        {
-                            label: "Total Sessions",
-                            value: sessions.length,
-                            icon: <Terminal className="h-4 w-4 text-blue-400" />,
-                            color: "text-blue-300",
-                        },
-                        {
-                            label: "Supervisors",
-                            value: council?.supervisors?.length ?? 0,
-                            icon: <Users className="h-4 w-4 text-purple-400" />,
-                            color: "text-purple-300",
-                        },
-                        {
-                            label: "Pending Vetoes",
-                            value: vetoPending.length,
-                            icon: <Gavel className="h-4 w-4 text-amber-400" />,
-                            color: vetoPending.length > 0 ? "text-amber-300" : "text-zinc-500",
-                        },
-                    ].map((s) => (
+                    {statsCards.map((s) => (
                         <div key={s.label} className="border border-zinc-800 rounded-lg bg-zinc-950 px-4 py-3 flex items-center gap-3">
                             {s.icon}
                             <div>
@@ -600,6 +753,11 @@ export default function BorgOrchestratorDashboardPage() {
                 {/* ── Council ── */}
                 <SectionCard title="Council" icon={<Users className="h-4 w-4" />}>
                     <div className="space-y-3">
+                        {councilError ? (
+                            <div className="rounded-lg border border-red-700/50 bg-red-950/30 px-3 py-2 text-xs text-red-300">
+                                {councilError}
+                            </div>
+                        ) : null}
                         <div className="flex flex-wrap items-center gap-3">
                             <div className="flex items-center gap-2">
                                 <span className="text-xs text-zinc-400">Status:</span>
@@ -631,7 +789,7 @@ export default function BorgOrchestratorDashboardPage() {
                         </div>
 
                         {/* Supervisor roster */}
-                        {council?.supervisors && council.supervisors.length > 0 ? (
+                        {councilError ? null : council?.supervisors && council.supervisors.length > 0 ? (
                             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
                                 {council.supervisors.map((sup) => (
                                     <div key={sup.id} className="border border-zinc-800 rounded bg-zinc-900 px-3 py-2 flex items-center gap-2 text-xs">
@@ -715,7 +873,9 @@ export default function BorgOrchestratorDashboardPage() {
                         )}
 
                         {/* Sessions list */}
-                        {sessions.length === 0 ? (
+                        {sessionsError ? (
+                            <p className="text-xs text-rose-300 text-center py-4">{sessionsError}</p>
+                        ) : sessions.length === 0 ? (
                             <p className="text-xs text-zinc-600 text-center py-4">No sessions. Start one above.</p>
                         ) : (
                             <div className="space-y-2">
@@ -789,7 +949,14 @@ export default function BorgOrchestratorDashboardPage() {
                 </SectionCard>
 
                 {/* ── Veto queue ── */}
-                {vetoPending.length > 0 && (
+                {vetoPendingError ? (
+                    <SectionCard
+                        title="Pending Vetoes"
+                        icon={<Gavel className="h-4 w-4 text-amber-400" />}
+                    >
+                        <p className="text-xs text-rose-300">{vetoPendingError}</p>
+                    </SectionCard>
+                ) : vetoPending.length > 0 && (
                     <SectionCard
                         title={`Pending Vetoes (${vetoPending.length})`}
                         icon={<Gavel className="h-4 w-4 text-amber-400" />}
@@ -824,8 +991,10 @@ export default function BorgOrchestratorDashboardPage() {
 
                 {/* ── CLI Tools ── */}
                 <SectionCard title="CLI Tools" icon={<Wrench className="h-4 w-4" />} defaultOpen={false}>
-                    {cliTools.length === 0 ? (
-                        <p className="text-xs text-zinc-600">No CLI tools data. Server may not be running.</p>
+                    {cliToolsError ? (
+                        <p className="text-xs text-rose-300">{cliToolsError}</p>
+                    ) : cliTools.length === 0 ? (
+                        <p className="text-xs text-zinc-600">No CLI tools data available yet.</p>
                     ) : (
                         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
                             {cliTools.map((t) => (
@@ -847,7 +1016,9 @@ export default function BorgOrchestratorDashboardPage() {
                 {/* ── Debate History ── */}
                 <SectionCard title="Recent Debates" icon={<History className="h-4 w-4" />} defaultOpen={false}>
                     {debateHistory.length === 0 ? (
-                        <p className="text-xs text-zinc-600">No debate history yet.</p>
+                        <p className={`text-xs ${debateHistoryError ? "text-rose-300" : "text-zinc-600"}`}>
+                            {debateHistoryError ?? "No debate history yet."}
+                        </p>
                     ) : (
                         <div className="space-y-1 max-h-64 overflow-auto">
                             {debateHistory.map((d, i) => (
