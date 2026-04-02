@@ -1,21 +1,43 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { Card, CardHeader, CardTitle, CardContent, Button, Badge } from "@borg/ui";
+import { Card, CardHeader, CardTitle, CardContent, Button, Badge } from "@hypercode/ui";
 import { Scale, Save, History, RotateCcw, Loader2, Info, BookOpen } from "lucide-react";
 import { trpc } from '@/utils/trpc';
 import { toast } from 'sonner';
+
+function isProjectContextPayload(value: unknown): value is string {
+    return typeof value === 'string';
+}
+
+function isProjectHandoff(value: unknown): value is { id: string; timestamp: string | number | Date } {
+    return typeof value === 'object'
+        && value !== null
+        && typeof (value as { id?: unknown }).id === 'string'
+        && ['string', 'number', 'object'].includes(typeof (value as { timestamp?: unknown }).timestamp);
+}
 
 export default function ProjectPage() {
     const utils = trpc.useContext();
     const contextQuery = trpc.project.getContext.useQuery();
     const handoffsQuery = trpc.project.getHandoffs.useQuery();
+    const contextUnavailable = Boolean(contextQuery.error) || (contextQuery.data !== undefined && !isProjectContextPayload(contextQuery.data));
+    const handoffsError = handoffsQuery.error?.message ?? null;
+    const handoffsUnavailable = Boolean(handoffsQuery.error)
+        || (
+            handoffsQuery.data !== undefined
+            && (
+                !Array.isArray(handoffsQuery.data)
+                || !handoffsQuery.data.every(isProjectHandoff)
+            )
+        );
+    const typedHandoffs = !handoffsUnavailable && Array.isArray(handoffsQuery.data) ? handoffsQuery.data : [];
     
     const [content, setContent] = useState('');
     const [isSaving, setIsIngesting] = useState(false);
 
     useEffect(() => {
-        if (contextQuery.data) {
+        if (isProjectContextPayload(contextQuery.data)) {
             setContent(contextQuery.data);
         }
     }, [contextQuery.data]);
@@ -55,7 +77,7 @@ export default function ProjectPage() {
                         Project Constitution
                     </h1>
                     <p className="text-zinc-500 mt-2">
-                        Define the high-level rules, architectural patterns, and "laws" that all Borg agents must follow.
+                        Define the high-level rules, architectural patterns, and "laws" that all HyperCode agents must follow.
                     </p>
                 </div>
                 <Badge variant="outline" className="bg-amber-500/5 text-amber-400 border-amber-500/20 px-3 py-1">
@@ -83,11 +105,17 @@ export default function ProjectPage() {
                             </Button>
                         </CardHeader>
                         <CardContent className="flex-1 p-0">
+                            {contextUnavailable ? (
+                                <div className="m-6 rounded-lg border border-red-900/40 bg-red-950/20 p-4 text-sm text-red-300">
+                                    {contextQuery.error?.message ?? 'Project context is unavailable.'}
+                                </div>
+                            ) : null}
                             <textarea 
                                 value={content}
                                 onChange={(e) => setContent(e.target.value)}
                                 className="w-full h-full bg-zinc-950 p-6 text-sm text-zinc-300 font-mono focus:outline-none transition-colors resize-none"
                                 placeholder="# Repository Rules..."
+                                disabled={contextUnavailable}
                             />
                         </CardContent>
                     </Card>
@@ -103,10 +131,18 @@ export default function ProjectPage() {
                     <div className="space-y-3">
                         {handoffsQuery.isLoading ? (
                             <div className="flex justify-center p-8"><Loader2 className="h-6 w-6 animate-spin text-zinc-800" /></div>
-                        ) : handoffsQuery.data?.length === 0 ? (
+                        ) : handoffsError ? (
+                            <div className="rounded-lg border border-red-900/40 bg-red-950/20 p-4 text-sm text-red-300">
+                                {handoffsError}
+                            </div>
+                        ) : handoffsUnavailable ? (
+                            <div className="rounded-lg border border-red-900/40 bg-red-950/20 p-4 text-sm text-red-300">
+                                {handoffsError ?? "Project handoff history is unavailable."}
+                            </div>
+                        ) : typedHandoffs.length === 0 ? (
                             <p className="text-[10px] text-zinc-700 italic px-1 text-center py-8 bg-zinc-950 rounded-lg border border-zinc-900">No previous handoffs found.</p>
                         ) : (
-                            handoffsQuery.data?.map((handoff) => (
+                            typedHandoffs.map((handoff) => (
                                 <Card key={handoff.id} className="bg-zinc-950 border-zinc-900 hover:border-zinc-800 transition-all group">
                                     <CardContent className="p-3 space-y-3">
                                         <div className="flex justify-between items-start">
@@ -141,7 +177,7 @@ export default function ProjectPage() {
                                 <span className="text-[10px] font-bold uppercase tracking-tight">Pro Tip</span>
                             </div>
                             <p className="text-[10px] text-zinc-600 leading-relaxed italic">
-                                Use this page to set "permanent" context. Borg agents call <code>get_project_context</code> on every fresh session to align their behavior with these rules.
+                                Use this page to set "permanent" context. HyperCode agents call <code>get_project_context</code> on every fresh session to align their behavior with these rules.
                             </p>
                         </CardContent>
                     </Card>
