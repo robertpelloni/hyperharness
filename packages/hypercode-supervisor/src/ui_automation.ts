@@ -2,7 +2,7 @@ import activeWin from 'active-win';
 import { runPowerShell, runPowerShellJson, toPowerShellString } from './powershell.js';
 import { DEFAULT_ACTION_LABELS, SupervisorSettings, SupervisorSettingsManager } from './settings.js';
 import { DEFAULT_SURFACE_PROFILE, listSurfaceProfiles, resolveSurfaceProfile, SurfaceProfile } from './surface_profiles.js';
-import { classifyBrowserFamily, detectSurfaceName, inspectionLooksLikeAntigravity, resolveActionLabels } from './decision_logic.js';
+import { inspectionLooksLikeAntigravity, resolveActionLabels, resolveDetectedSurface } from './decision_logic.js';
 
 export interface WindowBounds {
     left: number;
@@ -654,27 +654,34 @@ export class UiAutomationManager {
                 : null;
         }
 
-        const browserFamily = classifyBrowserFamily(processName);
-        const detection = detectSurfaceName(title, processName);
-        let resolvedSurfaceId = options?.surfaceOverride ?? detection.detectedSurface;
-        let heuristics = options?.surfaceOverride
-            ? [`surface override applied: ${options.surfaceOverride}`, ...detection.heuristics]
-            : detection.heuristics;
+        const initialSurface = resolveDetectedSurface({
+            title,
+            processName,
+            windowTargeted: Boolean(options?.windowTitle || options?.processName),
+            surfaceOverride: options?.surfaceOverride
+        });
 
-        if (options?.windowTitle || options?.processName) {
-            heuristics.unshift('surface detected from targeted window criteria');
-        }
+        let inspectionSuggestsAntigravity = false;
 
-        if (!options?.surfaceOverride && (browserFamily !== null || detection.detectedSurface === 'browser-chat' || detection.detectedSurface === 'unknown')) {
+        if (!options?.surfaceOverride && (initialSurface.browserFamily !== null || initialSurface.detectedSurface === 'browser-chat' || initialSurface.detectedSurface === 'unknown')) {
             try {
                 const inspection = await this.inspectWindow(options?.windowTitle, options?.processName);
-                if (inspectionLooksLikeAntigravity(inspection)) {
-                    resolvedSurfaceId = 'antigravity';
-                    heuristics = ['inspection hints matched Antigravity approval/composer patterns', ...heuristics];
-                }
+                inspectionSuggestsAntigravity = inspectionLooksLikeAntigravity(inspection);
             } catch {
             }
         }
+
+        const {
+            detectedSurface: resolvedSurfaceId,
+            browserFamily,
+            heuristics
+        } = resolveDetectedSurface({
+            title,
+            processName,
+            windowTargeted: Boolean(options?.windowTitle || options?.processName),
+            surfaceOverride: options?.surfaceOverride,
+            inspectionSuggestsAntigravity
+        });
 
         const surfaceProfile = resolveSurfaceProfile(resolvedSurfaceId);
 

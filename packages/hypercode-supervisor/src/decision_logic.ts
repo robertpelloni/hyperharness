@@ -119,3 +119,33 @@ export function detectSurfaceName(title: string, processName: string | null): { 
 
     return { detectedSurface: 'unknown', heuristics: ['no known chat-surface heuristic matched'] };
 }
+
+export function resolveDetectedSurface(options: {
+    title: string;
+    processName: string | null;
+    windowTargeted: boolean;
+    surfaceOverride?: string;
+    inspectionSuggestsAntigravity?: boolean;
+}): { detectedSurface: string; browserFamily: string | null; heuristics: string[] } {
+    const browserFamily = classifyBrowserFamily(options.processName);
+    const detection = detectSurfaceName(options.title, options.processName);
+    let detectedSurface = options.surfaceOverride ?? detection.detectedSurface;
+    let heuristics = options.surfaceOverride
+        ? [`surface override applied: ${options.surfaceOverride}`, ...detection.heuristics]
+        : [...detection.heuristics];
+
+    if (options.windowTargeted) {
+        heuristics.unshift('surface detected from targeted window criteria');
+    }
+
+    if (!options.surfaceOverride && options.inspectionSuggestsAntigravity && (browserFamily !== null || detection.detectedSurface === 'browser-chat' || detection.detectedSurface === 'unknown')) {
+        detectedSurface = 'antigravity';
+        heuristics = ['inspection hints matched Antigravity approval/composer patterns', ...heuristics];
+    }
+
+    return {
+        detectedSurface,
+        browserFamily,
+        heuristics
+    };
+}

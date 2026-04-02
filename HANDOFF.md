@@ -399,6 +399,33 @@ Validated with:
 - `pnpm -C packages\hypercode-supervisor run build`
 - `pnpm -C packages\hypercode-supervisor run test`
 
+### 0.17. Final surface resolution now lives in the tested decision layer too
+
+Finding:
+
+- even after extracting browser-family and title/process classification, the last important resolution rule still lived inline in `detectChatSurface`
+- override handling, targeted-window heuristic notes, browser-family fallback, and optional Antigravity inspection promotion were still composed there instead of in the tested helper layer
+
+What changed:
+
+- added `resolveDetectedSurface(...)` to `packages/hypercode-supervisor/src/decision_logic.ts`
+- added Node coverage for:
+  - explicit override precedence
+  - targeted-window heuristic annotation
+  - browser-surface promotion to Antigravity when inspection hints match
+  - unknown/non-browser cases
+- `ui_automation.ts` now uses that shared helper both before and after the optional inspection probe
+
+Behavior change:
+
+- runtime intent is unchanged, but the final surface-id/heuristic composition rules are now explicit, shared, and tested instead of partially embedded in the larger automation method
+
+Validated with:
+
+- `pnpm -C packages\hypercode-supervisor exec tsc --noEmit`
+- `pnpm -C packages\hypercode-supervisor run build`
+- `pnpm -C packages\hypercode-supervisor run test`
+
 ### 1. Published catalog stdio entries are no longer labeled "unsafe"
 
 Updated `packages/core/src/services/published-catalog-validator.ts` so stdio-backed published catalog entries are labeled as transport-skipped instead of `stdio_unsafe`.

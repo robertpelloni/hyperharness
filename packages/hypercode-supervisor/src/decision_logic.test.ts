@@ -8,7 +8,8 @@ import {
     detectSurfaceName,
     inspectionLooksLikeAntigravity,
     normalizeComparableLabel,
-    resolveActionLabels
+    resolveActionLabels,
+    resolveDetectedSurface
 } from './decision_logic.js';
 import type { ChatSurfaceInfo, UiInspection } from './ui_automation.js';
 
@@ -134,5 +135,57 @@ test('detectSurfaceName falls back to process-based browser/editor detection', (
     assert.deepEqual(detectSurfaceName('Untitled', 'unknown'), {
         detectedSurface: 'unknown',
         heuristics: ['no known chat-surface heuristic matched']
+    });
+});
+
+test('resolveDetectedSurface honors explicit surface override', () => {
+    assert.deepEqual(resolveDetectedSurface({
+        title: 'Untitled',
+        processName: 'firefox',
+        windowTargeted: false,
+        surfaceOverride: 'claude-web',
+        inspectionSuggestsAntigravity: true
+    }), {
+        detectedSurface: 'claude-web',
+        browserFamily: 'firefox',
+        heuristics: ['surface override applied: claude-web', 'active process looks like a browser']
+    });
+});
+
+test('resolveDetectedSurface adds targeted-window heuristic note', () => {
+    assert.deepEqual(resolveDetectedSurface({
+        title: 'Untitled',
+        processName: 'firefox',
+        windowTargeted: true
+    }), {
+        detectedSurface: 'browser-chat',
+        browserFamily: 'firefox',
+        heuristics: ['surface detected from targeted window criteria', 'active process looks like a browser']
+    });
+});
+
+test('resolveDetectedSurface promotes browser-like surfaces to antigravity when inspection hints match', () => {
+    assert.deepEqual(resolveDetectedSurface({
+        title: 'Untitled',
+        processName: 'firefox',
+        windowTargeted: false,
+        inspectionSuggestsAntigravity: true
+    }), {
+        detectedSurface: 'antigravity',
+        browserFamily: 'firefox',
+        heuristics: ['inspection hints matched Antigravity approval/composer patterns', 'active process looks like a browser']
+    });
+});
+
+test('resolveDetectedSurface does not promote non-browser unknown surfaces without browser fallback', () => {
+    assert.deepEqual(resolveDetectedSurface({
+        title: 'Local App',
+        processName: 'customtool',
+        windowTargeted: false,
+        inspectionSuggestsAntigravity: true
+    }), {
+        detectedSurface: 'antigravity',
+        browserFamily: null,
+        heuristics: ['inspection hints matched Antigravity approval/composer patterns', 'no known chat-surface heuristic matched']
     });
 });
