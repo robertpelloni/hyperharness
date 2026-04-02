@@ -1,7 +1,7 @@
 import activeWin from 'active-win';
 import { runPowerShell, runPowerShellJson, toPowerShellString } from './powershell.js';
 import { DEFAULT_ACTION_LABELS, SupervisorSettings, SupervisorSettingsManager } from './settings.js';
-import { DEFAULT_SURFACE_PROFILE, resolveSurfaceProfile, SurfaceProfile } from './surface_profiles.js';
+import { DEFAULT_SURFACE_PROFILE, listSurfaceProfiles, resolveSurfaceProfile, SurfaceProfile } from './surface_profiles.js';
 
 export interface WindowBounds {
     left: number;
@@ -79,6 +79,10 @@ export interface AdvanceChatResult {
     typed: boolean;
     submitted: boolean;
     detail: string;
+}
+
+export interface SurfaceDetectionOptions {
+    surfaceOverride?: string;
 }
 
 const UI_AUTOMATION_BASE = String.raw`
@@ -599,11 +603,15 @@ export class UiAutomationManager {
         return this.settingsManager.updateSettings(update);
     }
 
+    listSurfaceProfiles(): SurfaceProfile[] {
+        return listSurfaceProfiles();
+    }
+
     async inspectWindow(windowTitle?: string, processName?: string): Promise<UiInspection> {
         return runPowerShellJson<UiInspection>(buildInspectionScript(windowTitle, processName));
     }
 
-    async detectChatSurface(): Promise<ChatSurfaceInfo> {
+    async detectChatSurface(options?: SurfaceDetectionOptions): Promise<ChatSurfaceInfo> {
         const activeWindow = await activeWin();
 
         const title = activeWindow?.title ?? '';
@@ -621,7 +629,11 @@ export class UiAutomationManager {
 
         const browserFamily = classifyBrowserFamily(processName);
         const detection = detectSurfaceName(title, processName);
-        const surfaceProfile = resolveSurfaceProfile(detection.detectedSurface);
+        const resolvedSurfaceId = options?.surfaceOverride ?? detection.detectedSurface;
+        const surfaceProfile = resolveSurfaceProfile(resolvedSurfaceId);
+        const heuristics = options?.surfaceOverride
+            ? [`surface override applied: ${options.surfaceOverride}`, ...detection.heuristics]
+            : detection.heuristics;
 
         return {
             title,
@@ -630,15 +642,15 @@ export class UiAutomationManager {
             processId,
             bounds,
             browserFamily,
-            detectedSurface: detection.detectedSurface,
+            detectedSurface: resolvedSurfaceId,
             surfaceProfile,
-            heuristics: detection.heuristics
+            heuristics
         };
     }
 
-    async detectChatState(windowTitle?: string, processName?: string, actionLabels?: string[]): Promise<ChatStateInfo> {
+    async detectChatState(windowTitle?: string, processName?: string, actionLabels?: string[], options?: SurfaceDetectionOptions): Promise<ChatStateInfo> {
         const [surface, inspection, settings] = await Promise.all([
-            this.detectChatSurface(),
+            this.detectChatSurface(options),
             this.inspectWindow(windowTitle, processName),
             this.getSettings()
         ]);
@@ -717,10 +729,11 @@ export class UiAutomationManager {
         submitKeyChord?: string;
         windowTitle?: string;
         processName?: string;
+        surfaceOverride?: string;
     }): Promise<AdvanceChatResult> {
         const [settings, surface] = await Promise.all([
             this.getSettings(),
-            this.detectChatSurface()
+            this.detectChatSurface({ surfaceOverride: options?.surfaceOverride })
         ]);
         const profile = surface.surfaceProfile ?? DEFAULT_SURFACE_PROFILE;
         const actionLabels = options?.actionLabels ?? profile.actionLabels ?? settings.actionLabels;
@@ -729,7 +742,7 @@ export class UiAutomationManager {
         const submitKeyChord = options?.submitKeyChord ?? profile.submitKeyChord ?? settings.submitKeyChord;
         const windowTitle = options?.windowTitle;
         const processName = options?.processName;
-        const state = await this.detectChatState(windowTitle, processName, actionLabels);
+        const state = await this.detectChatState(windowTitle, processName, actionLabels, { surfaceOverride: options?.surfaceOverride });
 
         if (state.state === 'awaiting_action') {
             const clickResult = await this.clickActionButtons(actionLabels, windowTitle, processName);

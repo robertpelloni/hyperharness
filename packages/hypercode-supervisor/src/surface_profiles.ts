@@ -106,3 +106,7 @@ const SURFACE_PROFILES: Record<string, SurfaceProfile> = {
 export function resolveSurfaceProfile(surfaceId: string): SurfaceProfile {
     return SURFACE_PROFILES[surfaceId] ?? DEFAULT_SURFACE_PROFILE;
 }
+
+export function listSurfaceProfiles(): SurfaceProfile[] {
+    return [DEFAULT_SURFACE_PROFILE, ...Object.values(SURFACE_PROFILES)];
+}

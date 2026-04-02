@@ -92,6 +92,19 @@ class SupervisorServer {
                         description: "Inspect the active window and classify the current chat surface heuristically",
                         inputSchema: {
                             type: "object",
+                            properties: {
+                                surfaceOverride: {
+                                    type: "string",
+                                    description: "Optional explicit surface/profile id to force instead of heuristic detection"
+                                }
+                            }
+                        }
+                    },
+                    {
+                        name: "list_surface_profiles",
+                        description: "List the known supervisor surface profiles and their default labels, submit chords, and input preferences",
+                        inputSchema: {
+                            type: "object",
                             properties: {}
                         }
                     },
@@ -125,6 +138,10 @@ class SupervisorServer {
                                 processName: {
                                     type: "string",
                                     description: "Optional process name to target"
+                                },
+                                surfaceOverride: {
+                                    type: "string",
+                                    description: "Optional explicit surface/profile id to force"
                                 }
                             }
                         }
@@ -147,6 +164,10 @@ class SupervisorServer {
                                 processName: {
                                     type: "string",
                                     description: "Optional process name to target"
+                                },
+                                surfaceOverride: {
+                                    type: "string",
+                                    description: "Optional explicit surface/profile id to force"
                                 }
                             }
                         }
@@ -173,6 +194,10 @@ class SupervisorServer {
                                 processName: {
                                     type: "string",
                                     description: "Optional process name to target"
+                                },
+                                surfaceOverride: {
+                                    type: "string",
+                                    description: "Optional explicit surface/profile id to force"
                                 }
                             },
                             required: ["text"]
@@ -196,6 +221,10 @@ class SupervisorServer {
                                 processName: {
                                     type: "string",
                                     description: "Optional process name to target"
+                                },
+                                surfaceOverride: {
+                                    type: "string",
+                                    description: "Optional explicit surface/profile id to force"
                                 }
                             }
                         }
@@ -232,6 +261,10 @@ class SupervisorServer {
                                 processName: {
                                     type: "string",
                                     description: "Optional process name to target"
+                                },
+                                surfaceOverride: {
+                                    type: "string",
+                                    description: "Optional explicit surface/profile id to force"
                                 }
                             }
                         }
@@ -327,8 +360,17 @@ class SupervisorServer {
                 }
 
                 if (request.params.name === "detect_chat_surface") {
-                    const result = await this.uiAutomationManager.detectChatSurface();
+                    const surfaceOverride = request.params.arguments?.surfaceOverride as string | undefined;
+                    const result = await this.uiAutomationManager.detectChatSurface({ surfaceOverride });
                     logger.info("Chat Surface Detected", result);
+                    return {
+                        content: [{ type: "text", text: JSON.stringify(result, null, 2) }]
+                    };
+                }
+
+                if (request.params.name === "list_surface_profiles") {
+                    const result = this.uiAutomationManager.listSurfaceProfiles();
+                    logger.info("Surface Profiles Listed", { count: result.length });
                     return {
                         content: [{ type: "text", text: JSON.stringify(result, null, 2) }]
                     };
@@ -347,7 +389,8 @@ class SupervisorServer {
                 if (request.params.name === "detect_chat_state") {
                     const windowTitle = request.params.arguments?.windowTitle as string | undefined;
                     const processName = request.params.arguments?.processName as string | undefined;
-                    const result = await this.uiAutomationManager.detectChatState(windowTitle, processName);
+                    const surfaceOverride = request.params.arguments?.surfaceOverride as string | undefined;
+                    const result = await this.uiAutomationManager.detectChatState(windowTitle, processName, undefined, { surfaceOverride });
                     logger.info("Chat State Detected", { windowTitle, processName, state: result.state });
                     return {
                         content: [{ type: "text", text: JSON.stringify(result, null, 2) }]
@@ -395,13 +438,15 @@ class SupervisorServer {
                     const submitKeyChord = request.params.arguments?.submitKeyChord as string | undefined;
                     const windowTitle = request.params.arguments?.windowTitle as string | undefined;
                     const processName = request.params.arguments?.processName as string | undefined;
+                    const surfaceOverride = request.params.arguments?.surfaceOverride as string | undefined;
                     const result = await this.uiAutomationManager.advanceChat({
                         bumpText,
                         actionLabels,
                         submitAfterTyping,
                         submitKeyChord,
                         windowTitle,
-                        processName
+                        processName,
+                        surfaceOverride
                     });
                     logger.info("Advance Chat Completed", { detail: result.detail });
                     return {
