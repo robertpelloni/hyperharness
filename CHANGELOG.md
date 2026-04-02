@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **CLI Status Operator Surface**: `hypercode status` now queries live control-plane startup, MCP, session, and provider routes instead of inventing a fake summary, with JSON output and actionable control-plane error reporting.
 - **CLI Provider Operator Surface**: `hypercode provider list` and `hypercode provider quota` now query live control-plane provider and billing routes instead of placeholder output, including JSON mode, merged configured/authenticated/quota state, provider filtering, and actionable control-plane error reporting.
 - **CLI Config Operator Surface**: `hypercode config show`, `hypercode config get`, and `hypercode config set` now query live control-plane configuration routes instead of invented defaults and placeholder output, with JSON mode, section selection, typed value reconstruction for display, and actionable control-plane error reporting.
 - **CLI MCP Operator Surface**: `hypercode mcp list`, `hypercode mcp tools`, and `hypercode mcp search` now query live control-plane MCP inventory and registry snapshot surfaces instead of placeholder empty-state output, including JSON mode, server/namespace filtering, registry-category filtering, and actionable control-plane error reporting.

@@ -332,7 +332,24 @@ Validation:
 - `pnpm -C packages\cli exec tsc --noEmit`
 - `pnpm -C packages\cli exec vitest run src\commands\provider.test.ts src\commands\config.test.ts src\commands\mcp.test.ts src\commands\tools.test.ts src\control-plane.test.ts`
 
-### 8. `harden-published-catalog-ingestion`
+### 8. `wire-cli-status-command`
+
+Status: **completed**
+
+What changed:
+
+- `packages/cli/src/commands/status.ts` no longer invents a fake whole-system summary for `hypercode status`
+- the command now queries `startupStatus`, `mcp.getStatus`, `session.list`, and `billing.getProviderQuotas` so server, MCP, session, memory, and provider rows reflect live control-plane state
+- `--json` now emits a structured live snapshot suitable for automation instead of placeholder data
+- command failures now report the resolved control-plane endpoint and a concrete remediation path, consistent with the other wired CLI commands
+- focused CLI coverage was added in `packages/cli/src/commands/status.test.ts`
+
+Validation:
+
+- `pnpm -C packages\cli exec tsc --noEmit`
+- `pnpm -C packages\cli exec vitest run src\commands\status.test.ts src\commands\provider.test.ts src\commands\config.test.ts src\commands\mcp.test.ts src\commands\tools.test.ts src\control-plane.test.ts`
+
+### 9. `harden-published-catalog-ingestion`
 
 Status: **completed**
 
