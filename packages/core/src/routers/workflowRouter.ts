@@ -82,7 +82,14 @@ export const workflowRouter = t.router({
         .input(z.object({ workflowId: z.string() }))
         .query(({ input }) => {
             const engine = requireWorkflowEngine();
-            return engine.getGraph(input.workflowId) || { nodes: [], edges: [] };
+            const graph = engine.getGraph(input.workflowId);
+            if (!graph) {
+                throw new TRPCError({
+                    code: 'NOT_FOUND',
+                    message: `Workflow "${input.workflowId}" was not found.`,
+                });
+            }
+            return graph;
         }),
 
     // --- Executions ---

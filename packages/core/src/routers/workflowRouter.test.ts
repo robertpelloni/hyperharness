@@ -86,4 +86,16 @@ describe('workflowRouter degraded SQLite handling', () => {
             message: 'Workflow engine is unavailable for this run.',
         });
     });
+
+    it('surfaces a clear not-found error for missing workflow graphs', async () => {
+        getWorkflowEngineMock.mockReturnValue({
+            getGraph: vi.fn().mockReturnValue(undefined),
+        } as never);
+
+        const caller = createCaller();
+
+        await expect(caller.getGraph({ workflowId: 'missing-workflow' })).rejects.toMatchObject({
+            message: 'Workflow "missing-workflow" was not found.',
+        });
+    });
 });

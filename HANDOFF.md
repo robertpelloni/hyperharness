@@ -289,7 +289,8 @@ Status: **completed**
 What changed:
 
 - `packages/core/src/routers/workflowRouter.ts` now requires a live workflow engine for definitions and execution read routes instead of returning fake empty arrays or `null`
-- missing workflow-engine runtime now surfaces as `Workflow engine is unavailable for this run.` for definitions, execution lists, execution detail, and history reads
+- missing workflow-engine runtime now surfaces as `Workflow engine is unavailable for this run.` for definitions, execution lists, execution detail, history reads, and graph requests
+- missing workflow graph ids now surface as `Workflow "<id>" was not found.` instead of returning a fake empty `{ nodes: [], edges: [] }` graph
 - focused degraded-state router coverage was added in `packages/core/src/routers/workflowRouter.test.ts`
 
 Validation:
@@ -297,13 +298,28 @@ Validation:
 - `pnpm -C packages\core exec vitest run src\routers\workflowRouter.test.ts`
 - `pnpm -C packages\core exec tsc --noEmit`
 
+### 7. `workflow-designer-fetch-truthfulness`
+
+Status: **completed**
+
+What changed:
+
+- `packages/ui/src/components/designer/WorkflowDesigner.tsx` now validates workflow list, detail, and save responses instead of defaulting malformed payloads to empty/default designer state
+- workflow list/load/save failures now surface explicit destructive alerts instead of only logging to the console
+- workflow list fetch failures clear the dropdown inventory truthfully instead of leaving a believable empty-success state
+
+Validation:
+
+- `pnpm -C packages\ui exec tsc --noEmit`
+
 ## High-signal follow-ups
 
 Recommended next steps:
 
 1. Continue the remaining workflow-surface truthfulness sweep now that workflow save failures, malformed saved-canvas payloads, and fake empty engine-unavailable reads are surfaced explicitly.
-2. Re-run the browser/dashboard flow that originally produced storage-access console errors and confirm whether the content-script store migration removed the main noise.
-3. Resume the electron-orchestrator native ABI lane after the highest-signal startup/runtime reliability gaps are quieter.
+2. Check whether any remaining workflow-related surfaces outside `apps/web` still hide fetch/save failures behind default state now that `packages/ui`'s mounted enterprise designer is hardened.
+3. Re-run the browser/dashboard flow that originally produced storage-access console errors and confirm whether the content-script store migration removed the main noise.
+4. Resume the electron-orchestrator native ABI lane after the highest-signal startup/runtime reliability gaps are quieter.
 
 ## Validation summary
 
@@ -313,6 +329,7 @@ Successfully validated in this session:
 - `pnpm -C packages\core exec vitest run src\services\published-catalog-ingestor.test.ts`
 - `pnpm -C packages\core exec vitest run src\routers\workflowRouter.test.ts`
 - `pnpm -C packages\core exec tsc --noEmit`
+- `pnpm -C packages\ui exec tsc --noEmit`
 - `pnpm exec vitest run apps/web/src/lib/orchestrator-config.test.ts`
 - `pnpm -C apps\web exec tsc --noEmit --pretty false`
 - `node scripts\ensure_native_runtime.mjs`

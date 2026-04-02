@@ -20,6 +20,7 @@ import 'reactflow/dist/style.css';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
+import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
 import { Save, Plus, Play, Trash2, Settings2, Layout } from 'lucide-react';
 
 const initialNodes: Node[] = [
@@ -32,44 +33,182 @@ const initialNodes: Node[] = [
   }
 ];
 
+type WorkflowSummary = {
+  id: string;
+  name: string;
+};
+
+type WorkflowListResponse = {
+  workflows: WorkflowSummary[];
+};
+
+type WorkflowRecord = {
+  id: string;
+  name: string;
+  uiConfig?: {
+    nodes?: Node[];
+    edges?: Edge[];
+  } | null;
+};
+
+type WorkflowDetailResponse = {
+  success: true;
+  workflow: WorkflowRecord;
+} | {
+  success?: false;
+  error?: string;
+};
+
+type WorkflowSaveResponse = {
+  success: true;
+  workflow: { id: string };
+} | {
+  success?: false;
+  error?: string;
+};
+
+function isObject(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null;
+}
+
+function isFlowPosition(value: unknown): value is Node['position'] {
+  return isObject(value)
+    && typeof value.x === 'number'
+    && Number.isFinite(value.x)
+    && typeof value.y === 'number'
+    && Number.isFinite(value.y);
+}
+
+function isFlowNode(value: unknown): value is Node {
+  return isObject(value)
+    && typeof value.id === 'string'
+    && isFlowPosition(value.position)
+    && isObject(value.data);
+}
+
+function isFlowEdge(value: unknown): value is Edge {
+  return isObject(value)
+    && typeof value.id === 'string'
+    && typeof value.source === 'string'
+    && typeof value.target === 'string';
+}
+
+function isWorkflowSummary(value: unknown): value is WorkflowSummary {
+  return isObject(value)
+    && typeof value.id === 'string'
+    && typeof value.name === 'string';
+}
+
+function isWorkflowListResponse(value: unknown): value is WorkflowListResponse {
+  return isObject(value)
+    && Array.isArray(value.workflows)
+    && value.workflows.every(isWorkflowSummary);
+}
+
+function isWorkflowRecord(value: unknown): value is WorkflowRecord {
+  if (!isObject(value) || typeof value.id !== 'string' || typeof value.name !== 'string') {
+    return false;
+  }
+
+  if (value.uiConfig == null) {
+    return true;
+  }
+
+  if (!isObject(value.uiConfig)) {
+    return false;
+  }
+
+  const { nodes, edges } = value.uiConfig;
+  return (nodes === undefined || (Array.isArray(nodes) && nodes.every(isFlowNode)))
+    && (edges === undefined || (Array.isArray(edges) && edges.every(isFlowEdge)));
+}
+
+function isWorkflowDetailResponse(value: unknown): value is WorkflowDetailResponse {
+  if (!isObject(value)) {
+    return false;
+  }
+
+  if (value.success === true) {
+    return isWorkflowRecord(value.workflow);
+  }
+
+  return value.success === false || value.success === undefined;
+}
+
+function isWorkflowSaveResponse(value: unknown): value is WorkflowSaveResponse {
+  if (!isObject(value)) {
+    return false;
+  }
+
+  if (value.success === true) {
+    return isObject(value.workflow) && typeof value.workflow.id === 'string';
+  }
+
+  return value.success === false || value.success === undefined;
+}
+
+function getErrorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : 'Unknown error';
+}
+
 export function WorkflowDesigner() {
-  const [workflows, setWorkflows] = useState<any[]>([]);
+  const [workflows, setWorkflows] = useState<WorkflowSummary[]>([]);
   const [selectedWorkflowId, setSelectedWorkflowId] = useState<string | null>(null);
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
   const [name, setName] = useState('New Workflow');
+  const [fetchError, setFetchError] = useState<string | null>(null);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [saveError, setSaveError] = useState<string | null>(null);
 
   useEffect(() => {
     fetchWorkflows();
   }, []);
 
   const fetchWorkflows = async () => {
+    setFetchError(null);
     try {
       const res = await fetch('/api/workflows');
-      const data = await res.json();
-      setWorkflows(data.workflows || []);
+      if (!res.ok) {
+        throw new Error(`Workflow list request failed with ${res.status}.`);
+      }
+      const data: unknown = await res.json();
+      if (!isWorkflowListResponse(data)) {
+        throw new Error('Workflow list response was malformed.');
+      }
+      setWorkflows(data.workflows);
     } catch (err) {
-      console.error('Failed to fetch workflows:', err);
+      setFetchError(getErrorMessage(err));
+      setWorkflows([]);
     }
   };
 
   const loadWorkflow = async (id: string) => {
+    setLoadError(null);
     try {
       const res = await fetch(`/api/workflows/${id}`);
-      const data = await res.json();
-      if (data.success) {
-        setSelectedWorkflowId(id);
-        setName(data.workflow.name);
-        if (data.workflow.uiConfig) {
-          setNodes(data.workflow.uiConfig.nodes || initialNodes);
-          setEdges(data.workflow.uiConfig.edges || []);
-        } else {
-          setNodes(initialNodes);
-          setEdges([]);
-        }
+      if (!res.ok) {
+        throw new Error(`Workflow load request failed with ${res.status}.`);
+      }
+      const data: unknown = await res.json();
+      if (!isWorkflowDetailResponse(data)) {
+        throw new Error('Workflow detail response was malformed.');
+      }
+      if (data.success !== true) {
+        throw new Error(data.error ?? 'Workflow load failed.');
+      }
+
+      setSelectedWorkflowId(id);
+      setName(data.workflow.name);
+      if (data.workflow.uiConfig) {
+        setNodes(data.workflow.uiConfig.nodes ?? initialNodes);
+        setEdges(data.workflow.uiConfig.edges ?? []);
+      } else {
+        setNodes(initialNodes);
+        setEdges([]);
       }
     } catch (err) {
-      console.error('Failed to load workflow:', err);
+      setLoadError(getErrorMessage(err));
     }
   };
 
@@ -79,6 +218,7 @@ export function WorkflowDesigner() {
   );
 
   const handleSave = async () => {
+    setSaveError(null);
     const payload = {
       name,
       uiConfig: { nodes, edges },
@@ -100,15 +240,24 @@ export function WorkflowDesigner() {
           body: JSON.stringify(payload)
         });
       }
-      
-      const data = await res.json();
-      if (data.success) {
+
+      if (!res.ok) {
+        throw new Error(`Workflow save request failed with ${res.status}.`);
+      }
+
+      const data: unknown = await res.json();
+      if (!isWorkflowSaveResponse(data)) {
+        throw new Error('Workflow save response was malformed.');
+      }
+      if (data.success === true) {
         alert('Workflow saved successfully!');
         if (!selectedWorkflowId) setSelectedWorkflowId(data.workflow.id);
         fetchWorkflows();
+        return;
       }
+      throw new Error(data.error ?? 'Workflow save failed.');
     } catch (err) {
-      console.error('Failed to save workflow:', err);
+      setSaveError(getErrorMessage(err));
     }
   };
 
@@ -168,6 +317,26 @@ export function WorkflowDesigner() {
       </div>
 
       <div className="flex-1 bg-slate-950 relative">
+        <div className="absolute left-4 right-4 top-4 z-20 space-y-2">
+          {fetchError ? (
+            <Alert variant="destructive">
+              <AlertTitle>Workflows unavailable</AlertTitle>
+              <AlertDescription>{fetchError}</AlertDescription>
+            </Alert>
+          ) : null}
+          {loadError ? (
+            <Alert variant="destructive">
+              <AlertTitle>Workflow load failed</AlertTitle>
+              <AlertDescription>{loadError}</AlertDescription>
+            </Alert>
+          ) : null}
+          {saveError ? (
+            <Alert variant="destructive">
+              <AlertTitle>Workflow save failed</AlertTitle>
+              <AlertDescription>{saveError}</AlertDescription>
+            </Alert>
+          ) : null}
+        </div>
         <ReactFlow
           nodes={nodes}
           edges={edges}
