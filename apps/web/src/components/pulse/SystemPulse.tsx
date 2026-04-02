@@ -1,7 +1,7 @@
 "use client";
 
 import { trpc } from '@/utils/trpc';
-import { Card, CardHeader, CardTitle, CardContent, Badge } from '@borg/ui';
+import { Card, CardHeader, CardTitle, CardContent, Badge } from '@hypercode/ui';
 import { Activity, Cpu, HardDrive, AlertTriangle, Clock, Server, MonitorPlay } from 'lucide-react';
 
 function formatBytes(bytes: number) {
@@ -14,30 +14,34 @@ function formatBytes(bytes: number) {
 
 export function SystemPulse() {
     // Polling System Pulse
-    const { data: status } = trpc.pulse.getSystemStatus.useQuery(undefined, { refetchInterval: 5000 });
-    const { data: metrics } = trpc.metrics.systemSnapshot.useQuery(undefined, { refetchInterval: 5000 });
-    const { data: logs } = trpc.logs.summary.useQuery({ limit: 1000 }, { refetchInterval: 5000 });
-    const { data: events } = trpc.pulse.getLatestEvents.useQuery({ limit: 50 }, { refetchInterval: 2000 });
+    const { data: status, error: statusError } = trpc.pulse.getSystemStatus.useQuery(undefined, { refetchInterval: 5000 });
+    const { data: metrics, error: metricsError } = trpc.metrics.systemSnapshot.useQuery(undefined, { refetchInterval: 5000 });
+    const { data: logs, error: logsError } = trpc.logs.summary.useQuery({ limit: 1000 }, { refetchInterval: 5000 });
+    const { data: events, error: eventsError } = trpc.pulse.getLatestEvents.useQuery({ limit: 50 }, { refetchInterval: 2000 });
 
     const uptimeStr = metrics
         ? `${Math.floor(metrics.process.uptimeSeconds / 3600)}h ${Math.floor((metrics.process.uptimeSeconds % 3600) / 60)}m`
         : '--';
+    const pulseOffline = status?.status === 'offline';
 
     return (
         <div className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">Borg Core Status</CardTitle>
-                        {status?.status === 'online' ? (
+                        <CardTitle className="text-sm font-medium">HyperCode Core Status</CardTitle>
+                        {statusError ? (
+                            <Badge variant="destructive">Unavailable</Badge>
+                        ) : status?.status === 'online' ? (
                             <Badge variant="default" className="bg-green-500/10 text-green-500 hover:bg-green-500/20">Online</Badge>
                         ) : (
                             <Badge variant="destructive">Offline</Badge>
                         )}
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">{(status as any)?.agents?.length || 0}</div>
+                        <div className="text-2xl font-bold">{statusError ? '—' : ((status as any)?.agents?.length || 0)}</div>
                         <p className="text-xs text-muted-foreground mt-1 text-cyan-500">Active Agents</p>
+                        {statusError ? <p className="text-xs text-red-300 mt-2">{statusError.message}</p> : null}
                     </CardContent>
                 </Card>
 
@@ -47,8 +51,9 @@ export function SystemPulse() {
                         <Clock className="h-4 w-4 text-muted-foreground" />
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">{uptimeStr}</div>
-                        <p className="text-xs text-muted-foreground mt-1">PID: {metrics?.process?.pid || '--'}</p>
+                        <div className="text-2xl font-bold">{metricsError ? '—' : uptimeStr}</div>
+                        <p className="text-xs text-muted-foreground mt-1">PID: {metricsError ? '--' : (metrics?.process?.pid || '--')}</p>
+                        {metricsError ? <p className="text-xs text-red-300 mt-2">{metricsError.message}</p> : null}
                     </CardContent>
                 </Card>
 
@@ -59,10 +64,10 @@ export function SystemPulse() {
                     </CardHeader>
                     <CardContent>
                         <div className="text-2xl font-bold">
-                            {metrics ? `${metrics.system.memoryUsagePercent}%` : '--'}
+                            {metricsError ? '—' : metrics ? `${metrics.system.memoryUsagePercent}%` : '--'}
                         </div>
                         <p className="text-xs text-muted-foreground mt-1">
-                            {metrics ? `${formatBytes(metrics.system.usedMemory)} / ${formatBytes(metrics.system.totalMemory)}` : '--'}
+                            {metricsError ? '--' : metrics ? `${formatBytes(metrics.system.usedMemory)} / ${formatBytes(metrics.system.totalMemory)}` : '--'}
                         </p>
                     </CardContent>
                 </Card>
@@ -74,10 +79,10 @@ export function SystemPulse() {
                     </CardHeader>
                     <CardContent>
                         <div className="text-2xl font-bold">
-                            {metrics ? formatBytes(metrics.process.heapUsed) : '--'}
+                            {metricsError ? '—' : metrics ? formatBytes(metrics.process.heapUsed) : '--'}
                         </div>
                         <p className="text-xs text-muted-foreground mt-1">
-                            of {metrics ? formatBytes(metrics.process.heapTotal) : '--'} total
+                            of {metricsError ? '--' : metrics ? formatBytes(metrics.process.heapTotal) : '--'} total
                         </p>
                     </CardContent>
                 </Card>
@@ -91,12 +96,16 @@ export function SystemPulse() {
                                 <Activity className="h-5 w-5 text-blue-500" />
                                 Live Event Stream
                             </CardTitle>
-                            <Badge variant="secondary" className="font-mono">{events?.length || 0} Events</Badge>
+                            <Badge variant="secondary" className="font-mono">{eventsError ? '—' : (events?.length || 0)} Events</Badge>
                         </CardHeader>
                         <CardContent className="flex-1 bg-zinc-950 p-4 overflow-y-auto font-mono text-sm space-y-3">
-                            {!events || events.length === 0 ? (
-                                <div className="text-zinc-500 italic flex items-center gap-2 h-full justify-center">
-                                    <MonitorPlay className="h-4 w-4" /> Waiting for events...
+                            {eventsError ? (
+                                <div className="italic flex items-center gap-2 h-full justify-center text-rose-300">
+                                    <MonitorPlay className="h-4 w-4" /> Event stream unavailable: {eventsError.message}
+                                </div>
+                            ) : !events || events.length === 0 ? (
+                                <div className={`italic flex items-center gap-2 h-full justify-center ${pulseOffline ? 'text-rose-300' : 'text-zinc-500'}`}>
+                                    <MonitorPlay className="h-4 w-4" /> {pulseOffline ? 'Pulse runtime offline. Event stream unavailable.' : 'Waiting for events...'}
                                 </div>
                             ) : (
                                 events.map((event: any, idx: number) => (
@@ -121,7 +130,11 @@ export function SystemPulse() {
                             <CardTitle className="text-sm font-medium">Top Tools (Last 1k Calls)</CardTitle>
                         </CardHeader>
                         <CardContent className="flex-1 overflow-y-auto p-0">
-                            {logs?.topTools?.map((tool: any, idx: number) => (
+                            {logsError ? (
+                                <div className="p-8 text-center text-red-300 text-sm">
+                                    Tool summary unavailable: {logsError.message}
+                                </div>
+                            ) : logs?.topTools?.map((tool: any, idx: number) => (
                                 <div key={idx} className="flex items-center justify-between p-4 border-b last:border-0 hover:bg-muted/50">
                                     <div className="flex flex-col">
                                         <span className="font-medium text-sm">{tool.name}</span>

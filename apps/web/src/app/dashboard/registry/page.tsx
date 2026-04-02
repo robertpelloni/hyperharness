@@ -28,7 +28,7 @@ import { trpc } from "@/utils/trpc";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import type { inferRouterOutputs } from "@trpc/server";
-import type { AppRouter } from "@borg/core";
+import type { AppRouter } from "@hypercode/core";
 import {
     Search,
     RefreshCw,
@@ -203,7 +203,7 @@ export default function RegistryPage() {
         },
     });
 
-    const { data: installDetails } = trpc.catalog.get.useQuery(
+    const { data: installDetails, error: installDetailsError, isLoading: loadingInstallDetails } = trpc.catalog.get.useQuery(
         { uuid: installTarget?.uuid ?? "" },
         {
             enabled: Boolean(installTarget?.uuid),
@@ -402,6 +402,18 @@ export default function RegistryPage() {
                         </div>
 
                         <div className="p-5 space-y-4 max-h-[70vh] overflow-y-auto">
+                            {installDetailsError && (
+                                <div className="rounded-lg border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-200">
+                                    Install details unavailable: {installDetailsError.message}
+                                </div>
+                            )}
+
+                            {loadingInstallDetails && !installDetailsError && (
+                                <div className="rounded-lg border border-zinc-800 bg-zinc-900/50 p-3 text-sm text-zinc-400">
+                                    Loading install recipe details…
+                                </div>
+                            )}
+
                             <div>
                                 <label className="block text-xs text-zinc-400 mb-1">Optional server name override</label>
                                 <input
@@ -460,6 +472,12 @@ export default function RegistryPage() {
                                             Missing required values: {missingRequiredSecrets.join(", ")}
                                         </p>
                                     )}
+                                </div>
+                            )}
+
+                            {!loadingInstallDetails && !installDetailsError && !installDetails?.activeRecipe && (
+                                <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 p-3 text-sm text-amber-200">
+                                    No install recipe is currently available for this catalog entry.
                                 </div>
                             )}
                         </div>

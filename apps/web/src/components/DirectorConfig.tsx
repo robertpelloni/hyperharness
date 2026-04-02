@@ -57,6 +57,16 @@ export default function DirectorConfig() {
 
     if (configQuery.isLoading) return <div className="p-4 bg-gray-900/50 rounded animate-pulse">Loading config...</div>;
 
+    if (configQuery.error) {
+        return (
+            <div className="bg-gray-900 border border-red-500/30 rounded-lg p-4 space-y-2 text-red-200">
+                <h2 className="text-xl font-bold">Director Configuration</h2>
+                <p>Director configuration unavailable.</p>
+                <p className="text-sm opacity-90">{configQuery.error.message}</p>
+            </div>
+        );
+    }
+
     return (
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 space-y-4">
             <h2 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-400">

@@ -29,6 +29,11 @@ export default function ConfigEditor() {
     return (
         <div className="p-6 border rounded-lg bg-zinc-900 text-zinc-100 shadow-md w-full max-w-2xl mt-8">
             <h2 className="text-xl font-bold mb-4">⚙️ Antigravity Config (mcp.json)</h2>
+            {configQuery.error && (
+                <div className="mb-4 rounded border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-200">
+                    Configuration unavailable: {configQuery.error.message}
+                </div>
+            )}
             <div className="relative">
                 <textarea
                     aria-label="Antigravity configuration JSON"

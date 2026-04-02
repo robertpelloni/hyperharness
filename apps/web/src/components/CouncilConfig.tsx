@@ -48,6 +48,14 @@ export default function CouncilConfig() {
 
     if (configQuery.isPending) return null;
 
+    if (configQuery.error) {
+        return (
+            <div className="bg-gray-900 border border-red-500/30 rounded-lg overflow-hidden p-4 text-red-200">
+                Council configuration unavailable: {configQuery.error.message}
+            </div>
+        );
+    }
+
     return (
         <div className="bg-gray-900 border border-gray-800 rounded-lg overflow-hidden">
             <button

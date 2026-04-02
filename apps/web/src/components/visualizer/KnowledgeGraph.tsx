@@ -4,7 +4,7 @@
 import dynamic from 'next/dynamic';
 import React, { useRef } from 'react';
 import { trpc } from '@/utils/trpc'; // Assuming standard TRPC hook location or adjust
-import { Card, CardHeader, CardTitle, CardContent } from '@borg/ui';
+import { Card, CardHeader, CardTitle, CardContent } from '@hypercode/ui';
 
 // ForceGraph must be dynamically imported as it uses window
 const ForceGraph2D = dynamic(() => import('react-force-graph-2d'), { ssr: false });
@@ -17,7 +17,7 @@ export function KnowledgeGraph() {
     // But for "Visual Grounding", let's visualize the "Knowledge Service" directly.
 
     // Use TRPC to fetch graph data
-    const { data } = trpc.knowledge.getGraph.useQuery({ query: undefined, depth: 2 }, {
+    const { data, error, isLoading } = trpc.knowledge.getGraph.useQuery({ query: undefined, depth: 2 }, {
         refetchOnWindowFocus: false
     });
 
@@ -41,14 +41,24 @@ export function KnowledgeGraph() {
                 <CardTitle>Memory Layout (Hippocampus)</CardTitle>
             </CardHeader>
             <CardContent className="flex-1 p-0 relative bg-zinc-950 overflow-hidden rounded-b-xl">
-                <ForceGraph2D
-                    ref={fgRef}
-                    graphData={graphData}
-                    nodeLabel="id"
-                    nodeColor={node => node.group === 1 ? '#ef4444' : '#3b82f6'}
-                    linkColor={() => '#ffffff40'}
-                    backgroundColor="#09090b" // Zinc-950
-                />
+                {isLoading ? (
+                    <div className="flex h-full items-center justify-center text-zinc-400">Loading knowledge graph...</div>
+                ) : error ? (
+                    <div className="flex h-full items-center justify-center px-6 text-center text-red-300">
+                        Knowledge graph unavailable: {error.message}
+                    </div>
+                ) : graphData.nodes.length === 0 ? (
+                    <div className="flex h-full items-center justify-center text-zinc-500">No knowledge graph data available.</div>
+                ) : (
+                    <ForceGraph2D
+                        ref={fgRef}
+                        graphData={graphData}
+                        nodeLabel="id"
+                        nodeColor={node => node.group === 1 ? '#ef4444' : '#3b82f6'}
+                        linkColor={() => '#ffffff40'}
+                        backgroundColor="#09090b" // Zinc-950
+                    />
+                )}
             </CardContent>
         </Card>
     );

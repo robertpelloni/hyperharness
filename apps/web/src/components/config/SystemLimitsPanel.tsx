@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { trpc } from '@/utils/trpc';
-import { Card, Switch, Label } from '@borg/ui';
+import { Card, Switch, Label } from '@hypercode/ui';
 
 export function SystemLimitsPanel() {
     const signupQuery = trpc.config.getSignupDisabled.useQuery();
@@ -30,6 +30,12 @@ export function SystemLimitsPanel() {
             <h2 className="text-xl font-bold text-white mb-2">System Policy & Security</h2>
             <p className="text-sm text-gray-400 mb-6">Manage global authentication policies and execution limits.</p>
 
+            {(signupQuery.error || ssoQuery.error || basicAuthQuery.error || mcpResetQuery.error) && (
+                <div className="rounded border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-200">
+                    System policy settings unavailable: {signupQuery.error?.message || ssoQuery.error?.message || basicAuthQuery.error?.message || mcpResetQuery.error?.message}
+                </div>
+            )}
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <Card className="p-5 bg-gray-900 border-gray-800 space-y-6">
                     <h3 className="font-semibold border-b border-gray-800 pb-2 text-gray-200">Authentication</h3>
@@ -42,7 +48,7 @@ export function SystemLimitsPanel() {
                         <Switch 
                             checked={signupQuery.data ?? false} 
                             onCheckedChange={(v) => setSignupMutation.mutate({ disabled: v })}
-                            disabled={signupQuery.isLoading || setSignupMutation.isPending}
+                            disabled={signupQuery.isLoading || Boolean(signupQuery.error) || setSignupMutation.isPending}
                         />
                     </div>
 
@@ -54,7 +60,7 @@ export function SystemLimitsPanel() {
                         <Switch 
                             checked={ssoQuery.data ?? false} 
                             onCheckedChange={(v) => setSsoMutation.mutate({ disabled: v })}
-                            disabled={ssoQuery.isLoading || setSsoMutation.isPending}
+                            disabled={ssoQuery.isLoading || Boolean(ssoQuery.error) || setSsoMutation.isPending}
                         />
                     </div>
 
@@ -66,7 +72,7 @@ export function SystemLimitsPanel() {
                         <Switch 
                             checked={basicAuthQuery.data ?? false} 
                             onCheckedChange={(v) => setBasicAuthMutation.mutate({ disabled: v })}
-                            disabled={basicAuthQuery.isLoading || setBasicAuthMutation.isPending}
+                            disabled={basicAuthQuery.isLoading || Boolean(basicAuthQuery.error) || setBasicAuthMutation.isPending}
                         />
                     </div>
                 </Card>
@@ -82,7 +88,7 @@ export function SystemLimitsPanel() {
                         <Switch 
                             checked={mcpResetQuery.data ?? false} 
                             onCheckedChange={(v) => setMcpResetMutation.mutate({ enabled: v })}
-                            disabled={mcpResetQuery.isLoading || setMcpResetMutation.isPending}
+                            disabled={mcpResetQuery.isLoading || Boolean(mcpResetQuery.error) || setMcpResetMutation.isPending}
                         />
                     </div>
                 </Card>

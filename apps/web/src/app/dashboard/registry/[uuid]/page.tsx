@@ -47,7 +47,7 @@ import {
 import { useState } from "react";
 import { toast } from "sonner";
 import type { inferRouterOutputs } from "@trpc/server";
-import type { AppRouter } from "@borg/core";
+import type { AppRouter } from "@hypercode/core";
 
 // ---- Types ----
 
@@ -195,7 +195,7 @@ export default function ServerDetailPage() {
     const utils = trpc.useContext();
 
     // Server detail query
-    const { data: detail, isLoading } = trpc.catalog.get.useQuery(
+    const { data: detail, isLoading, error: detailError } = trpc.catalog.get.useQuery(
         { uuid },
         { enabled: Boolean(uuid), staleTime: 30_000 }
     );
@@ -253,6 +253,22 @@ export default function ServerDetailPage() {
         return (
             <div className="p-8 flex items-center justify-center gap-3 text-zinc-500">
                 <RefreshCw className="w-5 h-5 animate-spin" /> Loading…
+            </div>
+        );
+    }
+
+    if (detailError) {
+        return (
+            <div className="p-8 text-center space-y-4">
+                <AlertCircle className="w-10 h-10 mx-auto text-red-500 opacity-60" />
+                <p className="text-zinc-300">Catalog entry unavailable.</p>
+                <p className="text-sm text-zinc-500">{detailError.message}</p>
+                <button
+                    onClick={() => router.back()}
+                    className="text-sm text-indigo-400 hover:underline"
+                >
+                    ← Back to registry
+                </button>
             </div>
         );
     }

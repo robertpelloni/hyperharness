@@ -1760,9 +1760,10 @@ func (s *Server) handleImportedSessionGet(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	writeJSON(w, http.StatusOK, map[string]any{
-		"success": true,
-		"data":    nil,
+	writeJSON(w, http.StatusServiceUnavailable, map[string]any{
+		"success": false,
+		"error":   "imported session unavailable",
+		"detail":  "upstream unavailable; imported session not present in archived or scan-only fallback records",
 		"bridge": map[string]any{
 			"fallback":  "go-sessionimport",
 			"procedure": "session.importedGet",
@@ -2185,9 +2186,10 @@ func (s *Server) handleMCPConfiguredServerGet(w http.ResponseWriter, r *http.Req
 		return
 	}
 
-	writeJSON(w, http.StatusOK, map[string]any{
-		"success": true,
-		"data":    nil,
+	writeJSON(w, http.StatusServiceUnavailable, map[string]any{
+		"success": false,
+		"error":   "configured MCP server unavailable",
+		"detail":  "upstream unavailable; configured MCP server not present in local metamcp.db fallback",
 		"bridge": map[string]any{
 			"fallback":  "go-local-mcp-db",
 			"procedure": "mcpServers.get",
@@ -2877,8 +2879,9 @@ func (s *Server) handleMCPTraffic(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	writeJSON(w, http.StatusOK, map[string]any{
-		"success": true,
+	writeJSON(w, http.StatusServiceUnavailable, map[string]any{
+		"success": false,
+		"error":   "MCP traffic history is unavailable: upstream MCP router is unavailable and no local traffic history is persisted.",
 		"data":    []map[string]any{},
 		"bridge": map[string]any{
 			"fallback":  "go-local-mcp",
@@ -2903,8 +2906,9 @@ func (s *Server) handleMCPToolSelectionTelemetry(w http.ResponseWriter, r *http.
 		return
 	}
 
-	writeJSON(w, http.StatusOK, map[string]any{
-		"success": true,
+	writeJSON(w, http.StatusServiceUnavailable, map[string]any{
+		"success": false,
+		"error":   "Tool-selection telemetry is unavailable: upstream MCP router is unavailable and no local telemetry history is persisted.",
 		"data":    []map[string]any{},
 		"bridge": map[string]any{
 			"fallback":  "go-local-mcp",
@@ -2929,8 +2933,9 @@ func (s *Server) handleMCPClearToolSelectionTelemetry(w http.ResponseWriter, r *
 		return
 	}
 
-	writeJSON(w, http.StatusOK, map[string]any{
-		"success": true,
+	writeJSON(w, http.StatusServiceUnavailable, map[string]any{
+		"success": false,
+		"error":   "Tool-selection telemetry clearing is unavailable: upstream MCP router is unavailable and no local telemetry history exists.",
 		"data": map[string]any{
 			"ok": true,
 		},
@@ -3245,8 +3250,9 @@ func (s *Server) handleMCPWorkingSet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	writeJSON(w, http.StatusOK, map[string]any{
-		"success": true,
+	writeJSON(w, http.StatusServiceUnavailable, map[string]any{
+		"success": false,
+		"error":   "MCP working set is unavailable: upstream MCP router is unavailable and no local working set manager is initialized.",
 		"data": map[string]any{
 			"limits": map[string]any{
 				"maxLoadedTools":          0,
@@ -3278,8 +3284,9 @@ func (s *Server) handleMCPWorkingSetEvictions(w http.ResponseWriter, r *http.Req
 		return
 	}
 
-	writeJSON(w, http.StatusOK, map[string]any{
-		"success": true,
+	writeJSON(w, http.StatusServiceUnavailable, map[string]any{
+		"success": false,
+		"error":   "MCP eviction history is unavailable: upstream MCP router is unavailable and no local eviction history is persisted.",
 		"data":    []map[string]any{},
 		"bridge": map[string]any{
 			"fallback":  "go-local-mcp",
@@ -3304,8 +3311,9 @@ func (s *Server) handleMCPClearWorkingSetEvictions(w http.ResponseWriter, r *htt
 		return
 	}
 
-	writeJSON(w, http.StatusOK, map[string]any{
-		"success": true,
+	writeJSON(w, http.StatusServiceUnavailable, map[string]any{
+		"success": false,
+		"error":   "MCP eviction history clearing is unavailable: upstream MCP router is unavailable and no local eviction history exists.",
 		"data": map[string]any{
 			"ok":      true,
 			"message": "MCP server unavailable; eviction history already empty.",
@@ -3429,9 +3437,10 @@ func (s *Server) handleMemoryContextGet(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	writeJSON(w, http.StatusOK, map[string]any{
-		"success": true,
-		"data":    nil,
+	writeJSON(w, http.StatusServiceUnavailable, map[string]any{
+		"success": false,
+		"error":   "memory context unavailable",
+		"detail":  "upstream unavailable; local memory context fallback has no persisted context body",
 		"bridge": map[string]any{
 			"fallback":  "go-local-memory",
 			"procedure": "memory.getContext",
@@ -3452,7 +3461,7 @@ func (s *Server) handleMemoryContextDelete(w http.ResponseWriter, r *http.Reques
 		writeJSON(w, http.StatusOK, map[string]any{"success": true, "data": result, "bridge": map[string]any{"upstreamBase": upstreamBase, "procedure": "memory.deleteContext"}})
 		return
 	}
-	writeJSON(w, http.StatusOK, map[string]any{"success": true, "data": map[string]any{"success": false}, "bridge": map[string]any{"fallback": "go-local-memory", "procedure": "memory.deleteContext", "reason": "upstream unavailable; local memory fallback cannot delete persisted contexts"}})
+	writeJSON(w, http.StatusServiceUnavailable, map[string]any{"success": false, "error": "Memory context deletion is unavailable: upstream memory service is unavailable and the local fallback cannot delete persisted contexts.", "data": map[string]any{"success": false}, "bridge": map[string]any{"fallback": "go-local-memory", "procedure": "memory.deleteContext", "reason": "upstream unavailable; local memory fallback cannot delete persisted contexts"}})
 }
 
 func (s *Server) handleMemoryAgentStats(w http.ResponseWriter, r *http.Request) {
@@ -3541,7 +3550,7 @@ func (s *Server) handleMemoryAddFact(w http.ResponseWriter, r *http.Request) {
 		writeJSON(w, http.StatusOK, map[string]any{"success": true, "data": result, "bridge": map[string]any{"upstreamBase": upstreamBase, "procedure": "memory.addFact"}})
 		return
 	}
-	writeJSON(w, http.StatusOK, map[string]any{"success": true, "data": map[string]any{"success": false}, "bridge": map[string]any{"fallback": "go-local-memory", "procedure": "memory.addFact", "reason": "upstream unavailable; local memory fallback cannot persist facts"}})
+	writeJSON(w, http.StatusServiceUnavailable, map[string]any{"success": false, "error": "Memory fact persistence is unavailable: upstream memory service is unavailable and the local fallback cannot persist facts.", "data": map[string]any{"success": false}, "bridge": map[string]any{"fallback": "go-local-memory", "procedure": "memory.addFact", "reason": "upstream unavailable; local memory fallback cannot persist facts"}})
 }
 
 func (s *Server) handleMemoryRecordObservation(w http.ResponseWriter, r *http.Request) {
@@ -3556,7 +3565,7 @@ func (s *Server) handleMemoryRecordObservation(w http.ResponseWriter, r *http.Re
 		writeJSON(w, http.StatusOK, map[string]any{"success": true, "data": result, "bridge": map[string]any{"upstreamBase": upstreamBase, "procedure": "memory.recordObservation"}})
 		return
 	}
-	writeJSON(w, http.StatusOK, map[string]any{"success": true, "data": map[string]any{"success": false}, "bridge": map[string]any{"fallback": "go-local-memory", "procedure": "memory.recordObservation", "reason": "upstream unavailable; local memory fallback cannot persist observations"}})
+	writeJSON(w, http.StatusServiceUnavailable, map[string]any{"success": false, "error": "Memory observation persistence is unavailable: upstream memory service is unavailable and the local fallback cannot persist observations.", "data": map[string]any{"success": false}, "bridge": map[string]any{"fallback": "go-local-memory", "procedure": "memory.recordObservation", "reason": "upstream unavailable; local memory fallback cannot persist observations"}})
 }
 
 func (s *Server) handleMemoryRecentObservations(w http.ResponseWriter, r *http.Request) {
@@ -3666,7 +3675,7 @@ func (s *Server) handleMemoryCaptureUserPrompt(w http.ResponseWriter, r *http.Re
 		writeJSON(w, http.StatusOK, map[string]any{"success": true, "data": result, "bridge": map[string]any{"upstreamBase": upstreamBase, "procedure": "memory.captureUserPrompt"}})
 		return
 	}
-	writeJSON(w, http.StatusOK, map[string]any{"success": true, "data": map[string]any{"success": false}, "bridge": map[string]any{"fallback": "go-local-memory", "procedure": "memory.captureUserPrompt", "reason": "upstream unavailable; local memory fallback cannot persist user prompts"}})
+	writeJSON(w, http.StatusServiceUnavailable, map[string]any{"success": false, "error": "User prompt capture is unavailable: upstream memory service is unavailable and the local fallback cannot persist user prompts.", "data": map[string]any{"success": false}, "bridge": map[string]any{"fallback": "go-local-memory", "procedure": "memory.captureUserPrompt", "reason": "upstream unavailable; local memory fallback cannot persist user prompts"}})
 }
 
 func (s *Server) handleMemoryRecentUserPrompts(w http.ResponseWriter, r *http.Request) {
@@ -3885,7 +3894,7 @@ func (s *Server) handleMemoryCaptureSessionSummary(w http.ResponseWriter, r *htt
 		writeJSON(w, http.StatusOK, map[string]any{"success": true, "data": result, "bridge": map[string]any{"upstreamBase": upstreamBase, "procedure": "memory.captureSessionSummary"}})
 		return
 	}
-	writeJSON(w, http.StatusOK, map[string]any{"success": true, "data": map[string]any{"success": false}, "bridge": map[string]any{"fallback": "go-local-memory", "procedure": "memory.captureSessionSummary", "reason": "upstream unavailable; local memory fallback cannot persist session summaries"}})
+	writeJSON(w, http.StatusServiceUnavailable, map[string]any{"success": false, "error": "Session summary capture is unavailable: upstream memory service is unavailable and the local fallback cannot persist session summaries.", "data": map[string]any{"success": false}, "bridge": map[string]any{"fallback": "go-local-memory", "procedure": "memory.captureSessionSummary", "reason": "upstream unavailable; local memory fallback cannot persist session summaries"}})
 }
 
 func (s *Server) handleMemoryRecentSessionSummaries(w http.ResponseWriter, r *http.Request) {
@@ -4209,8 +4218,9 @@ func (s *Server) handleAgentMemoryByNamespace(w http.ResponseWriter, r *http.Req
 }
 
 func (s *Server) writeAgentMemoryListFallback(w http.ResponseWriter, procedure string) {
-	writeJSON(w, http.StatusOK, map[string]any{
-		"success": true,
+	writeJSON(w, http.StatusServiceUnavailable, map[string]any{
+		"success": false,
+		"error":   "Agent memory is unavailable: upstream agent memory service is unavailable and the local agent memory runtime is not initialized.",
 		"data":    []any{},
 		"bridge": map[string]any{
 			"fallback":  "go-local-agent-memory",
@@ -4243,8 +4253,9 @@ func (s *Server) handleAgentMemoryExport(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	writeJSON(w, http.StatusOK, map[string]any{
-		"success": true,
+	writeJSON(w, http.StatusServiceUnavailable, map[string]any{
+		"success": false,
+		"error":   "Agent memory export is unavailable: upstream agent memory service is unavailable and the local agent memory runtime is not initialized.",
 		"data": map[string]any{
 			"session":   []any{},
 			"working":   []any{},
@@ -4281,8 +4292,9 @@ func (s *Server) handleAgentMemoryStats(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	writeJSON(w, http.StatusOK, map[string]any{
-		"success": true,
+	writeJSON(w, http.StatusServiceUnavailable, map[string]any{
+		"success": false,
+		"error":   "Agent memory stats are unavailable: upstream agent memory service is unavailable and the local agent memory runtime is not initialized.",
 		"data": map[string]any{
 			"session":  0,
 			"working":  0,
@@ -4352,8 +4364,9 @@ func (s *Server) handleGraphDependencies(w http.ResponseWriter, r *http.Request)
 }
 
 func (s *Server) writeGraphListFallback(w http.ResponseWriter, procedure string) {
-	writeJSON(w, http.StatusOK, map[string]any{
-		"success": true,
+	writeJSON(w, http.StatusServiceUnavailable, map[string]any{
+		"success": false,
+		"error":   "Repository graph is unavailable: upstream graph service is unavailable and the local graph index is not initialized.",
 		"data":    []string{},
 		"bridge": map[string]any{
 			"fallback":  "go-local-graph",
@@ -4378,8 +4391,9 @@ func (s *Server) handleGraphSymbols(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	writeJSON(w, http.StatusOK, map[string]any{
-		"success": true,
+	writeJSON(w, http.StatusServiceUnavailable, map[string]any{
+		"success": false,
+		"error":   "Symbol graph is unavailable: upstream graph service is unavailable and local symbol graph data is not initialized.",
 		"data": map[string]any{
 			"nodes": []map[string]any{},
 			"links": []map[string]any{},
@@ -4638,8 +4652,9 @@ func (s *Server) handleMetricsStats(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	writeJSON(w, http.StatusOK, map[string]any{
-		"success": true,
+	writeJSON(w, http.StatusServiceUnavailable, map[string]any{
+		"success": false,
+		"error":   "Metrics stats are unavailable: upstream metrics service is unavailable and the local event store is not implemented.",
 		"data": map[string]any{
 			"windowMs":    windowMs,
 			"totalEvents": 0,
@@ -4750,8 +4765,9 @@ func (s *Server) handleMetricsTimeline(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	writeJSON(w, http.StatusOK, map[string]any{
-		"success": true,
+	writeJSON(w, http.StatusServiceUnavailable, map[string]any{
+		"success": false,
+		"error":   "Metrics timeline is unavailable: upstream metrics service is unavailable and the local event store is not implemented.",
 		"data": map[string]any{
 			"windowMs":   windowMs,
 			"buckets":    buckets,
@@ -4835,8 +4851,9 @@ func (s *Server) handleMetricsRoutingHistory(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	writeJSON(w, http.StatusOK, map[string]any{
-		"success": true,
+	writeJSON(w, http.StatusServiceUnavailable, map[string]any{
+		"success": false,
+		"error":   "Routing history is unavailable: upstream metrics service is unavailable and the local routing history buffer is not implemented.",
 		"data":    []any{},
 		"bridge": map[string]any{
 			"fallback":  "go-local-metrics-preview",
@@ -5725,9 +5742,10 @@ func (s *Server) handleToolSetsGet(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	writeJSON(w, http.StatusOK, map[string]any{
-		"success": true,
-		"data":    nil,
+	writeJSON(w, http.StatusServiceUnavailable, map[string]any{
+		"success": false,
+		"error":   "tool set unavailable",
+		"detail":  "upstream unavailable; tool set was not found in local metamcp.db",
 		"bridge": map[string]any{
 			"fallback":  "go-local-operator",
 			"procedure": "toolSets.get",
@@ -6152,8 +6170,9 @@ func (s *Server) handleWorkflowList(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	writeJSON(w, http.StatusOK, map[string]any{
-		"success": true,
+	writeJSON(w, http.StatusServiceUnavailable, map[string]any{
+		"success": false,
+		"error":   "Workflow definitions are unavailable: upstream workflow engine is unavailable and the local workflow engine is not initialized.",
 		"data":    []map[string]any{},
 		"bridge": map[string]any{
 			"fallback":  "go-local-workflow",
@@ -6183,8 +6202,9 @@ func (s *Server) handleWorkflowGraph(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	writeJSON(w, http.StatusOK, map[string]any{
-		"success": true,
+	writeJSON(w, http.StatusServiceUnavailable, map[string]any{
+		"success": false,
+		"error":   "Workflow graph is unavailable: upstream workflow engine is unavailable and the local workflow engine is not initialized.",
 		"data": map[string]any{
 			"nodes": []map[string]any{},
 			"edges": []map[string]any{},
@@ -6216,8 +6236,9 @@ func (s *Server) handleWorkflowExecutions(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	writeJSON(w, http.StatusOK, map[string]any{
-		"success": true,
+	writeJSON(w, http.StatusServiceUnavailable, map[string]any{
+		"success": false,
+		"error":   "Workflow executions are unavailable: upstream workflow engine is unavailable and the local workflow engine is not initialized.",
 		"data":    []map[string]any{},
 		"bridge": map[string]any{
 			"fallback":  "go-local-workflow",
@@ -6247,8 +6268,9 @@ func (s *Server) handleWorkflowExecution(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	writeJSON(w, http.StatusOK, map[string]any{
-		"success": true,
+	writeJSON(w, http.StatusServiceUnavailable, map[string]any{
+		"success": false,
+		"error":   "Workflow execution is unavailable: upstream workflow engine is unavailable and the local workflow engine is not initialized.",
 		"data":    nil,
 		"bridge": map[string]any{
 			"fallback":  "go-local-workflow",
@@ -6278,8 +6300,9 @@ func (s *Server) handleWorkflowHistory(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	writeJSON(w, http.StatusOK, map[string]any{
-		"success": true,
+	writeJSON(w, http.StatusServiceUnavailable, map[string]any{
+		"success": false,
+		"error":   "Workflow history is unavailable: upstream workflow engine is unavailable and the local workflow engine is not initialized.",
 		"data":    []map[string]any{},
 		"bridge": map[string]any{
 			"fallback":  "go-local-workflow",
@@ -6469,8 +6492,9 @@ func (s *Server) handleSymbolsForFile(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) writeSymbolsEmptyFallback(w http.ResponseWriter, procedure string, reason string) {
-	writeJSON(w, http.StatusOK, map[string]any{
-		"success": true,
+	writeJSON(w, http.StatusServiceUnavailable, map[string]any{
+		"success": false,
+		"error":   "Symbol data is unavailable: upstream symbols service is unavailable and the local symbol index is not initialized.",
 		"data":    []map[string]any{},
 		"bridge": map[string]any{
 			"fallback":  "go-local-symbols",
@@ -6584,6 +6608,19 @@ func (s *Server) handleAPIKeysGet(w http.ResponseWriter, r *http.Request) {
 			"success": false,
 			"error":   fallbackErr.Error(),
 			"detail":  fallbackErr.Error(),
+		})
+		return
+	}
+	if apiKey == nil {
+		writeJSON(w, http.StatusServiceUnavailable, map[string]any{
+			"success": false,
+			"error":   "API key unavailable",
+			"detail":  "upstream unavailable; API key was not found in local metamcp workspace metadata",
+			"bridge": map[string]any{
+				"fallback":  "go-local-policy-db",
+				"procedure": "apiKeys.get",
+				"reason":    "upstream unavailable; API key was not found in local metamcp workspace metadata",
+			},
 		})
 		return
 	}
@@ -6791,9 +6828,10 @@ func (s *Server) handleSavedScriptsGet(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	writeJSON(w, http.StatusOK, map[string]any{
-		"success": true,
-		"data":    nil,
+	writeJSON(w, http.StatusServiceUnavailable, map[string]any{
+		"success": false,
+		"error":   "saved script unavailable",
+		"detail":  "upstream unavailable; saved script was not found in local HyperCode config",
 		"bridge": map[string]any{
 			"fallback":  "go-local-operator",
 			"procedure": "savedScripts.get",
@@ -6956,6 +6994,19 @@ func (s *Server) handleLinksBacklogGet(w http.ResponseWriter, r *http.Request) {
 			"success": false,
 			"error":   fallbackErr.Error(),
 			"detail":  fallbackErr.Error(),
+		})
+		return
+	}
+	if item == nil {
+		writeJSON(w, http.StatusServiceUnavailable, map[string]any{
+			"success": false,
+			"error":   "links backlog item unavailable",
+			"detail":  "upstream unavailable; links backlog item was not found in local metamcp links backlog",
+			"bridge": map[string]any{
+				"fallback":  "go-local-links-db",
+				"procedure": "linksBacklog.get",
+				"reason":    "upstream unavailable; links backlog item was not found in local metamcp links backlog",
+			},
 		})
 		return
 	}
@@ -7329,6 +7380,19 @@ func (s *Server) handleCatalogGet(w http.ResponseWriter, r *http.Request) {
 		})
 		return
 	}
+	if payload == nil {
+		writeJSON(w, http.StatusServiceUnavailable, map[string]any{
+			"success": false,
+			"error":   "catalog entry unavailable",
+			"detail":  "upstream unavailable; catalog entry was not found in local metamcp published catalog",
+			"bridge": map[string]any{
+				"fallback":  "go-local-published-catalog-db",
+				"procedure": "catalog.get",
+				"reason":    "upstream unavailable; catalog entry was not found in local metamcp published catalog",
+			},
+		})
+		return
+	}
 
 	writeJSON(w, http.StatusOK, map[string]any{
 		"success": true,
@@ -7516,6 +7580,19 @@ func (s *Server) handleOAuthClientGet(w http.ResponseWriter, r *http.Request) {
 		})
 		return
 	}
+	if client == nil {
+		writeJSON(w, http.StatusServiceUnavailable, map[string]any{
+			"success": false,
+			"error":   "OAuth client unavailable",
+			"detail":  "upstream unavailable; OAuth client was not found in local metamcp oauth clients",
+			"bridge": map[string]any{
+				"fallback":  "go-local-oauth-clients-db",
+				"procedure": "oauth.clients.get",
+				"reason":    "upstream unavailable; OAuth client was not found in local metamcp oauth clients",
+			},
+		})
+		return
+	}
 
 	writeJSON(w, http.StatusOK, map[string]any{
 		"success": true,
@@ -7558,6 +7635,19 @@ func (s *Server) handleOAuthSessionGetByServer(w http.ResponseWriter, r *http.Re
 			"success": false,
 			"error":   fallbackErr.Error(),
 			"detail":  fallbackErr.Error(),
+		})
+		return
+	}
+	if session == nil {
+		writeJSON(w, http.StatusServiceUnavailable, map[string]any{
+			"success": false,
+			"error":   "OAuth session unavailable",
+			"detail":  "upstream unavailable; OAuth session was not found in local metamcp oauth sessions",
+			"bridge": map[string]any{
+				"fallback":  "go-local-oauth-sessions-db",
+				"procedure": "oauth.sessions.getByServer",
+				"reason":    "upstream unavailable; OAuth session was not found in local metamcp oauth sessions",
+			},
 		})
 		return
 	}
@@ -8691,6 +8781,19 @@ func (s *Server) handleToolChainsGet(w http.ResponseWriter, r *http.Request) {
 		writeJSON(w, http.StatusInternalServerError, map[string]any{
 			"success": false,
 			"error":   fallbackErr.Error(),
+		})
+		return
+	}
+	if chain == nil {
+		writeJSON(w, http.StatusServiceUnavailable, map[string]any{
+			"success": false,
+			"error":   "tool chain unavailable",
+			"detail":  "upstream unavailable; tool chain was not found in local metamcp tool chains",
+			"bridge": map[string]any{
+				"fallback":  "go-local-toolchain-db",
+				"procedure": "toolChaining.getChain",
+				"reason":    "upstream unavailable; tool chain was not found in local metamcp tool chains",
+			},
 		})
 		return
 	}
@@ -10148,6 +10251,9 @@ func (s *Server) localCatalogGet(uuid string) (any, error) {
 	server, err := localPublishedCatalogServer(db, uuid)
 	if err != nil {
 		return nil, err
+	}
+	if server == nil {
+		return nil, nil
 	}
 	latestRun, err := localPublishedCatalogLatestRun(db, uuid)
 	if err != nil {
@@ -14967,9 +15073,10 @@ func (s *Server) handleReadOnlyMemoryBodyFallback(w http.ResponseWriter, r *http
 		return
 	}
 
-	writeJSON(w, http.StatusOK, map[string]any{
-		"success": true,
-		"data":    []map[string]any{},
+	writeJSON(w, http.StatusServiceUnavailable, map[string]any{
+		"success": false,
+		"error":   "memory route unavailable",
+		"detail":  "upstream unavailable; local memory fallback has no persisted body results for " + procedure,
 		"bridge": map[string]any{
 			"fallback":  "go-local-memory",
 			"procedure": procedure,
@@ -14999,8 +15106,9 @@ func (s *Server) handleMCPManualToolMutation(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	writeJSON(w, http.StatusOK, map[string]any{
-		"success": true,
+	writeJSON(w, http.StatusServiceUnavailable, map[string]any{
+		"success": false,
+		"error":   "MCP working-set mutation is unavailable: upstream MCP router is unavailable and the local MCP working set manager is not initialized.",
 		"data": map[string]any{
 			"ok":      false,
 			"message": "MCP Server not initialized",

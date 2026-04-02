@@ -105,6 +105,12 @@ export function DirectorChat() {
                 💬 Director Chat
             </h2>
 
+            {configQuery.error && (
+                <div className="mb-4 rounded border border-amber-500/30 bg-amber-500/10 p-3 text-xs text-amber-200">
+                    Director chat settings unavailable: {configQuery.error.message}. Paste auto-submit is using manual mode until configuration reconnects.
+                </div>
+            )}
+
             {EMERGENCY_MODE && (
                 <div className="bg-red-900/50 text-red-200 text-xs p-2 rounded border border-red-500/50 animate-pulse mb-4">
                     🛑 <b>EMERGENCY STOP ACTIVE</b>: Auto-typing disabled to break loop. Please restart Director process.

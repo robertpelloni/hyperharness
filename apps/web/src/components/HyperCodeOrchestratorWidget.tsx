@@ -17,7 +17,7 @@ interface SupervisorInfo {
 }
 
 interface CouncilStatus {
-    enabled: boolean;
+    enabled?: boolean;
     supervisors: SupervisorInfo[];
     consensusMode: string;
     consensusThreshold?: number;
@@ -155,6 +155,11 @@ export function HyperCodeOrchestratorWidget() {
     const [cliTools, setCliTools] = useState<CliTool[]>([]);
     const [vetoPending, setVetoPending] = useState<VetoPending[]>([]);
     const [debateHistory, setDebateHistory] = useState<DebateEntry[]>([]);
+    const [debateHistoryError, setDebateHistoryError] = useState<string | null>(null);
+    const [councilError, setCouncilError] = useState<string | null>(null);
+    const [sessionsError, setSessionsError] = useState<string | null>(null);
+    const [cliToolsError, setCliToolsError] = useState<string | null>(null);
+    const [vetoError, setVetoError] = useState<string | null>(null);
     const [health, setHealth] = useState<ServerHealth | null>(null);
     const [loading, setLoading] = useState(false);
     const [lastError, setLastError] = useState<string | null>(null);
@@ -170,7 +175,7 @@ export function HyperCodeOrchestratorWidget() {
 
     const [settingMode, setSettingMode] = useState(false);
 
-    const serverUrl = BASE ?? "not configured";
+    const serverUrl = BASE;
 
     const refresh = useCallback(async () => {
         if (!BASE) {
@@ -182,6 +187,11 @@ export function HyperCodeOrchestratorWidget() {
 
         setLoading(true);
         setLastError(null);
+        setDebateHistoryError(null);
+        setCouncilError(null);
+        setSessionsError(null);
+        setCliToolsError(null);
+        setVetoError(null);
 
         const [healthRes, councilRes, sessionsRes, cliRes, vetoRes, debateRes] = await Promise.all([
             apFetch<{ uptime?: number; memUsed?: number; memTotal?: number; version?: string } | null>("/api/health/server"),
@@ -207,32 +217,48 @@ export function HyperCodeOrchestratorWidget() {
 
         if (councilRes.ok) {
             const d = councilRes.data;
+            const councilData = ((d as any)?.council ?? d) as Partial<CouncilStatus> | undefined;
             setCouncil({
-                enabled: (d as any)?.enabled ?? (d as any)?.council?.enabled ?? false,
-                supervisors: (d as any)?.supervisors ?? (d as any)?.council?.supervisors ?? [],
-                consensusMode: (d as any)?.consensusMode ?? (d as any)?.council?.consensusMode ?? "simple-majority",
+                enabled: typeof councilData?.enabled === "boolean" ? councilData.enabled : undefined,
+                supervisors: Array.isArray(councilData?.supervisors) ? councilData.supervisors : [],
+                consensusMode: typeof councilData?.consensusMode === "string" ? councilData.consensusMode : "simple-majority",
             });
+        } else {
+            setCouncil(null);
+            setCouncilError(councilRes.error ?? "Council status is unavailable.");
         }
 
         if (sessionsRes.ok) {
             const d = sessionsRes.data;
             setSessions(Array.isArray(d) ? (d as AutopilotSession[]) : ((d as any)?.sessions ?? []));
+        } else {
+            setSessions([]);
+            setSessionsError(sessionsRes.error ?? "Session inventory is unavailable.");
         }
 
         if (cliRes.ok) {
             const d = cliRes.data;
             setCliTools(Array.isArray(d) ? (d as CliTool[]) : ((d as any)?.tools ?? []));
+        } else {
+            setCliTools([]);
+            setCliToolsError(cliRes.error ?? "CLI tool inventory is unavailable.");
         }
 
         if (vetoRes.ok) {
             const d = vetoRes.data;
             setVetoPending(Array.isArray(d) ? (d as VetoPending[]) : ((d as any)?.pending ?? []));
+        } else {
+            setVetoPending([]);
+            setVetoError(vetoRes.error ?? "Pending vetoes are unavailable.");
         }
 
         if (debateRes.ok) {
             const d = debateRes.data;
             const list: DebateEntry[] = Array.isArray(d) ? (d as DebateEntry[]) : ((d as any)?.entries ?? (d as any)?.debates ?? []);
             setDebateHistory(list.slice(0, 20));
+        } else {
+            setDebateHistory([]);
+            setDebateHistoryError(debateRes.error ?? "Debate history is unavailable.");
         }
 
         setLoading(false);
@@ -343,9 +369,10 @@ export function HyperCodeOrchestratorWidget() {
                 <div className="rounded-2xl border border-amber-500/30 bg-amber-500/10 p-4 text-sm flex gap-3">
                     <AlertCircle className="h-4 w-4 text-amber-300 mt-0.5 shrink-0" />
                     <div>
-                        <p className="text-amber-100 font-medium">Orchestrator endpoint not configured</p>
+                        <p className="text-amber-100 font-medium">Custom orchestrator override not configured</p>
                         <div className="text-amber-200/80 text-xs mt-1 space-y-1">
-                            <p>Set one of these env vars to enable this surface:</p>
+                            <p>This surface already uses the bundled proxy route at <code className="bg-amber-950/40 px-1 rounded">{serverUrl}</code>.</p>
+                            <p>Set one of these env vars only if you need to target a different orchestrator base:</p>
                             <ul className="list-disc pl-4 space-y-1">
                                 <li><code className="bg-amber-950/40 px-1 rounded">NEXT_PUBLIC_BORG_ORCHESTRATOR_URL</code></li>
                                 <li><code className="bg-amber-950/40 px-1 rounded">NEXT_PUBLIC_AUTOPILOT_URL</code> <span className="text-amber-300/70">(legacy alias)</span></li>
@@ -376,10 +403,10 @@ export function HyperCodeOrchestratorWidget() {
 
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
                 {[
-                    { label: "Active", value: activeSessions.length, icon: <Activity className="h-4 w-4 text-emerald-400" /> },
-                    { label: "Sessions", value: sessions.length, icon: <Terminal className="h-4 w-4 text-blue-400" /> },
-                    { label: "Council", value: council?.supervisors?.length ?? 0, icon: <Users className="h-4 w-4 text-purple-400" /> },
-                    { label: "Vetoes", value: vetoPending.length, icon: <Gavel className="h-4 w-4 text-amber-400" /> },
+                    { label: "Active", value: sessionsError ? "—" : activeSessions.length, icon: <Activity className="h-4 w-4 text-emerald-400" /> },
+                    { label: "Sessions", value: sessionsError ? "—" : sessions.length, icon: <Terminal className="h-4 w-4 text-blue-400" /> },
+                    { label: "Council", value: councilError ? "—" : (council?.supervisors?.length ?? 0), icon: <Users className="h-4 w-4 text-purple-400" /> },
+                    { label: "Vetoes", value: vetoError ? "—" : vetoPending.length, icon: <Gavel className="h-4 w-4 text-amber-400" /> },
                 ].map((s) => (
                     <div key={s.label} className="border border-slate-800 rounded-xl bg-slate-950/70 p-3 flex items-center gap-3">
                         <div className="p-2 bg-slate-900 rounded-lg">{s.icon}</div>
@@ -395,29 +422,31 @@ export function HyperCodeOrchestratorWidget() {
                 <SectionCard title="Council Governance" icon={<Users className="h-4 w-4" />}>
                     <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
                         <div className="flex items-center gap-2">
-                            <span className={`text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full border ${council?.enabled ? "text-emerald-300 border-emerald-700/50 bg-emerald-500/10" : "text-slate-400 border-slate-700 bg-slate-800"}`}>
-                                {council?.enabled ? "Active" : "Standby"}
+                            <span className={`text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full border ${councilError ? "text-rose-300 border-rose-700/50 bg-rose-500/10" : council?.enabled ? "text-emerald-300 border-emerald-700/50 bg-emerald-500/10" : "text-slate-400 border-slate-700 bg-slate-800"}`}>
+                                {councilError ? "Unavailable" : council?.enabled ? "Active" : "Standby"}
                             </span>
                         </div>
                         <div className="flex items-center gap-2">
                             <select
                                 className="bg-slate-900 border border-slate-700 rounded-md px-2 py-1 text-xs text-slate-200 focus:border-cyan-500 outline-none"
                                 value={council?.consensusMode ?? "simple-majority"}
-                                disabled={!online || settingMode}
+                                disabled={!online || settingMode || Boolean(councilError)}
                                 onChange={(e) => void setConsensusMode(e.target.value as ConsensusModeType)}
                             >
                                 {CONSENSUS_MODES.map((m) => <option key={m} value={m}>{m}</option>)}
                             </select>
                             <button
                                 onClick={() => void toggleCouncil()}
-                                    disabled={!online}
-                                    className="px-3 py-1 bg-slate-800 hover:bg-slate-700 disabled:opacity-40 rounded-md text-xs font-medium transition"
-                                >
+                                disabled={!online || Boolean(councilError)}
+                                className="px-3 py-1 bg-slate-800 hover:bg-slate-700 disabled:opacity-40 rounded-md text-xs font-medium transition"
+                            >
                                 {council?.enabled ? "Disable" : "Enable"}
                             </button>
                         </div>
                     </div>
-                    {council?.supervisors && council.supervisors.length > 0 ? (
+                    {councilError ? (
+                        <p className="text-xs text-rose-300">{councilError}</p>
+                    ) : council?.supervisors && council.supervisors.length > 0 ? (
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                             {council.supervisors.map((sup) => (
                                 <div key={sup.id} className="border border-slate-800 rounded-lg bg-slate-900 p-2 text-xs flex items-center justify-between">
@@ -465,7 +494,9 @@ export function HyperCodeOrchestratorWidget() {
                     )}
 
                     <div className="space-y-2 max-h-[300px] overflow-y-auto pr-1">
-                        {sessions.length === 0 ? (
+                        {sessionsError ? (
+                            <p className="text-xs text-rose-300 text-center py-2">{sessionsError}</p>
+                        ) : sessions.length === 0 ? (
                             <p className="text-xs text-slate-500 text-center py-2">Swarm is idle.</p>
                         ) : sessions.map(s => (
                             <div key={s.id} className="border border-slate-800 rounded-lg bg-slate-900/50 overflow-hidden">
@@ -492,25 +523,31 @@ export function HyperCodeOrchestratorWidget() {
                     </div>
                 </SectionCard>
 
-                {vetoPending.length > 0 && (
+                {(vetoPending.length > 0 || vetoError) && (
                     <SectionCard title={`Pending Vetoes (${vetoPending.length})`} icon={<Gavel className="h-4 w-4 text-amber-400" />}>
-                        <div className="space-y-2">
-                            {vetoPending.map((v) => (
-                                <div key={v.id} className="border border-amber-500/20 rounded-lg bg-amber-500/5 p-2 flex flex-col gap-2">
-                                    <p className="text-xs text-amber-200">{v.description ?? v.id}</p>
-                                    <div className="flex gap-2">
-                                        <button onClick={() => void approveVeto(v.id)} className="flex-1 py-1 bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 rounded text-xs font-medium flex justify-center items-center gap-1"><CheckCircle2 className="h-3 w-3" /> Approve</button>
-                                        <button onClick={() => void rejectVeto(v.id)} className="flex-1 py-1 bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 rounded text-xs font-medium flex justify-center items-center gap-1"><XCircle className="h-3 w-3" /> Reject</button>
+                        {vetoError ? (
+                            <p className="text-xs text-rose-300">{vetoError}</p>
+                        ) : (
+                            <div className="space-y-2">
+                                {vetoPending.map((v) => (
+                                    <div key={v.id} className="border border-amber-500/20 rounded-lg bg-amber-500/5 p-2 flex flex-col gap-2">
+                                        <p className="text-xs text-amber-200">{v.description ?? v.id}</p>
+                                        <div className="flex gap-2">
+                                            <button onClick={() => void approveVeto(v.id)} className="flex-1 py-1 bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 rounded text-xs font-medium flex justify-center items-center gap-1"><CheckCircle2 className="h-3 w-3" /> Approve</button>
+                                            <button onClick={() => void rejectVeto(v.id)} className="flex-1 py-1 bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 rounded text-xs font-medium flex justify-center items-center gap-1"><XCircle className="h-3 w-3" /> Reject</button>
+                                        </div>
                                     </div>
-                                </div>
-                            ))}
-                        </div>
+                                ))}
+                            </div>
+                        )}
                     </SectionCard>
                 )}
 
                 <SectionCard title="Debate History" icon={<History className="h-4 w-4" />} defaultOpen={false}>
                     {debateHistory.length === 0 ? (
-                        <p className="text-xs text-slate-500">No debates on record.</p>
+                        <p className={`text-xs ${debateHistoryError ? "text-rose-300" : "text-slate-500"}`}>
+                            {debateHistoryError ?? "No debates on record."}
+                        </p>
                     ) : (
                         <div className="space-y-2 max-h-48 overflow-y-auto">
                             {debateHistory.map((d, i) => (

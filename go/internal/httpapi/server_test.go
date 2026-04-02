@@ -1068,8 +1068,20 @@ func TestMCPEmptyStateRoutesFallBackLocally(t *testing.T) {
 	for _, tc := range cases {
 		recorder := httptest.NewRecorder()
 		server.Handler().ServeHTTP(recorder, httptest.NewRequest(tc.method, tc.path, nil))
-		if recorder.Code != http.StatusOK {
-			t.Fatalf("%s %s: expected 200, got %d", tc.method, tc.path, recorder.Code)
+		expectedStatus := http.StatusOK
+		if tc.path == "/api/mcp/traffic" ||
+			tc.path == "/api/mcp/tool-selection-telemetry" ||
+			tc.path == "/api/mcp/tool-selection-telemetry/clear" ||
+			tc.path == "/api/mcp/working-set" ||
+			tc.path == "/api/mcp/working-set/evictions" ||
+			tc.path == "/api/mcp/working-set/evictions/clear" {
+			expectedStatus = http.StatusServiceUnavailable
+		}
+		if recorder.Code != expectedStatus {
+			t.Fatalf("%s %s: expected %d, got %d", tc.method, tc.path, expectedStatus, recorder.Code)
+		}
+		if expectedStatus == http.StatusServiceUnavailable && !strings.Contains(recorder.Body.String(), `"success":false`) {
+			t.Fatalf("%s %s: expected explicit unavailable payload, got %s", tc.method, tc.path, recorder.Body.String())
 		}
 		matched := false
 		for _, expected := range tc.containsAny {
@@ -1108,8 +1120,13 @@ func TestReadOnlyMemoryRoutesFallBackLocally(t *testing.T) {
 	for _, tc := range cases {
 		recorder := httptest.NewRecorder()
 		server.Handler().ServeHTTP(recorder, httptest.NewRequest(tc.method, tc.path, nil))
-		if recorder.Code != http.StatusOK {
-			t.Fatalf("%s %s: expected 200, got %d", tc.method, tc.path, recorder.Code)
+		expectedStatus := http.StatusOK
+		switch tc.path {
+		case "/api/memory/context/get?id=ctx-missing":
+			expectedStatus = http.StatusServiceUnavailable
+		}
+		if recorder.Code != expectedStatus {
+			t.Fatalf("%s %s: expected %d, got %d", tc.method, tc.path, expectedStatus, recorder.Code)
 		}
 		matched := false
 		for _, expected := range tc.containsAny {
@@ -1268,8 +1285,22 @@ func TestMemoryServiceBackedMutationsFallBackLocally(t *testing.T) {
 	for _, tc := range cases {
 		recorder := httptest.NewRecorder()
 		server.Handler().ServeHTTP(recorder, httptest.NewRequest(http.MethodPost, tc.path, strings.NewReader(tc.body)))
-		if recorder.Code != http.StatusOK {
-			t.Fatalf("POST %s: expected 200, got %d", tc.path, recorder.Code)
+		expectedStatus := http.StatusOK
+		if tc.path == "/api/memory/context/delete" ||
+			tc.path == "/api/memory/facts/add" ||
+			tc.path == "/api/memory/observations/record" ||
+			tc.path == "/api/memory/user-prompts/capture" ||
+			tc.path == "/api/memory/pivot/search" ||
+			tc.path == "/api/memory/timeline/window" ||
+			tc.path == "/api/memory/cross-session-links" ||
+			tc.path == "/api/memory/session-summaries/capture" {
+			expectedStatus = http.StatusServiceUnavailable
+		}
+		if recorder.Code != expectedStatus {
+			t.Fatalf("POST %s: expected %d, got %d", tc.path, expectedStatus, recorder.Code)
+		}
+		if expectedStatus == http.StatusServiceUnavailable && !strings.Contains(recorder.Body.String(), `"success":false`) {
+			t.Fatalf("POST %s: expected explicit failure payload, got %s", tc.path, recorder.Body.String())
 		}
 		matched := false
 		for _, expected := range tc.containsAny {
@@ -1394,8 +1425,11 @@ func TestMCPLoadAndUnloadToolReturnExplicitUnavailableFallback(t *testing.T) {
 		req.Header.Set("content-type", "application/json")
 		recorder := httptest.NewRecorder()
 		server.Handler().ServeHTTP(recorder, req)
-		if recorder.Code != http.StatusOK || !strings.Contains(recorder.Body.String(), `"fallback":"go-local-mcp"`) || !strings.Contains(recorder.Body.String(), `MCP Server not initialized`) {
+		if recorder.Code != http.StatusServiceUnavailable || !strings.Contains(recorder.Body.String(), `"fallback":"go-local-mcp"`) || !strings.Contains(recorder.Body.String(), `MCP Server not initialized`) {
 			t.Fatalf("%s: expected explicit unavailable fallback, got %d %s", path, recorder.Code, recorder.Body.String())
+		}
+		if !strings.Contains(recorder.Body.String(), `"success":false`) {
+			t.Fatalf("%s: expected explicit failure payload, got %s", path, recorder.Body.String())
 		}
 		if !strings.Contains(recorder.Body.String(), `local MCP working set manager is not initialized`) {
 			t.Fatalf("%s: expected local working-set fallback reason, got %s", path, recorder.Body.String())
@@ -3958,20 +3992,20 @@ func TestMetricsReadEndpointsFallBackToLocalPreview(t *testing.T) {
 	statsRecorder := httptest.NewRecorder()
 	statsRequest := httptest.NewRequest(http.MethodGet, "/api/metrics/stats?windowMs=60000", nil)
 	server.Handler().ServeHTTP(statsRecorder, statsRequest)
-	if statsRecorder.Code != http.StatusOK {
-		t.Fatalf("expected metrics stats fallback 200, got %d with body %s", statsRecorder.Code, statsRecorder.Body.String())
+	if statsRecorder.Code != http.StatusServiceUnavailable {
+		t.Fatalf("expected metrics stats fallback 503, got %d with body %s", statsRecorder.Code, statsRecorder.Body.String())
 	}
-	if !strings.Contains(statsRecorder.Body.String(), `"fallback":"go-local-metrics-preview"`) || !strings.Contains(statsRecorder.Body.String(), `"windowMs":60000`) || !strings.Contains(statsRecorder.Body.String(), `"totalEvents":0`) {
+	if !strings.Contains(statsRecorder.Body.String(), `"success":false`) || !strings.Contains(statsRecorder.Body.String(), `"fallback":"go-local-metrics-preview"`) || !strings.Contains(statsRecorder.Body.String(), `"windowMs":60000`) || !strings.Contains(statsRecorder.Body.String(), `"totalEvents":0`) {
 		t.Fatalf("expected metrics stats local preview, got %s", statsRecorder.Body.String())
 	}
 
 	timelineRecorder := httptest.NewRecorder()
 	timelineRequest := httptest.NewRequest(http.MethodGet, "/api/metrics/timeline?windowMs=60000&buckets=10&metricType=requests", nil)
 	server.Handler().ServeHTTP(timelineRecorder, timelineRequest)
-	if timelineRecorder.Code != http.StatusOK {
-		t.Fatalf("expected metrics timeline fallback 200, got %d with body %s", timelineRecorder.Code, timelineRecorder.Body.String())
+	if timelineRecorder.Code != http.StatusServiceUnavailable {
+		t.Fatalf("expected metrics timeline fallback 503, got %d with body %s", timelineRecorder.Code, timelineRecorder.Body.String())
 	}
-	if !strings.Contains(timelineRecorder.Body.String(), `"fallback":"go-local-metrics-preview"`) || !strings.Contains(timelineRecorder.Body.String(), `"buckets":10`) || !strings.Contains(timelineRecorder.Body.String(), `"metricType":"requests"`) {
+	if !strings.Contains(timelineRecorder.Body.String(), `"success":false`) || !strings.Contains(timelineRecorder.Body.String(), `"fallback":"go-local-metrics-preview"`) || !strings.Contains(timelineRecorder.Body.String(), `"buckets":10`) || !strings.Contains(timelineRecorder.Body.String(), `"metricType":"requests"`) {
 		t.Fatalf("expected metrics timeline local preview, got %s", timelineRecorder.Body.String())
 	}
 
@@ -3988,10 +4022,10 @@ func TestMetricsReadEndpointsFallBackToLocalPreview(t *testing.T) {
 	routingHistoryRecorder := httptest.NewRecorder()
 	routingHistoryRequest := httptest.NewRequest(http.MethodGet, "/api/metrics/routing-history?limit=7", nil)
 	server.Handler().ServeHTTP(routingHistoryRecorder, routingHistoryRequest)
-	if routingHistoryRecorder.Code != http.StatusOK {
-		t.Fatalf("expected routing history fallback 200, got %d with body %s", routingHistoryRecorder.Code, routingHistoryRecorder.Body.String())
+	if routingHistoryRecorder.Code != http.StatusServiceUnavailable {
+		t.Fatalf("expected routing history fallback 503, got %d with body %s", routingHistoryRecorder.Code, routingHistoryRecorder.Body.String())
 	}
-	if !strings.Contains(routingHistoryRecorder.Body.String(), `"fallback":"go-local-metrics-preview"`) || !strings.Contains(routingHistoryRecorder.Body.String(), `"data":[]`) {
+	if !strings.Contains(routingHistoryRecorder.Body.String(), `"success":false`) || !strings.Contains(routingHistoryRecorder.Body.String(), `"fallback":"go-local-metrics-preview"`) || !strings.Contains(routingHistoryRecorder.Body.String(), `"data":[]`) {
 		t.Fatalf("expected routing history local preview, got %s", routingHistoryRecorder.Body.String())
 	}
 }
@@ -4176,11 +4210,13 @@ func TestBrowserStatusFallsBackToExplicitUnavailableState(t *testing.T) {
 
 	recorder := httptest.NewRecorder()
 	server.Handler().ServeHTTP(recorder, httptest.NewRequest(http.MethodGet, "/api/browser/status", nil))
-	if recorder.Code != http.StatusOK {
-		t.Fatalf("expected browser status 200, got %d with body %s", recorder.Code, recorder.Body.String())
+	if recorder.Code != http.StatusServiceUnavailable {
+		t.Fatalf("expected browser status 503, got %d with body %s", recorder.Code, recorder.Body.String())
 	}
 
 	for _, needle := range []string{
+		`"success":false`,
+		`Browser runtime is unavailable`,
 		`"fallback":"go-local-browser"`,
 		`"procedure":"browser.status"`,
 		`browser service is not available locally`,
@@ -6942,6 +6978,193 @@ func TestCatalogGetFallsBackToLocalDB(t *testing.T) {
 	}
 }
 
+func TestSpecificFallbackGetRoutesReturnUnavailableWhenRecordMissing(t *testing.T) {
+	t.Setenv("BORG_TRPC_UPSTREAM", "http://127.0.0.1:1/trpc")
+
+	workspace := t.TempDir()
+	dbPath := filepath.Join(workspace, "metamcp.db")
+	db, err := sql.Open("sqlite", dbPath)
+	if err != nil {
+		t.Fatalf("failed to open sqlite db: %v", err)
+	}
+	defer db.Close()
+
+	if _, err := db.Exec(`
+		CREATE TABLE api_keys (
+			uuid TEXT PRIMARY KEY,
+			name TEXT NOT NULL,
+			key TEXT NOT NULL,
+			user_id TEXT,
+			created_at INTEGER NOT NULL,
+			is_active INTEGER NOT NULL DEFAULT 1
+		);
+		CREATE TABLE links_backlog (
+			uuid TEXT PRIMARY KEY,
+			url TEXT NOT NULL,
+			normalized_url TEXT,
+			title TEXT,
+			description TEXT,
+			tags TEXT NOT NULL DEFAULT '[]',
+			source TEXT NOT NULL,
+			is_duplicate INTEGER NOT NULL DEFAULT 0,
+			duplicate_of TEXT,
+			research_status TEXT NOT NULL DEFAULT 'pending',
+			http_status INTEGER,
+			page_title TEXT,
+			page_description TEXT,
+			favicon_url TEXT,
+			researched_at INTEGER,
+			cluster_id TEXT,
+			bobbybookmarks_bookmark_id TEXT,
+			import_session_id TEXT,
+			raw_payload TEXT,
+			synced_at INTEGER,
+			created_at INTEGER NOT NULL,
+			updated_at INTEGER NOT NULL
+		);
+		CREATE TABLE oauth_clients (
+			client_id TEXT PRIMARY KEY,
+			client_secret TEXT,
+			client_name TEXT NOT NULL,
+			redirect_uris TEXT NOT NULL DEFAULT '[]',
+			grant_types TEXT NOT NULL DEFAULT '["authorization_code","refresh_token"]',
+			response_types TEXT NOT NULL DEFAULT '["code"]',
+			token_endpoint_auth_method TEXT NOT NULL DEFAULT 'none',
+			scope TEXT DEFAULT 'admin',
+			client_uri TEXT,
+			logo_uri TEXT,
+			contacts TEXT,
+			tos_uri TEXT,
+			policy_uri TEXT,
+			software_id TEXT,
+			software_version TEXT,
+			created_at INTEGER NOT NULL,
+			updated_at INTEGER NOT NULL
+		);
+		CREATE TABLE oauth_sessions (
+			uuid TEXT PRIMARY KEY,
+			mcp_server_uuid TEXT NOT NULL,
+			client_information TEXT NOT NULL DEFAULT '{}',
+			tokens TEXT,
+			code_verifier TEXT,
+			created_at INTEGER NOT NULL,
+			updated_at INTEGER NOT NULL
+		);
+		CREATE UNIQUE INDEX oauth_sessions_unique_per_server_idx ON oauth_sessions(mcp_server_uuid);
+		CREATE TABLE tool_chains (
+			id TEXT PRIMARY KEY,
+			name TEXT NOT NULL,
+			description TEXT,
+			created_at INTEGER NOT NULL
+		);
+		CREATE TABLE tool_chain_steps (
+			chain_id TEXT NOT NULL,
+			step_order INTEGER NOT NULL,
+			tool_name TEXT NOT NULL,
+			arguments_template TEXT NOT NULL DEFAULT '{}'
+		);
+		CREATE TABLE published_mcp_servers (
+			uuid TEXT PRIMARY KEY,
+			canonical_id TEXT NOT NULL UNIQUE,
+			display_name TEXT NOT NULL,
+			description TEXT,
+			author TEXT,
+			repository_url TEXT,
+			homepage_url TEXT,
+			icon_url TEXT,
+			transport TEXT NOT NULL DEFAULT 'unknown',
+			install_method TEXT NOT NULL DEFAULT 'unknown',
+			auth_model TEXT NOT NULL DEFAULT 'unknown',
+			status TEXT NOT NULL DEFAULT 'discovered',
+			confidence INTEGER NOT NULL DEFAULT 0,
+			tags TEXT NOT NULL DEFAULT '[]',
+			categories TEXT NOT NULL DEFAULT '[]',
+			stars INTEGER,
+			last_seen_at INTEGER,
+			last_verified_at INTEGER,
+			created_at INTEGER NOT NULL,
+			updated_at INTEGER NOT NULL
+		);
+		CREATE TABLE published_mcp_server_sources (
+			uuid TEXT PRIMARY KEY,
+			server_uuid TEXT NOT NULL,
+			source_name TEXT NOT NULL,
+			source_url TEXT,
+			raw_payload TEXT,
+			first_seen_at INTEGER NOT NULL,
+			last_seen_at INTEGER NOT NULL
+		);
+		CREATE TABLE published_mcp_config_recipes (
+			uuid TEXT PRIMARY KEY,
+			server_uuid TEXT NOT NULL,
+			recipe_version INTEGER NOT NULL DEFAULT 1,
+			template TEXT NOT NULL,
+			required_secrets TEXT NOT NULL DEFAULT '[]',
+			required_env TEXT NOT NULL DEFAULT '{}',
+			confidence INTEGER NOT NULL DEFAULT 0,
+			explanation TEXT,
+			is_active INTEGER NOT NULL DEFAULT 1,
+			generated_by TEXT NOT NULL DEFAULT 'Configurator',
+			created_at INTEGER NOT NULL,
+			updated_at INTEGER NOT NULL
+		);
+		CREATE TABLE published_mcp_validation_runs (
+			uuid TEXT PRIMARY KEY,
+			server_uuid TEXT NOT NULL,
+			run_mode TEXT NOT NULL,
+			started_at INTEGER NOT NULL,
+			finished_at INTEGER,
+			outcome TEXT NOT NULL DEFAULT 'pending',
+			failure_class TEXT,
+			tool_count INTEGER,
+			findings_summary TEXT,
+			performed_by TEXT NOT NULL DEFAULT 'Verifier',
+			created_at INTEGER NOT NULL
+		);
+	`); err != nil {
+		t.Fatalf("failed to create fallback schema: %v", err)
+	}
+
+	cfg := config.Default()
+	cfg.WorkspaceRoot = workspace
+	cfg.ConfigDir = t.TempDir()
+	cfg.MainConfigDir = t.TempDir()
+	server := New(cfg, stubDetector{})
+
+	cases := []struct {
+		name        string
+		path        string
+		errorNeedle string
+		procedure   string
+	}{
+		{name: "api key missing", path: "/api/api-keys/get?uuid=missing-key", errorNeedle: `"error":"API key unavailable"`, procedure: `"procedure":"apiKeys.get"`},
+		{name: "links backlog item missing", path: "/api/links-backlog/get?uuid=missing-link", errorNeedle: `"error":"links backlog item unavailable"`, procedure: `"procedure":"linksBacklog.get"`},
+		{name: "oauth client missing", path: "/api/oauth/clients/get?clientId=missing-client", errorNeedle: `"error":"OAuth client unavailable"`, procedure: `"procedure":"oauth.clients.get"`},
+		{name: "oauth session missing", path: "/api/oauth/sessions/by-server?mcpServerUuid=missing-server", errorNeedle: `"error":"OAuth session unavailable"`, procedure: `"procedure":"oauth.sessions.getByServer"`},
+		{name: "catalog entry missing", path: "/api/catalog/get?uuid=missing-catalog", errorNeedle: `"error":"catalog entry unavailable"`, procedure: `"procedure":"catalog.get"`},
+		{name: "tool chain missing", path: "/api/tool-chains/get?id=missing-chain", errorNeedle: `"error":"tool chain unavailable"`, procedure: `"procedure":"toolChaining.getChain"`},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			recorder := httptest.NewRecorder()
+			server.Handler().ServeHTTP(recorder, httptest.NewRequest(http.MethodGet, tc.path, nil))
+			if recorder.Code != http.StatusServiceUnavailable {
+				t.Fatalf("expected 503, got %d with body %s", recorder.Code, recorder.Body.String())
+			}
+			if !strings.Contains(recorder.Body.String(), `"success":false`) {
+				t.Fatalf("expected unsuccessful response, got %s", recorder.Body.String())
+			}
+			if !strings.Contains(recorder.Body.String(), tc.errorNeedle) {
+				t.Fatalf("expected error needle %s, got %s", tc.errorNeedle, recorder.Body.String())
+			}
+			if !strings.Contains(recorder.Body.String(), tc.procedure) {
+				t.Fatalf("expected procedure metadata %s, got %s", tc.procedure, recorder.Body.String())
+			}
+		})
+	}
+}
+
 func TestCatalogRunsFallsBackToLocalDB(t *testing.T) {
 	t.Setenv("BORG_TRPC_UPSTREAM", "http://127.0.0.1:1/trpc")
 
@@ -7390,6 +7613,117 @@ func TestConfigReadRoutesFallBackToLocalDB(t *testing.T) {
 				if !strings.Contains(recorder.Body.String(), needle) {
 					t.Fatalf("expected config fallback to contain %s, got %s", needle, recorder.Body.String())
 				}
+			}
+		})
+	}
+}
+
+func TestOperatorFallbackGetRoutesReturnUnavailableWhenRecordMissing(t *testing.T) {
+	workspaceRoot := t.TempDir()
+	mainConfigDir := t.TempDir()
+	homeDir := t.TempDir()
+
+	if err := os.MkdirAll(filepath.Join(workspaceRoot, ".hypercode"), 0o755); err != nil {
+		t.Fatalf("failed to create .hypercode dir: %v", err)
+	}
+	scriptsPayload := []map[string]any{
+		{
+			"uuid":        "script-local-1",
+			"name":        "Deploy local",
+			"description": "Local script fallback",
+			"code":        "echo local",
+		},
+	}
+	scriptsJSON, err := json.Marshal(scriptsPayload)
+	if err != nil {
+		t.Fatalf("failed to marshal scripts payload: %v", err)
+	}
+	if err := os.WriteFile(filepath.Join(workspaceRoot, ".hypercode", "saved-scripts.json"), scriptsJSON, 0o644); err != nil {
+		t.Fatalf("failed to seed saved scripts: %v", err)
+	}
+
+	dbPath := filepath.Join(workspaceRoot, "metamcp.db")
+	db, err := sql.Open("sqlite", dbPath)
+	if err != nil {
+		t.Fatalf("failed to open sqlite db: %v", err)
+	}
+	defer db.Close()
+
+	if _, err := db.Exec(`
+		CREATE TABLE tool_sets (
+			uuid TEXT PRIMARY KEY,
+			name TEXT NOT NULL,
+			description TEXT,
+			tools_json TEXT NOT NULL DEFAULT '[]',
+			created_at INTEGER NOT NULL,
+			updated_at INTEGER NOT NULL
+		);
+		CREATE TABLE tool_set_items (
+			uuid TEXT PRIMARY KEY,
+			tool_set_uuid TEXT NOT NULL,
+			tool_uuid TEXT NOT NULL,
+			created_at INTEGER NOT NULL
+		);
+		INSERT INTO tool_sets (uuid, name, description, tools_json, created_at, updated_at)
+		VALUES ('toolset-local-1', 'Core local tools', 'Fallback tool set', '["search_tools"]', 1711958300, 1711958460);
+		CREATE TABLE mcp_servers (
+			uuid TEXT PRIMARY KEY,
+			name TEXT NOT NULL,
+			description TEXT,
+			type TEXT NOT NULL DEFAULT 'STDIO',
+			command TEXT,
+			args TEXT NOT NULL DEFAULT '[]',
+			env TEXT NOT NULL DEFAULT '{}',
+			url TEXT,
+			error_status TEXT NOT NULL DEFAULT 'NONE',
+			created_at INTEGER NOT NULL,
+			bearer_token TEXT,
+			headers TEXT NOT NULL DEFAULT '{}',
+			always_on INTEGER NOT NULL DEFAULT 0,
+			user_id TEXT NOT NULL,
+			source_published_server_uuid TEXT
+		);
+	`); err != nil {
+		t.Fatalf("failed to seed sqlite fallback db: %v", err)
+	}
+
+	t.Setenv("BORG_TRPC_UPSTREAM", "http://127.0.0.1:1/trpc")
+	t.Setenv("USERPROFILE", homeDir)
+	t.Setenv("APPDATA", filepath.Join(homeDir, "AppData", "Roaming"))
+	t.Setenv("LOCALAPPDATA", filepath.Join(homeDir, "AppData", "Local"))
+
+	cfg := config.Default()
+	cfg.WorkspaceRoot = workspaceRoot
+	cfg.ConfigDir = homeDir
+	cfg.MainConfigDir = mainConfigDir
+	server := New(cfg, stubDetector{})
+
+	cases := []struct {
+		name        string
+		path        string
+		errorNeedle string
+		procedure   string
+	}{
+		{name: "configured server get missing", path: "/api/mcp/servers/get?uuid=missing-server", errorNeedle: `"error":"configured MCP server unavailable"`, procedure: `"procedure":"mcpServers.get"`},
+		{name: "tool set get missing", path: "/api/tool-sets/get?uuid=missing-toolset", errorNeedle: `"error":"tool set unavailable"`, procedure: `"procedure":"toolSets.get"`},
+		{name: "saved script get missing", path: "/api/scripts/get?uuid=missing-script", errorNeedle: `"error":"saved script unavailable"`, procedure: `"procedure":"savedScripts.get"`},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			recorder := httptest.NewRecorder()
+			server.Handler().ServeHTTP(recorder, httptest.NewRequest(http.MethodGet, tc.path, nil))
+			if recorder.Code != http.StatusServiceUnavailable {
+				t.Fatalf("expected 503, got %d with body %s", recorder.Code, recorder.Body.String())
+			}
+			if !strings.Contains(recorder.Body.String(), `"success":false`) {
+				t.Fatalf("expected unsuccessful response, got %s", recorder.Body.String())
+			}
+			if !strings.Contains(recorder.Body.String(), tc.errorNeedle) {
+				t.Fatalf("expected error needle %s, got %s", tc.errorNeedle, recorder.Body.String())
+			}
+			if !strings.Contains(recorder.Body.String(), tc.procedure) {
+				t.Fatalf("expected procedure metadata %s, got %s", tc.procedure, recorder.Body.String())
 			}
 		})
 	}
@@ -8121,11 +8455,12 @@ func TestSymbolsReadRoutesFallBackToEmptyResults(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			recorder := httptest.NewRecorder()
 			server.Handler().ServeHTTP(recorder, httptest.NewRequest(http.MethodGet, tc.path, nil))
-			if recorder.Code != http.StatusOK {
-				t.Fatalf("expected %s 200, got %d with body %s", tc.name, recorder.Code, recorder.Body.String())
+			if recorder.Code != http.StatusServiceUnavailable {
+				t.Fatalf("expected %s 503, got %d with body %s", tc.name, recorder.Code, recorder.Body.String())
 			}
 
 			for _, needle := range []string{
+				`"success":false`,
 				`"fallback":"go-local-symbols"`,
 				`"procedure":"` + tc.procedure + `"`,
 				tc.reason,
@@ -8150,11 +8485,12 @@ func TestGraphSymbolsFallsBackToEmptyGraph(t *testing.T) {
 
 	recorder := httptest.NewRecorder()
 	server.Handler().ServeHTTP(recorder, httptest.NewRequest(http.MethodGet, "/api/graph/symbols", nil))
-	if recorder.Code != http.StatusOK {
-		t.Fatalf("expected graph symbols 200, got %d with body %s", recorder.Code, recorder.Body.String())
+	if recorder.Code != http.StatusServiceUnavailable {
+		t.Fatalf("expected graph symbols 503, got %d with body %s", recorder.Code, recorder.Body.String())
 	}
 
 	for _, needle := range []string{
+		`"success":false`,
 		`"fallback":"go-local-graph"`,
 		`"procedure":"graph.getSymbolsGraph"`,
 		`symbol graph data is not initialized`,
@@ -8189,11 +8525,12 @@ func TestGraphFileReadsFallBackToEmptyLists(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			recorder := httptest.NewRecorder()
 			server.Handler().ServeHTTP(recorder, httptest.NewRequest(http.MethodGet, tc.path, nil))
-			if recorder.Code != http.StatusOK {
-				t.Fatalf("expected %s 200, got %d with body %s", tc.name, recorder.Code, recorder.Body.String())
+			if recorder.Code != http.StatusServiceUnavailable {
+				t.Fatalf("expected %s 503, got %d with body %s", tc.name, recorder.Code, recorder.Body.String())
 			}
 
 			for _, needle := range []string{
+				`"success":false`,
 				`"fallback":"go-local-graph"`,
 				`"procedure":"` + tc.procedure + `"`,
 				`repo graph is not initialized`,
@@ -8233,11 +8570,12 @@ func TestWorkflowReadRoutesFallBackToEngineZeroState(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			recorder := httptest.NewRecorder()
 			server.Handler().ServeHTTP(recorder, httptest.NewRequest(http.MethodGet, tc.path, nil))
-			if recorder.Code != http.StatusOK {
-				t.Fatalf("expected %s 200, got %d with body %s", tc.name, recorder.Code, recorder.Body.String())
+			if recorder.Code != http.StatusServiceUnavailable {
+				t.Fatalf("expected %s 503, got %d with body %s", tc.name, recorder.Code, recorder.Body.String())
 			}
 
 			baseNeedles := []string{
+				`"success":false`,
 				`"fallback":"go-local-workflow"`,
 				`"procedure":"` + tc.procedure + `"`,
 				`workflow engine is not initialized`,
@@ -8444,11 +8782,12 @@ func TestAgentMemoryStatsFallsBackToZeroState(t *testing.T) {
 
 	recorder := httptest.NewRecorder()
 	server.Handler().ServeHTTP(recorder, httptest.NewRequest(http.MethodGet, "/api/agent-memory/stats", nil))
-	if recorder.Code != http.StatusOK {
-		t.Fatalf("expected agent memory stats 200, got %d with body %s", recorder.Code, recorder.Body.String())
+	if recorder.Code != http.StatusServiceUnavailable {
+		t.Fatalf("expected agent memory stats 503, got %d with body %s", recorder.Code, recorder.Body.String())
 	}
 
 	for _, needle := range []string{
+		`"success":false`,
 		`"fallback":"go-local-agent-memory"`,
 		`"procedure":"agentMemory.stats"`,
 		`local agent memory runtime is not initialized`,
@@ -8473,11 +8812,12 @@ func TestAgentMemoryExportFallsBackToEmptyBuckets(t *testing.T) {
 
 	recorder := httptest.NewRecorder()
 	server.Handler().ServeHTTP(recorder, httptest.NewRequest(http.MethodGet, "/api/agent-memory/export", nil))
-	if recorder.Code != http.StatusOK {
-		t.Fatalf("expected agent memory export 200, got %d with body %s", recorder.Code, recorder.Body.String())
+	if recorder.Code != http.StatusServiceUnavailable {
+		t.Fatalf("expected agent memory export 503, got %d with body %s", recorder.Code, recorder.Body.String())
 	}
 
 	for _, needle := range []string{
+		`"success":false`,
 		`"fallback":"go-local-agent-memory"`,
 		`"procedure":"agentMemory.export"`,
 		`local agent memory runtime is not initialized`,
@@ -8514,11 +8854,12 @@ func TestAgentMemoryReadRoutesFallBackToEmptyResults(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			recorder := httptest.NewRecorder()
 			server.Handler().ServeHTTP(recorder, httptest.NewRequest(http.MethodGet, tc.path, nil))
-			if recorder.Code != http.StatusOK {
-				t.Fatalf("expected %s 200, got %d with body %s", tc.name, recorder.Code, recorder.Body.String())
+			if recorder.Code != http.StatusServiceUnavailable {
+				t.Fatalf("expected %s 503, got %d with body %s", tc.name, recorder.Code, recorder.Body.String())
 			}
 
 			for _, needle := range []string{
+				`"success":false`,
 				`"fallback":"go-local-agent-memory"`,
 				`"procedure":"` + tc.procedure + `"`,
 				`local agent memory runtime is not initialized`,
@@ -10086,6 +10427,34 @@ func TestImportedSessionGetFallsBackToArchivedRecords(t *testing.T) {
 	}
 	if !strings.Contains(recorder.Body.String(), `Archived imported transcript`) {
 		t.Fatalf("expected archived transcript contents, got %s", recorder.Body.String())
+	}
+}
+
+func TestImportedSessionGetReturnsUnavailableWhenFallbackRecordMissing(t *testing.T) {
+	workspaceRoot := t.TempDir()
+
+	t.Setenv("BORG_TRPC_UPSTREAM", "http://127.0.0.1:1/trpc")
+
+	cfg := config.Default()
+	cfg.WorkspaceRoot = workspaceRoot
+	cfg.MainConfigDir = t.TempDir()
+	server := New(cfg, stubDetector{})
+
+	request := httptest.NewRequest(http.MethodGet, "/api/sessions/imported/get?id=missing-imported-session", nil)
+	recorder := httptest.NewRecorder()
+	server.Handler().ServeHTTP(recorder, request)
+
+	if recorder.Code != http.StatusServiceUnavailable {
+		t.Fatalf("expected unavailable status 503, got %d with body %s", recorder.Code, recorder.Body.String())
+	}
+	if !strings.Contains(recorder.Body.String(), `"success":false`) {
+		t.Fatalf("expected unsuccessful response body, got %s", recorder.Body.String())
+	}
+	if !strings.Contains(recorder.Body.String(), `"error":"imported session unavailable"`) {
+		t.Fatalf("expected unavailable error message, got %s", recorder.Body.String())
+	}
+	if !strings.Contains(recorder.Body.String(), `"procedure":"session.importedGet"`) {
+		t.Fatalf("expected importedGet procedure metadata, got %s", recorder.Body.String())
 	}
 }
 
@@ -12181,7 +12550,7 @@ func demo() {
 	if !strings.Contains(recorder.Body.String(), "\"sourceBackedHarnessCount\":1") {
 		t.Fatalf("expected one source-backed harness in payload, got %s", recorder.Body.String())
 	}
-	if !strings.Contains(recorder.Body.String(), "\"metadataOnlyHarnessCount\":14") {
+	if !strings.Contains(recorder.Body.String(), "\"metadataOnlyHarnessCount\":47") {
 		t.Fatalf("expected metadata-only harness count in payload, got %s", recorder.Body.String())
 	}
 }
@@ -12867,8 +13236,8 @@ func demo() {
 	if payload.Data.CLI.AvailableToolCount != 0 {
 		t.Fatalf("expected no available CLI tools from empty stub, got %d", payload.Data.CLI.AvailableToolCount)
 	}
-	if payload.Data.CLI.HarnessCount != 16 {
-		t.Fatalf("expected 16 total harness definitions, got %d", payload.Data.CLI.HarnessCount)
+	if payload.Data.CLI.HarnessCount != 49 {
+		t.Fatalf("expected 49 total harness definitions, got %d", payload.Data.CLI.HarnessCount)
 	}
 	if payload.Data.CLI.InstalledHarnessCount != 1 {
 		t.Fatalf("expected 1 installed harness from hypercode submodule, got %d", payload.Data.CLI.InstalledHarnessCount)
@@ -12876,7 +13245,7 @@ func demo() {
 	if payload.Data.CLI.SourceBackedHarnessCount != 1 || payload.Data.CLI.SourceBackedToolCount != 2 {
 		t.Fatalf("expected runtime source-backed CLI summary, got %+v", payload.Data.CLI)
 	}
-	if payload.Data.CLI.MetadataOnlyHarnessCount != 14 || payload.Data.CLI.OperatorDefinedHarnessCount != 1 {
+	if payload.Data.CLI.MetadataOnlyHarnessCount != 47 || payload.Data.CLI.OperatorDefinedHarnessCount != 1 {
 		t.Fatalf("expected runtime metadata/operator harness counts, got %+v", payload.Data.CLI)
 	}
 	if payload.Data.CLI.PrimaryHarness != "hypercode" {
