@@ -230,12 +230,21 @@ What is known:
 
 - electron-orchestrator postinstall now degrades gracefully when `electron-rebuild` hits the known Node 24 compatibility failure
 - this improves workspace install reliability
-- Electron/native ABI separation is still not fully resolved for all electron-orchestrator SQLite usage paths
+- the remaining high-signal gap is now mostly operator truthfulness rather than an unwrapped runtime consumer: the known SQLite consumers already load `better-sqlite3` through `apps/maestro/src/main/native/better-sqlite3-runtime.ts`
+- the desktop lane currently uses an isolated `native-modules/node_modules/better-sqlite3` Electron-native copy plus `scripts/ensure-native-runtime.mjs` startup preflight; older test/docs wording still overemphasized shared `node_modules` and raw `electron-rebuild`
+
+What changed:
+
+- `apps/maestro/src/main/native/better-sqlite3-runtime.ts` now reports both isolated and shared load failures explicitly and tells operators that the startup preflight already tried the isolated Electron-native path
+- `apps/maestro/BUILDING_WINDOWS.md` now documents that `pnpm install` can succeed while the real Electron-native repair still happens at runtime via `scripts/ensure-native-runtime.mjs`, and it adds concrete Windows troubleshooting guidance for strict runtime diagnostics
+- `apps/maestro/src/__tests__/main/stats/integration.test.ts` now describes the isolated native-modules contract truthfully and accepts either isolated or shared `better_sqlite3.node` locations when checking for a native binding on dev machines
 
 What remains:
 
-- continue tracing Electron-side consumers
-- decide whether to isolate runtime-specific native modules more explicitly or add a safer dedicated rebuild / packaging path
+- focused Maestro stats integration coverage passed after the doc/test/runtime-message updates
+- `node scripts/ensure-native-runtime.mjs` still exits 0 in non-strict mode after warning that stats-backed features may remain unavailable
+- `MAESTRO_STRICT_NATIVE_RUNTIME=1 node scripts/ensure-native-runtime.mjs` still fails on this machine, confirming that the remaining gap is a real native rebuild/toolchain outage rather than a missing wrapper or stale test assumption
+- next ABI follow-up should therefore target concrete rebuild diagnostics or native-toolchain repair guidance, not another broad consumer audit
 
 ### 3. `harden-published-catalog-ingestion`
 

@@ -83,6 +83,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Parity Framing**: Tightened root documentation so HyperCode no longer implies `electron-orchestrator` and `cli-orchestrator` already have 100% feature parity; the desktop lane is broader today, while the CLI lane remains the cleaner control-plane and Go-port target.
 
 ### Fixed
+- **Maestro Native ABI Truthfulness**: Electron-native `better-sqlite3` failures in `apps/maestro` now report both the isolated `native-modules` load failure and the shared-module fallback failure, the Windows build guide now explains that `scripts/ensure-native-runtime.mjs` is the real startup preflight/repair path, and the stats integration coverage now matches the isolated-or-shared native binding reality instead of assuming only the shared `node_modules` layout.
 - **Go Module Validation Encoding**: Removed the UTF-8 BOM from `go/go.mod`, restoring truthful `go test ./...` validation from the `go/` module root.
 - **Go Module Parse Blocker**: Removed an accidental empty `go/internal/httpapi/cloud_orchestrator_handlers.go` file that was causing `expected 'package', found 'EOF'` and blocking unrelated Go bridge validation.
 - **CLI Tool Detection Startup Path**: The council CLI registry no longer uses `shell: true` for detection probes, eliminating the Node `DEP0190` warning and making multi-part detect commands like `gh copilot`, `python -m aider`, and `npx opencode` execute through safer structured argument parsing.
