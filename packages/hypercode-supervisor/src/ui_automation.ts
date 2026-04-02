@@ -87,6 +87,9 @@ export interface SurfaceDetectionOptions {
     processName?: string;
 }
 
+const TERMINAL_TEXT_HINTS = ['@terminal:', 'pwsh', 'powershell', 'terminal', 'shell'];
+const ANTIGRAVITY_LABEL_HINTS = ['Run', 'Expand', 'Always Allow', 'Retry', 'Accept all', 'Accept', 'Allow', 'Approve', 'Proceed', 'Keep'];
+
 const UI_AUTOMATION_BASE = String.raw`
 $ErrorActionPreference = 'Stop'
 Add-Type -AssemblyName UIAutomationClient | Out-Null
@@ -140,6 +143,37 @@ function Convert-Element($element) {
     }
 }
 
+function Get-ElementTextHint($element) {
+    $parts = New-Object System.Collections.Generic.List[string]
+
+    foreach ($value in @($element.Current.Name, $element.Current.AutomationId, $element.Current.ClassName)) {
+        if (-not [string]::IsNullOrWhiteSpace($value)) {
+            $parts.Add($value) | Out-Null
+        }
+    }
+
+    $valuePattern = $null
+    if ($element.TryGetCurrentPattern([System.Windows.Automation.ValuePattern]::Pattern, [ref]$valuePattern)) {
+        $value = $valuePattern.Current.Value
+        if (-not [string]::IsNullOrWhiteSpace($value)) {
+            $parts.Add($value) | Out-Null
+        }
+    }
+
+    $textPattern = $null
+    if ($element.TryGetCurrentPattern([System.Windows.Automation.TextPattern]::Pattern, [ref]$textPattern)) {
+        try {
+            $text = $textPattern.DocumentRange.GetText(-1)
+            if (-not [string]::IsNullOrWhiteSpace($text)) {
+                $parts.Add($text) | Out-Null
+            }
+        } catch {
+        }
+    }
+
+    return Normalize-Label ($parts -join ' ')
+}
+
 function Normalize-Label([string]$value) {
     if ([string]::IsNullOrWhiteSpace($value)) { return '' }
     $normalized = $value.ToLowerInvariant()
@@ -164,6 +198,38 @@ function Test-ExactishLabelMatch([string]$elementName, [string]$targetLabel) {
     }
 
     return $left -eq $right
+}
+
+function Test-IsTerminalLikeHint([string]$textHint) {
+    if ([string]::IsNullOrWhiteSpace($textHint)) {
+        return $false
+    }
+
+    foreach ($needle in @('@terminal:', 'pwsh', 'powershell', 'terminal', 'shell')) {
+        if ($textHint.Contains($needle)) {
+            return $true
+        }
+    }
+
+    return $false
+}
+
+function Test-IsLikelyChatInput($element) {
+    if (-not $element.Current.IsEnabled -or $element.Current.IsOffscreen) {
+        return $false
+    }
+
+    $controlType = Get-ControlTypeName $element
+    if ($controlType -notin @('Document', 'Edit')) {
+        return $false
+    }
+
+    $textHint = Get-ElementTextHint $element
+    if (Test-IsTerminalLikeHint $textHint) {
+        return $false
+    }
+
+    return $true
 }
 
 function Get-ForegroundAutomationWindow() {
@@ -239,12 +305,12 @@ function Get-Inspection([System.Windows.Automation.AutomationElement]$window) {
             }
         }
 
-        if ($controlType -in @('Button', 'Hyperlink', 'MenuItem', 'SplitButton', 'TabItem')) {
+        if ($controlType -in @('Button', 'Hyperlink')) {
             $buttons += $dto
             continue
         }
 
-        if ($controlType -in @('Edit', 'Document')) {
+        if (($controlType -in @('Edit', 'Document')) -and (Test-IsLikelyChatInput $element)) {
             $inputs += $dto
         }
     }
@@ -302,6 +368,9 @@ function Get-InteractiveAutomationElements([System.Windows.Automation.Automation
     foreach ($element in $descendants) {
         $typeName = Get-ControlTypeName $element
         if ($controlTypes -contains $typeName) {
+            if (($typeName -in @('Edit', 'Document')) -and -not (Test-IsLikelyChatInput $element)) {
+                continue
+            }
             $matches.Add($element)
         }
     }
@@ -433,11 +502,57 @@ function detectSurfaceName(title: string, processName: string | null): { detecte
     return { detectedSurface: 'unknown', heuristics: ['no known chat-surface heuristic matched'] };
 }
 
+function normalizeComparableLabel(value: string | null | undefined): string {
+    if (!value) {
+        return '';
+    }
+
+    return value
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+}
+
+function collectInspectionHints(inspection: UiInspection): string[] {
+    return [
+        ...inspection.labels,
+        ...inspection.buttons.map((button) => button.name),
+        ...inspection.inputs.flatMap((input) => [input.name, input.automationId ?? '', input.className ?? ''])
+    ].filter((value): value is string => Boolean(value && value.trim()));
+}
+
+function inspectionLooksLikeAntigravity(inspection: UiInspection): boolean {
+    const normalizedHints = new Set(collectInspectionHints(inspection).map((value) => normalizeComparableLabel(value)));
+
+    for (const label of ANTIGRAVITY_LABEL_HINTS) {
+        if (normalizedHints.has(normalizeComparableLabel(label))) {
+            return true;
+        }
+    }
+
+    return [...normalizedHints].some((value) =>
+        TERMINAL_TEXT_HINTS.some((needle) => value.includes(normalizeComparableLabel(needle)))
+    );
+}
+
+function resolveActionLabels(explicitLabels: string[] | undefined, surface: ChatSurfaceInfo, settings: SupervisorSettings): string[] {
+    if (explicitLabels && explicitLabels.length > 0) {
+        return explicitLabels;
+    }
+
+    if (surface.detectedSurface === 'antigravity') {
+        return [...DEFAULT_ACTION_LABELS];
+    }
+
+    return surface.surfaceProfile.actionLabels ?? settings.actionLabels ?? [...DEFAULT_ACTION_LABELS];
+}
+
 function buildClickScript(labels: string[], delays: Pick<SupervisorSettings, 'afterClickDelayMs'>, windowTitle?: string, processName?: string): string {
     return `${UI_AUTOMATION_BASE}
 $window = Get-TargetWindow ${toPowerShellString(windowTitle ?? '')} ${toPowerShellString(processName ?? '')}
 $targets = ${powerShellStringArray(labels)}
-$buttonElements = Get-InteractiveAutomationElements $window @('Button', 'Hyperlink', 'MenuItem', 'SplitButton', 'TabItem')
+$buttonElements = Get-InteractiveAutomationElements $window @('Button', 'Hyperlink')
 $clicked = @()
 $missing = New-Object System.Collections.Generic.List[string]
 
@@ -507,11 +622,15 @@ if ($null -eq $target) {
 $method = 'focus-sendkeys'
 $valuePattern = $null
 if ($target.TryGetCurrentPattern([System.Windows.Automation.ValuePattern]::Pattern, [ref]$valuePattern) -and -not $valuePattern.Current.IsReadOnly) {
+    $target.SetFocus()
+    Start-Sleep -Milliseconds ${delays.inputSettleDelayMs}
     $nextValue = $targetText
     if (-not $clearExisting) {
         $nextValue = $valuePattern.Current.Value + $targetText
     }
     $valuePattern.SetValue($nextValue)
+    $target.SetFocus()
+    Start-Sleep -Milliseconds ${delays.inputSettleDelayMs}
     $method = 'value-pattern'
 } else {
     $target.SetFocus()
@@ -573,18 +692,11 @@ foreach ($candidate in $inputElements) {
 }
 
 if ($null -eq $target) {
-    foreach ($candidate in $inputElements) {
-        if ($candidate.Current.IsEnabled -and -not $candidate.Current.IsOffscreen) {
-            $target = $candidate
-            break
-        }
-    }
+    throw 'No enabled chat input found in target window for submission'
 }
 
-if ($null -ne $target) {
-    $target.SetFocus()
-    Start-Sleep -Milliseconds ${delays.focusDelayMs}
-}
+$target.SetFocus()
+Start-Sleep -Milliseconds ${delays.focusDelayMs}
 
 $wshell = New-Object -ComObject wscript.shell
 $wshell.SendKeys(${sendKeysExpression})
@@ -662,15 +774,27 @@ export class UiAutomationManager {
 
         const browserFamily = classifyBrowserFamily(processName);
         const detection = detectSurfaceName(title, processName);
-        const resolvedSurfaceId = options?.surfaceOverride ?? detection.detectedSurface;
-        const surfaceProfile = resolveSurfaceProfile(resolvedSurfaceId);
-        const heuristics = options?.surfaceOverride
+        let resolvedSurfaceId = options?.surfaceOverride ?? detection.detectedSurface;
+        let heuristics = options?.surfaceOverride
             ? [`surface override applied: ${options.surfaceOverride}`, ...detection.heuristics]
             : detection.heuristics;
 
         if (options?.windowTitle || options?.processName) {
             heuristics.unshift('surface detected from targeted window criteria');
         }
+
+        if (!options?.surfaceOverride && (browserFamily !== null || detection.detectedSurface === 'browser-chat' || detection.detectedSurface === 'unknown')) {
+            try {
+                const inspection = await this.inspectWindow(options?.windowTitle, options?.processName);
+                if (inspectionLooksLikeAntigravity(inspection)) {
+                    resolvedSurfaceId = 'antigravity';
+                    heuristics = ['inspection hints matched Antigravity approval/composer patterns', ...heuristics];
+                }
+            } catch {
+            }
+        }
+
+        const surfaceProfile = resolveSurfaceProfile(resolvedSurfaceId);
 
         return {
             title,
@@ -691,7 +815,7 @@ export class UiAutomationManager {
             this.inspectWindow(windowTitle, processName),
             this.getSettings()
         ]);
-        const resolvedActionLabels = actionLabels ?? surface.surfaceProfile.actionLabels ?? settings.actionLabels ?? [...DEFAULT_ACTION_LABELS];
+        const resolvedActionLabels = resolveActionLabels(actionLabels, surface, settings);
 
         const pendingActionButtons = inspection.buttons
             .map((button) => button.name)
@@ -729,7 +853,7 @@ export class UiAutomationManager {
             this.getSettings(),
             this.detectChatSurface({ ...options, windowTitle, processName })
         ]);
-        const resolvedLabels = labels ?? surface.surfaceProfile.actionLabels ?? settings.actionLabels ?? [...DEFAULT_ACTION_LABELS];
+        const resolvedLabels = resolveActionLabels(labels, surface, settings);
         return runPowerShellJson<ClickActionResult>(buildClickScript(resolvedLabels, settings, windowTitle, processName));
     }
 
@@ -777,8 +901,6 @@ export class UiAutomationManager {
     async advanceChat(options?: {
         bumpText?: string;
         actionLabels?: string[];
-        submitAfterTyping?: boolean;
-        submitKeyChord?: string;
         windowTitle?: string;
         processName?: string;
         surfaceOverride?: string;
@@ -790,8 +912,9 @@ export class UiAutomationManager {
         const profile = surface.surfaceProfile ?? DEFAULT_SURFACE_PROFILE;
         const actionLabels = options?.actionLabels ?? profile.actionLabels ?? settings.actionLabels;
         const bumpText = options?.bumpText ?? settings.bumpText;
-        const submitAfterTyping = options?.submitAfterTyping ?? settings.submitAfterTyping;
-        const submitKeyChord = options?.submitKeyChord ?? profile.submitKeyChord ?? settings.submitKeyChord;
+        const submitKeyChord = profile.id === 'antigravity'
+            ? 'alt+enter'
+            : profile.submitKeyChord ?? 'alt+enter';
         const windowTitle = options?.windowTitle;
         const processName = options?.processName;
         const state = await this.detectChatState(windowTitle, processName, actionLabels, { surfaceOverride: options?.surfaceOverride });
@@ -817,23 +940,13 @@ export class UiAutomationManager {
                 surfaceOverride: options?.surfaceOverride
             });
 
-            if (submitAfterTyping) {
-                await this.submitChatInput(submitKeyChord, windowTitle, processName, { surfaceOverride: options?.surfaceOverride });
-                return {
-                    state,
-                    clicked: [],
-                    typed: true,
-                    submitted: true,
-                    detail: `Typed bump text and submitted with ${submitKeyChord} for ${profile.id}`
-                };
-            }
-
+            await this.submitChatInput(submitKeyChord, windowTitle, processName, { surfaceOverride: options?.surfaceOverride });
             return {
                 state,
                 clicked: [],
                 typed: true,
-                submitted: false,
-                detail: 'Typed bump text without submitting'
+                submitted: true,
+                detail: `Typed bump text and submitted with ${submitKeyChord} for ${profile.id}`
             };
         }
 

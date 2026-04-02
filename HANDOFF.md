@@ -272,6 +272,33 @@ Validated with:
 - `pnpm -C packages\hypercode-supervisor exec tsc --noEmit`
 - `pnpm -C packages\hypercode-supervisor run build`
 
+### 0.12. Supervisor behavior is now narrowed toward the Antigravity path instead of the broad generic bridge
+
+Finding:
+
+- the remaining live failures were consistent with the generic bridge still seeing too much UIA surface area
+- menu/dropdown affordances could still compete with primary approval buttons, terminal-like `Document` surfaces such as `@terminal:pwsh` could still look like candidate inputs, and Alt+Enter submission could still be sent after typing without first proving focus stayed on the same chat composer
+
+What changed:
+
+- `packages/hypercode-supervisor/src/ui_automation.ts` now treats only `Button` and `Hyperlink` as primary action targets for the click path
+- terminal-like text surfaces are filtered out of composer selection by inspecting name/automationId/class/value/text hints
+- value-pattern writes now re-focus the same target before submission, and submission now fails explicitly when no valid chat composer can be re-found instead of spraying the chord at an unknown target
+- browser/generic surfaces are now promoted to the `antigravity` profile when the visible UI labels match Antigravity-style approval/composer hints
+- `advance_chat` and supervisor settings were simplified toward the narrower contract: bump text, action labels, and timing values remain; the broad submit-mode knobs were removed from the public settings/update surface
+
+Behavior change:
+
+- the supervisor is less likely to grab `Always Run`-style dropdown/menu affordances when the intent is to click the real `Run` button
+- terminal panes are less likely to be mistaken for the main chat composer
+- after bump text is written, submission now stays attached to the chosen composer path more deliberately
+- the public settings surface is smaller and closer to the real core requirement for this lane: detect approvals, click them, detect ready chats, type bump text, submit it, with timing controls
+
+Validated with:
+
+- `pnpm -C packages\hypercode-supervisor exec tsc --noEmit`
+- `pnpm -C packages\hypercode-supervisor run build`
+
 ### 1. Published catalog stdio entries are no longer labeled "unsafe"
 
 Updated `packages/core/src/services/published-catalog-validator.ts` so stdio-backed published catalog entries are labeled as transport-skipped instead of `stdio_unsafe`.

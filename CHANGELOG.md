@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Antigravity-First Supervisor Simplification**: `packages/hypercode-supervisor` now narrows its live action/composer path for browser-hosted coding chats by rejecting menu/dropdown-style pseudo-buttons, filtering terminal-like `Document`/`Edit` surfaces such as `@terminal:pwsh` out of chat-composer selection, re-focusing the chosen composer before submission, and promoting generic browser windows to the `antigravity` profile when visible approval/composer hints match that UI.
 - **Supervisor Targeted Surface Probe API**: `detect_chat_surface` now accepts `windowTitle` and `processName` so operators can directly probe non-foreground windows instead of only the active surface, matching the runtime's targeted detection support.
 - **Supervisor Targeted Surface Detection**: `packages/hypercode-supervisor` now derives surface profiles from the same targeted window used by inspection/click/type/submit operations when `windowTitle` or `processName` is supplied, so profile defaults no longer come from an unrelated active window.
 - **Supervisor Override Plumbing**: `surfaceOverride` is now honored consistently across `click_action_buttons`, `set_chat_input`, and `submit_chat_input`, closing the gap between the MCP schemas and the actual runtime profile selection path.

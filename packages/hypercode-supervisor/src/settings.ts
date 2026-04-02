@@ -19,8 +19,6 @@ export const DEFAULT_ACTION_LABELS = [
 const supervisorSettingsSchema = z.object({
     bumpText: z.string().default('keep going'),
     actionLabels: z.array(z.string()).default([...DEFAULT_ACTION_LABELS]),
-    submitAfterTyping: z.boolean().default(true),
-    submitKeyChord: z.string().default('alt+enter'),
     focusDelayMs: z.number().int().nonnegative().default(100),
     afterClickDelayMs: z.number().int().nonnegative().default(150),
     inputSettleDelayMs: z.number().int().nonnegative().default(120)

@@ -239,7 +239,7 @@ class SupervisorServer {
                     },
                     {
                         name: "advance_chat",
-                        description: "Single-step autopilot helper: click pending action buttons, otherwise type and optionally submit bump text",
+                        description: "Single-step autopilot helper: click pending action buttons, otherwise type and submit bump text",
                         inputSchema: {
                             type: "object",
                             properties: {
@@ -251,16 +251,6 @@ class SupervisorServer {
                                     type: "array",
                                     items: { type: "string" },
                                     description: "Optional button labels to click"
-                                },
-                                submitAfterTyping: {
-                                    type: "boolean",
-                                    description: "Whether to submit after typing bump text",
-                                    default: true
-                                },
-                                submitKeyChord: {
-                                    type: "string",
-                                    description: "Key chord used to submit typed bump text",
-                                    default: "alt+enter"
                                 },
                                 windowTitle: {
                                     type: "string",
@@ -279,7 +269,7 @@ class SupervisorServer {
                     },
                     {
                         name: "get_supervisor_settings",
-                        description: "Read the persisted supervisor defaults for bump text, action labels, submit behavior, and timing",
+                        description: "Read the persisted supervisor defaults for bump text, action labels, and timing",
                         inputSchema: {
                             type: "object",
                             properties: {}
@@ -287,7 +277,7 @@ class SupervisorServer {
                     },
                     {
                         name: "update_supervisor_settings",
-                        description: "Persist supervisor defaults for bump text, action labels, submit behavior, and timing",
+                        description: "Persist supervisor defaults for bump text, action labels, and timing",
                         inputSchema: {
                             type: "object",
                             properties: {
@@ -299,14 +289,6 @@ class SupervisorServer {
                                     type: "array",
                                     items: { type: "string" },
                                     description: "Default action labels to match exactly"
-                                },
-                                submitAfterTyping: {
-                                    type: "boolean",
-                                    description: "Whether advance_chat submits after typing"
-                                },
-                                submitKeyChord: {
-                                    type: "string",
-                                    description: "Default key chord used for submission"
                                 },
                                 focusDelayMs: {
                                     type: "number",
@@ -447,16 +429,12 @@ class SupervisorServer {
                 if (request.params.name === "advance_chat") {
                     const bumpText = request.params.arguments?.bumpText as string | undefined;
                     const actionLabels = request.params.arguments?.actionLabels as string[] | undefined;
-                    const submitAfterTyping = request.params.arguments?.submitAfterTyping as boolean | undefined;
-                    const submitKeyChord = request.params.arguments?.submitKeyChord as string | undefined;
                     const windowTitle = request.params.arguments?.windowTitle as string | undefined;
                     const processName = request.params.arguments?.processName as string | undefined;
                     const surfaceOverride = request.params.arguments?.surfaceOverride as string | undefined;
                     const result = await this.uiAutomationManager.advanceChat({
                         bumpText,
                         actionLabels,
-                        submitAfterTyping,
-                        submitKeyChord,
                         windowTitle,
                         processName,
                         surfaceOverride
@@ -479,8 +457,6 @@ class SupervisorServer {
                     const result = await this.uiAutomationManager.updateSettings({
                         bumpText: request.params.arguments?.bumpText as string | undefined,
                         actionLabels: request.params.arguments?.actionLabels as string[] | undefined,
-                        submitAfterTyping: request.params.arguments?.submitAfterTyping as boolean | undefined,
-                        submitKeyChord: request.params.arguments?.submitKeyChord as string | undefined,
                         focusDelayMs: request.params.arguments?.focusDelayMs as number | undefined,
                         afterClickDelayMs: request.params.arguments?.afterClickDelayMs as number | undefined,
                         inputSettleDelayMs: request.params.arguments?.inputSettleDelayMs as number | undefined
