@@ -1,5 +1,8 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { Command } from 'commander';
+import { readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { join } from 'node:path';
+import { tmpdir } from 'node:os';
 
 const queryTrpcMock = vi.fn();
 const resolveControlPlaneLocationMock = vi.fn(() => ({
@@ -143,6 +146,75 @@ describe('registerMemoryCommand', () => {
         },
       },
     }, null, 2));
+  });
+
+  it('adds memory through the live control plane as JSON', async () => {
+    queryTrpcMock.mockResolvedValue({ success: true });
+
+    const program = createProgram();
+    await program.parseAsync(['memory', 'add', 'Remember this', '-t', 'long-term', '--json'], { from: 'user' });
+
+    expect(queryTrpcMock).toHaveBeenCalledWith('memory.addFact', {
+      content: 'Remember this',
+      type: 'long_term',
+    });
+    expect(logSpy).toHaveBeenCalledWith(JSON.stringify({
+      success: true,
+      type: 'long_term',
+      content: 'Remember this',
+    }, null, 2));
+  });
+
+  it('exports memories through the live control plane', async () => {
+    queryTrpcMock.mockResolvedValue({
+      data: '[{\"uuid\":\"mem-1\"}]',
+      format: 'json',
+      exportedAt: '2026-04-02T09:00:00.000Z',
+    });
+
+    const output = join(tmpdir(), `hypercode-memory-export-${Date.now()}.json`);
+
+    try {
+      const program = createProgram();
+      await program.parseAsync(['memory', 'export', '--output', output], { from: 'user' });
+
+      expect(queryTrpcMock).toHaveBeenCalledWith('memory.exportMemories', {
+        format: 'json',
+        userId: 'default',
+      });
+      expect(readFileSync(output, 'utf8')).toBe('[{"uuid":"mem-1"}]');
+    } finally {
+      rmSync(output, { force: true });
+    }
+  });
+
+  it('imports memories through the live control plane as JSON', async () => {
+    const input = join(tmpdir(), `hypercode-memory-import-${Date.now()}.json`);
+    queryTrpcMock.mockResolvedValue({
+      imported: 2,
+      errors: 0,
+      importedAt: '2026-04-02T09:00:00.000Z',
+    });
+
+    try {
+      writeFileSync(input, '[{"uuid":"mem-1"}]', 'utf8');
+
+      const program = createProgram();
+      await program.parseAsync(['memory', 'import', input, '--json'], { from: 'user' });
+
+      expect(queryTrpcMock).toHaveBeenCalledWith('memory.importMemories', {
+        format: 'json',
+        data: '[{"uuid":"mem-1"}]',
+        userId: 'default',
+      });
+      expect(logSpy).toHaveBeenCalledWith(JSON.stringify({
+        imported: 2,
+        errors: 0,
+        importedAt: '2026-04-02T09:00:00.000Z',
+      }, null, 2));
+    } finally {
+      rmSync(input, { force: true });
+    }
   });
 
   it('reports control-plane failures without throwing out of the command', async () => {

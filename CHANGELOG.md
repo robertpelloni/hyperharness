@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **CLI Memory Write Surfaces**: `hypercode memory add`, `hypercode memory export`, and `hypercode memory import` now call live `memory.addFact`, `memory.exportMemories`, and `memory.importMemories` control-plane routes, perform real file IO for import/export, and fail explicitly for unsupported placeholder-only flags instead of printing fabricated success messages.
 - **CLI Config Reset/Init Surface**: `hypercode config reset` and `hypercode config init` now call live `config.reset` and `config.init` control-plane mutations, with scoped reset support, real config-file initialization, and structured `--json` output instead of fabricated success messages.
 - **CLI Session Import Surface**: `hypercode session import <file>` now reads the local export file, calls the live `sessionExport.import` control-plane mutation, supports `--dry-run`, `--replace`, `--source-environment`, and structured `--json` output instead of printing a fabricated success message.
 - **CLI Session Export Surface**: `hypercode session export <id>` now calls the live `sessionExport.export` control-plane mutation, passes the requested `sessionIds` filter through to the core export path, writes the returned portable package to disk, and supports truthful `--json` output instead of a fabricated success message.

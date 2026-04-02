@@ -1,4 +1,5 @@
 import type { Command } from 'commander';
+import { readFileSync, writeFileSync } from 'node:fs';
 
 import { queryTrpc, resolveControlPlaneLocation } from '../control-plane.js';
 
@@ -41,6 +42,22 @@ type SectionedMemoryStatus = {
   };
 };
 
+type MemoryAddResult = {
+  success: boolean;
+};
+
+type MemoryExportResult = {
+  data: string;
+  format: string;
+  exportedAt: string;
+};
+
+type MemoryImportResult = {
+  imported: number;
+  errors: number;
+  importedAt: string;
+};
+
 function normalizeText(value: string | null | undefined): string {
   return typeof value === 'string' && value.trim().length > 0 ? value.trim() : '—';
 }
@@ -59,6 +76,17 @@ function parsePositiveInt(value: string, label: string): number {
     throw new Error(`${label} must be a positive integer`);
   }
   return parsed;
+}
+
+function normalizeMemoryType(value: string): 'working' | 'long_term' {
+  const normalized = value.trim().toLowerCase();
+  if (normalized === 'working' || normalized === 'short-term' || normalized === 'short_term') {
+    return 'working';
+  }
+  if (normalized === 'long-term' || normalized === 'long_term' || normalized === 'semantic') {
+    return 'long_term';
+  }
+  throw new Error(`Memory type '${value}' is not supported by the live memory add route. Use working or long-term.`);
 }
 
 async function withMemoryErrorHandling(
@@ -100,11 +128,31 @@ Examples:
   $ hypercode memory add "API uses OAuth 2.0" -t semantic --tags auth api
   $ hypercode memory add "Deploy with: pnpm build && pnpm start" -t procedural
     `)
+    .option('--json', 'Output as JSON')
     .action(async (content, opts) => {
-      const chalk = (await import('chalk')).default;
-      console.log(chalk.green(`  ✓ Memory added (${opts.type})`));
-      console.log(chalk.dim(`    Content: ${content.substring(0, 80)}${content.length > 80 ? '...' : ''}`));
-      if (opts.tags) console.log(chalk.dim(`    Tags: ${opts.tags.join(', ')}`));
+      await withMemoryErrorHandling(async () => {
+        if (opts.tags?.length) {
+          throw new Error('Live memory add does not yet support CLI tag attachment.');
+        }
+        if (opts.source && opts.source !== 'cli') {
+          throw new Error('Live memory add does not yet support overriding the memory source.');
+        }
+
+        const type = normalizeMemoryType(opts.type);
+        const result = await queryTrpc<MemoryAddResult>('memory.addFact', {
+          content,
+          type,
+        });
+
+        if (opts.json) {
+          console.log(JSON.stringify({ success: result.success, type, content }, null, 2));
+          return;
+        }
+
+        const chalk = (await import('chalk')).default;
+        console.log(chalk.green(`  ✓ Memory added (${type})`));
+        console.log(chalk.dim(`    Content: ${content.substring(0, 80)}${content.length > 80 ? '...' : ''}`));
+      }, opts);
     });
 
   mem
@@ -218,10 +266,31 @@ Examples:
     .option('-o, --output <file>', 'Output file path')
     .option('-t, --type <type>', 'Export only specific type')
     .option('--backend <backend>', 'Export from specific backend')
+    .option('--json', 'Output as JSON')
     .action(async (opts) => {
-      const chalk = (await import('chalk')).default;
-      const file = opts.output || `hypercode-memories-export.${opts.format}`;
-      console.log(chalk.green(`  ✓ Exported memories to ${file}`));
+      await withMemoryErrorHandling(async () => {
+        if (opts.type) {
+          throw new Error('Live memory export does not yet support type filtering.');
+        }
+        if (opts.backend) {
+          throw new Error('Live memory export does not yet support backend selection.');
+        }
+
+        const result = await queryTrpc<MemoryExportResult>('memory.exportMemories', {
+          format: opts.format,
+          userId: 'default',
+        });
+
+        if (opts.json) {
+          console.log(JSON.stringify(result, null, 2));
+          return;
+        }
+
+        const chalk = (await import('chalk')).default;
+        const file = opts.output || `hypercode-memories-export.${result.format}`;
+        writeFileSync(file, result.data, 'utf8');
+        console.log(chalk.green(`  ✓ Exported memories to ${file}`));
+      }, opts);
     });
 
   mem
@@ -229,9 +298,34 @@ Examples:
     .description('Import memories from file')
     .option('--merge', 'Merge with existing (skip duplicates)')
     .option('--backend <backend>', 'Import into specific backend')
-    .action(async (file) => {
-      const chalk = (await import('chalk')).default;
-      console.log(chalk.green(`  ✓ Imported memories from ${file}`));
+    .option('-f, --format <format>', 'Import format: json, csv, jsonl, json-provider, sectioned-memory-store', 'json')
+    .option('--json', 'Output as JSON')
+    .action(async (file, opts) => {
+      await withMemoryErrorHandling(async () => {
+        if (opts.merge) {
+          throw new Error('Live memory import does not yet support merge/deduplication mode.');
+        }
+        if (opts.backend) {
+          throw new Error('Live memory import does not yet support backend selection.');
+        }
+
+        const data = readFileSync(file, 'utf8');
+        const result = await queryTrpc<MemoryImportResult>('memory.importMemories', {
+          format: opts.format,
+          data,
+          userId: 'default',
+        });
+
+        if (opts.json) {
+          console.log(JSON.stringify(result, null, 2));
+          return;
+        }
+
+        const chalk = (await import('chalk')).default;
+        console.log(chalk.green(`  ✓ Imported memories from ${file}`));
+        console.log(chalk.dim(`    Imported: ${result.imported}`));
+        console.log(chalk.dim(`    Errors:   ${result.errors}`));
+      }, opts);
     });
 
   mem

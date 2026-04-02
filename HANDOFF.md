@@ -725,7 +725,25 @@ Validation:
 - `pnpm -C packages\cli exec tsc --noEmit`
 - `pnpm -C packages\cli exec vitest run src\commands\config.test.ts src\commands\session.test.ts src\commands\mcp.test.ts src\commands\tools.test.ts src\commands\status.test.ts src\commands\provider.test.ts src\commands\agent.test.ts src\commands\memory.test.ts src\control-plane.test.ts`
 
-### 31. `harden-published-catalog-ingestion`
+### 31. `wire-cli-memory-write-flows`
+
+Status: **completed**
+
+What changed:
+
+- `packages/cli/src/commands/memory.ts` no longer prints fabricated success for `hypercode memory add`, `memory export`, or `memory import`
+- `memory add` now calls the live `memory.addFact` mutation and normalizes supported CLI memory types to the current backend contract
+- `memory export` now calls `memory.exportMemories` and writes the returned data to disk instead of pretending an export file was created
+- `memory import` now reads the requested file locally and calls `memory.importMemories` instead of printing fabricated success
+- unsupported placeholder-only options on these live routes (`tags`, custom source override, backend selection, merge mode, and export type filtering) now fail explicitly instead of being silently ignored
+- focused CLI coverage in `packages/cli/src/commands/memory.test.ts` now includes live add/export/import flows
+
+Validation:
+
+- `pnpm -C packages\cli exec tsc --noEmit`
+- `pnpm -C packages\cli exec vitest run src\commands\memory.test.ts src\commands\config.test.ts src\commands\session.test.ts src\commands\mcp.test.ts src\commands\tools.test.ts src\commands\status.test.ts src\commands\provider.test.ts src\commands\agent.test.ts src\control-plane.test.ts`
+
+### 32. `harden-published-catalog-ingestion`
 
 Status: **completed**
 
