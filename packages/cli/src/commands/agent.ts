@@ -52,6 +52,10 @@ async function withAgentErrorHandling(
   }
 }
 
+function unsupportedAgentCommand(message: string): Promise<void> {
+  return Promise.reject(new Error(message));
+}
+
 export function registerAgentCommand(program: Command): void {
   const agent = program
     .command('agent')
@@ -64,37 +68,10 @@ export function registerAgentCommand(program: Command): void {
     .option('--provider <provider>', 'Filter by provider')
     .option('--role <role>', 'Filter by role')
     .action(async (opts) => {
-      const chalk = (await import('chalk')).default;
-      const Table = (await import('cli-table3')).default;
-
-      if (opts.json) {
-        console.log(JSON.stringify({ agents: [] }, null, 2));
-        return;
-      }
-
-      const table = new Table({
-        head: ['Name', 'Model', 'Provider', 'Role', 'Status'],
-        style: { head: ['cyan'] },
-      });
-
-      const agents = [
-        ['architect', 'claude-opus-4', 'anthropic', 'Architect', 'available'],
-        ['builder', 'gpt-5.2-codex', 'openai', 'Builder', 'available'],
-        ['researcher', 'gemini-3-pro', 'google', 'Researcher', 'available'],
-        ['critic', 'grok-4', 'xai', 'Critic', 'available'],
-        ['supernova', 'claude-sonnet-4', 'anthropic', 'General', 'available'],
-      ];
-
-      for (const a of agents) {
-        const status = a[4] === 'running'
-          ? (await import('chalk')).default.green('● running')
-          : (await import('chalk')).default.dim('○ available');
-        table.push([a[0], a[1], a[2], a[3], status]);
-      }
-
-      console.log(chalk.bold.cyan('\n  Available Agents\n'));
-      console.log(table.toString());
-      console.log(chalk.dim(`\n  ${agents.length} agents available. Use \`hypercode agent spawn <name>\` to start one.\n`));
+      await withAgentErrorHandling(
+        () => unsupportedAgentCommand('Live agent definition listing is unavailable: the control plane does not expose a real agent inventory route yet.'),
+        opts,
+      );
     });
 
   agent
@@ -105,6 +82,7 @@ export function registerAgentCommand(program: Command): void {
     .option('-w, --workdir <path>', 'Working directory for the agent', '.')
     .option('--system-prompt <prompt>', 'Custom system prompt')
     .option('--temperature <temp>', 'LLM temperature', '0.7')
+    .option('--json', 'Output as JSON')
     .addHelpText('after', `
 Examples:
   $ hypercode agent spawn architect
@@ -112,20 +90,22 @@ Examples:
   $ hypercode agent spawn researcher --provider google
     `)
     .action(async (name, opts) => {
-      const chalk = (await import('chalk')).default;
-      console.log(chalk.yellow(`  Spawning agent: ${name}...`));
-      console.log(chalk.green(`  ✓ Agent '${name}' spawned (id: agent_${Date.now()})`));
-      console.log(chalk.dim(`    Model: ${opts.model || 'default'}`));
-      console.log(chalk.dim(`    Workdir: ${opts.workdir}`));
+      await withAgentErrorHandling(
+        () => unsupportedAgentCommand(`Live agent spawn is unavailable for '${name}': the control plane does not expose a real generic agent spawn route yet.`),
+        opts,
+      );
     });
 
   agent
     .command('stop <id>')
     .description('Stop a running agent instance')
     .option('-f, --force', 'Force stop without cleanup')
-    .action(async (id) => {
-      const chalk = (await import('chalk')).default;
-      console.log(chalk.green(`  ✓ Agent '${id}' stopped`));
+    .option('--json', 'Output as JSON')
+    .action(async (id, opts) => {
+      await withAgentErrorHandling(
+        () => unsupportedAgentCommand(`Live agent stop is unavailable for '${id}': the control plane does not expose a real generic agent stop route yet.`),
+        opts,
+      );
     });
 
   agent
@@ -133,28 +113,21 @@ Examples:
     .description('Show all running agent instances with metrics')
     .option('--json', 'Output as JSON')
     .action(async (opts) => {
-      const chalk = (await import('chalk')).default;
-      console.log(chalk.bold.cyan('\n  Running Agents\n'));
-      console.log(chalk.dim('  No agents currently running.\n'));
+      await withAgentErrorHandling(
+        () => unsupportedAgentCommand('Live agent status is unavailable: the control plane does not expose a real generic running-agent inventory route yet.'),
+        opts,
+      );
     });
 
   agent
     .command('chat <id>')
     .description('Open interactive chat session with a running agent')
-    .action(async (id) => {
-      const chalk = (await import('chalk')).default;
-      console.log(chalk.bold.cyan(`\n  Chat with Agent: ${id}`));
-      console.log(chalk.dim('  Type your message and press Enter. Type "exit" to quit.\n'));
-
-      const readline = await import('node:readline');
-      const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
-      rl.on('line', (line: string) => {
-        if (line.trim().toLowerCase() === 'exit') {
-          rl.close();
-          return;
-        }
-        console.log(chalk.dim(`  [Agent] Processing: "${line.substring(0, 50)}..."`));
-      });
+    .option('--json', 'Output as JSON')
+    .action(async (id, opts) => {
+      await withAgentErrorHandling(
+        () => unsupportedAgentCommand(`Live agent chat is unavailable for '${id}': the control plane only exposes stateless agent chat, not attached agent-instance chat.`),
+        opts,
+      );
     });
 
   agent

@@ -780,7 +780,24 @@ Validation:
 - `pnpm -C packages\cli exec tsc --noEmit`
 - `pnpm -C packages\cli exec vitest run src\commands\provider.test.ts src\commands\config.test.ts src\commands\mcp.test.ts src\control-plane.test.ts`
 
-### 34. `harden-published-catalog-ingestion`
+### 34. `harden-cli-agent-stubs`
+
+Status: **completed**
+
+What changed:
+
+- `packages/cli/src/commands/agent.ts` no longer fabricates agent inventory, fake spawned agent ids, fake stop success, a fake empty running-agent view, or a fake attached interactive agent chat shell
+- `hypercode agent list`, `agent spawn`, `agent stop`, `agent status`, and `agent chat` now fail explicitly through the shared agent control-plane error path because the current control plane does not expose real generic routes for those surfaces
+- `agent spawn` now also accepts `--json` so the explicit live-unavailable error can be returned in structured form instead of Commander rejecting the flag before the command handler runs
+- the already-live `hypercode agent council --status` path remains unchanged and still queries `director.status`, `supervisor.status`, and `council.status`
+- focused CLI coverage in `packages/cli/src/commands/agent.test.ts` now locks in these explicit live-unavailable failures so the CLI cannot drift back to fake success output
+
+Validation:
+
+- `pnpm -C packages\cli exec tsc --noEmit`
+- `pnpm -C packages\cli exec vitest run src\commands\agent.test.ts src\commands\provider.test.ts src\commands\config.test.ts src\commands\mcp.test.ts src\control-plane.test.ts`
+
+### 35. `harden-published-catalog-ingestion`
 
 Status: **completed**
 
