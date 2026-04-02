@@ -5,13 +5,22 @@ import { trpc } from "@/utils/trpc";
 import { PageStatusBanner } from "@/components/PageStatusBanner";
 import { Network, ArrowUp, ArrowDown, Save, ShieldAlert, Cpu } from "lucide-react";
 import { toast } from "sonner";
-import { Button } from "@borg/ui";
+import { Button } from "@hypercode/ui";
 
 interface CouncilMember {
     name: string;
     provider: string;
     modelId: string;
     systemPrompt: string;
+}
+
+function isCouncilMember(value: unknown): value is CouncilMember {
+    return typeof value === "object"
+        && value !== null
+        && typeof (value as { name?: unknown }).name === "string"
+        && typeof (value as { provider?: unknown }).provider === "string"
+        && typeof (value as { modelId?: unknown }).modelId === "string"
+        && typeof (value as { systemPrompt?: unknown }).systemPrompt === "string";
 }
 
 export default function RoutingConfigurationPage() {
@@ -36,12 +45,26 @@ export default function RoutingConfigurationPage() {
         }
     });
 
+    const membersUnavailable = membersQuery.isError
+        || (
+            membersQuery.data !== undefined
+            && (
+                !Array.isArray(membersQuery.data)
+                || !membersQuery.data.every(isCouncilMember)
+            )
+        );
+
     useEffect(() => {
-        if (membersQuery.data) {
+        if (!membersUnavailable && Array.isArray(membersQuery.data)) {
             // Clone to avoid mutating TRPC cache
             setChain(JSON.parse(JSON.stringify(membersQuery.data)));
+            return;
         }
-    }, [membersQuery.data]);
+
+        if (membersUnavailable) {
+            setChain([]);
+        }
+    }, [membersQuery.data, membersUnavailable]);
 
     const moveUp = (index: number) => {
         if (index === 0) return;
@@ -90,7 +113,7 @@ export default function RoutingConfigurationPage() {
                 <div>
                     <Button 
                         onClick={handleSave} 
-                        disabled={isSaving}
+                        disabled={isSaving || membersUnavailable}
                         className="bg-cyan-600 hover:bg-cyan-500 text-white border-none flex items-center gap-2"
                     >
                         <Save className="h-4 w-4" />
@@ -113,59 +136,65 @@ export default function RoutingConfigurationPage() {
                     Cascading Recovery Chain
                 </h3>
 
-                <div className="space-y-3">
-                    {chain.map((member, idx) => (
-                        <div 
-                            key={`${member.provider}-${member.modelId}-${idx}`} 
-                            className="flex items-center gap-4 bg-zinc-900 border border-zinc-800 p-4 rounded-lg shadow-sm"
-                        >
-                            {/* Priority Identifier */}
-                            <div className="flex flex-col items-center justify-center shrink-0 w-8 h-8 rounded-full bg-zinc-950 border border-zinc-700 font-mono text-zinc-400">
-                                {idx + 1}
-                            </div>
-
-                            {/* Core Details */}
-                            <div className="flex-1 min-w-0">
-                                <div className="flex items-center gap-2 mb-1">
-                                    <Cpu className="h-4 w-4 text-emerald-400" />
-                                    <span className="font-semibold text-zinc-100">{member.name}</span>
-                                    <span className="text-xs px-2 py-0.5 rounded bg-zinc-800 text-zinc-400 border border-zinc-700">
-                                        {member.provider}
-                                    </span>
+                {membersUnavailable ? (
+                    <div className="rounded-lg border border-red-900/40 bg-red-950/20 p-4 text-sm text-red-300">
+                        {membersQuery.error?.message ?? "Routing hierarchy is unavailable due to malformed data."}
+                    </div>
+                ) : (
+                    <div className="space-y-3">
+                        {chain.map((member, idx) => (
+                            <div 
+                                key={`${member.provider}-${member.modelId}-${idx}`} 
+                                className="flex items-center gap-4 bg-zinc-900 border border-zinc-800 p-4 rounded-lg shadow-sm"
+                            >
+                                {/* Priority Identifier */}
+                                <div className="flex flex-col items-center justify-center shrink-0 w-8 h-8 rounded-full bg-zinc-950 border border-zinc-700 font-mono text-zinc-400">
+                                    {idx + 1}
                                 </div>
-                                <div className="text-xs text-zinc-500 font-mono">
-                                    {member.modelId}
+
+                                {/* Core Details */}
+                                <div className="flex-1 min-w-0">
+                                    <div className="flex items-center gap-2 mb-1">
+                                        <Cpu className="h-4 w-4 text-emerald-400" />
+                                        <span className="font-semibold text-zinc-100">{member.name}</span>
+                                        <span className="text-xs px-2 py-0.5 rounded bg-zinc-800 text-zinc-400 border border-zinc-700">
+                                            {member.provider}
+                                        </span>
+                                    </div>
+                                    <div className="text-xs text-zinc-500 font-mono">
+                                        {member.modelId}
+                                    </div>
+                                </div>
+
+                                {/* Reordering Controls */}
+                                <div className="flex flex-col gap-1 shrink-0">
+                                    <button
+                                        onClick={() => moveUp(idx)}
+                                        disabled={idx === 0}
+                                        className={`p-1.5 rounded border transition-colors ${
+                                            idx === 0 
+                                            ? "border-transparent text-zinc-700 cursor-not-allowed" 
+                                            : "border-zinc-700 text-zinc-300 hover:bg-zinc-800 hover:text-white"
+                                        }`}
+                                    >
+                                        <ArrowUp className="h-3.5 w-3.5" />
+                                    </button>
+                                    <button
+                                        onClick={() => moveDown(idx)}
+                                        disabled={idx === chain.length - 1}
+                                        className={`p-1.5 rounded border transition-colors ${
+                                            idx === chain.length - 1 
+                                            ? "border-transparent text-zinc-700 cursor-not-allowed" 
+                                            : "border-zinc-700 text-zinc-300 hover:bg-zinc-800 hover:text-white"
+                                        }`}
+                                    >
+                                        <ArrowDown className="h-3.5 w-3.5" />
+                                    </button>
                                 </div>
                             </div>
-
-                            {/* Reordering Controls */}
-                            <div className="flex flex-col gap-1 shrink-0">
-                                <button
-                                    onClick={() => moveUp(idx)}
-                                    disabled={idx === 0}
-                                    className={`p-1.5 rounded border transition-colors ${
-                                        idx === 0 
-                                        ? "border-transparent text-zinc-700 cursor-not-allowed" 
-                                        : "border-zinc-700 text-zinc-300 hover:bg-zinc-800 hover:text-white"
-                                    }`}
-                                >
-                                    <ArrowUp className="h-3.5 w-3.5" />
-                                </button>
-                                <button
-                                    onClick={() => moveDown(idx)}
-                                    disabled={idx === chain.length - 1}
-                                    className={`p-1.5 rounded border transition-colors ${
-                                        idx === chain.length - 1 
-                                        ? "border-transparent text-zinc-700 cursor-not-allowed" 
-                                        : "border-zinc-700 text-zinc-300 hover:bg-zinc-800 hover:text-white"
-                                    }`}
-                                >
-                                    <ArrowDown className="h-3.5 w-3.5" />
-                                </button>
-                            </div>
-                        </div>
-                    ))}
-                </div>
+                        ))}
+                    </div>
+                )}
 
                 <div className="mt-8 p-4 rounded bg-blue-950/20 border border-blue-900/30">
                     <p className="text-sm text-blue-300 font-medium">Design Protocol</p>
