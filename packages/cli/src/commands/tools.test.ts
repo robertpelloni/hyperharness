@@ -125,4 +125,54 @@ describe('registerToolsCommand', () => {
     expect(errorSpy).toHaveBeenCalled();
     expect(process.exitCode).toBe(1);
   });
+
+  it('shows tool detail as JSON from the live control plane', async () => {
+    queryTrpcMock.mockResolvedValue({
+      uuid: 'search_tools',
+      name: 'search_tools',
+      description: 'Search available tools',
+      server: 'meta',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          query: {
+            type: 'string',
+            description: 'Search query',
+          },
+        },
+        required: ['query'],
+      },
+      schemaParamCount: 1,
+      always_on: true,
+      isDeferred: false,
+      mcpServerUuid: 'server-1',
+    });
+
+    const program = createProgram();
+    await program.parseAsync(['tools', 'info', 'search_tools', '--json'], { from: 'user' });
+
+    expect(queryTrpcMock).toHaveBeenCalledWith('tools.get', { uuid: 'search_tools' });
+    expect(logSpy).toHaveBeenCalledWith(JSON.stringify({
+      tool: {
+        uuid: 'search_tools',
+        name: 'search_tools',
+        description: 'Search available tools',
+        server: 'meta',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            query: {
+              type: 'string',
+              description: 'Search query',
+            },
+          },
+          required: ['query'],
+        },
+        schemaParamCount: 1,
+        always_on: true,
+        isDeferred: false,
+        mcpServerUuid: 'server-1',
+      },
+    }, null, 2));
+  });
 });

@@ -35,6 +35,25 @@ type SearchedTool = ListedTool & {
   autoLoaded?: boolean;
 };
 
+type DetailedTool = {
+  uuid: string;
+  name: string;
+  description?: string;
+  server?: string;
+  inputSchema?: {
+    type?: string;
+    properties?: Record<string, {
+      type?: string | string[];
+      description?: string;
+    }>;
+    required?: string[];
+  } | null;
+  isDeferred?: boolean;
+  schemaParamCount?: number;
+  mcpServerUuid?: string;
+  always_on?: boolean;
+};
+
 function normalizeText(value: string | undefined | null): string {
   return typeof value === 'string' && value.trim().length > 0 ? value.trim() : '—';
 }
@@ -89,6 +108,22 @@ function parseTopK(value: string): number {
   }
 
   return parsed;
+}
+
+function getSchemaParamCount(tool: DetailedTool): number {
+  if (typeof tool.schemaParamCount === 'number') {
+    return tool.schemaParamCount;
+  }
+
+  return Object.keys(tool.inputSchema?.properties ?? {}).length;
+}
+
+function formatSchemaType(value: string | string[] | undefined): string {
+  if (Array.isArray(value)) {
+    return value.join(' | ');
+  }
+
+  return value ?? 'unknown';
 }
 
 async function withToolsErrorHandling(
@@ -271,10 +306,66 @@ Examples:
     .command('info <name>')
     .description('Show detailed information about a specific tool')
     .option('--json', 'Output as JSON')
-    .action(async (name, _opts) => {
-      const chalk = (await import('chalk')).default;
-      console.log(chalk.bold.cyan(`\n  Tool: ${name}\n`));
-      console.log(chalk.dim('  Tool detail lookup is not wired yet. Use `hypercode tools search` or `hypercode tools list` for now.\n'));
+    .action(async (name, opts) => {
+      await withToolsErrorHandling(async () => {
+        const tool = await queryTrpc<DetailedTool | null>('tools.get', { uuid: name });
+        if (!tool) {
+          throw new Error(`Tool '${name}' was not found`);
+        }
+
+        if (opts.json) {
+          console.log(JSON.stringify({ tool }, null, 2));
+          return;
+        }
+
+        const chalk = (await import('chalk')).default;
+        const Table = (await import('cli-table3')).default;
+        const properties = Object.entries(tool.inputSchema?.properties ?? {});
+        const required = new Set(tool.inputSchema?.required ?? []);
+
+        console.log(chalk.bold.cyan(`\n  Tool: ${tool.name}\n`));
+
+        const summary = new Table({
+          colWidths: [18, 72],
+          wordWrap: true,
+          style: { head: ['cyan'] },
+        });
+
+        summary.push(
+          ['Description', normalizeText(tool.description)],
+          ['Server', normalizeText(tool.server)],
+          ['Always On', tool.always_on ? chalk.green('yes') : chalk.dim('no')],
+          ['Deferred', tool.isDeferred ? chalk.yellow('yes') : chalk.dim('no')],
+          ['Parameters', String(getSchemaParamCount(tool))],
+          ['Server UUID', normalizeText(tool.mcpServerUuid)],
+        );
+
+        console.log(summary.toString());
+
+        if (properties.length === 0) {
+          console.log(chalk.dim('\n  No input schema properties available.\n'));
+          return;
+        }
+
+        const schemaTable = new Table({
+          head: ['Parameter', 'Type', 'Required', 'Description'],
+          style: { head: ['cyan'] },
+          wordWrap: true,
+          colWidths: [24, 18, 12, 54],
+        });
+
+        for (const [propertyName, propertySchema] of properties) {
+          schemaTable.push([
+            propertyName,
+            formatSchemaType(propertySchema?.type),
+            required.has(propertyName) ? chalk.green('yes') : chalk.dim('no'),
+            normalizeText(propertySchema?.description),
+          ]);
+        }
+
+        console.log('\n' + schemaTable.toString());
+        console.log('');
+      }, opts);
     });
 
   tools

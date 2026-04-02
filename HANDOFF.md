@@ -264,7 +264,24 @@ Validation:
 - `pnpm -C packages\cli exec tsc --noEmit`
 - `pnpm -C packages\cli exec vitest run src\commands\tools.test.ts src\control-plane.test.ts`
 
-### 4. `harden-published-catalog-ingestion`
+### 4. `wire-cli-tools-info`
+
+Status: **completed**
+
+What changed:
+
+- `packages/cli/src/commands/tools.ts` no longer leaves `hypercode tools info <name>` as a placeholder
+- tool detail lookup now queries the live control plane through `tools.get`
+- JSON mode now returns the live tool payload directly, and the default terminal view now renders real description/server/always-on/deferred/schema summary plus per-parameter schema rows when available
+- missing tools now fail truthfully instead of printing a vague generic stub
+- focused CLI coverage was extended in `packages/cli/src/commands/tools.test.ts`
+
+Validation:
+
+- `pnpm -C packages\cli exec tsc --noEmit`
+- `pnpm -C packages\cli exec vitest run src\commands\tools.test.ts src\control-plane.test.ts`
+
+### 5. `harden-published-catalog-ingestion`
 
 Status: **completed**
 
@@ -288,7 +305,7 @@ Validation:
 - `pnpm -C packages\core exec vitest run src\services\published-catalog-ingestor.test.ts`
 - `pnpm -C packages\core exec tsc --noEmit`
 
-### 5. `workflow-canvas-save-truthfulness`
+### 6. `workflow-canvas-save-truthfulness`
 
 Status: **completed**
 
@@ -302,7 +319,7 @@ Validation:
 
 - `pnpm -C apps\web exec tsc --noEmit --pretty false`
 
-### 6. `workflow-canvas-payload-truthfulness`
+### 7. `workflow-canvas-payload-truthfulness`
 
 Status: **completed**
 
@@ -316,7 +333,7 @@ Validation:
 
 - `pnpm -C apps\web exec tsc --noEmit --pretty false`
 
-### 7. `workflow-engine-empty-state-truthfulness`
+### 8. `workflow-engine-empty-state-truthfulness`
 
 Status: **completed**
 
@@ -332,7 +349,7 @@ Validation:
 - `pnpm -C packages\core exec vitest run src\routers\workflowRouter.test.ts`
 - `pnpm -C packages\core exec tsc --noEmit`
 
-### 8. `workflow-designer-fetch-truthfulness`
+### 9. `workflow-designer-fetch-truthfulness`
 
 Status: **completed**
 
