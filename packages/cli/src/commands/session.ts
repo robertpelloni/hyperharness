@@ -427,9 +427,24 @@ Harnesses:
   session
     .command('resume <id>')
     .description('Resume a paused or stopped session')
-    .action(async (id) => {
-      const chalk = (await import('chalk')).default;
-      console.log(chalk.green(`  ✓ Session '${id}' resumed`));
+    .option('--json', 'Output as JSON')
+    .action(async (id, opts) => {
+      await withSessionErrorHandling(async () => {
+        const chalk = (await import('chalk')).default;
+        const resumed = await queryTrpc<SessionRecord>('session.restart', { id });
+
+        if (opts.json) {
+          console.log(JSON.stringify({
+            session: resumed,
+          }, null, 2));
+          return;
+        }
+
+        console.log(chalk.green(`  ✓ Session '${resumed.id}' resume requested`));
+        console.log(chalk.dim(`    Status:   ${normalizeText(resumed.status)}`));
+        console.log(chalk.dim(`    Harness:  ${normalizeText(resumed.cliType)}`));
+        console.log(chalk.dim(`    Workdir:  ${normalizeText(resumed.workingDirectory)}`));
+      }, opts);
     });
 
   session

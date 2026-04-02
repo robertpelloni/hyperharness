@@ -237,6 +237,32 @@ describe('registerSessionCommand', () => {
     }, null, 2));
   });
 
+  it('resumes a live session as JSON', async () => {
+    queryTrpcMock.mockResolvedValue({
+      id: 'sess_live_1',
+      name: 'repo-fix',
+      cliType: 'hypercode',
+      workingDirectory: 'C:\\repo',
+      status: 'restarting',
+    });
+
+    const program = createProgram();
+    await program.parseAsync(['session', 'resume', 'sess_live_1', '--json'], { from: 'user' });
+
+    expect(queryTrpcMock).toHaveBeenCalledWith('session.restart', {
+      id: 'sess_live_1',
+    });
+    expect(logSpy).toHaveBeenCalledWith(JSON.stringify({
+      session: {
+        id: 'sess_live_1',
+        name: 'repo-fix',
+        cliType: 'hypercode',
+        workingDirectory: 'C:\\repo',
+        status: 'restarting',
+      },
+    }, null, 2));
+  });
+
   it('reports control-plane failures without throwing out of the command', async () => {
     queryTrpcMock.mockRejectedValue(new Error('control plane unavailable'));
 

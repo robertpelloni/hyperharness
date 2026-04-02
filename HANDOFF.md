@@ -604,7 +604,24 @@ Validation:
 - `pnpm -C packages\cli exec tsc --noEmit`
 - `pnpm -C packages\cli exec vitest run src\commands\session.test.ts src\commands\status.test.ts src\commands\provider.test.ts src\commands\config.test.ts src\commands\mcp.test.ts src\commands\agent.test.ts src\commands\tools.test.ts src\commands\memory.test.ts src\control-plane.test.ts`
 
-### 24. `harden-published-catalog-ingestion`
+### 24. `wire-cli-session-resume`
+
+Status: **completed**
+
+What changed:
+
+- `packages/cli/src/commands/session.ts` no longer prints a fabricated success line for `hypercode session resume <id>`
+- `session resume` now calls the live `session.restart` control-plane mutation, which matches the supervisor's resume/restart lifecycle in this implementation
+- `--json` now emits the structured resumed-session payload for automation and troubleshooting
+- command failures now flow through the existing structured session control-plane error handling path
+- focused CLI coverage in `packages/cli/src/commands/session.test.ts` now includes the session-resume JSON flow
+
+Validation:
+
+- `pnpm -C packages\cli exec tsc --noEmit`
+- `pnpm -C packages\cli exec vitest run src\commands\session.test.ts src\commands\status.test.ts src\commands\provider.test.ts src\commands\config.test.ts src\commands\mcp.test.ts src\commands\agent.test.ts src\commands\tools.test.ts src\commands\memory.test.ts src\control-plane.test.ts`
+
+### 25. `harden-published-catalog-ingestion`
 
 Status: **completed**
 
