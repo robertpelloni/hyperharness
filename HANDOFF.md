@@ -888,6 +888,21 @@ Validation:
 - `pnpm -C packages\cli exec tsc --noEmit`
 - `pnpm -C packages\cli exec vitest run src\commands\provider.test.ts src\commands\config.test.ts src\commands\mcp.test.ts src\commands\tools.test.ts src\commands\session.test.ts src\control-plane.test.ts`
 
+### 41. `wire-cli-mcp-auto-start-toggle`
+
+Status: **completed**
+
+What changed:
+
+- `packages/cli/src/commands/mcp.ts` now exposes a truthful `--no-auto-start` path for `hypercode mcp add`, so operators can create MCP registry entries with `always_on: false` instead of only the always-on default
+- this keeps the CLI aligned with the live `mcpServers.create` contract, which already supports the `always_on` field even though the earlier CLI surface only made the enabled path practical
+- focused CLI coverage in `packages/cli/src/commands/mcp.test.ts` now locks in the `always_on: false` payload shape for disabled auto-start registration
+
+Validation:
+
+- `pnpm -C packages\cli exec tsc --noEmit`
+- `pnpm -C packages\cli exec vitest run src\commands\mcp.test.ts src\commands\provider.test.ts src\commands\session.test.ts src\commands\tools.test.ts src\control-plane.test.ts`
+
 ### 39. `harden-cli-mcp-namespace-flag`
 
 Status: **completed**

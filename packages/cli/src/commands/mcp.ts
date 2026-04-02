@@ -417,6 +417,7 @@ export function registerMcpCommand(program: Command): void {
     .option('--args <args...>', 'Command arguments')
     .option('--env <vars...>', 'Environment variables (KEY=VALUE)')
     .option('--auto-start', 'Auto-start on HyperCode launch', true)
+    .option('--no-auto-start', 'Do not auto-start on HyperCode launch')
     .addHelpText('after', `
 Examples:
   $ hypercode mcp add filesystem npx -- -y @modelcontextprotocol/server-filesystem /home

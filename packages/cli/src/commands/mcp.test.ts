@@ -302,6 +302,53 @@ describe('registerMcpCommand', () => {
     }, null, 2));
   });
 
+  it('passes always_on false when MCP add disables auto-start', async () => {
+    queryTrpcMock.mockResolvedValue({
+      uuid: 'server-2',
+      name: 'github',
+      type: 'stdio',
+      command: 'npx',
+      args: ['-y', '@modelcontextprotocol/server-github'],
+      env: {},
+      always_on: false,
+    });
+
+    const program = createProgram();
+    await program.parseAsync([
+      'mcp',
+      'add',
+      'github',
+      'npx',
+      '--args',
+      '-y',
+      '@modelcontextprotocol/server-github',
+      '--no-auto-start',
+      '--json',
+    ], { from: 'user' });
+
+    expect(queryTrpcMock).toHaveBeenCalledWith('mcpServers.create', {
+      name: 'github',
+      description: null,
+      type: 'stdio',
+      command: 'npx',
+      args: ['-y', '@modelcontextprotocol/server-github'],
+      env: undefined,
+      url: null,
+      always_on: false,
+    });
+    expect(logSpy).toHaveBeenCalledWith(JSON.stringify({
+      server: {
+        uuid: 'server-2',
+        name: 'github',
+        type: 'stdio',
+        command: 'npx',
+        args: ['-y', '@modelcontextprotocol/server-github'],
+        env: {},
+        always_on: false,
+      },
+    }, null, 2));
+  });
+
   it('rejects unsupported MCP namespace assignment explicitly on add', async () => {
     const program = createProgram();
     await program.parseAsync(['mcp', 'add', 'filesystem', 'npx', '--namespace', 'ops', '--json'], { from: 'user' });
