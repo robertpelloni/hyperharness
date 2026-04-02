@@ -247,7 +247,24 @@ What remains:
 - `MAESTRO_STRICT_NATIVE_RUNTIME=1 node scripts/ensure-native-runtime.mjs` still fails on this machine, but the remaining blocker is now more specific: `electron-rebuild` reports success while the final Electron probe still sees `better_sqlite3.node` built for NODE_MODULE_VERSION 137 instead of Electron 28 / Node 18 ABI 119
 - the next ABI follow-up should therefore inspect why the isolated artifact remains Node-ABI 137 after an `electron-rebuild` pass, including whether shared pnpm store state, stale copied artifacts, or the isolated module layout is causing the wrong binary to survive
 
-### 3. `harden-published-catalog-ingestion`
+### 3. `wire-cli-tools-command`
+
+Status: **completed**
+
+What changed:
+
+- `packages/cli/src/commands/tools.ts` no longer prints placeholder empty-state output for `hypercode tools list` and `hypercode tools search`
+- `hypercode tools list` now queries the live control plane through `mcp.listTools`, supports `--json`, `--server`, `--namespace`, `--enabled`, and `--disabled`, and renders real tool inventory rows with server/group/keyword visibility
+- `hypercode tools search <query>` now queries `mcp.searchTools`, supports `--profile`, `--top-k`, and `--json`, and surfaces ranked search metadata like always-on/loaded/hydrated/deferred state plus match reasons
+- command failures now report the resolved control-plane endpoint and a concrete remediation path instead of failing silently or pretending no tools exist
+- focused CLI coverage was added in `packages/cli/src/commands/tools.test.ts`
+
+Validation:
+
+- `pnpm -C packages\cli exec tsc --noEmit`
+- `pnpm -C packages\cli exec vitest run src\commands\tools.test.ts src\control-plane.test.ts`
+
+### 4. `harden-published-catalog-ingestion`
 
 Status: **completed**
 
@@ -271,7 +288,7 @@ Validation:
 - `pnpm -C packages\core exec vitest run src\services\published-catalog-ingestor.test.ts`
 - `pnpm -C packages\core exec tsc --noEmit`
 
-### 4. `workflow-canvas-save-truthfulness`
+### 5. `workflow-canvas-save-truthfulness`
 
 Status: **completed**
 
@@ -285,7 +302,7 @@ Validation:
 
 - `pnpm -C apps\web exec tsc --noEmit --pretty false`
 
-### 5. `workflow-canvas-payload-truthfulness`
+### 6. `workflow-canvas-payload-truthfulness`
 
 Status: **completed**
 
@@ -299,7 +316,7 @@ Validation:
 
 - `pnpm -C apps\web exec tsc --noEmit --pretty false`
 
-### 6. `workflow-engine-empty-state-truthfulness`
+### 7. `workflow-engine-empty-state-truthfulness`
 
 Status: **completed**
 
@@ -315,7 +332,7 @@ Validation:
 - `pnpm -C packages\core exec vitest run src\routers\workflowRouter.test.ts`
 - `pnpm -C packages\core exec tsc --noEmit`
 
-### 7. `workflow-designer-fetch-truthfulness`
+### 8. `workflow-designer-fetch-truthfulness`
 
 Status: **completed**
 
