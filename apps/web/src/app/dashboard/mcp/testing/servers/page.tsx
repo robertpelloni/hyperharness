@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { Suspense, useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { Button, Card, CardContent, CardHeader, CardTitle } from '@borg/ui';
+import { Button, Card, CardContent, CardHeader, CardTitle } from '@hypercode/ui';
 import { trpc } from '@/utils/trpc';
 import { toast } from 'sonner';
 import { Activity, ExternalLink, Loader2, Play, Server, TestTube2, Waypoints, Wrench } from 'lucide-react';
@@ -53,6 +53,22 @@ type ProbeResult = {
     trafficEvents: ProbeTrafficEvent[];
 };
 
+function isProbeServerSummary(value: unknown): value is ProbeServerSummary {
+    return typeof value === 'object'
+        && value !== null
+        && typeof (value as { name?: unknown }).name === 'string'
+        && typeof (value as { status?: unknown }).status === 'string'
+        && typeof (value as { toolCount?: unknown }).toolCount === 'number';
+}
+
+function isProbeToolSummary(value: unknown): value is ProbeToolSummary {
+    return typeof value === 'object'
+        && value !== null
+        && typeof (value as { name?: unknown }).name === 'string'
+        && typeof (value as { server?: unknown }).server === 'string'
+        && typeof (value as { description?: unknown }).description === 'string';
+}
+
 function TargetStatusPill({ target }: { target: ServerProbeTarget }) {
     if (target.kind === 'router') {
         return <span className="rounded-full border border-cyan-500/20 bg-cyan-500/10 px-2 py-0.5 text-[10px] uppercase tracking-wider text-cyan-200">aggregated</span>;
@@ -78,8 +94,8 @@ export default function MCPServerProbePage(): React.JSX.Element {
 
 function MCPServerProbePageContent(): React.JSX.Element {
     const searchParams = useSearchParams();
-    const { data: servers, isLoading: isLoadingServers } = trpc.mcp.listServers.useQuery();
-    const { data: tools, isLoading: isLoadingTools } = trpc.mcp.listTools.useQuery();
+    const serversQuery = trpc.mcp.listServers.useQuery();
+    const toolsQuery = trpc.mcp.listTools.useQuery();
     const runServerTestMutation = trpc.mcp.runServerTest.useMutation({
         onSuccess: (data: ProbeResult) => {
             toast[data.success ? 'success' : 'error'](`${data.target.displayName}: ${data.response.summary}`);
@@ -88,9 +104,21 @@ function MCPServerProbePageContent(): React.JSX.Element {
             toast.error(error.message);
         },
     });
+    const serversUnavailable = serversQuery.isError
+        || (serversQuery.data !== undefined && (!Array.isArray(serversQuery.data) || !serversQuery.data.every(isProbeServerSummary)));
+    const toolsUnavailable = toolsQuery.isError
+        || (toolsQuery.data !== undefined && (!Array.isArray(toolsQuery.data) || !toolsQuery.data.every(isProbeToolSummary)));
+    const isLoadingServers = serversQuery.isLoading;
+    const isLoadingTools = toolsQuery.isLoading;
+    const serversErrorMessage = serversQuery.error?.message ?? 'Probe target server inventory is unavailable.';
+    const toolsErrorMessage = toolsQuery.error?.message ?? 'Tool inventory is unavailable.';
 
-    const serverList = ((servers ?? []) as ProbeServerSummary[]);
-    const toolList = ((tools ?? []) as ProbeToolSummary[]);
+    const serverList = !serversUnavailable && Array.isArray(serversQuery.data)
+        ? (serversQuery.data as ProbeServerSummary[])
+        : [];
+    const toolList = !toolsUnavailable && Array.isArray(toolsQuery.data)
+        ? (toolsQuery.data as ProbeToolSummary[])
+        : [];
     const targets = useMemo(() => buildServerProbeTargets(serverList), [serverList]);
 
     const [selectedTargetId, setSelectedTargetId] = useState('router');
@@ -171,7 +199,7 @@ function MCPServerProbePageContent(): React.JSX.Element {
                 <div>
                     <h1 className="text-3xl font-bold tracking-tight text-white">Server probes</h1>
                     <p className="mt-2 max-w-3xl text-zinc-500">
-                        Run a client-style probe against the Borg router or any downstream MCP server and inspect the exact request plus response payload without leaving the dashboard.
+                        Run a client-style probe against the HyperCode router or any downstream MCP server and inspect the exact request plus response payload without leaving the dashboard.
                     </p>
                 </div>
                 <Link
@@ -185,13 +213,20 @@ function MCPServerProbePageContent(): React.JSX.Element {
                 </Link>
             </div>
 
+            {serversUnavailable || toolsUnavailable ? (
+                <div className="rounded-lg border border-red-900/40 bg-red-950/20 px-4 py-3 text-sm text-red-300 space-y-1">
+                    {serversUnavailable ? <div>{serversErrorMessage}</div> : null}
+                    {toolsUnavailable ? <div>{toolsErrorMessage}</div> : null}
+                </div>
+            ) : null}
+
             <div className="grid gap-4 md:grid-cols-3">
                 <Card className="border-zinc-800 bg-zinc-900">
                     <CardContent className="p-5">
                         <div className="flex items-center justify-between">
                             <div>
                                 <div className="text-xs uppercase tracking-wider text-zinc-500">Probe targets</div>
-                                <div className="mt-1 text-3xl font-semibold text-white">{targets.length}</div>
+                                <div className="mt-1 text-3xl font-semibold text-white">{serversUnavailable ? '—' : targets.length}</div>
                             </div>
                             <TestTube2 className="h-5 w-5 text-fuchsia-400" />
                         </div>
@@ -202,7 +237,7 @@ function MCPServerProbePageContent(): React.JSX.Element {
                         <div className="flex items-center justify-between">
                             <div>
                                 <div className="text-xs uppercase tracking-wider text-zinc-500">Downstream servers</div>
-                                <div className="mt-1 text-3xl font-semibold text-white">{serverList.length}</div>
+                                <div className="mt-1 text-3xl font-semibold text-white">{serversUnavailable ? '—' : serverList.length}</div>
                             </div>
                             <Server className="h-5 w-5 text-blue-400" />
                         </div>
@@ -213,7 +248,7 @@ function MCPServerProbePageContent(): React.JSX.Element {
                         <div className="flex items-center justify-between">
                             <div>
                                 <div className="text-xs uppercase tracking-wider text-zinc-500">Callable tools</div>
-                                <div className="mt-1 text-3xl font-semibold text-white">{availableTools.length}</div>
+                                <div className="mt-1 text-3xl font-semibold text-white">{toolsUnavailable ? '—' : availableTools.length}</div>
                             </div>
                             <Wrench className="h-5 w-5 text-emerald-400" />
                         </div>
@@ -229,6 +264,10 @@ function MCPServerProbePageContent(): React.JSX.Element {
                     <CardContent className="space-y-3">
                         {isLoadingServers ? (
                             <div className="flex justify-center p-6"><Loader2 className="h-5 w-5 animate-spin text-zinc-500" /></div>
+                        ) : serversUnavailable ? (
+                            <div className="rounded-lg border border-red-900/40 bg-red-950/20 p-4 text-sm text-red-300">
+                                {serversErrorMessage}
+                            </div>
                         ) : targets.map((target) => (
                             <button
                                 key={target.id}
@@ -269,12 +308,12 @@ function MCPServerProbePageContent(): React.JSX.Element {
                                         <div className="flex flex-wrap items-center gap-2">
                                             <Waypoints className="h-4 w-4 text-cyan-400" />
                                             <span className="font-semibold text-white">{selectedTarget.label}</span>
-                                            <span className="text-zinc-500">via {selectedTarget.kind === 'router' ? 'Borg router' : 'direct downstream connection'}</span>
+                                            <span className="text-zinc-500">via {selectedTarget.kind === 'router' ? 'HyperCode router' : 'direct downstream connection'}</span>
                                         </div>
                                         <p className="mt-2 text-xs text-zinc-500">
                                             {selectedTarget.kind === 'router'
-                                                ? 'This simulates a client probing Borg’s aggregated router surface. Router traffic below reflects downstream calls Borg made on your behalf.'
-                                                : 'This bypasses Borg’s tool-selection layer and hits the downstream server directly, which is handy when you want to separate upstream routing issues from server-specific breakage.'}
+                                                ? 'This simulates a client probing HyperCode’s aggregated router surface. Router traffic below reflects downstream calls HyperCode made on your behalf.'
+                                                : 'This bypasses HyperCode’s tool-selection layer and hits the downstream server directly, which is handy when you want to separate upstream routing issues from server-specific breakage.'}
                                         </p>
                                     </div>
 
@@ -298,9 +337,9 @@ function MCPServerProbePageContent(): React.JSX.Element {
                                                     value={selectedToolName}
                                                     onChange={(event) => setSelectedToolName(event.target.value)}
                                                     className="w-full rounded-md border border-zinc-800 bg-zinc-950 p-2.5 text-sm text-white outline-none focus:ring-1 focus:ring-cyan-500"
-                                                    disabled={isLoadingTools || availableTools.length === 0}
+                                                    disabled={isLoadingTools || toolsUnavailable || availableTools.length === 0}
                                                 >
-                                                    {availableTools.length === 0 ? <option value="">No tools available for this target</option> : null}
+                                                    {toolsUnavailable ? <option value="">{toolsErrorMessage}</option> : availableTools.length === 0 ? <option value="">No tools available for this target</option> : null}
                                                     {availableTools.map((tool) => (
                                                         <option key={tool.name} value={tool.name}>{tool.name}</option>
                                                     ))}
@@ -334,7 +373,7 @@ function MCPServerProbePageContent(): React.JSX.Element {
                                             {runServerTestMutation.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Play className="mr-2 h-4 w-4" />}
                                             Run probe
                                         </Button>
-                                        <span className="text-xs text-zinc-500">The result includes request payload, response payload, latency, and any matching Borg router traffic captured during the probe window.</span>
+                                        <span className="text-xs text-zinc-500">The result includes request payload, response payload, latency, and any matching HyperCode router traffic captured during the probe window.</span>
                                     </div>
                                 </>
                             )}
@@ -372,7 +411,7 @@ function MCPServerProbePageContent(): React.JSX.Element {
 
                                     <div className="rounded-lg border border-zinc-800 bg-zinc-950/60 p-4">
                                         <div className="flex items-center justify-between gap-3">
-                                            <div className="text-xs uppercase tracking-wider text-zinc-500">Matching Borg router traffic</div>
+                                            <div className="text-xs uppercase tracking-wider text-zinc-500">Matching HyperCode router traffic</div>
                                             <Link
                                                 href="/dashboard/inspector"
                                                 className="inline-flex items-center gap-1 text-xs text-zinc-400 hover:text-white"
@@ -384,7 +423,7 @@ function MCPServerProbePageContent(): React.JSX.Element {
                                             </Link>
                                         </div>
                                         {result.trafficEvents.length === 0 ? (
-                                            <p className="mt-3 text-sm text-zinc-500">No Borg router traffic matched this probe window. Direct downstream probes only record the explicit request/response transcript above.</p>
+                                            <p className="mt-3 text-sm text-zinc-500">No HyperCode router traffic matched this probe window. Direct downstream probes only record the explicit request/response transcript above.</p>
                                         ) : (
                                             <div className="mt-3 space-y-3">
                                                 {result.trafficEvents.map((event, index) => (

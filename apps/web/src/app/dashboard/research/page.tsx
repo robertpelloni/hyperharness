@@ -1,10 +1,10 @@
 'use client';
 
-import { Card, CardHeader, CardTitle, CardContent } from "@borg/ui";
-import { Button } from "@borg/ui";
-import { Input } from "@borg/ui";
-import { Badge } from "@borg/ui";
-import { ScrollArea } from "@borg/ui";
+import { Card, CardHeader, CardTitle, CardContent } from "@hypercode/ui";
+import { Button } from "@hypercode/ui";
+import { Input } from "@hypercode/ui";
+import { Badge } from "@hypercode/ui";
+import { ScrollArea } from "@hypercode/ui";
 import { useEffect, useState } from "react";
 import { Loader2, Search, BookOpen, GitBranch, ExternalLink, Network } from "lucide-react";
 import { trpc } from '@/utils/trpc';
@@ -17,12 +17,70 @@ interface ResearchNode {
     subTopics?: ResearchNode[];
 }
 
+function isResearchSource(value: unknown): value is { title: string; url: string } {
+    return typeof value === 'object'
+        && value !== null
+        && typeof (value as { title?: unknown }).title === 'string'
+        && typeof (value as { url?: unknown }).url === 'string';
+}
+
+function isResearchNode(value: unknown): value is ResearchNode {
+    return typeof value === 'object'
+        && value !== null
+        && typeof (value as { topic?: unknown }).topic === 'string'
+        && typeof (value as { summary?: unknown }).summary === 'string'
+        && Array.isArray((value as { sources?: unknown }).sources)
+        && (value as { sources: unknown[] }).sources.every(isResearchSource)
+        && Array.isArray((value as { relatedTopics?: unknown }).relatedTopics)
+        && (value as { relatedTopics: unknown[] }).relatedTopics.every((topic) => typeof topic === 'string')
+        && (
+            (value as { subTopics?: unknown }).subTopics === undefined
+            || (
+                Array.isArray((value as { subTopics?: unknown }).subTopics)
+                && (value as { subTopics: unknown[] }).subTopics.every(isResearchNode)
+            )
+        );
+}
+
+function isResearchQueueItem(value: unknown): value is { url: string; name: string; error: string; attempts: number } {
+    return typeof value === 'object'
+        && value !== null
+        && typeof (value as { url?: unknown }).url === 'string'
+        && typeof (value as { name?: unknown }).name === 'string'
+        && typeof (value as { error?: unknown }).error === 'string'
+        && typeof (value as { attempts?: unknown }).attempts === 'number';
+}
+
+function isResearchQueuePayload(value: unknown): value is {
+    totals: { processed: number; pending: number; failed: number };
+    queue: { failed: Array<{ url: string; name: string; error: string; attempts: number }> };
+    updatedAt?: string | null;
+} {
+    return typeof value === 'object'
+        && value !== null
+        && typeof (value as { totals?: unknown }).totals === 'object'
+        && (value as { totals: { processed?: unknown } }).totals !== null
+        && typeof (value as { totals: { processed?: unknown } }).totals.processed === 'number'
+        && typeof (value as { totals: { pending?: unknown } }).totals.pending === 'number'
+        && typeof (value as { totals: { failed?: unknown } }).totals.failed === 'number'
+        && typeof (value as { queue?: unknown }).queue === 'object'
+        && (value as { queue: { failed?: unknown } }).queue !== null
+        && Array.isArray((value as { queue: { failed?: unknown } }).queue.failed)
+        && (value as { queue: { failed: unknown[] } }).queue.failed.every(isResearchQueueItem)
+        && (
+            (value as { updatedAt?: unknown }).updatedAt === undefined
+            || (value as { updatedAt?: unknown }).updatedAt === null
+            || typeof (value as { updatedAt?: unknown }).updatedAt === 'string'
+        );
+}
+
 export default function ResearchPage() {
     const [topic, setTopic] = useState("");
     const [depth, setDepth] = useState(2);
     const [depthInput, setDepthInput] = useState("2");
     const [loading, setLoading] = useState(false);
     const [result, setResult] = useState<ResearchNode | null>(null);
+    const [resultError, setResultError] = useState<string | null>(null);
     const [queueMessage, setQueueMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
     const [lastQueueActionAt, setLastQueueActionAt] = useState<string | null>(null);
 
@@ -62,6 +120,11 @@ export default function ResearchPage() {
         return () => window.clearTimeout(timer);
     }, [queueMessage]);
 
+    const queueUnavailable = queueQuery.isError || (queueQuery.data !== undefined && !isResearchQueuePayload(queueQuery.data));
+    const queueData = !queueUnavailable && isResearchQueuePayload(queueQuery.data) ? queueQuery.data : null;
+    const failedQueueItems = queueData?.queue.failed ?? [];
+    const queueErrorMessage = queueQuery.error?.message ?? 'Research ingestion queue is unavailable.';
+
     const handleResearch = async () => {
         if (!topic) return;
         const parsedDepth = Number.parseInt(depthInput, 10);
@@ -73,6 +136,7 @@ export default function ResearchPage() {
         setDepthInput(String(normalizedDepth));
         setLoading(true);
         setResult(null);
+        setResultError(null);
 
         try {
             console.log(`Starting research: ${topic} (Depth: ${normalizedDepth})`);
@@ -82,11 +146,16 @@ export default function ResearchPage() {
             // If report is a string, we might need to parse it or display it simply.
             // For now, let's treat the root result as the node.
             // Adjust based on actual default return type of ResearchService if needed.
-            if (response.report) {
-                setResult(response.report as unknown as ResearchNode);
+            if (response.report == null) {
+                setResultError('Research report is unavailable.');
+            } else if (isResearchNode(response.report)) {
+                setResult(response.report);
+            } else {
+                setResultError('Research report returned an invalid payload.');
             }
         } catch (e) {
             console.error(e);
+            setResultError(e instanceof Error ? e.message : 'Research report is unavailable.');
         } finally {
             setLoading(false);
         }
@@ -145,17 +214,22 @@ export default function ResearchPage() {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                     <div className="rounded-md border border-emerald-500/30 bg-emerald-950/20 px-3 py-2">
                         <div className="text-xs uppercase tracking-wide text-emerald-300/80">Processed</div>
-                        <div className="text-2xl font-semibold text-emerald-300">{queueQuery.data?.totals.processed ?? 0}</div>
+                        <div className="text-2xl font-semibold text-emerald-300">{queueUnavailable ? '—' : queueData?.totals.processed ?? 0}</div>
                     </div>
                     <div className="rounded-md border border-amber-500/30 bg-amber-950/20 px-3 py-2">
                         <div className="text-xs uppercase tracking-wide text-amber-300/80">Pending</div>
-                        <div className="text-2xl font-semibold text-amber-300">{queueQuery.data?.totals.pending ?? 0}</div>
+                        <div className="text-2xl font-semibold text-amber-300">{queueUnavailable ? '—' : queueData?.totals.pending ?? 0}</div>
                     </div>
                     <div className="rounded-md border border-rose-500/30 bg-rose-950/20 px-3 py-2">
                         <div className="text-xs uppercase tracking-wide text-rose-300/80">Failed</div>
-                        <div className="text-2xl font-semibold text-rose-300">{queueQuery.data?.totals.failed ?? 0}</div>
+                        <div className="text-2xl font-semibold text-rose-300">{queueUnavailable ? '—' : queueData?.totals.failed ?? 0}</div>
                     </div>
                 </div>
+                {queueUnavailable ? (
+                    <div className="rounded-md border border-rose-500/30 bg-rose-950/20 px-3 py-2 text-sm text-rose-300">
+                        {queueErrorMessage}
+                    </div>
+                ) : null}
 
                 <div className="flex gap-4 items-end bg-muted/20 p-4 rounded-lg border border-border/50">
                     <div className="flex-1 space-y-2">
@@ -208,6 +282,12 @@ export default function ResearchPage() {
                                 <p>Exploring deep knowledge tree...</p>
                                 <p className="text-xs mt-2">This may take a moment.</p>
                             </div>
+                        ) : resultError ? (
+                            <div className="flex flex-col items-center justify-center h-64 text-rose-300 border rounded-lg border-rose-500/30 bg-rose-950/20">
+                                <Network className="h-12 w-12 mb-4 opacity-40" />
+                                <p className="font-medium">Research report unavailable</p>
+                                <p className="mt-2 max-w-xl text-center text-sm text-rose-200">{resultError}</p>
+                            </div>
                         ) : result ? (
                             <ScrollArea className="h-[600px] pr-4">
                                 {renderTree(result)}
@@ -230,7 +310,7 @@ export default function ResearchPage() {
                                     size="sm"
                                     variant="outline"
                                     className="h-7 text-xs"
-                                    disabled={(queueQuery.data?.queue.failed.length ?? 0) === 0 || retryAllMutation.isPending}
+                                    disabled={queueUnavailable || failedQueueItems.length === 0 || retryAllMutation.isPending}
                                     onClick={() => retryAllMutation.mutate()}
                                 >
                                     {retryAllMutation.isPending ? <Loader2 className="h-3 w-3 animate-spin" /> : 'Retry All'}
@@ -253,14 +333,18 @@ export default function ResearchPage() {
                                     <Loader2 className="h-4 w-4 animate-spin" />
                                     Loading queue...
                                 </div>
-                            ) : (queueQuery.data?.queue.failed.length ?? 0) === 0 ? (
+                            ) : queueUnavailable ? (
+                                <div className="text-sm text-rose-300 text-center py-4">
+                                    {queueErrorMessage}
+                                </div>
+                            ) : failedQueueItems.length === 0 ? (
                                 <div className="text-sm text-muted-foreground text-center py-4">
                                     No failed URLs. Queue is healthy.
                                 </div>
                             ) : (
                                 <ScrollArea className="h-64 pr-2">
                                     <div className="space-y-3">
-                                        {queueQuery.data?.queue.failed.slice(0, 20).map((item) => (
+                                        {failedQueueItems.slice(0, 20).map((item) => (
                                             <div key={item.url} className="rounded-md border border-border/50 p-2 bg-muted/20">
                                                 <div className="text-xs font-medium text-foreground truncate" title={item.name}>{item.name}</div>
                                                 <div className="text-[11px] text-muted-foreground truncate" title={item.url}>{item.url}</div>
@@ -300,7 +384,7 @@ export default function ResearchPage() {
                             </div>
                             <div className="flex justify-between text-xs text-muted-foreground">
                                 <span>Last refresh</span>
-                                <span>{queueQuery.data?.updatedAt ? new Date(queueQuery.data.updatedAt).toLocaleTimeString() : '—'}</span>
+                                <span>{queueData?.updatedAt ? new Date(queueData.updatedAt).toLocaleTimeString() : '—'}</span>
                             </div>
                         </CardContent>
                     </Card>

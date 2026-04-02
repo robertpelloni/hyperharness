@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from 'react';
-import { Card, CardHeader, CardTitle, CardContent, Button, Badge, ScrollArea } from "@borg/ui";
+import { Card, CardHeader, CardTitle, CardContent, Button, Badge, ScrollArea } from "@hypercode/ui";
 import { Loader2, Brain, Search, Database, History, Zap, Filter, Plus, Save, Download, RefreshCw, ChevronRight } from "lucide-react";
 import { trpc } from '@/utils/trpc';
 import { toast } from 'sonner';
@@ -35,9 +35,50 @@ const MEMORY_FORMAT_OPTIONS: Array<{ value: MemoryInterchangeFormat; label: stri
     { value: 'json', label: 'Canonical JSON' },
     { value: 'csv', label: 'Canonical CSV' },
     { value: 'jsonl', label: 'Canonical JSONL' },
-    { value: 'json-provider', label: 'Borg JSON Provider' },
+    { value: 'json-provider', label: 'HyperCode JSON Provider' },
     { value: 'sectioned-memory-store', label: 'Sectioned Memory Store' },
 ];
+
+function isMemoryRecord(value: unknown): value is MemoryRecord {
+    return typeof value === 'object'
+        && value !== null
+        && typeof (value as { content?: unknown }).content === 'string';
+}
+
+function isMemoryRecordArray(value: unknown): value is MemoryRecord[] {
+    return Array.isArray(value) && value.every(isMemoryRecord);
+}
+
+function isRelatedMemoryRecord(value: unknown): value is RelatedMemoryRecord {
+    return typeof value === 'object'
+        && value !== null
+        && isMemoryRecord((value as { memory?: unknown }).memory)
+        && typeof (value as { score?: unknown }).score === 'number'
+        && Array.isArray((value as { reasons?: unknown }).reasons)
+        && (value as { reasons: unknown[] }).reasons.every((reason) => typeof reason === 'string');
+}
+
+function isRelatedMemoryRecordArray(value: unknown): value is RelatedMemoryRecord[] {
+    return Array.isArray(value) && value.every(isRelatedMemoryRecord);
+}
+
+function isMemoryStatsPayload(value: unknown): value is {
+    sessionCount: number;
+    workingCount: number;
+    longTermCount: number;
+    observationCount: number;
+    sessionSummaryCount: number;
+    promptCount: number;
+} {
+    return typeof value === 'object'
+        && value !== null
+        && typeof (value as { sessionCount?: unknown }).sessionCount === 'number'
+        && typeof (value as { workingCount?: unknown }).workingCount === 'number'
+        && typeof (value as { longTermCount?: unknown }).longTermCount === 'number'
+        && typeof (value as { observationCount?: unknown }).observationCount === 'number'
+        && typeof (value as { sessionSummaryCount?: unknown }).sessionSummaryCount === 'number'
+        && typeof (value as { promptCount?: unknown }).promptCount === 'number';
+}
 
 export default function MemoryDashboard() {
     const utils = trpc.useUtils();
@@ -55,7 +96,7 @@ export default function MemoryDashboard() {
     const trimmedSearchQuery = searchQuery.trim();
     const hasSearchQuery = trimmedSearchQuery.length > 0;
 
-    const { data: stats } = trpc.memory.getAgentStats.useQuery(undefined, { refetchInterval: 10000 });
+    const statsQuery = trpc.memory.getAgentStats.useQuery(undefined, { refetchInterval: 10000 });
     const recentObservationsQuery = trpc.memory.getRecentObservations.useQuery({
         limit: 6,
         namespace: 'project',
@@ -118,58 +159,77 @@ export default function MemoryDashboard() {
         ]);
     };
 
+    const statsUnavailable = statsQuery.isError || (statsQuery.data !== undefined && !isMemoryStatsPayload(statsQuery.data));
+    const stats = !statsUnavailable && isMemoryStatsPayload(statsQuery.data) ? statsQuery.data : undefined;
+    const genericSearchUnavailable = genericSearchQuery.isError || (genericSearchQuery.data !== undefined && !isMemoryRecordArray(genericSearchQuery.data));
+    const observationSearchUnavailable = observationSearchQuery.isError || (observationSearchQuery.data !== undefined && !isMemoryRecordArray(observationSearchQuery.data));
+    const promptSearchUnavailable = promptSearchQuery.isError || (promptSearchQuery.data !== undefined && !isMemoryRecordArray(promptSearchQuery.data));
+    const sessionSummarySearchUnavailable = sessionSummarySearchQuery.isError || (sessionSummarySearchQuery.data !== undefined && !isMemoryRecordArray(sessionSummarySearchQuery.data));
+    const pivotSearchUnavailable = pivotSearchQuery.isError || (pivotSearchQuery.data !== undefined && !isMemoryRecordArray(pivotSearchQuery.data));
+    const recentObservationsUnavailable = recentObservationsQuery.isError || (recentObservationsQuery.data !== undefined && !isMemoryRecordArray(recentObservationsQuery.data));
+    const recentPromptsUnavailable = recentPromptsQuery.isError || (recentPromptsQuery.data !== undefined && !isMemoryRecordArray(recentPromptsQuery.data));
+    const recentSessionSummariesUnavailable = recentSessionSummariesQuery.isError || (recentSessionSummariesQuery.data !== undefined && !isMemoryRecordArray(recentSessionSummariesQuery.data));
+    const genericSearchResults = !genericSearchUnavailable && isMemoryRecordArray(genericSearchQuery.data) ? genericSearchQuery.data : [];
+    const observationSearchResults = !observationSearchUnavailable && isMemoryRecordArray(observationSearchQuery.data) ? observationSearchQuery.data : [];
+    const promptSearchResults = !promptSearchUnavailable && isMemoryRecordArray(promptSearchQuery.data) ? promptSearchQuery.data : [];
+    const sessionSummarySearchResults = !sessionSummarySearchUnavailable && isMemoryRecordArray(sessionSummarySearchQuery.data) ? sessionSummarySearchQuery.data : [];
+    const pivotSearchResults = !pivotSearchUnavailable && isMemoryRecordArray(pivotSearchQuery.data) ? pivotSearchQuery.data : [];
+    const recentObservations = !recentObservationsUnavailable && isMemoryRecordArray(recentObservationsQuery.data) ? recentObservationsQuery.data : [];
+    const recentPrompts = !recentPromptsUnavailable && isMemoryRecordArray(recentPromptsQuery.data) ? recentPromptsQuery.data : [];
+    const recentSessionSummaries = !recentSessionSummariesUnavailable && isMemoryRecordArray(recentSessionSummariesQuery.data) ? recentSessionSummariesQuery.data : [];
+
     const activeResults = useMemo<MemoryRecord[]>(() => {
         if (activePivot) {
-            return filterMemoryRecords(((pivotSearchQuery.data as MemoryRecord[] | undefined) ?? []), searchMode);
+            return filterMemoryRecords(pivotSearchResults, searchMode);
         }
 
         if (searchMode === 'all') {
             return mergeMemoryRecords(hasSearchQuery
                 ? [
-                    (genericSearchQuery.data as MemoryRecord[] | undefined),
-                    (observationSearchQuery.data as MemoryRecord[] | undefined),
-                    (promptSearchQuery.data as MemoryRecord[] | undefined),
-                    (sessionSummarySearchQuery.data as MemoryRecord[] | undefined),
+                    genericSearchResults,
+                    observationSearchResults,
+                    promptSearchResults,
+                    sessionSummarySearchResults,
                 ]
                 : [
-                    (genericSearchQuery.data as MemoryRecord[] | undefined),
-                    (recentObservationsQuery.data as MemoryRecord[] | undefined),
-                    (recentPromptsQuery.data as MemoryRecord[] | undefined),
-                    (recentSessionSummariesQuery.data as MemoryRecord[] | undefined),
+                    genericSearchResults,
+                    recentObservations,
+                    recentPrompts,
+                    recentSessionSummaries,
                 ]);
         }
 
         if (searchMode === 'observations') {
             return hasSearchQuery
-                ? ((observationSearchQuery.data as MemoryRecord[] | undefined) ?? [])
-                : ((recentObservationsQuery.data as MemoryRecord[] | undefined) ?? []);
+                ? observationSearchResults
+                : recentObservations;
         }
 
         if (searchMode === 'prompts') {
             return hasSearchQuery
-                ? ((promptSearchQuery.data as MemoryRecord[] | undefined) ?? [])
-                : ((recentPromptsQuery.data as MemoryRecord[] | undefined) ?? []);
+                ? promptSearchResults
+                : recentPrompts;
         }
 
         if (searchMode === 'session_summaries') {
             return hasSearchQuery
-                ? ((sessionSummarySearchQuery.data as MemoryRecord[] | undefined) ?? [])
-                : ((recentSessionSummariesQuery.data as MemoryRecord[] | undefined) ?? []);
+                ? sessionSummarySearchResults
+                : recentSessionSummaries;
         }
 
-        return filterMemoryRecords(((genericSearchQuery.data as MemoryRecord[] | undefined) ?? []), searchMode);
+        return filterMemoryRecords(genericSearchResults, searchMode);
     }, [
-        genericSearchQuery.data,
         hasSearchQuery,
-        observationSearchQuery.data,
-        promptSearchQuery.data,
-        recentObservationsQuery.data,
-        recentPromptsQuery.data,
-        recentSessionSummariesQuery.data,
         activePivot,
-        pivotSearchQuery.data,
+        genericSearchResults,
+        observationSearchResults,
+        pivotSearchResults,
+        promptSearchResults,
+        recentObservations,
+        recentPrompts,
+        recentSessionSummaries,
         searchMode,
-        sessionSummarySearchQuery.data,
+        sessionSummarySearchResults,
     ]);
 
     const timelineRecords = useMemo(() => sortMemoryRecordsByTimestamp(activeResults), [activeResults]);
@@ -195,6 +255,8 @@ export default function MemoryDashboard() {
     }, {
         enabled: Boolean(selectedMemory?.id),
     });
+    const timelineWindowUnavailable = timelineWindowQuery.isError || (timelineWindowQuery.data !== undefined && !isMemoryRecordArray(timelineWindowQuery.data));
+    const crossSessionLinksUnavailable = crossSessionLinksQuery.isError || (crossSessionLinksQuery.data !== undefined && !isRelatedMemoryRecordArray(crossSessionLinksQuery.data));
     const relatedRecords = useMemo(() => {
         if (!selectedMemory) {
             return [];
@@ -214,9 +276,9 @@ export default function MemoryDashboard() {
             return [];
         }
 
-        return (((timelineWindowQuery.data as MemoryRecord[] | undefined) ?? [])
+        return ((!timelineWindowUnavailable && isMemoryRecordArray(timelineWindowQuery.data) ? timelineWindowQuery.data : [])
             .filter((memory) => getMemoryRecordKey(memory) !== getMemoryRecordKey(selectedMemory)));
-    }, [selectedMemory, timelineWindowQuery.data]);
+    }, [selectedMemory, timelineWindowQuery.data, timelineWindowUnavailable]);
     const sessionWindowGroups = useMemo(() => {
         if (!selectedMemory) {
             return [];
@@ -225,8 +287,8 @@ export default function MemoryDashboard() {
         return groupMemoryWindowAroundAnchor(selectedMemory, sessionWindowRecords);
     }, [selectedMemory, sessionWindowRecords]);
     const crossSessionLinks = useMemo(() => {
-        return (crossSessionLinksQuery.data as RelatedMemoryRecord[] | undefined) ?? [];
-    }, [crossSessionLinksQuery.data]);
+        return !crossSessionLinksUnavailable && isRelatedMemoryRecordArray(crossSessionLinksQuery.data) ? crossSessionLinksQuery.data : [];
+    }, [crossSessionLinksQuery.data, crossSessionLinksUnavailable]);
 
     const handlePivotAction = (action: MemoryPivotAction) => {
         setActivePivot(action);
@@ -271,6 +333,43 @@ export default function MemoryDashboard() {
                     ? (hasSearchQuery ? sessionSummarySearchQuery.isLoading : recentSessionSummariesQuery.isLoading)
                     : genericSearchQuery.isLoading;
 
+    const activeError =
+        activePivot
+            ? (pivotSearchQuery.error?.message ?? (pivotSearchUnavailable ? 'Memory pivot results are unavailable.' : null))
+            : searchMode === 'all'
+                ? (hasSearchQuery
+                    ? genericSearchQuery.error?.message
+                        ?? observationSearchQuery.error?.message
+                        ?? promptSearchQuery.error?.message
+                        ?? sessionSummarySearchQuery.error?.message
+                        ?? (genericSearchUnavailable ? 'Memory fact search is unavailable.' : null)
+                        ?? (observationSearchUnavailable ? 'Observation search is unavailable.' : null)
+                        ?? (promptSearchUnavailable ? 'Prompt search is unavailable.' : null)
+                        ?? (sessionSummarySearchUnavailable ? 'Session summary search is unavailable.' : null)
+                    : genericSearchQuery.error?.message
+                        ?? recentObservationsQuery.error?.message
+                        ?? recentPromptsQuery.error?.message
+                        ?? recentSessionSummariesQuery.error?.message
+                        ?? (genericSearchUnavailable ? 'Memory fact search is unavailable.' : null)
+                        ?? (recentObservationsUnavailable ? 'Recent observations are unavailable.' : null)
+                        ?? (recentPromptsUnavailable ? 'Recent prompts are unavailable.' : null)
+                        ?? (recentSessionSummariesUnavailable ? 'Recent session summaries are unavailable.' : null))
+                : searchMode === 'observations'
+                    ? ((hasSearchQuery ? observationSearchQuery.error?.message : recentObservationsQuery.error?.message)
+                        ?? ((hasSearchQuery ? observationSearchUnavailable : recentObservationsUnavailable) ? 'Observation records are unavailable.' : null))
+                    : searchMode === 'prompts'
+                        ? ((hasSearchQuery ? promptSearchQuery.error?.message : recentPromptsQuery.error?.message)
+                            ?? ((hasSearchQuery ? promptSearchUnavailable : recentPromptsUnavailable) ? 'Prompt records are unavailable.' : null))
+                        : searchMode === 'session_summaries'
+                            ? ((hasSearchQuery ? sessionSummarySearchQuery.error?.message : recentSessionSummariesQuery.error?.message)
+                                ?? ((hasSearchQuery ? sessionSummarySearchUnavailable : recentSessionSummariesUnavailable) ? 'Session summary records are unavailable.' : null))
+                            : genericSearchQuery.error?.message ?? (genericSearchUnavailable ? 'Memory fact records are unavailable.' : null);
+    const recentObservationsError = recentObservationsQuery.error?.message ?? null;
+    const recentPromptsError = recentPromptsQuery.error?.message ?? null;
+    const recentSessionSummariesError = recentSessionSummariesQuery.error?.message ?? null;
+    const timelineWindowError = timelineWindowQuery.error?.message ?? null;
+    const crossSessionLinksError = crossSessionLinksQuery.error?.message ?? null;
+
     const activeEmptyMessage = activePivot
         ? `No related memory records found for this ${activePivot.group} pivot yet.`
         : hasSearchQuery
@@ -302,21 +401,27 @@ export default function MemoryDashboard() {
                 <div>
                     <h1 className="text-3xl font-bold tracking-tight text-white flex items-center gap-3">
                         <Brain className="h-8 w-8 text-pink-500" />
-                        Borg Memory Control
+                        HyperCode Memory Control
                     </h1>
                     <p className="text-zinc-500 mt-2">
-                        Search and inspect Borg-native facts, observations, prompts, session summaries, and sectioned-store exports from one control surface.
+                        Search and inspect HyperCode-native facts, observations, prompts, session summaries, and sectioned-store exports from one control surface.
                     </p>
                 </div>
                 <div className="flex gap-4">
-                    <StatCard label="Session" value={(stats as any)?.sessionCount || 0} icon={<History className="h-3 w-3" />} />
-                    <StatCard label="Working" value={(stats as any)?.workingCount || 0} icon={<Zap className="h-3 w-3" />} />
-                    <StatCard label="Long Term" value={(stats as any)?.longTermCount || 0} icon={<Database className="h-3 w-3" />} />
-                    <StatCard label="Observations" value={(stats as any)?.observationCount || 0} icon={<RefreshCw className="h-3 w-3" />} />
-                    <StatCard label="Summaries" value={(stats as any)?.sessionSummaryCount || 0} icon={<History className="h-3 w-3" />} />
-                    <StatCard label="Prompts" value={(stats as any)?.promptCount || 0} icon={<Brain className="h-3 w-3" />} />
+                    <StatCard label="Session" value={statsUnavailable ? null : (stats as any)?.sessionCount || 0} icon={<History className="h-3 w-3" />} />
+                    <StatCard label="Working" value={statsUnavailable ? null : (stats as any)?.workingCount || 0} icon={<Zap className="h-3 w-3" />} />
+                    <StatCard label="Long Term" value={statsUnavailable ? null : (stats as any)?.longTermCount || 0} icon={<Database className="h-3 w-3" />} />
+                    <StatCard label="Observations" value={statsUnavailable ? null : (stats as any)?.observationCount || 0} icon={<RefreshCw className="h-3 w-3" />} />
+                    <StatCard label="Summaries" value={statsUnavailable ? null : (stats as any)?.sessionSummaryCount || 0} icon={<History className="h-3 w-3" />} />
+                    <StatCard label="Prompts" value={statsUnavailable ? null : (stats as any)?.promptCount || 0} icon={<Brain className="h-3 w-3" />} />
                 </div>
             </div>
+
+            {statsUnavailable ? (
+                <div className="rounded-lg border border-red-900/40 bg-red-950/20 px-4 py-3 text-sm text-red-300">
+                    {statsQuery.error?.message ?? 'Memory stats are unavailable.'}
+                </div>
+            ) : null}
 
             <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 flex-1 min-h-0">
                 {/* Sidebar Controls */}
@@ -347,7 +452,7 @@ export default function MemoryDashboard() {
                         <CardHeader className="pb-3">
                             <CardTitle className="text-sm font-bold text-zinc-400 uppercase tracking-widest flex items-center gap-2">
                                 <Brain className="h-4 w-4" />
-                                Borg Memory Model
+                                HyperCode Memory Model
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-3 text-xs text-zinc-300">
@@ -422,7 +527,7 @@ export default function MemoryDashboard() {
                                         const url = URL.createObjectURL(blob);
                                         const a = document.createElement('a');
                                         a.href = url;
-                                        a.download = `borg-memories.${extension}`;
+                                        a.download = `hypercode-memories.${extension}`;
                                         a.click();
                                         URL.revokeObjectURL(url);
                                         toast.success(`Exported as ${MEMORY_FORMAT_OPTIONS.find(option => option.value === exportFormat)?.label || exportFormat}`);
@@ -508,7 +613,7 @@ export default function MemoryDashboard() {
                                             const url = URL.createObjectURL(blob);
                                             const a = document.createElement('a');
                                             a.href = url;
-                                            a.download = `borg-memory-converted.${extension}`;
+                                            a.download = `hypercode-memory-converted.${extension}`;
                                             a.click();
                                             URL.revokeObjectURL(url);
                                             toast.success(`Converted ${exportFormat} → ${convertToFormat}`);
@@ -539,11 +644,13 @@ export default function MemoryDashboard() {
                                     <Loader2 className="h-3 w-3 animate-spin" />
                                     Loading observations…
                                 </div>
-                            ) : !(recentObservationsQuery.data ?? []).length ? (
+                            ) : recentObservationsUnavailable ? (
+                                <p className="text-rose-300">{recentObservationsError}</p>
+                            ) : !recentObservations.length ? (
                                 <p className="text-zinc-500">No runtime observations have been captured yet.</p>
                             ) : (
                                 <div className="space-y-2">
-                                    {(recentObservationsQuery.data as any[]).map((memory, index) => {
+                                    {recentObservations.map((memory, index) => {
                                         const observation = memory.metadata?.structuredObservation;
                                         return (
                                             <div key={memory.id ?? `observation-${index}`} className="rounded-lg border border-zinc-800 bg-zinc-950/70 p-3">
@@ -586,11 +693,13 @@ export default function MemoryDashboard() {
                                     <Loader2 className="h-3 w-3 animate-spin" />
                                     Loading session summaries…
                                 </div>
-                            ) : !(recentSessionSummariesQuery.data ?? []).length ? (
+                            ) : recentSessionSummariesUnavailable ? (
+                                <p className="text-rose-300">{recentSessionSummariesError}</p>
+                            ) : !recentSessionSummaries.length ? (
                                 <p className="text-zinc-500">No session summaries have been captured yet.</p>
                             ) : (
                                 <div className="space-y-2">
-                                    {(recentSessionSummariesQuery.data as any[]).map((memory, index) => {
+                                    {recentSessionSummaries.map((memory, index) => {
                                         const summary = memory.metadata?.structuredSessionSummary;
                                         return (
                                             <div key={memory.id ?? `summary-${index}`} className="rounded-lg border border-zinc-800 bg-zinc-950/70 p-3">
@@ -632,11 +741,13 @@ export default function MemoryDashboard() {
                                     <Loader2 className="h-3 w-3 animate-spin" />
                                     Loading prompt history…
                                 </div>
-                            ) : !(recentPromptsQuery.data ?? []).length ? (
+                            ) : recentPromptsUnavailable ? (
+                                <p className="text-rose-300">{recentPromptsError}</p>
+                            ) : !recentPrompts.length ? (
                                 <p className="text-zinc-500">No prompt captures have been recorded yet.</p>
                             ) : (
                                 <div className="space-y-2">
-                                    {(recentPromptsQuery.data as any[]).map((memory, index) => {
+                                    {recentPrompts.map((memory, index) => {
                                         const prompt = memory.metadata?.structuredUserPrompt;
                                         return (
                                             <div key={memory.id ?? `prompt-${index}`} className="rounded-lg border border-zinc-800 bg-zinc-950/70 p-3">
@@ -710,6 +821,12 @@ export default function MemoryDashboard() {
                                 <div className="p-12 flex flex-col items-center justify-center text-zinc-500 gap-3">
                                     <Loader2 className="h-8 w-8 animate-spin" />
                                     <p className="text-sm font-mono uppercase tracking-widest">Accessing Synapses...</p>
+                                </div>
+                            ) : activeError ? (
+                                <div className="p-12 flex flex-col items-center justify-center text-rose-300 gap-3">
+                                    <Brain className="h-12 w-12 opacity-40" />
+                                    <p className="text-lg font-medium">Memory unavailable</p>
+                                    <p className="max-w-2xl text-center text-sm text-rose-200">{activeError}</p>
                                 </div>
                             ) : !activeResults || activeResults.length === 0 ? (
                                 <div className="p-20 text-center text-zinc-600">
@@ -933,6 +1050,10 @@ export default function MemoryDashboard() {
                                                                     <Loader2 className="h-3 w-3 animate-spin" />
                                                                     Loading session timeline…
                                                                 </div>
+                                                            ) : timelineWindowUnavailable ? (
+                                                                <p className="mt-3 text-xs text-rose-300">
+                                                                    {timelineWindowError}
+                                                                </p>
                                                             ) : sessionWindowGroups.length ? (
                                                                 <div className="mt-3 space-y-4">
                                                                     {sessionWindowGroups.map((group) => (
@@ -998,6 +1119,10 @@ export default function MemoryDashboard() {
                                                                     <Loader2 className="h-3 w-3 animate-spin" />
                                                                     Finding related sessions…
                                                                 </div>
+                                                            ) : crossSessionLinksUnavailable ? (
+                                                                <p className="mt-3 text-xs text-rose-300">
+                                                                    {crossSessionLinksError}
+                                                                </p>
                                                             ) : crossSessionLinks.length ? (
                                                                 <div className="mt-3 space-y-3">
                                                                     {crossSessionLinks.map((related) => {
@@ -1062,13 +1187,13 @@ export default function MemoryDashboard() {
     );
 }
 
-function StatCard({ label, value, icon }: { label: string, value: number, icon: React.ReactNode }) {
+function StatCard({ label, value, icon }: { label: string, value: number | null, icon: React.ReactNode }) {
     return (
         <div className="bg-zinc-900 border border-zinc-800 rounded-lg px-4 py-2 flex flex-col items-end min-w-[100px]">
             <div className="flex items-center gap-1.5 text-[10px] font-bold text-zinc-500 uppercase tracking-widest">
                 {icon} {label}
             </div>
-            <div className="text-xl font-bold text-white tabular-nums">{value}</div>
+            <div className="text-xl font-bold text-white tabular-nums">{value == null ? '—' : value}</div>
         </div>
     );
 }

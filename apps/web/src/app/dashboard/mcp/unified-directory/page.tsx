@@ -2,7 +2,7 @@
 
 import { Suspense, useEffect, useMemo, useState } from "react";
 import type { inferRouterOutputs } from "@trpc/server";
-import type { AppRouter } from "@borg/core";
+import type { AppRouter } from "@hypercode/core";
 import { trpc } from "@/utils/trpc";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
@@ -16,6 +16,50 @@ type UnifiedItem = RouterOutput["unifiedDirectory"]["list"]["items"][number];
 type SourceFilter = "all" | "catalog" | "backlog";
 const SOURCE_FILTERS: SourceFilter[] = ["all", "catalog", "backlog"];
 const RESEARCH_FILTERS = ["", "pending", "running", "done", "failed", "skipped"] as const;
+
+function isUnifiedItem(value: unknown): value is UnifiedItem {
+    return typeof value === "object"
+        && value !== null
+        && typeof (value as { id?: unknown }).id === "string"
+        && typeof (value as { source?: unknown }).source === "string"
+        && typeof (value as { title?: unknown }).title === "string"
+        && Array.isArray((value as { tags?: unknown }).tags)
+        && (value as { tags: unknown[] }).tags.every((tag) => typeof tag === "string");
+}
+
+function isUnifiedListPayload(value: unknown): value is { items: UnifiedItem[]; total: number } {
+    return typeof value === "object"
+        && value !== null
+        && !Array.isArray(value)
+        && Array.isArray((value as { items?: unknown }).items)
+        && (value as { items: unknown[] }).items.every(isUnifiedItem)
+        && typeof (value as { total?: unknown }).total === "number";
+}
+
+function isDirectoryBucket(value: unknown): value is { total: number; pending?: number; validated?: number; broken?: number } {
+    return typeof value === "object"
+        && value !== null
+        && typeof (value as { total?: unknown }).total === "number"
+        && ((value as { pending?: unknown }).pending === undefined || typeof (value as { pending?: unknown }).pending === "number")
+        && ((value as { validated?: unknown }).validated === undefined || typeof (value as { validated?: unknown }).validated === "number")
+        && ((value as { broken?: unknown }).broken === undefined || typeof (value as { broken?: unknown }).broken === "number");
+}
+
+function isUnifiedDirectoryStats(value: unknown): value is {
+    combined_total: number;
+    catalog: { total: number; validated: number; broken: number };
+    backlog: { total: number; pending: number };
+} {
+    return typeof value === "object"
+        && value !== null
+        && !Array.isArray(value)
+        && typeof (value as { combined_total?: unknown }).combined_total === "number"
+        && isDirectoryBucket((value as { catalog?: unknown }).catalog)
+        && typeof ((value as { catalog: { validated?: unknown } }).catalog.validated) === "number"
+        && typeof ((value as { catalog: { broken?: unknown } }).catalog.broken) === "number"
+        && isDirectoryBucket((value as { backlog?: unknown }).backlog)
+        && typeof ((value as { backlog: { pending?: unknown } }).backlog.pending) === "number";
+}
 
 function formatDate(value: string | Date | null | undefined): string {
     if (!value) return "—";
@@ -93,13 +137,13 @@ function UnifiedDirectoryPageContent() {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [querySearch, querySource, hydratedQueryResearchStatus, hydratedQueryShowDuplicates, hydratedQueryDuplicatesOnly, hasEffectiveQueryPrefilters]);
 
-    const { data: stats } = trpc.unifiedDirectory.stats.useQuery();
+    const statsQuery = trpc.unifiedDirectory.stats.useQuery();
     const backlogFiltersEnabled = source !== "catalog";
     const effectiveShowDuplicates = backlogFiltersEnabled && (showDuplicates || duplicatesOnly);
     const effectiveDuplicatesOnly = backlogFiltersEnabled && duplicatesOnly;
     const effectiveResearchStatus = backlogFiltersEnabled ? (researchStatus || undefined) : undefined;
 
-    const { data, isLoading, isFetching } = trpc.unifiedDirectory.list.useQuery({
+    const listQuery = trpc.unifiedDirectory.list.useQuery({
         limit: PAGE_SIZE,
         offset: page * PAGE_SIZE,
         search: search.trim() || undefined,
@@ -108,9 +152,14 @@ function UnifiedDirectoryPageContent() {
         show_duplicates: effectiveShowDuplicates,
         duplicates_only: effectiveDuplicatesOnly,
     });
+    const stats = isUnifiedDirectoryStats(statsQuery.data) ? statsQuery.data : undefined;
+    const statsUnavailable = statsQuery.isError || (statsQuery.data !== undefined && !isUnifiedDirectoryStats(statsQuery.data));
+    const listUnavailable = listQuery.isError || (listQuery.data !== undefined && !isUnifiedListPayload(listQuery.data));
+    const isLoading = listQuery.isLoading;
+    const isFetching = listQuery.isFetching;
 
-    const items = data?.items ?? [];
-    const total = data?.total ?? 0;
+    const items = !listUnavailable && isUnifiedListPayload(listQuery.data) ? listQuery.data.items : [];
+    const total = !listUnavailable && isUnifiedListPayload(listQuery.data) ? listQuery.data.total : 0;
     const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
     const activeFilterCount =
         Number(search.trim().length > 0)
@@ -149,7 +198,9 @@ function UnifiedDirectoryPageContent() {
                     </h1>
                     <p className="text-zinc-400 text-sm mt-1">
                         Merged operator view of published MCP catalog entries and BobbyBookmarks backlog links.
-                        {subtitle && <span className="ml-2 text-zinc-500">{subtitle}</span>}
+                        {statsUnavailable ? (
+                            <span className="ml-2 text-red-300">{statsQuery.error?.message ?? "Unified directory stats unavailable."}</span>
+                        ) : subtitle ? <span className="ml-2 text-zinc-500">{subtitle}</span> : null}
                     </p>
                     {hasEffectiveQueryPrefilters && (
                         <p className="text-indigo-400 text-xs mt-1">
@@ -159,7 +210,13 @@ function UnifiedDirectoryPageContent() {
                 </div>
             </div>
 
-            {stats && (
+            {listUnavailable ? (
+                <div className="rounded-lg border border-red-900/40 bg-red-950/20 px-4 py-3 text-sm text-red-300">
+                    {listQuery.error?.message ?? "Unified directory entries are unavailable."}
+                </div>
+            ) : null}
+
+            {!statsUnavailable && stats ? (
                 <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
                     <StatCard label="Combined" value={stats.combined_total} tone="indigo" />
                     <StatCard label="Catalog" value={stats.catalog.total} />
@@ -168,7 +225,7 @@ function UnifiedDirectoryPageContent() {
                     <StatCard label="Backlog" value={stats.backlog.total} tone="cyan" />
                     <StatCard label="Backlog Pending" value={stats.backlog.pending} tone="amber" />
                 </div>
-            )}
+            ) : null}
 
             <div className="flex flex-wrap gap-3 items-center">
                 <div className="relative flex-1 min-w-[220px]">
@@ -288,6 +345,12 @@ function UnifiedDirectoryPageContent() {
                                         <Loader2 className="w-5 h-5 animate-spin mx-auto" />
                                     </td>
                                 </tr>
+                            ) : listUnavailable ? (
+                                <tr>
+                                    <td colSpan={5} className="px-4 py-12 text-center text-red-300">
+                                        {listQuery.error?.message ?? "Unified directory entries are unavailable."}
+                                    </td>
+                                </tr>
                             ) : items.length === 0 ? (
                                 <tr>
                                     <td colSpan={5} className="px-4 py-12 text-center text-zinc-500">
@@ -313,7 +376,7 @@ function UnifiedDirectoryPageContent() {
                 </div>
 
                 <div className="flex items-center justify-between px-4 py-3 border-t border-zinc-800 text-sm text-zinc-500">
-                    <div>{isFetching ? "Refreshing…" : `Showing ${items.length} of ${total}`}</div>
+                    <div>{listUnavailable ? "Showing — of —" : isFetching ? "Refreshing…" : `Showing ${items.length} of ${total}`}</div>
                     <div className="flex items-center gap-2">
                         <button
                             onClick={() => setPage((value) => Math.max(0, value - 1))}

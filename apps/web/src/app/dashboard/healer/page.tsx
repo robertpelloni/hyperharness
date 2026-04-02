@@ -1,15 +1,42 @@
 
 'use client';
 
-import { useHealerStream } from '@borg/ui';
+import { useHealerStream } from '@hypercode/ui';
+
+type HealerEvent = {
+    success: boolean;
+    timestamp: string | number | Date;
+    error?: string;
+    fix?: {
+        diagnosis?: {
+            errorType?: string;
+            file?: string;
+            description?: string;
+            suggestedFix?: string;
+        };
+    };
+};
+
+function isHealerEvent(value: unknown): value is HealerEvent {
+    return typeof value === 'object'
+        && value !== null
+        && typeof (value as { success?: unknown }).success === 'boolean'
+        && (
+            value === null
+            || typeof (value as { timestamp?: unknown }).timestamp === 'string'
+            || typeof (value as { timestamp?: unknown }).timestamp === 'number'
+            || (value as { timestamp?: unknown }).timestamp instanceof Date
+        );
+}
 
 export default function HealerDashboard() {
-    const { events, isLoading } = useHealerStream();
+    const { events, error, isLoading } = useHealerStream();
 
     // Derive active infections from failed heal attempts
-    const history = events;
-    const activeInfections = history.filter((e: any) => !e.success);
-    const resolvedCount = history.filter((e: any) => e.success).length;
+    const historyUnavailable = Boolean(error) || (events !== undefined && (!Array.isArray(events) || !events.every(isHealerEvent)));
+    const history = !historyUnavailable && Array.isArray(events) ? events : [];
+    const activeInfections = history.filter((e) => !e.success);
+    const resolvedCount = history.filter((e) => e.success).length;
     const successRate = history.length > 0 ? Math.round((resolvedCount / history.length) * 100) : 100;
     const lastHealTime = history.length > 0 ? new Date(history[history.length - 1]?.timestamp).toLocaleString() : 'Never';
 
@@ -54,13 +81,17 @@ export default function HealerDashboard() {
                     <h2 className="text-xl font-bold mb-4 text-red-400 flex items-center">
                         <span className={activeInfections.length > 0 ? "animate-pulse mr-2" : "mr-2"}>●</span> ACTIVE INFECTIONS ({activeInfections.length})
                     </h2>
-                    {activeInfections.length === 0 ? (
+                    {historyUnavailable ? (
+                        <div className="text-rose-300 italic text-center py-10">
+                            Healer history unavailable. {error ?? 'Healer stream returned an invalid payload.'}
+                        </div>
+                    ) : activeInfections.length === 0 ? (
                         <div className="text-gray-500 italic text-center py-10">
                             No active pathogens detected. System healthy.
                         </div>
                     ) : (
                         <div className="space-y-4 max-h-[400px] overflow-y-auto">
-                            {activeInfections.slice().reverse().map((inf: any, i: number) => (
+                            {activeInfections.slice().reverse().map((inf, i: number) => (
                                 <div key={i} className="bg-red-900/20 border border-red-500/50 p-4 rounded">
                                     <div className="flex justify-between text-xs text-gray-400 mb-2">
                                         <span>{new Date(inf.timestamp).toLocaleString()}</span>
@@ -86,12 +117,16 @@ export default function HealerDashboard() {
                 <section className="bg-gray-800 rounded-lg border border-gray-700 p-6">
                     <h2 className="text-xl font-bold mb-4 text-blue-400">IMMUNE HISTORY ({resolvedCount})</h2>
                     <div className="space-y-4 max-h-[600px] overflow-y-auto">
-                        {history.length === 0 ? (
+                        {historyUnavailable ? (
+                            <div className="text-rose-300 italic text-center py-10">
+                                Healer history unavailable. {error ?? 'Healer stream returned an invalid payload.'}
+                            </div>
+                        ) : history.length === 0 ? (
                             <div className="text-gray-500 italic text-center py-10">
                                 No history available.
                             </div>
                         ) : (
-                            history.filter((e: any) => e.success).slice().reverse().map((entry: any, i: number) => (
+                            history.filter((e) => e.success).slice().reverse().map((entry, i: number) => (
                                 <div key={i} className="bg-gray-700/50 border border-gray-600 p-4 rounded">
                                     <div className="flex justify-between text-xs text-gray-400 mb-2">
                                         <span>{new Date(entry.timestamp).toLocaleString()}</span>

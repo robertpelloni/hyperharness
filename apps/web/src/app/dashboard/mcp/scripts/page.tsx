@@ -1,17 +1,34 @@
 "use client";
 
 import { useState } from 'react';
-import { Card, CardHeader, CardTitle, CardContent } from "@borg/ui";
-import { Button } from "@borg/ui";
+import { Card, CardHeader, CardTitle, CardContent } from "@hypercode/ui";
+import { Button } from "@hypercode/ui";
 import { Loader2, Plus, FileCode, Trash2, Play, Edit2 } from "lucide-react";
 import { trpc } from '@/utils/trpc';
 import { toast } from 'sonner';
 import { normalizeSavedScripts } from './scripts-page-normalizers';
 
+function isSavedScriptRowPayload(value: unknown): value is {
+    uuid: string;
+    name: string;
+    description: string;
+    code: string;
+} {
+    return typeof value === 'object'
+        && value !== null
+        && typeof (value as { uuid?: unknown }).uuid === 'string'
+        && typeof (value as { name?: unknown }).name === 'string'
+        && typeof (value as { description?: unknown }).description === 'string'
+        && typeof (value as { code?: unknown }).code === 'string';
+}
+
 export default function ScriptsDashboard() {
-    const { data: scripts, isLoading, refetch } = trpc.savedScripts.list.useQuery();
+    const scriptsQuery = trpc.savedScripts.list.useQuery();
+    const { data: scripts, isLoading, refetch } = scriptsQuery;
     const [isCreateOpen, setIsCreateOpen] = useState(false);
     const normalizedScripts = normalizeSavedScripts(scripts);
+    const scriptsUnavailable = scriptsQuery.isError
+        || (scripts != null && (!Array.isArray(scripts) || !scripts.every(isSavedScriptRowPayload)));
 
     return (
         <div className="p-8 space-y-8">
@@ -37,6 +54,12 @@ export default function ScriptsDashboard() {
                 {isLoading ? (
                     <div className="col-span-3 flex justify-center p-12">
                         <Loader2 className="h-8 w-8 animate-spin text-zinc-500" />
+                    </div>
+                ) : scriptsUnavailable ? (
+                    <div className="col-span-3 text-center p-12 text-red-300 bg-red-950/20 rounded-lg border border-red-900/40">
+                        <FileCode className="h-12 w-12 mx-auto mb-4 opacity-60" />
+                        <p className="text-lg font-medium">Saved scripts unavailable</p>
+                        <p className="text-sm mt-1">{scriptsQuery.isError ? scriptsQuery.error.message : 'Malformed saved scripts payload.'}</p>
                     </div>
                 ) : normalizedScripts.length === 0 ? (
                     <div className="col-span-3 text-center p-12 text-zinc-500 bg-zinc-900/50 rounded-lg border border-zinc-800 border-dashed">
