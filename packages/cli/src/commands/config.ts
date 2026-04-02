@@ -6,6 +6,7 @@
  */
 
 import type { Command } from 'commander';
+import { createInterface } from 'node:readline';
 import { dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -21,6 +22,10 @@ type SecretEntry = {
   key: string;
   created_at?: string | number | Date;
   updated_at?: string | number | Date;
+};
+
+type SecretMutationResult = {
+  success: boolean;
 };
 
 function normalizeText(value: string | null | undefined): string {
@@ -110,6 +115,24 @@ function printConfigObject(obj: Record<string, unknown>, chalk: typeof import('c
 
     console.log(chalk.dim(`${prefix}${key}: `) + JSON.stringify(value));
   }
+}
+
+async function promptForSecretValue(key: string): Promise<string> {
+  if (!process.stdin.isTTY || !process.stdout.isTTY) {
+    throw new Error(`Secret '${key}' requires --value when stdin/stdout is not interactive`);
+  }
+
+  return await new Promise<string>((resolve) => {
+    const rl = createInterface({
+      input: process.stdin,
+      output: process.stdout,
+    });
+
+    rl.question(`Enter secret value for ${key}: `, (answer) => {
+      rl.close();
+      resolve(answer);
+    });
+  });
 }
 
 async function withConfigErrorHandling(
@@ -243,6 +266,7 @@ Examples:
     .option('--list', 'List all secrets (masked)')
     .option('--json', 'Output as JSON')
     .option('--set <key>', 'Set a secret value')
+    .option('--value <value>', 'Secret value to use with --set')
     .option('--delete <key>', 'Delete a secret')
     .option('--env', 'Show environment variable sources')
     .addHelpText('after', `
@@ -293,9 +317,29 @@ Examples:
         }
 
         if (opts.set) {
-          console.log(chalk.yellow(`  Setting secret: ${opts.set}`));
-          console.log(chalk.dim('  (Interactive input not yet implemented)'));
+          const value = typeof opts.value === 'string' ? opts.value : await promptForSecretValue(opts.set);
+          const result = await queryTrpc<SecretMutationResult>('secrets.set', { key: opts.set, value });
+
+          if (opts.json) {
+            console.log(JSON.stringify({
+              ok: result.success,
+              key: opts.set,
+            }, null, 2));
+            return;
+          }
+
+          console.log(chalk.green(`  ✓ Secret '${opts.set}' set`));
         } else if (opts.delete) {
+          const result = await queryTrpc<SecretMutationResult>('secrets.delete', { key: opts.delete });
+
+          if (opts.json) {
+            console.log(JSON.stringify({
+              ok: result.success,
+              key: opts.delete,
+            }, null, 2));
+            return;
+          }
+
           console.log(chalk.green(`  ✓ Secret '${opts.delete}' deleted`));
         } else if (opts.env) {
           console.log(chalk.bold.cyan('\n  Environment Variable Sources\n'));

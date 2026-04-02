@@ -536,7 +536,24 @@ Validation:
 - `pnpm -C packages\cli exec tsc --noEmit`
 - `pnpm -C packages\cli exec vitest run src\commands\provider.test.ts src\commands\mcp.test.ts src\commands\agent.test.ts src\commands\config.test.ts src\commands\tools.test.ts src\commands\memory.test.ts src\commands\session.test.ts src\commands\status.test.ts src\control-plane.test.ts`
 
-### 20. `harden-published-catalog-ingestion`
+### 20. `wire-cli-config-secrets-write`
+
+Status: **completed**
+
+What changed:
+
+- `packages/cli/src/commands/config.ts` no longer prints placeholder output for `hypercode config secrets --set` or fake success for `--delete`
+- `config secrets --set` now calls the live `secrets.set` mutation, supports scriptable `--value` input, and only falls back to an interactive prompt when stdin/stdout are TTY-backed
+- non-interactive secret writes now fail truthfully with a clear `--value` requirement instead of pretending the write succeeded
+- `config secrets --delete` now calls the live `secrets.delete` mutation instead of printing a fabricated deletion confirmation
+- `--json` now emits structured mutation results for both set and delete flows, and focused CLI coverage in `packages/cli/src/commands/config.test.ts` now includes set/delete/non-interactive guard cases
+
+Validation:
+
+- `pnpm -C packages\cli exec tsc --noEmit`
+- `pnpm -C packages\cli exec vitest run src\commands\config.test.ts src\commands\provider.test.ts src\commands\mcp.test.ts src\commands\agent.test.ts src\commands\tools.test.ts src\commands\memory.test.ts src\commands\session.test.ts src\commands\status.test.ts src\control-plane.test.ts`
+
+### 21. `harden-published-catalog-ingestion`
 
 Status: **completed**
 

@@ -105,6 +105,56 @@ describe('registerConfigCommand', () => {
     expect(errorSpy).not.toHaveBeenCalled();
   });
 
+  it('sets a live secret as JSON', async () => {
+    queryTrpcMock.mockResolvedValue({ success: true });
+
+    const program = createProgram();
+    await program.parseAsync(['config', 'secrets', '--set', 'OPENAI_API_KEY', '--value', 'sk-live', '--json'], { from: 'user' });
+
+    expect(queryTrpcMock).toHaveBeenCalledWith('secrets.set', {
+      key: 'OPENAI_API_KEY',
+      value: 'sk-live',
+    });
+    expect(logSpy).toHaveBeenCalledWith(JSON.stringify({
+      ok: true,
+      key: 'OPENAI_API_KEY',
+    }, null, 2));
+  });
+
+  it('deletes a live secret as JSON', async () => {
+    queryTrpcMock.mockResolvedValue({ success: true });
+
+    const program = createProgram();
+    await program.parseAsync(['config', 'secrets', '--delete', 'OPENAI_API_KEY', '--json'], { from: 'user' });
+
+    expect(queryTrpcMock).toHaveBeenCalledWith('secrets.delete', {
+      key: 'OPENAI_API_KEY',
+    });
+    expect(logSpy).toHaveBeenCalledWith(JSON.stringify({
+      ok: true,
+      key: 'OPENAI_API_KEY',
+    }, null, 2));
+  });
+
+  it('fails secret set without --value in non-interactive mode', async () => {
+    const stdinIsTty = process.stdin.isTTY;
+    const stdoutIsTty = process.stdout.isTTY;
+    Object.defineProperty(process.stdin, 'isTTY', { value: false, configurable: true });
+    Object.defineProperty(process.stdout, 'isTTY', { value: false, configurable: true });
+
+    const program = createProgram();
+    await program.parseAsync(['config', 'secrets', '--set', 'OPENAI_API_KEY', '--json'], { from: 'user' });
+
+    expect(queryTrpcMock).not.toHaveBeenCalled();
+    expect(logSpy).toHaveBeenCalledWith(JSON.stringify({
+      error: "Secret 'OPENAI_API_KEY' requires --value when stdin/stdout is not interactive",
+    }, null, 2));
+    expect(process.exitCode).toBe(1);
+
+    Object.defineProperty(process.stdin, 'isTTY', { value: stdinIsTty, configurable: true });
+    Object.defineProperty(process.stdout, 'isTTY', { value: stdoutIsTty, configurable: true });
+  });
+
   it('reports control-plane failures without throwing out of the command', async () => {
     queryTrpcMock.mockRejectedValue(new Error('control plane unavailable'));
 
