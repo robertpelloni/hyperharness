@@ -45,6 +45,20 @@ interface BillingSelectorRuntime {
     getTaskRoutingRules?: () => Record<ProviderTaskType, ProviderRoutingStrategy>;
     setTaskRoutingStrategy?: (taskType: ProviderTaskType, strategy: ProviderRoutingStrategy) => void;
     resetTaskRoutingStrategy?: (taskType: ProviderTaskType) => void;
+    getFallbackHistory?: (limit?: number) => ProviderFallbackEventRuntime[];
+    clearFallbackHistory?: () => void;
+}
+
+interface ProviderFallbackEventRuntime {
+    id: number;
+    timestamp: number;
+    requestedProvider?: string;
+    selectedProvider: string;
+    selectedModelId: string;
+    taskType: ProviderTaskType;
+    strategy: ProviderRoutingStrategy;
+    reason: string;
+    causeCode: 'preference_honored' | 'fallback_provider' | 'budget_forced_local' | 'emergency_fallback';
 }
 
 interface BillingModelRuntime {

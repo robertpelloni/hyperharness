@@ -21,11 +21,11 @@ Make HyperCode feel trustworthy in daily operator use.
 - [ ] Improve session attach and restart clarity
 - [ ] Deepen `hypercode` assimilation beyond harness registration once the upstream submodule exposes real runtime entrypoints
 - [ ] Improve memory provenance and retrieval debugging
-- [ ] Improve MCP import and export error reporting
-- [ ] Improve provider fallback history and quota clarity
+- [x] Improve MCP import and export error reporting
+- [x] Improve provider fallback history and quota clarity
 - [ ] Improve first-run empty states and setup guidance
 - [ ] Improve MCP health and validation reporting
-- [ ] Define package seams for `hypercoded`, `hypermcpd`, `hypermemd`, `hyperingest`, and `hyperharnessd` before extracting binaries
+- [x] Define package seams for `hypercoded`, `hypermcpd`, `hypermemd`, `hyperingest`, and `hyperharnessd` before extracting binaries
 - [ ] Reduce duplicated orchestration logic across CLI, web, desktop, and sidecar surfaces so daemon ownership is clearer
 - [ ] Continue Go truth-parity work only where the sidecar can read the same SQLite tables, config files, session artifacts, or deterministic local defaults without pretending to own live orchestration state
 - [ ] Keep documenting which Go routes are truthful local fallbacks versus bridge-only passthroughs so operator expectations stay honest
