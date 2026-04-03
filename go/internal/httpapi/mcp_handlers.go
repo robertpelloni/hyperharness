@@ -46,19 +46,12 @@ func (s *Server) handleMCPSearchTools(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Simple search implementation
-	var filtered []mcp.ToolEntry
-	for _, tool := range inventory.Tools {
-		if query == "" || 
-		   (len(tool.Name) > 0 && (tool.Name == query)) ||
-		   (len(tool.Description) > 0 && (tool.Description == query)) {
-			filtered = append(filtered, tool)
-		}
-	}
+	// Use native Go TF-IDF semantic RAG engine for tool ranking
+	rankedTools := mcp.RankTools(query, inventory.Tools, 20)
 
 	writeJSON(w, http.StatusOK, map[string]any{
 		"success": true,
-		"data":    filtered,
+		"data":    rankedTools,
 	})
 }
 
