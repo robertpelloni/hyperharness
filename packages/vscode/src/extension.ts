@@ -170,7 +170,7 @@ function summarizeText(value: string, maxLength = 600): string {
         return normalized;
     }
 
-    return `${normalized.slice(0, maxLength)}â€¦`;
+    return `${normalized.slice(0, maxLength)}...`;
 }
 
 function getVisibleChatEditorSnapshots(): ChatHistoryEntry[] {
