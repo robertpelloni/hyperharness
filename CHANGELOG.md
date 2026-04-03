@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.0.0-alpha.1] - 2026-04-02
 
 ### Added
+- **HyperIngest Daemon Processes**: Implemented the first standalone daemon package boundaries for `hyperingest` via `BobbyBookmarksSyncWorker` and `LinkCrawlerWorker`.
+- **Autonomous Link Crawler**: HyperCode now autonomously crawls pending URLs in the Links Backlog using `jsdom` to extract OpenGraph tags, favicons, and page descriptions, feeding the raw text to a configured LLM to automatically generate semantic tags and categories without user intervention.
+- **Cross-Database Backlog Sync**: Built a background daemon worker to seamlessly and safely synchronize the external `resources.db` bookmarks fed by the Python ecosystem into the canonical `metamcp.db` `links_backlog` table.
+
+## [1.0.0-alpha.1] - 2026-04-02
+
+### Added
 - **Go Sidecar API Documentation**: Created `docs/GO_SIDECAR_API.md` to explicitly map and classify truthful local fallbacks vs bridge-only passthroughs in the experimental Go sidecar.
 - **P1 Feature Freeze**: Successfully implemented, tested, and validated all P1 core features identified in the previous stabilization passes.
 

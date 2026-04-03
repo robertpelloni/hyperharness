@@ -71,6 +71,8 @@ import { WorkflowEngine } from "./orchestrator/WorkflowEngine.js";
 import { AgentMemoryService } from "./services/AgentMemoryService.js";
 import { SessionImportService } from "./services/SessionImportService.js";
 import { MemoryManager } from "./services/MemoryManager.js"; // Use legacy MemoryManager
+import { BobbyBookmarksSyncWorker } from "./daemons/hyperingest/BobbyBookmarksSyncWorker.js";
+import { LinkCrawlerWorker } from "./daemons/hyperingest/LinkCrawlerWorker.js";
 mcpServerDebugLog('[MCPServer] ✓ Phase 51/53 Infrastructure');
 import { SkillAssimilationService } from "./services/SkillAssimilationService.js";
 import { MarketplaceService } from "./services/MarketplaceService.js";
@@ -305,6 +307,8 @@ export class MCPServer {
     public lspTools: LSPTools;
     public agentMemoryService: AgentMemoryService;
     public sessionImportService: SessionImportService;
+    public bobbyBookmarksSyncWorker: BobbyBookmarksSyncWorker;
+    public linkCrawlerWorker: LinkCrawlerWorker;
     private readonly nativeSessionMetaTools: NativeSessionMetaTools;
     private readonly promptToClient: Record<string, ConnectedClient> = {};
     private readonly resourceToClient: Record<string, ConnectedClient> = {};
@@ -651,6 +655,8 @@ export class MCPServer {
         this.lspTools = new LSPTools(process.cwd());
         // MemoryManager + AgentMemoryService initialized early
         this.sessionImportService = new SessionImportService(this.llmService, this.agentMemoryService, process.cwd());
+        this.bobbyBookmarksSyncWorker = new BobbyBookmarksSyncWorker(process.cwd());
+        this.linkCrawlerWorker = new LinkCrawlerWorker(this.llmService);
 
         // Phase 5 & 6 Init
         this.browserTool = new BrowserTool();
@@ -3517,6 +3523,10 @@ ${env.tools.filter((tool) => tool.installed).map((tool) => `- **${tool.name}**: 
 
         // Trigger automatic session discovery/import in the background
         this.sessionImportService.startAutoImport();
+        
+        // Start hyperingest background workers
+        this.bobbyBookmarksSyncWorker.start();
+        this.linkCrawlerWorker.start();
 
         // Build Graph in Background
         this.autoTestService.repoGraph.buildGraph().catch(e => console.error("Graph build failed", e));
