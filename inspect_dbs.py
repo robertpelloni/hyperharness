@@ -19,6 +19,6 @@ def get_schema(db_path):
         print(f"Error: {e}")
 
 if __name__ == '__main__':
-    get_schema('resources.db')
-    get_schema('data/bobbybookmarks/resources.db')
+    get_schema('packages/core/metamcp.db')
+    get_schema('packages/core/resources.db')
 

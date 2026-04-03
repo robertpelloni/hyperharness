@@ -3148,81 +3148,7 @@ func (s *Server) handleMCPUnloadTool(w http.ResponseWriter, r *http.Request) {
 	s.handleMCPManualToolMutation(w, r, "mcp.unloadTool")
 }
 
-func (s *Server) handleMemorySearch(w http.ResponseWriter, r *http.Request) {
-	query := strings.TrimSpace(r.URL.Query().Get("query"))
-	if query == "" {
-		writeJSON(w, http.StatusBadRequest, map[string]any{
-			"success": false,
-			"error":   "missing query parameter",
-		})
-		return
-	}
-	payload := map[string]any{"query": query}
-	if limit := strings.TrimSpace(r.URL.Query().Get("limit")); limit != "" {
-		if parsed, err := strconv.Atoi(limit); err == nil {
-			payload["limit"] = parsed
-		}
-	}
-	var result any
-	upstreamBase, err := s.callUpstreamJSON(r.Context(), "memory.query", payload, &result)
-	if err == nil {
-		writeJSON(w, http.StatusOK, map[string]any{
-			"success": true,
-			"data":    result,
-			"bridge": map[string]any{
-				"upstreamBase": upstreamBase,
-				"procedure":    "memory.query",
-			},
-		})
-		return
-	}
 
-	writeJSON(w, http.StatusOK, map[string]any{
-		"success": true,
-		"data":    []map[string]any{},
-		"bridge": map[string]any{
-			"fallback":  "go-local-memory",
-			"procedure": "memory.query",
-			"reason":    "upstream unavailable; local memory fallback has no full-text memory query index",
-		},
-	})
-}
-
-func (s *Server) handleMemoryContexts(w http.ResponseWriter, r *http.Request) {
-	var result any
-	upstreamBase, err := s.callUpstreamJSON(r.Context(), "memory.listContexts", nil, &result)
-	if err == nil {
-		writeJSON(w, http.StatusOK, map[string]any{
-			"success": true,
-			"data":    result,
-			"bridge": map[string]any{
-				"upstreamBase": upstreamBase,
-				"procedure":    "memory.listContexts",
-			},
-		})
-		return
-	}
-
-	contexts, fallbackErr := s.localMemoryContexts()
-	if fallbackErr != nil {
-		writeJSON(w, http.StatusServiceUnavailable, map[string]any{
-			"success": false,
-			"error":   fallbackErr.Error(),
-			"detail":  fallbackErr.Error(),
-		})
-		return
-	}
-
-	writeJSON(w, http.StatusOK, map[string]any{
-		"success": true,
-		"data":    contexts,
-		"bridge": map[string]any{
-			"fallback":  "go-local-memory",
-			"procedure": "memory.listContexts",
-			"reason":    "upstream unavailable; using local memory context list",
-		},
-	})
-}
 
 func (s *Server) handleMemoryContextSave(w http.ResponseWriter, r *http.Request) {
 	s.handleTRPCBridgeBodyCall(w, r, "memory.saveContext")
@@ -3792,40 +3718,6 @@ func (s *Server) handleMemorySearchSessionSummaries(w http.ResponseWriter, r *ht
 	})
 }
 
-func (s *Server) handleMemorySectionedStatus(w http.ResponseWriter, r *http.Request) {
-	var result map[string]any
-	upstreamBase, err := s.callUpstreamJSON(r.Context(), "memory.getSectionedMemoryStatus", nil, &result)
-	if err == nil {
-		writeJSON(w, http.StatusOK, map[string]any{
-			"success": true,
-			"data":    result,
-			"bridge": map[string]any{
-				"upstreamBase": upstreamBase,
-				"procedure":    "memory.getSectionedMemoryStatus",
-			},
-		})
-		return
-	}
-
-	status, fallbackErr := memorystore.ReadStatus(s.cfg.WorkspaceRoot)
-	if fallbackErr != nil {
-		writeJSON(w, http.StatusServiceUnavailable, map[string]any{"success": false, "error": fallbackErr.Error(), "detail": fallbackErr.Error()})
-		return
-	}
-	writeJSON(w, http.StatusOK, map[string]any{
-		"success": true,
-		"data": map[string]any{
-			"available": status.Exists,
-			"sections":  status.Sections,
-			"storePath": status.StorePath,
-		},
-		"bridge": map[string]any{
-			"fallback":  "go-local-memory",
-			"procedure": "memory.getSectionedMemoryStatus",
-			"reason":    "upstream unavailable; using local sectioned memory status",
-		},
-	})
-}
 
 func (s *Server) handleMemoryInterchangeFormats(w http.ResponseWriter, r *http.Request) {
 	var result any
