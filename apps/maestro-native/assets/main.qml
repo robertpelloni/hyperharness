@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
+import Maestro.Components 1.0
 
 ApplicationWindow {
     visible: true
@@ -34,7 +35,7 @@ ApplicationWindow {
                 ListView {
                     Layout.fillWidth: true
                     Layout.fillHeight: true
-                    model: ["Core Session", "Web UI Refactor", "Go Porting"]
+                    model: ["Core Session", "Web UI Refactor", "Go Porting", "Native Terminal Bridge"]
                     delegate: ItemDelegate {
                         width: parent.width
                         text: modelData
@@ -123,14 +124,27 @@ ApplicationWindow {
                     }
                 }
 
-                // Terminal View
+                // Terminal View (using bobui's OmniTerminal)
                 Rectangle {
                     color: "black"
-                    Text {
-                        anchors.centerIn: parent
-                        text: "OmniTerminal would render here"
-                        color: "#00ff00"
-                        font.family: "Courier"
+                    
+                    OmniTerminal {
+                        id: nativeTerminal
+                        anchors.fill: parent
+                        anchors.margins: 5
+                        backgroundColor: "#000000"
+                        textColor: "#00ff00"
+                        
+                        Component.onCompleted: {
+                            // Boot sequence simulation
+                            writeCommand("echo 'HyperCode OmniTerminal Boot Sequence Initiated...'\n")
+                            writeCommand("hypercode status\n")
+                            writeCommand("hypercode mcp list\n")
+                        }
+                        
+                        onOutputReceived: function(text) {
+                            console.log("[OmniTerminal Output]:", text)
+                        }
                     }
                 }
             }
