@@ -63,6 +63,7 @@ import { linksBacklogRouter } from './routers/linksBacklogRouter.js';
 import { unifiedDirectoryRouter } from './routers/unifiedDirectoryRouter.js';
 import { codeModeRouter } from './routers/codeModeRouter.js';
 import { secretsRouter } from './routers/secretsRouter.js';
+import { workspaceRouter } from './routers/workspaceRouter.js';
 import { browserExtensionRouter } from './routers/browserExtensionRouter.js';
 import { sessionExportRouter } from './routers/sessionExportRouter.js';
 import { toolChainingRouter } from './routers/toolChainingRouter.js';
@@ -132,6 +133,7 @@ export const appRouter = t.router({
     unifiedDirectory: unifiedDirectoryRouter,
     codeMode: codeModeRouter,
     secrets: secretsRouter,
+    workspace: workspaceRouter,
     browserExtension: browserExtensionRouter,
     sessionExport: sessionExportRouter,
     toolChaining: toolChainingRouter,

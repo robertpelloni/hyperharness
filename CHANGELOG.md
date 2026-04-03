@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.0.0-alpha.1] - 2026-04-02
 
 ### Added
+- **Global Workspace Tracker**: Added a `WorkspaceTracker` daemon service that automatically registers new session directories into `~/.hypercode/workspaces.json`. The web dashboard (`/dashboard/session`) now prominently features a "Recent Workspaces" visualization for fast multi-project hopping.
+- **Robust Regression Coverage**: Created dedicated Vitest suites in `cachedToolInventory.test.ts` to strictly validate MCP discovery fallback behavior under simulated SQLite failures.
+
+## [1.0.0-alpha.1] - 2026-04-02
+
+### Added
 - **Autonomous Context Harvesting**: Fully wired `ContextHarvester` and `MemoryHarvestReactor` into the `ContextManager`. When files change on disk, the system instantly harvests the semantic chunks into memory and dynamically injects them into the active LLM context prompt. Models now intrinsically "know" when files change without explicitly needing to read them again.
 - **Context Inspection Dashboard**: Wired the `contextHarvester` APIs into the TRPC router and added a live "Harvested Context Chunks" visualization to the Web Dashboard's Context page. Operators can now visually inspect exactly which chunks are being injected into the models' active context window.
 
