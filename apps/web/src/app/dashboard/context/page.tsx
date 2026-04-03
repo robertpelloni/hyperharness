@@ -34,6 +34,24 @@ export default function ContextDashboard() {
     const utils = trpc.useUtils();
     const filesQuery = trpc.borgContext.list.useQuery();
     const promptQuery = trpc.borgContext.getPrompt.useQuery();
+    const harvestQuery = trpc.borgContext.getHarvestedContext.useQuery(undefined, { refetchInterval: 5000 });
+    const statsQuery = trpc.borgContext.getHarvestStats.useQuery(undefined, { refetchInterval: 5000 });
+
+    const pruneMutation = trpc.borgContext.prune.useMutation({
+        onSuccess: async () => {
+            toast.success('Pruned inactive context chunks');
+            await utils.borgContext.getHarvestedContext.invalidate();
+            await utils.borgContext.getHarvestStats.invalidate();
+        }
+    });
+
+    const compactMutation = trpc.borgContext.compact.useMutation({
+        onSuccess: async () => {
+            toast.success('Compacted older context chunks');
+            await utils.borgContext.getHarvestedContext.invalidate();
+            await utils.borgContext.getHarvestStats.invalidate();
+        }
+    });
 
     const addMutation = trpc.borgContext.add.useMutation({
         onSuccess: async () => {
@@ -262,6 +280,84 @@ export default function ContextDashboard() {
                         </CardContent>
                     </Card>
                 </div>
+            </div>
+
+            {/* Harvested Context */}
+            <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                    <h2 className="text-sm font-bold text-zinc-400 uppercase tracking-widest flex items-center gap-2">
+                        <Layers className="h-4 w-4" />
+                        Harvested Context Chunks
+                        {statsQuery.data && (
+                            <Badge variant="secondary" className="ml-1 text-xs">
+                                {statsQuery.data.totalChunks} chunks ({statsQuery.data.totalTokens} tokens)
+                            </Badge>
+                        )}
+                    </h2>
+                    <div className="flex gap-2">
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            className="text-amber-500 hover:text-amber-400"
+                            onClick={() => pruneMutation.mutate()}
+                            disabled={pruneMutation.isPending}
+                        >
+                            Prune Inactive
+                        </Button>
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            className="text-sky-500 hover:text-sky-400"
+                            onClick={() => compactMutation.mutate()}
+                            disabled={compactMutation.isPending}
+                        >
+                            Compact
+                        </Button>
+                    </div>
+                </div>
+                <Card className="border-zinc-800 bg-zinc-950/50">
+                    <CardContent className="p-0">
+                        {harvestQuery.isLoading ? (
+                            <div className="p-8 text-center text-zinc-500 flex items-center justify-center gap-2">
+                                <Loader2 className="h-4 w-4 animate-spin" /> Loading context...
+                            </div>
+                        ) : harvestQuery.isError ? (
+                            <div className="p-8 text-center text-red-500">Failed to load harvested context.</div>
+                        ) : !harvestQuery.data || (harvestQuery.data as any[]).length === 0 ? (
+                            <div className="p-8 text-center text-zinc-500 text-sm">
+                                No context has been harvested yet. Modify files to trigger sensory harvesting.
+                            </div>
+                        ) : (
+                            <ScrollArea className="h-[400px]">
+                                <div className="divide-y divide-zinc-800/50">
+                                    {(harvestQuery.data as any[]).map((chunk: any) => (
+                                        <div key={chunk.id} className="p-4 hover:bg-zinc-900/50 transition-colors">
+                                            <div className="flex items-center justify-between mb-2">
+                                                <div className="flex items-center gap-3 text-xs">
+                                                    <Badge variant="outline" className="border-emerald-500/30 text-emerald-400 font-mono">
+                                                        {chunk.source}
+                                                    </Badge>
+                                                    <span className="text-zinc-500 font-mono">{chunk.metadata?.path || 'unknown'}</span>
+                                                </div>
+                                                <div className="flex gap-2">
+                                                    <Badge variant="secondary" className="text-xs bg-zinc-800">
+                                                        Score: {Number(chunk.relevanceScore).toFixed(2)}
+                                                    </Badge>
+                                                    <Badge variant="secondary" className="text-xs bg-zinc-800 text-zinc-400 font-mono">
+                                                        ~{chunk.tokenCount}t
+                                                    </Badge>
+                                                </div>
+                                            </div>
+                                            <pre className="text-xs font-mono text-zinc-400 whitespace-pre-wrap leading-relaxed mt-2 bg-black/40 p-3 rounded-md border border-zinc-800/50">
+                                                {chunk.content.length > 500 ? chunk.content.substring(0, 500) + '...' : chunk.content}
+                                            </pre>
+                                        </div>
+                                    ))}
+                                </div>
+                            </ScrollArea>
+                        )}
+                    </CardContent>
+                </Card>
             </div>
         </div>
     );

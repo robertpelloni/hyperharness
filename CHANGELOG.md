@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.0.0-alpha.1] - 2026-04-02
 
 ### Added
+- **Autonomous Context Harvesting**: Fully wired `ContextHarvester` and `MemoryHarvestReactor` into the `ContextManager`. When files change on disk, the system instantly harvests the semantic chunks into memory and dynamically injects them into the active LLM context prompt. Models now intrinsically "know" when files change without explicitly needing to read them again.
+- **Context Inspection Dashboard**: Wired the `contextHarvester` APIs into the TRPC router and added a live "Harvested Context Chunks" visualization to the Web Dashboard's Context page. Operators can now visually inspect exactly which chunks are being injected into the models' active context window.
+
+## [1.0.0-alpha.1] - 2026-04-02
+
+### Added
 - **Workspace Secrets Injection**: The internal `workspace_secrets` SQLite table (managed by the "Secrets Vault" dashboard) is now natively and securely injected into the `process.env` stream for every `StdioClient` spawn. This allows global API credentials (like GitHub tokens, API keys) to flow securely into all MCP servers without needing to hardcode them in individual server configs or the operator's shell profile.
 
 ## [1.0.0-alpha.1] - 2026-04-02
