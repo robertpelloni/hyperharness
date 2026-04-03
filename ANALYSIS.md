@@ -16,7 +16,8 @@ The build pipeline was repaired following several critical failures:
   - Fixed missing dependencies in `@jules/cli` (`zustand`, `react-devtools-core`).
   - Fixed Rollup resolution issues in `maestro` by adding `github-slugger` and `unist-util-visit`.
   - Created a shim for `ThemeContext` in Maestro to resolve broken imports in the Visual Orchestrator.
-- **Verification**: `pnpm run build:workspace` now completes successfully across all 26 packages.
+- **Maestro Native**: Bootstrapped a native Qt version of Maestro in `apps/maestro-native` using the `bobui` (Qt6 fork) framework. This includes a CMake build system and a QML-based UI that mirrors the Maestro layout.
+- **Go Porting**: Ported core Maestro backend services (Agent Detection, Process Management, Filesystem access) to Go in `apps/maestro-go` using the Wails framework.
 
 ## 3. Go Sidecar Parity
 The experimental Go orchestrator has been upgraded with real functionality:

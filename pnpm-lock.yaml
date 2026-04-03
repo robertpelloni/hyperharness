@@ -457,6 +457,9 @@ importers:
       fastify:
         specifier: ^4.25.2
         version: 4.29.1
+      github-slugger:
+        specifier: ^2.0.0
+        version: 2.0.0
       js-tiktoken:
         specifier: ^1.0.21
         version: 1.0.21
@@ -508,6 +511,9 @@ importers:
       remark-gfm:
         specifier: ^4.0.1
         version: 4.0.1
+      unist-util-visit:
+        specifier: ^5.1.0
+        version: 5.1.0
       ws:
         specifier: ^8.16.0
         version: 8.19.0
