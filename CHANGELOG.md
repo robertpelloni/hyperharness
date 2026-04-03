@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.0.0-alpha.1] - 2026-04-02
 
 ### Added
+- **Prompt Library Integration**: Fully assimilated the `PromptRegistry` into the core TRPC router (`promptsRouter.ts`). The dashboard's Prompt Library component now securely accesses the local file system templates via TRPC instead of a hardcoded, hacky Next.js API route. The prompt dashboard has also been moved out of an orphaned URL into the main Dashboard shell.
+
+## [1.0.0-alpha.1] - 2026-04-02
+
+### Added
 - **Global Workspace Tracker**: Added a `WorkspaceTracker` daemon service that automatically registers new session directories into `~/.hypercode/workspaces.json`. The web dashboard (`/dashboard/session`) now prominently features a "Recent Workspaces" visualization for fast multi-project hopping.
 - **Robust Regression Coverage**: Created dedicated Vitest suites in `cachedToolInventory.test.ts` to strictly validate MCP discovery fallback behavior under simulated SQLite failures.
 

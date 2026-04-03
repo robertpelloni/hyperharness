@@ -68,6 +68,7 @@ import { browserExtensionRouter } from './routers/browserExtensionRouter.js';
 import { sessionExportRouter } from './routers/sessionExportRouter.js';
 import { toolChainingRouter } from './routers/toolChainingRouter.js';
 import { browserControlsRouter } from './routers/browserControlsRouter.js';
+import { promptsRouter } from './routers/promptsRouter.js';
 
 // import { type AnyTRPCRouter } from '@trpc/server';
 
@@ -138,6 +139,7 @@ export const appRouter = t.router({
     sessionExport: sessionExportRouter,
     toolChaining: toolChainingRouter,
     browserControls: browserControlsRouter,
+    prompts: promptsRouter,
 });
 
 export type AppRouter = typeof appRouter;

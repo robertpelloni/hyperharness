@@ -46,10 +46,12 @@ function ResourceCard({ item }: { item: ResourceSection }) {
 export default function LibraryDashboard() {
     const scriptsQuery = trpc.savedScripts.list.useQuery();
     const skillsQuery = trpc.skills.list.useQuery();
+    const promptsQuery = trpc.prompts.list.useQuery();
 
     // Normalize counts safely.
     const scriptCount = Array.isArray(scriptsQuery.data) ? scriptsQuery.data.length : undefined;
     const skillCount = Array.isArray(skillsQuery.data) ? (skillsQuery.data as unknown[]).length : undefined;
+    const promptCount = Array.isArray(promptsQuery.data) ? promptsQuery.data.length : undefined;
 
     const sections: ResourceSection[] = [
         {
@@ -69,6 +71,15 @@ export default function LibraryDashboard() {
             accentClass: "text-orange-400",
             count: skillCount,
             countLabel: "skills",
+        },
+        {
+            title: "Prompts & Templates",
+            description: "System prompts, task templates, and structural directives for AI agents.",
+            href: "/dashboard/prompts",
+            icon: BookOpenText,
+            accentClass: "text-indigo-400",
+            count: promptCount,
+            countLabel: "templates",
         },
         {
             title: "Tool Sets",
