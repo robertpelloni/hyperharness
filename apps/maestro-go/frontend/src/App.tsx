@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useRef, useMemo, useCallback, lazy, Suspense } from 'react';
+import { EventsOn } from '../wailsjs/runtime/runtime';
+import * as GoApp from '../wailsjs/go/main/App';
 // SettingsModal is lazy-loaded for performance (large component, only loaded when settings opened)
 const SettingsModal = lazy(() =>
 	import('./components/Settings/SettingsModal').then((m) => ({ default: m.SettingsModal }))
@@ -3280,6 +3282,21 @@ function MaestroConsoleInner() {
  * InlineWizardProvider - inline /wizard command state management
  */
 export default function MaestroConsole() {
+	useEffect(() => {
+		if ((window as any).go) {
+			console.log("[WailsBridge] Initializing window.maestro bridge...");
+			(window as any).maestro = (window as any).maestro || {};
+			(window as any).maestro.agents = {
+				list: () => GoApp.ListAgents()
+			};
+			(window as any).maestro.process = {
+				spawn: (config: any) => GoApp.ExecuteCommand(config.sessionId, config.command, config.args, config.cwd),
+				kill: (id: string) => GoApp.KillProcess(id),
+				onData: (callback: any) => EventsOn("process:data", (data: any) => callback(data.id, data.data)),
+				onExit: (callback: any) => EventsOn("process:exit", (data: any) => callback(data.id, data.exitCode)),
+			};
+		}
+	}, []);
 	if (!window.maestro) {
 		return (
 			<div
