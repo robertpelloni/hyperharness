@@ -5639,9 +5639,6 @@ func (s *Server) handleAgentRunTool(w http.ResponseWriter, r *http.Request) {
 	s.handleTRPCBridgeBodyCall(w, r, "agent.runTool")
 }
 
-func (s *Server) handleAgentChat(w http.ResponseWriter, r *http.Request) {
-	s.handleTRPCBridgeBodyCall(w, r, "agent.chat")
-}
 
 func (s *Server) handleCommandsExecute(w http.ResponseWriter, r *http.Request) {
 	s.handleTRPCBridgeBodyCall(w, r, "commands.execute")
