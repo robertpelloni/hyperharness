@@ -28,3 +28,6 @@
 [submodule "submodules/hyperharness"]
 	path = submodules/hyperharness
 	url = https://github.com/robertpelloni/hyperharness.git
+[submodule "submodules/superai"]
+	path = submodules/superai
+	url = https://github.com/robertpelloni/superai.git
