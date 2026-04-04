@@ -44,6 +44,82 @@ func TestSessionStoreCreateAppendListAndFork(t *testing.T) {
 	}
 }
 
+func TestSessionStoreLeafTrackingAndBranching(t *testing.T) {
+	dir := t.TempDir()
+	store := NewSessionStore(dir)
+	session, err := store.Create("alpha", "/workspace/project")
+	if err != nil {
+		t.Fatal(err)
+	}
+	id := session.Metadata.SessionID
+
+	session, err = store.AppendEntry(id, SessionEntry{Kind: "message", Role: "user", Text: "root"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	rootID := session.Metadata.LeafID
+	if rootID == "" {
+		t.Fatal("expected leaf after first append")
+	}
+
+	session, err = store.AppendEntry(id, SessionEntry{Kind: "message", Role: "assistant", Text: "main branch"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	mainLeaf := session.Metadata.LeafID
+	if mainLeaf == rootID {
+		t.Fatal("expected leaf to advance")
+	}
+
+	if _, err := store.Branch(id, rootID); err != nil {
+		t.Fatal(err)
+	}
+	leaf, err := store.GetLeafID(id)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if leaf != rootID {
+		t.Fatalf("expected leaf to move to root, got %q", leaf)
+	}
+
+	session, err = store.AppendEntry(id, SessionEntry{Kind: "message", Role: "assistant", Text: "alternate branch"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	altLeaf := session.Metadata.LeafID
+	if altLeaf == mainLeaf || altLeaf == rootID {
+		t.Fatal("expected a new alternate leaf")
+	}
+	if session.Entries[len(session.Entries)-1].ParentID != rootID {
+		t.Fatalf("expected alternate branch parent %q, got %q", rootID, session.Entries[len(session.Entries)-1].ParentID)
+	}
+
+	ctx, err := store.BuildSessionContext(id, "")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if ctx.LeafID != altLeaf {
+		t.Fatalf("expected context to follow alternate leaf %q, got %q", altLeaf, ctx.LeafID)
+	}
+	if len(ctx.Entries) != 2 {
+		t.Fatalf("expected 2 entries on active branch, got %d", len(ctx.Entries))
+	}
+	if ctx.Entries[len(ctx.Entries)-1].Text != "alternate branch" {
+		t.Fatalf("unexpected active branch tail: %#v", ctx.Entries[len(ctx.Entries)-1])
+	}
+
+	if _, err := store.ResetLeaf(id); err != nil {
+		t.Fatal(err)
+	}
+	leaf, err = store.GetLeafID(id)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if leaf != session.Entries[len(session.Entries)-1].ID {
+		t.Fatalf("expected fallback leaf to latest entry, got %q", leaf)
+	}
+}
+
 func TestSessionStoreExtendedEntriesAndContext(t *testing.T) {
 	dir := t.TempDir()
 	store := NewSessionStore(dir)

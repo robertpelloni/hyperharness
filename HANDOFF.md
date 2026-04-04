@@ -197,3 +197,33 @@
 1. Keep `foundation/*` green and truthful.
 2. Continue Pi-native parity next with explicit branch/leaf management and branch-summary semantics.
 3. After that, deepen CLI/TUI/session-mode behavior on top of the now-richer native session model.
+
+## Additional work completed later on 2026-04-04 (branch/leaf tranche)
+- Added explicit active-leaf tracking to `foundation/pi` sessions via `SessionMetadata.LeafID`.
+- Updated `AppendEntry()` to parent new entries to the active leaf when present instead of always using the latest entry in file order.
+- Updated `AppendEntry()` to advance the active leaf to the newly appended entry.
+- Updated `Fork()` to default to the active leaf when choosing a fork point.
+- Added native branch/leaf helpers on `SessionStore`:
+  - `GetLeafID`
+  - `Branch`
+  - `ResetLeaf`
+- Updated `GetBranch()` to default to the active leaf.
+- Updated `BuildSessionContext()` to default to the active leaf instead of only latest-entry order.
+- Added runtime wrappers in `foundation/pi/runtime.go`:
+  - `GetLeafID`
+  - `BranchSession`
+  - `ResetSessionLeaf`
+- Updated runtime tool-run persistence so tool executions attach to and advance the active leaf correctly.
+- Added explicit branch/leaf verification to `foundation/pi/session_test.go`.
+- Added detailed analysis doc:
+  - `docs/analysis/PI_BRANCH_LEAF_PARITY_TRANCHE_2026-04-04.md`
+
+## Latest validation after branch/leaf tranche
+- `gofmt -w foundation/pi/session.go foundation/pi/runtime.go foundation/pi/session_test.go`
+- `go test ./foundation/pi/...`
+- `go test ./foundation/...`
+
+## Updated recommendation after branch/leaf tranche
+1. Keep `foundation/*` green and canonical.
+2. Implement native branch-summary/common-ancestor helpers next on top of explicit leaf semantics.
+3. Then layer `/tree`-style CLI/TUI workflows over the truthful foundation behavior.

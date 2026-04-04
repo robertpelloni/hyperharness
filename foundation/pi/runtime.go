@@ -138,16 +138,31 @@ func (r *Runtime) BuildSessionContext(sessionID, leafID string) (*SessionContext
 	return r.sessionStore.BuildSessionContext(sessionID, leafID)
 }
 
+func (r *Runtime) GetLeafID(sessionID string) (string, error) {
+	return r.sessionStore.GetLeafID(sessionID)
+}
+
+func (r *Runtime) BranchSession(sessionID, entryID string) (*SessionFile, error) {
+	return r.sessionStore.Branch(sessionID, entryID)
+}
+
+func (r *Runtime) ResetSessionLeaf(sessionID string) (*SessionFile, error) {
+	return r.sessionStore.ResetLeaf(sessionID)
+}
+
 func (r *Runtime) appendToolRun(sessionID, toolName string, input json.RawMessage, result *ToolResult) error {
 	session, err := r.sessionStore.Load(sessionID)
 	if err != nil {
 		return err
 	}
 	var parentID string
-	if len(session.Entries) > 0 {
+	if session.Metadata.LeafID != "" {
+		parentID = session.Metadata.LeafID
+	} else if len(session.Entries) > 0 {
 		parentID = session.Entries[len(session.Entries)-1].ID
 	}
 	callID := uuid.NewString()
+	resultID := uuid.NewString()
 	session.Entries = append(session.Entries,
 		SessionEntry{
 			ID:        callID,
@@ -158,7 +173,7 @@ func (r *Runtime) appendToolRun(sessionID, toolName string, input json.RawMessag
 			CreatedAt: time.Now().UnixMilli(),
 		},
 		SessionEntry{
-			ID:        uuid.NewString(),
+			ID:        resultID,
 			ParentID:  callID,
 			Kind:      "tool_result",
 			Role:      "toolResult",
@@ -167,6 +182,7 @@ func (r *Runtime) appendToolRun(sessionID, toolName string, input json.RawMessag
 			CreatedAt: time.Now().UnixMilli(),
 		},
 	)
+	session.Metadata.LeafID = resultID
 	return r.sessionStore.Save(session)
 }
 

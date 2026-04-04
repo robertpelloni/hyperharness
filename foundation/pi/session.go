@@ -22,6 +22,7 @@ type SessionMetadata struct {
 	UpdatedAt     int64  `json:"updatedAt"`
 	Version       int    `json:"version,omitempty"`
 	ParentSession string `json:"parentSession,omitempty"`
+	LeafID        string `json:"leafId,omitempty"`
 }
 
 type SessionEntry struct {
@@ -203,10 +204,15 @@ func (s *SessionStore) AppendEntry(sessionID string, entry SessionEntry) (*Sessi
 	if entry.CreatedAt == 0 {
 		entry.CreatedAt = time.Now().UnixMilli()
 	}
-	if entry.ParentID == "" && len(session.Entries) > 0 {
-		entry.ParentID = session.Entries[len(session.Entries)-1].ID
+	if entry.ParentID == "" {
+		if session.Metadata.LeafID != "" {
+			entry.ParentID = session.Metadata.LeafID
+		} else if len(session.Entries) > 0 {
+			entry.ParentID = session.Entries[len(session.Entries)-1].ID
+		}
 	}
 	session.Entries = append(session.Entries, entry)
+	session.Metadata.LeafID = entry.ID
 	if err := s.Save(session); err != nil {
 		return nil, err
 	}
@@ -287,12 +293,17 @@ func (s *SessionStore) Fork(sessionID, fromEntryID, name string) (*SessionFile, 
 		return nil, err
 	}
 	forked.Metadata.ParentSession = session.Metadata.SessionID
-	if fromEntryID == "" && len(session.Entries) > 0 {
-		fromEntryID = session.Entries[len(session.Entries)-1].ID
+	if fromEntryID == "" {
+		if session.Metadata.LeafID != "" {
+			fromEntryID = session.Metadata.LeafID
+		} else if len(session.Entries) > 0 {
+			fromEntryID = session.Entries[len(session.Entries)-1].ID
+		}
 	}
 	for _, entry := range session.Entries {
 		forked.Entries = append(forked.Entries, entry)
 		if entry.ID == fromEntryID {
+			forked.Metadata.LeafID = entry.ID
 			break
 		}
 	}
@@ -300,6 +311,57 @@ func (s *SessionStore) Fork(sessionID, fromEntryID, name string) (*SessionFile, 
 		return nil, err
 	}
 	return forked, nil
+}
+
+func (s *SessionStore) GetLeafID(sessionID string) (string, error) {
+	session, err := s.Load(sessionID)
+	if err != nil {
+		return "", err
+	}
+	if session.Metadata.LeafID != "" {
+		return session.Metadata.LeafID, nil
+	}
+	if len(session.Entries) == 0 {
+		return "", nil
+	}
+	return session.Entries[len(session.Entries)-1].ID, nil
+}
+
+func (s *SessionStore) Branch(sessionID, entryID string) (*SessionFile, error) {
+	session, err := s.Load(sessionID)
+	if err != nil {
+		return nil, err
+	}
+	if entryID == "" {
+		return nil, fmt.Errorf("entry id is required")
+	}
+	found := false
+	for _, entry := range session.Entries {
+		if entry.ID == entryID {
+			found = true
+			break
+		}
+	}
+	if !found {
+		return nil, fmt.Errorf("entry not found: %s", entryID)
+	}
+	session.Metadata.LeafID = entryID
+	if err := s.Save(session); err != nil {
+		return nil, err
+	}
+	return session, nil
+}
+
+func (s *SessionStore) ResetLeaf(sessionID string) (*SessionFile, error) {
+	session, err := s.Load(sessionID)
+	if err != nil {
+		return nil, err
+	}
+	session.Metadata.LeafID = ""
+	if err := s.Save(session); err != nil {
+		return nil, err
+	}
+	return session, nil
 }
 
 func (s *SessionStore) Path(sessionID string) string {
@@ -365,8 +427,12 @@ func (s *SessionStore) GetBranch(sessionID, fromID string) ([]SessionEntry, erro
 	if err != nil {
 		return nil, err
 	}
-	if fromID == "" && len(session.Entries) > 0 {
-		fromID = session.Entries[len(session.Entries)-1].ID
+	if fromID == "" {
+		if session.Metadata.LeafID != "" {
+			fromID = session.Metadata.LeafID
+		} else if len(session.Entries) > 0 {
+			fromID = session.Entries[len(session.Entries)-1].ID
+		}
 	}
 	byID := make(map[string]SessionEntry, len(session.Entries))
 	for _, entry := range session.Entries {
@@ -420,6 +486,9 @@ func (s *SessionStore) BuildSessionContext(sessionID, leafID string) (*SessionCo
 	session, err := s.Load(sessionID)
 	if err != nil {
 		return nil, err
+	}
+	if leafID == "" {
+		leafID = session.Metadata.LeafID
 	}
 	branch, err := s.GetBranch(sessionID, leafID)
 	if err != nil {
