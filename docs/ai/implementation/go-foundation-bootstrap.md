@@ -53,12 +53,14 @@
   - native repo-map generation command
 
 - `foundation/repomap/repomap.go`
-  - first native Aider-inspired repo map baseline
+  - Aider-inspired native repo map baseline with graph-ranking groundwork
   - ranked file ordering using mentioned files/idents
+  - lightweight definition/reference propagation across files
   - symbol extraction for common source forms
 
 - `foundation/repomap/repomap_test.go`
-  - repo map output and ranking validation
+  - repo map output validation
+  - ranking validation for mention-based and graph-based prioritization
 
 - `tools/registry.go`
   - top-level tool registry now exposes exact-name Pi-compatible tools via the native foundation runtime
@@ -74,6 +76,12 @@
 
 - `tools/registry_test.go`
   - verifies exact Pi tools and repomap are present in the registry
+
+- `foundation/pi/tool_snapshot_test.go`
+  - snapshot-style verification for baseline tool results
+
+- `agent/agent_test.go`
+  - verifies top-level OpenAI tool registration exposes exact-schema tool definitions
 
 ### Documentation
 - requirements, design, planning, implementation, and testing documents under `docs/ai/`
@@ -108,12 +116,14 @@ These issues were observed and documented, not silently ignored or misrepresente
 - session persistence/list/fork tests
 - ordered runtime event tests
 - parity/truncation tests for `read` and `bash`
+- snapshot-style tool result verification
 - repo map generation and ranking tests
 - top-level tool registry tests confirming native exact-name tool exposure
+- top-level agent tool-schema registration tests
 
 ## Recommended next implementation sequence
 1. continue routing remaining top-level placeholder orchestration surfaces to `foundation/pi` runtime packages,
-2. add contract-result verification and snapshot tests for the default tool set,
-3. deepen repo-map ranking toward Aider-style graph semantics and add edit strategies,
-4. add HyperCode/Borg provider and MCP adapters,
+2. deepen repo-map ranking toward richer Aider-style graph semantics and add edit strategies,
+3. add HyperCode/Borg provider and MCP adapters,
+4. expand snapshot/result-shape coverage and CLI smoke coverage,
 5. layer in delegation, verification, detached/background runs, and JSON/RPC transport.

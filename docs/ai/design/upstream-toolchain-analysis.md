@@ -16,7 +16,7 @@ This document is the current clean-room reference map for the imported toolchain
 - **Role**: code-editing specialist
 - **Best traits**: repo map, multiple edit strategies, git-native workflow
 - **Assimilation guidance**: port the context and edit engines, not the Python runtime shape.
-- **Current native status**: first ranked repo-map baseline now exists in `foundation/repomap`, but it is still much simpler than Aider’s graph-aware pagerank pipeline.
+- **Current native status**: first ranked repo-map baseline now exists in `foundation/repomap`, with lightweight cross-file graph influence, but it is still much simpler than Aider’s full graph-aware pagerank pipeline.
 
 ## Adrenaline
 - **Role**: early repository-grounded coding assistant

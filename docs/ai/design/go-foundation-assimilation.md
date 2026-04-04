@@ -90,6 +90,7 @@ Responsibilities:
 - scan and rank source files
 - prioritize mentioned files and identifiers
 - extract lightweight symbol summaries
+- propagate lightweight cross-file reference influence as graph-ranking groundwork
 - emit deterministic `<repo_map>` output for the harness
 - provide the first step toward richer graph-based context ranking
 
@@ -165,7 +166,7 @@ Add contract and snapshot tests for each feature family.
 
 ## Recommended Next Technical Moves
 1. Continue routing existing top-level placeholder command and orchestration surfaces to the new `foundation/pi` runtime.
-2. Deepen `foundation/repomap` toward graph/LSP-aware ranking and port richer edit engines.
+2. Deepen `foundation/repomap` from lightweight graph groundwork toward fuller graph/LSP-aware ranking and port richer edit engines.
 3. Add HyperCode-backed provider and MCP adapters behind stable interfaces.
-4. Add verified snapshot-style contract tests for tool outputs.
+4. Expand verified snapshot-style contract tests for tool outputs and CLI behaviors.
 5. Add verification, delegation, and background session services.

@@ -56,16 +56,18 @@ go test ./...
 - `foundation/pi/runtime_test.go`
 - `foundation/pi/session_test.go`
 - `foundation/pi/tool_parity_test.go`
+- `foundation/pi/tool_snapshot_test.go`
 - `foundation/repomap/repomap_test.go`
 - `tools/registry_test.go`
+- `agent/agent_test.go`
 
 ## Tests that should be added next
 1. `cmd/foundation` smoke tests
-2. tool contract schema/result snapshot tests
+2. more tool contract schema/result snapshot tests
 3. more truncation and image-path edge-case tests for `read` and `bash`
 4. JSON/RPC transport tests
 5. compatibility tests against bridged HyperCode-backed adapters
-6. top-level `agent` integration tests around exact-schema tool registration
+6. richer top-level `agent` integration tests around exact-schema tool registration and tool-call loops
 
 ## Exit criteria for the next milestone
 - foundation packages compile cleanly,
@@ -74,4 +76,5 @@ go test ./...
 - default tool contracts are backed by real implementations,
 - session persistence is stable under create/list/load/fork flows,
 - repo-map output is stable enough for deterministic tests,
+- graph-ranking groundwork is stable enough for deterministic ranking tests,
 - maturity labels are truthful and enforced by tests.

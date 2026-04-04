@@ -22,9 +22,11 @@ Deliver a Go-native harness that can truthfully grow from a Pi-derived foundatio
 - [x] Add native implementations for compatibility-critical tools
 - [ ] Add source-specific tool compatibility packs
 - [x] Add first verified parity/truncation tests for default tools
+- [x] Add first snapshot-style verification for baseline tool outputs
 
 ### Workstream 3: Context and editing quality
 - [x] Port first native repo map baseline
+- [x] Add first graph-ranking groundwork for repo-map prioritization
 - [ ] Port code graph context ranking closer to Aider pagerank semantics
 - [ ] Port multiple edit strategies
 - [ ] Add semantic retrieval and memory-aware context assembly
@@ -71,6 +73,7 @@ Deliver a Go-native harness that can truthfully grow from a Pi-derived foundatio
 
 ### Milestone 2: Context and editing superiority
 - [x] first native Aider-inspired repo map baseline
+- [x] first graph-ranking groundwork for cross-file prioritization
 - [ ] code graph / LSP-assisted context assembly
 - [ ] multiple edit modes
 - [ ] verification-aware edit pipeline

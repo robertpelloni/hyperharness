@@ -2,6 +2,7 @@ package repomap
 
 import (
 	"fmt"
+	"math"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -55,6 +56,8 @@ var symbolPatterns = []struct {
 	{regexp.MustCompile(`(?m)^\s*def\s+([A-Za-z_][A-Za-z0-9_]*)\s*\(`), "func"},
 }
 
+var identifierPattern = regexp.MustCompile(`[A-Za-z_][A-Za-z0-9_]{2,}`)
+
 type Symbol struct {
 	Name string `json:"name"`
 	Kind string `json:"kind"`
@@ -81,6 +84,11 @@ type Result struct {
 	Map     string  `json:"map"`
 }
 
+type fileData struct {
+	Entry       Entry
+	Identifiers map[string]int
+}
+
 func Generate(options Options) (Result, error) {
 	baseDir := options.BaseDir
 	if strings.TrimSpace(baseDir) == "" {
@@ -93,7 +101,7 @@ func Generate(options Options) (Result, error) {
 	mentionedFiles := normalizeSet(options.MentionedFiles)
 	mentionedIdents := normalizeSet(options.MentionedIdents)
 
-	entries := make([]Entry, 0, 64)
+	files := make([]fileData, 0, 64)
 	err = filepath.Walk(absBase, func(path string, info os.FileInfo, walkErr error) error {
 		if walkErr != nil {
 			return walkErr
@@ -113,17 +121,31 @@ func Generate(options Options) (Result, error) {
 			return nil
 		}
 		rel = filepath.ToSlash(rel)
-		content, err := os.ReadFile(path)
+		contentBytes, err := os.ReadFile(path)
 		if err != nil {
 			return nil
 		}
-		symbols := extractSymbols(string(content))
-		score := scoreEntry(rel, symbols, mentionedFiles, mentionedIdents)
-		entries = append(entries, Entry{Path: rel, Symbols: symbols, Score: score})
+		content := string(contentBytes)
+		symbols := extractSymbols(content)
+		files = append(files, fileData{
+			Entry: Entry{
+				Path:    rel,
+				Symbols: symbols,
+			},
+			Identifiers: extractIdentifiers(content),
+		})
 		return nil
 	})
 	if err != nil {
 		return Result{}, fmt.Errorf("walk repo: %w", err)
+	}
+
+	scores := rankFiles(files, mentionedFiles, mentionedIdents)
+	entries := make([]Entry, 0, len(files))
+	for _, file := range files {
+		entry := file.Entry
+		entry.Score = int(math.Round(scores[file.Entry.Path] * 100))
+		entries = append(entries, entry)
 	}
 
 	sort.Slice(entries, func(i, j int) bool {
@@ -138,6 +160,58 @@ func Generate(options Options) (Result, error) {
 	result := Result{BaseDir: absBase, Entries: entries}
 	result.Map = renderMap(entries)
 	return result, nil
+}
+
+func rankFiles(files []fileData, mentionedFiles, mentionedIdents map[string]struct{}) map[string]float64 {
+	baseScores := make(map[string]float64, len(files))
+	definitions := make(map[string][]string)
+	for _, file := range files {
+		baseScores[file.Entry.Path] = float64(scoreEntry(file.Entry.Path, file.Entry.Symbols, mentionedFiles, mentionedIdents))
+		for _, symbol := range file.Entry.Symbols {
+			definitions[strings.ToLower(symbol.Name)] = append(definitions[strings.ToLower(symbol.Name)], file.Entry.Path)
+		}
+	}
+
+	edges := make(map[string]map[string]float64, len(files))
+	for _, file := range files {
+		for ident, count := range file.Identifiers {
+			for _, dst := range definitions[ident] {
+				if dst == file.Entry.Path {
+					continue
+				}
+				if edges[file.Entry.Path] == nil {
+					edges[file.Entry.Path] = map[string]float64{}
+				}
+				edges[file.Entry.Path][dst] += math.Sqrt(float64(count))
+			}
+		}
+	}
+
+	scores := make(map[string]float64, len(baseScores))
+	for path, score := range baseScores {
+		scores[path] = score
+	}
+	const damping = 0.85
+	for range 6 {
+		next := make(map[string]float64, len(baseScores))
+		for path, score := range baseScores {
+			next[path] = score
+		}
+		for src, outgoing := range edges {
+			total := 0.0
+			for _, weight := range outgoing {
+				total += weight
+			}
+			if total == 0 {
+				continue
+			}
+			for dst, weight := range outgoing {
+				next[dst] += damping * scores[src] * (weight / total)
+			}
+		}
+		scores = next
+	}
+	return scores
 }
 
 func renderMap(entries []Entry) string {
@@ -210,6 +284,15 @@ func extractSymbols(content string) []Symbol {
 		}
 		return out[i].Line < out[j].Line
 	})
+	return out
+}
+
+func extractIdentifiers(content string) map[string]int {
+	matches := identifierPattern.FindAllString(content, -1)
+	out := make(map[string]int, len(matches))
+	for _, match := range matches {
+		out[strings.ToLower(match)]++
+	}
 	return out
 }
 

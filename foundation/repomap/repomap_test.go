@@ -31,6 +31,22 @@ func TestGenerateBuildsRankedRepoMap(t *testing.T) {
 	}
 }
 
+func TestGenerateUsesReferenceGraphGroundworkForRanking(t *testing.T) {
+	dir := t.TempDir()
+	mustWrite(t, filepath.Join(dir, "main.go"), "package main\n\nfunc main() {\n  _ = Worker{}\n  Run()\n}\n")
+	mustWrite(t, filepath.Join(dir, "worker.go"), "package main\n\ntype Worker struct {}\n\nfunc Run() {}\n")
+	result, err := Generate(Options{BaseDir: dir, MaxFiles: 10})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(result.Entries) != 2 {
+		t.Fatalf("expected 2 source entries, got %d", len(result.Entries))
+	}
+	if result.Entries[0].Path != "worker.go" {
+		t.Fatalf("expected worker.go to rank first from reference graph, got %#v", result.Entries)
+	}
+}
+
 func TestGenerateIncludesTestsWhenRequested(t *testing.T) {
 	dir := t.TempDir()
 	mustWrite(t, filepath.Join(dir, "main_test.go"), "package main\n\nfunc TestMain() {}\n")

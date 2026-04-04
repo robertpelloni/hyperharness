@@ -89,7 +89,11 @@ func executeReadTool(ctx context.Context, cwd string, raw json.RawMessage) (*Too
 		truncation.ContinuationOffset = nextOffset
 		details = &ReadToolDetails{Truncation: &truncation}
 	}
-	return &ToolResult{ToolName: "read", Content: []any{TextContent{Type: "text", Text: output}}, Details: details}, nil
+	result := &ToolResult{ToolName: "read", Content: []any{TextContent{Type: "text", Text: output}}}
+	if details != nil {
+		result.Details = details
+	}
+	return result, nil
 }
 
 func executeWriteTool(ctx context.Context, cwd string, raw json.RawMessage) (*ToolResult, error) {
@@ -231,9 +235,17 @@ func executeBashTool(ctx context.Context, cwd string, raw json.RawMessage) (*Too
 		} else if exitErr, ok := err.(*exec.ExitError); ok {
 			rendered += fmt.Sprintf("\n\nCommand exited with code %d", exitErr.ExitCode())
 		}
-		return &ToolResult{ToolName: "bash", Content: []any{TextContent{Type: "text", Text: rendered}}, Details: details, IsError: true}, fmt.Errorf("%s", rendered)
+		result := &ToolResult{ToolName: "bash", Content: []any{TextContent{Type: "text", Text: rendered}}, IsError: true}
+		if details != nil {
+			result.Details = details
+		}
+		return result, fmt.Errorf("%s", rendered)
 	}
-	return &ToolResult{ToolName: "bash", Content: []any{TextContent{Type: "text", Text: rendered}}, Details: details}, nil
+	result := &ToolResult{ToolName: "bash", Content: []any{TextContent{Type: "text", Text: rendered}}}
+	if details != nil {
+		result.Details = details
+	}
+	return result, nil
 }
 
 func resolvePath(cwd, toolPath string) (string, error) {
