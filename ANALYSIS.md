@@ -1771,6 +1771,62 @@ Results:
 - Go build passed
 - full Go suite passed
 
+## Follow-up MCP per-tool provenance step (origin layer + layer freshness on tool records)
+The next refinement was to stop forcing clients to infer per-tool provenance from only the top-level bridge metadata.
+
+### The ambiguity before this step
+Before this step:
+- bridge metadata could describe the freshness of base inventory, persisted runtime overlay, and live runtime overlay at a summary level
+- but an individual tool record still did not directly say which layer it came from
+
+That made it harder for dashboard/UI consumers to explain things like:
+- why this specific tool is present
+- whether this specific tool came from base inventory, persisted runtime overlay, or live runtime overlay
+- which freshness timestamp/staleness heuristic actually applies to this specific tool
+
+### What changed
+- updated `go/internal/httpapi/mcp_inventory_fallback.go`
+  - introduced per-tool layer metadata mapping via `inventoryToolLayerMeta(...)`
+  - individual fallback tool records now carry fields such as:
+    - `originLayer`
+    - `layerCachedAt`
+    - `layerAgeMs`
+    - `layerStaleHeuristic`
+- applied that per-tool metadata uniformly across:
+  - `fallbackMCPInventoryTools(...)`
+  - `fallbackSearchMCPInventoryTools(...)`
+  - `fallbackControlToolsFromInventory(...)`
+- expanded `go/internal/httpapi/server_test.go`
+  - fallback tests now verify per-tool origin-layer fields for:
+    - base inventory tools
+    - persisted runtime overlay tools
+    - live runtime overlay tools
+
+### Important truthfulness note
+What is true now:
+- each fallback tool record now states which origin layer it came from
+- each fallback tool record now carries the freshness timestamp and stale heuristic for that specific layer
+- consumers no longer need to guess per-tool provenance from only response-level summary metadata
+
+What is still not true yet:
+- per-tool provenance is still derived from the current cache/view model, not from a fully authoritative lifecycle ledger
+- layer stale heuristics are still heuristics, not definitive correctness signals
+- this improves inspectability, not full MCP lifecycle parity
+
+### Validation performed for this MCP per-tool provenance step
+```bash
+gofmt -w go/internal/httpapi/mcp_inventory_fallback.go go/internal/httpapi/server_test.go
+cd go && go test ./internal/httpapi ./internal/mcp
+cd go && go build -buildvcs=false ./cmd/hypercode
+cd go && go test ./...
+```
+
+Results:
+- targeted httpapi tests passed
+- targeted mcp tests passed
+- Go build passed
+- full Go suite passed
+
 ## Bottom line
 This pass meaningfully strengthened the **Go-primary migration path** and improved TypeScript survivability while the migration continues:
 - broader provider routing
@@ -1814,6 +1870,7 @@ This pass meaningfully strengthened the **Go-primary migration path** and improv
 - canonical MCP metadata-tool normalization is now shared between JSONC metadata handling, inventory-cache generation, runtime overlay inventory views, and live metadata refresh serialization
 - the canonical MCP cache file now persists the durable subset of successful runtime overlay tool metadata and fallback responses distinguish persisted-vs-live runtime overlay counts
 - cache-backed fallback responses now expose per-layer age and stale heuristics for base inventory, persisted runtime overlay, and live runtime overlay
+- individual fallback tool records now carry origin-layer and layer freshness metadata so clients can explain per-tool provenance directly
 - a tested Go-native replacement path for multiple TS-owned persistence surfaces, even though mixed-runtime cleanup is not fully finished yet
 - a small but real Maestro UX fix
 

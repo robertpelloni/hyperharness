@@ -309,6 +309,32 @@ func inventoryToolSource(view *localMCPInventoryView, serverName string) string 
 	return view.InventorySource
 }
 
+func inventoryToolLayerMeta(view *localMCPInventoryView, serverName string) map[string]any {
+	source := inventoryToolSource(view, serverName)
+	layer := "base-inventory"
+	timestamp := ""
+	staleAfter := 24 * time.Hour
+	switch source {
+	case "go-persisted-runtime-overlay":
+		layer = "persisted-runtime-overlay"
+		timestamp = view.PersistedOverlayCheckedAt
+		staleAfter = 15 * time.Minute
+	case "go-runtime-registry":
+		layer = "live-runtime-overlay"
+		timestamp = view.LiveOverlayCheckedAt
+		staleAfter = 15 * time.Minute
+	default:
+		timestamp = view.CachedAt
+	}
+	meta := map[string]any{
+		"originLayer": layer,
+	}
+	for key, value := range freshnessBridgeMeta("layer", timestamp, staleAfter) {
+		meta[key] = value
+	}
+	return meta
+}
+
 func fallbackMCPInventoryTools(view *localMCPInventoryView) []map[string]any {
 	if view == nil {
 		return []map[string]any{}
@@ -316,7 +342,7 @@ func fallbackMCPInventoryTools(view *localMCPInventoryView) []map[string]any {
 	tools := normalizedInventoryTools(view.Inventory)
 	result := make([]map[string]any, 0, len(tools))
 	for _, tool := range tools {
-		result = append(result, map[string]any{
+		item := map[string]any{
 			"name":              tool.Name,
 			"description":       tool.Description,
 			"server":            tool.Server,
@@ -324,7 +350,11 @@ func fallbackMCPInventoryTools(view *localMCPInventoryView) []map[string]any {
 			"source":            inventoryToolSource(view, tool.Server),
 			"availability":      "cache-backed",
 			"inventoryCachedAt": nullableString(view.CachedAt),
-		})
+		}
+		for key, value := range inventoryToolLayerMeta(view, tool.Server) {
+			item[key] = value
+		}
+		result = append(result, item)
 	}
 	return result
 }
@@ -336,7 +366,7 @@ func fallbackSearchMCPInventoryTools(query string, view *localMCPInventoryView, 
 	ranked := mcp.RankTools(query, normalizedInventoryTools(view.Inventory), limit)
 	results := make([]map[string]any, 0, len(ranked))
 	for _, item := range ranked {
-		results = append(results, map[string]any{
+		result := map[string]any{
 			"name":              normalizedInventoryToolName(item.ToolEntry),
 			"server":            item.Server,
 			"alwaysShow":        item.AlwaysOn,
@@ -344,7 +374,11 @@ func fallbackSearchMCPInventoryTools(query string, view *localMCPInventoryView, 
 			"score":             item.Score,
 			"source":            inventoryToolSource(view, item.Server),
 			"inventoryCachedAt": nullableString(view.CachedAt),
-		})
+		}
+		for key, value := range inventoryToolLayerMeta(view, item.Server) {
+			result[key] = value
+		}
+		results = append(results, result)
 	}
 	return results
 }
@@ -368,7 +402,7 @@ func fallbackControlToolsFromInventory(view *localMCPInventoryView) []map[string
 				schemaParamCount = len(properties)
 			}
 		}
-		result = append(result, map[string]any{
+		item := map[string]any{
 			"uuid":              tool.Name,
 			"name":              tool.Name,
 			"description":       nullableString(tool.Description),
@@ -380,7 +414,11 @@ func fallbackControlToolsFromInventory(view *localMCPInventoryView) []map[string
 			"always_on":         tool.AlwaysOn,
 			"source":            inventoryToolSource(view, tool.Server),
 			"inventoryCachedAt": nullableString(view.CachedAt),
-		})
+		}
+		for key, value := range inventoryToolLayerMeta(view, tool.Server) {
+			item[key] = value
+		}
+		result = append(result, item)
 	}
 	return result
 }
