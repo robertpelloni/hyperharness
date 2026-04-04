@@ -41,8 +41,9 @@ Deliver a Go-native harness that can truthfully grow from a Pi-derived foundatio
 
 ### Workstream 5: HyperCode integration
 - [x] Initial HyperCode/Borg adapter seam with status/config visibility
-- [ ] Provider adapter layer
-- [ ] MCP adapter layer
+- [x] Initial provider adapter seam with config/env visibility
+- [ ] Provider routing adapter layer
+- [ ] MCP execution adapter layer
 - [ ] Memory/session import bridges
 - [ ] Operator telemetry surfaces
 - [ ] Mesh/capability discovery integration
@@ -81,6 +82,7 @@ Deliver a Go-native harness that can truthfully grow from a Pi-derived foundatio
 
 ### Milestone 3: HyperCode-native substrate
 - [x] first adapter seam for Borg memory/MCP config visibility
+- [x] first provider visibility seam
 - [ ] provider routing via HyperCode
 - [ ] MCP inventory/runtime via HyperCode
 - [ ] memory/session continuity via HyperCode

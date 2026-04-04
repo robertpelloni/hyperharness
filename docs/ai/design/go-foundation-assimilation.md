@@ -99,6 +99,7 @@ Purpose: define and exercise the integration seam between the Go harness and Hyp
 
 Responsibilities:
 - expose Borg memory/context status cleanly to the harness
+- expose provider configuration/status cleanly to the harness
 - expose MCP configuration visibility without duplicating MCP control-plane logic
 - discover adjacent HyperCode workspaces where available
 - provide a stable adapter boundary before deeper provider/MCP routing integration
@@ -178,6 +179,6 @@ Add contract and snapshot tests for each feature family.
 ## Recommended Next Technical Moves
 1. Continue routing existing top-level placeholder command and orchestration surfaces to the new `foundation/pi` runtime.
 2. Deepen `foundation/repomap` from lightweight graph groundwork toward fuller graph/LSP-aware ranking and port richer edit engines.
-3. Expand `foundation/adapters` from status/config seams into real HyperCode-backed provider and MCP adapters.
+3. Expand `foundation/adapters` from status/config seams into real HyperCode-backed provider routing and MCP execution adapters.
 4. Expand verified snapshot-style contract tests for tool outputs and CLI behaviors.
 5. Add verification, delegation, and background session services.

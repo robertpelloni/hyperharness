@@ -23,6 +23,9 @@ func TestHyperCodeAdapterBuildsStatusWithoutPanicking(t *testing.T) {
 	if status.MemoryContext == "" {
 		t.Fatal("expected memory context")
 	}
+	if status.Provider.CurrentProvider == "" {
+		t.Fatal("expected provider status")
+	}
 	if status.HyperCodeRepoPath == "" {
 		t.Fatal("expected discovered hypercode repo path")
 	}

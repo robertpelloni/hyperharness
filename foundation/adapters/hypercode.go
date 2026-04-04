@@ -12,13 +12,14 @@ import (
 )
 
 type HyperCodeStatus struct {
-	Assimilated       bool     `json:"assimilated"`
-	BorgCoreURL       string   `json:"borgCoreUrl,omitempty"`
-	MemoryContext     string   `json:"memoryContext,omitempty"`
-	MCPServerNames    []string `json:"mcpServerNames,omitempty"`
-	MCPConfigPath     string   `json:"mcpConfigPath,omitempty"`
-	HyperCodeRepoPath string   `json:"hypercodeRepoPath,omitempty"`
-	Warnings          []string `json:"warnings,omitempty"`
+	Assimilated       bool           `json:"assimilated"`
+	BorgCoreURL       string         `json:"borgCoreUrl,omitempty"`
+	MemoryContext     string         `json:"memoryContext,omitempty"`
+	Provider          ProviderStatus `json:"provider"`
+	MCPServerNames    []string       `json:"mcpServerNames,omitempty"`
+	MCPConfigPath     string         `json:"mcpConfigPath,omitempty"`
+	HyperCodeRepoPath string         `json:"hypercodeRepoPath,omitempty"`
+	Warnings          []string       `json:"warnings,omitempty"`
 }
 
 type HyperCodeAdapter struct {
@@ -40,6 +41,7 @@ func (a *HyperCodeAdapter) Status() HyperCodeStatus {
 	status := HyperCodeStatus{
 		Assimilated:   a.borgAdapter != nil && a.borgAdapter.Assimilated,
 		MemoryContext: a.MemoryContext(),
+		Provider:      BuildProviderStatus(),
 	}
 	if a.borgAdapter != nil {
 		status.BorgCoreURL = a.borgAdapter.BorgCoreURL
@@ -83,6 +85,9 @@ func (a *HyperCodeAdapter) BuildSystemContext() string {
 	}
 	if status.MemoryContext != "" {
 		parts = append(parts, status.MemoryContext)
+	}
+	if len(status.Provider.Available) > 0 {
+		parts = append(parts, BuildProviderContext())
 	}
 	if len(status.MCPServerNames) > 0 {
 		parts = append(parts, fmt.Sprintf("Configured MCP servers: %s", strings.Join(status.MCPServerNames, ", ")))

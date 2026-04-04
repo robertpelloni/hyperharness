@@ -59,6 +59,7 @@ go test ./...
 - `foundation/pi/tool_snapshot_test.go`
 - `foundation/repomap/repomap_test.go`
 - `foundation/adapters/hypercode_test.go`
+- `foundation/adapters/providers_test.go`
 - `tools/registry_test.go`
 - `agent/agent_test.go`
 
@@ -67,7 +68,7 @@ go test ./...
 2. more tool contract schema/result snapshot tests
 3. more truncation and image-path edge-case tests for `read` and `bash`
 4. JSON/RPC transport tests
-5. compatibility tests against richer HyperCode-backed adapters
+5. compatibility tests against richer HyperCode-backed provider/MCP adapters
 6. richer top-level `agent` integration tests around exact-schema tool registration and tool-call loops
 
 ## Exit criteria for the next milestone
