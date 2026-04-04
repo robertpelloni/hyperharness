@@ -14,6 +14,7 @@ Deliver a Go-native harness that can truthfully grow from a Pi-derived foundatio
 - [ ] Implement settings, themes, prompt templates, and skills
 - [ ] Implement extension runtime surface
 - [ ] Implement TUI/editor parity
+- [x] Route top-level tool registry and agent tool schemas onto native exact-name foundation tools
 
 ### Workstream 2: Exact tool compatibility
 - [x] Create central tool contract registry
@@ -66,6 +67,7 @@ Deliver a Go-native harness that can truthfully grow from a Pi-derived foundatio
 - [x] session persistence
 - [ ] JSON/RPC surface
 - [x] contract tests for the default harness
+- [x] top-level registry/agent surfaces now use native per-tool schemas for the default exact-name tools
 
 ### Milestone 2: Context and editing superiority
 - [x] first native Aider-inspired repo map baseline

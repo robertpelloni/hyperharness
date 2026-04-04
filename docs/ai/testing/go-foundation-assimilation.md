@@ -57,6 +57,7 @@ go test ./...
 - `foundation/pi/session_test.go`
 - `foundation/pi/tool_parity_test.go`
 - `foundation/repomap/repomap_test.go`
+- `tools/registry_test.go`
 
 ## Tests that should be added next
 1. `cmd/foundation` smoke tests
@@ -64,6 +65,7 @@ go test ./...
 3. more truncation and image-path edge-case tests for `read` and `bash`
 4. JSON/RPC transport tests
 5. compatibility tests against bridged HyperCode-backed adapters
+6. top-level `agent` integration tests around exact-schema tool registration
 
 ## Exit criteria for the next milestone
 - foundation packages compile cleanly,

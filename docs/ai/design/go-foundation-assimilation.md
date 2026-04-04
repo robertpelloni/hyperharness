@@ -118,6 +118,8 @@ We are not porting line-by-line. We are reproducing observable capability with a
 ### Principle 2: Exact tool names are first-class data
 Tool compatibility should not be implicit in code spread across packages. It should live in an explicit registry.
 
+This now applies both to the foundation packages and to the top-level Go agent/tool registry surfaces: the top-level agent should consume per-tool schemas from the native compatibility registry instead of inventing a single placeholder schema.
+
 ### Principle 3: Native first, bridge second, never lie
 Every imported feature should be labeled as:
 - bridged via HyperCode or another substrate,
@@ -162,7 +164,7 @@ Add contract and snapshot tests for each feature family.
 - current orchestration and TUI layers are not yet backed by a truthful native core.
 
 ## Recommended Next Technical Moves
-1. Route existing top-level placeholder command and orchestration surfaces to the new `foundation/pi` runtime.
+1. Continue routing existing top-level placeholder command and orchestration surfaces to the new `foundation/pi` runtime.
 2. Deepen `foundation/repomap` toward graph/LSP-aware ranking and port richer edit engines.
 3. Add HyperCode-backed provider and MCP adapters behind stable interfaces.
 4. Add verified snapshot-style contract tests for tool outputs.

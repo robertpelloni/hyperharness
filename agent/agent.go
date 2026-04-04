@@ -32,7 +32,7 @@ func NewAgent() *Agent {
 		messages: []openai.ChatCompletionMessage{
 			{
 				Role:    openai.ChatMessageRoleSystem,
-				Content: "You are Hypercode (formerly SuperCLI), the world's most advanced AI CLI assistant. You have full feature parity with Aider, Claude Code, and Open Interpreter. You can: 1) Execute shell commands. 2) Read/Write files. 3) Use a stateful Code Interpreter for Python/Node.js. 4) Search the codebase. 5) View an AST-lite Repository Map. Use these tools aggressively to solve the user's problems. You are ASSIMILATED by Borg for memory and context management.",
+				Content: "You are Hypercode, a Go-native coding and terminal assistant integrated with Borg and HyperCode. Prefer the exact-name Pi-compatible tools read, write, edit, and bash when solving coding tasks. Use repomap for repository-wide context when a condensed map would help. Additional legacy tools may exist for compatibility, but exact-contract tools are preferred.",
 			},
 		},
 		tools:       registry,
@@ -41,22 +41,14 @@ func NewAgent() *Agent {
 }
 
 func (a *Agent) buildOpenAITools() []openai.Tool {
-	var openAITools []openai.Tool
+	openAITools := make([]openai.Tool, 0, len(a.tools.Tools))
 	for _, t := range a.tools.Tools {
-		// Using a simplified schema for demonstration
 		openAITools = append(openAITools, openai.Tool{
 			Type: openai.ToolTypeFunction,
 			Function: &openai.FunctionDefinition{
 				Name:        t.Name,
 				Description: t.Description,
-				Parameters: json.RawMessage(`{
-					"type": "object",
-					"properties": {
-						"command": { "type": "string" },
-						"file_path": { "type": "string" },
-						"content": { "type": "string" }
-					}
-				}`),
+				Parameters:  append(json.RawMessage(nil), t.Parameters...),
 			},
 		})
 	}
@@ -95,19 +87,28 @@ func (a *Agent) handleToolCalls(toolCalls []openai.ToolCall) (string, error) {
 
 	for _, tc := range toolCalls {
 		var args map[string]interface{}
-		json.Unmarshal([]byte(tc.Function.Arguments), &args)
+		_ = json.Unmarshal([]byte(tc.Function.Arguments), &args)
 
 		var toolResult string
+		found := false
 		for _, t := range a.tools.Tools {
 			if t.Name == tc.Function.Name {
+				found = true
 				out, err := t.Execute(args)
 				if err != nil {
-					toolResult = fmt.Sprintf("Error executing %s: %v", t.Name, err)
+					if out != "" {
+						toolResult = out
+					} else {
+						toolResult = fmt.Sprintf("Error executing %s: %v", t.Name, err)
+					}
 				} else {
 					toolResult = out
 				}
 				break
 			}
+		}
+		if !found {
+			toolResult = fmt.Sprintf("Unknown tool: %s", tc.Function.Name)
 		}
 
 		a.messages = append(a.messages, openai.ChatCompletionMessage{
@@ -120,7 +121,6 @@ func (a *Agent) handleToolCalls(toolCalls []openai.ToolCall) (string, error) {
 		resultSummary += fmt.Sprintf("Executed tool %s\n", tc.Function.Name)
 	}
 
-	// Recurse to get the model's final response after tool execution
 	req := openai.ChatCompletionRequest{
 		Model:    openai.GPT4o,
 		Messages: a.messages,

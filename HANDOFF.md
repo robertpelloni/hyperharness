@@ -16,13 +16,17 @@
   - lightweight symbol extraction
   - deterministic `<repo_map>` output
   - `hypercode foundation repomap`
+- Routed top-level tool registration closer to the new foundation:
+  - `tools.Registry` now exposes exact-name native Pi-compatible tools from `foundation/pi`
+  - `agent.Agent` now registers per-tool schemas instead of one placeholder schema
+  - legacy `tools/repomap.go` now delegates to `foundation/repomap`
 - Added comprehensive `docs/ai/` documentation for requirements, design, planning, implementation, and testing.
 - Added `docs/ai/design/upstream-toolchain-analysis.md` summarizing the imported upstream systems and assimilation strategy.
 - Fixed the duplicate SQLite driver registration issue in `orchestrator/queue.go` and `orchestrator/vectors.go` by removing redundant `modernc.org/sqlite` imports.
 
 ## Validation completed
-- `gofmt -w cmd/foundation.go foundation/compat/types.go foundation/compat/catalog.go foundation/compat/default_catalog.go foundation/compat/catalog_test.go foundation/pi/foundation.go foundation/pi/foundation_test.go foundation/pi/runtime_types.go foundation/pi/runtime.go foundation/pi/runtime_test.go foundation/pi/session.go foundation/pi/session_test.go foundation/pi/tool_parity_test.go foundation/pi/tools_native.go foundation/assimilation/inventory.go foundation/assimilation/summary.go foundation/assimilation/inventory_test.go foundation/repomap/repomap.go foundation/repomap/repomap_test.go orchestrator/vectors.go orchestrator/queue.go`
-- `go test ./foundation/... ./cmd ./orchestrator`
+- `gofmt -w cmd/foundation.go foundation/compat/types.go foundation/compat/catalog.go foundation/compat/default_catalog.go foundation/compat/catalog_test.go foundation/pi/foundation.go foundation/pi/foundation_test.go foundation/pi/runtime_types.go foundation/pi/runtime.go foundation/pi/runtime_test.go foundation/pi/session.go foundation/pi/session_test.go foundation/pi/tool_parity_test.go foundation/pi/tools_native.go foundation/assimilation/inventory.go foundation/assimilation/summary.go foundation/assimilation/inventory_test.go foundation/repomap/repomap.go foundation/repomap/repomap_test.go tools/registry.go tools/repomap.go tools/registry_test.go agent/agent.go orchestrator/vectors.go orchestrator/queue.go`
+- `go test ./foundation/... ./cmd ./orchestrator ./tools ./agent`
 - `go run . foundation tools`
 - `go run . foundation inventory`
 - `go run . foundation repomap --dir foundation --max-files 5`
@@ -36,7 +40,7 @@
 - Many existing Go packages still contain placeholder or aspirational parity logic and should be migrated to the new `foundation/*` packages over time.
 
 ## Recommended next steps
-1. Route existing top-level placeholder orchestration/tool surfaces onto the new `foundation/pi` runtime.
+1. Continue routing remaining top-level placeholder orchestration/tool surfaces onto the new `foundation/pi` runtime.
 2. Add verified result-shape and snapshot tests for `read`, `write`, `edit`, and `bash`.
 3. Deepen `foundation/repomap` toward Aider-style graph ranking and port richer edit engines.
 4. Add HyperCode/Borg adapters for provider routing, memory, and MCP runtime access.

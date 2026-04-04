@@ -60,6 +60,21 @@
 - `foundation/repomap/repomap_test.go`
   - repo map output and ranking validation
 
+- `tools/registry.go`
+  - top-level tool registry now exposes exact-name Pi-compatible tools via the native foundation runtime
+  - repomap is available from the legacy registry surface as a native foundation-backed tool
+  - tool schemas are now forwarded instead of using one placeholder schema for every tool
+
+- `tools/repomap.go`
+  - legacy wrapper now delegates to `foundation/repomap`
+
+- `agent/agent.go`
+  - top-level agent now advertises the native exact-name tools preferentially
+  - OpenAI tool registration now uses per-tool schemas instead of one fake generic schema
+
+- `tools/registry_test.go`
+  - verifies exact Pi tools and repomap are present in the registry
+
 ### Documentation
 - requirements, design, planning, implementation, and testing documents under `docs/ai/`
 
@@ -94,9 +109,10 @@ These issues were observed and documented, not silently ignored or misrepresente
 - ordered runtime event tests
 - parity/truncation tests for `read` and `bash`
 - repo map generation and ranking tests
+- top-level tool registry tests confirming native exact-name tool exposure
 
 ## Recommended next implementation sequence
-1. route existing top-level placeholder orchestration/tool paths to `foundation/pi` runtime packages,
+1. continue routing remaining top-level placeholder orchestration surfaces to `foundation/pi` runtime packages,
 2. add contract-result verification and snapshot tests for the default tool set,
 3. deepen repo-map ranking toward Aider-style graph semantics and add edit strategies,
 4. add HyperCode/Borg provider and MCP adapters,
