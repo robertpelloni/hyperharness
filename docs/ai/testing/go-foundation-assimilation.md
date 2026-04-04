@@ -55,11 +55,13 @@ go test ./...
 - `foundation/pi/foundation_test.go`
 - `foundation/pi/runtime_test.go`
 - `foundation/pi/session_test.go`
+- `foundation/pi/tool_parity_test.go`
+- `foundation/repomap/repomap_test.go`
 
 ## Tests that should be added next
 1. `cmd/foundation` smoke tests
 2. tool contract schema/result snapshot tests
-3. truncation edge-case tests for `read` and `bash`
+3. more truncation and image-path edge-case tests for `read` and `bash`
 4. JSON/RPC transport tests
 5. compatibility tests against bridged HyperCode-backed adapters
 
@@ -69,4 +71,5 @@ go test ./...
 - CLI inspection and execution commands are covered,
 - default tool contracts are backed by real implementations,
 - session persistence is stable under create/list/load/fork flows,
+- repo-map output is stable enough for deterministic tests,
 - maturity labels are truthful and enforced by tests.

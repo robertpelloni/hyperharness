@@ -54,13 +54,16 @@ Current responsibilities:
 - run-event vocabulary
 - built-in tool definitions
 - default foundation spec
+- native default tool execution (`read`, `write`, `edit`, `bash`)
+- JSONL-backed session persistence and fork support
+- evented runtime execution baseline
 
 Future responsibilities:
-- actual Go agent runtime
-- session model
+- richer Go agent runtime
 - extension host API
 - prompt template runtime
 - settings loader and migration
+- JSON/RPC transport layer
 
 ### 2. `foundation/compat`
 Purpose: preserve exact model-facing tool contracts.
@@ -80,7 +83,17 @@ Responsibilities:
 - assimilation strategy per source
 - future: per-feature port map and parity scoreboard
 
-### 4. HyperCode integration boundary
+### 4. `foundation/repomap`
+Purpose: provide a native context-condensation layer inspired by Aider-style repo maps.
+
+Responsibilities:
+- scan and rank source files
+- prioritize mentioned files and identifiers
+- extract lightweight symbol summaries
+- emit deterministic `<repo_map>` output for the harness
+- provide the first step toward richer graph-based context ranking
+
+### 5. HyperCode integration boundary
 HyperCode should be treated as an external-but-local substrate.
 
 Responsibilities retained by HyperCode:
@@ -134,8 +147,12 @@ Add contract and snapshot tests for each feature family.
 
 ## Current Foundation Artifacts Added in This Phase
 - `foundation/pi/foundation.go`
+- `foundation/pi/runtime*.go`
+- `foundation/pi/session*.go`
+- `foundation/pi/tools_native.go`
 - `foundation/compat/*`
 - `foundation/assimilation/*`
+- `foundation/repomap/*`
 - `cmd/foundation.go`
 
 ## Baseline Risks Observed
@@ -145,8 +162,8 @@ Add contract and snapshot tests for each feature family.
 - current orchestration and TUI layers are not yet backed by a truthful native core.
 
 ## Recommended Next Technical Moves
-1. Implement a real session store and evented agent runtime under `foundation/pi`.
-2. Port Aider-style repo map and edit engines into a dedicated context package.
+1. Route existing top-level placeholder command and orchestration surfaces to the new `foundation/pi` runtime.
+2. Deepen `foundation/repomap` toward graph/LSP-aware ranking and port richer edit engines.
 3. Add HyperCode-backed provider and MCP adapters behind stable interfaces.
-4. Replace placeholder tools with native implementations plus contract tests.
+4. Add verified snapshot-style contract tests for tool outputs.
 5. Add verification, delegation, and background session services.

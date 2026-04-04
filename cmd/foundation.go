@@ -10,6 +10,7 @@ import (
 	"github.com/robertpelloni/hypercode/foundation/assimilation"
 	"github.com/robertpelloni/hypercode/foundation/compat"
 	foundationpi "github.com/robertpelloni/hypercode/foundation/pi"
+	"github.com/robertpelloni/hypercode/foundation/repomap"
 	"github.com/spf13/cobra"
 )
 
@@ -90,6 +91,35 @@ var foundationExecCmd = &cobra.Command{
 			return err
 		}
 		return execErr
+	},
+}
+
+var foundationRepomapCmd = &cobra.Command{
+	Use:   "repomap",
+	Short: "Generate a native ranked repo map inspired by Aider-style context condensation",
+	RunE: func(cmd *cobra.Command, args []string) error {
+		baseDir, _ := cmd.Flags().GetString("dir")
+		mentionedFiles, _ := cmd.Flags().GetStringSlice("mention-file")
+		mentionedIdents, _ := cmd.Flags().GetStringSlice("mention-ident")
+		maxFiles, _ := cmd.Flags().GetInt("max-files")
+		includeTests, _ := cmd.Flags().GetBool("include-tests")
+		result, err := repomap.Generate(repomap.Options{
+			BaseDir:         baseDir,
+			MentionedFiles:  mentionedFiles,
+			MentionedIdents: mentionedIdents,
+			MaxFiles:        maxFiles,
+			IncludeTests:    includeTests,
+		})
+		if err != nil {
+			return err
+		}
+		if asJSON, _ := cmd.Flags().GetBool("json"); asJSON {
+			enc := json.NewEncoder(os.Stdout)
+			enc.SetIndent("", "  ")
+			return enc.Encode(result)
+		}
+		_, err = fmt.Fprintln(os.Stdout, result.Map)
+		return err
 	},
 }
 
@@ -181,6 +211,12 @@ var foundationSessionForkCmd = &cobra.Command{
 
 func init() {
 	foundationInventoryCmd.Flags().Bool("json", false, "emit JSON")
+	foundationRepomapCmd.Flags().String("dir", ".", "base directory to scan")
+	foundationRepomapCmd.Flags().StringSlice("mention-file", nil, "files to prioritize in ranking")
+	foundationRepomapCmd.Flags().StringSlice("mention-ident", nil, "identifiers to prioritize in ranking")
+	foundationRepomapCmd.Flags().Int("max-files", 40, "maximum files to include in output")
+	foundationRepomapCmd.Flags().Bool("include-tests", false, "include test/spec files")
+	foundationRepomapCmd.Flags().Bool("json", false, "emit JSON")
 	foundationExecCmd.Flags().String("tool", "", "tool name to execute")
 	foundationExecCmd.Flags().String("input", "{}", "tool input as JSON")
 	foundationExecCmd.Flags().String("session", "", "optional session id to append tool execution to")
@@ -202,6 +238,7 @@ func init() {
 	foundationCmd.AddCommand(foundationInventoryCmd)
 	foundationCmd.AddCommand(foundationSpecCmd)
 	foundationCmd.AddCommand(foundationToolsCmd)
+	foundationCmd.AddCommand(foundationRepomapCmd)
 	foundationCmd.AddCommand(foundationExecCmd)
 	foundationCmd.AddCommand(foundationSessionCmd)
 	rootCmd.AddCommand(foundationCmd)

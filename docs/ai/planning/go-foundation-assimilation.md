@@ -20,10 +20,11 @@ Deliver a Go-native harness that can truthfully grow from a Pi-derived foundatio
 - [x] Add contract tests for default tools
 - [x] Add native implementations for compatibility-critical tools
 - [ ] Add source-specific tool compatibility packs
-- [ ] Add verified parity snapshots
+- [x] Add first verified parity/truncation tests for default tools
 
 ### Workstream 3: Context and editing quality
-- [ ] Port repo map / code graph context
+- [x] Port first native repo map baseline
+- [ ] Port code graph context ranking closer to Aider pagerank semantics
 - [ ] Port multiple edit strategies
 - [ ] Add semantic retrieval and memory-aware context assembly
 - [ ] Add verification-aware code modification loop
@@ -67,10 +68,10 @@ Deliver a Go-native harness that can truthfully grow from a Pi-derived foundatio
 - [x] contract tests for the default harness
 
 ### Milestone 2: Context and editing superiority
-- Aider-style repo map
-- code graph / LSP-assisted context assembly
-- multiple edit modes
-- verification-aware edit pipeline
+- [x] first native Aider-inspired repo map baseline
+- [ ] code graph / LSP-assisted context assembly
+- [ ] multiple edit modes
+- [ ] verification-aware edit pipeline
 
 ### Milestone 3: HyperCode-native substrate
 - provider routing via HyperCode
