@@ -16231,18 +16231,16 @@ func (s *Server) localAvailableMCPTools() (map[string]localMCPTool, error) {
 	for _, server := range servers {
 		serverName := stringValue(server["name"])
 		meta, _ := server["_meta"].(map[string]any)
-		toolList, _ := meta["tools"].([]any)
-		for _, rawTool := range toolList {
-			toolMap, _ := rawTool.(map[string]any)
-			name := strings.TrimSpace(stringValue(toolMap["name"]))
+		for _, tool := range mcp.MetadataToolsFromAny(meta["tools"]) {
+			name := strings.TrimSpace(tool.Name)
 			if name == "" {
 				continue
 			}
 			available[name] = localMCPTool{
 				Name:        name,
-				Description: stringValue(toolMap["description"]),
-				InputSchema: toolMap["inputSchema"],
-				AlwaysOn:    boolValue(toolMap["alwaysOn"]) || boolValue(server["always_on"]),
+				Description: tool.Description,
+				InputSchema: tool.InputSchema,
+				AlwaysOn:    tool.AlwaysOn || boolValue(server["always_on"]),
 				ServerName:  serverName,
 				Source:      "jsonc-metadata",
 			}
@@ -16374,14 +16372,15 @@ func (s *Server) tryProbeConfiguredServerMetadata(entry map[string]any, mode str
 		return nil, "", err
 	}
 	now := time.Now().UTC().Format(time.RFC3339)
-	tools := make([]any, 0, len(listResult.Tools))
+	metadataTools := make([]mcp.MetadataTool, 0, len(listResult.Tools))
 	for _, tool := range listResult.Tools {
-		tools = append(tools, map[string]any{
-			"name":        tool.Name,
-			"description": tool.Description,
-			"inputSchema": tool.InputSchema,
+		metadataTools = append(metadataTools, mcp.MetadataTool{
+			Name:        tool.Name,
+			Description: tool.Description,
+			InputSchema: tool.InputSchema,
 		})
 	}
+	tools := mcp.MetadataToolsToAny(metadataTools)
 	meta := map[string]any{
 		"status":                     "ready",
 		"metadataVersion":            2,
@@ -16407,13 +16406,11 @@ func inspectConfiguredServerMetadata(entry map[string]any, mode string) (map[str
 	for key, value := range existingMeta {
 		meta[key] = value
 	}
-	tools, _ := meta["tools"].([]any)
-	if tools == nil {
-		tools = []any{}
-	}
+	metadataTools := mcp.MetadataToolsFromAny(meta["tools"])
+	tools := mcp.MetadataToolsToAny(metadataTools)
 	toolCount := intNumber(meta["toolCount"])
-	if len(tools) > 0 {
-		toolCount = len(tools)
+	if len(metadataTools) > 0 {
+		toolCount = len(metadataTools)
 	}
 	reloadableFromCache := toolCount > 0
 	status := "configured"

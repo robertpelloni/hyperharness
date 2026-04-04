@@ -135,15 +135,12 @@ func loadLiveInventory(workspaceRoot, mainConfigDir string) (*Inventory, error) 
 			inventory.Servers = append(inventory.Servers, sEntry)
 
 			for _, tool := range server.Meta.Tools {
-				inventory.Tools = append(inventory.Tools, ToolEntry{
-					Name:              name + "__" + tool.Name,
-					Description:       tool.Description,
-					Server:            name,
-					ServerDisplayName: name,
-					AdvertisedName:    name + "__" + tool.Name,
-					OriginalName:      tool.Name,
-					InputSchema:       tool.InputSchema,
-				})
+				inventory.Tools = append(inventory.Tools, ToolEntryFromMetadata(name, MetadataTool{
+					Name:        tool.Name,
+					Description: tool.Description,
+					InputSchema: tool.InputSchema,
+					AlwaysOn:    tool.AlwaysOn,
+				}))
 			}
 		}
 		inventory.Source = "config"
@@ -224,6 +221,7 @@ type configServer struct {
 			Name        string      `json:"name"`
 			Description string      `json:"description"`
 			InputSchema interface{} `json:"inputSchema"`
+			AlwaysOn    bool        `json:"alwaysOn"`
 		} `json:"tools"`
 	} `json:"_meta"`
 }

@@ -89,20 +89,12 @@ func (v *localMCPInventoryView) applyRuntimeOverlay(records []runtimeServerRecor
 			v.RuntimeOverlayServerCount++
 		}
 		v.ServerSources[record.Name] = record.Source
-		for _, rawTool := range record.Tools {
-			name := strings.TrimSpace(stringValue(rawTool["name"]))
+		for _, tool := range mcp.MetadataToolsFromAny(genericAnySlice(record.Tools)) {
+			name := strings.TrimSpace(tool.Name)
 			if name == "" {
 				continue
 			}
-			entry := mcp.ToolEntry{
-				Name:              record.Name + "__" + name,
-				Description:       stringValue(rawTool["description"]),
-				Server:            record.Name,
-				ServerDisplayName: record.Name,
-				AdvertisedName:    record.Name + "__" + name,
-				OriginalName:      name,
-				InputSchema:       rawTool["inputSchema"],
-			}
+			entry := mcp.ToolEntryFromMetadata(record.Name, tool)
 			toolKey := record.Name + "::" + name
 			if index, ok := toolIndex[toolKey]; ok {
 				v.Inventory.Tools[index] = entry
@@ -165,9 +157,22 @@ func inventoryBridgeMeta(view *localMCPInventoryView) map[string]any {
 		"cachedAt":                  nullableString(view.CachedAt),
 		"cachePath":                 view.CachePath,
 		"cachePresent":              view.CachePresent,
+		"cacheAuthority":            "go-local-live-sync",
+		"metadataAuthority":         "mcp.jsonc",
 		"runtimeOverlayServerCount": view.RuntimeOverlayServerCount,
 		"runtimeOverlayToolCount":   view.RuntimeOverlayToolCount,
 	}
+}
+
+func genericAnySlice(items []map[string]any) []any {
+	if len(items) == 0 {
+		return []any{}
+	}
+	result := make([]any, 0, len(items))
+	for _, item := range items {
+		result = append(result, item)
+	}
+	return result
 }
 
 func inventoryToolSource(view *localMCPInventoryView, serverName string) string {

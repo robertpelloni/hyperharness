@@ -1545,6 +1545,86 @@ Results:
 - Go build passed
 - full Go suite passed
 
+## Follow-up MCP model-unification step (shared canonical metadata-tool mapping)
+The next cleanup target was one of the remaining shape-divergence seams: the same conceptual MCP tool metadata was still being translated separately in multiple places.
+
+### The duplication problem
+Before this step:
+- JSONC `_meta.tools` handling had its own ad hoc normalization path
+- live-probe metadata refresh built tool objects manually
+- config-driven inventory generation built `ToolEntry` records manually
+- runtime overlay inventory generation built `ToolEntry` records manually
+- local available-tool resolution parsed raw JSONC tool maps manually
+
+Even when behavior looked correct, this kind of duplication creates subtle drift risk around fields like:
+- `alwaysOn`
+- `OriginalName`
+- `AdvertisedName`
+- `InputSchema`
+- name normalization / empty-name filtering
+
+### What changed
+- added `go/internal/mcp/metadata_tools.go`
+  - introduced shared canonical MCP metadata helpers:
+    - `MetadataTool`
+    - `MetadataToolsFromAny(...)`
+    - `MetadataToolsToAny(...)`
+    - `ToolEntryFromMetadata(...)`
+- updated `go/internal/mcp/inventory.go`
+  - config-backed inventory generation now uses the shared canonical metadata-tool helpers instead of bespoke `ToolEntry` assembly
+  - config-side `_meta.tools` parsing now also carries `alwaysOn`
+- updated `go/internal/httpapi/server.go`
+  - live stdio metadata refresh now serializes tool metadata through the shared canonical helper path
+  - JSONC metadata inspection now normalizes `_meta.tools` through the same canonical helper path before recomputing `toolCount` / cache semantics
+  - local available-tool resolution now parses `_meta.tools` through the same canonical metadata helper path
+- updated `go/internal/httpapi/mcp_inventory_fallback.go`
+  - runtime overlay inventory generation now builds fallback `ToolEntry` records through the shared canonical metadata helper path
+  - cache bridge metadata now also exposes explicit authority labels:
+    - `cacheAuthority: "go-local-live-sync"`
+    - `metadataAuthority: "mcp.jsonc"`
+- added `go/internal/mcp/metadata_tools_test.go`
+  - direct regression coverage for canonical metadata-tool normalization, encoding, and `ToolEntry` generation
+- expanded `go/internal/httpapi/server_test.go`
+  - cache-backed fallback tests now assert the explicit cache/metadata authority labels
+
+### Real issue found and fixed during this step
+This step uncovered a **test fragility** rather than a production logic bug.
+
+Issue:
+- `TestMCPLocalStatePersistence` relied on millisecond timestamp ordering between rapid tool-load operations
+- under faster execution, multiple operations could land in the same millisecond and make eviction ordering nondeterministic
+
+Fix:
+- made the test deterministic by spacing load/hydrate operations slightly instead of assuming unique millisecond timestamps
+
+### Why this matters
+This is a structural cleanup step that improves long-term cache correctness.
+
+What is true now:
+- JSONC metadata handling and inventory/cache generation now share a canonical metadata-tool mapping path
+- `alwaysOn` handling is more consistent across JSONC metadata, inventory cache generation, and fallback inventory views
+- fallback responses now state not only freshness but also cache/metadata authority labels
+- future MCP cache evolution has fewer parallel conversion paths to keep in sync
+
+What is still not true yet:
+- there is still not one single persisted MCP object model for every cache/metadata/runtime layer
+- runtime overlay persistence is still separate from canonical cache persistence
+- broader MCP runtime/session lifecycle parity is still incomplete
+
+### Validation performed for this MCP model-unification step
+```bash
+gofmt -w go/internal/mcp/metadata_tools.go go/internal/mcp/metadata_tools_test.go go/internal/mcp/inventory.go go/internal/httpapi/mcp_inventory_fallback.go go/internal/httpapi/server.go go/internal/httpapi/server_test.go
+cd go && go test ./internal/mcp ./internal/httpapi
+cd go && go build -buildvcs=false ./cmd/hypercode
+cd go && go test ./...
+```
+
+Results:
+- targeted mcp tests passed
+- targeted httpapi tests passed
+- Go build passed
+- full Go suite passed
+
 ## Bottom line
 This pass meaningfully strengthened the **Go-primary migration path** and improved TypeScript survivability while the migration continues:
 - broader provider routing
@@ -1585,6 +1665,7 @@ This pass meaningfully strengthened the **Go-primary migration path** and improv
 - native MCP inventory now has a Go-owned persisted cache layer via `mcp_inventory_cache.json`, and key MCP/control tool list/search fallbacks can recover from it
 - cache-backed MCP/control fallback responses now expose source/freshness metadata and can overlay runtime-registry live-probed tools into the operator-visible fallback inventory view
 - JSONC metadata save/mutation flows now actively resync `mcp_inventory_cache.json` from live sources so metadata clear/refresh actions do not preserve stale cached tool inventory
+- canonical MCP metadata-tool normalization is now shared between JSONC metadata handling, inventory-cache generation, runtime overlay inventory views, and live metadata refresh serialization
 - a tested Go-native replacement path for multiple TS-owned persistence surfaces, even though mixed-runtime cleanup is not fully finished yet
 - a small but real Maestro UX fix
 

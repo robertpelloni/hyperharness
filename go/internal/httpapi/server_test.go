@@ -1549,12 +1549,14 @@ func TestMCPLocalStatePersistence(t *testing.T) {
 		if _, _, ok := m1.loadTool(toolName, limits, available); !ok {
 			t.Fatalf("expected %s load to succeed", toolName)
 		}
+		time.Sleep(2 * time.Millisecond)
 	}
 	for _, toolName := range []string{"grep_search", "write_file", "search_tools"} {
 		if _, _, ok := m1.hydrateTool(toolName, limits, available); !ok {
 			t.Fatalf("expected %s hydrate to succeed", toolName)
 		}
 		m1.recordTelemetry(localMCPTelemetryEvent{Type: "hydrate", ToolName: toolName, Timestamp: time.Now().UTC().UnixMilli()})
+		time.Sleep(2 * time.Millisecond)
 	}
 
 	m2 := newLocalMCPStateManager(persistPath)
@@ -6078,7 +6080,7 @@ func TestToolEndpointsFallBackToPersistedInventoryCache(t *testing.T) {
 		{
 			name:     "control tools list",
 			path:     "/api/tools",
-			contains: []string{`"fallback":"go-local-mcp-inventory-cache"`, `"name":"search_tools"`, `"server":"cache-core"`, `"name":"runtime_search"`, `"server":"runtime-core"`, `"runtimeOverlayToolCount":1`, `"cachePresent":true`},
+			contains: []string{`"fallback":"go-local-mcp-inventory-cache"`, `"name":"search_tools"`, `"server":"cache-core"`, `"name":"runtime_search"`, `"server":"runtime-core"`, `"runtimeOverlayToolCount":1`, `"cachePresent":true`, `"cacheAuthority":"go-local-live-sync"`},
 		},
 		{
 			name:     "control tools search",
@@ -6093,7 +6095,7 @@ func TestToolEndpointsFallBackToPersistedInventoryCache(t *testing.T) {
 		{
 			name:     "mcp tools list",
 			path:     "/api/mcp/tools",
-			contains: []string{`"fallback":"go-local-mcp"`, `using local MCP inventory cache`, `"name":"search_tools"`, `"server":"cache-core"`, `"name":"runtime_search"`, `"server":"runtime-core"`, `"runtimeOverlayToolCount":1`, `"cachePresent":true`, `"cachedAt":"2026-04-04T00:00:00Z"`},
+			contains: []string{`"fallback":"go-local-mcp"`, `using local MCP inventory cache`, `"name":"search_tools"`, `"server":"cache-core"`, `"name":"runtime_search"`, `"server":"runtime-core"`, `"runtimeOverlayToolCount":1`, `"cachePresent":true`, `"cachedAt":"2026-04-04T00:00:00Z"`, `"cacheAuthority":"go-local-live-sync"`, `"metadataAuthority":"mcp.jsonc"`},
 		},
 		{
 			name:     "mcp tools search",
