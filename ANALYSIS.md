@@ -1,5 +1,105 @@
 # HyperCode Stabilization Analysis — 2026-04-03
 
+## Latest stabilization pass — startup/build recovery after rename drift
+
+### Context
+A live operator startup attempt via `start.bat` exposed a real regression in the TypeScript workspace after the large `borg` → `hypercode` rename. The startup sequence did **not** require killing any process; it failed in build-time module resolution.
+
+The most important signal from the operator log was:
+- `@hypercode/core` failed to compile because several imports had already been renamed to `hypercode-*`, but the actual files still existed on disk as `borg-*`
+- after fixing that layer, the next failure moved forward into `@hypercode/web` with the same root cause: renamed imports pointing at old `borg-*` filenames
+- `pnpm install` still emits a non-blocking `electron-rebuild` failure inside `apps/maestro` on Node 24 / Windows, but the startup wrapper continues past it and the workspace build is the decisive gate for this pass
+
+### What was actually broken
+#### 1. Core package rename drift
+`packages/core` was importing:
+- `../../lib/hypercode-orchestrator.js`
+- `../config/HyperCodeConfig.js`
+- `./hypercode.js`
+
+But the real files on disk were still:
+- `packages/core/src/lib/borg-orchestrator.ts`
+- `packages/core/src/lib/borg-orchestrator.test.ts`
+- `packages/core/src/config/BorgConfig.ts`
+- `packages/core/src/orchestrator/council/supervisors/borg.ts`
+
+This caused the exact startup build failure seen in the operator log.
+
+#### 2. Web package rename drift
+After fixing `@hypercode/core`, the workspace build correctly advanced and then failed in `apps/web` because imports expected:
+- `apps/web/src/lib/hypercode-runtime.ts`
+- `apps/web/src/components/HyperCodeOrchestratorWidget.tsx`
+
+while the actual files still existed as:
+- `apps/web/src/lib/borg-runtime.ts`
+- `apps/web/src/components/BorgOrchestratorWidget.tsx`
+
+This was another real post-rename mismatch, not a tooling false positive.
+
+### What was changed
+#### Core fixes
+Renamed these files to match the imports the codebase already expected:
+- `packages/core/src/lib/borg-orchestrator.ts` → `packages/core/src/lib/hypercode-orchestrator.ts`
+- `packages/core/src/lib/borg-orchestrator.test.ts` → `packages/core/src/lib/hypercode-orchestrator.test.ts`
+- `packages/core/src/config/BorgConfig.ts` → `packages/core/src/config/HyperCodeConfig.ts`
+- `packages/core/src/orchestrator/council/supervisors/borg.ts` → `packages/core/src/orchestrator/council/supervisors/hypercode.ts`
+
+This was the smallest truthful fix because the source had already conceptually migrated to `hypercode` naming at the import layer.
+
+#### Web fixes
+Renamed these files to match the import graph:
+- `apps/web/src/lib/borg-runtime.ts` → `apps/web/src/lib/hypercode-runtime.ts`
+- `apps/web/src/components/BorgOrchestratorWidget.tsx` → `apps/web/src/components/HyperCodeOrchestratorWidget.tsx`
+
+#### Lockfile hygiene
+- The refreshed `pnpm-lock.yaml` no longer contains `borg` references for the main workspace packages.
+
+### Validation performed for this pass
+#### Targeted package validation
+```bash
+pnpm -C packages/core run build
+pnpm -C apps/web run build
+```
+
+Results:
+- `@hypercode/core` build passed after the rename-alignment fixes
+- `@hypercode/web` build passed after the runtime/widget rename-alignment fixes
+
+#### Full workspace validation
+```bash
+pnpm run build:workspace
+```
+
+Result:
+- succeeded end-to-end
+- all 24 workspace build tasks completed successfully
+
+### Important truthfulness notes
+#### Stable in this pass
+- the previously failing startup build blockers in `@hypercode/core` and `@hypercode/web` are fixed
+- `pnpm run build:workspace` now succeeds again
+- the main monorepo (excluding archived content and external harness submodules) no longer contains textual `borg` references
+
+#### Still non-blocking / still present
+- `apps/maestro` postinstall still reports an `electron-rebuild` failure under Node 24 on Windows during install
+- in this workspace, that failure is currently **non-blocking** for the startup wrapper because the wrapper continues into prerequisite checks and workspace build
+- Maestro production builds themselves completed successfully during this pass despite that install-time warning/failure
+
+#### Still outside the main workspace boundary
+A repo-wide `borg` search still finds many references inside:
+- `submodules/hyperharness`
+- `submodules/superai`
+- archived/vendor content under `archive/`
+- binary/generated artifacts
+
+Those are real findings. They were **not** normalized in this pass because:
+- `hyperharness` and `superai` are separate competing harness upstreams with their own histories and internal naming
+- archive/vendor content is not the operator-facing workspace runtime surface
+
+So the truthful statement is:
+- **main workspace runtime surface:** clean of `borg` references after this pass
+- **entire repo including external submodules/archive:** still contains `borg` references and would require a separate dedicated cleanup effort
+
 ## Summary
 This pass focused on **stabilization-first Go sidecar expansion** and a small **Maestro terminal-history UX fix**. The work stayed aligned with the current repo policy in `docs/UNIVERSAL_LLM_INSTRUCTIONS.md`: improve operator-facing reliability and truthful fallback behavior before speculative platform expansion.
 
