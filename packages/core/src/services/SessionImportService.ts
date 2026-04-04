@@ -821,10 +821,21 @@ export class SessionImportService {
             return;
         }
 
-        void this.scanAndImport();
+        void this.runAutoImportIteration();
         this.scanTimer = setInterval(() => {
-            void this.scanAndImport();
+            void this.runAutoImportIteration();
         }, this.importIntervalMs);
+    }
+
+    private async runAutoImportIteration(): Promise<void> {
+        try {
+            await this.scanAndImport();
+        } catch (error) {
+            console.warn(formatOptionalSqliteFailure(
+                '[SessionImport] Auto-import iteration failed',
+                error,
+            ));
+        }
     }
 
     public async scanAndImport(options: { force?: boolean } = {}): Promise<SessionImportSummary> {
@@ -1416,7 +1427,10 @@ export class SessionImportService {
 
                 prismDb.close();
             } catch (error) {
-                console.warn(`[SessionImport] Failed to inspect Prism database at ${dbPath}: ${error instanceof Error ? error.message : String(error)}`);
+                console.warn(formatOptionalSqliteFailure(
+                    `[SessionImport] Failed to inspect Prism database at ${dbPath}`,
+                    error,
+                ));
             }
         }
 
@@ -1603,7 +1617,10 @@ export class SessionImportService {
                     llmDb.close();
                 }
             } catch (error) {
-                console.warn(`[SessionImport] Failed to inspect llm logs database at ${dbPath}: ${error instanceof Error ? error.message : String(error)}`);
+                console.warn(formatOptionalSqliteFailure(
+                    `[SessionImport] Failed to inspect llm logs database at ${dbPath}`,
+                    error,
+                ));
             }
         }
 

@@ -2,12 +2,14 @@ import Database from 'better-sqlite3';
 import path from 'path';
 import { randomUUID } from 'crypto';
 import { linksBacklogRepository, type UpsertLinkBacklogInput } from '../../db/repositories/links-backlog.repo.js';
+import { formatOptionalSqliteFailure, isSqliteUnavailableError } from '../../db/sqliteAvailability.js';
 import { normalizeBookmarkUrl } from '../../services/bobby-bookmarks-adapter.js';
 
 export class BobbyBookmarksSyncWorker {
     private isRunning = false;
     private interval: NodeJS.Timeout | null = null;
     private readonly dbPath: string;
+    private sqliteUnavailableLogged = false;
 
     constructor(workspaceRoot: string = process.cwd()) {
         this.dbPath = path.join(workspaceRoot, 'data', 'bobbybookmarks', 'resources.db');
@@ -67,7 +69,17 @@ export class BobbyBookmarksSyncWorker {
 
                     await linksBacklogRepository.upsertLink(payload);
                     synced++;
-                } catch (e: any) {
+                } catch (error) {
+                    if (isSqliteUnavailableError(error)) {
+                        if (!this.sqliteUnavailableLogged) {
+                            console.warn(formatOptionalSqliteFailure(
+                                '[HyperIngest] Links backlog sync is unavailable',
+                                error,
+                            ));
+                            this.sqliteUnavailableLogged = true;
+                        }
+                        break;
+                    }
                     errors++;
                 }
             }
@@ -76,6 +88,14 @@ export class BobbyBookmarksSyncWorker {
         } catch (error: any) {
             if (error.code === 'SQLITE_CANTOPEN') {
                 console.warn(`[HyperIngest] BobbyBookmarks DB not found at ${this.dbPath}. Skipping sync.`);
+            } else if (isSqliteUnavailableError(error)) {
+                if (!this.sqliteUnavailableLogged) {
+                    console.warn(formatOptionalSqliteFailure(
+                        '[HyperIngest] BobbyBookmarks sync is unavailable',
+                        error,
+                    ));
+                    this.sqliteUnavailableLogged = true;
+                }
             } else {
                 console.error('[HyperIngest] Error during sync:', error);
             }

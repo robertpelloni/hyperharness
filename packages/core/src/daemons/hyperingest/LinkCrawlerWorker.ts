@@ -3,12 +3,14 @@ import { db } from '../../db/index.js';
 import { linksBacklogTable } from '../../db/metamcp-schema.js';
 import { eq, asc } from 'drizzle-orm';
 import { DEFAULT_OPENROUTER_FREE_MODEL, LLMService } from '@hypercode/ai';
+import { formatOptionalSqliteFailure, isSqliteUnavailableError } from '../../db/sqliteAvailability.js';
 
 export class LinkCrawlerWorker {
     private isRunning = false;
     private isProcessing = false;
     private interval: NodeJS.Timeout | null = null;
     private readonly llmService: LLMService;
+    private sqliteUnavailableLogged = false;
 
     constructor(llmService: LLMService) {
         this.llmService = llmService;
@@ -141,7 +143,17 @@ export class LinkCrawlerWorker {
                 }
             }
         } catch (error) {
-            console.error('[HyperIngest] Error in LinkCrawlerWorker:', error);
+            if (isSqliteUnavailableError(error)) {
+                if (!this.sqliteUnavailableLogged) {
+                    console.warn(formatOptionalSqliteFailure(
+                        '[HyperIngest] Link crawler backlog access is unavailable',
+                        error,
+                    ));
+                    this.sqliteUnavailableLogged = true;
+                }
+            } else {
+                console.error('[HyperIngest] Error in LinkCrawlerWorker:', error);
+            }
         } finally {
             this.isProcessing = false;
         }

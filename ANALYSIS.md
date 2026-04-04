@@ -636,14 +636,22 @@ A real operator crash later showed one remaining non-truthful startup edge:
   - `writeInstructionDocs()` now catches SQLite-unavailable failures from `listInstructionMemories()`
   - logs a concise degraded-mode warning via `formatOptionalSqliteFailure(...)`
   - returns `null` for `instructionDocPath` instead of aborting startup/import execution
+  - auto-import startup iterations now run through a guarded helper so failed background scans are logged instead of surfacing as unhandled async failures
+  - Prism DB discovery and `llm` CLI `logs.db` discovery now also emit concise degraded-mode SQLite warnings instead of dumping full native-binding probe noise
+- `packages/core/src/daemons/hyperingest/LinkCrawlerWorker.ts`
+  - SQLite-unavailable backlog access now logs once concisely instead of repeatedly printing noisy stack traces
+- `packages/core/src/daemons/hyperingest/BobbyBookmarksSyncWorker.ts`
+  - SQLite-unavailable sync failures now log once concisely and stop the current sync pass instead of failing row-by-row opaquely
 
 ### Regression coverage added
 - `packages/core/src/services/SessionImportService.test.ts`
   - added coverage for the exact failure mode where `listInstructionMemories()` throws a `better-sqlite3`-missing / SQLite-unavailable error
+  - added coverage for the guarded auto-import iteration path
   - verifies:
     - import scan still succeeds
     - `instructionDocPath` is `null`
-    - the warning is concise and does not dump the full native-binding probe spam
+    - failed auto-import iterations are swallowed/logged instead of escaping
+    - warnings remain concise and do not dump the full native-binding probe spam
 
 ### Validation performed for this fix
 ```bash
@@ -654,6 +662,27 @@ pnpm -C packages/core build
 Results:
 - targeted `SessionImportService` regression suite passed
 - `packages/core` build passed
+
+## Go-primary architecture mandate (new explicit direction)
+The migration target is now explicit and should govern future work:
+- Go should become the **primary runtime/control plane**
+- every meaningful backend feature/function should be ported, translated, or forked into Go
+- TypeScript should be reduced over time to only the most crucial UI/client/compatibility roles until those can also be retired where practical
+
+To make that direction concrete instead of aspirational, two planning docs were added:
+- `docs/ai/planning/GO_PRIMARY_MIGRATION_PLAN.md`
+- `docs/ai/planning/GO_PARITY_MATRIX.md`
+
+These documents define:
+- the authoritative target state
+- parity status buckets (`Native Go`, `Bridge-first`, `Bridge-only`, `Missing`, `TS-only critical`)
+- the highest-priority blockers to a truthful Go-primary claim
+- the recommended migration order:
+  1. Go-primary launcher/control-plane ownership
+  2. remaining TS SQLite-backed startup-service migration
+  3. MCP backend write/config parity
+  4. orchestration/session/council parity
+  5. dashboard/backend contract migration away from TS ownership
 
 ## Bottom line
 This pass meaningfully strengthened the **Go-primary migration path** and improved TypeScript survivability while the migration continues:
@@ -673,6 +702,10 @@ This pass meaningfully strengthened the **Go-primary migration path** and improv
 - deduplicated provider alias reporting for configured native providers
 - truthful CLI startup reuse when HyperCode is already running on port 4000
 - OpenRouter free as the new default for quota-sensitive TS services
+- session-import startup no longer aborts when imported instruction docs hit SQLite-unavailable state
+- auto-import background failures now degrade truthfully instead of risking unhandled async startup noise
+- concise once-per-surface SQLite degraded-mode logging for more startup-time ingestion paths
+- explicit Go-primary migration planning artifacts
 - a small but real Maestro UX fix
 
 It was validated by successful Go compilation, successful targeted Go tests for the new native surfaces, successful targeted regression tests for repaired bridge/fallback routes, a successful full Go test suite run (`go test ./...`), targeted CLI startup tests and type-checking, council/sync coverage, targeted AI/core validation, and repeated successful workspace builds. The new systems are real and integrated, but several of them should still be described as **Beta** or **Experimental**, not full parity.
