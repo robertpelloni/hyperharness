@@ -45,6 +45,9 @@ func (h *RemoteMCP) spawnIfNeeded() error {
 		return nil // Active session exists
 	}
 
+	if h.binaryPath == "" {
+		return fmt.Errorf("mcp binary path is empty")
+	}
 	log.Printf("[MCP] Spawning JIT execution environment: %s", h.binaryPath)
 	c, err := client.NewStdioMCPClient(h.binaryPath, h.env, h.args...)
 	if err != nil {

@@ -8,7 +8,6 @@ import (
 	"strings"
 
 	"github.com/robertpelloni/hypercode/borg"
-	"github.com/robertpelloni/hypercode/mcp"
 )
 
 type HyperCodeStatus struct {
@@ -102,8 +101,7 @@ func (a *HyperCodeAdapter) BuildSystemContext() string {
 }
 
 func (a *HyperCodeAdapter) listMCPServers() (string, []string, error) {
-	config, err := mcp.ParseMetadataContext()
-	configPath := filepath.Join(a.homeDir, ".borg", "mcp.json")
+	configPath, config, err := ParseMCPConfig(a.homeDir)
 	if err != nil {
 		return configPath, nil, fmt.Errorf("mcp config unavailable: %w", err)
 	}

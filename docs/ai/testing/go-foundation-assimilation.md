@@ -60,8 +60,11 @@ go test ./...
 - `foundation/repomap/repomap_test.go`
 - `foundation/adapters/hypercode_test.go`
 - `foundation/adapters/providers_test.go`
+- `foundation/adapters/mcp_test.go`
 - `tools/registry_test.go`
 - `agent/agent_test.go`
+- `mcp/client_test.go`
+- `mcp/manager_test.go`
 
 ## Tests that should be added next
 1. `cmd/foundation` smoke tests
@@ -70,6 +73,7 @@ go test ./...
 4. JSON/RPC transport tests
 5. compatibility tests against richer HyperCode-backed provider/MCP adapters
 6. richer top-level `agent` integration tests around exact-schema tool registration and tool-call loops
+7. end-to-end MCP execution tests once richer execution adapters exist
 
 ## Exit criteria for the next milestone
 - foundation packages compile cleanly,

@@ -101,6 +101,7 @@ Responsibilities:
 - expose Borg memory/context status cleanly to the harness
 - expose provider configuration/status cleanly to the harness
 - expose MCP configuration visibility without duplicating MCP control-plane logic
+- expose early MCP execution/routing seams before full control-plane delegation
 - discover adjacent HyperCode workspaces where available
 - provide a stable adapter boundary before deeper provider/MCP routing integration
 

@@ -1,14 +1,8 @@
 package mcp
 
-import (
-	"encoding/json"
-	"fmt"
-	"os"
-	"path/filepath"
-	"strings"
-)
+import "github.com/robertpelloni/hypercode/foundation/adapters"
 
-// Config binds the ~/.borg/mcp.json native parsing
+// Config binds the ~/.borg/mcp.json native parsing.
 type Config struct {
 	MCPServers map[string]ServerConfig `json:"mcpServers"`
 }
@@ -19,37 +13,21 @@ type ServerConfig struct {
 	Env     map[string]string `json:"env"`
 }
 
-// ReadScopedClient strictly constructs OS Subprocess environment lists without pulling globally
+// ReadScopedClient strictly constructs OS subprocess environment lists without pulling globally.
 func ParseMetadataContext() (*Config, error) {
-	home, _ := os.UserHomeDir()
-	path := filepath.Join(home, ".borg", "mcp.json")
-
-	b, err := os.ReadFile(path)
+	_, conf, err := adapters.ParseMCPConfig("")
 	if err != nil {
-		return nil, fmt.Errorf("missing .borg/mcp.json definition: %w", err)
-	}
-
-	var conf Config
-	if err := json.Unmarshal(b, &conf); err != nil {
 		return nil, err
 	}
-
-	return &conf, nil
+	converted := &Config{MCPServers: map[string]ServerConfig{}}
+	for name, server := range conf.MCPServers {
+		converted.MCPServers[name] = ServerConfig(server)
+	}
+	return converted, nil
 }
 
-// FlattenEnv constructs the isolated subprocess environmental bindings
+// FlattenEnv constructs the isolated subprocess environmental bindings.
 func (s *ServerConfig) FlattenEnv() []string {
-	var envList []string
-
-	// Start with host required bindings silently merged
-	for _, e := range os.Environ() {
-		if strings.HasPrefix(e, "PATH=") || strings.HasPrefix(e, "NODE_ENV=") {
-			envList = append(envList, e)
-		}
-	}
-
-	for k, v := range s.Env {
-		envList = append(envList, fmt.Sprintf("%s=%s", k, v))
-	}
-	return envList
+	server := adapters.MCPServerConfig(*s)
+	return server.FlattenEnv()
 }

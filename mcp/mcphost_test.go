@@ -17,7 +17,7 @@ func TestMCPSchemaExtraction(t *testing.T) {
 
 	// Because starting a dummy binary is environment dependent, we'll verify
 	// the method signature and explicit null failures.
-	_, err := host.MapToNativeTools(context.Background())
+	_, err := host.MapToNativeTools(context.Background(), nil)
 	if err == nil {
 		t.Error("Null MCP proxy must error attempting schema translation.")
 	}

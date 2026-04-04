@@ -126,17 +126,21 @@ var foundationRepomapCmd = &cobra.Command{
 
 var foundationAdaptersCmd = &cobra.Command{
 	Use:   "adapters",
-	Short: "Inspect HyperCode/Borg and provider adapter seams for the foundation runtime",
+	Short: "Inspect HyperCode/Borg, provider, and MCP adapter seams for the foundation runtime",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		cwd, err := os.Getwd()
 		if err != nil {
 			return err
 		}
-		adapter := adapters.NewHyperCodeAdapter(cwd)
-		status := adapter.Status()
+		hyperAdapter := adapters.NewHyperCodeAdapter(cwd)
+		mcpAdapter := adapters.NewMCPAdapter(cwd)
+		payload := map[string]any{
+			"hypercode": hyperAdapter.Status(),
+			"mcp":       mcpAdapter.Status(),
+		}
 		enc := json.NewEncoder(os.Stdout)
 		enc.SetIndent("", "  ")
-		return enc.Encode(status)
+		return enc.Encode(payload)
 	},
 }
 

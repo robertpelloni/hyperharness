@@ -70,6 +70,18 @@
 - `tools/repomap.go`
   - legacy wrapper now delegates to `foundation/repomap`
 
+- `mcp/client.go`
+  - top-level MCP client now uses the adapter seam for connection status and tool hint listing
+
+- `mcp/manager.go`
+  - top-level MCP manager now uses the adapter seam for configured server discovery and startup
+
+- `mcp/config.go`
+  - top-level MCP config now wraps adapter-owned parsing instead of duplicating config logic
+
+- `mcp/mcphost.go`
+  - defensive guard added for empty MCP binary path to avoid nil-process panics in tests
+
 - `agent/agent.go`
   - top-level agent now advertises the native exact-name tools preferentially
   - OpenAI tool registration now uses per-tool schemas instead of one fake generic schema
@@ -84,11 +96,21 @@
   - detects available providers from config/env
   - probes Ollama models when relevant
 
+- `foundation/adapters/mcp_config.go`
+  - adapter-owned MCP config parsing to avoid circular coupling
+  - normalizes server command/env visibility for foundation consumers
+
+- `foundation/adapters/mcp.go`
+  - MCP adapter seam for configured server discovery, tool hints, route hints, and configured-server startup
+
 - `foundation/adapters/hypercode_test.go`
   - validates adapter status, routing, and system-context construction
 
 - `foundation/adapters/providers_test.go`
   - validates provider status/context construction
+
+- `foundation/adapters/mcp_test.go`
+  - validates MCP adapter status, tool hints, and route calls
 
 - `tools/registry_test.go`
   - verifies exact Pi tools and repomap are present in the registry
@@ -99,6 +121,12 @@
 - `agent/agent_test.go`
   - verifies top-level OpenAI tool registration exposes exact-schema tool definitions
   - verifies HyperCode adapter presence on the top-level agent
+
+- `mcp/client_test.go`
+  - verifies MCP client tool hint listing through the adapter seam
+
+- `mcp/manager_test.go`
+  - verifies MCP manager configured-tool listing and missing-server handling
 
 ### Documentation
 - requirements, design, planning, implementation, and testing documents under `docs/ai/`
@@ -139,10 +167,11 @@ These issues were observed and documented, not silently ignored or misrepresente
 - top-level agent tool-schema registration tests
 - HyperCode/Borg adapter seam tests
 - provider adapter seam tests
+- MCP adapter seam and top-level MCP package tests
 
 ## Recommended next implementation sequence
 1. continue routing remaining top-level placeholder orchestration surfaces to `foundation/pi` runtime packages,
 2. deepen repo-map ranking toward richer Aider-style graph semantics and add edit strategies,
-3. expand `foundation/adapters` from status/config visibility into real HyperCode/Borg provider routing and MCP execution adapters,
+3. expand `foundation/adapters` from status/config visibility into real HyperCode/Borg provider routing and richer MCP execution adapters,
 4. expand snapshot/result-shape coverage and CLI smoke coverage,
 5. layer in delegation, verification, detached/background runs, and JSON/RPC transport.

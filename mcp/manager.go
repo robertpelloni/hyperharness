@@ -2,24 +2,35 @@ package mcp
 
 import (
 	"fmt"
+	"os"
 	"os/exec"
+
+	"github.com/robertpelloni/hypercode/foundation/adapters"
 )
 
-// ServerManager handles the installation and lifecycle of MCP servers (Smithery parity)
+// ServerManager handles the installation and lifecycle of MCP servers (Smithery parity).
 type ServerManager struct {
 	RegistryPath string
+	adapter      *adapters.MCPAdapter
 }
 
 func NewServerManager() *ServerManager {
+	cwd, _ := os.Getwd()
+	adapter := adapters.NewMCPAdapter(cwd)
+	status := adapter.Status()
+	registryPath := "./.supercli/mcp_servers"
+	if status.ConfigPath != "" {
+		registryPath = status.ConfigPath
+	}
 	return &ServerManager{
-		RegistryPath: "./.supercli/mcp_servers",
+		RegistryPath: registryPath,
+		adapter:      adapter,
 	}
 }
 
-// Install from an npm package (e.g., npx @smithery/cli install)
+// Install from an npm package (e.g., npx @smithery/cli install).
 func (sm *ServerManager) InstallNPXServer(packageName string) error {
 	fmt.Printf("Installing MCP server via NPX: %s\n", packageName)
-	// Example command, in reality we'd manage the installation directory
 	cmd := exec.Command("npm", "install", "-g", packageName)
 	output, err := cmd.CombinedOutput()
 	if err != nil {
@@ -28,14 +39,21 @@ func (sm *ServerManager) InstallNPXServer(packageName string) error {
 	return nil
 }
 
-// StartServer launches an MCP server process
+// StartServer launches an MCP server process.
 func (sm *ServerManager) StartServer(command string, args ...string) (*exec.Cmd, error) {
 	cmd := exec.Command(command, args...)
-
-	// We'd set up StdinPipe and StdoutPipe here for Stdio-based MCP
 	if err := cmd.Start(); err != nil {
 		return nil, err
 	}
-
 	return cmd, nil
+}
+
+// StartConfiguredServer launches a configured MCP server by name via the adapter seam.
+func (sm *ServerManager) StartConfiguredServer(name string) (*exec.Cmd, error) {
+	return sm.adapter.StartConfiguredServer(name)
+}
+
+// ListConfiguredTools returns adapter-backed MCP tool hints.
+func (sm *ServerManager) ListConfiguredTools() ([]string, error) {
+	return sm.adapter.ListTools()
 }
