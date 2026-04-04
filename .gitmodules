@@ -88,3 +88,6 @@
 [submodule "qwen-code-cli"]
 	path = qwen-code-cli
 	url = https://github.com/dinoanderson/qwen_cli_coder
+[submodule "amazon-q-cli"]
+	path = amazon-q-developer-cli
+	url = https://github.com/aws/amazon-q-developer-cli
