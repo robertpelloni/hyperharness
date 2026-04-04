@@ -8,7 +8,6 @@ import (
 	"sort"
 
 	"github.com/robertpelloni/hypercode/agents"
-	_ "modernc.org/sqlite"
 )
 
 // VectorDB handles the "Jules Autopilot" requirement directly over SQLite natively

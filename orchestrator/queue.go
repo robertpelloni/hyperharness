@@ -6,8 +6,6 @@ import (
 	"log"
 	"sync"
 	"time"
-
-	_ "modernc.org/sqlite"
 )
 
 // TaskQueue replaces Redis/BullMQ by natively acting on SQLite locally.
