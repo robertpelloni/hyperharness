@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/robertpelloni/hypercode/foundation/adapters"
 	"github.com/sashabaranov/go-openai"
 )
 
@@ -55,13 +56,14 @@ func (p *GeminiBorgProvider) FetchLegacyToolArray() []Tool {
 }
 
 func (p *GeminiBorgProvider) Chat(ctx context.Context, messages []Message, tools []Tool) (Message, error) {
-	// A massive structural parser here maps `messages` into `openai.ChatCompletionMessage`
-	// then sends it natively via REST to the API, caching responses natively.
-
-	// Example Bypass
+	prompt := ""
+	if len(messages) > 0 {
+		prompt = messages[len(messages)-1].Content
+	}
+	execution := adapters.PrepareProviderExecution(adapters.ProviderExecutionRequest{Prompt: prompt, TaskType: "analysis", CostPreference: "quality"})
 	return Message{
 		Role:    RoleAssistant,
-		Content: fmt.Sprintf("[%s] Executing native REST API request. (Gemini Parity Engaged)\n> Awaiting instruction...", p.Model),
+		Content: fmt.Sprintf("[%s] Executing native REST API request. (Gemini Parity Engaged)\n> %s", p.Model, execution.ExecutionHint),
 	}, nil
 }
 

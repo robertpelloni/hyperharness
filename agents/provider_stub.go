@@ -2,15 +2,23 @@ package agents
 
 import (
 	"context"
+	"fmt"
+
+	"github.com/robertpelloni/hypercode/foundation/adapters"
 )
 
 // DefaultProvider simulates the LLM locally.
 type DefaultProvider struct{}
 
 func (p *DefaultProvider) Chat(ctx context.Context, messages []Message, tools []Tool) (Message, error) {
+	prompt := ""
+	if len(messages) > 0 {
+		prompt = messages[len(messages)-1].Content
+	}
+	execution := adapters.PrepareProviderExecution(adapters.ProviderExecutionRequest{Prompt: prompt, CostPreference: "budget"})
 	return Message{
 		Role:    RoleAssistant,
-		Content: "I am the new Native Go Borg Director. How can I autonomously assist you today?",
+		Content: fmt.Sprintf("I am the new Native Go Borg Director. %s", execution.ExecutionHint),
 	}, nil
 }
 

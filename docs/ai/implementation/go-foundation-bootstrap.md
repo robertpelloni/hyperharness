@@ -51,7 +51,7 @@
   - native execution surface for exact-name tools
   - native session create/list/show/fork commands
   - native repo-map generation command
-  - provider visibility and route-selection commands
+  - provider visibility, route-selection, and execution-preparation commands
 
 - `foundation/repomap/repomap.go`
   - Aider-inspired native repo map baseline with graph-ranking groundwork
@@ -88,7 +88,7 @@
 
 - `cmd/serve.go`
   - operator HTTP surface now exposes foundation-backed endpoints under `/api/v1/foundation/*`
-  - `/api/v1/foundation/providers*` now exposes provider visibility and route-selection behavior
+  - `/api/v1/foundation/providers*` now exposes provider visibility, route-selection, and execution-preparation behavior
   - `/api/v1/foundation/mcp/*` now exposes adapter-backed MCP tool listing and mediated call preparation
   - `/fs/read` now routes through the native foundation `read` tool instead of direct file reads
   - foundation-backed orchestration entrypoints continue to replace direct placeholder logic incrementally
@@ -97,6 +97,9 @@
   - top-level agent now advertises the native exact-name tools preferentially
   - OpenAI tool registration now uses per-tool schemas instead of one fake generic schema
   - system prompt now incorporates HyperCode/Borg and provider adapter context
+
+- `agents/provider_stub.go` and `agents/provider.go`
+  - top-level provider stubs now consume provider execution-preparation hints instead of returning purely static placeholder text
 
 - `foundation/adapters/hypercode.go`
   - first HyperCode/Borg adapter seam for the Go foundation
@@ -110,6 +113,9 @@
 - `foundation/adapters/provider_routing.go`
   - provider-route selection groundwork based on task type, cost preference, and local-execution preference
   - provides the first shared route-selection logic for CLI and HTTP surfaces
+
+- `foundation/adapters/provider_execution.go`
+  - provider-execution preparation seam that combines inferred task type, provider status, route selection, and execution hints
 
 - `foundation/adapters/mcp_config.go`
   - adapter-owned MCP config parsing to avoid circular coupling
@@ -126,6 +132,9 @@
 
 - `foundation/adapters/provider_routing_test.go`
   - validates provider-route selection groundwork
+
+- `foundation/adapters/provider_execution_test.go`
+  - validates provider execution-preparation behavior
 
 - `foundation/adapters/mcp_test.go`
   - validates MCP adapter status, tool hints, and route calls
@@ -189,6 +198,7 @@ These issues were observed and documented, not silently ignored or misrepresente
 - HyperCode/Borg adapter seam tests
 - provider adapter seam tests
 - provider-route selection tests
+- provider execution-preparation tests
 - MCP adapter seam and top-level MCP package tests
 - foundation-backed HTTP helper tests, including MCP mediation and provider-route helpers
 - provider CLI smoke checks

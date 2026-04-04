@@ -39,6 +39,13 @@ type foundationProviderRouteRequest struct {
 	RequireLocal   bool   `json:"requireLocal,omitempty"`
 }
 
+type foundationProviderPrepareRequest struct {
+	Prompt         string `json:"prompt,omitempty"`
+	TaskType       string `json:"taskType,omitempty"`
+	CostPreference string `json:"costPreference,omitempty"`
+	RequireLocal   bool   `json:"requireLocal,omitempty"`
+}
+
 func currentFoundationRuntime() (*foundationpi.Runtime, string, error) {
 	cwd, err := os.Getwd()
 	if err != nil {
@@ -62,6 +69,15 @@ func providerStatusPayload() adapters.ProviderStatus {
 
 func selectFoundationProviderRoute(body foundationProviderRouteRequest) adapters.ProviderRoute {
 	return adapters.SelectProviderRoute(adapters.ProviderRouteRequest{
+		TaskType:       body.TaskType,
+		CostPreference: body.CostPreference,
+		RequireLocal:   body.RequireLocal,
+	})
+}
+
+func prepareFoundationProviderExecution(body foundationProviderPrepareRequest) adapters.ProviderExecutionResult {
+	return adapters.PrepareProviderExecution(adapters.ProviderExecutionRequest{
+		Prompt:         body.Prompt,
 		TaskType:       body.TaskType,
 		CostPreference: body.CostPreference,
 		RequireLocal:   body.RequireLocal,

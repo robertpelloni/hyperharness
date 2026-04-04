@@ -98,6 +98,21 @@ var foundationProvidersSelectCmd = &cobra.Command{
 	},
 }
 
+var foundationProvidersPrepareCmd = &cobra.Command{
+	Use:   "prepare",
+	Short: "Prepare a provider execution plan using routing groundwork",
+	RunE: func(cmd *cobra.Command, args []string) error {
+		prompt, _ := cmd.Flags().GetString("prompt")
+		taskType, _ := cmd.Flags().GetString("task-type")
+		costPreference, _ := cmd.Flags().GetString("cost")
+		requireLocal, _ := cmd.Flags().GetBool("local")
+		result := prepareFoundationProviderExecution(foundationProviderPrepareRequest{Prompt: prompt, TaskType: taskType, CostPreference: costPreference, RequireLocal: requireLocal})
+		enc := json.NewEncoder(os.Stdout)
+		enc.SetIndent("", "  ")
+		return enc.Encode(result)
+	},
+}
+
 var foundationExecCmd = &cobra.Command{
 	Use:   "exec",
 	Short: "Execute a native foundation tool with exact-name contracts",
@@ -264,6 +279,10 @@ func init() {
 	foundationProvidersSelectCmd.Flags().String("task-type", "", "task type hint, e.g. coding, analysis, local")
 	foundationProvidersSelectCmd.Flags().String("cost", "", "cost preference hint, e.g. budget or quality")
 	foundationProvidersSelectCmd.Flags().Bool("local", false, "prefer local execution when possible")
+	foundationProvidersPrepareCmd.Flags().String("prompt", "", "prompt or task description")
+	foundationProvidersPrepareCmd.Flags().String("task-type", "", "task type hint, e.g. coding, analysis, local")
+	foundationProvidersPrepareCmd.Flags().String("cost", "", "cost preference hint, e.g. budget or quality")
+	foundationProvidersPrepareCmd.Flags().Bool("local", false, "prefer local execution when possible")
 	foundationRepomapCmd.Flags().String("dir", ".", "base directory to scan")
 	foundationRepomapCmd.Flags().StringSlice("mention-file", nil, "files to prioritize in ranking")
 	foundationRepomapCmd.Flags().StringSlice("mention-ident", nil, "identifiers to prioritize in ranking")
@@ -285,6 +304,7 @@ func init() {
 
 	foundationProvidersCmd.AddCommand(foundationProvidersStatusCmd)
 	foundationProvidersCmd.AddCommand(foundationProvidersSelectCmd)
+	foundationProvidersCmd.AddCommand(foundationProvidersPrepareCmd)
 
 	foundationSessionCmd.AddCommand(foundationSessionCreateCmd)
 	foundationSessionCmd.AddCommand(foundationSessionListCmd)

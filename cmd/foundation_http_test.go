@@ -89,6 +89,10 @@ func TestFoundationAdaptersPayloadAndRepomap(t *testing.T) {
 	if route.Provider == "" || route.Model == "" {
 		t.Fatalf("unexpected provider route: %#v", route)
 	}
+	execution := prepareFoundationProviderExecution(foundationProviderPrepareRequest{Prompt: "Analyze this repo and explain the architecture.", CostPreference: "budget"})
+	if execution.Route.Provider == "" || execution.ExecutionHint == "" {
+		t.Fatalf("unexpected provider execution: %#v", execution)
+	}
 	if err := os.WriteFile(filepath.Join(cwd, "main.go"), []byte("package main\n\nfunc main() {}\n"), 0o644); err != nil {
 		t.Fatal(err)
 	}
