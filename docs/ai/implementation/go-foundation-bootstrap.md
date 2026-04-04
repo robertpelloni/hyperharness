@@ -114,11 +114,11 @@
   - foundation-backed orchestration entrypoints continue to replace direct placeholder logic incrementally
 
 - `tui/slash.go`
-  - TUI slash-command handling now exposes foundation-backed `/plan` and `/repomap`
+  - TUI slash-command handling now exposes foundation-backed `/plan`, `/repomap`, `/providers`, `/adapters`, and `/mcp`
   - `/clear` now resets the director cleanly instead of only clearing history text
 
 - `tui/slash_test.go`
-  - validates foundation-backed slash-command planning and repo-map behavior
+  - validates foundation-backed slash-command planning, provider/adapter introspection, and repo-map behavior
 
 - `agent/agent.go`
   - top-level agent now advertises the native exact-name tools preferentially
@@ -259,6 +259,7 @@ These issues were observed and documented, not silently ignored or misrepresente
 - foundation-backed TUI slash-command tests
 - provider CLI smoke checks
 - foundation plan CLI smoke checks
+- TUI slash-command smoke coverage for provider/adapter introspection
 
 ## Recommended next implementation sequence
 1. continue routing remaining top-level placeholder orchestration surfaces to `foundation/pi` runtime packages,

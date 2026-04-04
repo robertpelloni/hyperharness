@@ -43,6 +43,7 @@
   - `agents/provider_stub.go` and `agents/provider.go` now consume provider execution-preparation hints
   - `agents/director.go` and `agent/orchestrator.go` now consume `foundation/orchestration` planning primitives
   - `orchestrator/webhooks.go`, daemon sweep planning, and autodrive objective generation now consume foundation orchestration helpers
+  - `tui/slash.go` now exposes foundation-backed `/plan`, `/repomap`, `/providers`, `/adapters`, and `/mcp`
   - `tui/slash.go` now exposes foundation-backed `/plan` and `/repomap` slash commands
 - Added deeper verification coverage:
   - snapshot-style tests for baseline tool results
@@ -58,6 +59,7 @@
   - foundation-backed TUI slash-command tests
   - provider CLI smoke checks
   - foundation plan CLI smoke checks
+  - TUI provider/adapter introspection smoke coverage via tests
 - Added comprehensive `docs/ai/` documentation for requirements, design, planning, implementation, and testing.
 - Added `docs/ai/design/upstream-toolchain-analysis.md` summarizing the imported upstream systems and assimilation strategy.
 - Fixed the duplicate SQLite driver registration issue in `orchestrator/queue.go` and `orchestrator/vectors.go` by removing redundant `modernc.org/sqlite` imports.

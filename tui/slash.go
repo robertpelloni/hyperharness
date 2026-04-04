@@ -7,6 +7,7 @@ import (
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/robertpelloni/hypercode/agents"
+	"github.com/robertpelloni/hypercode/foundation/adapters"
 	foundationorchestration "github.com/robertpelloni/hypercode/foundation/orchestration"
 	foundationrepomap "github.com/robertpelloni/hypercode/foundation/repomap"
 )
@@ -28,6 +29,12 @@ func ProcessSlashCommand(cmd string, m *model) (tea.Model, tea.Cmd) {
 		return handlePlan(m, strings.TrimSpace(strings.TrimPrefix(cmd, "/plan")))
 	case "/repomap":
 		return handleRepoMap(m)
+	case "/providers":
+		return handleProviders(m)
+	case "/adapters":
+		return handleAdapters(m)
+	case "/mcp", "/mcptools":
+		return handleMCPTools(m)
 	case "/exit", "/quit":
 		return *m, tea.Quit
 	default:
@@ -39,12 +46,15 @@ func handleHelp(m *model) (tea.Model, tea.Cmd) {
 	m.loading = false
 	// Simulate glamour markdown output locally bypassing the Director
 	m.history = append(m.history, `[System] Parity Slash Commands:
-  /help     - This menu
-  /clear    - Wipes contextual agent memory
-  /commit   - Autonomously generates a standard Git commit
-  /plan     - Build a foundation-backed orchestration plan
-  /repomap  - Generate a foundation-backed repo map
-  /exit     - Closes hypercode`)
+  /help      - This menu
+  /clear     - Wipes contextual agent memory
+  /commit    - Autonomously generates a standard Git commit
+  /plan      - Build a foundation-backed orchestration plan
+  /repomap   - Generate a foundation-backed repo map
+  /providers - Show provider visibility and defaults
+  /adapters  - Show HyperCode/Borg + MCP adapter status
+  /mcp       - Show adapter-backed MCP tool hints
+  /exit      - Closes hypercode`)
 	return *m, nil
 }
 
@@ -90,6 +100,38 @@ func handleRepoMap(m *model) (tea.Model, tea.Cmd) {
 		return *m, nil
 	}
 	m.history = append(m.history, "[Foundation RepoMap]\n"+result.Map)
+	return *m, nil
+}
+
+func handleProviders(m *model) (tea.Model, tea.Cmd) {
+	m.loading = false
+	payload, _ := json.MarshalIndent(adapters.BuildProviderStatus(), "", "  ")
+	m.history = append(m.history, "[Foundation Providers]\n"+string(payload))
+	return *m, nil
+}
+
+func handleAdapters(m *model) (tea.Model, tea.Cmd) {
+	m.loading = false
+	hyper := adapters.NewHyperCodeAdapter(m.director.WorkingDir)
+	mcpAdapter := adapters.NewMCPAdapter(m.director.WorkingDir)
+	payload, _ := json.MarshalIndent(map[string]any{
+		"hypercode": hyper.Status(),
+		"mcp":       mcpAdapter.Status(),
+	}, "", "  ")
+	m.history = append(m.history, "[Foundation Adapters]\n"+string(payload))
+	return *m, nil
+}
+
+func handleMCPTools(m *model) (tea.Model, tea.Cmd) {
+	m.loading = false
+	mcpAdapter := adapters.NewMCPAdapter(m.director.WorkingDir)
+	tools, err := mcpAdapter.ListTools()
+	if err != nil {
+		m.history = append(m.history, fmt.Sprintf("[Error] mcp tools unavailable: %v", err))
+		return *m, nil
+	}
+	payload, _ := json.MarshalIndent(map[string]any{"tools": tools}, "", "  ")
+	m.history = append(m.history, "[Foundation MCP Tools]\n"+string(payload))
 	return *m, nil
 }
 

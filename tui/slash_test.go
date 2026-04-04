@@ -28,6 +28,22 @@ func TestProcessSlashCommandPlanAndRepomap(t *testing.T) {
 	}
 }
 
+func TestProcessSlashCommandProvidersAndAdapters(t *testing.T) {
+	cwd := t.TempDir()
+	m := model{director: agents.NewDirector(&agents.DefaultProvider{})}
+	m.director.WorkingDir = cwd
+	mdl, _ := ProcessSlashCommand("/providers", &m)
+	updated := mdl.(model)
+	if len(updated.history) == 0 || !strings.Contains(updated.history[len(updated.history)-1], "[Foundation Providers]") {
+		t.Fatalf("expected provider output, got %#v", updated.history)
+	}
+	mdl, _ = ProcessSlashCommand("/adapters", &updated)
+	updated = mdl.(model)
+	if len(updated.history) == 0 || !strings.Contains(updated.history[len(updated.history)-1], "[Foundation Adapters]") {
+		t.Fatalf("expected adapter output, got %#v", updated.history)
+	}
+}
+
 func TestProcessSlashCommandClearResetsDirector(t *testing.T) {
 	m := model{director: agents.NewDirector(&agents.DefaultProvider{})}
 	m.history = []string{"old"}
