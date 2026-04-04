@@ -10129,7 +10129,8 @@ func TestMCPConfiguredServersFallBackToLocalJsonc(t *testing.T) {
       "args": ["server.js"],
       "env": {"JSONC_ONLY":"1"},
       "_meta": {
-        "toolCount": 1
+        "toolCount": 1,
+        "cacheHydratedAt": "2024-01-01T00:00:00Z"
       }
     }
   }
@@ -10209,6 +10210,11 @@ func TestMCPConfiguredServersFallBackToLocalJsonc(t *testing.T) {
 	if !strings.Contains(listRecorder.Body.String(), `"toolCount":1`) {
 		t.Fatalf("expected jsonc _meta payload, got %s", listRecorder.Body.String())
 	}
+	for _, needle := range []string{`"originLayer":"configured-jsonc"`, `"metadataOrigin":"jsonc-cache"`, `"metadataCachedAt":"2024-01-01T00:00:00Z"`, `"metadataStaleHeuristic":true`} {
+		if !strings.Contains(listRecorder.Body.String(), needle) {
+			t.Fatalf("expected configured server list provenance %s, got %s", needle, listRecorder.Body.String())
+		}
+	}
 
 	expectedUUID := syntheticServerUUID("core")
 	getRequest := httptest.NewRequest(http.MethodGet, "/api/mcp/servers/get?uuid="+expectedUUID, nil)
@@ -10226,6 +10232,11 @@ func TestMCPConfiguredServersFallBackToLocalJsonc(t *testing.T) {
 	}
 	if !strings.Contains(getRecorder.Body.String(), `"name":"core"`) {
 		t.Fatalf("expected configured server get payload, got %s", getRecorder.Body.String())
+	}
+	for _, needle := range []string{`"originLayer":"configured-jsonc"`, `"metadataOrigin":"jsonc-cache"`, `"metadataCachedAt":"2024-01-01T00:00:00Z"`} {
+		if !strings.Contains(getRecorder.Body.String(), needle) {
+			t.Fatalf("expected configured server get provenance %s, got %s", needle, getRecorder.Body.String())
+		}
 	}
 }
 

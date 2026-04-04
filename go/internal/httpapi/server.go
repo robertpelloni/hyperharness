@@ -15543,7 +15543,7 @@ func (s *Server) localConfiguredMCPServers() ([]map[string]any, error) {
 			}
 		}
 
-		results = append(results, map[string]any{
+		item := map[string]any{
 			"uuid":                         syntheticServerUUID(name),
 			"name":                         name,
 			"description":                  description,
@@ -15560,7 +15560,11 @@ func (s *Server) localConfiguredMCPServers() ([]map[string]any, error) {
 			"user_id":                      nil,
 			"source_published_server_uuid": nullableString(serverMap["source_published_server_uuid"]),
 			"_meta":                        serverMap["_meta"],
-		})
+		}
+		for key, value := range configuredServerProvenance(item, "configured-jsonc") {
+			item[key] = value
+		}
+		results = append(results, item)
 	}
 
 	sort.Slice(results, func(i, j int) bool {
@@ -15618,6 +15622,9 @@ func (s *Server) localConfiguredMCPServersFromDB() ([]map[string]any, error) {
 		if name, _ := server["name"].(string); strings.TrimSpace(name) != "" {
 			server["_meta"] = metaByName[name]
 		}
+		for key, value := range configuredServerProvenance(server, "configured-db-overlay") {
+			server[key] = value
+		}
 	}
 
 	return servers, nil
@@ -15658,8 +15665,38 @@ func (s *Server) localConfiguredMCPServerFromDB(uuid string) (map[string]any, er
 	if name, _ := server["name"].(string); strings.TrimSpace(name) != "" {
 		server["_meta"] = metaByName[name]
 	}
+	for key, value := range configuredServerProvenance(server, "configured-db-overlay") {
+		server[key] = value
+	}
 
 	return server, nil
+}
+
+func configuredServerProvenance(server map[string]any, originLayer string) map[string]any {
+	metaMap, _ := server["_meta"].(map[string]any)
+	metadataOrigin := "metadata-unavailable"
+	metadataCachedAt := ""
+	if metaMap != nil {
+		if source := strings.TrimSpace(stringValue(metaMap["metadataSource"])); source != "" {
+			metadataOrigin = source
+		} else if intNumber(metaMap["toolCount"]) > 0 || len(mcp.MetadataToolsFromAny(metaMap["tools"])) > 0 {
+			metadataOrigin = "jsonc-cache"
+		} else {
+			metadataOrigin = "jsonc-inline"
+		}
+		metadataCachedAt = strings.TrimSpace(stringValue(metaMap["cacheHydratedAt"]))
+		if metadataCachedAt == "" {
+			metadataCachedAt = strings.TrimSpace(stringValue(metaMap["discoveredAt"]))
+		}
+	}
+	result := map[string]any{
+		"originLayer":    originLayer,
+		"metadataOrigin": metadataOrigin,
+	}
+	for key, value := range freshnessBridgeMeta("metadata", metadataCachedAt, 24*time.Hour) {
+		result[key] = value
+	}
+	return result
 }
 
 func (s *Server) localConfiguredMCPServerMetaByName() (map[string]any, error) {

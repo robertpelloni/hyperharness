@@ -1880,6 +1880,57 @@ Results:
 - Go build passed
 - full Go suite passed
 
+## Follow-up configured-server provenance step (record-level metadata origin and freshness)
+The next truthfulness gap was on configured-server read surfaces.
+
+### The gap before this step
+Before this step:
+- configured-server fallback routes could return `_meta` payloads
+- but the server record itself did not directly state:
+  - whether the definition came from JSONC fallback or DB-with-JSONC-overlay fallback
+  - what the metadata source was
+  - when the metadata was last hydrated/discovered
+  - whether that metadata should be treated as old enough to warrant caution
+
+### What changed
+- updated `go/internal/httpapi/server.go`
+  - JSONC-backed configured server records now include provenance fields such as:
+    - `originLayer`
+    - `metadataOrigin`
+    - `metadataCachedAt`
+    - `metadataAgeMs`
+    - `metadataStaleHeuristic`
+  - DB-backed configured server fallback records now include the same provenance/freshness fields after JSONC metadata overlay is applied
+  - metadata provenance can infer `jsonc-cache` when cached tool metadata is clearly present even if older JSONC fixtures do not explicitly set `metadataSource`
+- expanded `go/internal/httpapi/server_test.go`
+  - configured server list/get fallback tests now verify the new provenance/freshness fields
+  - the JSONC fixture now includes an explicit cache hydration timestamp to make freshness assertions deterministic
+
+### Important truthfulness note
+What is true now:
+- configured-server fallback records now say where the definition layer came from
+- configured-server fallback records now expose metadata freshness/provenance directly on the record
+- JSONC-backed and DB-backed configured server fallback payloads are more inspectable and more aligned with the tool/runtime provenance model
+
+What is still not true yet:
+- configured-server provenance still reflects fallback data authority, not full runtime liveness authority
+- metadata staleness is still heuristic, not proof the metadata is invalid
+- broader configured-server ecosystem parity is still incomplete
+
+### Validation performed for this configured-server provenance step
+```bash
+gofmt -w go/internal/httpapi/server.go go/internal/httpapi/server_test.go go/internal/httpapi/mcp_handlers.go go/internal/httpapi/mcp_inventory_fallback.go
+cd go && go test ./internal/httpapi ./internal/mcp
+cd go && go build -buildvcs=false ./cmd/hypercode
+cd go && go test ./...
+```
+
+Results:
+- targeted httpapi tests passed
+- targeted mcp tests passed
+- Go build passed
+- full Go suite passed
+
 ## Bottom line
 This pass meaningfully strengthened the **Go-primary migration path** and improved TypeScript survivability while the migration continues:
 - broader provider routing
@@ -1925,6 +1976,7 @@ This pass meaningfully strengthened the **Go-primary migration path** and improv
 - cache-backed fallback responses now expose per-layer age and stale heuristics for base inventory, persisted runtime overlay, and live runtime overlay
 - individual fallback tool records now carry origin-layer and layer freshness metadata so clients can explain per-tool provenance directly
 - runtime server fallback records now also carry server-level origin-layer and layer freshness metadata, and can recover from persisted runtime overlay cache when live summary detection is unavailable
+- configured-server fallback records now carry record-level definition-layer provenance plus metadata freshness/provenance fields across JSONC-backed and DB-backed fallback reads
 - a tested Go-native replacement path for multiple TS-owned persistence surfaces, even though mixed-runtime cleanup is not fully finished yet
 - a small but real Maestro UX fix
 
