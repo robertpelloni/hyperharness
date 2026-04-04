@@ -287,7 +287,50 @@ Results:
 - Go sidecar build passed
 
 ### Important validation note
-A broader run of `go test ./internal/httpapi` still reports **pre-existing unrelated failures** in other fallback/bridge tests. Those failures were not introduced by this pass, and this pass was therefore validated using the smallest truthful targeted test set for the new code.
+A broader run of `go test ./internal/httpapi` initially reported several failures on bridge/fallback routes. Those failures were investigated in the next pass and a meaningful subset was fixed directly.
+
+## Follow-up bridge/fallback repair pass
+A subsequent stabilization pass fixed several **truthfulness and compatibility regressions** in extracted Go handlers.
+
+### Additional fixes in this pass
+- `go/internal/httpapi/memory_handlers.go`
+  - `handleMemorySearch` now behaves as a true bridge-first handler:
+    - upstream procedure: `memory.query`
+    - local fallback: empty-or-real local SQLite search results with explicit fallback metadata
+  - `handleMemoryContexts` now bridges to `memory.listContexts` and falls back to the local contexts registry via `.hypercode/memory/contexts.json`
+  - `handleMemorySectionedStatus` now bridges to `memory.getSectionedMemoryStatus` and includes explicit fallback metadata when using local sectioned-memory status
+- `go/internal/httpapi/mcp_handlers.go`
+  - `handleMCPStatus` now bridges to `mcp.getStatus` and falls back to local harness summary data with lifecycle mode fields preserved
+  - `handleMCPTools` now bridges to `mcp.listTools` and falls back to source-backed local tool inventory
+  - `handleMCPSearchTools` now bridges to `mcp.searchTools`, preserves request payload shape (including `profile`), and falls back to local source-backed search results
+  - `handleMCPRuntimeServers` now bridges to `mcp.listServers` and falls back to local runtime-server summaries
+- `go/internal/httpapi/council_base_handlers.go`
+  - `handleCouncilBaseDebate` now accepts both `objective` and `description` style payloads
+  - upstream bridge payload now includes `description`, fixing compatibility with the existing test/route contract
+  - local fallback still normalizes to a debate objective internally
+- `go/internal/memorystore/search.go`
+  - missing database files and missing tables now degrade to an empty result set instead of surfacing misleading internal errors for normal fallback flows
+
+### Regression tests validated in this pass
+Commands run:
+```bash
+cd go && go test ./internal/httpapi -run 'TestMemorySectionedStatusAndFormatsFallBackLocally|TestMemoryContextsFallsBackToLocalRegistry|TestReadOnlyMemoryRoutesFallBackLocally|TestMCPLifecycleModesFallBackToLocalState|TestCouncilBaseBridgeRoutes|TestMCPBridgeRoutes|TestMCPReadRoutesFallBackToLocalSummary|TestMCPSearchToolsFallsBackToLocalInventory|TestMemoryBridgeRoutes'
+cd go && go test ./internal/httpapi -run 'Test(Native(Workflow|Supervisor|SessionExport)|MemorySectionedStatusAndFormatsFallBackLocally|MemoryContextsFallsBackToLocalRegistry|ReadOnlyMemoryRoutesFallBackLocally|MCPLifecycleModesFallBackToLocalState|CouncilBaseBridgeRoutes|MCPBridgeRoutes|MCPReadRoutesFallBackToLocalSummary|MCPSearchToolsFallsBackToLocalInventory|MemoryBridgeRoutes)'
+cd go && go test ./internal/workflow ./internal/sessionimport
+cd go && go build -buildvcs=false ./cmd/hypercode
+```
+
+Results:
+- all targeted previously failing `httpapi` tests in scope now pass
+- previously added native endpoint tests still pass
+- `internal/workflow` and `internal/sessionimport` tests pass
+- Go sidecar build passes
+
+### Updated truthfulness assessment
+The affected bridge/fallback routes are now more credible because they:
+- preserve the existing TypeScript procedure names expected by tests and clients
+- return bridge metadata consistently
+- degrade to empty local results where appropriate instead of throwing avoidable internal errors
 
 ## Bottom line
 This pass meaningfully strengthened the **Go sidecar as a truthful local fallback control plane**:
@@ -298,6 +341,8 @@ This pass meaningfully strengthened the **Go sidecar as a truthful local fallbac
 - native submodule update orchestration
 - detached async execution for workflow/supervisor request lifecycles
 - regression tests for the new native surfaces
+- repaired bridge-first behavior for key memory/MCP/council routes
+- graceful empty-result fallback for missing local memory DB state
 - a small but real Maestro UX fix
 
-It was validated by successful Go compilation, successful targeted Go tests for the new native surfaces, and the previously successful full workspace build. The new systems are real and integrated, but several of them should still be described as **Beta** or **Experimental**, not full parity.
+It was validated by successful Go compilation, successful targeted Go tests for the new native surfaces, successful targeted regression tests for the repaired memory/MCP/council routes, and the previously successful full workspace build. The new systems are real and integrated, but several of them should still be described as **Beta** or **Experimental**, not full parity.

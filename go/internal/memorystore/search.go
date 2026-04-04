@@ -3,7 +3,9 @@ package memorystore
 import (
 	"database/sql"
 	"fmt"
+	"os"
 	"path/filepath"
+	"strings"
 
 	_ "modernc.org/sqlite"
 )
@@ -26,6 +28,13 @@ func Search(workspaceRoot string, query string, limit int) ([]SearchResult, erro
 	}
 
 	dbPath := filepath.Join(workspaceRoot, "packages", "core", "metamcp.db")
+	if _, err := os.Stat(dbPath); err != nil {
+		if os.IsNotExist(err) {
+			return []SearchResult{}, nil
+		}
+		return nil, err
+	}
+
 	db, err := sql.Open("sqlite", dbPath)
 	if err != nil {
 		return nil, err
@@ -50,6 +59,9 @@ func Search(workspaceRoot string, query string, limit int) ([]SearchResult, erro
 
 	rows, err := db.Query(stmt, queryStr, queryStr, queryStr, limit)
 	if err != nil {
+		if strings.Contains(err.Error(), "no such table") || strings.Contains(err.Error(), "unable to open database file") {
+			return []SearchResult{}, nil
+		}
 		return nil, err
 	}
 	defer rows.Close()

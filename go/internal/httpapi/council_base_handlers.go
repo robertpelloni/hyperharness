@@ -30,16 +30,32 @@ func (s *Server) handleCouncilBaseDebate(w http.ResponseWriter, r *http.Request)
 	}
 
 	var payload struct {
-		Objective string `json:"objective"`
-		Context   string `json:"context"`
+		ID          string   `json:"id"`
+		Objective   string   `json:"objective"`
+		Description string   `json:"description"`
+		Context     string   `json:"context"`
+		Files       []string `json:"files"`
 	}
 	if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
 		writeJSON(w, http.StatusBadRequest, map[string]any{"success": false, "error": "invalid JSON body"})
 		return
 	}
 
+	normalizedObjective := payload.Objective
+	if normalizedObjective == "" {
+		normalizedObjective = payload.Description
+	}
+
+	upstreamPayload := map[string]any{
+		"id":          payload.ID,
+		"objective":   normalizedObjective,
+		"description": normalizedObjective,
+		"context":     payload.Context,
+		"files":       payload.Files,
+	}
+
 	var result any
-	upstreamBase, err := s.callUpstreamJSON(r.Context(), "council.debate", payload, &result)
+	upstreamBase, err := s.callUpstreamJSON(r.Context(), "council.debate", upstreamPayload, &result)
 	if err == nil {
 		writeJSON(w, http.StatusOK, map[string]any{
 			"success": true,
@@ -52,7 +68,7 @@ func (s *Server) handleCouncilBaseDebate(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	debateRes, fallbackErr := orchestration.RunDebate(r.Context(), payload.Objective, payload.Context)
+	debateRes, fallbackErr := orchestration.RunDebate(r.Context(), normalizedObjective, payload.Context)
 	if fallbackErr != nil {
 		writeJSON(w, http.StatusServiceUnavailable, map[string]any{
 			"success": false,
