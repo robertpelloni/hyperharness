@@ -2429,6 +2429,69 @@ Results:
 - Go build passed
 - full Go suite passed
 
+## Follow-up Go-primary backend slice (native AutoDev fallback)
+The next real TS-to-Go backend ownership step was AutoDev.
+
+### The gap before this step
+Before this step:
+- `/api/autodev/start-loop`
+- `/api/autodev/cancel-loop`
+- `/api/autodev/loops`
+- `/api/autodev/loop`
+- `/api/autodev/clear-completed`
+were still bridge-only to TypeScript
+
+That meant Go could not own even a basic local fix-loop manager when TS was unavailable.
+
+### What changed
+- added `go/internal/httpapi/autodev_local_state.go`
+  - native local AutoDev loop state
+  - persisted AutoDev state under Go config dir (`autodev_state.json`)
+  - async loop execution with retry tracking
+  - local cancel/list/get/clear behavior
+  - truthful no-director/no-process-kill semantics in fallback mode
+- updated `go/internal/httpapi/server.go`
+  - server now owns `autoDevState`
+- replaced `go/internal/httpapi/autodev_handlers.go`
+  - AutoDev routes now attempt TS first, then fall back natively in Go
+  - local fallback supports:
+    - start loop
+    - cancel loop
+    - list loops
+    - get one loop
+    - clear completed loops
+- expanded `go/internal/httpapi/server_test.go`
+  - added regression coverage proving native AutoDev fallback works with a harmless custom command when upstream is unavailable
+  - preserved existing upstream bridge coverage
+
+### Important truthfulness note
+This is a **real Go-native AutoDev fallback**, but it is not full TS parity.
+
+What is true now:
+- AutoDev routes are no longer bridge-only
+- Go can persist local AutoDev loop state and report it across requests/restarts
+- Go can execute simple local retry loops truthfully in fallback mode
+- Go does not kill in-flight processes during cancel; it only prevents further retries
+
+What is still not true yet:
+- this does not replicate TS director-driven autonomous repair parity
+- the Go fallback does not yet perform the richer Director/agent-mediated code-fix loop from TS
+- full autodev/swarm/squad orchestration parity remains incomplete
+
+### Validation performed for this native AutoDev step
+```bash
+gofmt -w go/internal/httpapi/autodev_handlers.go go/internal/httpapi/autodev_local_state.go go/internal/httpapi/server.go go/internal/httpapi/server_test.go
+cd go && go test ./internal/httpapi ./internal/mcp
+cd go && go build -buildvcs=false ./cmd/hypercode
+cd go && go test ./...
+```
+
+Results:
+- targeted httpapi tests passed
+- targeted mcp tests passed
+- Go build passed
+- full Go suite passed
+
 ## Bottom line
 This pass meaningfully strengthened the **Go-primary migration path** and improved TypeScript survivability while the migration continues:
 - broader provider routing
@@ -2484,6 +2547,7 @@ This pass meaningfully strengthened the **Go-primary migration path** and improv
 - configured-server get fallback now also adopts the trimmed primary nested `provenance` contract while the remaining highest-risk config/detail surfaces stay compatibility-heavy for now
 - `/api/skills/assimilate` now has a native Go fallback that writes a real local starter skill scaffold instead of remaining bridge-only
 - Darwin routes now have a native Go persisted local fallback for mutation/experiment/status behavior instead of remaining bridge-only
+- AutoDev routes now have a native Go persisted local loop-manager fallback instead of remaining bridge-only
 - a tested Go-native replacement path for multiple TS-owned persistence surfaces, even though mixed-runtime cleanup is not fully finished yet
 - a small but real Maestro UX fix
 

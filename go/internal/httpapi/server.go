@@ -71,6 +71,7 @@ type Server struct {
 	runtimeServers    *runtimeServerRegistry
 	mcpState          *localMCPStateManager
 	darwinState       *localDarwinStateManager
+	autoDevState      *localAutoDevManager
 }
 
 type providerFallbackEvent struct {
@@ -393,6 +394,7 @@ func New(cfg config.Config, detector controlplane.ToolProvider) *Server {
 		runtimeServers: newRuntimeServerRegistry(),
 		mcpState:       newLocalMCPStateManager(filepath.Join(cfg.ConfigDir, "mcp_state.json")),
 		darwinState:    newLocalDarwinStateManager(filepath.Join(cfg.ConfigDir, "darwin_state.json")),
+		autoDevState:   newLocalAutoDevManager(cfg.WorkspaceRoot, filepath.Join(cfg.ConfigDir, "autodev_state.json")),
 	}
 
 	server.registerRoutes()

@@ -1997,6 +1997,72 @@ func TestDarwinFallsBackToLocalGoState(t *testing.T) {
 	}
 }
 
+func TestAutoDevFallsBackToLocalGoLoopManager(t *testing.T) {
+	t.Setenv("HYPERCODE_TRPC_UPSTREAM", "http://127.0.0.1:1/trpc")
+	cfg := config.Default()
+	cfg.WorkspaceRoot = t.TempDir()
+	cfg.ConfigDir = t.TempDir()
+	server := New(cfg, stubDetector{})
+
+	command := "echo autodev-ok"
+	if runtime.GOOS == "windows" {
+		command = "cmd /C echo autodev-ok"
+	}
+	startReq := httptest.NewRequest(http.MethodPost, "/api/autodev/start-loop", strings.NewReader(`{"type":"test","maxAttempts":1,"command":"`+command+`"}`))
+	startReq.Header.Set("content-type", "application/json")
+	startRecorder := httptest.NewRecorder()
+	server.Handler().ServeHTTP(startRecorder, startReq)
+	if startRecorder.Code != http.StatusOK {
+		t.Fatalf("expected autodev fallback start 200, got %d %s", startRecorder.Code, startRecorder.Body.String())
+	}
+	for _, needle := range []string{`"fallback":"go-local-autodev"`, `"procedure":"autoDev.startLoop"`, `"loopId":"loop-1"`} {
+		if !strings.Contains(startRecorder.Body.String(), needle) {
+			t.Fatalf("expected autodev start fallback to contain %s, got %s", needle, startRecorder.Body.String())
+		}
+	}
+
+	time.Sleep(50 * time.Millisecond)
+	loopsRecorder := httptest.NewRecorder()
+	server.Handler().ServeHTTP(loopsRecorder, httptest.NewRequest(http.MethodGet, "/api/autodev/loops", nil))
+	if loopsRecorder.Code != http.StatusOK {
+		t.Fatalf("expected autodev loops fallback 200, got %d %s", loopsRecorder.Code, loopsRecorder.Body.String())
+	}
+	for _, needle := range []string{`"fallback":"go-local-autodev"`, `"procedure":"autoDev.getLoops"`, `"id":"loop-1"`} {
+		if !strings.Contains(loopsRecorder.Body.String(), needle) {
+			t.Fatalf("expected autodev loops fallback to contain %s, got %s", needle, loopsRecorder.Body.String())
+		}
+	}
+
+	getRecorder := httptest.NewRecorder()
+	server.Handler().ServeHTTP(getRecorder, httptest.NewRequest(http.MethodGet, "/api/autodev/loop?loopId=loop-1", nil))
+	if getRecorder.Code != http.StatusOK {
+		t.Fatalf("expected autodev get fallback 200, got %d %s", getRecorder.Code, getRecorder.Body.String())
+	}
+	if !strings.Contains(getRecorder.Body.String(), `"id":"loop-1"`) {
+		t.Fatalf("expected autodev get fallback payload, got %s", getRecorder.Body.String())
+	}
+
+	cancelReq := httptest.NewRequest(http.MethodPost, "/api/autodev/cancel-loop", strings.NewReader(`{"loopId":"loop-1"}`))
+	cancelReq.Header.Set("content-type", "application/json")
+	cancelRecorder := httptest.NewRecorder()
+	server.Handler().ServeHTTP(cancelRecorder, cancelReq)
+	if cancelRecorder.Code != http.StatusOK {
+		t.Fatalf("expected autodev cancel fallback 200, got %d %s", cancelRecorder.Code, cancelRecorder.Body.String())
+	}
+	if !strings.Contains(cancelRecorder.Body.String(), `"fallback":"go-local-autodev"`) {
+		t.Fatalf("expected autodev cancel fallback metadata, got %s", cancelRecorder.Body.String())
+	}
+
+	clearRecorder := httptest.NewRecorder()
+	server.Handler().ServeHTTP(clearRecorder, httptest.NewRequest(http.MethodPost, "/api/autodev/clear-completed", nil))
+	if clearRecorder.Code != http.StatusOK {
+		t.Fatalf("expected autodev clear fallback 200, got %d %s", clearRecorder.Code, clearRecorder.Body.String())
+	}
+	if !strings.Contains(clearRecorder.Body.String(), `"fallback":"go-local-autodev"`) {
+		t.Fatalf("expected autodev clear fallback metadata, got %s", clearRecorder.Body.String())
+	}
+}
+
 func TestDarwinBridgeRoutes(t *testing.T) {
 	upstream := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("content-type", "application/json")
