@@ -25,8 +25,9 @@
   - legacy `tools/repomap.go` now delegates to `foundation/repomap`
 - Added the first HyperCode/Borg adapter seam:
   - `foundation/adapters/hypercode.go` exposes assimilation status, memory context, provider status, MCP config visibility, and adjacent HyperCode repo discovery
-  - `foundation/adapters/providers.go` exposes current provider/model visibility, detected providers, and Ollama model discovery when relevant
-  - `foundation/adapters/mcp_config.go` and `foundation/adapters/mcp.go` expose MCP config parsing, server discovery, tool hints, route hints, and configured-server startup seams
+  - `foundation/adapters/providers.go` exposes current provider/model visibility, detected providers, Ollama model discovery, and provider-route selection groundwork
+  - `foundation/adapters/provider_routing.go` provides shared route-selection logic for CLI and HTTP surfaces
+  - `foundation/adapters/mcp_config.go` and `foundation/adapters/mcp.go` expose MCP config parsing, server discovery, tool hints, route hints, mediated tool-call preparation, and configured-server startup seams
   - `hypercode foundation adapters` now inspects that seam directly
   - `agent.Agent` now incorporates adapter-derived system context into its system prompt
 - Migrated more top-level surfaces onto the foundation/adapter layer:
@@ -34,14 +35,18 @@
   - `cmd/foundation_http.go` provides reusable foundation-backed HTTP helpers
   - `cmd/serve.go` now exposes `/api/v1/foundation/*` endpoints and routes `/fs/read` through the foundation `read` tool
   - foundation-backed MCP HTTP helper and route surfaces now expose MCP tool listing and mediated call preparation
+  - foundation-backed provider helper and route surfaces now expose provider visibility and route selection
+  - `hypercode foundation providers status/select` now exposes provider routing groundwork from the CLI
 - Added deeper verification coverage:
   - snapshot-style tests for baseline tool results
   - top-level agent schema registration test
   - HyperCode/Borg adapter seam test
   - provider adapter seam test
+  - provider-route selection test
   - MCP adapter seam tests and top-level MCP package tests
   - foundation-backed HTTP helper tests
   - MCP mediation helper tests
+  - provider CLI smoke checks
 - Added comprehensive `docs/ai/` documentation for requirements, design, planning, implementation, and testing.
 - Added `docs/ai/design/upstream-toolchain-analysis.md` summarizing the imported upstream systems and assimilation strategy.
 - Fixed the duplicate SQLite driver registration issue in `orchestrator/queue.go` and `orchestrator/vectors.go` by removing redundant `modernc.org/sqlite` imports.
@@ -66,5 +71,5 @@
 1. Continue routing remaining top-level placeholder orchestration/tool surfaces onto the new `foundation/pi` runtime.
 2. Expand verified result-shape and snapshot tests for `read`, `write`, `edit`, and `bash` plus CLI/HTTP smoke coverage.
 3. Deepen `foundation/repomap` from graph-ranking groundwork toward fuller Aider-style graph ranking and richer edit engines.
-4. Expand `foundation/adapters` from visibility seams into provider routing, memory, and richer MCP runtime adapters backed by HyperCode/Borg.
+4. Expand `foundation/adapters` from visibility and route-selection seams into richer provider routing, memory, and richer MCP runtime adapters backed by HyperCode/Borg.
 5. Migrate TUI and orchestration code to the new truthful foundation instead of placeholder parity claims, with special attention to adapter-backed execution paths.

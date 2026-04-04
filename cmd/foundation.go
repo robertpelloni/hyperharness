@@ -69,6 +69,35 @@ var foundationToolsCmd = &cobra.Command{
 	},
 }
 
+var foundationProvidersCmd = &cobra.Command{
+	Use:   "providers",
+	Short: "Inspect provider visibility and route selection for the foundation runtime",
+}
+
+var foundationProvidersStatusCmd = &cobra.Command{
+	Use:   "status",
+	Short: "Show provider visibility for the foundation runtime",
+	RunE: func(cmd *cobra.Command, args []string) error {
+		enc := json.NewEncoder(os.Stdout)
+		enc.SetIndent("", "  ")
+		return enc.Encode(providerStatusPayload())
+	},
+}
+
+var foundationProvidersSelectCmd = &cobra.Command{
+	Use:   "select",
+	Short: "Select a provider route using the current adapter groundwork",
+	RunE: func(cmd *cobra.Command, args []string) error {
+		taskType, _ := cmd.Flags().GetString("task-type")
+		costPreference, _ := cmd.Flags().GetString("cost")
+		requireLocal, _ := cmd.Flags().GetBool("local")
+		route := selectFoundationProviderRoute(foundationProviderRouteRequest{TaskType: taskType, CostPreference: costPreference, RequireLocal: requireLocal})
+		enc := json.NewEncoder(os.Stdout)
+		enc.SetIndent("", "  ")
+		return enc.Encode(route)
+	},
+}
+
 var foundationExecCmd = &cobra.Command{
 	Use:   "exec",
 	Short: "Execute a native foundation tool with exact-name contracts",
@@ -232,6 +261,9 @@ var foundationSessionForkCmd = &cobra.Command{
 
 func init() {
 	foundationInventoryCmd.Flags().Bool("json", false, "emit JSON")
+	foundationProvidersSelectCmd.Flags().String("task-type", "", "task type hint, e.g. coding, analysis, local")
+	foundationProvidersSelectCmd.Flags().String("cost", "", "cost preference hint, e.g. budget or quality")
+	foundationProvidersSelectCmd.Flags().Bool("local", false, "prefer local execution when possible")
 	foundationRepomapCmd.Flags().String("dir", ".", "base directory to scan")
 	foundationRepomapCmd.Flags().StringSlice("mention-file", nil, "files to prioritize in ranking")
 	foundationRepomapCmd.Flags().StringSlice("mention-ident", nil, "identifiers to prioritize in ranking")
@@ -251,6 +283,9 @@ func init() {
 	_ = foundationSessionShowCmd.MarkFlagRequired("session")
 	_ = foundationSessionForkCmd.MarkFlagRequired("session")
 
+	foundationProvidersCmd.AddCommand(foundationProvidersStatusCmd)
+	foundationProvidersCmd.AddCommand(foundationProvidersSelectCmd)
+
 	foundationSessionCmd.AddCommand(foundationSessionCreateCmd)
 	foundationSessionCmd.AddCommand(foundationSessionListCmd)
 	foundationSessionCmd.AddCommand(foundationSessionShowCmd)
@@ -259,6 +294,7 @@ func init() {
 	foundationCmd.AddCommand(foundationInventoryCmd)
 	foundationCmd.AddCommand(foundationSpecCmd)
 	foundationCmd.AddCommand(foundationToolsCmd)
+	foundationCmd.AddCommand(foundationProvidersCmd)
 	foundationCmd.AddCommand(foundationRepomapCmd)
 	foundationCmd.AddCommand(foundationAdaptersCmd)
 	foundationCmd.AddCommand(foundationExecCmd)

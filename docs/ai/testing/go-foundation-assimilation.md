@@ -60,6 +60,7 @@ go test ./...
 - `foundation/repomap/repomap_test.go`
 - `foundation/adapters/hypercode_test.go`
 - `foundation/adapters/providers_test.go`
+- `foundation/adapters/provider_routing_test.go`
 - `foundation/adapters/mcp_test.go`
 - `tools/registry_test.go`
 - `agent/agent_test.go`
@@ -76,6 +77,7 @@ go test ./...
 6. richer top-level `agent` integration tests around exact-schema tool registration and tool-call loops
 7. end-to-end MCP execution tests once richer execution adapters exist
 8. response-shape assertions for foundation-backed MCP HTTP endpoints
+9. response-shape assertions for foundation-backed provider HTTP endpoints
 
 ## Exit criteria for the next milestone
 - foundation packages compile cleanly,

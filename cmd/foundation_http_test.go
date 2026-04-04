@@ -81,6 +81,14 @@ func TestFoundationAdaptersPayloadAndRepomap(t *testing.T) {
 	if call.Route == "" {
 		t.Fatal("expected MCP route")
 	}
+	providerStatus := providerStatusPayload()
+	if providerStatus.CurrentProvider == "" {
+		t.Fatal("expected provider status")
+	}
+	route := selectFoundationProviderRoute(foundationProviderRouteRequest{TaskType: "analysis", CostPreference: "budget"})
+	if route.Provider == "" || route.Model == "" {
+		t.Fatalf("unexpected provider route: %#v", route)
+	}
 	if err := os.WriteFile(filepath.Join(cwd, "main.go"), []byte("package main\n\nfunc main() {}\n"), 0o644); err != nil {
 		t.Fatal(err)
 	}

@@ -100,11 +100,13 @@ Purpose: define and exercise the integration seam between the Go harness and Hyp
 Responsibilities:
 - expose Borg memory/context status cleanly to the harness
 - expose provider configuration/status cleanly to the harness
+- expose early provider-route selection seams before full control-plane delegation
 - expose MCP configuration visibility without duplicating MCP control-plane logic
 - expose early MCP execution/routing seams before full control-plane delegation
 - discover adjacent HyperCode workspaces where available
 - provide a stable adapter boundary before deeper provider/MCP routing integration
 - supply reusable execution helpers for top-level CLI and HTTP surfaces
+- support migration of provider- and MCP-related orchestration entrypoints onto shared adapter logic
 
 ### 6. HyperCode integration boundary
 HyperCode should be treated as an external-but-local substrate.

@@ -131,6 +131,16 @@ var serveCmd = &cobra.Command{
 			return c.JSON(foundationAdaptersPayload(cwd))
 		})
 
+		api.Get("/foundation/providers", func(c *fiber.Ctx) error {
+			return c.JSON(providerStatusPayload())
+		})
+
+		api.Post("/foundation/providers/select", func(c *fiber.Ctx) error {
+			var body foundationProviderRouteRequest
+			_ = c.BodyParser(&body)
+			return c.JSON(selectFoundationProviderRoute(body))
+		})
+
 		api.Get("/foundation/mcp/tools", func(c *fiber.Ctx) error {
 			cwd, err := os.Getwd()
 			if err != nil {

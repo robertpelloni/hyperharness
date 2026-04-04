@@ -33,6 +33,12 @@ type foundationMCPCallRequest struct {
 	Arguments map[string]interface{} `json:"arguments,omitempty"`
 }
 
+type foundationProviderRouteRequest struct {
+	TaskType       string `json:"taskType,omitempty"`
+	CostPreference string `json:"costPreference,omitempty"`
+	RequireLocal   bool   `json:"requireLocal,omitempty"`
+}
+
 func currentFoundationRuntime() (*foundationpi.Runtime, string, error) {
 	cwd, err := os.Getwd()
 	if err != nil {
@@ -48,6 +54,18 @@ func foundationAdaptersPayload(cwd string) map[string]any {
 		"hypercode": hyperAdapter.Status(),
 		"mcp":       mcpAdapter.Status(),
 	}
+}
+
+func providerStatusPayload() adapters.ProviderStatus {
+	return adapters.BuildProviderStatus()
+}
+
+func selectFoundationProviderRoute(body foundationProviderRouteRequest) adapters.ProviderRoute {
+	return adapters.SelectProviderRoute(adapters.ProviderRouteRequest{
+		TaskType:       body.TaskType,
+		CostPreference: body.CostPreference,
+		RequireLocal:   body.RequireLocal,
+	})
 }
 
 func listFoundationMCPTools(cwd string) ([]string, error) {

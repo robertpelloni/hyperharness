@@ -51,6 +51,7 @@
   - native execution surface for exact-name tools
   - native session create/list/show/fork commands
   - native repo-map generation command
+  - provider visibility and route-selection commands
 
 - `foundation/repomap/repomap.go`
   - Aider-inspired native repo map baseline with graph-ranking groundwork
@@ -83,12 +84,14 @@
   - defensive guard added for empty MCP binary path to avoid nil-process panics in tests
 
 - `cmd/foundation_http.go`
-  - foundation-backed helper layer for execution, sessions, repomap, adapters, foundation-backed file reads, and foundation-backed MCP mediation
+  - foundation-backed helper layer for execution, sessions, repomap, adapters, foundation-backed file reads, foundation-backed MCP mediation, and provider-route selection
 
 - `cmd/serve.go`
   - operator HTTP surface now exposes foundation-backed endpoints under `/api/v1/foundation/*`
+  - `/api/v1/foundation/providers*` now exposes provider visibility and route-selection behavior
   - `/api/v1/foundation/mcp/*` now exposes adapter-backed MCP tool listing and mediated call preparation
   - `/fs/read` now routes through the native foundation `read` tool instead of direct file reads
+  - foundation-backed orchestration entrypoints continue to replace direct placeholder logic incrementally
 
 - `agent/agent.go`
   - top-level agent now advertises the native exact-name tools preferentially
@@ -104,6 +107,10 @@
   - detects available providers from config/env
   - probes Ollama models when relevant
 
+- `foundation/adapters/provider_routing.go`
+  - provider-route selection groundwork based on task type, cost preference, and local-execution preference
+  - provides the first shared route-selection logic for CLI and HTTP surfaces
+
 - `foundation/adapters/mcp_config.go`
   - adapter-owned MCP config parsing to avoid circular coupling
   - normalizes server command/env visibility for foundation consumers
@@ -116,6 +123,9 @@
 
 - `foundation/adapters/providers_test.go`
   - validates provider status/context construction
+
+- `foundation/adapters/provider_routing_test.go`
+  - validates provider-route selection groundwork
 
 - `foundation/adapters/mcp_test.go`
   - validates MCP adapter status, tool hints, and route calls
@@ -137,7 +147,7 @@
   - verifies MCP manager configured-tool listing, mediated call routing, and missing-server handling
 
 - `cmd/foundation_http_test.go`
-  - verifies foundation-backed execution/session/repomap/adapter helper behavior used by HTTP surfaces, including MCP mediation helpers
+  - verifies foundation-backed execution/session/repomap/adapter helper behavior used by HTTP surfaces, including MCP mediation and provider-route helpers
 
 ### Documentation
 - requirements, design, planning, implementation, and testing documents under `docs/ai/`
@@ -178,12 +188,14 @@ These issues were observed and documented, not silently ignored or misrepresente
 - top-level agent tool-schema registration tests
 - HyperCode/Borg adapter seam tests
 - provider adapter seam tests
+- provider-route selection tests
 - MCP adapter seam and top-level MCP package tests
-- foundation-backed HTTP helper tests, including MCP mediation helpers
+- foundation-backed HTTP helper tests, including MCP mediation and provider-route helpers
+- provider CLI smoke checks
 
 ## Recommended next implementation sequence
 1. continue routing remaining top-level placeholder orchestration surfaces to `foundation/pi` runtime packages,
 2. deepen repo-map ranking toward richer Aider-style graph semantics and add edit strategies,
-3. expand `foundation/adapters` from status/config visibility into real HyperCode/Borg provider routing and richer MCP execution adapters,
+3. expand `foundation/adapters` from visibility and route-selection seams into richer HyperCode/Borg provider routing and richer MCP execution adapters,
 4. expand snapshot/result-shape coverage plus HTTP/CLI smoke coverage,
 5. layer in delegation, verification, detached/background runs, and JSON/RPC transport.
