@@ -65,6 +65,7 @@ type Server struct {
 	fallbackBuffer    *providerFallbackBuffer
 	supervisorManager *supervisor.Manager
 	workflowEngine    *workflow.Engine
+	linkCrawler       *bobbySync.LinkCrawlerManager
 }
 
 type providerFallbackEvent struct {
@@ -378,6 +379,11 @@ func New(cfg config.Config, detector controlplane.ToolProvider) *Server {
 		fallbackBuffer:    newProviderFallbackBuffer(50),
 		supervisorManager: supMgr,
 		workflowEngine:    wfEngine,
+		linkCrawler: bobbySync.NewLinkCrawlerManager(
+			filepath.Join(cfg.WorkspaceRoot, "metamcp.db"),
+			resolveLinkCrawlerInterval(),
+			resolveLinkCrawlerClassifyTags(),
+		),
 	}
 
 	server.registerRoutes()
@@ -394,6 +400,11 @@ func (s *Server) ListenAndServe(ctx context.Context) error {
 		Handler:           s.mux,
 		ReadHeaderTimeout: 5 * time.Second,
 	}
+
+	if resolveLinkCrawlerAutoStart() {
+		s.linkCrawler.Start(ctx)
+	}
+	defer s.linkCrawler.Stop()
 
 	errCh := make(chan error, 1)
 	go func() {
@@ -823,6 +834,9 @@ func (s *Server) registerRoutes() {
 	s.mux.HandleFunc("/api/links-backlog/get", s.handleLinksBacklogGet)
 	s.mux.HandleFunc("/api/links-backlog/sync", s.handleLinksBacklogSync)
 	s.mux.HandleFunc("/api/links-backlog/crawl-native", s.handleLinksBacklogCrawlNative)
+	s.mux.HandleFunc("/api/links-backlog/crawler-native/status", s.handleLinksBacklogCrawlerStatus)
+	s.mux.HandleFunc("/api/links-backlog/crawler-native/start", s.handleLinksBacklogCrawlerStart)
+	s.mux.HandleFunc("/api/links-backlog/crawler-native/stop", s.handleLinksBacklogCrawlerStop)
 	s.mux.HandleFunc("/api/infrastructure", s.handleInfrastructureStatus)
 	s.mux.HandleFunc("/api/infrastructure/doctor", s.handleInfrastructureDoctor)
 	s.mux.HandleFunc("/api/infrastructure/apply", s.handleInfrastructureApply)
@@ -1282,7 +1296,10 @@ func (s *Server) handleAPIIndex(w http.ResponseWriter, _ *http.Request) {
 				{Path: "/api/links-backlog/stats", Category: "operator", Description: "Read BobbyBookmarks backlog stats through the TypeScript links backlog router."},
 				{Path: "/api/links-backlog/get", Category: "operator", Description: "Read a BobbyBookmarks backlog item through the TypeScript links backlog router."},
 				{Path: "/api/links-backlog/sync", Category: "operator", Description: "Sync BobbyBookmarks backlog data through the TypeScript links backlog router."},
-				{Path: "/api/links-backlog/crawl-native", Category: "operator", Description: "Crawl pending links in the local backlog natively in Go and enrich them with fetched metadata."},
+				{Path: "/api/links-backlog/crawl-native", Category: "operator", Description: "Run a single native Go crawl/enrichment pass over pending backlog links."},
+				{Path: "/api/links-backlog/crawler-native/status", Category: "operator", Description: "Read native Go links backlog crawler background-worker status."},
+				{Path: "/api/links-backlog/crawler-native/start", Category: "operator", Description: "Start the native Go links backlog crawler background worker."},
+				{Path: "/api/links-backlog/crawler-native/stop", Category: "operator", Description: "Stop the native Go links backlog crawler background worker."},
 				{Path: "/api/infrastructure", Category: "operator", Description: "Read infrastructure daemon status through the TypeScript infrastructure router, with a local binary/config fallback when the router is unavailable."},
 				{Path: "/api/infrastructure/doctor", Category: "operator", Description: "Run the infrastructure doctor command through the TypeScript infrastructure router."},
 				{Path: "/api/infrastructure/apply", Category: "operator", Description: "Apply infrastructure configuration through the TypeScript infrastructure router."},
@@ -6824,27 +6841,26 @@ func (s *Server) handleLinksBacklogCrawlNative(w http.ResponseWriter, r *http.Re
 		return
 	}
 
-	var payload struct {
-		Limit        int  `json:"limit"`
-		ClassifyTags bool `json:"classifyTags"`
-	}
+	statusBefore := s.linkCrawler.Status()
 	if r.Body != nil {
 		defer r.Body.Close()
+		var payload struct {
+			ClassifyTags *bool `json:"classifyTags"`
+		}
 		if err := json.NewDecoder(r.Body).Decode(&payload); err != nil && !errors.Is(err, io.EOF) {
 			writeJSON(w, http.StatusBadRequest, map[string]any{"success": false, "error": "invalid JSON body"})
 			return
 		}
-	}
-	if payload.Limit <= 0 {
-		payload.Limit = 5
+		if payload.ClassifyTags != nil && *payload.ClassifyTags != statusBefore.ClassifyTags {
+			writeJSON(w, http.StatusBadRequest, map[string]any{
+				"success": false,
+				"error":   "classifyTags override is not supported on the running native crawler; restart the worker with updated settings instead",
+			})
+			return
+		}
 	}
 
-	opts := bobbySync.LinkCrawlerOptions{Limit: payload.Limit}
-	if payload.ClassifyTags {
-		opts.Classifier = bobbySync.DefaultLinkTagClassifier
-	}
-
-	report, err := bobbySync.CrawlPendingLinks(r.Context(), s.localMetaMCPDBPath(), opts)
+	report, err := s.linkCrawler.RunOnce(r.Context())
 	if err != nil {
 		writeJSON(w, http.StatusServiceUnavailable, map[string]any{
 			"success": false,
@@ -6857,10 +6873,52 @@ func (s *Server) handleLinksBacklogCrawlNative(w http.ResponseWriter, r *http.Re
 	writeJSON(w, http.StatusOK, map[string]any{
 		"success": true,
 		"data":    report,
+		"status":  s.linkCrawler.Status(),
 		"bridge": map[string]any{
 			"fallback":  "go-local-link-crawler",
 			"procedure": "linksBacklog.crawlNative",
 			"reason":    "using native Go links backlog crawler",
+		},
+	})
+}
+
+func (s *Server) handleLinksBacklogCrawlerStatus(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		writeJSON(w, http.StatusMethodNotAllowed, map[string]any{"success": false, "error": "method not allowed"})
+		return
+	}
+	writeJSON(w, http.StatusOK, map[string]any{
+		"success": true,
+		"data":    s.linkCrawler.Status(),
+	})
+}
+
+func (s *Server) handleLinksBacklogCrawlerStart(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		writeJSON(w, http.StatusMethodNotAllowed, map[string]any{"success": false, "error": "method not allowed"})
+		return
+	}
+	started := s.linkCrawler.Start(context.WithoutCancel(r.Context()))
+	writeJSON(w, http.StatusOK, map[string]any{
+		"success": true,
+		"data": map[string]any{
+			"started": started,
+			"status":  s.linkCrawler.Status(),
+		},
+	})
+}
+
+func (s *Server) handleLinksBacklogCrawlerStop(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		writeJSON(w, http.StatusMethodNotAllowed, map[string]any{"success": false, "error": "method not allowed"})
+		return
+	}
+	stopped := s.linkCrawler.Stop()
+	writeJSON(w, http.StatusOK, map[string]any{
+		"success": true,
+		"data": map[string]any{
+			"stopped": stopped,
+			"status":  s.linkCrawler.Status(),
 		},
 	})
 }
@@ -9623,6 +9681,34 @@ func (s *Server) localPlanSummary() string {
 
 func (s *Server) localMetaMCPDBPath() string {
 	return filepath.Join(s.cfg.WorkspaceRoot, "metamcp.db")
+}
+
+func resolveLinkCrawlerAutoStart() bool {
+	value := strings.TrimSpace(os.Getenv("HYPERCODE_NATIVE_LINK_CRAWLER_AUTOSTART"))
+	if value == "" {
+		return true
+	}
+	return !(strings.EqualFold(value, "0") || strings.EqualFold(value, "false") || strings.EqualFold(value, "no"))
+}
+
+func resolveLinkCrawlerClassifyTags() bool {
+	value := strings.TrimSpace(os.Getenv("HYPERCODE_NATIVE_LINK_CRAWLER_CLASSIFY_TAGS"))
+	if value == "" {
+		return false
+	}
+	return strings.EqualFold(value, "1") || strings.EqualFold(value, "true") || strings.EqualFold(value, "yes")
+}
+
+func resolveLinkCrawlerInterval() time.Duration {
+	value := strings.TrimSpace(os.Getenv("HYPERCODE_NATIVE_LINK_CRAWLER_INTERVAL_MS"))
+	if value == "" {
+		return time.Minute
+	}
+	ms, err := strconv.Atoi(value)
+	if err != nil || ms <= 0 {
+		return time.Minute
+	}
+	return time.Duration(ms) * time.Millisecond
 }
 
 func (s *Server) localPolicy(uuid string) (any, error) {

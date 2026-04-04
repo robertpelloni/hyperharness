@@ -746,29 +746,45 @@ Create a native Go execution path for backlog crawling/enrichment so this surfac
   - HTTP status persistence for crawl failures
   - optional tag classification hook
   - default AI-backed tag classifier wired through Go `ai.AutoRouteWithModel(...)` using `xiaomi/mimo-v2-flash:free`
-- added `go/internal/httpapi/server.go` route:
+- added `go/internal/sync/linkcrawler_manager.go`
+  - Go-owned background worker lifecycle for backlog crawling
+  - periodic loop execution
+  - run counters / last report / last error / timestamps
+  - clean start/stop behavior
+- added `go/internal/httpapi/server.go` routes:
   - `POST /api/links-backlog/crawl-native`
-- updated Go API index metadata so the new route is discoverable
+  - `GET /api/links-backlog/crawler-native/status`
+  - `POST /api/links-backlog/crawler-native/start`
+  - `POST /api/links-backlog/crawler-native/stop`
+- Go server now auto-starts the native link crawler by default during `ListenAndServe(...)`
+  - can be controlled with env:
+    - `HYPERCODE_NATIVE_LINK_CRAWLER_AUTOSTART`
+    - `HYPERCODE_NATIVE_LINK_CRAWLER_INTERVAL_MS`
+    - `HYPERCODE_NATIVE_LINK_CRAWLER_CLASSIFY_TAGS`
+- updated Go API index metadata so the new routes are discoverable
 - added regression coverage:
   - `go/internal/sync/linkcrawler_test.go`
+  - `go/internal/sync/linkcrawler_manager_test.go`
   - `go/internal/httpapi/server_test.go`
 
 ### Important truthfulness note
-This is **not yet** full ownership parity with the TS background worker.
+This is **not yet** full cross-runtime ownership parity with the TS background worker.
 
 What is true now:
 - Go can natively crawl and enrich pending backlog links
-- Go exposes that capability via a real HTTP endpoint
+- Go exposes that capability via real HTTP endpoints
+- the Go server now owns a native crawler background loop when the Go control plane is the active runtime
 - the native path is tested
 
 What is not true yet:
-- the Go crawler is not yet the default continuously running background worker started automatically by the Go control plane
-- the TS `LinkCrawlerWorker` still remains the default background owner in the current runtime mix
+- the TS `LinkCrawlerWorker` still exists in the mixed-runtime world
+- overall repo behavior is still transitional because not every operator path is Go-only yet
 
-So this surface should now be described as **Partial Native Go**, not fully migrated.
+So this surface should still be described as **Partial Native Go**, but it is materially closer to Go ownership than before.
 
 ### Validation performed for this crawler step
 ```bash
+gofmt -w go/internal/sync/linkcrawler.go go/internal/sync/linkcrawler_test.go go/internal/sync/linkcrawler_manager.go go/internal/sync/linkcrawler_manager_test.go go/internal/httpapi/server.go go/internal/httpapi/server_test.go
 cd go && go test ./internal/sync ./internal/httpapi
 cd go && go build -buildvcs=false ./cmd/hypercode
 cd go && go test ./...
@@ -804,7 +820,8 @@ This pass meaningfully strengthened the **Go-primary migration path** and improv
 - Go-primary runtime selection in the CLI launcher (`auto|go|node`, with auto preferring Go)
 - truthful dashboard skipping/warnings when Go runtime is selected but TS/tRPC compatibility is still required for the current web UI
 - native Go links backlog crawling/enrichment API surface
-- a tested Go-native replacement path for one TS-only HyperIngest feature, even though background-worker ownership is not fully flipped yet
+- Go-owned links backlog crawler background lifecycle in the Go server
+- a tested Go-native replacement path for one TS-only HyperIngest feature, even though mixed-runtime cleanup is not fully finished yet
 - a small but real Maestro UX fix
 
 It was validated by successful Go compilation, successful targeted Go tests for the new native surfaces, successful targeted regression tests for repaired bridge/fallback routes, a successful full Go test suite run (`go test ./...`), targeted CLI startup tests and type-checking, council/sync coverage, targeted AI/core validation, and repeated successful workspace builds. The new systems are real and integrated, but several of them should still be described as **Beta** or **Experimental**, not full parity.
