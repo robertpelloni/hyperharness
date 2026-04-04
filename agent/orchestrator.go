@@ -2,22 +2,28 @@ package agent
 
 import (
 	"fmt"
+	"os"
 	"strings"
+
+	foundationorchestration "github.com/robertpelloni/hypercode/foundation/orchestration"
 )
 
 // Orchestrator manages multiple sub-agents (Maestro/Codemachine parity)
 type Orchestrator struct {
-	Agents map[string]*Agent
-	Lead   *Agent
+	Agents     map[string]*Agent
+	Lead       *Agent
+	WorkingDir string
 }
 
 func NewOrchestrator() *Orchestrator {
 	lead := NewAgent()
 	lead.messages[0].Content = "You are the TechLead Orchestrator. Break down user requests and delegate to specialized sub-agents."
+	cwd, _ := os.Getwd()
 
 	return &Orchestrator{
-		Agents: make(map[string]*Agent),
-		Lead:   lead,
+		Agents:     make(map[string]*Agent),
+		Lead:       lead,
+		WorkingDir: cwd,
 	}
 }
 
@@ -38,25 +44,42 @@ func (o *Orchestrator) Delegate(agentName, task string) (string, error) {
 	return agent.Chat(fmt.Sprintf("[Delegated Task]: %s", task))
 }
 
-// PlanAndExecute uses the Lead agent to plan a task and then delegates it
+func (o *Orchestrator) BuildPlan(task string) (foundationorchestration.PlanResult, error) {
+	return foundationorchestration.BuildPlan(foundationorchestration.PlanRequest{
+		Prompt:       task,
+		WorkingDir:   o.WorkingDir,
+		IncludeRepo:  true,
+		MaxRepoFiles: 8,
+	})
+}
+
+// PlanAndExecute uses the local orchestration planner and then delegates it.
 func (o *Orchestrator) PlanAndExecute(task string) (string, error) {
-	// 1. Lead creates a plan
-	planResponse, err := o.Lead.Chat(fmt.Sprintf("Create a step-by-step plan for: %s. Output only the plan.", task))
+	plan, err := o.BuildPlan(task)
 	if err != nil {
 		return "", err
 	}
 
-	// 2. Here we would parse the plan and delegate. For now, we simulate execution.
 	var builder strings.Builder
-	builder.WriteString(fmt.Sprintf("### Orchestration Plan ###\n%s\n\n### Execution ###\n", planResponse))
+	builder.WriteString("### Orchestration Plan ###\n")
+	builder.WriteString(fmt.Sprintf("Task Type: %s\n", plan.TaskType))
+	builder.WriteString(fmt.Sprintf("Provider Route: %s/%s\n", plan.Execution.Route.Provider, plan.Execution.Route.Model))
+	for i, step := range plan.Steps {
+		builder.WriteString(fmt.Sprintf("%d. %s\n", i+1, step))
+	}
+	if plan.RepoMapIncluded {
+		builder.WriteString("\n### Repo Map ###\n")
+		builder.WriteString(plan.RepoMap)
+		builder.WriteString("\n")
+	}
+	builder.WriteString("\n### Execution ###\n")
 
-	// Create a generic execution agent if none exist
 	if len(o.Agents) == 0 {
 		o.Spawn("executor", "You are the Executor Agent. Complete the tasks assigned to you.")
 	}
 
 	for name := range o.Agents {
-		result, err := o.Delegate(name, fmt.Sprintf("Execute the following plan:\n%s", planResponse))
+		result, err := o.Delegate(name, fmt.Sprintf("Execute the following plan:\n%s", strings.Join(plan.Steps, "\n")))
 		if err != nil {
 			builder.WriteString(fmt.Sprintf("Agent %s failed: %v\n", name, err))
 		} else {

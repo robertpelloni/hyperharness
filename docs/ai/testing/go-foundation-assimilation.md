@@ -58,6 +58,7 @@ go test ./...
 - `foundation/pi/tool_parity_test.go`
 - `foundation/pi/tool_snapshot_test.go`
 - `foundation/repomap/repomap_test.go`
+- `foundation/orchestration/planner_test.go`
 - `foundation/adapters/hypercode_test.go`
 - `foundation/adapters/providers_test.go`
 - `foundation/adapters/provider_routing_test.go`
@@ -65,6 +66,8 @@ go test ./...
 - `foundation/adapters/mcp_test.go`
 - `tools/registry_test.go`
 - `agent/agent_test.go`
+- `agent/orchestrator_test.go`
+- `agents/director_test.go`
 - `mcp/client_test.go`
 - `mcp/manager_test.go`
 - `cmd/foundation_http_test.go`

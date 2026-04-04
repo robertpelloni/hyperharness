@@ -25,6 +25,9 @@ func TestDirectorInitialization(t *testing.T) {
 	if !strings.Contains(director.History[0].Content, "Borg TechLead Director") {
 		t.Errorf("System prompt missing core identity")
 	}
+	if director.HyperAdapter == nil {
+		t.Errorf("Expected HyperAdapter to be initialized")
+	}
 }
 
 func TestDirectorHandleInput(t *testing.T) {
@@ -38,6 +41,12 @@ func TestDirectorHandleInput(t *testing.T) {
 
 	if !strings.Contains(resp, "Native Go Borg Director") {
 		t.Errorf("Unexpected default response: %s", resp)
+	}
+	if !strings.Contains(resp, "[Director Plan]") {
+		t.Errorf("Expected director plan summary in response: %s", resp)
+	}
+	if _, ok := director.State["lastPlan"]; !ok {
+		t.Errorf("Expected lastPlan state to be recorded")
 	}
 
 	// 1 (sys) + 1 (user) + 1 (assistant) = 3 messages in history

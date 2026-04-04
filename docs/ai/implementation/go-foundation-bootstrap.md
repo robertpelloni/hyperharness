@@ -63,6 +63,12 @@
   - repo map output validation
   - ranking validation for mention-based and graph-based prioritization
 
+- `foundation/orchestration/planner.go`
+  - orchestration planning primitives that combine task inference, provider execution preparation, and optional repo-map context
+
+- `foundation/orchestration/planner_test.go`
+  - validates orchestration planning results and repo-map inclusion
+
 - `tools/registry.go`
   - top-level tool registry now exposes exact-name Pi-compatible tools via the native foundation runtime
   - repomap is available from the legacy registry surface as a native foundation-backed tool
@@ -100,6 +106,12 @@
 
 - `agents/provider_stub.go` and `agents/provider.go`
   - top-level provider stubs now consume provider execution-preparation hints instead of returning purely static placeholder text
+
+- `agents/director.go`
+  - top-level director now records orchestration plans and injects plan context into provider calls
+
+- `agent/orchestrator.go`
+  - top-level orchestrator now builds plans from `foundation/orchestration` instead of relying only on placeholder LLM planning
 
 - `foundation/adapters/hypercode.go`
   - first HyperCode/Borg adapter seam for the Go foundation
@@ -158,6 +170,12 @@
 - `cmd/foundation_http_test.go`
   - verifies foundation-backed execution/session/repomap/adapter helper behavior used by HTTP surfaces, including MCP mediation and provider-route helpers
 
+- `agents/director_test.go`
+  - verifies orchestration plan state and planned response decoration
+
+- `agent/orchestrator_test.go`
+  - verifies foundation-backed orchestration plan building
+
 ### Documentation
 - requirements, design, planning, implementation, and testing documents under `docs/ai/`
 
@@ -193,6 +211,7 @@ These issues were observed and documented, not silently ignored or misrepresente
 - parity/truncation tests for `read` and `bash`
 - snapshot-style tool result verification
 - repo map generation and ranking tests
+- orchestration planning tests
 - top-level tool registry tests confirming native exact-name tool exposure
 - top-level agent tool-schema registration tests
 - HyperCode/Borg adapter seam tests

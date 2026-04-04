@@ -59,6 +59,7 @@ Deliver a Go-native harness that can truthfully grow from a Pi-derived foundatio
 - [x] Route initial HTTP helper/file-read surfaces onto the foundation runtime
 - [x] Route initial provider/MCP HTTP helper surfaces onto adapter-backed foundation helpers
 - [x] Route initial provider stub behavior onto provider execution-preparation seams
+- [x] Route initial director/orchestrator planning onto foundation orchestration primitives
 - [ ] Route more daemon/orchestrator workflows away from placeholder paths
 - [ ] Route TUI request handling onto foundation runtime primitives
 

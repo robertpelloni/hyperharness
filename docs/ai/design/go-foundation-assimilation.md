@@ -94,7 +94,17 @@ Responsibilities:
 - emit deterministic `<repo_map>` output for the harness
 - provide the first step toward richer graph-based context ranking
 
-### 5. `foundation/adapters`
+### 5. `foundation/orchestration`
+Purpose: provide reusable planning and execution-preparation primitives for higher-level orchestrators.
+
+Responsibilities:
+- infer task type from user prompts
+- prepare provider execution plans
+- optionally attach repo-map context
+- generate deterministic orchestration steps for directors/supervisors
+- reduce placeholder orchestration logic in higher-level packages
+
+### 6. `foundation/adapters`
 Purpose: define and exercise the integration seam between the Go harness and HyperCode/Borg.
 
 Responsibilities:
@@ -108,7 +118,7 @@ Responsibilities:
 - supply reusable execution helpers for top-level CLI and HTTP surfaces
 - support migration of provider- and MCP-related orchestration entrypoints onto shared adapter logic
 
-### 6. HyperCode integration boundary
+### 7. HyperCode integration boundary
 HyperCode should be treated as an external-but-local substrate.
 
 Responsibilities retained by HyperCode:
@@ -172,6 +182,7 @@ Add contract and snapshot tests for each feature family.
 - `foundation/compat/*`
 - `foundation/assimilation/*`
 - `foundation/repomap/*`
+- `foundation/orchestration/*`
 - `foundation/adapters/*`
 - `cmd/foundation.go`
 
@@ -185,5 +196,6 @@ Add contract and snapshot tests for each feature family.
 1. Continue routing existing top-level placeholder command and orchestration surfaces to the new `foundation/pi` runtime.
 2. Deepen `foundation/repomap` from lightweight graph groundwork toward fuller graph/LSP-aware ranking and port richer edit engines.
 3. Expand `foundation/adapters` from status/config seams into real HyperCode-backed provider routing and richer MCP execution adapters.
-4. Expand verified snapshot-style contract tests for tool outputs plus CLI/HTTP behaviors.
-5. Add verification, delegation, and background session services.
+4. Continue migrating higher-level director/orchestrator logic onto `foundation/orchestration` primitives.
+5. Expand verified snapshot-style contract tests for tool outputs plus CLI/HTTP behaviors.
+6. Add verification, delegation, and background session services.
