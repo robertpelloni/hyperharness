@@ -25,7 +25,7 @@ func initialModel() model {
 	s.Style = lipgloss.NewStyle().Foreground(lipgloss.Color("205"))
 
 	return model{
-		director: agents.NewDirector(&agents.DefaultProvider{}),
+		director: agents.NewDirector(agents.NewHyperCodeProvider()),
 		input:    "",
 		history:  []string{},
 		loading:  false,
