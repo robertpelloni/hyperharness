@@ -69,6 +69,12 @@
 - `foundation/orchestration/planner_test.go`
   - validates orchestration planning results and repo-map inclusion
 
+- `foundation/orchestration/webhook_plan.go`
+  - foundation-backed webhook planning for queue actions and telemetry summaries
+
+- `foundation/orchestration/webhook_plan_test.go`
+  - validates webhook-to-action planning
+
 - `tools/registry.go`
   - top-level tool registry now exposes exact-name Pi-compatible tools via the native foundation runtime
   - repomap is available from the legacy registry surface as a native foundation-backed tool
@@ -112,6 +118,12 @@
 
 - `agent/orchestrator.go`
   - top-level orchestrator now builds plans from `foundation/orchestration` instead of relying only on placeholder LLM planning
+
+- `orchestrator/webhooks.go`
+  - webhook handling now uses foundation-backed webhook planning for queued actions and telemetry summaries
+
+- `orchestrator/orchestration_bridge.go`
+  - daemon/autodrive bridge now converts foundation plans into execution objectives for sandboxed runs
 
 - `foundation/adapters/hypercode.go`
   - first HyperCode/Borg adapter seam for the Go foundation
@@ -176,6 +188,9 @@
 - `agent/orchestrator_test.go`
   - verifies foundation-backed orchestration plan building
 
+- `orchestrator/orchestration_bridge_test.go`
+  - verifies daemon/autodrive objective generation from foundation plans
+
 ### Documentation
 - requirements, design, planning, implementation, and testing documents under `docs/ai/`
 
@@ -212,6 +227,8 @@ These issues were observed and documented, not silently ignored or misrepresente
 - snapshot-style tool result verification
 - repo map generation and ranking tests
 - orchestration planning tests
+- webhook planning tests
+- daemon/autodrive orchestration bridge tests
 - top-level tool registry tests confirming native exact-name tool exposure
 - top-level agent tool-schema registration tests
 - HyperCode/Borg adapter seam tests

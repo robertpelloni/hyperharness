@@ -59,6 +59,7 @@ go test ./...
 - `foundation/pi/tool_snapshot_test.go`
 - `foundation/repomap/repomap_test.go`
 - `foundation/orchestration/planner_test.go`
+- `foundation/orchestration/webhook_plan_test.go`
 - `foundation/adapters/hypercode_test.go`
 - `foundation/adapters/providers_test.go`
 - `foundation/adapters/provider_routing_test.go`
@@ -71,6 +72,7 @@ go test ./...
 - `mcp/client_test.go`
 - `mcp/manager_test.go`
 - `cmd/foundation_http_test.go`
+- `orchestrator/orchestration_bridge_test.go`
 
 ## Tests that should be added next
 1. `cmd/foundation` and HTTP route smoke tests

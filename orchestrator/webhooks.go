@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	foundationorchestration "github.com/robertpelloni/hypercode/foundation/orchestration"
 )
 
 type WebhookPayload struct {
@@ -34,18 +35,16 @@ func HandleBorgWebhook(payload WebhookPayload, queue *TaskQueue, ws *TelemetrySo
 		log.Printf("[Webhooks] ORM Insert skipped: %v", err)
 	}
 
-	// 2. Queue specific tasks based on the webhook type
-	switch payload.Type {
-	case "repo_updated", "reindex_all":
-		log.Printf("[Webhooks] Borg requested automated RAG re-index...")
-		queue.Enqueue("index_codebase")
-	case "issue_detected":
-		log.Printf("[Webhooks] Borg reported an active issue ticket. Firing check_issues...")
-		queue.Enqueue("check_issues")
-	case "clear_logs":
-		// Direct administrative truncate request mapping TS Prisma
+	// 2. Build a foundation-backed webhook plan and apply it.
+	plan := foundationorchestration.BuildWebhookPlan(payload.Type, source)
+	for _, action := range plan.QueueActions {
+		log.Printf("[Webhooks] Queueing action %s from plan for signal %s", action, payload.Type)
+		queue.Enqueue(action)
+	}
+	if plan.ClearLogs {
 		DB.Where("1 = 1").Delete(&KeeperLog{})
-	default:
+	}
+	if len(plan.QueueActions) == 0 && !plan.ClearLogs {
 		log.Printf("[Webhooks] Unmapped signal subtype ignored: %s", payload.Type)
 	}
 
@@ -53,6 +52,8 @@ func HandleBorgWebhook(payload WebhookPayload, queue *TaskQueue, ws *TelemetrySo
 	emitPayload := map[string]interface{}{
 		"type":      payload.Type,
 		"source":    source,
+		"summary":   plan.Summary,
+		"actions":   plan.QueueActions,
 		"data":      payload.Data,
 		"timestamp": time.Now().Format(time.RFC3339),
 	}
@@ -60,5 +61,5 @@ func HandleBorgWebhook(payload WebhookPayload, queue *TaskQueue, ws *TelemetrySo
 	rawJson, _ := json.Marshal(emitPayload)
 	ws.Broadcast(fmt.Sprintf(`{"event": "borg_signal_received", "payload": %s}`, string(rawJson)))
 
-	return map[string]interface{}{"success": true, "processed": true}, nil
+	return map[string]interface{}{"success": true, "processed": true, "plan": plan}, nil
 }

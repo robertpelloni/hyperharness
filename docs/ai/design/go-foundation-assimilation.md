@@ -102,6 +102,7 @@ Responsibilities:
 - prepare provider execution plans
 - optionally attach repo-map context
 - generate deterministic orchestration steps for directors/supervisors
+- generate webhook plans for queue/telemetry flows
 - reduce placeholder orchestration logic in higher-level packages
 
 ### 6. `foundation/adapters`

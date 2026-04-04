@@ -40,6 +40,7 @@
   - `hypercode foundation providers status/select/prepare` now exposes provider routing groundwork from the CLI
   - `agents/provider_stub.go` and `agents/provider.go` now consume provider execution-preparation hints
   - `agents/director.go` and `agent/orchestrator.go` now consume `foundation/orchestration` planning primitives
+  - `orchestrator/webhooks.go` and autodrive objective generation now consume foundation orchestration helpers
 - Added deeper verification coverage:
   - snapshot-style tests for baseline tool results
   - top-level agent schema registration test
@@ -50,7 +51,7 @@
   - MCP adapter seam tests and top-level MCP package tests
   - foundation-backed HTTP helper tests
   - MCP mediation helper tests
-  - orchestration planner and migrated director/orchestrator tests
+  - orchestration planner, webhook planner, and migrated director/orchestrator tests
   - provider CLI smoke checks
 - Added comprehensive `docs/ai/` documentation for requirements, design, planning, implementation, and testing.
 - Added `docs/ai/design/upstream-toolchain-analysis.md` summarizing the imported upstream systems and assimilation strategy.

@@ -188,7 +188,8 @@ func BackgroundWorker() {
 					log.Printf("[AutoDrive-Fault] Strict execution blocked explicitly due to Git boundaries: %v", err)
 				} else {
 					defer wMgr.DestroyWorktree(sandboxDir, branchName)
-					err := engine.Start(context.Background(), "Execute the approved plan perfectly within the explicitly bound repository isolation boundaries.", sandboxDir)
+					objective := buildAutoDriveObjective("Execute the approved plan perfectly within the explicitly bound repository isolation boundaries.", sandboxDir)
+					err := engine.Start(context.Background(), objective, sandboxDir)
 					if err != nil {
 						log.Printf("[AutoDrive] Execution aborted natively: %v", err)
 					}
