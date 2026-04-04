@@ -150,6 +150,18 @@ func (r *Runtime) ResetSessionLeaf(sessionID string) (*SessionFile, error) {
 	return r.sessionStore.ResetLeaf(sessionID)
 }
 
+func (r *Runtime) GetCommonAncestor(sessionID, firstLeafID, secondLeafID string) (string, error) {
+	return r.sessionStore.GetCommonAncestor(sessionID, firstLeafID, secondLeafID)
+}
+
+func (r *Runtime) PrepareBranchSummary(sessionID, targetID string) (*BranchSummaryPreparation, error) {
+	return r.sessionStore.PrepareBranchSummary(sessionID, targetID)
+}
+
+func (r *Runtime) BranchWithSummary(sessionID, targetID, summary string, details any) (*SessionFile, error) {
+	return r.sessionStore.BranchWithSummary(sessionID, targetID, summary, details)
+}
+
 func (r *Runtime) appendToolRun(sessionID, toolName string, input json.RawMessage, result *ToolResult) error {
 	session, err := r.sessionStore.Load(sessionID)
 	if err != nil {

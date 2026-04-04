@@ -66,6 +66,13 @@ type SessionContext struct {
 	CompactionUsed bool           `json:"compactionUsed"`
 }
 
+type BranchSummaryPreparation struct {
+	TargetID           string         `json:"targetId"`
+	OldLeafID          string         `json:"oldLeafId"`
+	CommonAncestorID   string         `json:"commonAncestorId,omitempty"`
+	EntriesToSummarize []SessionEntry `json:"entriesToSummarize"`
+}
+
 type sessionRecord struct {
 	Type string          `json:"type"`
 	Data json.RawMessage `json:"data"`
@@ -452,6 +459,80 @@ func (s *SessionStore) GetBranch(sessionID, fromID string) ([]SessionEntry, erro
 		branch[i], branch[j] = branch[j], branch[i]
 	}
 	return branch, nil
+}
+
+func (s *SessionStore) GetCommonAncestor(sessionID, firstLeafID, secondLeafID string) (string, error) {
+	if firstLeafID == "" || secondLeafID == "" {
+		return "", nil
+	}
+	firstBranch, err := s.GetBranch(sessionID, firstLeafID)
+	if err != nil {
+		return "", err
+	}
+	secondBranch, err := s.GetBranch(sessionID, secondLeafID)
+	if err != nil {
+		return "", err
+	}
+	ancestor := ""
+	for i := 0; i < len(firstBranch) && i < len(secondBranch); i++ {
+		if firstBranch[i].ID != secondBranch[i].ID {
+			break
+		}
+		ancestor = firstBranch[i].ID
+	}
+	return ancestor, nil
+}
+
+func (s *SessionStore) PrepareBranchSummary(sessionID, targetID string) (*BranchSummaryPreparation, error) {
+	session, err := s.Load(sessionID)
+	if err != nil {
+		return nil, err
+	}
+	oldLeafID := session.Metadata.LeafID
+	if oldLeafID == "" && len(session.Entries) > 0 {
+		oldLeafID = session.Entries[len(session.Entries)-1].ID
+	}
+	if oldLeafID == "" || targetID == "" {
+		return &BranchSummaryPreparation{TargetID: targetID, OldLeafID: oldLeafID}, nil
+	}
+	commonAncestorID, err := s.GetCommonAncestor(sessionID, oldLeafID, targetID)
+	if err != nil {
+		return nil, err
+	}
+	oldBranch, err := s.GetBranch(sessionID, oldLeafID)
+	if err != nil {
+		return nil, err
+	}
+	entries := make([]SessionEntry, 0)
+	startCollecting := commonAncestorID == ""
+	for _, entry := range oldBranch {
+		if !startCollecting {
+			if entry.ID == commonAncestorID {
+				startCollecting = true
+			}
+			continue
+		}
+		if entry.ID == commonAncestorID {
+			continue
+		}
+		entries = append(entries, entry)
+	}
+	return &BranchSummaryPreparation{TargetID: targetID, OldLeafID: oldLeafID, CommonAncestorID: commonAncestorID, EntriesToSummarize: entries}, nil
+}
+
+func (s *SessionStore) BranchWithSummary(sessionID, targetID, summary string, details any) (*SessionFile, error) {
+	prep, err := s.PrepareBranchSummary(sessionID, targetID)
+	if err != nil {
+		return nil, err
+	}
+	session, err := s.Branch(sessionID, targetID)
+	if err != nil {
+		return nil, err
+	}
+	if summary == "" {
+		return session, nil
+	}
+	return s.AppendBranchSummary(sessionID, prep.OldLeafID, summary, details)
 }
 
 func (s *SessionStore) GetLabel(sessionID, targetID string) (string, error) {

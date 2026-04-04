@@ -227,3 +227,38 @@
 1. Keep `foundation/*` green and canonical.
 2. Implement native branch-summary/common-ancestor helpers next on top of explicit leaf semantics.
 3. Then layer `/tree`-style CLI/TUI workflows over the truthful foundation behavior.
+
+## Additional work completed later on 2026-04-04 (branch-summary groundwork tranche)
+- Added native branch-summary preparation substrate to `foundation/pi`.
+- Added `BranchSummaryPreparation` with:
+  - `TargetID`
+  - `OldLeafID`
+  - `CommonAncestorID`
+  - `EntriesToSummarize`
+- Added native common-ancestor computation:
+  - `GetCommonAncestor(sessionID, firstLeafID, secondLeafID)`
+- Added native branch-summary preparation:
+  - `PrepareBranchSummary(sessionID, targetID)`
+- Added native branch-and-append-summary helper:
+  - `BranchWithSummary(sessionID, targetID, summary, details)`
+- Added runtime wrappers in `foundation/pi/runtime.go`:
+  - `GetCommonAncestor`
+  - `PrepareBranchSummary`
+  - `BranchWithSummary`
+- Added explicit verification in `foundation/pi/session_test.go` for:
+  - common ancestor correctness
+  - abandoned branch entry collection
+  - branch-summary attachment on the destination branch
+  - `fromId` preservation
+- Added detailed analysis doc:
+  - `docs/analysis/PI_BRANCH_SUMMARY_GROUNDWORK_TRANCHE_2026-04-04.md`
+
+## Latest validation after branch-summary groundwork
+- `gofmt -w foundation/pi/session.go foundation/pi/runtime.go foundation/pi/session_test.go`
+- `go test ./foundation/pi/...`
+- `go test ./foundation/...`
+
+## Updated recommendation after branch-summary groundwork
+1. Keep `foundation/*` green and canonical.
+2. Implement budget-aware branch-summary preparation and structured summary-generation hooks next.
+3. Then build truthful `/tree`-style CLI/TUI behavior on top of the now-real branch substrate.

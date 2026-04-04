@@ -120,6 +120,93 @@ func TestSessionStoreLeafTrackingAndBranching(t *testing.T) {
 	}
 }
 
+func TestSessionStoreCommonAncestorAndBranchSummary(t *testing.T) {
+	dir := t.TempDir()
+	store := NewSessionStore(dir)
+	session, err := store.Create("alpha", "/workspace/project")
+	if err != nil {
+		t.Fatal(err)
+	}
+	id := session.Metadata.SessionID
+
+	session, err = store.AppendEntry(id, SessionEntry{Kind: "message", Role: "user", Text: "A"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	aID := session.Metadata.LeafID
+
+	session, err = store.AppendEntry(id, SessionEntry{Kind: "message", Role: "assistant", Text: "B"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	bID := session.Metadata.LeafID
+
+	session, err = store.AppendEntry(id, SessionEntry{Kind: "message", Role: "assistant", Text: "C"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	oldLeafID := session.Metadata.LeafID
+
+	if _, err := store.Branch(id, aID); err != nil {
+		t.Fatal(err)
+	}
+	session, err = store.AppendEntry(id, SessionEntry{Kind: "message", Role: "assistant", Text: "E"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	session, err = store.AppendEntry(id, SessionEntry{Kind: "message", Role: "assistant", Text: "F"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	fID := session.Metadata.LeafID
+
+	ancestor, err := store.GetCommonAncestor(id, oldLeafID, fID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if ancestor != aID {
+		t.Fatalf("expected common ancestor %q, got %q", aID, ancestor)
+	}
+
+	prep, err := store.PrepareBranchSummary(id, bID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if prep.OldLeafID != fID {
+		t.Fatalf("expected old leaf %q, got %q", fID, prep.OldLeafID)
+	}
+	if prep.CommonAncestorID != aID {
+		t.Fatalf("expected common ancestor %q, got %q", aID, prep.CommonAncestorID)
+	}
+	if len(prep.EntriesToSummarize) != 2 {
+		t.Fatalf("expected 2 entries to summarize, got %d", len(prep.EntriesToSummarize))
+	}
+	if prep.EntriesToSummarize[0].Text != "E" || prep.EntriesToSummarize[1].Text != "F" {
+		t.Fatalf("unexpected entries to summarize: %#v", prep.EntriesToSummarize)
+	}
+
+	session, err = store.BranchWithSummary(id, bID, "summary of E/F", map[string]any{"readFiles": []string{"x.go"}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if session.Metadata.LeafID == bID {
+		t.Fatal("expected branch summary append to advance leaf beyond target")
+	}
+	last := session.Entries[len(session.Entries)-1]
+	if last.Kind != "branch_summary" {
+		t.Fatalf("expected last entry to be branch_summary, got %#v", last)
+	}
+	if last.ParentID != bID {
+		t.Fatalf("expected branch summary to attach to target %q, got %q", bID, last.ParentID)
+	}
+	if last.FromID != fID {
+		t.Fatalf("expected branch summary from leaf %q, got %q", fID, last.FromID)
+	}
+	if last.Summary != "summary of E/F" {
+		t.Fatalf("unexpected summary: %q", last.Summary)
+	}
+}
+
 func TestSessionStoreExtendedEntriesAndContext(t *testing.T) {
 	dir := t.TempDir()
 	store := NewSessionStore(dir)
