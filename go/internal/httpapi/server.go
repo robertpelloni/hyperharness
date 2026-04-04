@@ -390,7 +390,7 @@ func New(cfg config.Config, detector controlplane.ToolProvider) *Server {
 		),
 		debateHistory:  orchestration.NewDebateHistoryStore(filepath.Join(cfg.WorkspaceRoot, "metamcp.db")),
 		runtimeServers: newRuntimeServerRegistry(),
-		mcpState:       newLocalMCPStateManager(),
+		mcpState:       newLocalMCPStateManager(filepath.Join(cfg.ConfigDir, "mcp_state.json")),
 	}
 
 	server.registerRoutes()

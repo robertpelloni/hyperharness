@@ -1221,19 +1221,86 @@ The next MCP slice targeted a cluster of operator-facing fallback gaps that were
   - added a focused working-set/telemetry/eviction fallback test that exercises local load + hydrate + eviction behavior through the real HTTP routes
 
 ### Important truthfulness note
-This is a real local operator-state improvement, but it is still **session-local/in-memory parity**, not full durable parity.
+This was the first real local operator-state improvement, but at that point it was still **session-local/in-memory parity**, not full durable parity.
 
-What is true now:
-- Go no longer returns only empty/no-op fallback behavior for key MCP operator state surfaces
-- local working-set state, eviction history, and tool-selection telemetry now exist in Go fallback mode
-- tool load/unload/schema fallback behavior is materially more realistic when local MCP inventory is known
+What became true in that step:
+- Go no longer returned only empty/no-op fallback behavior for key MCP operator state surfaces
+- local working-set state, eviction history, and tool-selection telemetry existed in Go fallback mode
+- tool load/unload/schema fallback behavior became materially more realistic when local MCP inventory is known
 
-What is not true yet:
-- this local MCP state is still in-memory only
-- it is not yet a full durable replacement for every TS runtime/session working-set behavior
-- richer multi-session persistence and long-horizon telemetry parity are still incomplete
+What was still not true after that step:
+- the local MCP state was still in-memory only
+- it was not yet a full durable replacement for every TS runtime/session working-set behavior
+- richer multi-session persistence and long-horizon telemetry parity were still incomplete
 
 ### Validation performed for this MCP state step
+```bash
+gofmt -w go/internal/httpapi/mcp_local_state.go go/internal/httpapi/server.go go/internal/httpapi/server_test.go
+cd go && go test ./internal/httpapi
+cd go && go build -buildvcs=false ./cmd/hypercode
+cd go && go test ./...
+```
+
+Results:
+- targeted httpapi tests passed
+- Go build passed
+- full Go suite passed
+
+## Follow-up MCP durability step (persisted local working-set / telemetry state)
+The natural next parity move was to make the new Go-owned MCP local state survive process restarts instead of disappearing with the process.
+
+### What changed
+- extended `go/internal/httpapi/mcp_local_state.go`
+  - added persisted state snapshot format covering:
+    - loaded-tool state
+    - telemetry events
+    - eviction history
+  - added file-backed load-on-start behavior
+  - added save-on-mutation behavior
+  - persistence target is now `mcp_state.json` under the Go config directory (`cfg.ConfigDir`)
+  - persistence snapshots are now cloned under lock before JSON marshalling so file writes do not marshal live mutable maps/slices after unlock
+- updated `go/internal/httpapi/server.go`
+  - `newLocalMCPStateManager(...)` now receives `filepath.Join(cfg.ConfigDir, "mcp_state.json")`
+- expanded `go/internal/httpapi/server_test.go`
+  - added persistence coverage proving reload behavior for:
+    - loaded working-set state
+    - hydrated-schema state
+    - eviction history
+    - telemetry history
+    - clear/unload persistence semantics
+
+### Real bug found and fixed during this step
+While adding save-on-mutation behavior I initially introduced an RWMutex misuse by combining `defer m.mu.Unlock()` with explicit pre-save unlocks in mutation methods.
+
+That caused:
+- `fatal error: sync: Unlock of unlocked RWMutex`
+
+Root cause:
+- mutation functions were explicitly unlocking before `save()` so file I/O would not happen while holding the write lock
+- but some functions still retained `defer m.mu.Unlock()`, producing a double-unlock on the successful path
+
+Fix:
+- removed deferred unlocks from the affected mutation methods
+- switched those methods to explicit unlock paths for both success and early-return branches
+- re-ran the full Go suite after the fix
+
+### Important truthfulness note
+This is now a materially stronger parity position than the previous in-memory-only step.
+
+What is true now:
+- Go fallback mode has persisted local MCP working-set state
+- Go fallback mode has persisted local MCP eviction history
+- Go fallback mode has persisted local MCP tool-selection telemetry
+- this state survives Go process restart/reconstruction so long as the same Go config directory is used
+- the persisted state is local-Go-owned rather than bridge-only
+
+What is still not true yet:
+- this is still local file-backed parity, not full TS-equivalent durable distributed/session orchestration parity
+- there is still no richer long-horizon analytics pipeline or broader TS-equivalent MCP runtime history model in Go
+- MCP config import/export/client-sync authority remains unfinished
+- runtime-server lifecycle/transport parity is still only partial
+
+### Validation performed for this MCP durability step
 ```bash
 gofmt -w go/internal/httpapi/mcp_local_state.go go/internal/httpapi/server.go go/internal/httpapi/server_test.go
 cd go && go test ./internal/httpapi
@@ -1282,7 +1349,7 @@ This pass meaningfully strengthened the **Go-primary migration path** and improv
 - native MCP metadata refresh/cache endpoints now use truthful JSONC inspection semantics instead of a generic placeholder-only state
 - native MCP stdio metadata refresh can now perform live `tools/list` probing for probeable configured servers
 - native MCP runtime add/remove/list fallback now uses a real Go runtime registry instead of only config-shaped behavior
-- native MCP fallback mode now has real local working-set state, eviction history, and tool-selection telemetry
+- native MCP fallback mode now has persisted local working-set state, eviction history, and tool-selection telemetry via Go-owned `mcp_state.json`
 - a tested Go-native replacement path for multiple TS-owned persistence surfaces, even though mixed-runtime cleanup is not fully finished yet
 - a small but real Maestro UX fix
 

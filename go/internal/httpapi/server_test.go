@@ -1531,6 +1531,72 @@ func TestMCPWorkingSetAndTelemetryFallBackToLocalState(t *testing.T) {
 	}
 }
 
+func TestMCPLocalStatePersistence(t *testing.T) {
+	tempDir := t.TempDir()
+	persistPath := filepath.Join(tempDir, "mcp_state.json")
+	limits := map[string]any{"maxLoadedTools": 4, "maxHydratedSchemas": 2}
+	available := map[string]localMCPTool{
+		"read_file":       {Name: "read_file", Description: "Read files", InputSchema: map[string]any{"type": "object"}},
+		"grep_search":     {Name: "grep_search", Description: "Search files", InputSchema: map[string]any{"type": "object"}},
+		"write_file":      {Name: "write_file", Description: "Write files", InputSchema: map[string]any{"type": "object"}},
+		"execute_command": {Name: "execute_command", Description: "Execute commands", InputSchema: map[string]any{"type": "object"}},
+		"search_tools":    {Name: "search_tools", Description: "Search tools", InputSchema: map[string]any{"type": "object"}},
+	}
+
+	m1 := newLocalMCPStateManager(persistPath)
+	for _, toolName := range []string{"read_file", "grep_search", "write_file", "execute_command", "search_tools"} {
+		if _, _, ok := m1.loadTool(toolName, limits, available); !ok {
+			t.Fatalf("expected %s load to succeed", toolName)
+		}
+	}
+	for _, toolName := range []string{"grep_search", "write_file", "search_tools"} {
+		if _, _, ok := m1.hydrateTool(toolName, limits, available); !ok {
+			t.Fatalf("expected %s hydrate to succeed", toolName)
+		}
+		m1.recordTelemetry(localMCPTelemetryEvent{Type: "hydrate", ToolName: toolName, Timestamp: time.Now().UTC().UnixMilli()})
+	}
+
+	m2 := newLocalMCPStateManager(persistPath)
+	workingSet := m2.snapshot(limits, available)
+	workingSetJSON, _ := json.Marshal(workingSet)
+	if strings.Contains(string(workingSetJSON), `"name":"read_file"`) || !strings.Contains(string(workingSetJSON), `"name":"search_tools"`) {
+		t.Fatalf("expected persisted working set to retain newest tools, got %s", string(workingSetJSON))
+	}
+	if !strings.Contains(string(workingSetJSON), `"hydrated":true`) {
+		t.Fatalf("expected persisted hydrated state, got %s", string(workingSetJSON))
+	}
+
+	telemetry := m2.telemetryList()
+	if len(telemetry) == 0 || telemetry[0]["type"] != "hydrate" {
+		t.Fatalf("expected persisted telemetry after reload, got %+v", telemetry)
+	}
+
+	evictions := m2.evictionList()
+	evictionsJSON, _ := json.Marshal(evictions)
+	if !strings.Contains(string(evictionsJSON), `"tier":"loaded"`) || !strings.Contains(string(evictionsJSON), `"toolName":"read_file"`) {
+		t.Fatalf("expected persisted loaded eviction history, got %s", string(evictionsJSON))
+	}
+	if !strings.Contains(string(evictionsJSON), `"tier":"hydrated"`) || !strings.Contains(string(evictionsJSON), `"toolName":"grep_search"`) {
+		t.Fatalf("expected persisted hydrated eviction history, got %s", string(evictionsJSON))
+	}
+
+	m2.clearTelemetry()
+	m2.clearEvictions()
+	m2.unloadTool("search_tools", available)
+
+	m3 := newLocalMCPStateManager(persistPath)
+	if len(m3.telemetryList()) != 0 {
+		t.Fatalf("expected no telemetry after clear and reload, got %d", len(m3.telemetryList()))
+	}
+	if len(m3.evictionList()) != 0 {
+		t.Fatalf("expected no evictions after clear and reload, got %d", len(m3.evictionList()))
+	}
+	postUnloadJSON, _ := json.Marshal(m3.snapshot(limits, available))
+	if strings.Contains(string(postUnloadJSON), `"name":"search_tools"`) {
+		t.Fatalf("expected unloaded tool to stay removed after reload, got %s", string(postUnloadJSON))
+	}
+}
+
 func TestAutonomyBridgeRoutes(t *testing.T) {
 	upstream := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("content-type", "application/json")

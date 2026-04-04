@@ -34,7 +34,7 @@ Status values:
 | Configured server CRUD | Partial Native Go | Go now has native JSONC-backed configured-server create/update/delete plus JSONC-first read fallback; broader ecosystem authority cleanup still remains |
 | Runtime server add/remove/mutation | Partial Native Go | Go now has a native runtime-server registry for add/remove/list fallback behavior, with best-effort probe status, but full transport/lifecycle parity is still incomplete |
 | Metadata refresh/cache management | Partial Native Go | native JSONC inspection/cache normalization exists, and probeable STDIO servers can now attempt live `tools/list` refresh; broader multi-transport live discovery parity is still incomplete |
-| Telemetry/history/write surfaces | Partial Native Go | Go now has native in-memory MCP working-set state, eviction history, and tool-selection telemetry fallback behavior, though persistence and full parity remain incomplete |
+| Telemetry/history/write surfaces | Partial Native Go | Go now has native persisted local MCP working-set state, eviction history, and tool-selection telemetry fallback behavior via `mcp_state.json` in the Go config dir; richer multi-session/runtime parity is still incomplete |
 | MCP config import/export/client sync | Bridge-only | not yet full native authority |
 
 ---

@@ -1,6 +1,9 @@
 package httpapi
 
 import (
+	"encoding/json"
+	"os"
+	"path/filepath"
 	"sort"
 	"sync"
 	"time"
@@ -45,20 +48,117 @@ type localMCPEvictionEvent struct {
 }
 
 type localMCPStateManager struct {
-	mu         sync.RWMutex
-	loaded     map[string]*localMCPToolState
-	telemetry  []localMCPTelemetryEvent
-	evictions  []localMCPEvictionEvent
-	maxHistory int
+	mu          sync.RWMutex
+	persistPath string
+	loaded      map[string]*localMCPToolState
+	telemetry   []localMCPTelemetryEvent
+	evictions   []localMCPEvictionEvent
+	maxHistory  int
 }
 
-func newLocalMCPStateManager() *localMCPStateManager {
-	return &localMCPStateManager{
-		loaded:     map[string]*localMCPToolState{},
-		telemetry:  []localMCPTelemetryEvent{},
-		evictions:  []localMCPEvictionEvent{},
-		maxHistory: 200,
+type persistedMCPState struct {
+	Loaded    map[string]*localMCPToolState `json:"loaded"`
+	Telemetry []localMCPTelemetryEvent      `json:"telemetry"`
+	Evictions []localMCPEvictionEvent       `json:"evictions"`
+}
+
+func newLocalMCPStateManager(persistPath string) *localMCPStateManager {
+	m := &localMCPStateManager{
+		persistPath: persistPath,
+		loaded:      map[string]*localMCPToolState{},
+		telemetry:   []localMCPTelemetryEvent{},
+		evictions:   []localMCPEvictionEvent{},
+		maxHistory:  200,
 	}
+	m.load()
+	return m
+}
+
+func (m *localMCPStateManager) load() {
+	if m.persistPath == "" {
+		return
+	}
+	data, err := os.ReadFile(m.persistPath)
+	if err != nil {
+		return
+	}
+	var state persistedMCPState
+	if err := json.Unmarshal(data, &state); err != nil {
+		return
+	}
+	if state.Loaded != nil {
+		m.loaded = state.Loaded
+	}
+	if state.Telemetry != nil {
+		m.telemetry = state.Telemetry
+	}
+	if state.Evictions != nil {
+		m.evictions = state.Evictions
+	}
+}
+
+func (m *localMCPStateManager) save() {
+	if m.persistPath == "" {
+		return
+	}
+	m.mu.RLock()
+	state := persistedMCPState{
+		Loaded:    cloneLocalMCPToolStateMap(m.loaded),
+		Telemetry: cloneLocalMCPTelemetryEvents(m.telemetry),
+		Evictions: cloneLocalMCPEvictionEvents(m.evictions),
+	}
+	m.mu.RUnlock()
+
+	data, err := json.MarshalIndent(state, "", "  ")
+	if err != nil {
+		return
+	}
+	_ = os.MkdirAll(filepath.Dir(m.persistPath), 0o755)
+	_ = os.WriteFile(m.persistPath, data, 0o644)
+}
+
+func cloneLocalMCPToolStateMap(source map[string]*localMCPToolState) map[string]*localMCPToolState {
+	if len(source) == 0 {
+		return map[string]*localMCPToolState{}
+	}
+	cloned := make(map[string]*localMCPToolState, len(source))
+	for name, state := range source {
+		if state == nil {
+			cloned[name] = nil
+			continue
+		}
+		copyState := *state
+		if state.HydratedAt != nil {
+			hydratedAt := *state.HydratedAt
+			copyState.HydratedAt = &hydratedAt
+		}
+		cloned[name] = &copyState
+	}
+	return cloned
+}
+
+func cloneLocalMCPTelemetryEvents(source []localMCPTelemetryEvent) []localMCPTelemetryEvent {
+	if len(source) == 0 {
+		return []localMCPTelemetryEvent{}
+	}
+	cloned := make([]localMCPTelemetryEvent, 0, len(source))
+	for _, event := range source {
+		copyEvent := event
+		if len(event.EvictedTools) > 0 {
+			copyEvent.EvictedTools = append([]string(nil), event.EvictedTools...)
+		}
+		cloned = append(cloned, copyEvent)
+	}
+	return cloned
+}
+
+func cloneLocalMCPEvictionEvents(source []localMCPEvictionEvent) []localMCPEvictionEvent {
+	if len(source) == 0 {
+		return []localMCPEvictionEvent{}
+	}
+	cloned := make([]localMCPEvictionEvent, len(source))
+	copy(cloned, source)
+	return cloned
 }
 
 func (m *localMCPStateManager) snapshot(limits map[string]any, available map[string]localMCPTool) map[string]any {
@@ -96,10 +196,10 @@ func (m *localMCPStateManager) snapshot(limits map[string]any, available map[str
 
 func (m *localMCPStateManager) loadTool(name string, limits map[string]any, available map[string]localMCPTool) (string, []string, bool) {
 	m.mu.Lock()
-	defer m.mu.Unlock()
 	m.applyAlwaysLoadedLocked(available)
 	tool, ok := available[name]
 	if !ok {
+		m.mu.Unlock()
 		return "", nil, false
 	}
 	now := time.Now().UTC().UnixMilli()
@@ -111,32 +211,38 @@ func (m *localMCPStateManager) loadTool(name string, limits map[string]any, avai
 		state.AccessedAt = now
 	}
 	evicted := m.enforceLoadedCapacityLocked(intNumber(limits["maxLoadedTools"]))
+	m.mu.Unlock()
+	m.save()
 	return "loaded", evicted, true
 }
 
 func (m *localMCPStateManager) unloadTool(name string, available map[string]localMCPTool) (string, bool) {
 	m.mu.Lock()
-	defer m.mu.Unlock()
 	if tool, ok := available[name]; ok && tool.AlwaysOn {
 		if state, exists := m.loaded[name]; exists {
 			state.HydratedAt = nil
 			state.AccessedAt = time.Now().UTC().UnixMilli()
 		}
+		m.mu.Unlock()
+		m.save()
 		return "tool remains loaded because it is configured as always-loaded; cleared hydrated schema state only", true
 	}
 	if _, ok := m.loaded[name]; !ok {
+		m.mu.Unlock()
 		return "", false
 	}
 	delete(m.loaded, name)
+	m.mu.Unlock()
+	m.save()
 	return "unloaded", true
 }
 
 func (m *localMCPStateManager) hydrateTool(name string, limits map[string]any, available map[string]localMCPTool) (map[string]any, []string, bool) {
 	m.mu.Lock()
-	defer m.mu.Unlock()
 	m.applyAlwaysLoadedLocked(available)
 	tool, ok := available[name]
 	if !ok {
+		m.mu.Unlock()
 		return nil, nil, false
 	}
 	now := time.Now().UTC().UnixMilli()
@@ -148,6 +254,8 @@ func (m *localMCPStateManager) hydrateTool(name string, limits map[string]any, a
 	state.AccessedAt = now
 	state.HydratedAt = &now
 	evicted := m.enforceHydratedCapacityLocked(intNumber(limits["maxHydratedSchemas"]))
+	m.mu.Unlock()
+	m.save()
 	return map[string]any{"inputSchema": tool.InputSchema, "evictedHydratedTools": evicted}, evicted, true
 }
 
@@ -175,9 +283,10 @@ func (m *localMCPStateManager) telemetryList() []map[string]any {
 
 func (m *localMCPStateManager) clearTelemetry() map[string]any {
 	m.mu.Lock()
-	defer m.mu.Unlock()
 	count := len(m.telemetry)
 	m.telemetry = nil
+	m.mu.Unlock()
+	m.save()
 	return map[string]any{"ok": true, "cleared": count}
 }
 
@@ -199,19 +308,21 @@ func (m *localMCPStateManager) evictionList() []map[string]any {
 
 func (m *localMCPStateManager) clearEvictions() map[string]any {
 	m.mu.Lock()
-	defer m.mu.Unlock()
 	count := len(m.evictions)
 	m.evictions = nil
+	m.mu.Unlock()
+	m.save()
 	return map[string]any{"ok": true, "message": "cleared", "cleared": count}
 }
 
 func (m *localMCPStateManager) recordTelemetry(event localMCPTelemetryEvent) {
 	m.mu.Lock()
-	defer m.mu.Unlock()
 	m.telemetry = append([]localMCPTelemetryEvent{event}, m.telemetry...)
 	if len(m.telemetry) > m.maxHistory {
 		m.telemetry = m.telemetry[:m.maxHistory]
 	}
+	m.mu.Unlock()
+	m.save()
 }
 
 func (m *localMCPStateManager) applyAlwaysLoadedLocked(available map[string]localMCPTool) {
