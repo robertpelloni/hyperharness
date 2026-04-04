@@ -2253,7 +2253,21 @@ func (s *Server) handleMCPConfiguredServers(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	fallbackServers, fallbackErr := s.localConfiguredMCPServersFromDB()
+	fallbackServers, fallbackErr := s.localConfiguredMCPServers()
+	if fallbackErr == nil && len(fallbackServers) > 0 {
+		writeJSON(w, http.StatusOK, map[string]any{
+			"success": true,
+			"data":    fallbackServers,
+			"bridge": map[string]any{
+				"fallback":  "go-local-jsonc",
+				"procedure": "mcpServers.list",
+				"reason":    "upstream unavailable; using local MCP server definitions from HyperCode JSONC config",
+			},
+		})
+		return
+	}
+
+	fallbackServers, fallbackErr = s.localConfiguredMCPServersFromDB()
 	if fallbackErr != nil {
 		writeJSON(w, http.StatusServiceUnavailable, map[string]any{
 			"success": false,
@@ -2298,7 +2312,21 @@ func (s *Server) handleMCPConfiguredServerGet(w http.ResponseWriter, r *http.Req
 		return
 	}
 
-	fallbackServer, fallbackErr := s.localConfiguredMCPServerFromDB(uuid)
+	fallbackServer, fallbackErr := s.localConfiguredMCPServerByUUID(uuid)
+	if fallbackErr == nil && fallbackServer != nil {
+		writeJSON(w, http.StatusOK, map[string]any{
+			"success": true,
+			"data":    fallbackServer,
+			"bridge": map[string]any{
+				"fallback":  "go-local-jsonc",
+				"procedure": "mcpServers.get",
+				"reason":    "upstream unavailable; using local MCP server definition from HyperCode JSONC config",
+			},
+		})
+		return
+	}
+
+	fallbackServer, fallbackErr = s.localConfiguredMCPServerFromDB(uuid)
 	if fallbackErr != nil {
 		writeJSON(w, http.StatusServiceUnavailable, map[string]any{
 			"success": false,
@@ -15930,6 +15958,20 @@ func (s *Server) localConfiguredServerByName(name string) (map[string]any, error
 		}
 	}
 	return nil, errors.New("configured server not found")
+}
+
+func (s *Server) localConfiguredMCPServerByUUID(uuid string) (map[string]any, error) {
+	servers, err := s.localConfiguredMCPServers()
+	if err != nil {
+		return nil, err
+	}
+	for _, server := range servers {
+		serverUUID, _ := server["uuid"].(string)
+		if strings.TrimSpace(serverUUID) == strings.TrimSpace(uuid) {
+			return server, nil
+		}
+	}
+	return nil, nil
 }
 
 func (s *Server) readLocalMCPConfigObject() (map[string]any, error) {

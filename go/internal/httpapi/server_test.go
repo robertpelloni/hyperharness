@@ -9757,6 +9757,9 @@ func TestMCPConfiguredServersFallBackToLocalJsonc(t *testing.T) {
 {
   "mcpServers": {
     "core": {
+      "command": "node",
+      "args": ["server.js"],
+      "env": {"JSONC_ONLY":"1"},
       "_meta": {
         "toolCount": 1
       }
@@ -9823,23 +9826,23 @@ func TestMCPConfiguredServersFallBackToLocalJsonc(t *testing.T) {
 	if listRecorder.Code != http.StatusOK {
 		t.Fatalf("expected fallback list status 200, got %d with body %s", listRecorder.Code, listRecorder.Body.String())
 	}
-	if !strings.Contains(listRecorder.Body.String(), `"fallback":"go-local-mcp-db"`) {
-		t.Fatalf("expected go-local-mcp-db fallback metadata, got %s", listRecorder.Body.String())
+	if !strings.Contains(listRecorder.Body.String(), `"fallback":"go-local-jsonc"`) {
+		t.Fatalf("expected go-local-jsonc fallback metadata, got %s", listRecorder.Body.String())
 	}
-	if !strings.Contains(listRecorder.Body.String(), `using local MCP server definitions from metamcp.db with JSONC metadata overlay`) {
-		t.Fatalf("expected configured server list fallback reason, got %s", listRecorder.Body.String())
+	if !strings.Contains(listRecorder.Body.String(), `using local MCP server definitions from HyperCode JSONC config`) {
+		t.Fatalf("expected configured server list JSONC fallback reason, got %s", listRecorder.Body.String())
 	}
-	if !strings.Contains(listRecorder.Body.String(), `"uuid":"srv-db-1"`) || !strings.Contains(listRecorder.Body.String(), `"command":"node"`) {
-		t.Fatalf("expected configured server from local db, got %s", listRecorder.Body.String())
+	if !strings.Contains(listRecorder.Body.String(), `"name":"core"`) || !strings.Contains(listRecorder.Body.String(), `"command":"node"`) {
+		t.Fatalf("expected configured server from local JSONC, got %s", listRecorder.Body.String())
 	}
-	if !strings.Contains(listRecorder.Body.String(), `"LOCAL_ONLY":"1"`) || !strings.Contains(listRecorder.Body.String(), `"OPENAI_API_KEY":"secret-one"`) {
-		t.Fatalf("expected db env plus workspace secret injection, got %s", listRecorder.Body.String())
+	if !strings.Contains(listRecorder.Body.String(), `"JSONC_ONLY":"1"`) || strings.Contains(listRecorder.Body.String(), `"LOCAL_ONLY":"1"`) {
+		t.Fatalf("expected JSONC env authority over db fallback, got %s", listRecorder.Body.String())
 	}
 	if !strings.Contains(listRecorder.Body.String(), `"toolCount":1`) {
-		t.Fatalf("expected jsonc _meta overlay, got %s", listRecorder.Body.String())
+		t.Fatalf("expected jsonc _meta payload, got %s", listRecorder.Body.String())
 	}
 
-	expectedUUID := "srv-db-1"
+	expectedUUID := syntheticServerUUID("core")
 	getRequest := httptest.NewRequest(http.MethodGet, "/api/mcp/servers/get?uuid="+expectedUUID, nil)
 	getRecorder := httptest.NewRecorder()
 	server.Handler().ServeHTTP(getRecorder, getRequest)
@@ -9847,11 +9850,11 @@ func TestMCPConfiguredServersFallBackToLocalJsonc(t *testing.T) {
 	if getRecorder.Code != http.StatusOK {
 		t.Fatalf("expected fallback get status 200, got %d with body %s", getRecorder.Code, getRecorder.Body.String())
 	}
-	if !strings.Contains(getRecorder.Body.String(), `using local MCP server definition from metamcp.db with JSONC metadata overlay`) {
-		t.Fatalf("expected configured server get fallback reason, got %s", getRecorder.Body.String())
+	if !strings.Contains(getRecorder.Body.String(), `using local MCP server definition from HyperCode JSONC config`) {
+		t.Fatalf("expected configured server get JSONC fallback reason, got %s", getRecorder.Body.String())
 	}
 	if !strings.Contains(getRecorder.Body.String(), `"uuid":"`+expectedUUID+`"`) {
-		t.Fatalf("expected db uuid %s, got %s", expectedUUID, getRecorder.Body.String())
+		t.Fatalf("expected synthetic uuid %s, got %s", expectedUUID, getRecorder.Body.String())
 	}
 	if !strings.Contains(getRecorder.Body.String(), `"name":"core"`) {
 		t.Fatalf("expected configured server get payload, got %s", getRecorder.Body.String())

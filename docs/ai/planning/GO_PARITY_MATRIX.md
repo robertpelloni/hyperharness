@@ -31,9 +31,9 @@ Status values:
 | MCP inventory snapshot | Bridge-first / partial Native Go | Go inventory reads `mcp.jsonc` + DB cache; bridge semantics preserved where needed |
 | Tool listing/search/call | Bridge-first with Native Go fallback | native aggregation and ranking exist |
 | Runtime server list/status | Bridge-first | route exists, still aligned to TS semantics |
-| Configured server CRUD | Missing / partial | major remaining parity gap |
+| Configured server CRUD | Partial Native Go | Go now has native JSONC-backed configured-server create/update/delete plus JSONC-first read fallback; broader ecosystem authority cleanup still remains |
 | Runtime server add/remove/mutation | Bridge-only / partial | some bridge routes exist, not full native ownership |
-| Metadata refresh/cache management | Missing / partial | still needs native authority |
+| Metadata refresh/cache management | Partial Native Go | native placeholder reload/clear cache mutation fallbacks exist, though real metadata refresh parity is still incomplete |
 | Telemetry/history/write surfaces | Missing / partial | still primarily TS |
 | MCP config import/export/client sync | Bridge-only | not yet full native authority |
 

@@ -1008,6 +1008,49 @@ Results:
 - Go build passed
 - full Go suite passed
 
+## Follow-up MCP authority fix (configured-server JSONC-first reads)
+The next migration slice returned to MCP backend authority and fixed an important internal inconsistency in the Go fallback path.
+
+### Problem
+Go already had native configured-server **mutation** fallbacks backed by local `mcp.jsonc`, but configured-server **read** fallbacks still preferred `metamcp.db` rows plus JSONC metadata overlay.
+
+That meant the local source of truth for configured-server reads and writes did not match, which is the wrong shape for a Go-primary MCP config lane.
+
+### What changed
+- updated `go/internal/httpapi/server.go`
+  - `/api/mcp/servers/configured` now prefers native JSONC-backed configured-server reads first
+  - `/api/mcp/servers/get` now prefers native JSONC-backed configured-server reads first
+  - local DB fallback remains available as a legacy secondary fallback when JSONC does not provide the configured server
+- added `localConfiguredMCPServerByUUID(...)`
+- updated MCP configured-server tests so they verify:
+  - local JSONC is authoritative when present
+  - DB remains secondary fallback behavior
+
+### Important truthfulness note
+This does **not** mean full MCP parity is complete.
+
+What is true now:
+- native configured-server create/update/delete already existed
+- native configured-server read fallback now uses the same local source of truth (JSONC) as those writes
+- Go MCP configured-server CRUD is materially more coherent than before
+
+What is not true yet:
+- full runtime mutation, telemetry, and metadata refresh parity is still incomplete
+- some MCP admin/config surfaces remain bridge-heavy or placeholder-like
+
+### Validation performed for this MCP authority step
+```bash
+gofmt -w go/internal/httpapi/server.go go/internal/httpapi/server_test.go
+cd go && go test ./internal/httpapi
+cd go && go build -buildvcs=false ./cmd/hypercode
+cd go && go test ./...
+```
+
+Results:
+- targeted httpapi tests passed
+- Go build passed
+- full Go suite passed
+
 ## Bottom line
 This pass meaningfully strengthened the **Go-primary migration path** and improved TypeScript survivability while the migration continues:
 - broader provider routing
@@ -1040,6 +1083,7 @@ This pass meaningfully strengthened the **Go-primary migration path** and improv
 - native fallback council debates now persist into Go history instead of being transient-only
 - native file-based imported-session ingest in Go with heuristic memory extraction and instruction-doc regeneration
 - native DB-backed imported-session parsing in Go for `llm-cli` and Prism artifacts
+- MCP configured-server reads and writes now share JSONC as the native local authority in Go fallback mode
 - a tested Go-native replacement path for multiple TS-owned persistence surfaces, even though mixed-runtime cleanup is not fully finished yet
 - a small but real Maestro UX fix
 
