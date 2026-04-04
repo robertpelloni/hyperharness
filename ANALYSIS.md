@@ -625,6 +625,36 @@ A broad `packages/core` test run still has unrelated noisy/failing areas in othe
 - direct-service regression guard (`HealerService`)
 - session import unchanged behavior under mocked LLM failures
 
+## Follow-up startup resilience fix (SQLite-unavailable session import docs)
+A real operator crash later showed one remaining non-truthful startup edge:
+- `SessionImportService.scanAndImport()` already degraded gracefully when imported-session SQLite persistence failed
+- but the final `writeInstructionDocs()` step still called `ImportedSessionStore.listInstructionMemories()` as if SQLite were always available
+- when `better-sqlite3` was missing on Windows / Node 24, startup could still abort from imported-session instruction-doc generation even though the main SQLite error text explicitly claimed the control plane could continue running
+
+### Fix made
+- `packages/core/src/services/SessionImportService.ts`
+  - `writeInstructionDocs()` now catches SQLite-unavailable failures from `listInstructionMemories()`
+  - logs a concise degraded-mode warning via `formatOptionalSqliteFailure(...)`
+  - returns `null` for `instructionDocPath` instead of aborting startup/import execution
+
+### Regression coverage added
+- `packages/core/src/services/SessionImportService.test.ts`
+  - added coverage for the exact failure mode where `listInstructionMemories()` throws a `better-sqlite3`-missing / SQLite-unavailable error
+  - verifies:
+    - import scan still succeeds
+    - `instructionDocPath` is `null`
+    - the warning is concise and does not dump the full native-binding probe spam
+
+### Validation performed for this fix
+```bash
+pnpm -C packages/core exec vitest run src/services/SessionImportService.test.ts
+pnpm -C packages/core build
+```
+
+Results:
+- targeted `SessionImportService` regression suite passed
+- `packages/core` build passed
+
 ## Bottom line
 This pass meaningfully strengthened the **Go-primary migration path** and improved TypeScript survivability while the migration continues:
 - broader provider routing

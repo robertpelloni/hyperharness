@@ -1907,7 +1907,21 @@ ${transcriptTail}
     }
 
     private async writeInstructionDocs(): Promise<string | null> {
-        const instructions = this.store.listInstructionMemories(250);
+        let instructions;
+        try {
+            instructions = this.store.listInstructionMemories(250);
+        } catch (error) {
+            if (isSqliteUnavailableError(error)) {
+                console.warn(formatOptionalSqliteFailure(
+                    '[SessionImport] Skipping imported instruction docs for this run',
+                    error,
+                ));
+                return null;
+            }
+
+            throw error;
+        }
+
         if (instructions.length === 0) {
             return null;
         }
