@@ -36,4 +36,11 @@ func TestMCPAdapterStatusAndToolHints(t *testing.T) {
 	if !strings.Contains(adapter.RouteCall("demo", "list"), "demo:list") {
 		t.Fatalf("unexpected route call: %s", adapter.RouteCall("demo", "list"))
 	}
+	call, err := adapter.CallTool(MCPCallRequest{ServerName: "demo", ToolName: "list-tools", Arguments: map[string]interface{}{"limit": 5}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if call.ServerName != "demo" || call.ToolName != "list-tools" {
+		t.Fatalf("unexpected MCP call result: %#v", call)
+	}
 }

@@ -26,6 +26,21 @@ type MCPServerStatus struct {
 	Executable bool     `json:"executable"`
 }
 
+type MCPCallRequest struct {
+	ServerName string                 `json:"serverName"`
+	ToolName   string                 `json:"toolName"`
+	Arguments  map[string]interface{} `json:"arguments,omitempty"`
+}
+
+type MCPCallResult struct {
+	ServerName string                 `json:"serverName"`
+	ToolName   string                 `json:"toolName"`
+	Arguments  map[string]interface{} `json:"arguments,omitempty"`
+	Route      string                 `json:"route"`
+	Summary    string                 `json:"summary"`
+	Executable bool                   `json:"executable"`
+}
+
 type MCPAdapter struct {
 	borgAdapter *borg.Adapter
 	workingDir  string
@@ -90,6 +105,28 @@ func (a *MCPAdapter) RouteCall(serverName, request string) string {
 		return payload
 	}
 	return a.borgAdapter.RouteMCP(payload)
+}
+
+func (a *MCPAdapter) CallTool(req MCPCallRequest) (MCPCallResult, error) {
+	if strings.TrimSpace(req.ServerName) == "" {
+		return MCPCallResult{}, fmt.Errorf("server name is required")
+	}
+	if strings.TrimSpace(req.ToolName) == "" {
+		return MCPCallResult{}, fmt.Errorf("tool name is required")
+	}
+	server, ok := a.LookupServer(req.ServerName)
+	if !ok {
+		return MCPCallResult{}, fmt.Errorf("unknown MCP server: %s", req.ServerName)
+	}
+	result := MCPCallResult{
+		ServerName: req.ServerName,
+		ToolName:   req.ToolName,
+		Arguments:  req.Arguments,
+		Route:      a.RouteCall(req.ServerName, req.ToolName),
+		Summary:    fmt.Sprintf("Prepared MCP tool call %s on %s", req.ToolName, req.ServerName),
+		Executable: commandResolvable(server.Command),
+	}
+	return result, nil
 }
 
 func (a *MCPAdapter) LookupServer(name string) (MCPServerConfig, bool) {

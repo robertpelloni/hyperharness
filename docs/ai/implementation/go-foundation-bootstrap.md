@@ -71,10 +71,10 @@
   - legacy wrapper now delegates to `foundation/repomap`
 
 - `mcp/client.go`
-  - top-level MCP client now uses the adapter seam for connection status and tool hint listing
+  - top-level MCP client now uses the adapter seam for connection status, tool hint listing, and mediated tool-call routing
 
 - `mcp/manager.go`
-  - top-level MCP manager now uses the adapter seam for configured server discovery and startup
+  - top-level MCP manager now uses the adapter seam for configured server discovery, startup, and routed tool-call mediation
 
 - `mcp/config.go`
   - top-level MCP config now wraps adapter-owned parsing instead of duplicating config logic
@@ -83,10 +83,11 @@
   - defensive guard added for empty MCP binary path to avoid nil-process panics in tests
 
 - `cmd/foundation_http.go`
-  - foundation-backed helper layer for execution, sessions, repomap, adapters, and foundation-backed file reads
+  - foundation-backed helper layer for execution, sessions, repomap, adapters, foundation-backed file reads, and foundation-backed MCP mediation
 
 - `cmd/serve.go`
   - operator HTTP surface now exposes foundation-backed endpoints under `/api/v1/foundation/*`
+  - `/api/v1/foundation/mcp/*` now exposes adapter-backed MCP tool listing and mediated call preparation
   - `/fs/read` now routes through the native foundation `read` tool instead of direct file reads
 
 - `agent/agent.go`
@@ -108,7 +109,7 @@
   - normalizes server command/env visibility for foundation consumers
 
 - `foundation/adapters/mcp.go`
-  - MCP adapter seam for configured server discovery, tool hints, route hints, and configured-server startup
+  - MCP adapter seam for configured server discovery, tool hints, route hints, mediated tool-call preparation, and configured-server startup
 
 - `foundation/adapters/hypercode_test.go`
   - validates adapter status, routing, and system-context construction
@@ -130,13 +131,13 @@
   - verifies HyperCode adapter presence on the top-level agent
 
 - `mcp/client_test.go`
-  - verifies MCP client tool hint listing through the adapter seam
+  - verifies MCP client tool hint listing and mediated call routing through the adapter seam
 
 - `mcp/manager_test.go`
-  - verifies MCP manager configured-tool listing and missing-server handling
+  - verifies MCP manager configured-tool listing, mediated call routing, and missing-server handling
 
 - `cmd/foundation_http_test.go`
-  - verifies foundation-backed execution/session/repomap/adapter helper behavior used by HTTP surfaces
+  - verifies foundation-backed execution/session/repomap/adapter helper behavior used by HTTP surfaces, including MCP mediation helpers
 
 ### Documentation
 - requirements, design, planning, implementation, and testing documents under `docs/ai/`
@@ -178,7 +179,7 @@ These issues were observed and documented, not silently ignored or misrepresente
 - HyperCode/Borg adapter seam tests
 - provider adapter seam tests
 - MCP adapter seam and top-level MCP package tests
-- foundation-backed HTTP helper tests
+- foundation-backed HTTP helper tests, including MCP mediation helpers
 
 ## Recommended next implementation sequence
 1. continue routing remaining top-level placeholder orchestration surfaces to `foundation/pi` runtime packages,

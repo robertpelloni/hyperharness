@@ -27,6 +27,12 @@ type foundationSessionForkRequest struct {
 	Name  string `json:"name,omitempty"`
 }
 
+type foundationMCPCallRequest struct {
+	Server    string                 `json:"server"`
+	Tool      string                 `json:"tool"`
+	Arguments map[string]interface{} `json:"arguments,omitempty"`
+}
+
 func currentFoundationRuntime() (*foundationpi.Runtime, string, error) {
 	cwd, err := os.Getwd()
 	if err != nil {
@@ -42,6 +48,20 @@ func foundationAdaptersPayload(cwd string) map[string]any {
 		"hypercode": hyperAdapter.Status(),
 		"mcp":       mcpAdapter.Status(),
 	}
+}
+
+func listFoundationMCPTools(cwd string) ([]string, error) {
+	adapter := adapters.NewMCPAdapter(cwd)
+	return adapter.ListTools()
+}
+
+func callFoundationMCPTool(cwd string, body foundationMCPCallRequest) (adapters.MCPCallResult, error) {
+	adapter := adapters.NewMCPAdapter(cwd)
+	return adapter.CallTool(adapters.MCPCallRequest{
+		ServerName: body.Server,
+		ToolName:   body.Tool,
+		Arguments:  body.Arguments,
+	})
 }
 
 func mcpToolContracts() []compat.ToolContract {

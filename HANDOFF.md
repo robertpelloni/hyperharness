@@ -33,6 +33,7 @@
   - `mcp/client.go`, `mcp/manager.go`, and `mcp/config.go` now consume adapter-backed behavior
   - `cmd/foundation_http.go` provides reusable foundation-backed HTTP helpers
   - `cmd/serve.go` now exposes `/api/v1/foundation/*` endpoints and routes `/fs/read` through the foundation `read` tool
+  - foundation-backed MCP HTTP helper and route surfaces now expose MCP tool listing and mediated call preparation
 - Added deeper verification coverage:
   - snapshot-style tests for baseline tool results
   - top-level agent schema registration test
@@ -40,6 +41,7 @@
   - provider adapter seam test
   - MCP adapter seam tests and top-level MCP package tests
   - foundation-backed HTTP helper tests
+  - MCP mediation helper tests
 - Added comprehensive `docs/ai/` documentation for requirements, design, planning, implementation, and testing.
 - Added `docs/ai/design/upstream-toolchain-analysis.md` summarizing the imported upstream systems and assimilation strategy.
 - Fixed the duplicate SQLite driver registration issue in `orchestrator/queue.go` and `orchestrator/vectors.go` by removing redundant `modernc.org/sqlite` imports.
@@ -65,4 +67,4 @@
 2. Expand verified result-shape and snapshot tests for `read`, `write`, `edit`, and `bash` plus CLI/HTTP smoke coverage.
 3. Deepen `foundation/repomap` from graph-ranking groundwork toward fuller Aider-style graph ranking and richer edit engines.
 4. Expand `foundation/adapters` from visibility seams into provider routing, memory, and richer MCP runtime adapters backed by HyperCode/Borg.
-5. Migrate TUI and orchestration code to the new truthful foundation instead of placeholder parity claims.
+5. Migrate TUI and orchestration code to the new truthful foundation instead of placeholder parity claims, with special attention to adapter-backed execution paths.

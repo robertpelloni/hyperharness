@@ -34,3 +34,15 @@ func (c *Client) Connect() error {
 func (c *Client) ListTools() ([]string, error) {
 	return c.adapter.ListTools()
 }
+
+func (c *Client) CallTool(serverName, toolName string, args map[string]interface{}) (string, error) {
+	result, err := c.adapter.CallTool(adapters.MCPCallRequest{
+		ServerName: serverName,
+		ToolName:   toolName,
+		Arguments:  args,
+	})
+	if err != nil {
+		return "", err
+	}
+	return result.Route, nil
+}

@@ -75,6 +75,7 @@ go test ./...
 5. compatibility tests against richer HyperCode-backed provider/MCP adapters
 6. richer top-level `agent` integration tests around exact-schema tool registration and tool-call loops
 7. end-to-end MCP execution tests once richer execution adapters exist
+8. response-shape assertions for foundation-backed MCP HTTP endpoints
 
 ## Exit criteria for the next milestone
 - foundation packages compile cleanly,

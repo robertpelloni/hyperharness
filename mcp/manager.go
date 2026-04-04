@@ -57,3 +57,16 @@ func (sm *ServerManager) StartConfiguredServer(name string) (*exec.Cmd, error) {
 func (sm *ServerManager) ListConfiguredTools() ([]string, error) {
 	return sm.adapter.ListTools()
 }
+
+// RouteConfiguredToolCall returns the mediated route for a configured MCP tool call.
+func (sm *ServerManager) RouteConfiguredToolCall(serverName, toolName string, args map[string]interface{}) (string, error) {
+	result, err := sm.adapter.CallTool(adapters.MCPCallRequest{
+		ServerName: serverName,
+		ToolName:   toolName,
+		Arguments:  args,
+	})
+	if err != nil {
+		return "", err
+	}
+	return result.Route, nil
+}

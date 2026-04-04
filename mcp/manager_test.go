@@ -27,6 +27,13 @@ func TestServerManagerUsesAdapterConfigPathAndToolHints(t *testing.T) {
 	if len(tools) == 0 {
 		t.Fatal("expected configured tool hints")
 	}
+	route, err := manager.RouteConfiguredToolCall("demo", "list-tools", map[string]interface{}{"limit": 2})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if route == "" {
+		t.Fatal("expected MCP route")
+	}
 	if _, err := manager.StartConfiguredServer("missing"); err == nil {
 		t.Fatal("expected missing server error")
 	}

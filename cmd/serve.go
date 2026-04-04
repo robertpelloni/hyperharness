@@ -131,6 +131,34 @@ var serveCmd = &cobra.Command{
 			return c.JSON(foundationAdaptersPayload(cwd))
 		})
 
+		api.Get("/foundation/mcp/tools", func(c *fiber.Ctx) error {
+			cwd, err := os.Getwd()
+			if err != nil {
+				return c.Status(500).JSON(fiber.Map{"error": err.Error()})
+			}
+			tools, err := listFoundationMCPTools(cwd)
+			if err != nil {
+				return c.Status(400).JSON(fiber.Map{"error": err.Error()})
+			}
+			return c.JSON(fiber.Map{"tools": tools})
+		})
+
+		api.Post("/foundation/mcp/call", func(c *fiber.Ctx) error {
+			var body foundationMCPCallRequest
+			if err := c.BodyParser(&body); err != nil || body.Server == "" || body.Tool == "" {
+				return c.Status(400).JSON(fiber.Map{"error": "server and tool are required"})
+			}
+			cwd, err := os.Getwd()
+			if err != nil {
+				return c.Status(500).JSON(fiber.Map{"error": err.Error()})
+			}
+			result, err := callFoundationMCPTool(cwd, body)
+			if err != nil {
+				return c.Status(400).JSON(fiber.Map{"error": err.Error()})
+			}
+			return c.JSON(result)
+		})
+
 		api.Post("/foundation/exec", func(c *fiber.Ctx) error {
 			var body foundationExecRequest
 			if err := c.BodyParser(&body); err != nil || body.Tool == "" {

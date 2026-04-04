@@ -104,6 +104,7 @@ Responsibilities:
 - expose early MCP execution/routing seams before full control-plane delegation
 - discover adjacent HyperCode workspaces where available
 - provide a stable adapter boundary before deeper provider/MCP routing integration
+- supply reusable execution helpers for top-level CLI and HTTP surfaces
 
 ### 6. HyperCode integration boundary
 HyperCode should be treated as an external-but-local substrate.
@@ -181,6 +182,6 @@ Add contract and snapshot tests for each feature family.
 ## Recommended Next Technical Moves
 1. Continue routing existing top-level placeholder command and orchestration surfaces to the new `foundation/pi` runtime.
 2. Deepen `foundation/repomap` from lightweight graph groundwork toward fuller graph/LSP-aware ranking and port richer edit engines.
-3. Expand `foundation/adapters` from status/config seams into real HyperCode-backed provider routing and MCP execution adapters.
-4. Expand verified snapshot-style contract tests for tool outputs and CLI behaviors.
+3. Expand `foundation/adapters` from status/config seams into real HyperCode-backed provider routing and richer MCP execution adapters.
+4. Expand verified snapshot-style contract tests for tool outputs plus CLI/HTTP behaviors.
 5. Add verification, delegation, and background session services.

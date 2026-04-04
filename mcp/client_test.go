@@ -28,6 +28,13 @@ func TestClientUsesAdapterToolHints(t *testing.T) {
 	if len(tools) == 0 {
 		t.Fatal("expected MCP tool hints")
 	}
+	route, err := client.CallTool("demo", "list-tools", map[string]interface{}{"limit": 1})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if route == "" {
+		t.Fatal("expected MCP route")
+	}
 }
 
 func setMCPEnv(t *testing.T, home string) {

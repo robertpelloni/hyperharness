@@ -16,6 +16,7 @@ Deliver a Go-native harness that can truthfully grow from a Pi-derived foundatio
 - [ ] Implement TUI/editor parity
 - [x] Route top-level tool registry and agent tool schemas onto native exact-name foundation tools
 - [x] Route initial HTTP helper/file-read surfaces onto foundation-backed execution
+- [x] Route initial MCP HTTP/helper surfaces onto adapter-backed foundation execution
 
 ### Workstream 2: Exact tool compatibility
 - [x] Create central tool contract registry
@@ -44,6 +45,7 @@ Deliver a Go-native harness that can truthfully grow from a Pi-derived foundatio
 - [x] Initial HyperCode/Borg adapter seam with status/config visibility
 - [x] Initial provider adapter seam with config/env visibility
 - [x] Initial MCP adapter seam with config/tool-hint/startup visibility
+- [x] Initial mediated MCP tool-call routing seam
 - [ ] Provider routing adapter layer
 - [ ] Richer MCP execution adapter layer
 - [ ] Memory/session import bridges

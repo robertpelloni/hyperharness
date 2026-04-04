@@ -59,6 +59,28 @@ func TestFoundationAdaptersPayloadAndRepomap(t *testing.T) {
 	if payload["hypercode"] == nil || payload["mcp"] == nil {
 		t.Fatalf("unexpected adapter payload: %#v", payload)
 	}
+	setMCPEnv(t, cwd)
+	borgDir := filepath.Join(cwd, ".borg")
+	if err := os.MkdirAll(borgDir, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(borgDir, "mcp.json"), []byte(`{"mcpServers":{"demo":{"command":"cmd","args":["/c","echo demo"]}}}`), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	mcpTools, err := listFoundationMCPTools(cwd)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(mcpTools) == 0 {
+		t.Fatal("expected MCP tools")
+	}
+	call, err := callFoundationMCPTool(cwd, foundationMCPCallRequest{Server: "demo", Tool: "list-tools", Arguments: map[string]interface{}{"limit": 1}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if call.Route == "" {
+		t.Fatal("expected MCP route")
+	}
 	if err := os.WriteFile(filepath.Join(cwd, "main.go"), []byte("package main\n\nfunc main() {}\n"), 0o644); err != nil {
 		t.Fatal(err)
 	}
@@ -75,6 +97,23 @@ func TestFoundationAdaptersPayloadAndRepomap(t *testing.T) {
 	}
 	if content == "" {
 		t.Fatal("expected foundation-backed read content")
+	}
+}
+
+func setMCPEnv(t *testing.T, home string) {
+	t.Helper()
+	for _, key := range []string{"HOME", "USERPROFILE"} {
+		old, had := os.LookupEnv(key)
+		if err := os.Setenv(key, home); err != nil {
+			t.Fatal(err)
+		}
+		t.Cleanup(func() {
+			if had {
+				_ = os.Setenv(key, old)
+			} else {
+				_ = os.Unsetenv(key)
+			}
+		})
 	}
 }
 
