@@ -91,10 +91,7 @@ func (m *localSwarmStateManager) startMission(payload map[string]any) map[string
 	}
 	m.missions = append([]localSwarmMission{mission}, m.missions...)
 	m.saveLocked()
-	return map[string]any{
-		"missionId": missionID,
-		"taskCount": len(mission.Tasks),
-	}
+	return map[string]any{"missionId": missionID, "taskCount": len(mission.Tasks)}
 }
 
 func (m *localSwarmStateManager) resumeMission(missionID string) bool {
@@ -110,6 +107,97 @@ func (m *localSwarmStateManager) resumeMission(missionID string) bool {
 		return true
 	}
 	return false
+}
+
+func (m *localSwarmStateManager) approveTask(missionID string, taskID string, approved bool) bool {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	for mi := range m.missions {
+		if m.missions[mi].ID != missionID {
+			continue
+		}
+		for ti := range m.missions[mi].Tasks {
+			if m.missions[mi].Tasks[ti].ID != taskID {
+				continue
+			}
+			if approved {
+				m.missions[mi].Tasks[ti].Status = "completed"
+			} else {
+				m.missions[mi].Tasks[ti].Status = "failed"
+				m.missions[mi].Status = "failed"
+			}
+			m.missions[mi].UpdatedAt = time.Now().UTC().UnixMilli()
+			if approved {
+				allDone := true
+				for _, task := range m.missions[mi].Tasks {
+					if task.Status != "completed" {
+						allDone = false
+						break
+					}
+				}
+				if allDone {
+					m.missions[mi].Status = "completed"
+				}
+			}
+			m.saveLocked()
+			return true
+		}
+	}
+	return false
+}
+
+func (m *localSwarmStateManager) updateTaskPriority(missionID string, taskID string, priority int) bool {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	for mi := range m.missions {
+		if m.missions[mi].ID != missionID {
+			continue
+		}
+		for ti := range m.missions[mi].Tasks {
+			if m.missions[mi].Tasks[ti].ID != taskID {
+				continue
+			}
+			m.missions[mi].Tasks[ti].Priority = priority
+			m.missions[mi].UpdatedAt = time.Now().UTC().UnixMilli()
+			m.saveLocked()
+			return true
+		}
+	}
+	return false
+}
+
+func (m *localSwarmStateManager) decomposeTask(missionID string, taskID string) (string, bool) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	for _, mission := range m.missions {
+		if mission.ID != missionID {
+			continue
+		}
+		for _, task := range mission.Tasks {
+			if task.ID != taskID {
+				continue
+			}
+			now := time.Now().UTC().UnixMilli()
+			subID := fmt.Sprintf("mission-%d", m.nextID)
+			m.nextID++
+			subMission := localSwarmMission{
+				ID:        subID,
+				Goal:      "Sub-mission for: " + task.Title,
+				Status:    "active",
+				Priority:  task.Priority,
+				CreatedAt: now,
+				UpdatedAt: now,
+				Tasks: []localSwarmTask{
+					{ID: subID + "-task-1", Title: "Research sub-problem", Status: "active", Priority: task.Priority},
+					{ID: subID + "-task-2", Title: "Implement sub-solution", Status: "pending", Priority: task.Priority},
+				},
+			}
+			m.missions = append([]localSwarmMission{subMission}, m.missions...)
+			m.saveLocked()
+			return subID, true
+		}
+	}
+	return "", false
 }
 
 func (m *localSwarmStateManager) missionHistory() []map[string]any {
@@ -200,7 +288,45 @@ func (m *localSwarmStateManager) missionRiskFacets(statusFilter string, minRisk 
 
 func (m *localSwarmStateManager) meshCapabilities() map[string]any {
 	return map[string]any{
-		"hypercoded-go": []string{"startSwarm", "resumeMission", "getMissionHistory", "getMissionRiskSummary", "getMissionRiskRows", "getMissionRiskFacets", "getMeshCapabilities"},
+		"hypercoded-go": []string{"startSwarm", "resumeMission", "approveTask", "decomposeTask", "updateTaskPriority", "executeDebate", "seekConsensus", "getMissionHistory", "getMissionRiskSummary", "getMissionRiskRows", "getMissionRiskFacets", "getMeshCapabilities", "sendDirectMessage"},
+	}
+}
+
+func (m *localSwarmStateManager) executeDebate(topic string, proponent string, opponent string, rounds int) map[string]any {
+	if rounds <= 0 {
+		rounds = 3
+	}
+	winner := proponent
+	if len(strings.TrimSpace(opponent)) > len(strings.TrimSpace(proponent)) {
+		winner = opponent
+	}
+	return map[string]any{
+		"winner":          winner,
+		"roundsCompleted": rounds,
+		"reasoning":       "Native Go swarm fallback used a deterministic local heuristic instead of a live multi-model debate.",
+		"topic":           topic,
+	}
+}
+
+func (m *localSwarmStateManager) seekConsensus(prompt string, models []string) map[string]any {
+	agreement := 100
+	agreed := len(models) >= 2 && strings.TrimSpace(prompt) != ""
+	if !agreed {
+		agreement = 0
+	}
+	return map[string]any{
+		"agreed":              agreed,
+		"agreementPercentage": agreement,
+		"reasoning":           "Native Go swarm fallback used a deterministic local consensus heuristic instead of live multi-model evaluation.",
+	}
+}
+
+func (m *localSwarmStateManager) sendDirectMessage(targetNodeID string, payload map[string]any) map[string]any {
+	return map[string]any{
+		"success":      true,
+		"targetNodeId": targetNodeID,
+		"echo":         payload,
+		"mode":         "native-go-fallback",
 	}
 }
 

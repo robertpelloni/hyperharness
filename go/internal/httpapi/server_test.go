@@ -4018,6 +4018,54 @@ func TestSwarmFallsBackToLocalGoMissionState(t *testing.T) {
 	if !strings.Contains(meshRecorder.Body.String(), `"hypercoded-go"`) {
 		t.Fatalf("expected swarm mesh capability payload, got %s", meshRecorder.Body.String())
 	}
+
+	approveReq := httptest.NewRequest(http.MethodPost, "/api/swarm/approve-task", strings.NewReader(`{"missionId":"mission-1","taskId":"mission-1-task-2","approved":true}`))
+	approveReq.Header.Set("content-type", "application/json")
+	approveRecorder := httptest.NewRecorder()
+	server.Handler().ServeHTTP(approveRecorder, approveReq)
+	if approveRecorder.Code != http.StatusOK || !strings.Contains(approveRecorder.Body.String(), `"fallback":"go-local-swarm"`) || !strings.Contains(approveRecorder.Body.String(), `"procedure":"swarm.approveTask"`) {
+		t.Fatalf("expected swarm approve fallback, got %d %s", approveRecorder.Code, approveRecorder.Body.String())
+	}
+
+	updateReq := httptest.NewRequest(http.MethodPost, "/api/swarm/update-task-priority", strings.NewReader(`{"missionId":"mission-1","taskId":"mission-1-task-3","priority":5}`))
+	updateReq.Header.Set("content-type", "application/json")
+	updateRecorder := httptest.NewRecorder()
+	server.Handler().ServeHTTP(updateRecorder, updateReq)
+	if updateRecorder.Code != http.StatusOK || !strings.Contains(updateRecorder.Body.String(), `"procedure":"swarm.updateTaskPriority"`) {
+		t.Fatalf("expected swarm update priority fallback, got %d %s", updateRecorder.Code, updateRecorder.Body.String())
+	}
+
+	decomposeReq := httptest.NewRequest(http.MethodPost, "/api/swarm/decompose-task", strings.NewReader(`{"missionId":"mission-1","taskId":"mission-1-task-3"}`))
+	decomposeReq.Header.Set("content-type", "application/json")
+	decomposeRecorder := httptest.NewRecorder()
+	server.Handler().ServeHTTP(decomposeRecorder, decomposeReq)
+	if decomposeRecorder.Code != http.StatusOK || !strings.Contains(decomposeRecorder.Body.String(), `"subMissionId":"mission-2"`) {
+		t.Fatalf("expected swarm decompose fallback, got %d %s", decomposeRecorder.Code, decomposeRecorder.Body.String())
+	}
+
+	debateReq := httptest.NewRequest(http.MethodPost, "/api/swarm/debate", strings.NewReader(`{"topic":"Best implementation path","proponentModel":"claude","opponentModel":"gpt","judgeModel":"gemini","rounds":3}`))
+	debateReq.Header.Set("content-type", "application/json")
+	debateRecorder := httptest.NewRecorder()
+	server.Handler().ServeHTTP(debateRecorder, debateReq)
+	if debateRecorder.Code != http.StatusOK || !strings.Contains(debateRecorder.Body.String(), `"procedure":"swarm.executeDebate"`) || !strings.Contains(debateRecorder.Body.String(), `"winner":"`) {
+		t.Fatalf("expected swarm debate fallback, got %d %s", debateRecorder.Code, debateRecorder.Body.String())
+	}
+
+	consensusReq := httptest.NewRequest(http.MethodPost, "/api/swarm/consensus", strings.NewReader(`{"prompt":"Agree on plan","models":["claude","gpt","gemini"]}`))
+	consensusReq.Header.Set("content-type", "application/json")
+	consensusRecorder := httptest.NewRecorder()
+	server.Handler().ServeHTTP(consensusRecorder, consensusReq)
+	if consensusRecorder.Code != http.StatusOK || !strings.Contains(consensusRecorder.Body.String(), `"procedure":"swarm.seekConsensus"`) || !strings.Contains(consensusRecorder.Body.String(), `"agreed":true`) {
+		t.Fatalf("expected swarm consensus fallback, got %d %s", consensusRecorder.Code, consensusRecorder.Body.String())
+	}
+
+	directReq := httptest.NewRequest(http.MethodPost, "/api/swarm/direct-message", strings.NewReader(`{"targetNodeId":"node-1","payload":{"hello":"world"}}`))
+	directReq.Header.Set("content-type", "application/json")
+	directRecorder := httptest.NewRecorder()
+	server.Handler().ServeHTTP(directRecorder, directReq)
+	if directRecorder.Code != http.StatusOK || !strings.Contains(directRecorder.Body.String(), `"procedure":"swarm.sendDirectMessage"`) || !strings.Contains(directRecorder.Body.String(), `"success":true`) {
+		t.Fatalf("expected swarm direct message fallback, got %d %s", directRecorder.Code, directRecorder.Body.String())
+	}
 }
 
 func TestBillingBridgeRoutes(t *testing.T) {

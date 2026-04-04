@@ -2620,6 +2620,21 @@ Results:
 - Go build passed
 - full Go suite passed
 
+### Follow-up swarm expansion note
+After the initial swarm slice landed, the native fallback scope was expanded beyond just mission start/resume/history/risk/mesh reads.
+
+The local swarm fallback now also covers:
+- approve task
+- decompose task
+- update task priority
+- local debate heuristic
+- local consensus heuristic
+- direct-message acknowledgment
+
+Truthfulness note:
+- these are still deterministic local fallback semantics, not full TS swarm-orchestrator parity
+- they are real local backend ownership, but not a claim of full multi-agent execution equivalence
+
 ## Bottom line
 This pass meaningfully strengthened the **Go-primary migration path** and improved TypeScript survivability while the migration continues:
 - broader provider routing
@@ -2678,6 +2693,7 @@ This pass meaningfully strengthened the **Go-primary migration path** and improv
 - AutoDev routes now have a native Go persisted local loop-manager fallback instead of remaining bridge-only
 - squad routes now have a native Go persisted local squad/indexer state fallback instead of remaining bridge-only
 - the safest swarm mission/risk/mesh surfaces plus mission start/resume now have native Go persisted fallback ownership instead of remaining bridge-only
+- native swarm fallback now also covers local approve/decompose/update/debate/consensus/direct-message semantics, while remaining truthful that these are fallback heuristics rather than full orchestrator parity
 - a tested Go-native replacement path for multiple TS-owned persistence surfaces, even though mixed-runtime cleanup is not fully finished yet
 - a small but real Maestro UX fix
 
