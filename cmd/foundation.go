@@ -7,6 +7,7 @@ import (
 	"os"
 	"text/tabwriter"
 
+	"github.com/robertpelloni/hypercode/foundation/adapters"
 	"github.com/robertpelloni/hypercode/foundation/assimilation"
 	"github.com/robertpelloni/hypercode/foundation/compat"
 	foundationpi "github.com/robertpelloni/hypercode/foundation/pi"
@@ -120,6 +121,22 @@ var foundationRepomapCmd = &cobra.Command{
 		}
 		_, err = fmt.Fprintln(os.Stdout, result.Map)
 		return err
+	},
+}
+
+var foundationAdaptersCmd = &cobra.Command{
+	Use:   "adapters",
+	Short: "Inspect HyperCode/Borg adapter seams for the foundation runtime",
+	RunE: func(cmd *cobra.Command, args []string) error {
+		cwd, err := os.Getwd()
+		if err != nil {
+			return err
+		}
+		adapter := adapters.NewHyperCodeAdapter(cwd)
+		status := adapter.Status()
+		enc := json.NewEncoder(os.Stdout)
+		enc.SetIndent("", "  ")
+		return enc.Encode(status)
 	},
 }
 
@@ -239,6 +256,7 @@ func init() {
 	foundationCmd.AddCommand(foundationSpecCmd)
 	foundationCmd.AddCommand(foundationToolsCmd)
 	foundationCmd.AddCommand(foundationRepomapCmd)
+	foundationCmd.AddCommand(foundationAdaptersCmd)
 	foundationCmd.AddCommand(foundationExecCmd)
 	foundationCmd.AddCommand(foundationSessionCmd)
 	rootCmd.AddCommand(foundationCmd)

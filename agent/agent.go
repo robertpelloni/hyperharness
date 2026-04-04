@@ -5,17 +5,20 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/robertpelloni/hypercode/borg"
+	"github.com/robertpelloni/hypercode/foundation/adapters"
 	"github.com/robertpelloni/hypercode/tools"
 	"github.com/sashabaranov/go-openai"
 )
 
 type Agent struct {
-	client      *openai.Client
-	messages    []openai.ChatCompletionMessage
-	tools       *tools.Registry
-	BorgAdapter *borg.Adapter
+	client       *openai.Client
+	messages     []openai.ChatCompletionMessage
+	tools        *tools.Registry
+	BorgAdapter  *borg.Adapter
+	HyperAdapter *adapters.HyperCodeAdapter
 }
 
 func NewAgent() *Agent {
@@ -26,17 +29,27 @@ func NewAgent() *Agent {
 
 	registry := tools.NewRegistry()
 	borgAdapter := borg.NewAdapter()
+	cwd, _ := os.Getwd()
+	hyperAdapter := adapters.NewHyperCodeAdapter(cwd)
+	systemPrompt := strings.Join([]string{
+		"You are Hypercode, a Go-native coding and terminal assistant integrated with Borg and HyperCode.",
+		"Prefer the exact-name Pi-compatible tools read, write, edit, and bash when solving coding tasks.",
+		"Use repomap for repository-wide context when a condensed map would help.",
+		"Additional legacy tools may exist for compatibility, but exact-contract tools are preferred.",
+		hyperAdapter.BuildSystemContext(),
+	}, "\n\n")
 
 	return &Agent{
 		client: openai.NewClient(apiKey),
 		messages: []openai.ChatCompletionMessage{
 			{
 				Role:    openai.ChatMessageRoleSystem,
-				Content: "You are Hypercode, a Go-native coding and terminal assistant integrated with Borg and HyperCode. Prefer the exact-name Pi-compatible tools read, write, edit, and bash when solving coding tasks. Use repomap for repository-wide context when a condensed map would help. Additional legacy tools may exist for compatibility, but exact-contract tools are preferred.",
+				Content: systemPrompt,
 			},
 		},
-		tools:       registry,
-		BorgAdapter: borgAdapter,
+		tools:        registry,
+		BorgAdapter:  borgAdapter,
+		HyperAdapter: hyperAdapter,
 	}
 }
 

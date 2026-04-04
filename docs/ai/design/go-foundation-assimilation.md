@@ -94,7 +94,16 @@ Responsibilities:
 - emit deterministic `<repo_map>` output for the harness
 - provide the first step toward richer graph-based context ranking
 
-### 5. HyperCode integration boundary
+### 5. `foundation/adapters`
+Purpose: define and exercise the integration seam between the Go harness and HyperCode/Borg.
+
+Responsibilities:
+- expose Borg memory/context status cleanly to the harness
+- expose MCP configuration visibility without duplicating MCP control-plane logic
+- discover adjacent HyperCode workspaces where available
+- provide a stable adapter boundary before deeper provider/MCP routing integration
+
+### 6. HyperCode integration boundary
 HyperCode should be treated as an external-but-local substrate.
 
 Responsibilities retained by HyperCode:
@@ -110,6 +119,7 @@ Responsibilities owned by the new harness:
 - agent loop behavior
 - session interaction model
 - coding-agent specialization
+- adapter consumption and presentation of HyperCode/Borg state
 
 ## Key Design Principles
 
@@ -156,6 +166,7 @@ Add contract and snapshot tests for each feature family.
 - `foundation/compat/*`
 - `foundation/assimilation/*`
 - `foundation/repomap/*`
+- `foundation/adapters/*`
 - `cmd/foundation.go`
 
 ## Baseline Risks Observed
@@ -167,6 +178,6 @@ Add contract and snapshot tests for each feature family.
 ## Recommended Next Technical Moves
 1. Continue routing existing top-level placeholder command and orchestration surfaces to the new `foundation/pi` runtime.
 2. Deepen `foundation/repomap` from lightweight graph groundwork toward fuller graph/LSP-aware ranking and port richer edit engines.
-3. Add HyperCode-backed provider and MCP adapters behind stable interfaces.
+3. Expand `foundation/adapters` from status/config seams into real HyperCode-backed provider and MCP adapters.
 4. Expand verified snapshot-style contract tests for tool outputs and CLI behaviors.
 5. Add verification, delegation, and background session services.

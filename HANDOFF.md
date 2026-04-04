@@ -23,16 +23,22 @@
   - `tools.Registry` now exposes exact-name native Pi-compatible tools from `foundation/pi`
   - `agent.Agent` now registers per-tool schemas instead of one placeholder schema
   - legacy `tools/repomap.go` now delegates to `foundation/repomap`
+- Added the first HyperCode/Borg adapter seam:
+  - `foundation/adapters/hypercode.go` exposes assimilation status, memory context, MCP config visibility, and adjacent HyperCode repo discovery
+  - `hypercode foundation adapters` now inspects that seam directly
+  - `agent.Agent` now incorporates adapter-derived system context into its system prompt
 - Added deeper verification coverage:
   - snapshot-style tests for baseline tool results
   - top-level agent schema registration test
+  - HyperCode/Borg adapter seam test
 - Added comprehensive `docs/ai/` documentation for requirements, design, planning, implementation, and testing.
 - Added `docs/ai/design/upstream-toolchain-analysis.md` summarizing the imported upstream systems and assimilation strategy.
 - Fixed the duplicate SQLite driver registration issue in `orchestrator/queue.go` and `orchestrator/vectors.go` by removing redundant `modernc.org/sqlite` imports.
 
 ## Validation completed
-- `gofmt -w cmd/foundation.go foundation/compat/types.go foundation/compat/catalog.go foundation/compat/default_catalog.go foundation/compat/catalog_test.go foundation/pi/foundation.go foundation/pi/foundation_test.go foundation/pi/runtime_types.go foundation/pi/runtime.go foundation/pi/runtime_test.go foundation/pi/session.go foundation/pi/session_test.go foundation/pi/tool_parity_test.go foundation/pi/tool_snapshot_test.go foundation/pi/tools_native.go foundation/assimilation/inventory.go foundation/assimilation/summary.go foundation/assimilation/inventory_test.go foundation/repomap/repomap.go foundation/repomap/repomap_test.go tools/registry.go tools/repomap.go tools/registry_test.go agent/agent.go agent/agent_test.go orchestrator/vectors.go orchestrator/queue.go`
+- `gofmt -w cmd/foundation.go foundation/adapters/hypercode.go foundation/adapters/hypercode_test.go foundation/compat/types.go foundation/compat/catalog.go foundation/compat/default_catalog.go foundation/compat/catalog_test.go foundation/pi/foundation.go foundation/pi/foundation_test.go foundation/pi/runtime_types.go foundation/pi/runtime.go foundation/pi/runtime_test.go foundation/pi/session.go foundation/pi/session_test.go foundation/pi/tool_parity_test.go foundation/pi/tool_snapshot_test.go foundation/pi/tools_native.go foundation/assimilation/inventory.go foundation/assimilation/summary.go foundation/assimilation/inventory_test.go foundation/repomap/repomap.go foundation/repomap/repomap_test.go tools/registry.go tools/repomap.go tools/registry_test.go agent/agent.go agent/agent_test.go orchestrator/vectors.go orchestrator/queue.go`
 - `go test ./foundation/... ./cmd ./orchestrator ./tools ./agent`
+- `go run . foundation adapters`
 - `go run . foundation tools`
 - `go run . foundation inventory`
 - `go run . foundation repomap --dir foundation --max-files 5`
@@ -49,5 +55,5 @@
 1. Continue routing remaining top-level placeholder orchestration/tool surfaces onto the new `foundation/pi` runtime.
 2. Expand verified result-shape and snapshot tests for `read`, `write`, `edit`, and `bash` plus CLI smoke coverage.
 3. Deepen `foundation/repomap` from graph-ranking groundwork toward fuller Aider-style graph ranking and richer edit engines.
-4. Add HyperCode/Borg adapters for provider routing, memory, and MCP runtime access.
+4. Expand `foundation/adapters` from status/config seams into provider routing, memory, and MCP runtime adapters backed by HyperCode/Borg.
 5. Migrate TUI and orchestration code to the new truthful foundation instead of placeholder parity claims.

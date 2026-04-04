@@ -40,6 +40,7 @@ Deliver a Go-native harness that can truthfully grow from a Pi-derived foundatio
 - [ ] Structured plan/execution state
 
 ### Workstream 5: HyperCode integration
+- [x] Initial HyperCode/Borg adapter seam with status/config visibility
 - [ ] Provider adapter layer
 - [ ] MCP adapter layer
 - [ ] Memory/session import bridges
@@ -79,10 +80,11 @@ Deliver a Go-native harness that can truthfully grow from a Pi-derived foundatio
 - [ ] verification-aware edit pipeline
 
 ### Milestone 3: HyperCode-native substrate
-- provider routing via HyperCode
-- MCP inventory/runtime via HyperCode
-- memory/session continuity via HyperCode
-- operator observability hooks
+- [x] first adapter seam for Borg memory/MCP config visibility
+- [ ] provider routing via HyperCode
+- [ ] MCP inventory/runtime via HyperCode
+- [ ] memory/session continuity via HyperCode
+- [ ] operator observability hooks
 
 ### Milestone 4: Orchestrator-grade autonomy
 - background runs

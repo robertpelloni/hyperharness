@@ -4,6 +4,12 @@ import "testing"
 
 func TestBuildOpenAIToolsUsesExactSchemas(t *testing.T) {
 	agent := NewAgent()
+	if agent.HyperAdapter == nil {
+		t.Fatal("expected hyper adapter")
+	}
+	if len(agent.messages) == 0 || agent.messages[0].Content == "" {
+		t.Fatal("expected system prompt")
+	}
 	tools := agent.buildOpenAITools()
 	if len(tools) == 0 {
 		t.Fatal("expected tools")

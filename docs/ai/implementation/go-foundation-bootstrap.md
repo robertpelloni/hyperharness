@@ -73,6 +73,14 @@
 - `agent/agent.go`
   - top-level agent now advertises the native exact-name tools preferentially
   - OpenAI tool registration now uses per-tool schemas instead of one fake generic schema
+  - system prompt now incorporates HyperCode/Borg adapter context
+
+- `foundation/adapters/hypercode.go`
+  - first HyperCode/Borg adapter seam for the Go foundation
+  - exposes assimilation status, memory context, MCP config visibility, and adjacent HyperCode repo discovery
+
+- `foundation/adapters/hypercode_test.go`
+  - validates adapter status, routing, and system-context construction
 
 - `tools/registry_test.go`
   - verifies exact Pi tools and repomap are present in the registry
@@ -82,6 +90,7 @@
 
 - `agent/agent_test.go`
   - verifies top-level OpenAI tool registration exposes exact-schema tool definitions
+  - verifies HyperCode adapter presence on the top-level agent
 
 ### Documentation
 - requirements, design, planning, implementation, and testing documents under `docs/ai/`
@@ -120,10 +129,11 @@ These issues were observed and documented, not silently ignored or misrepresente
 - repo map generation and ranking tests
 - top-level tool registry tests confirming native exact-name tool exposure
 - top-level agent tool-schema registration tests
+- HyperCode/Borg adapter seam tests
 
 ## Recommended next implementation sequence
 1. continue routing remaining top-level placeholder orchestration surfaces to `foundation/pi` runtime packages,
 2. deepen repo-map ranking toward richer Aider-style graph semantics and add edit strategies,
-3. add HyperCode/Borg provider and MCP adapters,
+3. expand `foundation/adapters` into real HyperCode/Borg provider and MCP adapters,
 4. expand snapshot/result-shape coverage and CLI smoke coverage,
 5. layer in delegation, verification, detached/background runs, and JSON/RPC transport.
