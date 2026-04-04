@@ -13674,7 +13674,7 @@ func harnessDocsURL(id string) string {
 func harnessInstallHint(id string) string {
 	switch id {
 	case "hypercode":
-		return "Use HyperCode's tracked `submodules/hypercode` checkout or install HyperCode and ensure `hypercode` is on PATH."
+		return "Use HyperCode's tracked `submodules/hyperharness` checkout or install HyperCode and ensure `hypercode` is on PATH."
 	case "aider":
 		return "pip install aider-chat"
 	case "antigravity":

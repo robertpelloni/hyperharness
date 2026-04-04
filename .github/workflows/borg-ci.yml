@@ -12,7 +12,7 @@ jobs:
     
     defaults:
       run:
-        working-directory: ./submodules/hypercode
+        working-directory: ./submodules/hyperharness
 
     steps:
     - uses: actions/checkout@v4

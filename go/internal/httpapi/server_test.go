@@ -6512,7 +6512,7 @@ func TestPersistedRuntimeOverlayFallbackWithoutLiveRegistry(t *testing.T) {
 
 func TestFileBackedReadEndpointsFallBackLocally(t *testing.T) {
 	workspaceRoot := t.TempDir()
-	if err := os.WriteFile(filepath.Join(workspaceRoot, ".gitmodules"), []byte("[submodule \"hypercode\"]\npath = submodules/hypercode\nurl = https://github.com/example/hypercode.git\n"), 0o644); err != nil {
+	if err := os.WriteFile(filepath.Join(workspaceRoot, ".gitmodules"), []byte("[submodule \"hypercode\"]\npath = submodules/hyperharness\nurl = https://github.com/example/hypercode.git\n"), 0o644); err != nil {
 		t.Fatalf("failed to write .gitmodules: %v", err)
 	}
 
@@ -10003,16 +10003,16 @@ func TestGitLogFallsBackLocally(t *testing.T) {
 
 func TestSubmoduleReadEndpointsFallBackLocally(t *testing.T) {
 	workspaceRoot := t.TempDir()
-	gitmodules := `[submodule "submodules/hypercode"]
-	path = submodules/hypercode
+	gitmodules := `[submodule "submodules/hyperharness"]
+	path = submodules/hyperharness
 	url = https://github.com/example/hypercode.git
 `
 	if err := os.WriteFile(filepath.Join(workspaceRoot, ".gitmodules"), []byte(gitmodules), 0o644); err != nil {
 		t.Fatalf("failed to write .gitmodules: %v", err)
 	}
 
-	hypercodePath := filepath.Join(workspaceRoot, "submodules", "hypercode")
-	if err := os.MkdirAll(filepath.Join(hypercodePath, "dist"), 0o755); err != nil {
+	hyperharnessPath := filepath.Join(workspaceRoot, "submodules", "hyperharness")
+	if err := os.MkdirAll(filepath.Join(hyperharnessPath, "dist"), 0o755); err != nil {
 		t.Fatalf("failed to create submodule dist dir: %v", err)
 	}
 	packageJSON := `{
@@ -10020,10 +10020,10 @@ func TestSubmoduleReadEndpointsFallBackLocally(t *testing.T) {
   "dependencies": {"@modelcontextprotocol/sdk": "^1.0.0"},
   "scripts": {"build": "tsc", "start": "node index.js"}
 }`
-	if err := os.WriteFile(filepath.Join(hypercodePath, "package.json"), []byte(packageJSON), 0o644); err != nil {
+	if err := os.WriteFile(filepath.Join(hyperharnessPath, "package.json"), []byte(packageJSON), 0o644); err != nil {
 		t.Fatalf("failed to write package.json: %v", err)
 	}
-	if err := os.MkdirAll(filepath.Join(hypercodePath, "node_modules"), 0o755); err != nil {
+	if err := os.MkdirAll(filepath.Join(hyperharnessPath, "node_modules"), 0o755); err != nil {
 		t.Fatalf("failed to create node_modules dir: %v", err)
 	}
 
@@ -10054,7 +10054,7 @@ func TestSubmoduleReadEndpointsFallBackLocally(t *testing.T) {
 		`"fallback":"go-local-submodules"`,
 		`"procedure":"submodule.list"`,
 		`using local .gitmodules submodule fallback`,
-		`"path":"submodules/hypercode"`,
+		`"path":"submodules/hyperharness"`,
 		`"status":"clean"`,
 		`"capabilities":["mcp-server","mcp-sdk","build"]`,
 		`"isInstalled":true`,
@@ -12213,7 +12213,7 @@ func TestCodeBridgeRoutes(t *testing.T) {
 		case "/trpc/hypercodeContext.getPrompt":
 			_ = json.NewEncoder(w).Encode(map[string]any{"result": map[string]any{"data": map[string]any{"json": "Prompt context"}}})
 		case "/trpc/git.getModules":
-			_ = json.NewEncoder(w).Encode(map[string]any{"result": map[string]any{"data": map[string]any{"json": []map[string]any{{"name": "hypercode", "path": "submodules/hypercode"}}}}})
+			_ = json.NewEncoder(w).Encode(map[string]any{"result": map[string]any{"data": map[string]any{"json": []map[string]any{{"name": "hypercode", "path": "submodules/hyperharness"}}}}})
 		case "/trpc/git.getLog":
 			body, _ := io.ReadAll(r.Body)
 			if !strings.Contains(string(body), `"limit":5`) {
@@ -13371,7 +13371,7 @@ func TestUIHelperBridgeRoutes(t *testing.T) {
 		case "/trpc/codeMode.execute":
 			_ = json.NewEncoder(w).Encode(map[string]any{"result": map[string]any{"data": map[string]any{"json": map[string]any{"success": true}}}})
 		case "/trpc/submodule.list":
-			_ = json.NewEncoder(w).Encode(map[string]any{"result": map[string]any{"data": map[string]any{"json": []any{map[string]any{"path": "submodules/hypercode"}}}}})
+			_ = json.NewEncoder(w).Encode(map[string]any{"result": map[string]any{"data": map[string]any{"json": []any{map[string]any{"path": "submodules/hyperharness"}}}}})
 		case "/trpc/submodule.updateAll":
 			_ = json.NewEncoder(w).Encode(map[string]any{"result": map[string]any{"data": map[string]any{"json": map[string]any{"success": true}}}})
 		case "/trpc/submodule.installDependencies":
@@ -13382,7 +13382,7 @@ func TestUIHelperBridgeRoutes(t *testing.T) {
 			_ = json.NewEncoder(w).Encode(map[string]any{"result": map[string]any{"data": map[string]any{"json": map[string]any{"success": true}}}})
 		case "/trpc/submodule.detectCapabilities":
 			body, _ := io.ReadAll(r.Body)
-			if !strings.Contains(string(body), `"path":"submodules/hypercode"`) {
+			if !strings.Contains(string(body), `"path":"submodules/hyperharness"`) {
 				t.Fatalf("expected submodule.detectCapabilities payload, got %s", string(body))
 			}
 			_ = json.NewEncoder(w).Encode(map[string]any{"result": map[string]any{"data": map[string]any{"json": map[string]any{"caps": []any{"build"}}}}})
@@ -13445,11 +13445,11 @@ func TestUIHelperBridgeRoutes(t *testing.T) {
 		{name: "code mode enable", method: http.MethodPost, path: "/api/code-mode/enable", body: `{}`, contains: `"enabled":true`, procedure: `"procedure":"codeMode.enable"`},
 		{name: "code mode disable", method: http.MethodPost, path: "/api/code-mode/disable", body: `{}`, contains: `"enabled":false`, procedure: `"procedure":"codeMode.disable"`},
 		{name: "code mode execute", method: http.MethodPost, path: "/api/code-mode/execute", body: `{"code":"return 1;"}`, contains: `"success":true`, procedure: `"procedure":"codeMode.execute"`},
-		{name: "submodule list", method: http.MethodGet, path: "/api/submodules", contains: `"submodules/hypercode"`, procedure: `"procedure":"submodule.list"`},
+		{name: "submodule list", method: http.MethodGet, path: "/api/submodules", contains: `"submodules/hyperharness"`, procedure: `"procedure":"submodule.list"`},
 		{name: "submodule update all", method: http.MethodPost, path: "/api/submodules/update-all", body: `{}`, contains: `"success":true`, procedure: `"procedure":"submodule.updateAll"`},
-		{name: "submodule install deps", method: http.MethodPost, path: "/api/submodules/install-dependencies", body: `{"path":"submodules/hypercode"}`, contains: `"success":true`, procedure: `"procedure":"submodule.installDependencies"`},
-		{name: "submodule build", method: http.MethodPost, path: "/api/submodules/build", body: `{"path":"submodules/hypercode"}`, contains: `"success":true`, procedure: `"procedure":"submodule.build"`},
-		{name: "submodule enable", method: http.MethodPost, path: "/api/submodules/enable", body: `{"path":"submodules/hypercode"}`, contains: `"success":true`, procedure: `"procedure":"submodule.enable"`},
+		{name: "submodule install deps", method: http.MethodPost, path: "/api/submodules/install-dependencies", body: `{"path":"submodules/hyperharness"}`, contains: `"success":true`, procedure: `"procedure":"submodule.installDependencies"`},
+		{name: "submodule build", method: http.MethodPost, path: "/api/submodules/build", body: `{"path":"submodules/hyperharness"}`, contains: `"success":true`, procedure: `"procedure":"submodule.build"`},
+		{name: "submodule enable", method: http.MethodPost, path: "/api/submodules/enable", body: `{"path":"submodules/hyperharness"}`, contains: `"success":true`, procedure: `"procedure":"submodule.enable"`},
 		{name: "submodule capabilities", method: http.MethodGet, path: "/api/submodules/capabilities?path=submodules%2Fhypercode", contains: `"build"`, procedure: `"procedure":"submodule.detectCapabilities"`},
 		{name: "suggestions list", method: http.MethodGet, path: "/api/suggestions", contains: `"sug-1"`, procedure: `"procedure":"suggestions.list"`},
 		{name: "suggestions resolve", method: http.MethodPost, path: "/api/suggestions/resolve", body: `{"id":"sug-1","status":"APPROVED"}`, contains: `"APPROVED"`, procedure: `"procedure":"suggestions.resolve"`},

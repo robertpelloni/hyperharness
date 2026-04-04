@@ -64,7 +64,7 @@ export const CLI_HARNESS_DEFINITIONS: Record<CliHarness, CliHarnessDefinition> =
     description: 'HyperCode Go CLI harness',
     maturity: 'Experimental',
     primary: true,
-    submodulePath: 'submodules/hypercode',
+    submodulePath: 'submodules/hyperharness',
     upstream: 'https://github.com/robertpelloni/hypercode',
     runtime: 'Go / Cobra / TUI',
     launchCommand: 'go run .',
@@ -287,6 +287,6 @@ function readHypercodeToolInventory(workspaceRoot: string): { toolCallNames: str
 
   return {
     toolCallNames: [...toolCallNames].sort((left, right) => left.localeCompare(right)),
-    toolInventorySource: 'submodules/hypercode/tools/*.go',
+    toolInventorySource: 'submodules/hyperharness/tools/*.go',
   };
 }

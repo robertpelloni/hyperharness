@@ -20,7 +20,7 @@ export const CLI_HARNESS_CATALOG: CliHarnessCatalogEntry[] = [
         args: [],
         homepage: 'https://github.com/robertpelloni/hypercode',
         docsUrl: 'https://github.com/robertpelloni/hypercode',
-        installHint: 'Use HyperCode\'s tracked `submodules/hypercode` checkout or install HyperCode and ensure `hypercode` is on PATH.',
+        installHint: 'Use HyperCode\'s tracked `submodules/hyperharness` checkout or install HyperCode and ensure `hypercode` is on PATH.',
         category: 'cli',
         sessionCapable: true,
         versionArgs: ['version'],
