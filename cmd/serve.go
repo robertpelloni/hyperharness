@@ -8,6 +8,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/websocket/v2"
+	foundationrepomap "github.com/robertpelloni/hypercode/foundation/repomap"
 	"github.com/robertpelloni/hypercode/mcp"
 	"github.com/robertpelloni/hypercode/orchestrator"
 	"github.com/spf13/cobra"
@@ -110,6 +111,108 @@ var serveCmd = &cobra.Command{
 				return c.Status(500).JSON(fiber.Map{"error": err.Error()})
 			}
 			return c.JSON(fiber.Map{"sessions": sessions})
+		})
+
+		api.Get("/foundation/tools", func(c *fiber.Ctx) error {
+			cwd, err := os.Getwd()
+			if err != nil {
+				return c.Status(500).JSON(fiber.Map{"error": err.Error()})
+			}
+			payload := foundationAdaptersPayload(cwd)
+			payload["tools"] = mcpToolContracts()
+			return c.JSON(payload)
+		})
+
+		api.Get("/foundation/adapters", func(c *fiber.Ctx) error {
+			cwd, err := os.Getwd()
+			if err != nil {
+				return c.Status(500).JSON(fiber.Map{"error": err.Error()})
+			}
+			return c.JSON(foundationAdaptersPayload(cwd))
+		})
+
+		api.Post("/foundation/exec", func(c *fiber.Ctx) error {
+			var body foundationExecRequest
+			if err := c.BodyParser(&body); err != nil || body.Tool == "" {
+				return c.Status(400).JSON(fiber.Map{"error": "tool and input are required"})
+			}
+			cwd, err := os.Getwd()
+			if err != nil {
+				return c.Status(500).JSON(fiber.Map{"error": err.Error()})
+			}
+			payload, execErr := executeFoundationTool(cwd, body)
+			if execErr != nil {
+				return c.Status(400).JSON(payload)
+			}
+			return c.JSON(payload)
+		})
+
+		api.Post("/foundation/repomap", func(c *fiber.Ctx) error {
+			var body foundationrepomap.Options
+			if err := c.BodyParser(&body); err != nil {
+				return c.Status(400).JSON(fiber.Map{"error": "invalid repomap request"})
+			}
+			cwd, err := os.Getwd()
+			if err != nil {
+				return c.Status(500).JSON(fiber.Map{"error": err.Error()})
+			}
+			result, err := generateFoundationRepomap(cwd, body)
+			if err != nil {
+				return c.Status(500).JSON(fiber.Map{"error": err.Error()})
+			}
+			return c.JSON(result)
+		})
+
+		api.Post("/foundation/sessions", func(c *fiber.Ctx) error {
+			var body foundationSessionCreateRequest
+			_ = c.BodyParser(&body)
+			cwd, err := os.Getwd()
+			if err != nil {
+				return c.Status(500).JSON(fiber.Map{"error": err.Error()})
+			}
+			session, err := createFoundationSession(cwd, body)
+			if err != nil {
+				return c.Status(500).JSON(fiber.Map{"error": err.Error()})
+			}
+			return c.JSON(session)
+		})
+
+		api.Get("/foundation/sessions", func(c *fiber.Ctx) error {
+			cwd, err := os.Getwd()
+			if err != nil {
+				return c.Status(500).JSON(fiber.Map{"error": err.Error()})
+			}
+			sessions, err := listFoundationSessions(cwd)
+			if err != nil {
+				return c.Status(500).JSON(fiber.Map{"error": err.Error()})
+			}
+			return c.JSON(fiber.Map{"sessions": sessions})
+		})
+
+		api.Get("/foundation/sessions/:id", func(c *fiber.Ctx) error {
+			cwd, err := os.Getwd()
+			if err != nil {
+				return c.Status(500).JSON(fiber.Map{"error": err.Error()})
+			}
+			session, err := getFoundationSession(cwd, c.Params("id"))
+			if err != nil {
+				return c.Status(404).JSON(fiber.Map{"error": err.Error()})
+			}
+			return c.JSON(session)
+		})
+
+		api.Post("/foundation/sessions/:id/fork", func(c *fiber.Ctx) error {
+			var body foundationSessionForkRequest
+			_ = c.BodyParser(&body)
+			cwd, err := os.Getwd()
+			if err != nil {
+				return c.Status(500).JSON(fiber.Map{"error": err.Error()})
+			}
+			session, err := forkFoundationSession(cwd, c.Params("id"), body)
+			if err != nil {
+				return c.Status(500).JSON(fiber.Map{"error": err.Error()})
+			}
+			return c.JSON(session)
 		})
 
 		api.Get("/sessions/:id/replay", func(c *fiber.Ctx) error {
@@ -216,11 +319,15 @@ var serveCmd = &cobra.Command{
 			if filePath == "" {
 				return c.Status(400).JSON(fiber.Map{"error": "path required"})
 			}
-			content, err := os.ReadFile(filePath)
+			cwd, err := os.Getwd()
 			if err != nil {
 				return c.Status(500).JSON(fiber.Map{"error": err.Error()})
 			}
-			return c.SendString(string(content))
+			content, err := encodeFoundationReadAsString(cwd, filePath)
+			if err != nil {
+				return c.Status(500).JSON(fiber.Map{"error": err.Error()})
+			}
+			return c.SendString(content)
 		})
 
 		// Actions Parity mapping TS legacy `:idAndAction` loops bridging Jules API boundaries
@@ -260,11 +367,15 @@ var serveCmd = &cobra.Command{
 			if filePath == "" {
 				return c.Status(400).JSON(fiber.Map{"error": "path required"})
 			}
-			content, err := os.ReadFile(filePath)
+			cwd, err := os.Getwd()
 			if err != nil {
 				return c.Status(500).JSON(fiber.Map{"error": err.Error()})
 			}
-			return c.SendString(string(content))
+			content, err := encodeFoundationReadAsString(cwd, filePath)
+			if err != nil {
+				return c.Status(500).JSON(fiber.Map{"error": err.Error()})
+			}
+			return c.SendString(content)
 		})
 
 		api.Post("/rag/query", func(c *fiber.Ctx) error {

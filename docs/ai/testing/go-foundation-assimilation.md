@@ -65,9 +65,10 @@ go test ./...
 - `agent/agent_test.go`
 - `mcp/client_test.go`
 - `mcp/manager_test.go`
+- `cmd/foundation_http_test.go`
 
 ## Tests that should be added next
-1. `cmd/foundation` smoke tests
+1. `cmd/foundation` and HTTP route smoke tests
 2. more tool contract schema/result snapshot tests
 3. more truncation and image-path edge-case tests for `read` and `bash`
 4. JSON/RPC transport tests

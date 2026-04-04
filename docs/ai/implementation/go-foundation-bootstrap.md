@@ -82,6 +82,13 @@
 - `mcp/mcphost.go`
   - defensive guard added for empty MCP binary path to avoid nil-process panics in tests
 
+- `cmd/foundation_http.go`
+  - foundation-backed helper layer for execution, sessions, repomap, adapters, and foundation-backed file reads
+
+- `cmd/serve.go`
+  - operator HTTP surface now exposes foundation-backed endpoints under `/api/v1/foundation/*`
+  - `/fs/read` now routes through the native foundation `read` tool instead of direct file reads
+
 - `agent/agent.go`
   - top-level agent now advertises the native exact-name tools preferentially
   - OpenAI tool registration now uses per-tool schemas instead of one fake generic schema
@@ -128,6 +135,9 @@
 - `mcp/manager_test.go`
   - verifies MCP manager configured-tool listing and missing-server handling
 
+- `cmd/foundation_http_test.go`
+  - verifies foundation-backed execution/session/repomap/adapter helper behavior used by HTTP surfaces
+
 ### Documentation
 - requirements, design, planning, implementation, and testing documents under `docs/ai/`
 
@@ -168,10 +178,11 @@ These issues were observed and documented, not silently ignored or misrepresente
 - HyperCode/Borg adapter seam tests
 - provider adapter seam tests
 - MCP adapter seam and top-level MCP package tests
+- foundation-backed HTTP helper tests
 
 ## Recommended next implementation sequence
 1. continue routing remaining top-level placeholder orchestration surfaces to `foundation/pi` runtime packages,
 2. deepen repo-map ranking toward richer Aider-style graph semantics and add edit strategies,
 3. expand `foundation/adapters` from status/config visibility into real HyperCode/Borg provider routing and richer MCP execution adapters,
-4. expand snapshot/result-shape coverage and CLI smoke coverage,
+4. expand snapshot/result-shape coverage plus HTTP/CLI smoke coverage,
 5. layer in delegation, verification, detached/background runs, and JSON/RPC transport.

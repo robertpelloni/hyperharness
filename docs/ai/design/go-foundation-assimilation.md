@@ -122,6 +122,7 @@ Responsibilities owned by the new harness:
 - session interaction model
 - coding-agent specialization
 - adapter consumption and presentation of HyperCode/Borg state
+- migration of top-level HTTP/CLI surfaces onto foundation-backed execution paths
 
 ## Key Design Principles
 
