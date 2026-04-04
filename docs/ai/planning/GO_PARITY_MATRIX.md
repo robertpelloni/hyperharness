@@ -98,7 +98,7 @@ Status values:
 | Surface | Current status | Notes |
 |---|---|---|
 | BobbyBookmarks sync | Native Go exists + TS worker still present | Go sync implemented; TS worker still exists |
-| Link backlog crawl/tag enrichment | TS-only critical | TS `LinkCrawlerWorker` still primary for this behavior |
+| Link backlog crawl/tag enrichment | Partial Native Go | native Go crawler utility + HTTP endpoint now exist, but TS worker is still the default background owner |
 | Session auto-import worker | TS-only critical / partially hardened | still TS-owned though startup failure modes reduced |
 | Transcript maintenance jobs | TS-only critical | still TS-owned |
 | Background ingestion ownership | Mixed | key migration target area |

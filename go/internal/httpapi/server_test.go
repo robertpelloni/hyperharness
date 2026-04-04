@@ -6715,6 +6715,106 @@ func TestLinksBacklogListFallsBackToLocalDB(t *testing.T) {
 	}
 }
 
+func TestLinksBacklogCrawlNativeEnrichesPendingLinks(t *testing.T) {
+	workspace := t.TempDir()
+	dbPath := filepath.Join(workspace, "metamcp.db")
+	db, err := sql.Open("sqlite", dbPath)
+	if err != nil {
+		t.Fatalf("failed to open sqlite db: %v", err)
+	}
+	defer db.Close()
+
+	if _, err := db.Exec(`
+		CREATE TABLE links_backlog (
+			uuid TEXT PRIMARY KEY,
+			url TEXT NOT NULL,
+			normalized_url TEXT NOT NULL UNIQUE,
+			title TEXT,
+			description TEXT,
+			tags TEXT NOT NULL DEFAULT '[]',
+			source TEXT NOT NULL DEFAULT 'manual',
+			is_duplicate INTEGER NOT NULL DEFAULT 0,
+			duplicate_of TEXT,
+			research_status TEXT NOT NULL DEFAULT 'pending',
+			http_status INTEGER,
+			page_title TEXT,
+			page_description TEXT,
+			favicon_url TEXT,
+			researched_at INTEGER,
+			cluster_id TEXT,
+			bobbybookmarks_bookmark_id INTEGER,
+			import_session_id INTEGER,
+			raw_payload TEXT,
+			synced_at INTEGER,
+			created_at INTEGER NOT NULL,
+			updated_at INTEGER NOT NULL
+		);
+		INSERT INTO links_backlog (uuid, url, normalized_url, tags, source, research_status, created_at, updated_at)
+		VALUES ('link-1', '__PLACEHOLDER__', '__PLACEHOLDER__', '[]', 'manual', 'pending', 1711958300, 1711958460);
+	`); err != nil {
+		t.Fatalf("failed to seed sqlite db: %v", err)
+	}
+
+	pageServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		_, _ = w.Write([]byte(`<html><head><title>Go Native Crawl</title><meta name="description" content="Backlog enrichment"><link rel="icon" href="/favicon.ico"></head><body>Native link crawler body text.</body></html>`))
+	}))
+	defer pageServer.Close()
+
+	if _, err := db.Exec(`UPDATE links_backlog SET url = ?, normalized_url = ? WHERE uuid = 'link-1'`, pageServer.URL, pageServer.URL); err != nil {
+		t.Fatalf("failed to rewrite test url: %v", err)
+	}
+
+	cfg := config.Default()
+	cfg.WorkspaceRoot = workspace
+	cfg.ConfigDir = t.TempDir()
+	cfg.MainConfigDir = t.TempDir()
+	server := New(cfg, stubDetector{})
+
+	request := httptest.NewRequest(http.MethodPost, "/api/links-backlog/crawl-native", strings.NewReader(`{"limit":1,"classifyTags":false}`))
+	request.Header.Set("content-type", "application/json")
+	recorder := httptest.NewRecorder()
+	server.Handler().ServeHTTP(recorder, request)
+
+	if recorder.Code != http.StatusOK {
+		t.Fatalf("expected 200, got %d with body %s", recorder.Code, recorder.Body.String())
+	}
+	for _, needle := range []string{
+		`"fallback":"go-local-link-crawler"`,
+		`"procedure":"linksBacklog.crawlNative"`,
+		`"selected":1`,
+		`"succeeded":1`,
+	} {
+		if !strings.Contains(recorder.Body.String(), needle) {
+			t.Fatalf("expected crawl-native response to contain %s, got %s", needle, recorder.Body.String())
+		}
+	}
+
+	var status string
+	var pageTitle sql.NullString
+	var pageDescription sql.NullString
+	var faviconURL sql.NullString
+	var httpStatus sql.NullInt64
+	if err := db.QueryRow(`SELECT research_status, page_title, page_description, favicon_url, http_status FROM links_backlog WHERE uuid = 'link-1'`).Scan(&status, &pageTitle, &pageDescription, &faviconURL, &httpStatus); err != nil {
+		t.Fatalf("failed to query crawled link: %v", err)
+	}
+	if status != "done" {
+		t.Fatalf("expected done status, got %q", status)
+	}
+	if pageTitle.String != "Go Native Crawl" {
+		t.Fatalf("unexpected page title: %q", pageTitle.String)
+	}
+	if pageDescription.String != "Backlog enrichment" {
+		t.Fatalf("unexpected page description: %q", pageDescription.String)
+	}
+	if faviconURL.String != "/favicon.ico" {
+		t.Fatalf("unexpected favicon url: %q", faviconURL.String)
+	}
+	if httpStatus.Int64 != 200 {
+		t.Fatalf("unexpected http status: %d", httpStatus.Int64)
+	}
+}
+
 func TestOAuthClientGetFallsBackToLocalDB(t *testing.T) {
 	t.Setenv("HYPERCODE_TRPC_UPSTREAM", "http://127.0.0.1:1/trpc")
 

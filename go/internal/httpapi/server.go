@@ -38,8 +38,8 @@ import (
 	"github.com/hypercodehq/hypercode-go/internal/providers"
 	"github.com/hypercodehq/hypercode-go/internal/sessionimport"
 	"github.com/hypercodehq/hypercode-go/internal/supervisor"
-	"github.com/hypercodehq/hypercode-go/internal/workflow"
 	bobbySync "github.com/hypercodehq/hypercode-go/internal/sync"
+	"github.com/hypercodehq/hypercode-go/internal/workflow"
 	_ "modernc.org/sqlite"
 )
 
@@ -365,12 +365,12 @@ func New(cfg config.Config, detector controlplane.ToolProvider) *Server {
 	wfEngine.Register(workflow.LintAndTestWorkflow(cfg.WorkspaceRoot))
 
 	server := &Server{
-		cfg:               cfg,
-		detector:          detector,
-		mesh:              mesh.New(cfg),
-		aggregator:        mcp.NewAggregator(),
-		startedAt:         time.Now().UTC(),
-		mux:               http.NewServeMux(),
+		cfg:        cfg,
+		detector:   detector,
+		mesh:       mesh.New(cfg),
+		aggregator: mcp.NewAggregator(),
+		startedAt:  time.Now().UTC(),
+		mux:        http.NewServeMux(),
 		lifecycleModes: map[string]any{
 			"lazySessionMode":        false,
 			"singleActiveServerMode": false,
@@ -822,6 +822,7 @@ func (s *Server) registerRoutes() {
 	s.mux.HandleFunc("/api/links-backlog/stats", s.handleLinksBacklogStats)
 	s.mux.HandleFunc("/api/links-backlog/get", s.handleLinksBacklogGet)
 	s.mux.HandleFunc("/api/links-backlog/sync", s.handleLinksBacklogSync)
+	s.mux.HandleFunc("/api/links-backlog/crawl-native", s.handleLinksBacklogCrawlNative)
 	s.mux.HandleFunc("/api/infrastructure", s.handleInfrastructureStatus)
 	s.mux.HandleFunc("/api/infrastructure/doctor", s.handleInfrastructureDoctor)
 	s.mux.HandleFunc("/api/infrastructure/apply", s.handleInfrastructureApply)
@@ -1281,6 +1282,7 @@ func (s *Server) handleAPIIndex(w http.ResponseWriter, _ *http.Request) {
 				{Path: "/api/links-backlog/stats", Category: "operator", Description: "Read BobbyBookmarks backlog stats through the TypeScript links backlog router."},
 				{Path: "/api/links-backlog/get", Category: "operator", Description: "Read a BobbyBookmarks backlog item through the TypeScript links backlog router."},
 				{Path: "/api/links-backlog/sync", Category: "operator", Description: "Sync BobbyBookmarks backlog data through the TypeScript links backlog router."},
+				{Path: "/api/links-backlog/crawl-native", Category: "operator", Description: "Crawl pending links in the local backlog natively in Go and enrich them with fetched metadata."},
 				{Path: "/api/infrastructure", Category: "operator", Description: "Read infrastructure daemon status through the TypeScript infrastructure router, with a local binary/config fallback when the router is unavailable."},
 				{Path: "/api/infrastructure/doctor", Category: "operator", Description: "Run the infrastructure doctor command through the TypeScript infrastructure router."},
 				{Path: "/api/infrastructure/apply", Category: "operator", Description: "Apply infrastructure configuration through the TypeScript infrastructure router."},
@@ -2036,8 +2038,6 @@ func (s *Server) handleImportedSessionMaintenanceStats(w http.ResponseWriter, r 
 	})
 }
 
-
-
 func (s *Server) handleMCPConfiguredServers(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		writeJSON(w, http.StatusMethodNotAllowed, map[string]any{
@@ -2384,8 +2384,6 @@ func (s *Server) handleMCPSyncClientConfig(w http.ResponseWriter, r *http.Reques
 		return preview, nil
 	})
 }
-
-
 
 func (s *Server) handleMCPCallTool(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
@@ -3189,8 +3187,6 @@ func (s *Server) handleMCPUnloadTool(w http.ResponseWriter, r *http.Request) {
 	s.handleMCPManualToolMutation(w, r, "mcp.unloadTool")
 }
 
-
-
 func (s *Server) handleMemoryContextSave(w http.ResponseWriter, r *http.Request) {
 	s.handleTRPCBridgeBodyCall(w, r, "memory.saveContext")
 }
@@ -3758,7 +3754,6 @@ func (s *Server) handleMemorySearchSessionSummaries(w http.ResponseWriter, r *ht
 		},
 	})
 }
-
 
 func (s *Server) handleMemoryInterchangeFormats(w http.ResponseWriter, r *http.Request) {
 	var result any
@@ -5672,7 +5667,6 @@ func (s *Server) handleAgentRunTool(w http.ResponseWriter, r *http.Request) {
 	s.handleTRPCBridgeBodyCall(w, r, "agent.runTool")
 }
 
-
 func (s *Server) handleCommandsExecute(w http.ResponseWriter, r *http.Request) {
 	s.handleTRPCBridgeBodyCall(w, r, "commands.execute")
 }
@@ -6820,6 +6814,53 @@ func (s *Server) handleLinksBacklogSync(w http.ResponseWriter, r *http.Request) 
 			"fallback":  "go-local-bobbybookmarks-sync",
 			"procedure": "linksBacklog.syncFromBobbyBookmarks",
 			"reason":    "upstream unavailable; using native Go bobbybookmarks sync",
+		},
+	})
+}
+
+func (s *Server) handleLinksBacklogCrawlNative(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		writeJSON(w, http.StatusMethodNotAllowed, map[string]any{"success": false, "error": "method not allowed"})
+		return
+	}
+
+	var payload struct {
+		Limit        int  `json:"limit"`
+		ClassifyTags bool `json:"classifyTags"`
+	}
+	if r.Body != nil {
+		defer r.Body.Close()
+		if err := json.NewDecoder(r.Body).Decode(&payload); err != nil && !errors.Is(err, io.EOF) {
+			writeJSON(w, http.StatusBadRequest, map[string]any{"success": false, "error": "invalid JSON body"})
+			return
+		}
+	}
+	if payload.Limit <= 0 {
+		payload.Limit = 5
+	}
+
+	opts := bobbySync.LinkCrawlerOptions{Limit: payload.Limit}
+	if payload.ClassifyTags {
+		opts.Classifier = bobbySync.DefaultLinkTagClassifier
+	}
+
+	report, err := bobbySync.CrawlPendingLinks(r.Context(), s.localMetaMCPDBPath(), opts)
+	if err != nil {
+		writeJSON(w, http.StatusServiceUnavailable, map[string]any{
+			"success": false,
+			"error":   err.Error(),
+			"detail":  err.Error(),
+		})
+		return
+	}
+
+	writeJSON(w, http.StatusOK, map[string]any{
+		"success": true,
+		"data":    report,
+		"bridge": map[string]any{
+			"fallback":  "go-local-link-crawler",
+			"procedure": "linksBacklog.crawlNative",
+			"reason":    "using native Go links backlog crawler",
 		},
 	})
 }
@@ -8004,7 +8045,6 @@ func (s *Server) handleSubmoduleList(w http.ResponseWriter, r *http.Request) {
 		},
 	})
 }
-
 
 func (s *Server) handleSubmoduleInstallDependencies(w http.ResponseWriter, r *http.Request) {
 	s.handleTRPCBridgeBodyCall(w, r, "submodule.installDependencies")

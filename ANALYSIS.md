@@ -725,6 +725,60 @@ Results:
 - CLI type-check passed
 - CLI build passed
 
+## Follow-up Go ingestion step (native links backlog crawler)
+The next stateful migration slice targeted one of the remaining TS-only startup-critical services:
+- `packages/core/src/daemons/hyperingest/LinkCrawlerWorker.ts`
+
+### Goal
+Create a native Go execution path for backlog crawling/enrichment so this surface is no longer exclusively dependent on the TypeScript runtime.
+
+### What changed
+- added `go/internal/sync/linkcrawler.go`
+  - native pending-link selection from `links_backlog`
+  - HTTP fetch with timeout and browser-like headers
+  - lightweight HTML metadata extraction for:
+    - page title
+    - description
+    - favicon URL
+    - visible text body
+  - backlog row status transitions:
+    - `pending` → `running` → `done` / `failed`
+  - HTTP status persistence for crawl failures
+  - optional tag classification hook
+  - default AI-backed tag classifier wired through Go `ai.AutoRouteWithModel(...)` using `xiaomi/mimo-v2-flash:free`
+- added `go/internal/httpapi/server.go` route:
+  - `POST /api/links-backlog/crawl-native`
+- updated Go API index metadata so the new route is discoverable
+- added regression coverage:
+  - `go/internal/sync/linkcrawler_test.go`
+  - `go/internal/httpapi/server_test.go`
+
+### Important truthfulness note
+This is **not yet** full ownership parity with the TS background worker.
+
+What is true now:
+- Go can natively crawl and enrich pending backlog links
+- Go exposes that capability via a real HTTP endpoint
+- the native path is tested
+
+What is not true yet:
+- the Go crawler is not yet the default continuously running background worker started automatically by the Go control plane
+- the TS `LinkCrawlerWorker` still remains the default background owner in the current runtime mix
+
+So this surface should now be described as **Partial Native Go**, not fully migrated.
+
+### Validation performed for this crawler step
+```bash
+cd go && go test ./internal/sync ./internal/httpapi
+cd go && go build -buildvcs=false ./cmd/hypercode
+cd go && go test ./...
+```
+
+Results:
+- targeted sync/httpapi tests passed
+- Go build passed
+- full Go suite passed
+
 ## Bottom line
 This pass meaningfully strengthened the **Go-primary migration path** and improved TypeScript survivability while the migration continues:
 - broader provider routing
@@ -749,6 +803,8 @@ This pass meaningfully strengthened the **Go-primary migration path** and improv
 - explicit Go-primary migration planning artifacts
 - Go-primary runtime selection in the CLI launcher (`auto|go|node`, with auto preferring Go)
 - truthful dashboard skipping/warnings when Go runtime is selected but TS/tRPC compatibility is still required for the current web UI
+- native Go links backlog crawling/enrichment API surface
+- a tested Go-native replacement path for one TS-only HyperIngest feature, even though background-worker ownership is not fully flipped yet
 - a small but real Maestro UX fix
 
 It was validated by successful Go compilation, successful targeted Go tests for the new native surfaces, successful targeted regression tests for repaired bridge/fallback routes, a successful full Go test suite run (`go test ./...`), targeted CLI startup tests and type-checking, council/sync coverage, targeted AI/core validation, and repeated successful workspace builds. The new systems are real and integrated, but several of them should still be described as **Beta** or **Experimental**, not full parity.
