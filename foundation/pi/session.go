@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"sort"
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
@@ -66,11 +67,20 @@ type SessionContext struct {
 	CompactionUsed bool           `json:"compactionUsed"`
 }
 
+type BranchSummaryFileOps struct {
+	ReadFiles     []string `json:"readFiles,omitempty"`
+	ModifiedFiles []string `json:"modifiedFiles,omitempty"`
+}
+
 type BranchSummaryPreparation struct {
-	TargetID           string         `json:"targetId"`
-	OldLeafID          string         `json:"oldLeafId"`
-	CommonAncestorID   string         `json:"commonAncestorId,omitempty"`
-	EntriesToSummarize []SessionEntry `json:"entriesToSummarize"`
+	TargetID               string               `json:"targetId"`
+	OldLeafID              string               `json:"oldLeafId"`
+	CommonAncestorID       string               `json:"commonAncestorId,omitempty"`
+	EntriesToSummarize     []SessionEntry       `json:"entriesToSummarize"`
+	SerializedConversation string               `json:"serializedConversation,omitempty"`
+	FileOps                BranchSummaryFileOps `json:"fileOps,omitempty"`
+	EstimatedTokens        int                  `json:"estimatedTokens,omitempty"`
+	MaxTokens              int                  `json:"maxTokens,omitempty"`
 }
 
 type sessionRecord struct {
@@ -484,6 +494,10 @@ func (s *SessionStore) GetCommonAncestor(sessionID, firstLeafID, secondLeafID st
 }
 
 func (s *SessionStore) PrepareBranchSummary(sessionID, targetID string) (*BranchSummaryPreparation, error) {
+	return s.PrepareBranchSummaryWithBudget(sessionID, targetID, 0)
+}
+
+func (s *SessionStore) PrepareBranchSummaryWithBudget(sessionID, targetID string, maxTokens int) (*BranchSummaryPreparation, error) {
 	session, err := s.Load(sessionID)
 	if err != nil {
 		return nil, err
@@ -493,7 +507,7 @@ func (s *SessionStore) PrepareBranchSummary(sessionID, targetID string) (*Branch
 		oldLeafID = session.Entries[len(session.Entries)-1].ID
 	}
 	if oldLeafID == "" || targetID == "" {
-		return &BranchSummaryPreparation{TargetID: targetID, OldLeafID: oldLeafID}, nil
+		return &BranchSummaryPreparation{TargetID: targetID, OldLeafID: oldLeafID, MaxTokens: maxTokens}, nil
 	}
 	commonAncestorID, err := s.GetCommonAncestor(sessionID, oldLeafID, targetID)
 	if err != nil {
@@ -517,7 +531,20 @@ func (s *SessionStore) PrepareBranchSummary(sessionID, targetID string) (*Branch
 		}
 		entries = append(entries, entry)
 	}
-	return &BranchSummaryPreparation{TargetID: targetID, OldLeafID: oldLeafID, CommonAncestorID: commonAncestorID, EntriesToSummarize: entries}, nil
+	trimmed := trimEntriesToBudget(entries, maxTokens)
+	fileOps := collectBranchFileOps(entries)
+	serialized := serializeConversation(trimmed)
+	estimated := estimateSerializedTokens(serialized)
+	return &BranchSummaryPreparation{
+		TargetID:               targetID,
+		OldLeafID:              oldLeafID,
+		CommonAncestorID:       commonAncestorID,
+		EntriesToSummarize:     trimmed,
+		SerializedConversation: serialized,
+		FileOps:                fileOps,
+		EstimatedTokens:        estimated,
+		MaxTokens:              maxTokens,
+	}, nil
 }
 
 func (s *SessionStore) BranchWithSummary(sessionID, targetID, summary string, details any) (*SessionFile, error) {
@@ -533,6 +560,159 @@ func (s *SessionStore) BranchWithSummary(sessionID, targetID, summary string, de
 		return session, nil
 	}
 	return s.AppendBranchSummary(sessionID, prep.OldLeafID, summary, details)
+}
+
+func trimEntriesToBudget(entries []SessionEntry, maxTokens int) []SessionEntry {
+	if maxTokens <= 0 || len(entries) == 0 {
+		return append([]SessionEntry(nil), entries...)
+	}
+	selected := make([]SessionEntry, 0, len(entries))
+	used := 0
+	for i := len(entries) - 1; i >= 0; i-- {
+		serialized := serializeSingleEntry(entries[i])
+		tokens := estimateSerializedTokens(serialized)
+		if len(selected) > 0 && used+tokens > maxTokens {
+			break
+		}
+		selected = append(selected, entries[i])
+		used += tokens
+	}
+	for i, j := 0, len(selected)-1; i < j; i, j = i+1, j-1 {
+		selected[i], selected[j] = selected[j], selected[i]
+	}
+	return selected
+}
+
+func estimateSerializedTokens(text string) int {
+	if text == "" {
+		return 0
+	}
+	return (len(text) + 3) / 4
+}
+
+func serializeConversation(entries []SessionEntry) string {
+	parts := make([]string, 0, len(entries))
+	for _, entry := range entries {
+		serialized := serializeSingleEntry(entry)
+		if serialized != "" {
+			parts = append(parts, serialized)
+		}
+	}
+	return strings.Join(parts, "\n")
+}
+
+func serializeSingleEntry(entry SessionEntry) string {
+	switch entry.Kind {
+	case "message":
+		role := entry.Role
+		if role == "" {
+			role = "message"
+		}
+		return fmt.Sprintf("[%s]: %s", strings.Title(role), truncateSummaryText(entry.Text, 2000))
+	case "tool_call":
+		return fmt.Sprintf("[Assistant tool calls]: %s(%s)", entry.ToolName, truncateSummaryText(string(entry.ToolInput), 1000))
+	case "tool_result":
+		if entry.Result == nil {
+			return "[Tool result]:"
+		}
+		return fmt.Sprintf("[Tool result]: %s", truncateSummaryText(flattenToolResultText(entry.Result), 2000))
+	case "branch_summary":
+		return fmt.Sprintf("[Branch summary]: %s", truncateSummaryText(entry.Summary, 2000))
+	case "compaction":
+		return fmt.Sprintf("[Compaction summary]: %s", truncateSummaryText(entry.Summary, 2000))
+	case "custom_message":
+		return fmt.Sprintf("[Custom message %s]: %s", entry.CustomType, truncateSummaryText(entry.Text, 2000))
+	default:
+		return ""
+	}
+}
+
+func flattenToolResultText(result *ToolResult) string {
+	if result == nil {
+		return ""
+	}
+	parts := make([]string, 0, len(result.Content))
+	for _, block := range result.Content {
+		switch v := block.(type) {
+		case TextContent:
+			parts = append(parts, v.Text)
+		case map[string]any:
+			if text, ok := v["text"].(string); ok {
+				parts = append(parts, text)
+			}
+		}
+	}
+	return strings.Join(parts, "\n")
+}
+
+func truncateSummaryText(text string, max int) string {
+	if len(text) <= max {
+		return text
+	}
+	if max <= 32 {
+		return text[:max]
+	}
+	return text[:max] + fmt.Sprintf(" ...(truncated %d chars)", len(text)-max)
+}
+
+func collectBranchFileOps(entries []SessionEntry) BranchSummaryFileOps {
+	readSet := map[string]bool{}
+	modifiedSet := map[string]bool{}
+	for _, entry := range entries {
+		collectFileOpsFromEntry(entry, readSet, modifiedSet)
+	}
+	readFiles := make([]string, 0, len(readSet))
+	for path := range readSet {
+		readFiles = append(readFiles, path)
+	}
+	modifiedFiles := make([]string, 0, len(modifiedSet))
+	for path := range modifiedSet {
+		modifiedFiles = append(modifiedFiles, path)
+	}
+	sort.Strings(readFiles)
+	sort.Strings(modifiedFiles)
+	return BranchSummaryFileOps{ReadFiles: readFiles, ModifiedFiles: modifiedFiles}
+}
+
+func collectFileOpsFromEntry(entry SessionEntry, readSet, modifiedSet map[string]bool) {
+	if entry.Kind == "tool_call" && len(entry.ToolInput) > 0 {
+		var payload map[string]any
+		if err := json.Unmarshal(entry.ToolInput, &payload); err == nil {
+			if path, ok := payload["path"].(string); ok && path != "" {
+				switch entry.ToolName {
+				case "read":
+					readSet[path] = true
+				case "write", "edit":
+					modifiedSet[path] = true
+				}
+			}
+		}
+	}
+	if (entry.Kind == "branch_summary" || entry.Kind == "compaction") && len(entry.Details) > 0 {
+		var details struct {
+			ReadFiles     []string `json:"readFiles"`
+			ModifiedFiles []string `json:"modifiedFiles"`
+		}
+		if err := json.Unmarshal(entry.Details, &details); err == nil {
+			for _, path := range details.ReadFiles {
+				if path != "" {
+					readSet[path] = true
+				}
+			}
+			for _, path := range details.ModifiedFiles {
+				if path != "" {
+					modifiedSet[path] = true
+				}
+			}
+		}
+	}
+}
+
+func DefaultStructuredSummaryTemplate(prep *BranchSummaryPreparation) string {
+	if prep == nil {
+		return ""
+	}
+	return fmt.Sprintf("## Goal\n[What the user is trying to accomplish]\n\n## Constraints & Preferences\n- [Requirements mentioned by user]\n\n## Progress\n### Done\n- [x] [Completed tasks]\n\n### In Progress\n- [ ] [Current work]\n\n### Blocked\n- [Issues, if any]\n\n## Key Decisions\n- **[Decision]**: [Rationale]\n\n## Next Steps\n1. [What should happen next]\n\n## Critical Context\n- [Data needed to continue]\n\n<read-files>\n%s\n</read-files>\n\n<modified-files>\n%s\n</modified-files>", strings.Join(prep.FileOps.ReadFiles, "\n"), strings.Join(prep.FileOps.ModifiedFiles, "\n"))
 }
 
 func (s *SessionStore) GetLabel(sessionID, targetID string) (string, error) {

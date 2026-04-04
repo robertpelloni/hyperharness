@@ -262,3 +262,43 @@
 1. Keep `foundation/*` green and canonical.
 2. Implement budget-aware branch-summary preparation and structured summary-generation hooks next.
 3. Then build truthful `/tree`-style CLI/TUI behavior on top of the now-real branch substrate.
+
+## Additional work completed later on 2026-04-04 (budget-aware branch-summary tranche)
+- Expanded `BranchSummaryPreparation` to include:
+  - `SerializedConversation`
+  - `FileOps`
+  - `EstimatedTokens`
+  - `MaxTokens`
+- Added `BranchSummaryFileOps` with cumulative:
+  - `ReadFiles`
+  - `ModifiedFiles`
+- Added budget-aware preparation API:
+  - `PrepareBranchSummaryWithBudget(sessionID, targetID, maxTokens)`
+- Added serialization helpers in `foundation/pi/session.go`:
+  - `serializeConversation`
+  - `serializeSingleEntry`
+  - `flattenToolResultText`
+  - `truncateSummaryText`
+  - `estimateSerializedTokens`
+- Added budget trimming helper:
+  - `trimEntriesToBudget`
+- Added cumulative file-op extraction helpers:
+  - `collectBranchFileOps`
+  - `collectFileOpsFromEntry`
+- Added structured summary hook:
+  - `DefaultStructuredSummaryTemplate(prep)`
+- Added runtime wrapper:
+  - `PrepareBranchSummaryWithBudget`
+- Important design choice: file-op tracking is cumulative across the full abandoned branch path even when the serialized conversation window is budget-trimmed.
+- Added detailed analysis doc:
+  - `docs/analysis/PI_BUDGET_AWARE_BRANCH_SUMMARY_TRANCHE_2026-04-04.md`
+
+## Latest validation after budget-aware branch-summary tranche
+- `gofmt -w foundation/pi/session.go foundation/pi/runtime.go foundation/pi/session_test.go`
+- `go test ./foundation/pi/...`
+- `go test ./foundation/...`
+
+## Updated recommendation after budget-aware branch-summary tranche
+1. Keep `foundation/*` green and canonical.
+2. Add native summary-generation hooks and/or provider-backed summary generation next.
+3. Then begin surfacing truthful `/tree`-style CLI/TUI branch workflows on top of the new summarization substrate.

@@ -1,6 +1,10 @@
 package pi
 
-import "testing"
+import (
+	"encoding/json"
+	"strings"
+	"testing"
+)
 
 func TestSessionStoreCreateAppendListAndFork(t *testing.T) {
 	dir := t.TempDir()
@@ -204,6 +208,79 @@ func TestSessionStoreCommonAncestorAndBranchSummary(t *testing.T) {
 	}
 	if last.Summary != "summary of E/F" {
 		t.Fatalf("unexpected summary: %q", last.Summary)
+	}
+}
+
+func TestBranchSummaryPreparationBudgetAndFileOps(t *testing.T) {
+	dir := t.TempDir()
+	store := NewSessionStore(dir)
+	session, err := store.Create("alpha", "/workspace/project")
+	if err != nil {
+		t.Fatal(err)
+	}
+	id := session.Metadata.SessionID
+
+	session, err = store.AppendEntry(id, SessionEntry{Kind: "message", Role: "user", Text: strings.Repeat("A", 200)})
+	if err != nil {
+		t.Fatal(err)
+	}
+	rootID := session.Metadata.LeafID
+
+	session, err = store.AppendEntry(id, SessionEntry{Kind: "tool_call", ToolName: "read", ToolInput: json.RawMessage(`{"path":"a.go"}`)})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := store.AppendEntry(id, SessionEntry{Kind: "tool_result", Role: "toolResult", ToolName: "read", Result: &ToolResult{ToolName: "read", Content: []any{TextContent{Type: "text", Text: strings.Repeat("output", 300)}}}}); err != nil {
+		t.Fatal(err)
+	}
+	session, err = store.AppendEntry(id, SessionEntry{Kind: "tool_call", ToolName: "edit", ToolInput: json.RawMessage(`{"path":"b.go"}`)})
+	if err != nil {
+		t.Fatal(err)
+	}
+	session, err = store.AppendEntry(id, SessionEntry{Kind: "message", Role: "assistant", Text: "long branch tail"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	currentLeaf := session.Metadata.LeafID
+
+	if _, err := store.Branch(id, rootID); err != nil {
+		t.Fatal(err)
+	}
+	session, err = store.AppendEntry(id, SessionEntry{Kind: "message", Role: "assistant", Text: "alternate"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	targetID := session.Metadata.LeafID
+
+	if _, err := store.Branch(id, currentLeaf); err != nil {
+		t.Fatal(err)
+	}
+
+	prep, err := store.PrepareBranchSummaryWithBudget(id, targetID, 400)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if prep.OldLeafID != currentLeaf {
+		t.Fatalf("expected old leaf %q, got %q", currentLeaf, prep.OldLeafID)
+	}
+	if prep.MaxTokens != 400 {
+		t.Fatalf("unexpected max tokens: %d", prep.MaxTokens)
+	}
+	if prep.EstimatedTokens > 400 && len(prep.EntriesToSummarize) > 1 {
+		t.Fatalf("expected trimmed preparation, got estimated tokens %d", prep.EstimatedTokens)
+	}
+	if prep.SerializedConversation == "" {
+		t.Fatal("expected serialized conversation")
+	}
+	if len(prep.FileOps.ReadFiles) == 0 || prep.FileOps.ReadFiles[0] != "a.go" {
+		t.Fatalf("unexpected read files: %#v", prep.FileOps.ReadFiles)
+	}
+	if len(prep.FileOps.ModifiedFiles) == 0 || prep.FileOps.ModifiedFiles[0] != "b.go" {
+		t.Fatalf("unexpected modified files: %#v", prep.FileOps.ModifiedFiles)
+	}
+	template := DefaultStructuredSummaryTemplate(prep)
+	if !strings.Contains(template, "<read-files>") || !strings.Contains(template, "a.go") {
+		t.Fatalf("unexpected summary template: %s", template)
 	}
 }
 

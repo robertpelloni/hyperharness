@@ -158,6 +158,10 @@ func (r *Runtime) PrepareBranchSummary(sessionID, targetID string) (*BranchSumma
 	return r.sessionStore.PrepareBranchSummary(sessionID, targetID)
 }
 
+func (r *Runtime) PrepareBranchSummaryWithBudget(sessionID, targetID string, maxTokens int) (*BranchSummaryPreparation, error) {
+	return r.sessionStore.PrepareBranchSummaryWithBudget(sessionID, targetID, maxTokens)
+}
+
 func (r *Runtime) BranchWithSummary(sessionID, targetID, summary string, details any) (*SessionFile, error) {
 	return r.sessionStore.BranchWithSummary(sessionID, targetID, summary, details)
 }
