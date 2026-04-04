@@ -4,8 +4,8 @@ import "testing"
 
 func TestDefaultCatalogIncludesPiToolContracts(t *testing.T) {
 	catalog := DefaultCatalog()
-	if catalog.Count() != 4 {
-		t.Fatalf("expected 4 contracts, got %d", catalog.Count())
+	if catalog.Count() != 7 {
+		t.Fatalf("expected 7 contracts, got %d", catalog.Count())
 	}
 
 	sources := catalog.Sources()
@@ -13,7 +13,7 @@ func TestDefaultCatalogIncludesPiToolContracts(t *testing.T) {
 		t.Fatalf("unexpected sources: %#v", sources)
 	}
 
-	for _, name := range []string{"read", "write", "edit", "bash"} {
+	for _, name := range []string{"read", "write", "edit", "bash", "grep", "find", "ls"} {
 		contracts := catalog.Lookup(name)
 		if len(contracts) != 1 {
 			t.Fatalf("expected one contract for %q, got %d", name, len(contracts))

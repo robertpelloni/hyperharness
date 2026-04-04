@@ -7,8 +7,8 @@ func TestDefaultFoundationSpecUsesPiDefaults(t *testing.T) {
 	if spec.Name != "pi-go-foundation" {
 		t.Fatalf("unexpected name: %s", spec.Name)
 	}
-	if len(spec.Agent.InitialState.Tools) != 4 {
-		t.Fatalf("expected 4 builtin tools, got %d", len(spec.Agent.InitialState.Tools))
+	if len(spec.Agent.InitialState.Tools) != 7 {
+		t.Fatalf("expected 7 builtin tools, got %d", len(spec.Agent.InitialState.Tools))
 	}
 	if spec.Agent.ToolExecution != ToolExecutionParallel {
 		t.Fatalf("expected parallel tool execution, got %s", spec.Agent.ToolExecution)

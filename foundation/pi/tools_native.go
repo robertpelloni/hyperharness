@@ -26,6 +26,9 @@ func DefaultToolHandlers() map[string]ToolHandler {
 		"write": executeWriteTool,
 		"edit":  executeEditTool,
 		"bash":  executeBashTool,
+		"grep":  executeGrepTool,
+		"find":  executeFindTool,
+		"ls":    executeLsTool,
 	}
 }
 

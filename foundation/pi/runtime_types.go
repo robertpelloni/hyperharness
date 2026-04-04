@@ -74,6 +74,43 @@ type BashToolDetails struct {
 	FullOutputPath string             `json:"fullOutputPath,omitempty"`
 }
 
+type GrepToolInput struct {
+	Pattern    string `json:"pattern"`
+	Path       string `json:"path,omitempty"`
+	Glob       string `json:"glob,omitempty"`
+	IgnoreCase bool   `json:"ignoreCase,omitempty"`
+	Literal    bool   `json:"literal,omitempty"`
+	Context    int    `json:"context,omitempty"`
+	Limit      int    `json:"limit,omitempty"`
+}
+
+type GrepToolDetails struct {
+	Truncation        *TruncationDetails `json:"truncation,omitempty"`
+	MatchLimitReached int                `json:"matchLimitReached,omitempty"`
+	LinesTruncated    bool               `json:"linesTruncated,omitempty"`
+}
+
+type FindToolInput struct {
+	Pattern string `json:"pattern"`
+	Path    string `json:"path,omitempty"`
+	Limit   int    `json:"limit,omitempty"`
+}
+
+type FindToolDetails struct {
+	Truncation         *TruncationDetails `json:"truncation,omitempty"`
+	ResultLimitReached int                `json:"resultLimitReached,omitempty"`
+}
+
+type LsToolInput struct {
+	Path  string `json:"path,omitempty"`
+	Limit int    `json:"limit,omitempty"`
+}
+
+type LsToolDetails struct {
+	Truncation        *TruncationDetails `json:"truncation,omitempty"`
+	EntryLimitReached int                `json:"entryLimitReached,omitempty"`
+}
+
 type ToolResult struct {
 	ToolName string      `json:"toolName"`
 	Content  []any       `json:"content"`

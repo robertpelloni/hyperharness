@@ -130,3 +130,22 @@ func shellEchoCommand(text string) string {
 	}
 	return "printf '%s' " + text
 }
+
+func mustExec(t *testing.T, runtime *Runtime, tool string, input any) {
+	raw, _ := json.Marshal(input)
+	if _, err := runtime.ExecuteTool(context.Background(), "", tool, raw, nil); err != nil {
+		t.Fatalf("unexpected error running %s: %v", tool, err)
+	}
+}
+
+func mustExecResult(t *testing.T, runtime *Runtime, tool string, input any) *ToolResult {
+	raw, _ := json.Marshal(input)
+	result, err := runtime.ExecuteTool(context.Background(), "", tool, raw, nil)
+	if err != nil {
+		t.Fatalf("unexpected error running %s: %v", tool, err)
+	}
+	if result == nil {
+		t.Fatalf("expected result from %s, got nil", tool)
+	}
+	return result
+}
