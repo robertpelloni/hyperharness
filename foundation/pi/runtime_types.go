@@ -46,6 +46,27 @@ type BashToolInput struct {
 	Timeout float64 `json:"timeout,omitempty"`
 }
 
+type GrepToolInput struct {
+	Pattern    string `json:"pattern"`
+	Path       string `json:"path,omitempty"`
+	Glob       string `json:"glob,omitempty"`
+	IgnoreCase bool   `json:"ignoreCase,omitempty"`
+	Literal    bool   `json:"literal,omitempty"`
+	Context    int    `json:"context,omitempty"`
+	Limit      int    `json:"limit,omitempty"`
+}
+
+type FindToolInput struct {
+	Pattern string `json:"pattern"`
+	Path    string `json:"path,omitempty"`
+	Limit   int    `json:"limit,omitempty"`
+}
+
+type LSToolInput struct {
+	Path  string `json:"path,omitempty"`
+	Limit int    `json:"limit,omitempty"`
+}
+
 type TruncationDetails struct {
 	Truncated          bool   `json:"truncated"`
 	TruncatedBy        string `json:"truncatedBy,omitempty"`

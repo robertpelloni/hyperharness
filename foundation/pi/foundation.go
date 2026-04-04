@@ -176,6 +176,21 @@ func BuiltinTools() []ToolDescriptor {
 			Description: "Execute a shell command with optional timeout seconds.",
 			Parameters:  json.RawMessage(`{"type":"object","required":["command"],"properties":{"command":{"type":"string"},"timeout":{"type":"number","exclusiveMinimum":0}},"additionalProperties":false}`),
 		},
+		{
+			Name:        "grep",
+			Description: "Search file contents for patterns with optional glob filtering.",
+			Parameters:  json.RawMessage(`{"type":"object","required":["pattern"],"properties":{"pattern":{"type":"string"},"path":{"type":"string"},"glob":{"type":"string"},"ignoreCase":{"type":"boolean"},"literal":{"type":"boolean"},"context":{"type":"integer","minimum":0},"limit":{"type":"integer","minimum":1}},"additionalProperties":false}`),
+		},
+		{
+			Name:        "find",
+			Description: "Find files by glob pattern.",
+			Parameters:  json.RawMessage(`{"type":"object","required":["pattern"],"properties":{"pattern":{"type":"string"},"path":{"type":"string"},"limit":{"type":"integer","minimum":1}},"additionalProperties":false}`),
+		},
+		{
+			Name:        "ls",
+			Description: "List directory contents.",
+			Parameters:  json.RawMessage(`{"type":"object","properties":{"path":{"type":"string"},"limit":{"type":"integer","minimum":1}},"additionalProperties":false}`),
+		},
 	}
 }
 

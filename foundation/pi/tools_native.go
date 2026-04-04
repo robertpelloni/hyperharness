@@ -10,6 +10,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"regexp"
 	"sort"
 	"strings"
 	"time"
@@ -26,6 +27,9 @@ func DefaultToolHandlers() map[string]ToolHandler {
 		"write": executeWriteTool,
 		"edit":  executeEditTool,
 		"bash":  executeBashTool,
+		"grep":  executeGrepTool,
+		"find":  executeFindTool,
+		"ls":    executeLSTool,
 	}
 }
 
@@ -248,6 +252,160 @@ func executeBashTool(ctx context.Context, cwd string, raw json.RawMessage) (*Too
 	return result, nil
 }
 
+func executeGrepTool(ctx context.Context, cwd string, raw json.RawMessage) (*ToolResult, error) {
+	var input GrepToolInput
+	if err := json.Unmarshal(raw, &input); err != nil {
+		return nil, fmt.Errorf("invalid grep input: %w", err)
+	}
+	if strings.TrimSpace(input.Pattern) == "" {
+		return nil, fmt.Errorf("pattern is required")
+	}
+	searchRoot := cwd
+	if strings.TrimSpace(input.Path) != "" {
+		var err error
+		searchRoot, err = resolvePath(cwd, input.Path)
+		if err != nil {
+			return nil, err
+		}
+	}
+	limit := input.Limit
+	if limit <= 0 {
+		limit = 100
+	}
+	matcher := func(line string) bool {
+		candidate := line
+		pattern := input.Pattern
+		if input.IgnoreCase {
+			candidate = strings.ToLower(candidate)
+			pattern = strings.ToLower(pattern)
+		}
+		if input.Literal {
+			return strings.Contains(candidate, pattern)
+		}
+		re, err := regexp.Compile(pattern)
+		if err != nil {
+			return strings.Contains(candidate, pattern)
+		}
+		return re.MatchString(candidate)
+	}
+	var matches []string
+	_ = filepath.Walk(searchRoot, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return nil
+		}
+		if info.IsDir() {
+			name := info.Name()
+			if name == ".git" || name == "node_modules" {
+				return filepath.SkipDir
+			}
+			return nil
+		}
+		if input.Glob != "" {
+			matched, globErr := filepath.Match(input.Glob, filepath.Base(path))
+			if globErr != nil || !matched {
+				return nil
+			}
+		}
+		data, readErr := os.ReadFile(path)
+		if readErr != nil {
+			return nil
+		}
+		lines := strings.Split(string(data), "\n")
+		for i, line := range lines {
+			if matcher(line) {
+				rel, _ := filepath.Rel(searchRoot, path)
+				matches = append(matches, fmt.Sprintf("%s:%d:%s", rel, i+1, truncateDisplay(line, 500)))
+				if len(matches) >= limit {
+					return fmt.Errorf("limit reached")
+				}
+			}
+		}
+		return nil
+	})
+	return &ToolResult{ToolName: "grep", Content: []any{TextContent{Type: "text", Text: strings.Join(matches, "\n")}}}, nil
+}
+
+func executeFindTool(ctx context.Context, cwd string, raw json.RawMessage) (*ToolResult, error) {
+	var input FindToolInput
+	if err := json.Unmarshal(raw, &input); err != nil {
+		return nil, fmt.Errorf("invalid find input: %w", err)
+	}
+	if strings.TrimSpace(input.Pattern) == "" {
+		return nil, fmt.Errorf("pattern is required")
+	}
+	searchRoot := cwd
+	if strings.TrimSpace(input.Path) != "" {
+		var err error
+		searchRoot, err = resolvePath(cwd, input.Path)
+		if err != nil {
+			return nil, err
+		}
+	}
+	limit := input.Limit
+	if limit <= 0 {
+		limit = 1000
+	}
+	var matches []string
+	_ = filepath.Walk(searchRoot, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return nil
+		}
+		if info.IsDir() {
+			name := info.Name()
+			if name == ".git" || name == "node_modules" {
+				return filepath.SkipDir
+			}
+			return nil
+		}
+		matched, globErr := filepath.Match(input.Pattern, filepath.Base(path))
+		if globErr != nil || !matched {
+			return nil
+		}
+		rel, _ := filepath.Rel(searchRoot, path)
+		matches = append(matches, rel)
+		if len(matches) >= limit {
+			return fmt.Errorf("limit reached")
+		}
+		return nil
+	})
+	return &ToolResult{ToolName: "find", Content: []any{TextContent{Type: "text", Text: strings.Join(matches, "\n")}}}, nil
+}
+
+func executeLSTool(ctx context.Context, cwd string, raw json.RawMessage) (*ToolResult, error) {
+	var input LSToolInput
+	if err := json.Unmarshal(raw, &input); err != nil {
+		return nil, fmt.Errorf("invalid ls input: %w", err)
+	}
+	listRoot := cwd
+	if strings.TrimSpace(input.Path) != "" {
+		var err error
+		listRoot, err = resolvePath(cwd, input.Path)
+		if err != nil {
+			return nil, err
+		}
+	}
+	entries, err := os.ReadDir(listRoot)
+	if err != nil {
+		return nil, err
+	}
+	limit := input.Limit
+	if limit <= 0 {
+		limit = 500
+	}
+	lines := make([]string, 0, min(limit, len(entries)))
+	for i, entry := range entries {
+		if i >= limit {
+			break
+		}
+		name := entry.Name()
+		if entry.IsDir() {
+			name += "/"
+		}
+		lines = append(lines, name)
+	}
+	return &ToolResult{ToolName: "ls", Content: []any{TextContent{Type: "text", Text: strings.Join(lines, "\n")}}}, nil
+}
+
 func resolvePath(cwd, toolPath string) (string, error) {
 	if strings.TrimSpace(toolPath) == "" {
 		return "", fmt.Errorf("path is required")
@@ -329,6 +487,16 @@ func truncateTail(text string) (TruncationDetails, string) {
 		truncatedBy = "bytes"
 	}
 	return TruncationDetails{Truncated: true, TruncatedBy: truncatedBy, TotalLines: len(lines), OutputLines: len(selected), OutputBytes: bytesUsed, MaxLines: DefaultMaxLines, MaxBytes: DefaultMaxBytes}, strings.Join(selected, "\n")
+}
+
+func truncateDisplay(s string, max int) string {
+	if len(s) <= max {
+		return s
+	}
+	if max <= 3 {
+		return s[:max]
+	}
+	return s[:max-3] + "..."
 }
 
 func shellCommand(ctx context.Context, command string) *exec.Cmd {

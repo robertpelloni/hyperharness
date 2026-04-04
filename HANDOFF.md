@@ -88,3 +88,58 @@
 3. Deepen `foundation/repomap` from graph-ranking groundwork toward fuller Aider-style graph ranking and richer edit engines.
 4. Expand `foundation/adapters` from visibility, route-selection, and execution-preparation seams into richer provider routing, memory, and richer MCP runtime adapters backed by HyperCode/Borg.
 5. Migrate TUI and orchestration code to the new truthful foundation instead of placeholder parity claims, with special attention to adapter-backed execution paths.
+
+## Additional work completed on 2026-04-04
+- Reconciled the repository module path back to the actual local import graph:
+  - `go.mod` now uses `module github.com/robertpelloni/hypercode`
+- Ran dependency reconciliation successfully via `go mod tidy`.
+- Verified the **canonical native foundation track** instead of the duplicate experimental internal track:
+  - `foundation/pi`
+  - `foundation/compat`
+  - `foundation/assimilation`
+  - `foundation/repomap`
+  - `foundation/adapters`
+  - `foundation/orchestration`
+- Expanded the verified native Pi-compatible tool surface from **4** tools to **7** tools:
+  - `read`
+  - `write`
+  - `edit`
+  - `bash`
+  - `grep`
+  - `find`
+  - `ls`
+- Added native input types for those tools in `foundation/pi/runtime_types.go`.
+- Expanded `foundation/pi/BuiltinTools()` JSON schema descriptors for those tools.
+- Expanded `foundation/pi/DefaultToolHandlers()` and added native handlers:
+  - `executeGrepTool`
+  - `executeFindTool`
+  - `executeLSTool`
+- Expanded `foundation/compat/DefaultCatalog()` so exact-name Pi contracts now include the same 7 tools.
+- Updated and extended tests to match the broader native parity surface:
+  - `foundation/pi/foundation_test.go`
+  - `foundation/pi/runtime_test.go`
+  - `foundation/pi/tool_snapshot_test.go`
+  - `foundation/compat/catalog_test.go`
+- Added comprehensive architectural reconciliation doc:
+  - `docs/analysis/FOUNDATION_RECONCILIATION_2026-04-04.md`
+
+## Latest validation completed
+- `go test ./foundation/pi/...`
+- `go test ./foundation/...`
+- Verified snapshot coverage specifically for the expanded native Pi tool surface.
+
+## Updated architectural conclusion
+- The repo contains both a newer `internal/*` Go track and an older but more integrated `foundation/*` Go track.
+- The correct near-term implementation truth should be the **existing `foundation/*` track**, because it is already:
+  - test-backed,
+  - wired into the repo’s existing CLI foundation surfaces,
+  - aligned with `foundation/compat`, and
+  - better suited to honest parity expansion.
+- Recommendation remains to **merge good ideas from `internal/*` into `foundation/*`**, not the other way around.
+
+## Updated next steps
+1. Keep `go test ./foundation/...` green at all times.
+2. Continue expanding exact Pi parity in `foundation/pi` beyond the current 7 native tools.
+3. Promote `foundation/compat` as the single source of truth for model-facing tool contracts.
+4. Deepen Aider-style repo map and edit-engine work in `foundation/repomap` and `foundation/pi`.
+5. Continue bridging HyperCode via `foundation/adapters` rather than duplicating control-plane responsibilities inside the harness.

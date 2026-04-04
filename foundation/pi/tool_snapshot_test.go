@@ -57,6 +57,36 @@ func TestToolResultSnapshots(t *testing.T) {
   ],
   "isError": false
 }`)
+	mustExecSnapshot(t, runtime, "grep", GrepToolInput{Pattern: "borg", Path: ".", Limit: 10}, `{
+  "toolName": "grep",
+  "content": [
+    {
+      "type": "text",
+      "text": "snap.txt:1:borg"
+    }
+  ],
+  "isError": false
+}`)
+	mustExecSnapshot(t, runtime, "find", FindToolInput{Pattern: "*.txt", Path: ".", Limit: 10}, `{
+  "toolName": "find",
+  "content": [
+    {
+      "type": "text",
+      "text": "snap.txt"
+    }
+  ],
+  "isError": false
+}`)
+	mustExecSnapshot(t, runtime, "ls", LSToolInput{Path: ".", Limit: 10}, `{
+  "toolName": "ls",
+  "content": [
+    {
+      "type": "text",
+      "text": "snap.txt"
+    }
+  ],
+  "isError": false
+}`)
 }
 
 func mustExecSnapshot(t *testing.T, runtime *Runtime, tool string, input any, expected string) {

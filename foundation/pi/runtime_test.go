@@ -55,6 +55,33 @@ func TestRuntimeExecuteReadWriteEditAndBashTools(t *testing.T) {
 	if got := textFromResult(t, bashResult); !strings.Contains(got, "foundation-ok") {
 		t.Fatalf("unexpected bash result: %q", got)
 	}
+
+	grepInput, _ := json.Marshal(GrepToolInput{Pattern: "borg", Path: ".", Limit: 10})
+	grepResult, err := runtime.ExecuteTool(context.Background(), "", "grep", grepInput, nil)
+	if err != nil {
+		t.Fatalf("grep failed: %v", err)
+	}
+	if got := textFromResult(t, grepResult); !strings.Contains(got, "notes.txt") {
+		t.Fatalf("unexpected grep result: %q", got)
+	}
+
+	findInput, _ := json.Marshal(FindToolInput{Pattern: "*.txt", Path: ".", Limit: 10})
+	findResult, err := runtime.ExecuteTool(context.Background(), "", "find", findInput, nil)
+	if err != nil {
+		t.Fatalf("find failed: %v", err)
+	}
+	if got := textFromResult(t, findResult); !strings.Contains(got, "notes.txt") {
+		t.Fatalf("unexpected find result: %q", got)
+	}
+
+	lsInput, _ := json.Marshal(LSToolInput{Path: ".", Limit: 10})
+	lsResult, err := runtime.ExecuteTool(context.Background(), "", "ls", lsInput, nil)
+	if err != nil {
+		t.Fatalf("ls failed: %v", err)
+	}
+	if got := textFromResult(t, lsResult); !strings.Contains(got, "notes.txt") {
+		t.Fatalf("unexpected ls result: %q", got)
+	}
 }
 
 func TestRuntimePersistsSessionToolRuns(t *testing.T) {
