@@ -49,16 +49,24 @@ go test ./...
 - orchestrator panic from duplicate sqlite registration
 ```
 
+## Tests added in this phase
+- `foundation/compat/catalog_test.go`
+- `foundation/assimilation/inventory_test.go`
+- `foundation/pi/foundation_test.go`
+- `foundation/pi/runtime_test.go`
+- `foundation/pi/session_test.go`
+
 ## Tests that should be added next
-1. `foundation/compat` registry tests
-2. `foundation/assimilation` inventory coverage tests
-3. `cmd/foundation` smoke tests
-4. tool contract schema tests
-5. session model tests once session runtime exists
+1. `cmd/foundation` smoke tests
+2. tool contract schema/result snapshot tests
+3. truncation edge-case tests for `read` and `bash`
+4. JSON/RPC transport tests
+5. compatibility tests against bridged HyperCode-backed adapters
 
 ## Exit criteria for the next milestone
 - foundation packages compile cleanly,
 - contract registry tests pass,
-- CLI inspection commands are covered,
+- CLI inspection and execution commands are covered,
 - default tool contracts are backed by real implementations,
+- session persistence is stable under create/list/load/fork flows,
 - maturity labels are truthful and enforced by tests.

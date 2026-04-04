@@ -6,15 +6,22 @@
   - `foundation/compat`
   - `foundation/assimilation`
   - `cmd/foundation.go`
+- Extended the bootstrap into a **truthful native runtime baseline**:
+  - native `read`, `write`, `edit`, `bash` handlers
+  - evented runtime execution
+  - JSONL-backed session persistence with create/list/load/fork
+  - CLI execution and session management commands under `foundation`
 - Added comprehensive `docs/ai/` documentation for requirements, design, planning, implementation, and testing.
 - Added `docs/ai/design/upstream-toolchain-analysis.md` summarizing the imported upstream systems and assimilation strategy.
 - Fixed the duplicate SQLite driver registration issue in `orchestrator/queue.go` and `orchestrator/vectors.go` by removing redundant `modernc.org/sqlite` imports.
 
 ## Validation completed
-- `gofmt -w cmd/foundation.go foundation/compat/types.go foundation/compat/catalog.go foundation/compat/default_catalog.go foundation/compat/catalog_test.go foundation/pi/foundation.go foundation/pi/foundation_test.go foundation/assimilation/inventory.go foundation/assimilation/summary.go foundation/assimilation/inventory_test.go orchestrator/vectors.go orchestrator/queue.go`
+- `gofmt -w cmd/foundation.go foundation/compat/types.go foundation/compat/catalog.go foundation/compat/default_catalog.go foundation/compat/catalog_test.go foundation/pi/foundation.go foundation/pi/foundation_test.go foundation/pi/runtime_types.go foundation/pi/runtime.go foundation/pi/runtime_test.go foundation/pi/session.go foundation/pi/session_test.go foundation/pi/tools_native.go foundation/assimilation/inventory.go foundation/assimilation/summary.go foundation/assimilation/inventory_test.go orchestrator/vectors.go orchestrator/queue.go`
 - `go test ./foundation/... ./cmd ./orchestrator`
 - `go run . foundation tools`
 - `go run . foundation inventory`
+- `go run . foundation session create --name smoke`
+- `go run . foundation exec --tool write --input '{"path":"smoke.txt","content":"hello"}'`
 
 ## Important repo state notes
 - The broader repository still has unrelated baseline failures under full `go test ./...`:
@@ -23,8 +30,8 @@
 - Many existing Go packages still contain placeholder or aspirational parity logic and should be migrated to the new `foundation/*` packages over time.
 
 ## Recommended next steps
-1. Implement a real Go agent runtime under `foundation/pi` with event emission and tool execution.
-2. Back the exact-name `read`, `write`, `edit`, and `bash` contracts with native implementations plus contract tests.
+1. Route existing top-level placeholder orchestration/tool surfaces onto the new `foundation/pi` runtime.
+2. Add verified result-shape and snapshot tests for `read`, `write`, `edit`, and `bash`.
 3. Port Aider-style repo map and edit engines.
 4. Add HyperCode/Borg adapters for provider routing, memory, and MCP runtime access.
 5. Migrate TUI and orchestration code to the new truthful foundation instead of placeholder parity claims.

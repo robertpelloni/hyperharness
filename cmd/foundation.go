@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -14,7 +15,7 @@ import (
 
 var foundationCmd = &cobra.Command{
 	Use:   "foundation",
-	Short: "Inspect the Go foundation port and assimilation plan",
+	Short: "Inspect and exercise the Go foundation port and assimilation plan",
 }
 
 var foundationInventoryCmd = &cobra.Command{
@@ -66,10 +67,142 @@ var foundationToolsCmd = &cobra.Command{
 	},
 }
 
+var foundationExecCmd = &cobra.Command{
+	Use:   "exec",
+	Short: "Execute a native foundation tool with exact-name contracts",
+	RunE: func(cmd *cobra.Command, args []string) error {
+		toolName, _ := cmd.Flags().GetString("tool")
+		input, _ := cmd.Flags().GetString("input")
+		sessionID, _ := cmd.Flags().GetString("session")
+		cwd, err := os.Getwd()
+		if err != nil {
+			return err
+		}
+		runtime := foundationpi.NewRuntime(cwd, nil)
+		result, execErr := runtime.ExecuteTool(context.Background(), sessionID, toolName, json.RawMessage(input), nil)
+		enc := json.NewEncoder(os.Stdout)
+		enc.SetIndent("", "  ")
+		payload := map[string]any{"tool": toolName, "result": result}
+		if execErr != nil {
+			payload["error"] = execErr.Error()
+		}
+		if err := enc.Encode(payload); err != nil {
+			return err
+		}
+		return execErr
+	},
+}
+
+var foundationSessionCmd = &cobra.Command{
+	Use:   "session",
+	Short: "Manage native foundation sessions",
+}
+
+var foundationSessionCreateCmd = &cobra.Command{
+	Use:   "create",
+	Short: "Create a new native foundation session",
+	RunE: func(cmd *cobra.Command, args []string) error {
+		name, _ := cmd.Flags().GetString("name")
+		cwd, err := os.Getwd()
+		if err != nil {
+			return err
+		}
+		runtime := foundationpi.NewRuntime(cwd, nil)
+		session, err := runtime.CreateSession(name)
+		if err != nil {
+			return err
+		}
+		enc := json.NewEncoder(os.Stdout)
+		enc.SetIndent("", "  ")
+		return enc.Encode(session)
+	},
+}
+
+var foundationSessionListCmd = &cobra.Command{
+	Use:   "list",
+	Short: "List native foundation sessions",
+	RunE: func(cmd *cobra.Command, args []string) error {
+		cwd, err := os.Getwd()
+		if err != nil {
+			return err
+		}
+		runtime := foundationpi.NewRuntime(cwd, nil)
+		sessions, err := runtime.ListSessions()
+		if err != nil {
+			return err
+		}
+		enc := json.NewEncoder(os.Stdout)
+		enc.SetIndent("", "  ")
+		return enc.Encode(sessions)
+	},
+}
+
+var foundationSessionShowCmd = &cobra.Command{
+	Use:   "show",
+	Short: "Show a native foundation session",
+	RunE: func(cmd *cobra.Command, args []string) error {
+		sessionID, _ := cmd.Flags().GetString("session")
+		cwd, err := os.Getwd()
+		if err != nil {
+			return err
+		}
+		runtime := foundationpi.NewRuntime(cwd, nil)
+		session, err := runtime.LoadSession(sessionID)
+		if err != nil {
+			return err
+		}
+		enc := json.NewEncoder(os.Stdout)
+		enc.SetIndent("", "  ")
+		return enc.Encode(session)
+	},
+}
+
+var foundationSessionForkCmd = &cobra.Command{
+	Use:   "fork",
+	Short: "Fork a native foundation session from an entry point",
+	RunE: func(cmd *cobra.Command, args []string) error {
+		sessionID, _ := cmd.Flags().GetString("session")
+		entryID, _ := cmd.Flags().GetString("entry")
+		name, _ := cmd.Flags().GetString("name")
+		cwd, err := os.Getwd()
+		if err != nil {
+			return err
+		}
+		runtime := foundationpi.NewRuntime(cwd, nil)
+		session, err := runtime.ForkSession(sessionID, entryID, name)
+		if err != nil {
+			return err
+		}
+		enc := json.NewEncoder(os.Stdout)
+		enc.SetIndent("", "  ")
+		return enc.Encode(session)
+	},
+}
+
 func init() {
 	foundationInventoryCmd.Flags().Bool("json", false, "emit JSON")
+	foundationExecCmd.Flags().String("tool", "", "tool name to execute")
+	foundationExecCmd.Flags().String("input", "{}", "tool input as JSON")
+	foundationExecCmd.Flags().String("session", "", "optional session id to append tool execution to")
+	_ = foundationExecCmd.MarkFlagRequired("tool")
+
+	foundationSessionCreateCmd.Flags().String("name", "", "optional session display name")
+	foundationSessionShowCmd.Flags().String("session", "", "session id")
+	foundationSessionForkCmd.Flags().String("session", "", "session id")
+	foundationSessionForkCmd.Flags().String("entry", "", "entry id to fork from (defaults to latest entry)")
+	foundationSessionForkCmd.Flags().String("name", "", "optional fork display name")
+	_ = foundationSessionShowCmd.MarkFlagRequired("session")
+	_ = foundationSessionForkCmd.MarkFlagRequired("session")
+
+	foundationSessionCmd.AddCommand(foundationSessionCreateCmd)
+	foundationSessionCmd.AddCommand(foundationSessionListCmd)
+	foundationSessionCmd.AddCommand(foundationSessionShowCmd)
+	foundationSessionCmd.AddCommand(foundationSessionForkCmd)
+
 	foundationCmd.AddCommand(foundationInventoryCmd)
 	foundationCmd.AddCommand(foundationSpecCmd)
 	foundationCmd.AddCommand(foundationToolsCmd)
+	foundationCmd.AddCommand(foundationExecCmd)
+	foundationCmd.AddCommand(foundationSessionCmd)
 	rootCmd.AddCommand(foundationCmd)
 }

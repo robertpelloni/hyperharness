@@ -192,8 +192,8 @@ func BuiltinToolContracts() []compat.ToolContract {
 			ExactName:         true,
 			ExactParameters:   true,
 			ExactResultShape:  true,
-			Status:            compat.ParitySpeced,
-			ImplementationRef: "foundation/pi.DefaultFoundationSpec",
+			Status:            compat.ParityNative,
+			ImplementationRef: "foundation/pi.DefaultToolHandlers",
 			Notes: []string{
 				"These contracts are the initial exact-name compatibility surface.",
 				"Runtime behavior should stay observationally compatible even when implementations evolve.",

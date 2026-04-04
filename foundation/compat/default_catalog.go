@@ -15,8 +15,8 @@ func DefaultCatalog() *Catalog {
 			ExactName:         true,
 			ExactParameters:   true,
 			ExactResultShape:  true,
-			Status:            ParitySpeced,
-			ImplementationRef: "foundation/compat.DefaultCatalog",
+			Status:            ParityNative,
+			ImplementationRef: "foundation/pi.DefaultToolHandlers",
 		},
 		{
 			Source:            "pi",
@@ -27,8 +27,8 @@ func DefaultCatalog() *Catalog {
 			ExactName:         true,
 			ExactParameters:   true,
 			ExactResultShape:  true,
-			Status:            ParitySpeced,
-			ImplementationRef: "foundation/compat.DefaultCatalog",
+			Status:            ParityNative,
+			ImplementationRef: "foundation/pi.DefaultToolHandlers",
 		},
 		{
 			Source:            "pi",
@@ -39,8 +39,8 @@ func DefaultCatalog() *Catalog {
 			ExactName:         true,
 			ExactParameters:   true,
 			ExactResultShape:  true,
-			Status:            ParitySpeced,
-			ImplementationRef: "foundation/compat.DefaultCatalog",
+			Status:            ParityNative,
+			ImplementationRef: "foundation/pi.DefaultToolHandlers",
 		},
 		{
 			Source:            "pi",
@@ -51,8 +51,8 @@ func DefaultCatalog() *Catalog {
 			ExactName:         true,
 			ExactParameters:   true,
 			ExactResultShape:  true,
-			Status:            ParitySpeced,
-			ImplementationRef: "foundation/compat.DefaultCatalog",
+			Status:            ParityNative,
+			ImplementationRef: "foundation/pi.DefaultToolHandlers",
 		},
 	}
 	for _, contract := range contracts {

@@ -10,6 +10,25 @@
   - run-event vocabulary
   - built-in tool descriptors
 
+- `foundation/pi/runtime_types.go`
+  - tool input/output types
+  - run event payloads
+  - truncation/detail structures
+
+- `foundation/pi/tools_native.go`
+  - native `read`, `write`, `edit`, and `bash` implementations
+  - truncation behavior
+  - exact-name tool handlers
+
+- `foundation/pi/runtime.go`
+  - evented runtime for native tool execution
+  - session-linked tool execution
+  - session creation/list/load/fork helpers
+
+- `foundation/pi/session.go`
+  - JSONL-backed session metadata and tree entries
+  - create/load/save/list/fork operations
+
 - `foundation/compat/types.go`
   - exact tool contract types
   - parity maturity model
@@ -18,7 +37,8 @@
   - thread-safe contract registry
 
 - `foundation/compat/default_catalog.go`
-  - initial Pi-compatible default tool contract set (`read`, `write`, `edit`, `bash`)
+  - Pi-compatible default tool contract set (`read`, `write`, `edit`, `bash`)
+  - updated to `native` maturity for the default tool set
 
 - `foundation/assimilation/inventory.go`
   - upstream assimilation inventory covering imported toolchains and HyperCode
@@ -28,16 +48,20 @@
 
 - `cmd/foundation.go`
   - CLI inspection for foundation spec, inventory, and tools
+  - native execution surface for exact-name tools
+  - native session create/list/show/fork commands
 
 ### Documentation
 - requirements, design, planning, implementation, and testing documents under `docs/ai/`
 
 ## Why this phase is useful
-This phase does not pretend to have completed the full port. It creates the structures required to do that port in a disciplined way:
+This phase still does not pretend to have completed the full port, but it now moves beyond pure scaffolding and establishes a truthful native baseline:
 - one place for exact tool contracts,
 - one place for the Pi-derived harness contract,
+- one place for native default tool execution,
+- one place for JSONL-backed native sessions,
 - one place for the upstream assimilation inventory,
-- one place to inspect those decisions from the CLI,
+- one CLI surface to inspect and exercise those decisions,
 - one documentation trail explaining the chosen architecture.
 
 ## Important baseline observations
@@ -55,9 +79,14 @@ Before this phase, `go test ./...` already failed for unrelated reasons:
 
 These issues were observed and documented, not silently ignored or misrepresented as introduced by the new foundation work.
 
+## Validation added in this phase
+- native runtime tests for `read`, `write`, `edit`, and `bash`
+- session persistence/list/fork tests
+- ordered runtime event tests
+
 ## Recommended next implementation sequence
-1. replace placeholder agent loop and session handling with `foundation/pi`-backed runtime packages,
-2. add native implementations and contract tests for `read`, `write`, `edit`, and `bash`,
+1. route existing top-level placeholder orchestration/tool paths to `foundation/pi` runtime packages,
+2. add contract-result verification and snapshot tests for the default tool set,
 3. port repo-map and edit strategies,
 4. add HyperCode/Borg provider and MCP adapters,
-5. layer in delegation, verification, and detached/background runs.
+5. layer in delegation, verification, detached/background runs, and JSON/RPC transport.

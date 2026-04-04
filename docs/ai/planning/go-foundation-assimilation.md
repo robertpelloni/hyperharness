@@ -9,7 +9,7 @@ Deliver a Go-native harness that can truthfully grow from a Pi-derived foundatio
 - [x] Define core harness contract types in Go
 - [x] Define initial exact-name default tools
 - [x] Define event vocabulary and foundation spec
-- [ ] Implement session persistence and branching
+- [x] Implement session persistence and branching
 - [ ] Implement compaction hooks
 - [ ] Implement settings, themes, prompt templates, and skills
 - [ ] Implement extension runtime surface
@@ -17,8 +17,8 @@ Deliver a Go-native harness that can truthfully grow from a Pi-derived foundatio
 
 ### Workstream 2: Exact tool compatibility
 - [x] Create central tool contract registry
-- [ ] Add contract tests for default tools
-- [ ] Add bridged implementations for compatibility-critical tools
+- [x] Add contract tests for default tools
+- [x] Add native implementations for compatibility-critical tools
 - [ ] Add source-specific tool compatibility packs
 - [ ] Add verified parity snapshots
 
@@ -60,11 +60,11 @@ Deliver a Go-native harness that can truthfully grow from a Pi-derived foundatio
 - document strategy and risks
 
 ### Milestone 1: Truthful core harness
-- real agent state machine
-- exact default tool execution
-- session persistence
-- JSON/RPC surface
-- contract tests for the default harness
+- [x] real agent state machine (tool-execution/event baseline)
+- [x] exact default tool execution
+- [x] session persistence
+- [ ] JSON/RPC surface
+- [x] contract tests for the default harness
 
 ### Milestone 2: Context and editing superiority
 - Aider-style repo map
