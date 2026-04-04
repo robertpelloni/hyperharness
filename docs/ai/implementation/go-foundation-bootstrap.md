@@ -113,6 +113,13 @@
   - `/fs/read` now routes through the native foundation `read` tool instead of direct file reads
   - foundation-backed orchestration entrypoints continue to replace direct placeholder logic incrementally
 
+- `tui/slash.go`
+  - TUI slash-command handling now exposes foundation-backed `/plan` and `/repomap`
+  - `/clear` now resets the director cleanly instead of only clearing history text
+
+- `tui/slash_test.go`
+  - validates foundation-backed slash-command planning and repo-map behavior
+
 - `agent/agent.go`
   - top-level agent now advertises the native exact-name tools preferentially
   - OpenAI tool registration now uses per-tool schemas instead of one fake generic schema
@@ -249,6 +256,7 @@ These issues were observed and documented, not silently ignored or misrepresente
 - provider execution-preparation tests
 - MCP adapter seam and top-level MCP package tests
 - foundation-backed HTTP helper tests, including MCP mediation and provider-route helpers
+- foundation-backed TUI slash-command tests
 - provider CLI smoke checks
 - foundation plan CLI smoke checks
 

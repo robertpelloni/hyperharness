@@ -43,6 +43,7 @@
   - `agents/provider_stub.go` and `agents/provider.go` now consume provider execution-preparation hints
   - `agents/director.go` and `agent/orchestrator.go` now consume `foundation/orchestration` planning primitives
   - `orchestrator/webhooks.go`, daemon sweep planning, and autodrive objective generation now consume foundation orchestration helpers
+  - `tui/slash.go` now exposes foundation-backed `/plan` and `/repomap` slash commands
 - Added deeper verification coverage:
   - snapshot-style tests for baseline tool results
   - top-level agent schema registration test
@@ -54,6 +55,7 @@
   - foundation-backed HTTP helper tests
   - MCP mediation helper tests
   - orchestration planner, daemon planner, webhook planner, and migrated director/orchestrator tests
+  - foundation-backed TUI slash-command tests
   - provider CLI smoke checks
   - foundation plan CLI smoke checks
 - Added comprehensive `docs/ai/` documentation for requirements, design, planning, implementation, and testing.

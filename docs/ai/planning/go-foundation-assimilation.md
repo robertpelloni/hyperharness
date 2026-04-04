@@ -62,8 +62,9 @@ Deliver a Go-native harness that can truthfully grow from a Pi-derived foundatio
 - [x] Route initial director/orchestrator planning onto foundation orchestration primitives
 - [x] Route initial webhook and autodrive objective planning onto foundation orchestration primitives
 - [x] Route initial daemon sweep planning onto foundation orchestration primitives
+- [x] Route initial TUI slash-command planning/repo-map handling onto foundation primitives
 - [ ] Route more daemon/orchestrator workflows away from placeholder paths
-- [ ] Route TUI request handling onto foundation runtime primitives
+- [ ] Route broader TUI request handling onto foundation runtime primitives
 
 ### Workstream 6: Documentation and truthfulness
 - [x] Requirements doc

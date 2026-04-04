@@ -74,6 +74,7 @@ go test ./...
 - `mcp/manager_test.go`
 - `cmd/foundation_http_test.go`
 - `orchestrator/orchestration_bridge_test.go`
+- `tui/slash_test.go`
 
 ## Tests that should be added next
 1. `cmd/foundation` and HTTP route smoke tests
