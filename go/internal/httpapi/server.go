@@ -70,6 +70,7 @@ type Server struct {
 	debateHistory     *orchestration.DebateHistoryStore
 	runtimeServers    *runtimeServerRegistry
 	mcpState          *localMCPStateManager
+	darwinState       *localDarwinStateManager
 }
 
 type providerFallbackEvent struct {
@@ -391,6 +392,7 @@ func New(cfg config.Config, detector controlplane.ToolProvider) *Server {
 		debateHistory:  orchestration.NewDebateHistoryStore(filepath.Join(cfg.WorkspaceRoot, "metamcp.db")),
 		runtimeServers: newRuntimeServerRegistry(),
 		mcpState:       newLocalMCPStateManager(filepath.Join(cfg.ConfigDir, "mcp_state.json")),
+		darwinState:    newLocalDarwinStateManager(filepath.Join(cfg.ConfigDir, "darwin_state.json")),
 	}
 
 	server.registerRoutes()

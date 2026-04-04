@@ -1952,6 +1952,51 @@ func TestAutoDevBridgeRoutes(t *testing.T) {
 	}
 }
 
+func TestDarwinFallsBackToLocalGoState(t *testing.T) {
+	t.Setenv("HYPERCODE_TRPC_UPSTREAM", "http://127.0.0.1:1/trpc")
+	cfg := config.Default()
+	cfg.ConfigDir = t.TempDir()
+	server := New(cfg, stubDetector{})
+
+	evolveReq := httptest.NewRequest(http.MethodPost, "/api/darwin/evolve", strings.NewReader(`{"prompt":"Refactor prompt","goal":"Improve prompts"}`))
+	evolveReq.Header.Set("content-type", "application/json")
+	evolveRecorder := httptest.NewRecorder()
+	server.Handler().ServeHTTP(evolveRecorder, evolveReq)
+	if evolveRecorder.Code != http.StatusOK {
+		t.Fatalf("expected darwin evolve fallback 200, got %d %s", evolveRecorder.Code, evolveRecorder.Body.String())
+	}
+	for _, needle := range []string{`"fallback":"go-local-darwin"`, `"procedure":"darwin.evolve"`, `"mutationId":"mut-1"`, `native Go Darwin fallback mutation scaffold`} {
+		if !strings.Contains(evolveRecorder.Body.String(), needle) {
+			t.Fatalf("expected darwin evolve fallback to contain %s, got %s", needle, evolveRecorder.Body.String())
+		}
+	}
+
+	experimentReq := httptest.NewRequest(http.MethodPost, "/api/darwin/experiment", strings.NewReader(`{"mutationId":"mut-1","task":"Run benchmark"}`))
+	experimentReq.Header.Set("content-type", "application/json")
+	experimentRecorder := httptest.NewRecorder()
+	server.Handler().ServeHTTP(experimentRecorder, experimentReq)
+	if experimentRecorder.Code != http.StatusOK {
+		t.Fatalf("expected darwin experiment fallback 200, got %d %s", experimentRecorder.Code, experimentRecorder.Body.String())
+	}
+	for _, needle := range []string{`"fallback":"go-local-darwin"`, `"procedure":"darwin.experiment"`, `"experimentId":"exp-2"`} {
+		if !strings.Contains(experimentRecorder.Body.String(), needle) {
+			t.Fatalf("expected darwin experiment fallback to contain %s, got %s", needle, experimentRecorder.Body.String())
+		}
+	}
+
+	time.Sleep(20 * time.Millisecond)
+	statusRecorder := httptest.NewRecorder()
+	server.Handler().ServeHTTP(statusRecorder, httptest.NewRequest(http.MethodGet, "/api/darwin/status", nil))
+	if statusRecorder.Code != http.StatusOK {
+		t.Fatalf("expected darwin status fallback 200, got %d %s", statusRecorder.Code, statusRecorder.Body.String())
+	}
+	for _, needle := range []string{`"fallback":"go-local-darwin"`, `"procedure":"darwin.getStatus"`, `"mutationCount":1`, `"experimentCount":1`, `"winner":"`} {
+		if !strings.Contains(statusRecorder.Body.String(), needle) {
+			t.Fatalf("expected darwin status fallback to contain %s, got %s", needle, statusRecorder.Body.String())
+		}
+	}
+}
+
 func TestDarwinBridgeRoutes(t *testing.T) {
 	upstream := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("content-type", "application/json")

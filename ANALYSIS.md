@@ -2372,6 +2372,63 @@ Results:
 - Go build passed
 - full Go suite passed
 
+## Follow-up Go-primary backend slice (native Darwin fallback)
+The next real TS-to-Go backend ownership step was to replace Darwin’s bridge-only status with a truthful native fallback instead of leaving those routes completely TypeScript-owned.
+
+### The gap before this step
+Before this step:
+- `/api/darwin/evolve`
+- `/api/darwin/experiment`
+- `/api/darwin/status`
+were all bridge-only to TypeScript
+
+That meant Go had no native Darwin ownership at all, even for local mutation/experiment state when TS was unavailable.
+
+### What changed
+- added `go/internal/httpapi/darwin_local_state.go`
+  - native local Darwin mutation state
+  - native local Darwin experiment state
+  - persisted Darwin state under Go config dir (`darwin_state.json`)
+  - async local experiment completion with deterministic, truthful local heuristics
+- updated `go/internal/httpapi/server.go`
+  - server now owns `darwinState`
+- replaced `go/internal/httpapi/darwin_handlers.go`
+  - Darwin routes now attempt TS first, then fall back natively in Go
+  - `/api/darwin/evolve` now creates a native local mutation scaffold
+  - `/api/darwin/experiment` now creates and runs a native local experiment record
+  - `/api/darwin/status` now reports native local Darwin state
+- expanded `go/internal/httpapi/server_test.go`
+  - added regression coverage proving native Darwin fallback works end-to-end when upstream is unavailable
+  - preserved existing upstream bridge coverage
+
+### Important truthfulness note
+This is a **real Go-native Darwin fallback**, but it is not full TS parity.
+
+What is true now:
+- Darwin routes are no longer bridge-only
+- Go can persist local Darwin mutations and experiments
+- Go can run a deterministic local fallback experiment flow and report status truthfully
+- Darwin fallback state survives restart through `darwin_state.json`
+
+What is still not true yet:
+- this does not replicate TS LLM-driven mutation generation and judging parity
+- the local Darwin fallback uses deterministic local heuristics instead of live model-based evolutionary evaluation
+- full Darwin/autodev/swarm parity in Go remains incomplete
+
+### Validation performed for this native Darwin step
+```bash
+gofmt -w go/internal/httpapi/darwin_handlers.go go/internal/httpapi/darwin_local_state.go go/internal/httpapi/server.go go/internal/httpapi/server_test.go
+cd go && go test ./internal/httpapi ./internal/mcp
+cd go && go build -buildvcs=false ./cmd/hypercode
+cd go && go test ./...
+```
+
+Results:
+- targeted httpapi tests passed
+- targeted mcp tests passed
+- Go build passed
+- full Go suite passed
+
 ## Bottom line
 This pass meaningfully strengthened the **Go-primary migration path** and improved TypeScript survivability while the migration continues:
 - broader provider routing
@@ -2426,6 +2483,7 @@ This pass meaningfully strengthened the **Go-primary migration path** and improv
 - `/api/tools/get` is now the first detail-adjacent MCP fallback surface to adopt the trimmed primary nested `provenance` contract while higher-risk detail surfaces remain compatibility-heavy
 - configured-server get fallback now also adopts the trimmed primary nested `provenance` contract while the remaining highest-risk config/detail surfaces stay compatibility-heavy for now
 - `/api/skills/assimilate` now has a native Go fallback that writes a real local starter skill scaffold instead of remaining bridge-only
+- Darwin routes now have a native Go persisted local fallback for mutation/experiment/status behavior instead of remaining bridge-only
 - a tested Go-native replacement path for multiple TS-owned persistence surfaces, even though mixed-runtime cleanup is not fully finished yet
 - a small but real Maestro UX fix
 

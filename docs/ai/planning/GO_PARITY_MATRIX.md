@@ -88,7 +88,7 @@ Status values:
 | Workflow API parity | Partial Native Go | native endpoints exist, not yet full TS parity |
 | Council debate endpoint | Bridge-first with Native Go fallback | native Go council fallback exists and now persists native fallback debates into the Go debate-history store |
 | Council history/persistence | Partial Native Go | Go history status/stats/list/get/delete/supervisor/clear/initialize fallbacks now use native persisted debate history when TS is unavailable |
-| Swarm/squad/autodev/darwin | Bridge-only / partial | many Go routes still proxy to TS; `/api/skills/assimilate` now has a native Go fallback that creates a truthful local starter skill scaffold, but Darwin and richer LLM/research-driven assimilation parity remain incomplete |
+| Swarm/squad/autodev/darwin | Partial Native Go / bridge mix | many Go routes still proxy to TS; `/api/skills/assimilate` now has a native Go fallback that creates a truthful local starter skill scaffold, and Darwin routes now have a native persisted local mutation/experiment/status fallback, but richer LLM/research-driven Darwin and assimilation parity remain incomplete |
 | Director config/status | Bridge-only / partial | visibility exists, not full native ownership |
 
 ---
