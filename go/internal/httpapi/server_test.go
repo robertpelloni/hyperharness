@@ -1059,23 +1059,18 @@ func TestMCPEmptyStateRoutesFallBackLocally(t *testing.T) {
 		containsAny []string
 	}{
 		{path: "/api/mcp/traffic", method: http.MethodGet, containsAny: []string{`"fallback":"go-local-mcp"`, `using local empty MCP traffic history`}},
-		{path: "/api/mcp/tool-selection-telemetry", method: http.MethodGet, containsAny: []string{`"fallback":"go-local-mcp"`, `using local empty tool-selection telemetry`}},
-		{path: "/api/mcp/tool-selection-telemetry/clear", method: http.MethodPost, containsAny: []string{`"ok":true`, `clearing local empty tool-selection telemetry`}},
-		{path: "/api/mcp/working-set", method: http.MethodGet, containsAny: []string{`"maxLoadedTools":0`, `using local empty MCP working set`}},
-		{path: "/api/mcp/working-set/evictions", method: http.MethodGet, containsAny: []string{`"fallback":"go-local-mcp"`, `using local empty MCP eviction history`}},
-		{path: "/api/mcp/working-set/evictions/clear", method: http.MethodPost, containsAny: []string{`already empty`, `clearing local empty MCP eviction history`}},
+		{path: "/api/mcp/tool-selection-telemetry", method: http.MethodGet, containsAny: []string{`"fallback":"go-local-mcp"`, `using local MCP tool-selection telemetry`}},
+		{path: "/api/mcp/tool-selection-telemetry/clear", method: http.MethodPost, containsAny: []string{`"ok":true`, `clearing local MCP tool-selection telemetry`}},
+		{path: "/api/mcp/working-set", method: http.MethodGet, containsAny: []string{`"maxLoadedTools":16`, `using local MCP working set state`}},
+		{path: "/api/mcp/working-set/evictions", method: http.MethodGet, containsAny: []string{`"fallback":"go-local-mcp"`, `using local MCP eviction history`}},
+		{path: "/api/mcp/working-set/evictions/clear", method: http.MethodPost, containsAny: []string{`"message":"cleared"`, `clearing local MCP eviction history`}},
 	}
 
 	for _, tc := range cases {
 		recorder := httptest.NewRecorder()
 		server.Handler().ServeHTTP(recorder, httptest.NewRequest(tc.method, tc.path, nil))
 		expectedStatus := http.StatusOK
-		if tc.path == "/api/mcp/traffic" ||
-			tc.path == "/api/mcp/tool-selection-telemetry" ||
-			tc.path == "/api/mcp/tool-selection-telemetry/clear" ||
-			tc.path == "/api/mcp/working-set" ||
-			tc.path == "/api/mcp/working-set/evictions" ||
-			tc.path == "/api/mcp/working-set/evictions/clear" {
+		if tc.path == "/api/mcp/traffic" {
 			expectedStatus = http.StatusServiceUnavailable
 		}
 		if recorder.Code != expectedStatus {
@@ -1426,15 +1421,113 @@ func TestMCPLoadAndUnloadToolReturnExplicitUnavailableFallback(t *testing.T) {
 		req.Header.Set("content-type", "application/json")
 		recorder := httptest.NewRecorder()
 		server.Handler().ServeHTTP(recorder, req)
-		if recorder.Code != http.StatusServiceUnavailable || !strings.Contains(recorder.Body.String(), `"fallback":"go-local-mcp"`) || !strings.Contains(recorder.Body.String(), `MCP Server not initialized`) {
+		if recorder.Code != http.StatusServiceUnavailable || !strings.Contains(recorder.Body.String(), `"fallback":"go-local-mcp"`) || !strings.Contains(recorder.Body.String(), `Tool not present in local MCP inventory`) {
 			t.Fatalf("%s: expected explicit unavailable fallback, got %d %s", path, recorder.Code, recorder.Body.String())
 		}
 		if !strings.Contains(recorder.Body.String(), `"success":false`) {
 			t.Fatalf("%s: expected explicit failure payload, got %s", path, recorder.Body.String())
 		}
-		if !strings.Contains(recorder.Body.String(), `local MCP working set manager is not initialized`) {
+		if !strings.Contains(recorder.Body.String(), `tool is not present in the local MCP inventory`) {
 			t.Fatalf("%s: expected local working-set fallback reason, got %s", path, recorder.Body.String())
 		}
+	}
+}
+
+func TestMCPWorkingSetAndTelemetryFallBackToLocalState(t *testing.T) {
+	mainConfigDir := t.TempDir()
+	jsoncContent := `// HyperCode MCP configuration
+{
+  "mcpServers": {
+    "core": {
+      "command": "node",
+      "args": ["server.js"],
+      "_meta": {
+        "toolCount": 5,
+        "tools": [
+          {"name": "read_file", "description": "Read files", "inputSchema": {"type": "object"}, "alwaysOn": false},
+          {"name": "grep_search", "description": "Grep search", "inputSchema": {"type": "object"}, "alwaysOn": false},
+          {"name": "write_file", "description": "Write files", "inputSchema": {"type": "object"}, "alwaysOn": false},
+          {"name": "execute_command", "description": "Execute commands", "inputSchema": {"type": "object"}, "alwaysOn": false},
+          {"name": "search_tools", "description": "Search tools", "inputSchema": {"type": "object"}, "alwaysOn": false}
+        ]
+      }
+    }
+  },
+  "settings": {
+    "toolSelection": {
+      "alwaysLoadedTools": [],
+      "maxLoadedTools": 4,
+      "maxHydratedSchemas": 2,
+      "idleEvictionThresholdMs": 60000
+    }
+  }
+}
+`
+	if err := os.WriteFile(filepath.Join(mainConfigDir, "mcp.jsonc"), []byte(jsoncContent), 0o644); err != nil {
+		t.Fatalf("failed to seed local mcp jsonc: %v", err)
+	}
+
+	t.Setenv("HYPERCODE_TRPC_UPSTREAM", "http://127.0.0.1:1/trpc")
+	cfg := config.Default()
+	cfg.WorkspaceRoot = t.TempDir()
+	cfg.ConfigDir = t.TempDir()
+	cfg.MainConfigDir = mainConfigDir
+	server := New(cfg, stubDetector{})
+
+	for _, toolName := range []string{"read_file", "grep_search", "write_file", "execute_command", "search_tools"} {
+		loadReq := httptest.NewRequest(http.MethodPost, "/api/mcp/working-set/load", strings.NewReader(`{"name":"`+toolName+`"}`))
+		loadReq.Header.Set("content-type", "application/json")
+		loadRecorder := httptest.NewRecorder()
+		server.Handler().ServeHTTP(loadRecorder, loadReq)
+		if loadRecorder.Code != http.StatusOK || !strings.Contains(loadRecorder.Body.String(), `using local MCP working set manager`) {
+			t.Fatalf("expected local load fallback success for %s, got %d %s", toolName, loadRecorder.Code, loadRecorder.Body.String())
+		}
+	}
+
+	for _, toolName := range []string{"grep_search", "write_file", "search_tools"} {
+		schemaReq := httptest.NewRequest(http.MethodPost, "/api/mcp/tools/schema", strings.NewReader(`{"name":"`+toolName+`"}`))
+		schemaReq.Header.Set("content-type", "application/json")
+		schemaRecorder := httptest.NewRecorder()
+		server.Handler().ServeHTTP(schemaRecorder, schemaReq)
+		if schemaRecorder.Code != http.StatusOK || !strings.Contains(schemaRecorder.Body.String(), `"inputSchema"`) {
+			t.Fatalf("expected local schema fallback success for %s, got %d %s", toolName, schemaRecorder.Code, schemaRecorder.Body.String())
+		}
+	}
+
+	workingSetRecorder := httptest.NewRecorder()
+	server.Handler().ServeHTTP(workingSetRecorder, httptest.NewRequest(http.MethodGet, "/api/mcp/working-set", nil))
+	if workingSetRecorder.Code != http.StatusOK {
+		t.Fatalf("expected local working set 200, got %d %s", workingSetRecorder.Code, workingSetRecorder.Body.String())
+	}
+	if strings.Contains(workingSetRecorder.Body.String(), `"name":"read_file"`) || !strings.Contains(workingSetRecorder.Body.String(), `"name":"search_tools"`) {
+		t.Fatalf("expected local working set to retain the newest loaded tools, got %s", workingSetRecorder.Body.String())
+	}
+	if !strings.Contains(workingSetRecorder.Body.String(), `"hydrated":true`) {
+		t.Fatalf("expected hydrated state in working set, got %s", workingSetRecorder.Body.String())
+	}
+
+	telemetryRecorder := httptest.NewRecorder()
+	server.Handler().ServeHTTP(telemetryRecorder, httptest.NewRequest(http.MethodGet, "/api/mcp/tool-selection-telemetry", nil))
+	if telemetryRecorder.Code != http.StatusOK {
+		t.Fatalf("expected local telemetry 200, got %d %s", telemetryRecorder.Code, telemetryRecorder.Body.String())
+	}
+	if !strings.Contains(telemetryRecorder.Body.String(), `"type":"hydrate"`) || !strings.Contains(telemetryRecorder.Body.String(), `"toolName":"search_tools"`) {
+		t.Fatalf("expected local hydrate telemetry, got %s", telemetryRecorder.Body.String())
+	}
+	if !strings.Contains(telemetryRecorder.Body.String(), `"type":"load"`) {
+		t.Fatalf("expected local load telemetry, got %s", telemetryRecorder.Body.String())
+	}
+
+	evictionsRecorder := httptest.NewRecorder()
+	server.Handler().ServeHTTP(evictionsRecorder, httptest.NewRequest(http.MethodGet, "/api/mcp/working-set/evictions", nil))
+	if evictionsRecorder.Code != http.StatusOK {
+		t.Fatalf("expected local evictions 200, got %d %s", evictionsRecorder.Code, evictionsRecorder.Body.String())
+	}
+	if !strings.Contains(evictionsRecorder.Body.String(), `"tier":"loaded"`) || !strings.Contains(evictionsRecorder.Body.String(), `"toolName":"read_file"`) {
+		t.Fatalf("expected local loaded eviction history entry, got %s", evictionsRecorder.Body.String())
+	}
+	if !strings.Contains(evictionsRecorder.Body.String(), `"tier":"hydrated"`) || !strings.Contains(evictionsRecorder.Body.String(), `"toolName":"grep_search"`) {
+		t.Fatalf("expected local hydrated eviction history entry, got %s", evictionsRecorder.Body.String())
 	}
 }
 
@@ -9592,10 +9685,29 @@ var ListAllTools = struct{
 func TestMCPToolSchemaFallsBackToLocalMetaSchemas(t *testing.T) {
 	t.Setenv("HYPERCODE_TRPC_UPSTREAM", "http://127.0.0.1:1/trpc")
 
+	mainConfigDir := t.TempDir()
+	jsoncContent := `// HyperCode MCP configuration
+{
+  "mcpServers": {
+    "core": {
+      "_meta": {
+        "toolCount": 1,
+        "tools": [
+          {"name": "search_tools", "description": "Search tools", "inputSchema": {"type": "object", "properties": {"query": {"type": "string"}}}, "alwaysOn": true}
+        ]
+      }
+    }
+  }
+}
+`
+	if err := os.WriteFile(filepath.Join(mainConfigDir, "mcp.jsonc"), []byte(jsoncContent), 0o644); err != nil {
+		t.Fatalf("failed to seed local mcp jsonc: %v", err)
+	}
+
 	cfg := config.Default()
 	cfg.WorkspaceRoot = t.TempDir()
 	cfg.ConfigDir = t.TempDir()
-	cfg.MainConfigDir = t.TempDir()
+	cfg.MainConfigDir = mainConfigDir
 	server := New(cfg, stubDetector{})
 
 	request := httptest.NewRequest(http.MethodPost, "/api/mcp/tools/schema", strings.NewReader(`{"name":"search_tools"}`))

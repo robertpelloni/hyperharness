@@ -69,6 +69,7 @@ type Server struct {
 	linkCrawler       *bobbySync.LinkCrawlerManager
 	debateHistory     *orchestration.DebateHistoryStore
 	runtimeServers    *runtimeServerRegistry
+	mcpState          *localMCPStateManager
 }
 
 type providerFallbackEvent struct {
@@ -389,6 +390,7 @@ func New(cfg config.Config, detector controlplane.ToolProvider) *Server {
 		),
 		debateHistory:  orchestration.NewDebateHistoryStore(filepath.Join(cfg.WorkspaceRoot, "metamcp.db")),
 		runtimeServers: newRuntimeServerRegistry(),
+		mcpState:       newLocalMCPStateManager(),
 	}
 
 	server.registerRoutes()
@@ -2831,15 +2833,31 @@ func (s *Server) handleMCPToolSchema(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fallbackResult, fallbackErr := localFallbackToolSchema(payload)
-	if fallbackErr != nil {
+	name, _ := payload["name"].(string)
+	limits, limitsErr := s.localToolPreferences()
+	if limitsErr != nil {
+		limits = map[string]any{"maxLoadedTools": 16, "maxHydratedSchemas": 8, "idleEvictionThresholdMs": 5 * 60 * 1000}
+	}
+	available, availableErr := s.localAvailableMCPTools()
+	if availableErr != nil {
+		writeJSON(w, http.StatusServiceUnavailable, map[string]any{"success": false, "error": availableErr.Error(), "detail": availableErr.Error()})
+		return
+	}
+
+	fallbackResult, evicted, ok := s.mcpState.hydrateTool(name, limits, available)
+	if !ok {
 		writeJSON(w, http.StatusServiceUnavailable, map[string]any{
 			"success": false,
-			"error":   fallbackErr.Error(),
-			"detail":  fallbackErr.Error(),
+			"error":   "MCP tool schema is unavailable: tool is not present in the local MCP inventory.",
+			"data":    map[string]any{"inputSchema": nil, "evictedHydratedTools": []string{}},
+			"bridge":  map[string]any{"fallback": "go-local-mcp", "procedure": "mcp.getToolSchema", "reason": "upstream unavailable; tool is not present in the local MCP inventory"},
 		})
 		return
 	}
+
+	snapshot := s.mcpState.snapshot(limits, available)
+	loadedCount, hydratedCount, loadedPct, hydratedPct := s.localWorkingSetPressure(limits, snapshot)
+	s.mcpState.recordTelemetry(localMCPTelemetryEvent{Type: "hydrate", ToolName: name, Source: "manual-action", Status: "success", Message: "schema hydrated", EvictedTools: evicted, LoadedToolCount: loadedCount, HydratedToolCount: hydratedCount, LoadedUtilizationPct: loadedPct, HydratedUtilizationPct: hydratedPct, Timestamp: time.Now().UTC().UnixMilli()})
 
 	writeJSON(w, http.StatusOK, map[string]any{
 		"success": true,
@@ -2981,14 +2999,13 @@ func (s *Server) handleMCPToolSelectionTelemetry(w http.ResponseWriter, r *http.
 		return
 	}
 
-	writeJSON(w, http.StatusServiceUnavailable, map[string]any{
-		"success": false,
-		"error":   "Tool-selection telemetry is unavailable: upstream MCP router is unavailable and no local telemetry history is persisted.",
-		"data":    []map[string]any{},
+	writeJSON(w, http.StatusOK, map[string]any{
+		"success": true,
+		"data":    s.mcpState.telemetryList(),
 		"bridge": map[string]any{
 			"fallback":  "go-local-mcp",
 			"procedure": "mcp.getToolSelectionTelemetry",
-			"reason":    "upstream unavailable; using local empty tool-selection telemetry",
+			"reason":    "upstream unavailable; using local MCP tool-selection telemetry",
 		},
 	})
 }
@@ -3008,16 +3025,13 @@ func (s *Server) handleMCPClearToolSelectionTelemetry(w http.ResponseWriter, r *
 		return
 	}
 
-	writeJSON(w, http.StatusServiceUnavailable, map[string]any{
-		"success": false,
-		"error":   "Tool-selection telemetry clearing is unavailable: upstream MCP router is unavailable and no local telemetry history exists.",
-		"data": map[string]any{
-			"ok": true,
-		},
+	writeJSON(w, http.StatusOK, map[string]any{
+		"success": true,
+		"data":    s.mcpState.clearTelemetry(),
 		"bridge": map[string]any{
 			"fallback":  "go-local-mcp",
 			"procedure": "mcp.clearToolSelectionTelemetry",
-			"reason":    "upstream unavailable; clearing local empty tool-selection telemetry",
+			"reason":    "upstream unavailable; clearing local MCP tool-selection telemetry",
 		},
 	})
 }
@@ -3336,22 +3350,23 @@ func (s *Server) handleMCPWorkingSet(w http.ResponseWriter, r *http.Request) {
 		})
 		return
 	}
-
-	writeJSON(w, http.StatusServiceUnavailable, map[string]any{
-		"success": false,
-		"error":   "MCP working set is unavailable: upstream MCP router is unavailable and no local working set manager is initialized.",
-		"data": map[string]any{
-			"limits": map[string]any{
-				"maxLoadedTools":          0,
-				"maxHydratedSchemas":      0,
-				"idleEvictionThresholdMs": 0,
-			},
-			"tools": []map[string]any{},
-		},
+	limits, limitsErr := s.localToolPreferences()
+	if limitsErr != nil {
+		limits = map[string]any{"maxLoadedTools": 16, "maxHydratedSchemas": 8, "idleEvictionThresholdMs": 5 * 60 * 1000}
+	}
+	available, availableErr := s.localAvailableMCPTools()
+	if availableErr != nil {
+		writeJSON(w, http.StatusServiceUnavailable, map[string]any{"success": false, "error": availableErr.Error(), "detail": availableErr.Error()})
+		return
+	}
+	snapshot := s.mcpState.snapshot(limits, available)
+	writeJSON(w, http.StatusOK, map[string]any{
+		"success": true,
+		"data":    snapshot,
 		"bridge": map[string]any{
 			"fallback":  "go-local-mcp",
 			"procedure": "mcp.getWorkingSet",
-			"reason":    "upstream unavailable; using local empty MCP working set",
+			"reason":    "upstream unavailable; using local MCP working set state",
 		},
 	})
 }
@@ -3371,14 +3386,13 @@ func (s *Server) handleMCPWorkingSetEvictions(w http.ResponseWriter, r *http.Req
 		return
 	}
 
-	writeJSON(w, http.StatusServiceUnavailable, map[string]any{
-		"success": false,
-		"error":   "MCP eviction history is unavailable: upstream MCP router is unavailable and no local eviction history is persisted.",
-		"data":    []map[string]any{},
+	writeJSON(w, http.StatusOK, map[string]any{
+		"success": true,
+		"data":    s.mcpState.evictionList(),
 		"bridge": map[string]any{
 			"fallback":  "go-local-mcp",
 			"procedure": "mcp.getWorkingSetEvictionHistory",
-			"reason":    "upstream unavailable; using local empty MCP eviction history",
+			"reason":    "upstream unavailable; using local MCP eviction history",
 		},
 	})
 }
@@ -3398,17 +3412,13 @@ func (s *Server) handleMCPClearWorkingSetEvictions(w http.ResponseWriter, r *htt
 		return
 	}
 
-	writeJSON(w, http.StatusServiceUnavailable, map[string]any{
-		"success": false,
-		"error":   "MCP eviction history clearing is unavailable: upstream MCP router is unavailable and no local eviction history exists.",
-		"data": map[string]any{
-			"ok":      true,
-			"message": "MCP server unavailable; eviction history already empty.",
-		},
+	writeJSON(w, http.StatusOK, map[string]any{
+		"success": true,
+		"data":    s.mcpState.clearEvictions(),
 		"bridge": map[string]any{
 			"fallback":  "go-local-mcp",
 			"procedure": "mcp.clearWorkingSetEvictionHistory",
-			"reason":    "upstream unavailable; clearing local empty MCP eviction history",
+			"reason":    "upstream unavailable; clearing local MCP eviction history",
 		},
 	})
 }
@@ -15244,17 +15254,55 @@ func (s *Server) handleMCPManualToolMutation(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	writeJSON(w, http.StatusServiceUnavailable, map[string]any{
-		"success": false,
-		"error":   "MCP working-set mutation is unavailable: upstream MCP router is unavailable and the local MCP working set manager is not initialized.",
-		"data": map[string]any{
-			"ok":      false,
-			"message": "MCP Server not initialized",
-		},
+	name, _ := payload["name"].(string)
+	limits, limitsErr := s.localToolPreferences()
+	if limitsErr != nil {
+		limits = map[string]any{"maxLoadedTools": 16, "maxHydratedSchemas": 8, "idleEvictionThresholdMs": 5 * 60 * 1000}
+	}
+	available, availableErr := s.localAvailableMCPTools()
+	if availableErr != nil {
+		writeJSON(w, http.StatusServiceUnavailable, map[string]any{"success": false, "error": availableErr.Error(), "detail": availableErr.Error()})
+		return
+	}
+	var (
+		message string
+		evicted []string
+		ok      bool
+	)
+	switch procedure {
+	case "mcp.loadTool":
+		message, evicted, ok = s.mcpState.loadTool(name, limits, available)
+	case "mcp.unloadTool":
+		message, ok = s.mcpState.unloadTool(name, available)
+	default:
+		writeJSON(w, http.StatusServiceUnavailable, map[string]any{"success": false, "error": "unsupported local MCP working-set mutation", "detail": "unsupported local MCP working-set mutation"})
+		return
+	}
+	if !ok {
+		writeJSON(w, http.StatusServiceUnavailable, map[string]any{
+			"success": false,
+			"error":   "MCP working-set mutation is unavailable: tool is not present in the local MCP inventory.",
+			"data":    map[string]any{"ok": false, "message": "Tool not present in local MCP inventory"},
+			"bridge":  map[string]any{"fallback": "go-local-mcp", "procedure": procedure, "reason": "upstream unavailable; tool is not present in the local MCP inventory"},
+		})
+		return
+	}
+
+	snapshot := s.mcpState.snapshot(limits, available)
+	loadedCount, hydratedCount, loadedPct, hydratedPct := s.localWorkingSetPressure(limits, snapshot)
+	eventType := "load"
+	if procedure == "mcp.unloadTool" {
+		eventType = "unload"
+	}
+	s.mcpState.recordTelemetry(localMCPTelemetryEvent{Type: eventType, ToolName: name, Source: "manual-action", Status: "success", Message: message, EvictedTools: evicted, LoadedToolCount: loadedCount, HydratedToolCount: hydratedCount, LoadedUtilizationPct: loadedPct, HydratedUtilizationPct: hydratedPct, Timestamp: time.Now().UTC().UnixMilli()})
+
+	writeJSON(w, http.StatusOK, map[string]any{
+		"success": true,
+		"data":    map[string]any{"ok": true, "message": message},
 		"bridge": map[string]any{
 			"fallback":  "go-local-mcp",
 			"procedure": procedure,
-			"reason":    "upstream unavailable; local MCP working set manager is not initialized",
+			"reason":    "upstream unavailable; using local MCP working set manager",
 		},
 	})
 }
@@ -15981,6 +16029,87 @@ func (s *Server) localConfiguredMCPServerByUUID(uuid string) (map[string]any, er
 		}
 	}
 	return nil, nil
+}
+
+func (s *Server) localAvailableMCPTools() (map[string]localMCPTool, error) {
+	servers, err := s.localConfiguredMCPServers()
+	if err != nil {
+		return nil, err
+	}
+	available := map[string]localMCPTool{}
+	for _, server := range servers {
+		serverName := stringValue(server["name"])
+		meta, _ := server["_meta"].(map[string]any)
+		toolList, _ := meta["tools"].([]any)
+		for _, rawTool := range toolList {
+			toolMap, _ := rawTool.(map[string]any)
+			name := strings.TrimSpace(stringValue(toolMap["name"]))
+			if name == "" {
+				continue
+			}
+			available[name] = localMCPTool{
+				Name:        name,
+				Description: stringValue(toolMap["description"]),
+				InputSchema: toolMap["inputSchema"],
+				AlwaysOn:    boolValue(toolMap["alwaysOn"]) || boolValue(server["always_on"]),
+				ServerName:  serverName,
+				Source:      "jsonc-metadata",
+			}
+		}
+	}
+	for _, record := range s.runtimeServers.list() {
+		for _, rawTool := range record.Tools {
+			name := strings.TrimSpace(stringValue(rawTool["name"]))
+			if name == "" {
+				continue
+			}
+			available[name] = localMCPTool{
+				Name:        name,
+				Description: stringValue(rawTool["description"]),
+				InputSchema: rawTool["inputSchema"],
+				AlwaysOn:    false,
+				ServerName:  record.Name,
+				Source:      record.Source,
+			}
+		}
+	}
+	return available, nil
+}
+
+func (s *Server) localWorkingSetPressure(limits map[string]any, snapshot map[string]any) (int, int, float64, float64) {
+	tools, _ := snapshot["tools"].([]map[string]any)
+	loadedCount := len(tools)
+	if genericTools, ok := snapshot["tools"].([]any); ok {
+		loadedCount = len(genericTools)
+	}
+	hydratedCount := 0
+	for _, raw := range genericSlice(snapshot["tools"]) {
+		toolMap, _ := raw.(map[string]any)
+		if boolValue(toolMap["hydrated"]) {
+			hydratedCount++
+		}
+	}
+	maxLoaded := intNumber(limits["maxLoadedTools"])
+	maxHydrated := intNumber(limits["maxHydratedSchemas"])
+	loadedPct := 0.0
+	if maxLoaded > 0 {
+		loadedPct = float64(loadedCount) / float64(maxLoaded)
+	}
+	hydratedPct := 0.0
+	if maxHydrated > 0 {
+		hydratedPct = float64(hydratedCount) / float64(maxHydrated)
+	}
+	return loadedCount, hydratedCount, loadedPct, hydratedPct
+}
+
+func genericSlice(value any) []any {
+	items, _ := value.([]any)
+	return items
+}
+
+func boolValue(value any) bool {
+	boolVal, _ := value.(bool)
+	return boolVal
 }
 
 func (s *Server) readLocalMCPConfigObject() (map[string]any, error) {

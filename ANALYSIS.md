@@ -1190,6 +1190,62 @@ Results:
 - Go build passed
 - full Go suite passed
 
+## Follow-up MCP state step (native working-set / telemetry fallback state)
+The next MCP slice targeted a cluster of operator-facing fallback gaps that were still effectively empty/no-op in Go mode:
+- working-set snapshot
+- tool load/unload fallback behavior
+- hydrated schema tracking
+- eviction history
+- tool-selection telemetry
+
+### What changed
+- added `go/internal/httpapi/mcp_local_state.go`
+  - Go-owned in-memory MCP state manager
+  - tracks loaded tools
+  - tracks hydrated schemas
+  - tracks eviction history
+  - tracks tool-selection telemetry
+- updated `go/internal/httpapi/server.go`
+  - local available-tool resolution now combines:
+    - configured-server JSONC `_meta.tools`
+    - runtime registry live-probe tools
+  - `/api/mcp/working-set` now returns a real local snapshot instead of a hardcoded empty state
+  - `/api/mcp/working-set/evictions` now returns real local eviction history
+  - `/api/mcp/working-set/evictions/clear` now clears real local eviction history
+  - `/api/mcp/tool-selection-telemetry` now returns local telemetry events
+  - `/api/mcp/tool-selection-telemetry/clear` now clears local telemetry events
+  - `/api/mcp/working-set/load` and `/api/mcp/working-set/unload` now use the local MCP state manager when upstream is unavailable and the requested tool exists in local inventory
+  - `/api/mcp/tools/schema` now uses the local state manager to track hydrated schemas and eviction effects when serving local fallback schema payloads
+- expanded `go/internal/httpapi/server_test.go`
+  - local MCP empty-state routes now verify real local fallback state instead of service-unavailable placeholders for every path
+  - added a focused working-set/telemetry/eviction fallback test that exercises local load + hydrate + eviction behavior through the real HTTP routes
+
+### Important truthfulness note
+This is a real local operator-state improvement, but it is still **session-local/in-memory parity**, not full durable parity.
+
+What is true now:
+- Go no longer returns only empty/no-op fallback behavior for key MCP operator state surfaces
+- local working-set state, eviction history, and tool-selection telemetry now exist in Go fallback mode
+- tool load/unload/schema fallback behavior is materially more realistic when local MCP inventory is known
+
+What is not true yet:
+- this local MCP state is still in-memory only
+- it is not yet a full durable replacement for every TS runtime/session working-set behavior
+- richer multi-session persistence and long-horizon telemetry parity are still incomplete
+
+### Validation performed for this MCP state step
+```bash
+gofmt -w go/internal/httpapi/mcp_local_state.go go/internal/httpapi/server.go go/internal/httpapi/server_test.go
+cd go && go test ./internal/httpapi
+cd go && go build -buildvcs=false ./cmd/hypercode
+cd go && go test ./...
+```
+
+Results:
+- targeted httpapi tests passed
+- Go build passed
+- full Go suite passed
+
 ## Bottom line
 This pass meaningfully strengthened the **Go-primary migration path** and improved TypeScript survivability while the migration continues:
 - broader provider routing
@@ -1226,6 +1282,7 @@ This pass meaningfully strengthened the **Go-primary migration path** and improv
 - native MCP metadata refresh/cache endpoints now use truthful JSONC inspection semantics instead of a generic placeholder-only state
 - native MCP stdio metadata refresh can now perform live `tools/list` probing for probeable configured servers
 - native MCP runtime add/remove/list fallback now uses a real Go runtime registry instead of only config-shaped behavior
+- native MCP fallback mode now has real local working-set state, eviction history, and tool-selection telemetry
 - a tested Go-native replacement path for multiple TS-owned persistence surfaces, even though mixed-runtime cleanup is not fully finished yet
 - a small but real Maestro UX fix
 
