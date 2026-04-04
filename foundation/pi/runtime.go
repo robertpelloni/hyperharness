@@ -110,6 +110,34 @@ func (r *Runtime) AppendUserText(sessionID, text string) (*SessionFile, error) {
 	})
 }
 
+func (r *Runtime) AppendThinkingLevelChange(sessionID, level string) (*SessionFile, error) {
+	return r.sessionStore.AppendThinkingLevelChange(sessionID, level)
+}
+
+func (r *Runtime) AppendModelChange(sessionID, provider, modelID string) (*SessionFile, error) {
+	return r.sessionStore.AppendModelChange(sessionID, provider, modelID)
+}
+
+func (r *Runtime) AppendCompaction(sessionID, summary, firstKeptEntryID string, tokensBefore int, details any) (*SessionFile, error) {
+	return r.sessionStore.AppendCompaction(sessionID, summary, firstKeptEntryID, tokensBefore, details)
+}
+
+func (r *Runtime) AppendBranchSummary(sessionID, fromID, summary string, details any) (*SessionFile, error) {
+	return r.sessionStore.AppendBranchSummary(sessionID, fromID, summary, details)
+}
+
+func (r *Runtime) AppendSessionInfo(sessionID, name string) (*SessionFile, error) {
+	return r.sessionStore.AppendSessionInfo(sessionID, name)
+}
+
+func (r *Runtime) AppendLabelChange(sessionID, targetID, label string) (*SessionFile, error) {
+	return r.sessionStore.AppendLabelChange(sessionID, targetID, label)
+}
+
+func (r *Runtime) BuildSessionContext(sessionID, leafID string) (*SessionContext, error) {
+	return r.sessionStore.BuildSessionContext(sessionID, leafID)
+}
+
 func (r *Runtime) appendToolRun(sessionID, toolName string, input json.RawMessage, result *ToolResult) error {
 	session, err := r.sessionStore.Load(sessionID)
 	if err != nil {

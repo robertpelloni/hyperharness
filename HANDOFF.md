@@ -143,3 +143,57 @@
 3. Promote `foundation/compat` as the single source of truth for model-facing tool contracts.
 4. Deepen Aider-style repo map and edit-engine work in `foundation/repomap` and `foundation/pi`.
 5. Continue bridging HyperCode via `foundation/adapters` rather than duplicating control-plane responsibilities inside the harness.
+
+## Additional work completed later on 2026-04-04
+- Expanded native `foundation/pi` session semantics significantly beyond the earlier basic persistence layer.
+- `foundation/pi/session.go` now supports richer Pi-style session metadata and entry shapes:
+  - versioned session metadata (`Version`, `ParentSession`)
+  - model changes
+  - thinking-level changes
+  - compaction entries
+  - branch summary entries
+  - custom entries
+  - custom message entries
+  - session-info entries
+  - label entries
+- Added native session append helpers:
+  - `AppendThinkingLevelChange`
+  - `AppendModelChange`
+  - `AppendCompaction`
+  - `AppendBranchSummary`
+  - `AppendCustomEntry`
+  - `AppendCustomMessage`
+  - `AppendSessionInfo`
+  - `AppendLabelChange`
+- Added session inspection and tree helpers:
+  - `GetEntry`
+  - `GetChildren`
+  - `GetBranch`
+  - `GetLabel`
+  - `GetSessionName`
+- Added native session context reconstruction via:
+  - `BuildSessionContext(sessionID, leafID)`
+  - `SessionContext`
+- Added runtime convenience wrappers in `foundation/pi/runtime.go` for the richer session APIs.
+- Added and expanded tests in `foundation/pi/session_test.go` to verify:
+  - versioned session creation
+  - parent-session preservation on fork
+  - labels
+  - session-info naming
+  - model/thinking changes
+  - custom entries and custom messages
+  - compaction entries
+  - branch reconstruction
+  - session context reconstruction
+- Added detailed analysis doc:
+  - `docs/analysis/PI_SESSION_PARITY_TRANCHE_2026-04-04.md`
+
+## Latest validation completed after session work
+- `gofmt -w foundation/pi/session.go foundation/pi/runtime.go foundation/pi/session_test.go`
+- `go test ./foundation/pi/...`
+- `go test ./foundation/...`
+
+## Updated recommendation after session tranche
+1. Keep `foundation/*` green and truthful.
+2. Continue Pi-native parity next with explicit branch/leaf management and branch-summary semantics.
+3. After that, deepen CLI/TUI/session-mode behavior on top of the now-richer native session model.
