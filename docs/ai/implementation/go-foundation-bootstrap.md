@@ -117,13 +117,22 @@
   - TUI slash-command handling now exposes foundation-backed `/plan`, `/repomap`, `/providers`, `/adapters`, and `/mcp`
   - `/clear` now resets the director cleanly instead of only clearing history text
 
+- `tui/foundation_bridge.go`
+  - non-slash TUI request helpers now wrap normal prompt handling and shell proposal generation in foundation-aware behavior
+
 - `tui/slash_test.go`
   - validates foundation-backed slash-command planning, provider/adapter introspection, and repo-map behavior
+
+- `tui/foundation_bridge_test.go`
+  - validates foundation-backed prompt/shell helper behavior
 
 - `agent/agent.go`
   - top-level agent now advertises the native exact-name tools preferentially
   - OpenAI tool registration now uses per-tool schemas instead of one fake generic schema
   - system prompt now incorporates HyperCode/Borg and provider adapter context
+
+- `agent/pipe.go`
+  - pipe processing now uses provider execution-preparation hints before invoking the agent
 
 - `agents/provider_stub.go` and `agents/provider.go`
   - top-level provider stubs now consume provider execution-preparation hints instead of returning purely static placeholder text
@@ -257,6 +266,7 @@ These issues were observed and documented, not silently ignored or misrepresente
 - MCP adapter seam and top-level MCP package tests
 - foundation-backed HTTP helper tests, including MCP mediation and provider-route helpers
 - foundation-backed TUI slash-command tests
+- foundation-backed TUI prompt/shell helper tests
 - provider CLI smoke checks
 - foundation plan CLI smoke checks
 - TUI slash-command smoke coverage for provider/adapter introspection

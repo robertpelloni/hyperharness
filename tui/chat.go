@@ -67,8 +67,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.input = ""
 				m.loading = true
 				cmds = append(cmds, func() tea.Msg {
-					// Use the new native parity abstraction
-					response, err := m.director.HandleInput(nil, req)
+					response, err := buildPromptResponse(m.director, req)
 					if err != nil {
 						return fmt.Sprintf("Error: %v", err)
 					}
@@ -87,9 +86,18 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.loading = false
 		m.history = append(m.history, "Borg-Go-Director: "+msg)
 
+	case PromptDisplayMsg:
+		m.loading = false
+		m.history = append(m.history, "Borg-Go-Director: "+msg.Display)
+
 	case ShellProposalMsg:
 		m.loading = false
-		m.history = append(m.history, fmt.Sprintf("[Shell Proposal] %s\n> Execute? (Y/n)", msg.Command))
+		display := fmt.Sprintf("[Shell Proposal] %s", msg.Command)
+		if strings.TrimSpace(msg.Explanation) != "" {
+			display += fmt.Sprintf("\n[Route] %s", msg.Explanation)
+		}
+		display += "\n> Execute? (Y/n)"
+		m.history = append(m.history, display)
 
 	case spinner.TickMsg:
 		var cmd tea.Cmd

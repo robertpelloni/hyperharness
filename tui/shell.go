@@ -5,7 +5,6 @@ import (
 	"strings"
 
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/robertpelloni/hypercode/agents"
 )
 
 // ProcessShellCommand mimics Copilot CLI's `??` bash translation interceptor.
@@ -14,23 +13,15 @@ func ProcessShellCommand(cmd string, m *model) (tea.Model, tea.Cmd) {
 
 	m.history = append(m.history, fmt.Sprintf("You: ?? %s", query))
 
-	// Create the explicit shell assistant
-	assistant := agents.NewShellTranslator(m.director.Provider)
-
 	m.loading = true
 	var cmds []tea.Cmd
 
 	cmds = append(cmds, func() tea.Msg {
-		// Native context abstraction request
-		response, err := assistant.Translate(nil, query)
+		response, err := buildShellProposal(m.director, query)
 		if err != nil {
 			return fmt.Sprintf("Error: %v", err)
 		}
-
-		return ShellProposalMsg{
-			Command:     response,
-			Explanation: "Automatically derived via shell constraints.",
-		}
+		return response
 	})
 
 	return *m, tea.Batch(cmds...)

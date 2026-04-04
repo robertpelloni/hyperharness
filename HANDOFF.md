@@ -44,6 +44,7 @@
   - `agents/director.go` and `agent/orchestrator.go` now consume `foundation/orchestration` planning primitives
   - `orchestrator/webhooks.go`, daemon sweep planning, and autodrive objective generation now consume foundation orchestration helpers
   - `tui/slash.go` now exposes foundation-backed `/plan`, `/repomap`, `/providers`, `/adapters`, and `/mcp`
+  - `tui/foundation_bridge.go` now routes normal prompt and shell proposal flows through foundation-aware helpers
   - `tui/slash.go` now exposes foundation-backed `/plan` and `/repomap` slash commands
 - Added deeper verification coverage:
   - snapshot-style tests for baseline tool results
@@ -57,6 +58,7 @@
   - MCP mediation helper tests
   - orchestration planner, daemon planner, webhook planner, and migrated director/orchestrator tests
   - foundation-backed TUI slash-command tests
+  - foundation-backed TUI prompt/shell helper tests
   - provider CLI smoke checks
   - foundation plan CLI smoke checks
   - TUI provider/adapter introspection smoke coverage via tests

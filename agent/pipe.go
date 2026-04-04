@@ -4,6 +4,9 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"strings"
+
+	"github.com/robertpelloni/hypercode/foundation/adapters"
 )
 
 // PipeProcessor mimics Simon Willison's "LLM CLI" and Charmbracelet's "Crush".
@@ -25,9 +28,17 @@ func (a *Agent) ProcessPipe(prompt string) (string, error) {
 		return "", fmt.Errorf("failed to read from stdin: %w", err)
 	}
 
-	combinedPrompt := fmt.Sprintf("%s\n\nInput Data:\n%s", prompt, string(inputData))
+	execution := adapters.PrepareProviderExecution(adapters.ProviderExecutionRequest{Prompt: prompt, TaskType: "analysis", CostPreference: "budget"})
+	combinedPrompt := fmt.Sprintf("%s\n\nExecution Hint:\n%s\n\nInput Data:\n%s", prompt, execution.ExecutionHint, string(inputData))
 
-	fmt.Printf("[PipeProcessor] Processing %d bytes of piped data...\n", len(inputData))
+	fmt.Printf("[PipeProcessor] Processing %d bytes of piped data via %s/%s...\n", len(inputData), execution.Route.Provider, execution.Route.Model)
 
-	return a.Chat(combinedPrompt)
+	response, err := a.Chat(combinedPrompt)
+	if err != nil {
+		return "", err
+	}
+	if strings.TrimSpace(execution.ExecutionHint) != "" {
+		return fmt.Sprintf("[Pipe Execution]\n%s\n\n%s", execution.ExecutionHint, response), nil
+	}
+	return response, nil
 }
