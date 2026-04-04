@@ -96,6 +96,13 @@ func TestFoundationAdaptersPayloadAndRepomap(t *testing.T) {
 	if err := os.WriteFile(filepath.Join(cwd, "main.go"), []byte("package main\n\nfunc main() {}\n"), 0o644); err != nil {
 		t.Fatal(err)
 	}
+	plan, err := generateFoundationPlan(cwd, foundationPlanRequest{Prompt: "Analyze this repository and explain the architecture", IncludeRepo: true, MaxRepoFiles: 5})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(plan.Steps) == 0 {
+		t.Fatal("expected plan steps")
+	}
 	result, err := generateFoundationRepomap(cwd, foundationrepomap.Options{MaxFiles: 5})
 	if err != nil {
 		t.Fatal(err)

@@ -8,6 +8,7 @@ import (
 
 	"github.com/robertpelloni/hypercode/foundation/adapters"
 	"github.com/robertpelloni/hypercode/foundation/compat"
+	foundationorchestration "github.com/robertpelloni/hypercode/foundation/orchestration"
 	foundationpi "github.com/robertpelloni/hypercode/foundation/pi"
 	foundationrepomap "github.com/robertpelloni/hypercode/foundation/repomap"
 )
@@ -16,6 +17,16 @@ type foundationExecRequest struct {
 	Tool    string          `json:"tool"`
 	Input   json.RawMessage `json:"input"`
 	Session string          `json:"session,omitempty"`
+}
+
+type foundationPlanRequest struct {
+	Prompt       string `json:"prompt"`
+	WorkingDir   string `json:"workingDir,omitempty"`
+	IncludeRepo  bool   `json:"includeRepo,omitempty"`
+	MaxRepoFiles int    `json:"maxRepoFiles,omitempty"`
+	TaskType     string `json:"taskType,omitempty"`
+	Cost         string `json:"cost,omitempty"`
+	RequireLocal bool   `json:"requireLocal,omitempty"`
 }
 
 type foundationSessionCreateRequest struct {
@@ -114,6 +125,22 @@ func executeFoundationTool(cwd string, req foundationExecRequest) (map[string]an
 		payload["error"] = execErr.Error()
 	}
 	return payload, execErr
+}
+
+func generateFoundationPlan(cwd string, body foundationPlanRequest) (foundationorchestration.PlanResult, error) {
+	workingDir := body.WorkingDir
+	if workingDir == "" {
+		workingDir = cwd
+	}
+	return foundationorchestration.BuildPlan(foundationorchestration.PlanRequest{
+		Prompt:       body.Prompt,
+		WorkingDir:   workingDir,
+		IncludeRepo:  body.IncludeRepo,
+		MaxRepoFiles: body.MaxRepoFiles,
+		TaskType:     body.TaskType,
+		Cost:         body.Cost,
+		RequireLocal: body.RequireLocal,
+	})
 }
 
 func generateFoundationRepomap(cwd string, body foundationrepomap.Options) (foundationrepomap.Result, error) {

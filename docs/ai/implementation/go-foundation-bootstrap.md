@@ -51,6 +51,7 @@
   - native execution surface for exact-name tools
   - native session create/list/show/fork commands
   - native repo-map generation command
+  - native orchestration planning command
   - provider visibility, route-selection, and execution-preparation commands
 
 - `foundation/repomap/repomap.go`
@@ -68,6 +69,12 @@
 
 - `foundation/orchestration/planner_test.go`
   - validates orchestration planning results and repo-map inclusion
+
+- `foundation/orchestration/daemon_plan.go`
+  - foundation-backed daemon sweep planning for queue actions and telemetry summaries
+
+- `foundation/orchestration/daemon_plan_test.go`
+  - validates daemon sweep planning decisions
 
 - `foundation/orchestration/webhook_plan.go`
   - foundation-backed webhook planning for queue actions and telemetry summaries
@@ -96,10 +103,11 @@
   - defensive guard added for empty MCP binary path to avoid nil-process panics in tests
 
 - `cmd/foundation_http.go`
-  - foundation-backed helper layer for execution, sessions, repomap, adapters, foundation-backed file reads, foundation-backed MCP mediation, and provider-route selection
+  - foundation-backed helper layer for execution, sessions, planning, repomap, adapters, foundation-backed file reads, foundation-backed MCP mediation, and provider-route selection
 
 - `cmd/serve.go`
   - operator HTTP surface now exposes foundation-backed endpoints under `/api/v1/foundation/*`
+  - `/api/v1/foundation/plan` now exposes foundation-backed orchestration planning
   - `/api/v1/foundation/providers*` now exposes provider visibility, route-selection, and execution-preparation behavior
   - `/api/v1/foundation/mcp/*` now exposes adapter-backed MCP tool listing and mediated call preparation
   - `/fs/read` now routes through the native foundation `read` tool instead of direct file reads
@@ -121,6 +129,9 @@
 
 - `orchestrator/webhooks.go`
   - webhook handling now uses foundation-backed webhook planning for queued actions and telemetry summaries
+
+- `orchestrator/daemon_loop.go`
+  - daemon sweep now uses foundation-backed daemon planning before queueing actions
 
 - `orchestrator/orchestration_bridge.go`
   - daemon/autodrive bridge now converts foundation plans into execution objectives for sandboxed runs
@@ -180,7 +191,7 @@
   - verifies MCP manager configured-tool listing, mediated call routing, and missing-server handling
 
 - `cmd/foundation_http_test.go`
-  - verifies foundation-backed execution/session/repomap/adapter helper behavior used by HTTP surfaces, including MCP mediation and provider-route helpers
+  - verifies foundation-backed execution/session/planning/repomap/adapter helper behavior used by HTTP surfaces, including MCP mediation and provider-route helpers
 
 - `agents/director_test.go`
   - verifies orchestration plan state and planned response decoration
@@ -227,6 +238,7 @@ These issues were observed and documented, not silently ignored or misrepresente
 - snapshot-style tool result verification
 - repo map generation and ranking tests
 - orchestration planning tests
+- daemon sweep planning tests
 - webhook planning tests
 - daemon/autodrive orchestration bridge tests
 - top-level tool registry tests confirming native exact-name tool exposure
@@ -238,6 +250,7 @@ These issues were observed and documented, not silently ignored or misrepresente
 - MCP adapter seam and top-level MCP package tests
 - foundation-backed HTTP helper tests, including MCP mediation and provider-route helpers
 - provider CLI smoke checks
+- foundation plan CLI smoke checks
 
 ## Recommended next implementation sequence
 1. continue routing remaining top-level placeholder orchestration surfaces to `foundation/pi` runtime packages,

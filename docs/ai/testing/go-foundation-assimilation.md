@@ -59,6 +59,7 @@ go test ./...
 - `foundation/pi/tool_snapshot_test.go`
 - `foundation/repomap/repomap_test.go`
 - `foundation/orchestration/planner_test.go`
+- `foundation/orchestration/daemon_plan_test.go`
 - `foundation/orchestration/webhook_plan_test.go`
 - `foundation/adapters/hypercode_test.go`
 - `foundation/adapters/providers_test.go`
@@ -85,6 +86,7 @@ go test ./...
 8. response-shape assertions for foundation-backed MCP HTTP endpoints
 9. response-shape assertions for foundation-backed provider HTTP endpoints
 10. response-shape assertions for provider execution-preparation endpoints
+11. response-shape assertions for foundation-backed orchestration plan endpoints
 
 ## Exit criteria for the next milestone
 - foundation packages compile cleanly,

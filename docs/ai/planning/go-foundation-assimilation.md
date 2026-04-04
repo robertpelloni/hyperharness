@@ -61,6 +61,7 @@ Deliver a Go-native harness that can truthfully grow from a Pi-derived foundatio
 - [x] Route initial provider stub behavior onto provider execution-preparation seams
 - [x] Route initial director/orchestrator planning onto foundation orchestration primitives
 - [x] Route initial webhook and autodrive objective planning onto foundation orchestration primitives
+- [x] Route initial daemon sweep planning onto foundation orchestration primitives
 - [ ] Route more daemon/orchestrator workflows away from placeholder paths
 - [ ] Route TUI request handling onto foundation runtime primitives
 

@@ -139,6 +139,27 @@ var foundationExecCmd = &cobra.Command{
 	},
 }
 
+var foundationPlanCmd = &cobra.Command{
+	Use:   "plan",
+	Short: "Build a foundation-backed orchestration plan",
+	RunE: func(cmd *cobra.Command, args []string) error {
+		prompt, _ := cmd.Flags().GetString("prompt")
+		workingDir, _ := cmd.Flags().GetString("dir")
+		includeRepo, _ := cmd.Flags().GetBool("include-repo")
+		maxRepoFiles, _ := cmd.Flags().GetInt("max-files")
+		taskType, _ := cmd.Flags().GetString("task-type")
+		cost, _ := cmd.Flags().GetString("cost")
+		requireLocal, _ := cmd.Flags().GetBool("local")
+		result, err := generateFoundationPlan(workingDir, foundationPlanRequest{Prompt: prompt, WorkingDir: workingDir, IncludeRepo: includeRepo, MaxRepoFiles: maxRepoFiles, TaskType: taskType, Cost: cost, RequireLocal: requireLocal})
+		if err != nil {
+			return err
+		}
+		enc := json.NewEncoder(os.Stdout)
+		enc.SetIndent("", "  ")
+		return enc.Encode(result)
+	},
+}
+
 var foundationRepomapCmd = &cobra.Command{
 	Use:   "repomap",
 	Short: "Generate a native ranked repo map inspired by Aider-style context condensation",
@@ -283,6 +304,14 @@ func init() {
 	foundationProvidersPrepareCmd.Flags().String("task-type", "", "task type hint, e.g. coding, analysis, local")
 	foundationProvidersPrepareCmd.Flags().String("cost", "", "cost preference hint, e.g. budget or quality")
 	foundationProvidersPrepareCmd.Flags().Bool("local", false, "prefer local execution when possible")
+	foundationPlanCmd.Flags().String("prompt", "", "prompt or task to plan")
+	foundationPlanCmd.Flags().String("dir", ".", "working directory for planning")
+	foundationPlanCmd.Flags().Bool("include-repo", false, "include repo map in the plan")
+	foundationPlanCmd.Flags().Int("max-files", 8, "maximum repo files to include in planning context")
+	foundationPlanCmd.Flags().String("task-type", "", "task type hint, e.g. coding, analysis, local")
+	foundationPlanCmd.Flags().String("cost", "", "cost preference hint, e.g. budget or quality")
+	foundationPlanCmd.Flags().Bool("local", false, "prefer local execution when possible")
+	_ = foundationPlanCmd.MarkFlagRequired("prompt")
 	foundationRepomapCmd.Flags().String("dir", ".", "base directory to scan")
 	foundationRepomapCmd.Flags().StringSlice("mention-file", nil, "files to prioritize in ranking")
 	foundationRepomapCmd.Flags().StringSlice("mention-ident", nil, "identifiers to prioritize in ranking")
@@ -315,6 +344,7 @@ func init() {
 	foundationCmd.AddCommand(foundationSpecCmd)
 	foundationCmd.AddCommand(foundationToolsCmd)
 	foundationCmd.AddCommand(foundationProvidersCmd)
+	foundationCmd.AddCommand(foundationPlanCmd)
 	foundationCmd.AddCommand(foundationRepomapCmd)
 	foundationCmd.AddCommand(foundationAdaptersCmd)
 	foundationCmd.AddCommand(foundationExecCmd)

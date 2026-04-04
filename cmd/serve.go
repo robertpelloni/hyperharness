@@ -191,6 +191,22 @@ var serveCmd = &cobra.Command{
 			return c.JSON(payload)
 		})
 
+		api.Post("/foundation/plan", func(c *fiber.Ctx) error {
+			var body foundationPlanRequest
+			if err := c.BodyParser(&body); err != nil || body.Prompt == "" {
+				return c.Status(400).JSON(fiber.Map{"error": "prompt is required"})
+			}
+			cwd, err := os.Getwd()
+			if err != nil {
+				return c.Status(500).JSON(fiber.Map{"error": err.Error()})
+			}
+			result, err := generateFoundationPlan(cwd, body)
+			if err != nil {
+				return c.Status(500).JSON(fiber.Map{"error": err.Error()})
+			}
+			return c.JSON(result)
+		})
+
 		api.Post("/foundation/repomap", func(c *fiber.Ctx) error {
 			var body foundationrepomap.Options
 			if err := c.BodyParser(&body); err != nil {

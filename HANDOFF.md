@@ -37,10 +37,12 @@
   - `cmd/serve.go` now exposes `/api/v1/foundation/*` endpoints and routes `/fs/read` through the foundation `read` tool
   - foundation-backed MCP HTTP helper and route surfaces now expose MCP tool listing and mediated call preparation
   - foundation-backed provider helper and route surfaces now expose provider visibility, route selection, and execution preparation
+  - foundation-backed orchestration helper and route surfaces now expose plan generation
   - `hypercode foundation providers status/select/prepare` now exposes provider routing groundwork from the CLI
+  - `hypercode foundation plan` now exposes orchestration planning from the CLI
   - `agents/provider_stub.go` and `agents/provider.go` now consume provider execution-preparation hints
   - `agents/director.go` and `agent/orchestrator.go` now consume `foundation/orchestration` planning primitives
-  - `orchestrator/webhooks.go` and autodrive objective generation now consume foundation orchestration helpers
+  - `orchestrator/webhooks.go`, daemon sweep planning, and autodrive objective generation now consume foundation orchestration helpers
 - Added deeper verification coverage:
   - snapshot-style tests for baseline tool results
   - top-level agent schema registration test
@@ -51,8 +53,9 @@
   - MCP adapter seam tests and top-level MCP package tests
   - foundation-backed HTTP helper tests
   - MCP mediation helper tests
-  - orchestration planner, webhook planner, and migrated director/orchestrator tests
+  - orchestration planner, daemon planner, webhook planner, and migrated director/orchestrator tests
   - provider CLI smoke checks
+  - foundation plan CLI smoke checks
 - Added comprehensive `docs/ai/` documentation for requirements, design, planning, implementation, and testing.
 - Added `docs/ai/design/upstream-toolchain-analysis.md` summarizing the imported upstream systems and assimilation strategy.
 - Fixed the duplicate SQLite driver registration issue in `orchestrator/queue.go` and `orchestrator/vectors.go` by removing redundant `modernc.org/sqlite` imports.
