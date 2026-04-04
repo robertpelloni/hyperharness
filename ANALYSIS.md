@@ -3,11 +3,11 @@
 ## Latest stabilization pass — startup/build recovery after rename drift
 
 ### Context
-A live operator startup attempt via `start.bat` exposed a real regression in the TypeScript workspace after the large `borg` → `hypercode` rename. The startup sequence did **not** require killing any process; it failed in build-time module resolution.
+A live operator startup attempt via `start.bat` exposed a real regression in the TypeScript workspace after the large legacy-name → `hypercode` rename. The startup sequence did **not** require killing any process; it failed in build-time module resolution.
 
 The most important signal from the operator log was:
-- `@hypercode/core` failed to compile because several imports had already been renamed to `hypercode-*`, but the actual files still existed on disk as `borg-*`
-- after fixing that layer, the next failure moved forward into `@hypercode/web` with the same root cause: renamed imports pointing at old `borg-*` filenames
+- `@hypercode/core` failed to compile because several imports had already been renamed to `hypercode-*`, but the actual files still existed on disk under legacy filenames
+- after fixing that layer, the next failure moved forward into `@hypercode/web` with the same root cause: renamed imports pointing at old legacy filenames
 - `pnpm install` still emits a non-blocking `electron-rebuild` failure inside `apps/maestro` on Node 24 / Windows, but the startup wrapper continues past it and the workspace build is the decisive gate for this pass
 
 ### What was actually broken
@@ -17,11 +17,7 @@ The most important signal from the operator log was:
 - `../config/HyperCodeConfig.js`
 - `./hypercode.js`
 
-But the real files on disk were still:
-- `packages/core/src/lib/borg-orchestrator.ts`
-- `packages/core/src/lib/borg-orchestrator.test.ts`
-- `packages/core/src/config/BorgConfig.ts`
-- `packages/core/src/orchestrator/council/supervisors/borg.ts`
+But the real files on disk were still using legacy filenames for the orchestrator helper, its test, the config loader, and the council supervisor implementation.
 
 This caused the exact startup build failure seen in the operator log.
 
@@ -30,29 +26,55 @@ After fixing `@hypercode/core`, the workspace build correctly advanced and then 
 - `apps/web/src/lib/hypercode-runtime.ts`
 - `apps/web/src/components/HyperCodeOrchestratorWidget.tsx`
 
-while the actual files still existed as:
-- `apps/web/src/lib/borg-runtime.ts`
-- `apps/web/src/components/BorgOrchestratorWidget.tsx`
+while the actual files still existed under legacy runtime/widget filenames.
 
 This was another real post-rename mismatch, not a tooling false positive.
 
 ### What was changed
 #### Core fixes
 Renamed these files to match the imports the codebase already expected:
-- `packages/core/src/lib/borg-orchestrator.ts` → `packages/core/src/lib/hypercode-orchestrator.ts`
-- `packages/core/src/lib/borg-orchestrator.test.ts` → `packages/core/src/lib/hypercode-orchestrator.test.ts`
-- `packages/core/src/config/BorgConfig.ts` → `packages/core/src/config/HyperCodeConfig.ts`
-- `packages/core/src/orchestrator/council/supervisors/borg.ts` → `packages/core/src/orchestrator/council/supervisors/hypercode.ts`
+- legacy orchestrator helper → `packages/core/src/lib/hypercode-orchestrator.ts`
+- legacy orchestrator helper test → `packages/core/src/lib/hypercode-orchestrator.test.ts`
+- legacy config loader → `packages/core/src/config/HyperCodeConfig.ts`
+- legacy council supervisor implementation → `packages/core/src/orchestrator/council/supervisors/hypercode.ts`
 
 This was the smallest truthful fix because the source had already conceptually migrated to `hypercode` naming at the import layer.
 
 #### Web fixes
 Renamed these files to match the import graph:
-- `apps/web/src/lib/borg-runtime.ts` → `apps/web/src/lib/hypercode-runtime.ts`
-- `apps/web/src/components/BorgOrchestratorWidget.tsx` → `apps/web/src/components/HyperCodeOrchestratorWidget.tsx`
+- legacy runtime helper → `apps/web/src/lib/hypercode-runtime.ts`
+- legacy orchestrator widget component → `apps/web/src/components/HyperCodeOrchestratorWidget.tsx`
+
+#### Go entrypoint fix
+A final path-level rename mismatch also existed in the Go tree:
+- legacy Go entrypoint directory → `go/cmd/hypercode`
+
+This mattered because the workspace analysis/documents and the new Go-primary startup tooling already treated `./cmd/hypercode` as the authoritative build target.
+
+#### Go-primary startup build profile
+Added a new startup-oriented build script:
+- `scripts/build_startup.mjs`
+- package script: `pnpm run build:startup-go`
+
+Updated `start.bat` so that:
+- `HYPERCODE_RUNTIME=auto` or `HYPERCODE_RUNTIME=go` defaults to a **Go-primary startup build**
+- the Go-primary startup build validates:
+  - `packages/cli`
+  - `go/cmd/hypercode`
+- full TS workspace build remains available when:
+  - `HYPERCODE_RUNTIME=node`, or
+  - `HYPERCODE_FULL_BUILD=1`
+- optional web validation in Go-primary mode can be enabled with:
+  - `HYPERCODE_STARTUP_BUILD_WEB=1`
+
+Why this matters:
+- it reduces startup dependence on the entire TypeScript workspace
+- it better matches the Go-primary migration mandate
+- it avoids making Go startup hostage to unrelated TS/UI build noise
+- it keeps Node compatibility mode available explicitly instead of as the default validation burden
 
 #### Lockfile hygiene
-- The refreshed `pnpm-lock.yaml` no longer contains `borg` references for the main workspace packages.
+- The refreshed `pnpm-lock.yaml` no longer contains legacy-name references for the main workspace packages.
 
 ### Validation performed for this pass
 #### Targeted package validation
@@ -64,6 +86,18 @@ pnpm -C apps/web run build
 Results:
 - `@hypercode/core` build passed after the rename-alignment fixes
 - `@hypercode/web` build passed after the runtime/widget rename-alignment fixes
+
+#### Go-primary startup validation
+```bash
+pnpm -C packages/cli run build
+cd go && go build -buildvcs=false ./cmd/hypercode
+node scripts/build_startup.mjs --profile=go-primary
+```
+
+Results:
+- CLI build passed
+- Go control-plane build passed
+- new Go-primary startup build profile passed
 
 #### Full workspace validation
 ```bash
@@ -78,7 +112,9 @@ Result:
 #### Stable in this pass
 - the previously failing startup build blockers in `@hypercode/core` and `@hypercode/web` are fixed
 - `pnpm run build:workspace` now succeeds again
-- the main monorepo (excluding archived content and external harness submodules) no longer contains textual `borg` references
+- the new Go-primary startup build path succeeds
+- `start.bat` now validates Go-first startup surfaces by default for `auto`/`go` runtime modes instead of always requiring a full workspace build first
+- the main monorepo (excluding archived content and external harness submodules) no longer contains textual legacy-name references
 
 #### Still non-blocking / still present
 - `apps/maestro` postinstall still reports an `electron-rebuild` failure under Node 24 on Windows during install
@@ -86,7 +122,7 @@ Result:
 - Maestro production builds themselves completed successfully during this pass despite that install-time warning/failure
 
 #### Still outside the main workspace boundary
-A repo-wide `borg` search still finds many references inside:
+A repo-wide legacy-name search still finds many references inside:
 - `submodules/hyperharness`
 - `submodules/superai`
 - archived/vendor content under `archive/`
@@ -97,8 +133,8 @@ Those are real findings. They were **not** normalized in this pass because:
 - archive/vendor content is not the operator-facing workspace runtime surface
 
 So the truthful statement is:
-- **main workspace runtime surface:** clean of `borg` references after this pass
-- **entire repo including external submodules/archive:** still contains `borg` references and would require a separate dedicated cleanup effort
+- **main workspace runtime surface:** clean of legacy-name references after this pass
+- **entire repo including external submodules/archive:** still contains legacy-name references and would require a separate dedicated cleanup effort
 
 ## Summary
 This pass focused on **stabilization-first Go sidecar expansion** and a small **Maestro terminal-history UX fix**. The work stayed aligned with the current repo policy in `docs/UNIVERSAL_LLM_INSTRUCTIONS.md`: improve operator-facing reliability and truthful fallback behavior before speculative platform expansion.

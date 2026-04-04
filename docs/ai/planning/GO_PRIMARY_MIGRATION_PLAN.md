@@ -95,8 +95,14 @@ Make Go the default runtime started by operator entrypoints.
 
 ### Exit criteria
 - `start.bat` and `hypercode start` prefer Go by default
+- default startup validation is Go-primary rather than full-TS-workspace-first
 - Go owns the primary control-plane port
 - TS startup becomes optional/compatibility-oriented
+
+### Progress note
+- `start.bat` now defaults to a Go-primary startup build profile for `auto`/`go` runtime modes: it validates the Go control plane and CLI without requiring a full workspace build first
+- explicit Node compatibility mode still uses the full workspace build path
+- full builds remain available via `HYPERCODE_FULL_BUILD=1`
 
 ---
 
