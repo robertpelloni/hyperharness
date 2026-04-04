@@ -6097,7 +6097,8 @@ func TestToolEndpointsFallBackToPersistedInventoryCache(t *testing.T) {
 		{
 			name:     "control tools get",
 			path:     "/api/tools/get?uuid=search_tools",
-			contains: []string{`"fallback":"go-local-mcp-inventory-cache"`, `"uuid":"search_tools"`, `"cachedAt":"2020-01-01T00:00:00Z"`, `"originLayer":"base-inventory"`, `"layerCachedAt":"2020-01-01T00:00:00Z"`, `"provenance":{"ageMs":`, `"layer":"base-inventory"`, `"source":"cache"`, `"baseInventoryStaleHeuristic":true`},
+			contains: []string{`"fallback":"go-local-mcp-inventory-cache"`, `"uuid":"search_tools"`, `"cachedAt":"2020-01-01T00:00:00Z"`, `"provenance":{"ageMs":`, `"compatibilityMode":"legacy-top-level-mirrors-trimmed"`, `"legacyMirrorFields":[]`, `"layer":"base-inventory"`, `"source":"cache"`, `"baseInventoryStaleHeuristic":true`},
+			absent:   []string{`"originLayer":"base-inventory"`, `"layerCachedAt":"2020-01-01T00:00:00Z"`},
 		},
 		{
 			name:     "mcp runtime servers",

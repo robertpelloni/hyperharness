@@ -512,6 +512,15 @@ func fallbackControlToolFromInventory(view *localMCPInventoryView, uuid string) 
 	return nil
 }
 
+func fallbackControlToolPrimaryProvenance(view *localMCPInventoryView, uuid string) any {
+	tool := fallbackControlToolFromInventory(view, uuid)
+	toolMap, _ := tool.(map[string]any)
+	if toolMap == nil {
+		return nil
+	}
+	return primaryProvenanceOnly(toolMap)
+}
+
 func fallbackRuntimeServerListWithPrimaryProvenance(definitions []harnesses.Definition, view *localMCPInventoryView) []map[string]any {
 	items := fallbackRuntimeServersWithProvenance(definitions, view)
 	trimmed := make([]map[string]any, 0, len(items))

@@ -5795,7 +5795,7 @@ func (s *Server) handleToolsGet(w http.ResponseWriter, r *http.Request) {
 		}
 		writeJSON(w, http.StatusOK, map[string]any{
 			"success": true,
-			"data":    fallbackControlToolFromInventory(view, uuid),
+			"data":    fallbackControlToolPrimaryProvenance(view, uuid),
 			"bridge":  bridge,
 		})
 		return
@@ -5813,7 +5813,7 @@ func (s *Server) handleToolsGet(w http.ResponseWriter, r *http.Request) {
 			}
 			writeJSON(w, http.StatusOK, map[string]any{
 				"success": true,
-				"data":    fallbackControlToolFromInventory(view, uuid),
+				"data":    fallbackControlToolPrimaryProvenance(view, uuid),
 				"bridge":  bridge,
 			})
 			return
