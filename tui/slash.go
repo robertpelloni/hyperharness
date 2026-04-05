@@ -57,6 +57,10 @@ func ProcessSlashCommand(cmd string, m *model) (tea.Model, tea.Cmd) {
 		return handleTreePaneSizeCycle(m)
 	case "/tree-pane-preview":
 		return handleTreePanePreview(m, strings.TrimSpace(strings.TrimPrefix(cmd, "/tree-pane-preview")))
+	case "/tree-pane-preview-on":
+		return handleTreePanePreview(m, "on")
+	case "/tree-pane-preview-off":
+		return handleTreePanePreview(m, "off")
 	case "/tree-pane-preview-toggle":
 		return handleTreePanePreview(m, "toggle")
 	case "/tree-pane-grouped":
@@ -137,6 +141,8 @@ func handleHelp(m *model) (tea.Model, tea.Cmd) {
   /tree-pane-size <n> - Set the persistent tree pane viewport height
   /tree-pane-size-cycle - Quickly cycle common persistent tree pane heights
   /tree-pane-preview <on|off> - Toggle preview details inside the persistent tree pane
+  /tree-pane-preview-on - Explicitly enable preview details inside the persistent tree pane
+  /tree-pane-preview-off - Explicitly disable preview details inside the persistent tree pane
   /tree-pane-preview-toggle - Quickly toggle preview details for the persistent tree pane
   /tree-pane-grouped <on|off|toggle> - Control grouped rendering for the persistent tree pane
   /tree-pane-grouped-on - Explicitly enable grouped rendering for the persistent tree pane

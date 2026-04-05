@@ -1314,3 +1314,20 @@
 1. Keep `foundation/*`, `cmd`, and `tui` green and aligned to the same canonical runtime.
 2. Continue only where explicit aliases clearly improve confidence or consistency over existing toggle-style controls.
 3. Keep explicit grouped aliases as direct wrappers over the same grouped-state transitions.
+
+## Additional work completed later on 2026-04-04 (preview explicit on/off tranche)
+- Added new TUI slash commands:
+  - `/tree-pane-preview-on`
+  - `/tree-pane-preview-off`
+- Added focused regression coverage verifying explicit preview on/off behavior.
+- Added detailed analysis doc:
+  - `docs/analysis/TUI_PREVIEW_EXPLICIT_ON_OFF_TRANCHE_2026-04-04.md`
+
+## Latest validation after preview explicit on/off tranche
+- `gofmt -w tui/slash.go tui/slash_test.go`
+- `go test ./tui ./cmd ./foundation/...`
+
+## Updated recommendation after preview explicit on/off tranche
+1. Keep `foundation/*`, `cmd`, and `tui` green and aligned to the same canonical runtime.
+2. Continue only where explicit aliases clearly improve confidence or consistency over existing controls.
+3. Keep explicit preview aliases as direct wrappers over the same preview-state transitions.
