@@ -821,3 +821,30 @@
 1. Keep `foundation/*`, `cmd`, and `tui` green and aligned to the same canonical runtime.
 2. Move toward stronger pane ergonomics or split-view browser behavior next, since the pane is now both persistent and live.
 3. Keep all pane refreshes driven by canonical runtime reads rather than local UI-only session mutation logic.
+
+## Additional work completed later on 2026-04-04 (focusable pane tranche)
+- Added focus state to the TUI model:
+  - `browserPinnedFocus bool`
+- Added new TUI slash command:
+  - `/tree-pane-focus`
+- Updated key handling so that when the pane is pinned and focused it supports:
+  - Up/Down navigation
+  - Left/Right collapse/expand
+  - Tab grouping toggle
+  - type-to-filter
+  - Enter/Y/N confirm-before-switch flow
+- Updated the view to show:
+  - `[Tree Pane Focused]`
+- Ensured pane hide clears focus and pending-confirm state.
+- Expanded `tui/slash_test.go` with a focused pane navigation regression.
+- Added detailed analysis doc:
+  - `docs/analysis/TUI_FOCUSABLE_PANE_TRANCHE_2026-04-04.md`
+
+## Latest validation after focusable pane tranche
+- `gofmt -w tui/chat.go tui/slash.go tui/slash_test.go`
+- `go test ./tui ./cmd ./foundation/...`
+
+## Updated recommendation after focusable pane tranche
+1. Keep `foundation/*`, `cmd`, and `tui` green and aligned to the same canonical runtime.
+2. Improve split-view ergonomics or pane viewport behavior next.
+3. Keep the focusable pane as another controller over canonical runtime truth rather than a separate navigation model.
