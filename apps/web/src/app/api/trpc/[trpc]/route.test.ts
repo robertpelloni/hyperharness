@@ -321,6 +321,7 @@ describe('legacy MCP dashboard compatibility bridge', () => {
     expect(payload[0]?.result?.data).toEqual(expect.objectContaining({
       status: expect.stringMatching(/^(starting|degraded)$/),
       ready: false,
+      startupMode: null,
       checks: expect.objectContaining({
         mcpAggregator: expect.objectContaining({
           initialization: 'compat-fallback',

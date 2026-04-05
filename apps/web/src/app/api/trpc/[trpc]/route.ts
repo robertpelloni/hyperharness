@@ -4,6 +4,7 @@ import fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 
+import { readLocalStartupProvenance } from '../../../../lib/hypercode-runtime';
 import { normalizeImportedServerType } from '../../../../lib/mcp-import';
 import { resolveUpstreamBases } from '../../../../lib/trpc-upstream';
 
@@ -539,6 +540,7 @@ function buildLocalStartupStatus(servers: unknown[]): {
   status: 'starting' | 'degraded';
   ready: false;
   summary: string;
+  startupMode: ReturnType<typeof readLocalStartupProvenance>;
   checks: {
     mcpAggregator: {
       ready: boolean;
@@ -608,6 +610,7 @@ function buildLocalStartupStatus(servers: unknown[]): {
   const status = buildStatusFromServers(servers);
   const serverCount = status.serverCount;
   const connectedCount = status.connectedCount;
+  const startupMode = readLocalStartupProvenance();
 
   return {
     status: serverCount > 0 ? 'degraded' : 'starting',
@@ -615,6 +618,7 @@ function buildLocalStartupStatus(servers: unknown[]): {
     summary: serverCount > 0
       ? `Using local MCP config fallback for ${serverCount} configured server(s); live startup telemetry is unavailable.`
       : 'No live HyperCode core upstream is available yet; showing local compatibility fallback.',
+    startupMode,
     checks: {
       mcpAggregator: {
         ready: serverCount > 0,
