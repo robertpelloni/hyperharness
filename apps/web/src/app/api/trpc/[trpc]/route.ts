@@ -992,6 +992,132 @@ async function buildPreferredExecutionEnvironment(cliHarnessDetections: unknown[
   };
 }
 
+async function buildPreferredWorkingSet(): Promise<Record<string, unknown>> {
+  const nativeWorkingSet = await fetchNativeStatusPayload<Record<string, unknown>>('/api/mcp/working-set');
+  if (!nativeWorkingSet) {
+    return {
+      tools: [],
+      limits: {
+        maxLoadedTools: 24,
+        maxHydratedSchemas: 8,
+      },
+    };
+  }
+
+  const normalizedTools = Array.isArray(nativeWorkingSet.tools)
+    ? nativeWorkingSet.tools
+      .map((entry) => {
+        const record = asObjectRecord(entry);
+        const name = readString(record?.name);
+        if (!name) {
+          return null;
+        }
+
+        return {
+          name,
+          hydrated: readBoolean(record?.hydrated) ?? false,
+          lastLoadedAt: readNumber(record?.lastLoadedAt) ?? 0,
+          lastHydratedAt: readNumber(record?.lastHydratedAt),
+          lastAccessedAt: readNumber(record?.lastAccessedAt) ?? 0,
+        };
+      })
+      .filter((entry): entry is NonNullable<typeof entry> => entry !== null)
+    : [];
+  const limits = asObjectRecord(nativeWorkingSet.limits);
+
+  return {
+    tools: normalizedTools,
+    limits: {
+      maxLoadedTools: readNumber(limits?.maxLoadedTools) ?? 24,
+      maxHydratedSchemas: readNumber(limits?.maxHydratedSchemas) ?? 8,
+      ...(readNumber(limits?.idleEvictionThresholdMs) !== null ? { idleEvictionThresholdMs: readNumber(limits?.idleEvictionThresholdMs) } : {}),
+    },
+  };
+}
+
+async function buildPreferredToolSelectionTelemetry(): Promise<unknown[]> {
+  for (const base of resolveNativeStatusBases()) {
+    try {
+      const response = await fetch(`${base}/api/mcp/tool-selection-telemetry`, { cache: 'no-store' });
+      if (!response.ok) {
+        continue;
+      }
+
+      const payload = await response.json() as { success?: unknown; data?: unknown };
+      if (payload.success !== true || !Array.isArray(payload.data)) {
+        continue;
+      }
+
+      return payload.data
+        .map((entry, index) => {
+          const record = asObjectRecord(entry);
+          const type = readString(record?.type);
+          const status = readString(record?.status);
+          const timestamp = readNumber(record?.timestamp);
+          if (!record || !type || !status || timestamp === null) {
+            return null;
+          }
+
+          return {
+            id: readString(record.id) ?? `telemetry-${index}`,
+            type,
+            timestamp,
+            ...(readString(record.query) ? { query: readString(record.query) } : {}),
+            ...(readString(record.profile) ? { profile: readString(record.profile) } : {}),
+            ...(readString(record.source) ? { source: readString(record.source) } : {}),
+            ...(readNumber(record.resultCount) !== null ? { resultCount: readNumber(record.resultCount) } : {}),
+            ...(readString(record.topResultName) ? { topResultName: readString(record.topResultName) } : {}),
+            ...(readString(record.topMatchReason) ? { topMatchReason: readString(record.topMatchReason) } : {}),
+            ...(readNumber(record.topScore) !== null ? { topScore: readNumber(record.topScore) } : {}),
+            ...(readString(record.secondResultName) ? { secondResultName: readString(record.secondResultName) } : {}),
+            ...(readString(record.secondMatchReason) ? { secondMatchReason: readString(record.secondMatchReason) } : {}),
+            ...(readNumber(record.secondScore) !== null ? { secondScore: readNumber(record.secondScore) } : {}),
+            ...(readNumber(record.scoreGap) !== null ? { scoreGap: readNumber(record.scoreGap) } : {}),
+            ...(readNumber(record.ignoredResultCount) !== null ? { ignoredResultCount: readNumber(record.ignoredResultCount) } : {}),
+            ...(readStringArray(record.ignoredResultNames).length > 0 ? { ignoredResultNames: readStringArray(record.ignoredResultNames) } : {}),
+            ...(readString(record.toolName) ? { toolName: readString(record.toolName) } : {}),
+            status,
+            ...(readString(record.message) ? { message: readString(record.message) } : {}),
+            ...(readStringArray(record.evictedTools).length > 0 ? { evictedTools: readStringArray(record.evictedTools) } : {}),
+            ...(readNumber(record.latencyMs) !== null ? { latencyMs: readNumber(record.latencyMs) } : {}),
+            ...(readString(record.autoLoadReason) ? { autoLoadReason: readString(record.autoLoadReason) } : {}),
+            ...(readNumber(record.autoLoadConfidence) !== null ? { autoLoadConfidence: readNumber(record.autoLoadConfidence) } : {}),
+            ...(readBoolean(record.autoLoadEvaluated) !== null ? { autoLoadEvaluated: readBoolean(record.autoLoadEvaluated) } : {}),
+            ...(readString(record.autoLoadOutcome) ? { autoLoadOutcome: readString(record.autoLoadOutcome) } : {}),
+            ...(readString(record.autoLoadSkipReason) ? { autoLoadSkipReason: readString(record.autoLoadSkipReason) } : {}),
+            ...(readNumber(record.autoLoadMinConfidence) !== null ? { autoLoadMinConfidence: readNumber(record.autoLoadMinConfidence) } : {}),
+            ...(readString(record.autoLoadExecutionStatus) ? { autoLoadExecutionStatus: readString(record.autoLoadExecutionStatus) } : {}),
+            ...(readString(record.autoLoadExecutionError) ? { autoLoadExecutionError: readString(record.autoLoadExecutionError) } : {}),
+          };
+        })
+        .filter((entry): entry is NonNullable<typeof entry> => entry !== null);
+    } catch {
+      // Try the next native control-plane base.
+    }
+  }
+
+  return [];
+}
+
+async function buildPreferredToolPreferences(): Promise<Record<string, unknown>> {
+  const nativePreferences = await fetchNativeStatusPayload<Record<string, unknown>>('/api/mcp/preferences');
+  if (!nativePreferences) {
+    return {
+      importantTools: [],
+      alwaysLoadedTools: ['search_tools', 'read_file', 'write_file', 'grep_search', 'execute_command', 'browser__open'],
+    };
+  }
+
+  return {
+    importantTools: readStringArray(nativePreferences.importantTools),
+    alwaysLoadedTools: readStringArray(nativePreferences.alwaysLoadedTools),
+    ...(readNumber(nativePreferences.autoLoadMinConfidence) !== null ? { autoLoadMinConfidence: readNumber(nativePreferences.autoLoadMinConfidence) } : {}),
+    ...(readNumber(nativePreferences.maxLoadedTools) !== null ? { maxLoadedTools: readNumber(nativePreferences.maxLoadedTools) } : {}),
+    ...(readNumber(nativePreferences.maxHydratedSchemas) !== null ? { maxHydratedSchemas: readNumber(nativePreferences.maxHydratedSchemas) } : {}),
+    ...(readNumber(nativePreferences.idleEvictionThresholdMs) !== null ? { idleEvictionThresholdMs: readNumber(nativePreferences.idleEvictionThresholdMs) } : {}),
+  };
+}
+
 async function buildPreferredImportedMaintenanceStats(): Promise<ImportedMaintenanceStats> {
   for (const base of resolveNativeStatusBases()) {
     try {
@@ -1662,6 +1788,9 @@ async function buildLocalCompatResponse(req: Request, body?: string): Promise<Re
   const providerQuotas = await buildPreferredProviderQuotas();
   const cliHarnessDetections = await buildPreferredCliHarnessDetections();
   const executionEnvironment = await buildPreferredExecutionEnvironment(cliHarnessDetections);
+  const workingSet = await buildPreferredWorkingSet();
+  const toolSelectionTelemetry = await buildPreferredToolSelectionTelemetry();
+  const toolPreferences = await buildPreferredToolPreferences();
   const importedMaintenanceStats = await buildPreferredImportedMaintenanceStats();
   const installSurfaces = await buildPreferredInstallSurfaces();
   const localStartupStatus = await buildLocalStartupStatus(localServers, executionEnvironment, importedMaintenanceStats);
@@ -1677,19 +1806,10 @@ async function buildLocalCompatResponse(req: Request, body?: string): Promise<Re
     'billing.getProviderQuotas': providerQuotas,
     'billing.getFallbackChain': LEGACY_COMPAT_RESPONSES['billing.getFallbackChain'],
     startupStatus: localStartupStatus,
-    'mcp.getWorkingSet': {
-      tools: [],
-      limits: {
-        maxLoadedTools: 24,
-        maxHydratedSchemas: 8,
-      },
-    },
-    'mcp.getToolSelectionTelemetry': [],
+    'mcp.getWorkingSet': workingSet,
+    'mcp.getToolSelectionTelemetry': toolSelectionTelemetry,
     'mcp.searchTools': [],
-    'mcp.getToolPreferences': {
-      importantTools: [],
-      alwaysLoadedTools: ['search_tools', 'read_file', 'write_file', 'grep_search', 'execute_command', 'browser__open'],
-    },
+    'mcp.getToolPreferences': toolPreferences,
     'mcp.getJsoncEditor': {
       path: localConfigSource.path,
       content: localConfigSource.content,

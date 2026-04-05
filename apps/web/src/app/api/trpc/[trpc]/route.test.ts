@@ -289,14 +289,95 @@ describe('legacy MCP dashboard compatibility bridge', () => {
     ).toBe(true);
   });
 
-  it('returns local dashboard fallback data for richer MCP pages when upstreams are unavailable', async () => {
-    process.env.HYPERCODE_TRPC_UPSTREAM = 'http://127.0.0.1:59999/trpc';
-    global.fetch = vi.fn(async () => {
-      throw new Error('connect ECONNREFUSED');
+  it('prefers go-native MCP inspector state in local dashboard fallback mode', async () => {
+    process.env.HYPERCODE_TRPC_UPSTREAM = 'http://127.0.0.1:4300/trpc';
+    global.fetch = vi.fn(async (input) => {
+      const url = String(input);
+
+      if (url.includes('/trpc/')) {
+        throw new Error('connect ECONNREFUSED');
+      }
+      if (url === 'http://127.0.0.1:4300/api/mcp/working-set') {
+        return new Response(JSON.stringify({
+          success: true,
+          data: {
+            tools: [
+              {
+                name: 'search_tools',
+                hydrated: true,
+                lastLoadedAt: 1712275200000,
+                lastHydratedAt: 1712275215000,
+                lastAccessedAt: 1712275220000,
+              },
+              {
+                name: 'read_file',
+                hydrated: false,
+                lastLoadedAt: 1712275100000,
+                lastHydratedAt: null,
+                lastAccessedAt: 1712275190000,
+              },
+            ],
+            limits: {
+              maxLoadedTools: 16,
+              maxHydratedSchemas: 8,
+              idleEvictionThresholdMs: 300000,
+            },
+          },
+        }), {
+          status: 200,
+          headers: { 'content-type': 'application/json' },
+        });
+      }
+      if (url === 'http://127.0.0.1:4300/api/mcp/tool-selection-telemetry') {
+        return new Response(JSON.stringify({
+          success: true,
+          data: [
+            {
+              id: 'telemetry-1',
+              type: 'search',
+              timestamp: 1712275201000,
+              query: 'read workspace files',
+              source: 'runtime-search',
+              resultCount: 3,
+              topResultName: 'read_file',
+              topMatchReason: 'file access',
+              topScore: 0.98,
+              ignoredResultCount: 2,
+              ignoredResultNames: ['write_file', 'grep_search'],
+              status: 'success',
+              latencyMs: 42,
+              autoLoadEvaluated: true,
+              autoLoadOutcome: 'loaded',
+              autoLoadMinConfidence: 0.85,
+            },
+          ],
+        }), {
+          status: 200,
+          headers: { 'content-type': 'application/json' },
+        });
+      }
+      if (url === 'http://127.0.0.1:4300/api/mcp/preferences') {
+        return new Response(JSON.stringify({
+          success: true,
+          data: {
+            importantTools: ['search_tools'],
+            alwaysLoadedTools: ['search_tools', 'read_file'],
+            autoLoadMinConfidence: 0.85,
+            maxLoadedTools: 16,
+            maxHydratedSchemas: 8,
+            idleEvictionThresholdMs: 300000,
+          },
+        }), {
+          status: 200,
+          headers: { 'content-type': 'application/json' },
+        });
+      }
+
+      throw new Error(`Unexpected fetch: ${url}`);
     }) as typeof fetch;
 
     const request = new Request(
-      'http://localhost:3010/api/trpc/startupStatus,mcp.getWorkingSet,mcp.searchTools,mcp.getJsoncEditor,serverHealth.check?batch=1',
+      'http://localhost:3010/api/trpc/startupStatus,mcp.getWorkingSet,mcp.getToolSelectionTelemetry,mcp.getToolPreferences,mcp.searchTools,mcp.getJsoncEditor,serverHealth.check?batch=1',
       {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
@@ -305,7 +386,9 @@ describe('legacy MCP dashboard compatibility bridge', () => {
           1: { json: null },
           2: { json: null },
           3: { json: null },
-          4: { json: null },
+          4: { json: { query: 'search', limit: 5 } },
+          5: { json: null },
+          6: { json: null },
         }),
       },
     );
@@ -316,7 +399,7 @@ describe('legacy MCP dashboard compatibility bridge', () => {
     expect(response.status).toBe(200);
     expect(response.headers.get('x-hypercode-trpc-compat')).toBe('local-dashboard-fallback');
     expect(Array.isArray(payload)).toBe(true);
-    expect(payload).toHaveLength(5);
+    expect(payload).toHaveLength(7);
 
     expect(payload[0]?.result?.data).toEqual(expect.objectContaining({
       status: expect.stringMatching(/^(starting|degraded)$/),
@@ -342,22 +425,62 @@ describe('legacy MCP dashboard compatibility bridge', () => {
       .toBe(payload[0].result.data.checks.mcpAggregator.persistedServerCount);
 
     expect(payload[1]?.result?.data).toEqual({
-      tools: [],
+      tools: [
+        {
+          name: 'search_tools',
+          hydrated: true,
+          lastLoadedAt: 1712275200000,
+          lastHydratedAt: 1712275215000,
+          lastAccessedAt: 1712275220000,
+        },
+        {
+          name: 'read_file',
+          hydrated: false,
+          lastLoadedAt: 1712275100000,
+          lastHydratedAt: null,
+          lastAccessedAt: 1712275190000,
+        },
+      ],
       limits: {
-        maxLoadedTools: 24,
+        maxLoadedTools: 16,
         maxHydratedSchemas: 8,
+        idleEvictionThresholdMs: 300000,
       },
     });
-    expect(payload[2]?.result?.data).toEqual([]);
-    expect(payload[3]?.result?.data).toEqual(expect.objectContaining({
+    expect(payload[2]?.result?.data).toEqual([
+      expect.objectContaining({
+        id: 'telemetry-1',
+        type: 'search',
+        status: 'success',
+        query: 'read workspace files',
+        source: 'runtime-search',
+        topResultName: 'read_file',
+        ignoredResultCount: 2,
+        ignoredResultNames: ['write_file', 'grep_search'],
+        autoLoadOutcome: 'loaded',
+      }),
+    ]);
+    expect(payload[3]?.result?.data).toEqual({
+      importantTools: ['search_tools'],
+      alwaysLoadedTools: ['search_tools', 'read_file'],
+      autoLoadMinConfidence: 0.85,
+      maxLoadedTools: 16,
+      maxHydratedSchemas: 8,
+      idleEvictionThresholdMs: 300000,
+    });
+    expect(payload[4]?.result?.data).toEqual([]);
+    expect(payload[5]?.result?.data).toEqual(expect.objectContaining({
       path: expect.stringMatching(/mcp\.jsonc?$|mcp\.json$/),
       content: expect.stringContaining('mcpServers'),
     }));
-    expect(payload[4]?.result?.data).toEqual({
+    expect(payload[6]?.result?.data).toEqual({
       status: 'unavailable',
       crashCount: 0,
       maxAttempts: 0,
     });
+    expect((global.fetch as ReturnType<typeof vi.fn>).mock.calls.some(([url]) => String(url) === 'http://127.0.0.1:4300/api/mcp/working-set')).toBe(true);
+    expect((global.fetch as ReturnType<typeof vi.fn>).mock.calls.some(([url]) => String(url) === 'http://127.0.0.1:4300/api/mcp/tool-selection-telemetry')).toBe(true);
+    expect((global.fetch as ReturnType<typeof vi.fn>).mock.calls.some(([url]) => String(url) === 'http://127.0.0.1:4300/api/mcp/preferences')).toBe(true);
   });
 
   it('prefers go-native startup and runtime status when local dashboard fallback is active', async () => {
