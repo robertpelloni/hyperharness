@@ -1209,3 +1209,19 @@
 1. Keep `foundation/*`, `cmd`, and `tui` green and aligned to the same canonical runtime.
 2. Continue adding small convenience controls where they reduce repeated pane/browser adjustment overhead.
 3. Keep size cycling as a pure layout convenience over the same pane state model.
+
+## Additional work completed later on 2026-04-04 (grouped quick-toggle tranche)
+- Added new TUI slash command:
+  - `/tree-pane-grouped-toggle`
+- Added focused regression coverage verifying grouped quick-toggle on/off behavior.
+- Added detailed analysis doc:
+  - `docs/analysis/TUI_GROUPED_QUICK_TOGGLE_TRANCHE_2026-04-04.md`
+
+## Latest validation after grouped quick-toggle tranche
+- `gofmt -w tui/slash.go tui/slash_test.go`
+- `go test ./tui ./cmd ./foundation/...`
+
+## Updated recommendation after grouped quick-toggle tranche
+1. Keep `foundation/*`, `cmd`, and `tui` green and aligned to the same canonical runtime.
+2. Continue adding only the small convenience controls that clearly reduce repeated operator friction.
+3. Keep quick grouped toggles as a thin layer over existing pane grouped-state behavior.

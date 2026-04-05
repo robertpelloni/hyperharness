@@ -719,6 +719,20 @@ func TestProcessSlashCommandTreePaneGrouped(t *testing.T) {
 	}
 }
 
+func TestProcessSlashCommandTreePaneGroupedQuickToggle(t *testing.T) {
+	m := model{director: agents.NewDirector(&agents.DefaultProvider{}), browserGrouped: false}
+	mdl, _ := ProcessSlashCommand("/tree-pane-grouped-toggle", &m)
+	updated := mdl.(model)
+	if !updated.browserGrouped {
+		t.Fatal("expected quick grouped toggle to enable grouped mode")
+	}
+	mdl, _ = ProcessSlashCommand("/tree-pane-grouped-toggle", &updated)
+	updated = mdl.(model)
+	if updated.browserGrouped {
+		t.Fatal("expected second quick grouped toggle to disable grouped mode")
+	}
+}
+
 func TestProcessSlashCommandTreePaneCycle(t *testing.T) {
 	m := model{director: agents.NewDirector(&agents.DefaultProvider{}), browserPaneHeight: 8, browserPanePreview: true, browserPanePosition: "top", browserGrouped: false}
 	mdl, _ := ProcessSlashCommand("/tree-pane-cycle", &m)
