@@ -991,6 +991,48 @@ async function buildPreferredExecutionEnvironment(cliHarnessDetections: unknown[
   };
 }
 
+async function buildPreferredInstallSurfaces(): Promise<unknown[]> {
+  for (const base of resolveNativeStatusBases()) {
+    try {
+      const response = await fetch(`${base}/api/tools/detect-install-surfaces`, { cache: 'no-store' });
+      if (!response.ok) {
+        continue;
+      }
+
+      const payload = await response.json() as { success?: unknown; data?: unknown };
+      if (payload.success !== true || !Array.isArray(payload.data)) {
+        continue;
+      }
+
+      return payload.data
+        .map((entry) => {
+          const record = asObjectRecord(entry);
+          const id = readString(record?.id);
+          const status = readString(record?.status);
+          const detail = readString(record?.detail);
+          if (!id || !detail || (status !== 'ready' && status !== 'partial' && status !== 'missing')) {
+            return null;
+          }
+
+          return {
+            id,
+            status,
+            artifactPath: readString(record?.artifactPath),
+            artifactKind: readString(record?.artifactKind),
+            detail,
+            declaredVersion: readString(record?.declaredVersion),
+            lastModifiedAt: readString(record?.lastModifiedAt),
+          };
+        })
+        .filter((entry): entry is NonNullable<typeof entry> => entry !== null);
+    } catch {
+      // Try the next native control-plane base.
+    }
+  }
+
+  return [];
+}
+
 function buildPreferredSessionCatalog(cliHarnessDetections: unknown[]): unknown[] {
   return (Array.isArray(cliHarnessDetections) ? cliHarnessDetections : [])
     .map((entry) => {
@@ -1566,6 +1608,7 @@ async function buildLocalCompatResponse(req: Request, body?: string): Promise<Re
   const providerQuotas = await buildPreferredProviderQuotas();
   const cliHarnessDetections = await buildPreferredCliHarnessDetections();
   const executionEnvironment = await buildPreferredExecutionEnvironment(cliHarnessDetections);
+  const installSurfaces = await buildPreferredInstallSurfaces();
   const localStartupStatus = await buildLocalStartupStatus(localServers, executionEnvironment);
   const sessionCatalog = buildPreferredSessionCatalog(cliHarnessDetections);
   const sessionList = await buildPreferredSessionList();
@@ -1600,7 +1643,7 @@ async function buildLocalCompatResponse(req: Request, body?: string): Promise<Re
     'apiKeys.list': [],
     'tools.detectCliHarnesses': cliHarnessDetections,
     'tools.detectExecutionEnvironment': executionEnvironment,
-    'tools.detectInstallSurfaces': [],
+    'tools.detectInstallSurfaces': installSurfaces,
     'expert.getStatus': {},
     'session.catalog': sessionCatalog,
     'session.getState': {

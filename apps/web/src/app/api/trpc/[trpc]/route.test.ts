@@ -663,7 +663,7 @@ describe('legacy MCP dashboard compatibility bridge', () => {
     expect((global.fetch as ReturnType<typeof vi.fn>).mock.calls.some(([url]) => String(url) === 'http://127.0.0.1:4100/api/billing/fallback-chain?taskType=coding')).toBe(true);
   });
 
-  it('prefers go-native execution environment, provider quotas, fallback chain, cli harnesses, session catalog, and sessions in local dashboard fallback mode', async () => {
+  it('prefers go-native install surfaces, execution environment, provider quotas, fallback chain, cli harnesses, session catalog, and sessions in local dashboard fallback mode', async () => {
     process.env.HYPERCODE_TRPC_UPSTREAM = 'http://127.0.0.1:4200/trpc';
     global.fetch = vi.fn(async (input) => {
       const url = String(input);
@@ -819,6 +819,52 @@ describe('legacy MCP dashboard compatibility bridge', () => {
           headers: { 'content-type': 'application/json' },
         });
       }
+      if (url === 'http://127.0.0.1:4200/api/tools/detect-install-surfaces') {
+        return new Response(JSON.stringify({
+          success: true,
+          data: [
+            {
+              id: 'browser-extension-chromium',
+              status: 'ready',
+              artifactPath: 'apps/hypercode-extension/dist-chromium',
+              artifactKind: 'Chromium unpacked bundle',
+              detail: 'Unpacked Chromium-compatible browser extension output is available.',
+              declaredVersion: '0.7.3',
+              lastModifiedAt: '2026-04-05T07:00:00.000Z',
+            },
+            {
+              id: 'browser-extension-firefox',
+              status: 'partial',
+              artifactPath: 'apps/hypercode-extension/manifest.firefox.json',
+              artifactKind: 'Firefox manifest source',
+              detail: 'Firefox manifest source is present, but no packaged Firefox bundle was detected yet.',
+              declaredVersion: '0.7.3',
+              lastModifiedAt: '2026-04-04T22:00:00.000Z',
+            },
+            {
+              id: 'vscode-extension',
+              status: 'partial',
+              artifactPath: 'packages/vscode/dist/extension.js',
+              artifactKind: 'Compiled extension output',
+              detail: 'VS Code extension is compiled, but no `.vsix` package was detected yet.',
+              declaredVersion: '0.2.0',
+              lastModifiedAt: '2026-04-04T20:00:00.000Z',
+            },
+            {
+              id: 'mcp-client-sync',
+              status: 'ready',
+              artifactPath: 'mcp.jsonc',
+              artifactKind: 'JSONC config source',
+              detail: 'HyperCode-managed MCP config source is present for dashboard sync and preview flows.',
+              declaredVersion: null,
+              lastModifiedAt: '2026-04-05T06:55:00.000Z',
+            },
+          ],
+        }), {
+          status: 200,
+          headers: { 'content-type': 'application/json' },
+        });
+      }
       if (url === 'http://127.0.0.1:4200/api/sessions') {
         return new Response(JSON.stringify({
           success: true,
@@ -851,11 +897,11 @@ describe('legacy MCP dashboard compatibility bridge', () => {
     }) as typeof fetch;
 
     const response = await POST(new Request(
-      'http://localhost:3010/api/trpc/startupStatus,billing.getProviderQuotas,billing.getFallbackChain,tools.detectCliHarnesses,tools.detectExecutionEnvironment,session.catalog,session.list?batch=1',
+      'http://localhost:3010/api/trpc/startupStatus,billing.getProviderQuotas,billing.getFallbackChain,tools.detectCliHarnesses,tools.detectExecutionEnvironment,tools.detectInstallSurfaces,session.catalog,session.list?batch=1',
       {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ 0: { json: null }, 1: { json: null }, 2: { json: null }, 3: { json: null }, 4: { json: null }, 5: { json: null }, 6: { json: null } }),
+        body: JSON.stringify({ 0: { json: null }, 1: { json: null }, 2: { json: null }, 3: { json: null }, 4: { json: null }, 5: { json: null }, 6: { json: null }, 7: { json: null } }),
       },
     ));
     const payload = await response.json();
@@ -945,6 +991,31 @@ describe('legacy MCP dashboard compatibility bridge', () => {
     }));
     expect(payload?.[5]?.result?.data).toEqual([
       expect.objectContaining({
+        id: 'browser-extension-chromium',
+        status: 'ready',
+        artifactPath: 'apps/hypercode-extension/dist-chromium',
+        artifactKind: 'Chromium unpacked bundle',
+        declaredVersion: '0.7.3',
+      }),
+      expect.objectContaining({
+        id: 'browser-extension-firefox',
+        status: 'partial',
+        artifactPath: 'apps/hypercode-extension/manifest.firefox.json',
+        artifactKind: 'Firefox manifest source',
+      }),
+      expect.objectContaining({
+        id: 'vscode-extension',
+        status: 'partial',
+        artifactPath: 'packages/vscode/dist/extension.js',
+      }),
+      expect.objectContaining({
+        id: 'mcp-client-sync',
+        status: 'ready',
+        artifactPath: 'mcp.jsonc',
+      }),
+    ]);
+    expect(payload?.[6]?.result?.data).toEqual([
+      expect.objectContaining({
         id: 'hypercode',
         name: 'hypercode',
         sessionCapable: true,
@@ -959,7 +1030,7 @@ describe('legacy MCP dashboard compatibility bridge', () => {
         category: 'cli',
       }),
     ]);
-    expect(payload?.[6]?.result?.data).toEqual([
+    expect(payload?.[7]?.result?.data).toEqual([
       expect.objectContaining({
         id: 'sess-1',
         name: 'Refactor startup fallback',
@@ -975,6 +1046,7 @@ describe('legacy MCP dashboard compatibility bridge', () => {
     expect((global.fetch as ReturnType<typeof vi.fn>).mock.calls.some(([url]) => String(url) === 'http://127.0.0.1:4200/api/billing/fallback-chain')).toBe(true);
     expect((global.fetch as ReturnType<typeof vi.fn>).mock.calls.some(([url]) => String(url) === 'http://127.0.0.1:4200/api/cli/harnesses')).toBe(true);
     expect((global.fetch as ReturnType<typeof vi.fn>).mock.calls.some(([url]) => String(url) === 'http://127.0.0.1:4200/api/tools/detect-execution-environment')).toBe(true);
+    expect((global.fetch as ReturnType<typeof vi.fn>).mock.calls.some(([url]) => String(url) === 'http://127.0.0.1:4200/api/tools/detect-install-surfaces')).toBe(true);
     expect((global.fetch as ReturnType<typeof vi.fn>).mock.calls.some(([url]) => String(url) === 'http://127.0.0.1:4200/api/sessions')).toBe(true);
   });
 
