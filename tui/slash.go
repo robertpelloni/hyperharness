@@ -93,6 +93,10 @@ func ProcessSlashCommand(cmd string, m *model) (tea.Model, tea.Cmd) {
 		return handleTreePanePreset(m, "review")
 	case "/tree-pane-position":
 		return handleTreePanePosition(m, strings.TrimSpace(strings.TrimPrefix(cmd, "/tree-pane-position")))
+	case "/tree-pane-top":
+		return handleTreePanePosition(m, "top")
+	case "/tree-pane-bottom":
+		return handleTreePanePosition(m, "bottom")
 	case "/tree-pane-position-toggle":
 		return handleTreePanePosition(m, "toggle")
 	case "/tree-pane-focus-on":
@@ -159,6 +163,8 @@ func handleHelp(m *model) (tea.Model, tea.Cmd) {
   /tree-pane-navigation - Apply the navigation pane preset
   /tree-pane-review - Apply the review pane preset
   /tree-pane-position <top|bottom> - Set the persistent tree pane position
+  /tree-pane-top - Explicitly place the persistent tree pane above the main flow
+  /tree-pane-bottom - Explicitly place the persistent tree pane below the main flow
   /tree-pane-position-toggle - Quickly toggle pane position between top and bottom
   /tree-pane-focus - Toggle keyboard focus for the pinned tree pane
   /tree-pane-focus-toggle - Quick alias for toggling keyboard focus on the pinned tree pane

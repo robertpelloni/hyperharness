@@ -1331,3 +1331,20 @@
 1. Keep `foundation/*`, `cmd`, and `tui` green and aligned to the same canonical runtime.
 2. Continue only where explicit aliases clearly improve confidence or consistency over existing controls.
 3. Keep explicit preview aliases as direct wrappers over the same preview-state transitions.
+
+## Additional work completed later on 2026-04-04 (pane position alias tranche)
+- Added new TUI slash commands:
+  - `/tree-pane-top`
+  - `/tree-pane-bottom`
+- Added focused regression coverage verifying direct top/bottom pane placement aliases.
+- Added detailed analysis doc:
+  - `docs/analysis/TUI_PANE_POSITION_ALIAS_TRANCHE_2026-04-04.md`
+
+## Latest validation after pane position alias tranche
+- `gofmt -w tui/slash.go tui/slash_test.go`
+- `go test ./tui ./cmd ./foundation/...`
+
+## Updated recommendation after pane position alias tranche
+1. Keep `foundation/*`, `cmd`, and `tui` green and aligned to the same canonical runtime.
+2. Continue adding explicit aliases only where they clearly improve confidence or reduce friction.
+3. Keep direct pane position aliases as wrappers over the existing position-state transitions.

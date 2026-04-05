@@ -535,6 +535,20 @@ func TestProcessSlashCommandTreePanePosition(t *testing.T) {
 	}
 }
 
+func TestProcessSlashCommandTreePanePositionAliases(t *testing.T) {
+	m := model{director: agents.NewDirector(&agents.DefaultProvider{}), browserPanePosition: "bottom"}
+	mdl, _ := ProcessSlashCommand("/tree-pane-top", &m)
+	updated := mdl.(model)
+	if updated.browserPanePosition != "top" {
+		t.Fatalf("expected /tree-pane-top to set top, got %q", updated.browserPanePosition)
+	}
+	mdl, _ = ProcessSlashCommand("/tree-pane-bottom", &updated)
+	updated = mdl.(model)
+	if updated.browserPanePosition != "bottom" {
+		t.Fatalf("expected /tree-pane-bottom to set bottom, got %q", updated.browserPanePosition)
+	}
+}
+
 func TestTreePaneViewportControls(t *testing.T) {
 	cwd := t.TempDir()
 	m := model{director: agents.NewDirector(&agents.DefaultProvider{}), browserPaneHeight: 4}
