@@ -631,6 +631,30 @@ func TestProcessSlashCommandTreePaneReset(t *testing.T) {
 	}
 }
 
+func TestProcessSlashCommandTreePaneCycle(t *testing.T) {
+	m := model{director: agents.NewDirector(&agents.DefaultProvider{}), browserPaneHeight: 8, browserPanePreview: true, browserPanePosition: "top", browserGrouped: false}
+	mdl, _ := ProcessSlashCommand("/tree-pane-cycle", &m)
+	updated := mdl.(model)
+	if updated.browserPaneHeight != 6 || updated.browserPanePreview != false || updated.browserPanePosition != "bottom" || updated.browserGrouped != false {
+		t.Fatalf("expected first cycle to compact, got %#v", updated)
+	}
+	mdl, _ = ProcessSlashCommand("/tree-pane-cycle", &updated)
+	updated = mdl.(model)
+	if updated.browserPaneHeight != 10 || updated.browserPanePreview != false || updated.browserPanePosition != "bottom" || updated.browserGrouped != true {
+		t.Fatalf("expected second cycle to navigation, got %#v", updated)
+	}
+	mdl, _ = ProcessSlashCommand("/tree-pane-cycle", &updated)
+	updated = mdl.(model)
+	if updated.browserPaneHeight != 12 || updated.browserPanePreview != true || updated.browserPanePosition != "top" || updated.browserGrouped != false {
+		t.Fatalf("expected third cycle to detailed, got %#v", updated)
+	}
+	mdl, _ = ProcessSlashCommand("/tree-pane-cycle", &updated)
+	updated = mdl.(model)
+	if updated.browserPaneHeight != 14 || updated.browserPanePreview != true || updated.browserPanePosition != "top" || updated.browserGrouped != true {
+		t.Fatalf("expected fourth cycle to review, got %#v", updated)
+	}
+}
+
 func TestProcessSlashCommandClearResetsDirector(t *testing.T) {
 	m := model{director: agents.NewDirector(&agents.DefaultProvider{})}
 	m.history = []string{"old"}

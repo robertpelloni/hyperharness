@@ -1098,3 +1098,24 @@
 1. Keep `foundation/*`, `cmd`, and `tui` green and aligned to the same canonical runtime.
 2. Continue improving operator control with higher-level presets or additional quick toggles where they reduce friction.
 3. Keep reset/clear behavior confined to UI/layout/control state, never canonical session/branch truth.
+
+## Additional work completed later on 2026-04-04 (pane cycle tranche)
+- Added new TUI slash command:
+  - `/tree-pane-cycle`
+- Implemented state-based cycling across pane presets:
+  - `compact`
+  - `navigation`
+  - `detailed`
+  - `review`
+- Added focused regression coverage verifying the full cycle order and state transitions.
+- Added detailed analysis doc:
+  - `docs/analysis/TUI_PANE_CYCLE_TRANCHE_2026-04-04.md`
+
+## Latest validation after pane cycle tranche
+- `gofmt -w tui/slash.go tui/slash_test.go`
+- `go test ./tui ./cmd ./foundation/...`
+
+## Updated recommendation after pane cycle tranche
+1. Keep `foundation/*`, `cmd`, and `tui` green and aligned to the same canonical runtime.
+2. Continue adding operator polish around pane/browser control and recovery where it reduces friction.
+3. Keep convenience commands like cycles as lightweight layers over the same underlying pane state bundles.
