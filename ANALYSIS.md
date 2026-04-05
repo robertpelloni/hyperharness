@@ -166,12 +166,23 @@ The CLI also now emits a concise `Startup mode summary:` block describing actual
 - Go supervisor/auto-drive startup flag semantics vs actual native API availability
 - full Node compatibility runtime support for integrated dashboard/MCP/supervisor/auto-drive flags
 
+In the same slice, startup provenance is now persisted into the local startup lock and surfaced by `hypercode status` when available. That persisted provenance includes:
+- requested runtime
+- active runtime
+- launch mode
+- dashboard mode
+- install decision / reason
+- build decision / reason
+
+This makes the startup truthfulness durable instead of transient.
+
 Why this matters:
 - it makes Go-primary launch use the same compiled artifact that the startup build profile already validates
 - it reduces repeated `go run` compilation overhead at runtime
 - it moves the actual control-plane launch path closer to a real production-style Go-primary binary handoff
 - it makes the runtime choice operator-visible instead of implicit
 - it makes post-launch surface availability explicit instead of forcing operators to infer it from scattered warnings
+- it makes startup decisions queryable through `hypercode status` instead of leaving them in terminal scrollback only
 
 #### Lockfile hygiene
 - The refreshed `pnpm-lock.yaml` no longer contains legacy-name references for the main workspace packages.
@@ -201,6 +212,7 @@ powershell.exe -NoProfile -Command "cmd /c 'call start.bat --help'"
 
 Results:
 - CLI start-command regression tests passed
+- CLI status-command regression tests passed
 - CLI build passed
 - Go control-plane build passed
 - new Go-primary startup build profile passed
@@ -209,6 +221,7 @@ Results:
 - direct built-CLI launch path resolved and printed `hypercode start --help` successfully
 - runtime provenance helper coverage passed in the CLI regression suite
 - startup mode summary helper coverage passed in the CLI regression suite
+- persisted startup-provenance status coverage passed in the CLI regression suite
 - a short-lived `start.bat --help` run also completed and showed the new install/build phase summary lines before exiting through CLI help output
 
 Validation boundary:
@@ -237,6 +250,7 @@ Result:
 - startup output now truthfully reports runtime provenance for Go and Node compatibility paths
 - startup output now truthfully reports whether install/build phases ran or were skipped and why
 - startup output now also provides a concise startup-mode surface summary for the selected runtime
+- startup provenance is now persisted into the local startup lock and exposed by `hypercode status` when available
 - `start.bat` now validates Go-first startup surfaces by default for `auto`/`go` runtime modes instead of always requiring a full workspace build first
 - `start.bat` can now skip `pnpm install` in Go-primary mode when the workspace is already ready
 - `start.bat` can now also skip the Go-primary startup build when the built CLI and Go binary artifacts are already current

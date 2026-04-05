@@ -9,7 +9,7 @@ import type { Command } from 'commander';
 import { dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { queryTrpc, resolveControlPlaneLocation } from '../control-plane.js';
+import { queryTrpc, readLocalStartupProvenance, resolveControlPlaneLocation } from '../control-plane.js';
 import { readCanonicalVersion } from '../version.js';
 
 type StartupStatusPayload = {
@@ -92,6 +92,7 @@ Examples:
     `)
     .action(async (opts) => {
       await withStatusErrorHandling(async () => {
+        const startupProvenance = readLocalStartupProvenance();
         const [startup, mcp, sessions, providers] = await Promise.all([
           queryTrpc<StartupStatusPayload>('startupStatus'),
           queryTrpc<McpStatusPayload>('mcp.getStatus'),
@@ -105,6 +106,7 @@ Examples:
         const authenticatedProviders = providers.filter((provider) => provider.authenticated).length;
 
         const status = {
+          startupMode: startupProvenance,
           version: startup.runtime?.version ?? version,
           server: {
             status: startup.status,
@@ -157,6 +159,21 @@ Examples:
           ['Sessions', activeSessions > 0 ? chalk.green('● Active') : chalk.dim('○ Idle'), `Active: ${activeSessions} | Paused: ${pausedSessions} | Total: ${sessions.length}`],
           ['Providers', configuredProviders > 0 ? chalk.green('● Configured') : chalk.dim('○ None'), `Configured: ${configuredProviders} | Authenticated: ${authenticatedProviders}`],
         );
+
+        if (startupProvenance) {
+          table.push([
+            'Startup Mode',
+            chalk.cyan('◉ Recorded'),
+            [
+              startupProvenance.requestedRuntime ? `Requested: ${startupProvenance.requestedRuntime}` : null,
+              startupProvenance.activeRuntime ? `Active: ${startupProvenance.activeRuntime}` : null,
+              startupProvenance.launchMode ? `Launch: ${startupProvenance.launchMode}` : null,
+              startupProvenance.dashboardMode ? `Dashboard: ${startupProvenance.dashboardMode}` : null,
+              startupProvenance.installDecision ? `Install: ${startupProvenance.installDecision}` : null,
+              startupProvenance.buildDecision ? `Build: ${startupProvenance.buildDecision}` : null,
+            ].filter(Boolean).join(' | '),
+          ]);
+        }
 
         console.log(table.toString());
         console.log('');

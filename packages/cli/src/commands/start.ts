@@ -22,12 +22,25 @@ import { fileURLToPath } from 'node:url';
 import type { Command } from 'commander';
 import { readCanonicalVersion } from '../version.js';
 
+export interface HypercodeStartupProvenance {
+  requestedRuntime?: string;
+  activeRuntime?: string;
+  launchMode?: string;
+  dashboardMode?: string;
+  installDecision?: string;
+  installReason?: string;
+  buildDecision?: string;
+  buildReason?: string;
+  updatedAt?: string;
+}
+
 export interface HypercodeStartLockRecord {
   instanceId: string;
   pid: number;
   port: number;
   host: string;
   createdAt: string;
+  startup?: HypercodeStartupProvenance;
 }
 
 export interface HypercodeStartLockHandle {
@@ -36,6 +49,7 @@ export interface HypercodeStartLockHandle {
   clearedStaleLock: boolean;
   reusedStalePort: boolean;
   updatePort: (port: number) => void;
+  updateStartupMetadata: (metadata: HypercodeStartupProvenance) => void;
   release: () => Promise<void>;
   releaseSync: () => void;
 }
@@ -221,6 +235,7 @@ export async function acquireSingleInstanceLock(
       });
 
       let currentPort = selectedPort;
+      let currentStartup: HypercodeStartupProvenance | undefined;
 
       const writeCurrentRecord = () => {
         writeFileSync(lockPath, `${JSON.stringify({
@@ -229,6 +244,7 @@ export async function acquireSingleInstanceLock(
           port: currentPort,
           host: options.host,
           createdAt: now().toISOString(),
+          ...(currentStartup ? { startup: currentStartup } : {}),
         }, null, 2)}\n`, 'utf8');
       };
 
@@ -246,6 +262,19 @@ export async function acquireSingleInstanceLock(
         }
 
         currentPort = port;
+        writeCurrentRecord();
+      };
+
+      const updateStartupMetadata = (metadata: HypercodeStartupProvenance) => {
+        const current = readStartLock(lockPath);
+        if (current?.instanceId !== instanceId) {
+          return;
+        }
+
+        currentStartup = {
+          ...currentStartup,
+          ...metadata,
+        };
         writeCurrentRecord();
       };
 
@@ -283,6 +312,7 @@ export async function acquireSingleInstanceLock(
         clearedStaleLock,
         reusedStalePort,
         updatePort,
+        updateStartupMetadata,
         release: async () => {
           releaseSync();
         },
@@ -1041,6 +1071,12 @@ Examples:
         })) {
           console.log(chalk.dim(`    • ${line}`));
         }
+        let dashboardMode = opts.dashboard
+          ? (runtimeSupportsIntegratedDashboard(runtimeKind)
+            ? 'supported by selected runtime'
+            : 'compatibility-only; skipped for Go runtime')
+          : 'disabled by request';
+
         if (opts.dashboard) {
           if (!runtimeSupportsIntegratedDashboard(runtimeKind)) {
             console.log(chalk.yellow('  ⚠ Dashboard startup is being skipped because the current web UI still depends heavily on the Node/tRPC compatibility backend.'));
@@ -1060,6 +1096,7 @@ Examples:
             const shouldOpenDashboard = opts.openDashboard !== false && !opts.daemon;
 
             if (dashboardSelection.reusedExisting) {
+              dashboardMode = 'reused existing integrated dashboard runtime';
               console.log(chalk.green(`  ✓ Reusing dashboard runtime at ${dashboardUrl}`));
             } else {
               const { command, args, cwd } = getDashboardSpawnSpec(
@@ -1105,12 +1142,16 @@ Examples:
               });
 
               if (dashboardReady) {
+                dashboardMode = 'started integrated dashboard runtime';
                 console.log(chalk.green(`  ✓ Dashboard runtime ready at ${dashboardUrl}`));
               } else if (dashboardLaunchErrorMessage) {
+                dashboardMode = 'dashboard launch attempted but failed';
                 console.log(chalk.yellow(`  ⚠ Dashboard runtime failed to launch: ${dashboardLaunchErrorMessage}`));
               } else if (dashboardExited) {
+                dashboardMode = 'dashboard launch attempted but exited early';
                 console.log(chalk.yellow(`  ⚠ Dashboard runtime exited before ${dashboardUrl} became ready.`));
               } else {
+                dashboardMode = 'dashboard launch attempted and still starting';
                 console.log(chalk.yellow(`  ⚠ Dashboard runtime is still starting. Visit ${dashboardUrl} in a moment.`));
               }
             }
@@ -1128,6 +1169,22 @@ Examples:
             }
           }
         }
+        acquiredLockHandle.updateStartupMetadata({
+          requestedRuntime,
+          activeRuntime: runtimeKind,
+          launchMode: runtimeKind === 'go'
+            ? describeGoRuntimeLaunchMode(goRuntimeMode === 'prebuilt-binary')
+            : (nodeRuntimeMode === 'go-fallback'
+              ? 'Node compatibility runtime (Go fallback)'
+              : 'Node compatibility runtime (explicit selection)'),
+          dashboardMode,
+          installDecision: process.env.HYPERCODE_STARTUP_INSTALL_DECISION,
+          installReason: process.env.HYPERCODE_STARTUP_INSTALL_REASON,
+          buildDecision: process.env.HYPERCODE_STARTUP_BUILD_DECISION,
+          buildReason: process.env.HYPERCODE_STARTUP_BUILD_REASON,
+          updatedAt: new Date().toISOString(),
+        });
+
         console.log(chalk.dim('\n  Press Ctrl+C to stop\n'));
 
         process.once('exit', () => {

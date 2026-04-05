@@ -136,6 +136,11 @@ if /I "%BUILD_DECISION%"=="skipped" (
     echo Build phase summary: ran ^(%BUILD_REASON%^)
 )
 
+set HYPERCODE_STARTUP_INSTALL_DECISION=%INSTALL_DECISION%
+set HYPERCODE_STARTUP_INSTALL_REASON=%INSTALL_REASON%
+set HYPERCODE_STARTUP_BUILD_DECISION=%BUILD_DECISION%
+set HYPERCODE_STARTUP_BUILD_REASON=%BUILD_REASON%
+
 echo Starting Hub...
 echo Maestro is now launched separately. Use "pnpm -C apps/maestro start" when needed.
 

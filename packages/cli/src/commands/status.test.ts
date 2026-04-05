@@ -9,8 +9,11 @@ const resolveControlPlaneLocationMock = vi.fn(() => ({
   port: 4000,
 }));
 
+const readLocalStartupProvenanceMock = vi.fn<() => Record<string, unknown> | null>(() => null);
+
 vi.mock('../control-plane.js', () => ({
   queryTrpc: (...args: unknown[]) => queryTrpcMock(...args),
+  readLocalStartupProvenance: () => readLocalStartupProvenanceMock(),
   resolveControlPlaneLocation: () => resolveControlPlaneLocationMock(),
 }));
 
@@ -25,6 +28,8 @@ const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
 afterEach(() => {
   queryTrpcMock.mockReset();
+  readLocalStartupProvenanceMock.mockReset();
+  readLocalStartupProvenanceMock.mockReturnValue(null);
   resolveControlPlaneLocationMock.mockClear();
   logSpy.mockClear();
   errorSpy.mockClear();
@@ -39,6 +44,15 @@ function createProgram(): Command {
 
 describe('registerStatusCommand', () => {
   it('shows live system status as JSON', async () => {
+    readLocalStartupProvenanceMock.mockReturnValue({
+      requestedRuntime: 'auto',
+      activeRuntime: 'go',
+      launchMode: 'prebuilt Go binary',
+      dashboardMode: 'compatibility-only; skipped for Go runtime',
+      installDecision: 'skipped',
+      buildDecision: 'skipped',
+    });
+
     queryTrpcMock
       .mockResolvedValueOnce({
         status: 'running',
@@ -76,6 +90,14 @@ describe('registerStatusCommand', () => {
     expect(queryTrpcMock).toHaveBeenNthCalledWith(3, 'session.list');
     expect(queryTrpcMock).toHaveBeenNthCalledWith(4, 'billing.getProviderQuotas');
     expect(logSpy).toHaveBeenCalledWith(JSON.stringify({
+      startupMode: {
+        requestedRuntime: 'auto',
+        activeRuntime: 'go',
+        launchMode: 'prebuilt Go binary',
+        dashboardMode: 'compatibility-only; skipped for Go runtime',
+        installDecision: 'skipped',
+        buildDecision: 'skipped',
+      },
       version: '1.0.15',
       server: {
         status: 'running',

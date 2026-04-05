@@ -6,12 +6,25 @@ import { resolveDataDir } from './commands/start.js';
 const DEFAULT_TRPC_HOST = '127.0.0.1';
 const DEFAULT_TRPC_PORT = 4000;
 
+export interface HypercodeStartupProvenance {
+  requestedRuntime?: string;
+  activeRuntime?: string;
+  launchMode?: string;
+  dashboardMode?: string;
+  installDecision?: string;
+  installReason?: string;
+  buildDecision?: string;
+  buildReason?: string;
+  updatedAt?: string;
+}
+
 interface HypercodeStartLockRecord {
   instanceId: string;
   pid: number;
   port: number;
   host: string;
   createdAt: string;
+  startup?: HypercodeStartupProvenance;
 }
 
 export interface ControlPlaneLocation {
@@ -68,6 +81,10 @@ function readStartLockRecord(dataDir: string): HypercodeStartLockRecord | null {
   } catch {
     return null;
   }
+}
+
+export function readLocalStartupProvenance(dataDir: string = '~/.hypercode'): HypercodeStartupProvenance | null {
+  return readStartLockRecord(dataDir)?.startup ?? null;
 }
 
 export function resolveControlPlaneLocation(options: {
