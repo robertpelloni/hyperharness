@@ -562,6 +562,20 @@ func TestTreePaneViewportControls(t *testing.T) {
 	}
 }
 
+func TestProcessSlashCommandTreePanePositionToggle(t *testing.T) {
+	m := model{director: agents.NewDirector(&agents.DefaultProvider{}), browserPanePosition: "top"}
+	mdl, _ := ProcessSlashCommand("/tree-pane-position-toggle", &m)
+	updated := mdl.(model)
+	if updated.browserPanePosition != "bottom" {
+		t.Fatalf("expected quick position toggle to set bottom, got %q", updated.browserPanePosition)
+	}
+	mdl, _ = ProcessSlashCommand("/tree-pane-position-toggle", &updated)
+	updated = mdl.(model)
+	if updated.browserPanePosition != "top" {
+		t.Fatalf("expected second quick position toggle to set top, got %q", updated.browserPanePosition)
+	}
+}
+
 func TestProcessSlashCommandTreePanePreviewToggle(t *testing.T) {
 	m := model{director: agents.NewDirector(&agents.DefaultProvider{}), browserPanePreview: true}
 	mdl, _ := ProcessSlashCommand("/tree-pane-preview off", &m)

@@ -1153,3 +1153,20 @@
 1. Keep `foundation/*`, `cmd`, and `tui` green and aligned to the same canonical runtime.
 2. Continue adding small operator-polish controls where they reduce repeated pane/browser friction.
 3. Keep quick toggles as convenience layers over the same pane layout state rather than separate semantics.
+
+## Additional work completed later on 2026-04-04 (pane position quick-toggle tranche)
+- Added new TUI slash command:
+  - `/tree-pane-position-toggle`
+- Extended the pane-position handler to support toggle semantics in addition to explicit top/bottom values.
+- Added focused regression coverage verifying top↔bottom quick toggling.
+- Added detailed analysis doc:
+  - `docs/analysis/TUI_PANE_POSITION_QUICK_TOGGLE_TRANCHE_2026-04-04.md`
+
+## Latest validation after pane position quick-toggle tranche
+- `gofmt -w tui/slash.go tui/slash_test.go`
+- `go test ./tui ./cmd ./foundation/...`
+
+## Updated recommendation after pane position quick-toggle tranche
+1. Keep `foundation/*`, `cmd`, and `tui` green and aligned to the same canonical runtime.
+2. Continue adding small convenience controls where they reduce repeated pane/browser friction.
+3. Keep quick position toggles as layout-only controls over the same pane/browser state model.
