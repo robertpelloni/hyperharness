@@ -21,6 +21,13 @@ import (
 
 type ToolHandler func(ctx context.Context, cwd string, input json.RawMessage) (*ToolResult, error)
 
+const (
+	defaultGrepLimit  = 100
+	defaultFindLimit  = 1000
+	defaultLSLimit    = 500
+	grepMaxLineLength = 500
+)
+
 func DefaultToolHandlers() map[string]ToolHandler {
 	return map[string]ToolHandler{
 		"read":  executeReadTool,
@@ -260,6 +267,7 @@ func executeGrepTool(ctx context.Context, cwd string, raw json.RawMessage) (*Too
 	if strings.TrimSpace(input.Pattern) == "" {
 		return nil, fmt.Errorf("pattern is required")
 	}
+
 	searchRoot := cwd
 	if strings.TrimSpace(input.Path) != "" {
 		var err error
@@ -268,29 +276,21 @@ func executeGrepTool(ctx context.Context, cwd string, raw json.RawMessage) (*Too
 			return nil, err
 		}
 	}
-	limit := input.Limit
-	if limit <= 0 {
-		limit = 100
+
+	effectiveLimit := input.Limit
+	if effectiveLimit <= 0 {
+		effectiveLimit = defaultGrepLimit
 	}
-	matcher := func(line string) bool {
-		candidate := line
-		pattern := input.Pattern
-		if input.IgnoreCase {
-			candidate = strings.ToLower(candidate)
-			pattern = strings.ToLower(pattern)
-		}
-		if input.Literal {
-			return strings.Contains(candidate, pattern)
-		}
-		re, err := regexp.Compile(pattern)
-		if err != nil {
-			return strings.Contains(candidate, pattern)
-		}
-		return re.MatchString(candidate)
+
+	matcher, err := compileGrepMatcher(input)
+	if err != nil {
+		return nil, err
 	}
-	var matches []string
-	_ = filepath.Walk(searchRoot, func(path string, info os.FileInfo, err error) error {
-		if err != nil {
+
+	var outputLines []string
+	matchCount := 0
+	err = filepath.Walk(searchRoot, func(path string, info os.FileInfo, walkErr error) error {
+		if walkErr != nil {
 			return nil
 		}
 		if info.IsDir() {
@@ -306,23 +306,67 @@ func executeGrepTool(ctx context.Context, cwd string, raw json.RawMessage) (*Too
 				return nil
 			}
 		}
-		data, readErr := os.ReadFile(path)
+		lines, readErr := readFileLines(path)
 		if readErr != nil {
 			return nil
 		}
-		lines := strings.Split(string(data), "\n")
+		relPath := filepath.ToSlash(relPathOrBase(path, searchRoot))
 		for i, line := range lines {
-			if matcher(line) {
-				rel, _ := filepath.Rel(searchRoot, path)
-				matches = append(matches, fmt.Sprintf("%s:%d:%s", rel, i+1, truncateDisplay(line, 500)))
-				if len(matches) >= limit {
-					return fmt.Errorf("limit reached")
+			if matchCount >= effectiveLimit {
+				return nil
+			}
+			if !matcher(line) {
+				continue
+			}
+			matchCount++
+			if input.Context > 0 {
+				start := max(1, i+1-input.Context)
+				end := min(len(lines), i+1+input.Context)
+				for j := start; j <= end; j++ {
+					text, _ := truncateLineStr(strings.ReplaceAll(lines[j-1], "\r", ""))
+					if j == i+1 {
+						outputLines = append(outputLines, fmt.Sprintf("%s:%d:%s", relPath, j, text))
+					} else {
+						outputLines = append(outputLines, fmt.Sprintf("%s-%d-%s", relPath, j, text))
+					}
 				}
+			} else {
+				text, _ := truncateLineStr(strings.ReplaceAll(line, "\r", ""))
+				outputLines = append(outputLines, fmt.Sprintf("%s:%d:%s", relPath, i+1, text))
 			}
 		}
 		return nil
 	})
-	return &ToolResult{ToolName: "grep", Content: []any{TextContent{Type: "text", Text: strings.Join(matches, "\n")}}}, nil
+	if err != nil {
+		return nil, err
+	}
+	if matchCount == 0 {
+		return &ToolResult{ToolName: "grep", Content: []any{TextContent{Type: "text", Text: "No matches found"}}}, nil
+	}
+
+	rawOutput := strings.Join(outputLines, "\n")
+	truncation, output := truncateHead(rawOutput)
+	var details *GrepToolDetails
+	var notices []string
+	if matchCount >= effectiveLimit {
+		notices = append(notices, fmt.Sprintf("%d matches limit reached. Use limit=%d for more, or refine pattern", effectiveLimit, effectiveLimit*2))
+		details = &GrepToolDetails{MatchLimitReached: effectiveLimit}
+	}
+	if truncation.Truncated {
+		notices = append(notices, fmt.Sprintf("%d byte limit reached", DefaultMaxBytes))
+		if details == nil {
+			details = &GrepToolDetails{}
+		}
+		details.Truncation = &truncation
+	}
+	if len(notices) > 0 {
+		output += fmt.Sprintf("\n\n[%s]", strings.Join(notices, ". "))
+	}
+	result := &ToolResult{ToolName: "grep", Content: []any{TextContent{Type: "text", Text: output}}}
+	if details != nil {
+		result.Details = details
+	}
+	return result, nil
 }
 
 func executeFindTool(ctx context.Context, cwd string, raw json.RawMessage) (*ToolResult, error) {
@@ -341,13 +385,14 @@ func executeFindTool(ctx context.Context, cwd string, raw json.RawMessage) (*Too
 			return nil, err
 		}
 	}
-	limit := input.Limit
-	if limit <= 0 {
-		limit = 1000
+	effectiveLimit := input.Limit
+	if effectiveLimit <= 0 {
+		effectiveLimit = defaultFindLimit
 	}
-	var matches []string
-	_ = filepath.Walk(searchRoot, func(path string, info os.FileInfo, err error) error {
-		if err != nil {
+
+	var results []string
+	err := filepath.Walk(searchRoot, func(path string, info os.FileInfo, walkErr error) error {
+		if walkErr != nil {
 			return nil
 		}
 		if info.IsDir() {
@@ -357,18 +402,52 @@ func executeFindTool(ctx context.Context, cwd string, raw json.RawMessage) (*Too
 			}
 			return nil
 		}
-		matched, globErr := filepath.Match(input.Pattern, filepath.Base(path))
-		if globErr != nil || !matched {
+		if len(results) >= effectiveLimit {
 			return nil
 		}
-		rel, _ := filepath.Rel(searchRoot, path)
-		matches = append(matches, rel)
-		if len(matches) >= limit {
-			return fmt.Errorf("limit reached")
+		matched, globErr := filepath.Match(input.Pattern, filepath.Base(path))
+		if globErr != nil || !matched {
+			relPath, relErr := filepath.Rel(searchRoot, path)
+			if relErr != nil {
+				return nil
+			}
+			matched, _ = filepath.Match(input.Pattern, filepath.ToSlash(relPath))
+		}
+		if matched {
+			results = append(results, filepath.ToSlash(relPathOrBase(path, searchRoot)))
 		}
 		return nil
 	})
-	return &ToolResult{ToolName: "find", Content: []any{TextContent{Type: "text", Text: strings.Join(matches, "\n")}}}, nil
+	if err != nil {
+		return nil, err
+	}
+	if len(results) == 0 {
+		return &ToolResult{ToolName: "find", Content: []any{TextContent{Type: "text", Text: "No files found matching pattern"}}}, nil
+	}
+
+	rawOutput := strings.Join(results, "\n")
+	truncation, output := truncateHead(rawOutput)
+	var details *FindToolDetails
+	var notices []string
+	if len(results) >= effectiveLimit {
+		notices = append(notices, fmt.Sprintf("%d results limit reached. Use limit=%d for more, or refine pattern", effectiveLimit, effectiveLimit*2))
+		details = &FindToolDetails{ResultLimitReached: effectiveLimit}
+	}
+	if truncation.Truncated {
+		notices = append(notices, fmt.Sprintf("%d byte limit reached", DefaultMaxBytes))
+		if details == nil {
+			details = &FindToolDetails{}
+		}
+		details.Truncation = &truncation
+	}
+	if len(notices) > 0 {
+		output += fmt.Sprintf("\n\n[%s]", strings.Join(notices, ". "))
+	}
+	result := &ToolResult{ToolName: "find", Content: []any{TextContent{Type: "text", Text: output}}}
+	if details != nil {
+		result.Details = details
+	}
+	return result, nil
 }
 
 func executeLSTool(ctx context.Context, cwd string, raw json.RawMessage) (*ToolResult, error) {
@@ -384,26 +463,63 @@ func executeLSTool(ctx context.Context, cwd string, raw json.RawMessage) (*ToolR
 			return nil, err
 		}
 	}
+	info, err := os.Stat(listRoot)
+	if err != nil {
+		return nil, err
+	}
+	if !info.IsDir() {
+		return nil, fmt.Errorf("not a directory: %s", input.Path)
+	}
 	entries, err := os.ReadDir(listRoot)
 	if err != nil {
 		return nil, err
 	}
-	limit := input.Limit
-	if limit <= 0 {
-		limit = 500
+	effectiveLimit := input.Limit
+	if effectiveLimit <= 0 {
+		effectiveLimit = defaultLSLimit
 	}
-	lines := make([]string, 0, min(limit, len(entries)))
-	for i, entry := range entries {
-		if i >= limit {
+	results := make([]string, 0, min(effectiveLimit, len(entries)))
+	entryLimitReached := false
+	for _, entry := range entries {
+		if len(results) >= effectiveLimit {
+			entryLimitReached = true
 			break
 		}
 		name := entry.Name()
 		if entry.IsDir() {
 			name += "/"
 		}
-		lines = append(lines, name)
+		results = append(results, name)
 	}
-	return &ToolResult{ToolName: "ls", Content: []any{TextContent{Type: "text", Text: strings.Join(lines, "\n")}}}, nil
+	sort.Slice(results, func(i, j int) bool {
+		return strings.ToLower(results[i]) < strings.ToLower(results[j])
+	})
+	if len(results) == 0 {
+		return &ToolResult{ToolName: "ls", Content: []any{TextContent{Type: "text", Text: "(empty directory)"}}}, nil
+	}
+	rawOutput := strings.Join(results, "\n")
+	truncation, output := truncateHead(rawOutput)
+	var details *LsToolDetails
+	var notices []string
+	if entryLimitReached {
+		notices = append(notices, fmt.Sprintf("%d entries limit reached. Use limit=%d for more", effectiveLimit, effectiveLimit*2))
+		details = &LsToolDetails{EntryLimitReached: effectiveLimit}
+	}
+	if truncation.Truncated {
+		notices = append(notices, fmt.Sprintf("%d byte limit reached", DefaultMaxBytes))
+		if details == nil {
+			details = &LsToolDetails{}
+		}
+		details.Truncation = &truncation
+	}
+	if len(notices) > 0 {
+		output += fmt.Sprintf("\n\n[%s]", strings.Join(notices, ". "))
+	}
+	result := &ToolResult{ToolName: "ls", Content: []any{TextContent{Type: "text", Text: output}}}
+	if details != nil {
+		result.Details = details
+	}
+	return result, nil
 }
 
 func resolvePath(cwd, toolPath string) (string, error) {
@@ -487,6 +603,53 @@ func truncateTail(text string) (TruncationDetails, string) {
 		truncatedBy = "bytes"
 	}
 	return TruncationDetails{Truncated: true, TruncatedBy: truncatedBy, TotalLines: len(lines), OutputLines: len(selected), OutputBytes: bytesUsed, MaxLines: DefaultMaxLines, MaxBytes: DefaultMaxBytes}, strings.Join(selected, "\n")
+}
+
+func compileGrepMatcher(input GrepToolInput) (func(string) bool, error) {
+	if input.Literal {
+		pattern := input.Pattern
+		if input.IgnoreCase {
+			pattern = strings.ToLower(pattern)
+			return func(line string) bool {
+				return strings.Contains(strings.ToLower(line), pattern)
+			}, nil
+		}
+		return func(line string) bool {
+			return strings.Contains(line, pattern)
+		}, nil
+	}
+	pattern := input.Pattern
+	if input.IgnoreCase {
+		pattern = "(?i)" + pattern
+	}
+	re, err := regexp.Compile(pattern)
+	if err != nil {
+		return nil, fmt.Errorf("invalid regex: %w", err)
+	}
+	return re.MatchString, nil
+}
+
+func relPathOrBase(path, base string) string {
+	if rel, err := filepath.Rel(base, path); err == nil && !strings.HasPrefix(rel, "..") {
+		return rel
+	}
+	return filepath.Base(path)
+}
+
+func readFileLines(path string) ([]string, error) {
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return nil, err
+	}
+	return strings.Split(strings.ReplaceAll(string(data), "\r\n", "\n"), "\n"), nil
+}
+
+func truncateLineStr(s string) (string, bool) {
+	runes := []rune(s)
+	if len(runes) > grepMaxLineLength {
+		return string(runes[:grepMaxLineLength]), true
+	}
+	return s, false
 }
 
 func truncateDisplay(s string, max int) string {

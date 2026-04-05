@@ -23,21 +23,21 @@ import (
 	"sync"
 	"time"
 
-	"github.com/hyperharness/hyperharness/internal/config"
-	"github.com/hyperharness/hyperharness/internal/memory"
-	"github.com/hyperharness/hyperharness/internal/providers"
-	"github.com/hyperharness/hyperharness/internal/sessions"
 	uuid "github.com/google/uuid"
+	"github.com/robertpelloni/hyperharness/internal/config"
+	"github.com/robertpelloni/hyperharness/internal/memory"
+	"github.com/robertpelloni/hyperharness/internal/providers"
+	"github.com/robertpelloni/hyperharness/internal/sessions"
 )
 
 // AgentMode identifies the agent operational mode.
 type AgentMode string
 
 const (
-	ModeInteractive AgentMode = "interactive"  // Full TUI with tool calls
-	ModePrint       AgentMode = "print"        // Print response and exit
-	ModeJSON        AgentMode = "json"         // JSON events on stdout
-	ModeRPC         AgentMode = "rpc"          // Stdin/stdout JSONL protocol
+	ModeInteractive AgentMode = "interactive" // Full TUI with tool calls
+	ModePrint       AgentMode = "print"       // Print response and exit
+	ModeJSON        AgentMode = "json"        // JSON events on stdout
+	ModeRPC         AgentMode = "rpc"         // Stdin/stdout JSONL protocol
 )
 
 // ToolResult is the result of executing a tool.
@@ -59,27 +59,27 @@ type ToolExecutor interface {
 type MessageEventType string
 
 const (
-	MessageSteering MessageEventType = "steering" // Interrupt after current tool call completes
+	MessageSteering MessageEventType = "steering"  // Interrupt after current tool call completes
 	MessageFollowUp MessageEventType = "follow-up" // Queue for after agent finishes
 )
 
 // QueuedMessage is a user message queued during agent execution.
 type QueuedMessage struct {
-	Type   MessageEventType
+	Type    MessageEventType
 	Content string
 	Time    time.Time
 }
 
 // Event types for the event bus.
 const (
-	EventUserMessage    = "user_message"
+	EventUserMessage       = "user_message"
 	EventAssistantResponse = "assistant_response"
-	EventToolCallStart  = "tool_call_start"
-	EventToolCallEnd    = "tool_call_end"
-	EventToolCallError  = "tool_call_error"
-	EventCompaction     = "compaction"
-	EventSessionBranch   = "session_branch"
-	EventError           = "error"
+	EventToolCallStart     = "tool_call_start"
+	EventToolCallEnd       = "tool_call_end"
+	EventToolCallError     = "tool_call_error"
+	EventCompaction        = "compaction"
+	EventSessionBranch     = "session_branch"
+	EventError             = "error"
 )
 
 // Event is a single event in the agent event stream.
@@ -98,12 +98,12 @@ type EventHandler func(event Event)
 // enhanced features from all integrated tools.
 type Runtime struct {
 	// Core components
-	config    *config.Settings
-	provider  providers.Provider
-	session   *sessions.Session
-	tools     map[string]ToolExecutor
-	memory    *memory.KnowledgeBase
-	
+	config   *config.Settings
+	provider providers.Provider
+	session  *sessions.Session
+	tools    map[string]ToolExecutor
+	memory   *memory.KnowledgeBase
+
 	// State
 	modelID       string
 	providerID    string
@@ -111,32 +111,32 @@ type Runtime struct {
 	compacting    bool
 	aborted       bool
 	abortSignal   context.CancelFunc
-	
+
 	// Message queue (Pi's steering/follow-up system)
 	messageQueue []*QueuedMessage
 	muQueue      sync.Mutex
-	
+
 	// Event handling
 	handlers   []EventHandler
 	muHandlers sync.RWMutex
-	
+
 	// Token/cost tracking
 	totalInputTokens  int
 	totalOutputTokens int
 	totalCost         float64
-	
+
 	// Context building
 	contextBuilder *ContextBuilder
-	
+
 	// System prompt
 	systemPrompt string
-	
+
 	// Mode
 	mode AgentMode
-	
+
 	// Compaction settings
 	compactionCtx *CompactionContext
-	
+
 	mu sync.RWMutex
 }
 
@@ -149,15 +149,15 @@ func NewRuntime(cfg *config.Settings, provider providers.Provider, session *sess
 		tools:    make(map[string]ToolExecutor),
 		mode:     mode,
 	}
-	
+
 	// Set up compaction context
 	if cfg.Compaction != nil && cfg.Compaction.Enabled {
 		r.compactionCtx = &CompactionContext{
-			ReserveTokens:   cfg.Compaction.ReserveTokens,
+			ReserveTokens:    cfg.Compaction.ReserveTokens,
 			KeepRecentTokens: cfg.Compaction.KeepRecentTokens,
 		}
 	}
-	
+
 	return r
 }
 
@@ -215,10 +215,10 @@ func (r *Runtime) Prompt(ctx context.Context, message string) (*providers.Comple
 	if err != nil {
 		return nil, fmt.Errorf("failed to build context: %w", err)
 	}
-	
+
 	// Build tool definitions
 	tools := r.buildToolDefs()
-	
+
 	// Execute the agent loop
 	return r.runAgentLoop(ctx, messages, tools)
 }
@@ -226,7 +226,7 @@ func (r *Runtime) Prompt(ctx context.Context, message string) (*providers.Comple
 // buildContext constructs the message history for the LLM.
 func (r *Runtime) buildContext(userMessage string) ([]providers.Message, error) {
 	var messages []providers.Message
-	
+
 	// Add system message if present
 	if r.systemPrompt != "" {
 		messages = append(messages, providers.Message{
@@ -236,7 +236,7 @@ func (r *Runtime) buildContext(userMessage string) ([]providers.Message, error) 
 			},
 		})
 	}
-	
+
 	// Add session history
 	history := r.session.GetFullHistory("")
 	for _, entry := range history {
@@ -283,7 +283,7 @@ func (r *Runtime) buildContext(userMessage string) ([]providers.Message, error) 
 			})
 		}
 	}
-	
+
 	// Add the current user message
 	messages = append(messages, providers.Message{
 		Role: "user",
@@ -291,7 +291,7 @@ func (r *Runtime) buildContext(userMessage string) ([]providers.Message, error) 
 			{Type: "text", Text: userMessage},
 		},
 	})
-	
+
 	// Check if context is too large and trigger compaction if needed
 	if r.compactionCtx != nil {
 		tokenCount := r.estimateTokenCount(messages)
@@ -300,7 +300,7 @@ func (r *Runtime) buildContext(userMessage string) ([]providers.Message, error) 
 			go r.compactIfNeeded(ctx)
 		}
 	}
-	
+
 	return messages, nil
 }
 
@@ -308,7 +308,7 @@ func (r *Runtime) buildContext(userMessage string) ([]providers.Message, error) 
 func (r *Runtime) buildToolDefs() []providers.ToolDefinition {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
-	
+
 	var defs []providers.ToolDefinition
 	for _, tool := range r.tools {
 		if !r.config.IsEnabled(tool.Name()) {
@@ -327,10 +327,10 @@ func (r *Runtime) buildToolDefs() []providers.ToolDefinition {
 func (r *Runtime) runAgentLoop(ctx context.Context, messages []providers.Message, tools []providers.ToolDefinition) (*providers.CompletionResult, error) {
 	maxToolCallRounds := 50 // Safety limit
 	round := 0
-	
+
 	for round < maxToolCallRounds {
 		round++
-		
+
 		// Build the completion request
 		req := providers.CompletionRequest{
 			ModelID:      r.modelID,
@@ -340,7 +340,7 @@ func (r *Runtime) runAgentLoop(ctx context.Context, messages []providers.Message
 			Stream:       true, // Always stream
 			ThinkingType: r.thinkingLevel,
 		}
-		
+
 		// Execute completion
 		result, err := r.executeCompletion(ctx, req)
 		if err != nil {
@@ -349,47 +349,47 @@ func (r *Runtime) runAgentLoop(ctx context.Context, messages []providers.Message
 			}
 			return nil, fmt.Errorf("completion failed: %w", err)
 		}
-		
+
 		// Track tokens and cost
 		if result.Usage != nil {
 			r.totalInputTokens += result.Usage.InputTokens
 			r.totalOutputTokens += result.Usage.OutputTokens
 			r.session.AddEntry(&sessions.SessionEntry{
-				ID:   uuid.New().String()[:8],
-				Type: sessions.EntryAssistant,
-				Content: resultContentString(result),
+				ID:         uuid.New().String()[:8],
+				Type:       sessions.EntryAssistant,
+				Content:    resultContentString(result),
 				TokenCount: result.Usage.OutputTokens,
 			})
 		}
-		
+
 		// Check if we need tool execution
 		if len(result.Content) > 0 && containsToolCall(result.Content) {
 			// Process tool calls
 			messages = append(messages, buildAssistantMessage(result))
-			
+
 			for _, block := range result.Content {
 				if block.Type == "tool_use" {
 					toolName := block.Name
 					if executor, ok := r.tools[toolName]; ok {
 						// Signal tool call start
 						r.emit(Event{Type: EventToolCallStart, Payload: map[string]string{"tool": toolName}})
-						
+
 						// Parse arguments
 						var args map[string]interface{}
 						if block.Input != nil {
 							args = block.Input
 						}
-						
+
 						// Check for abort
 						if r.aborted {
 							break
 						}
-						
+
 						// Execute tool
 						toCtx, cancel := context.WithTimeout(ctx, 5*time.Minute)
 						toResult, toErr := executor.Execute(toCtx, args, toCtx)
 						cancel()
-						
+
 						if toErr != nil {
 							r.emit(Event{Type: EventToolCallError, Payload: map[string]string{"tool": toolName, "error": toErr.Error()}})
 							messages = append(messages, providers.Message{
@@ -400,7 +400,7 @@ func (r *Runtime) runAgentLoop(ctx context.Context, messages []providers.Message
 							})
 						} else {
 							r.emit(Event{Type: EventToolCallEnd, Payload: map[string]string{"tool": toolName}})
-							
+
 							// Combine tool result text
 							var toolText string
 							for _, cb := range toResult.Content {
@@ -408,18 +408,18 @@ func (r *Runtime) runAgentLoop(ctx context.Context, messages []providers.Message
 									toolText += cb.Text
 								}
 							}
-							
+
 							// Save session entry
 							parentID := result.ID
 							r.session.AddEntry(&sessions.SessionEntry{
-								ID:        uuid.New().String()[:8],
-								ParentID:  &parentID,
-								Type:      sessions.EntryToolResult,
-								ToolName:  toolName,
+								ID:         uuid.New().String()[:8],
+								ParentID:   &parentID,
+								Type:       sessions.EntryToolResult,
+								ToolName:   toolName,
 								ToolResult: toolText,
-								Content:   toolText,
+								Content:    toolText,
 							})
-							
+
 							// Add result to messages
 							messages = append(messages, providers.Message{
 								Role: "user",
@@ -431,7 +431,7 @@ func (r *Runtime) runAgentLoop(ctx context.Context, messages []providers.Message
 					}
 				}
 			}
-			
+
 			// Check for queued steering messages
 			if queued := r.drainSteeringMessages(); len(queued) > 0 {
 				for _, qm := range queued {
@@ -443,7 +443,7 @@ func (r *Runtime) runAgentLoop(ctx context.Context, messages []providers.Message
 					})
 				}
 			}
-			
+
 			// Check if there's a final text response (done with tools)
 			hasTextResponse := false
 			for _, block := range result.Content {
@@ -455,14 +455,14 @@ func (r *Runtime) runAgentLoop(ctx context.Context, messages []providers.Message
 			if hasTextResponse {
 				return result, nil
 			}
-			
+
 			continue
 		}
-		
+
 		// No tool calls - we have a final response
 		return result, nil
 	}
-	
+
 	return nil, fmt.Errorf("exceeded maximum tool call rounds (%d)", maxToolCallRounds)
 }
 
@@ -474,13 +474,13 @@ func (r *Runtime) executeCompletion(ctx context.Context, req providers.Completio
 			req.ThinkingBudget = budget
 		}
 	}
-	
+
 	// Retry loop
 	maxRetries := 3
 	if r.config.Retry != nil && r.config.Retry.Enabled {
 		maxRetries = r.config.Retry.MaxRetries
 	}
-	
+
 	var lastErr error
 	for attempt := 0; attempt <= maxRetries; attempt++ {
 		if attempt > 0 {
@@ -492,12 +492,12 @@ func (r *Runtime) executeCompletion(ctx context.Context, req providers.Completio
 			case <-time.After(delay):
 			}
 		}
-		
+
 		// Try streaming
 		if req.Stream {
 			return r.executeStreaming(ctx, req)
 		}
-		
+
 		result, err := r.provider.CreateCompletion(ctx, req)
 		if err != nil {
 			lastErr = err
@@ -505,7 +505,7 @@ func (r *Runtime) executeCompletion(ctx context.Context, req providers.Completio
 		}
 		return result, nil
 	}
-	
+
 	return nil, fmt.Errorf("all retries exhausted: %w", lastErr)
 }
 
@@ -515,47 +515,47 @@ func (r *Runtime) executeStreaming(ctx context.Context, req providers.Completion
 	if err != nil {
 		return nil, err
 	}
-	
+
 	var fullText string
 	var thinking string
 	var toolUses []providers.StreamingToolUse
 	var finalResult *providers.CompletionResult
-	
+
 	for chunk := range ch {
 		if chunk.Err != nil {
 			return nil, chunk.Err
 		}
-		
+
 		if chunk.Content != "" {
 			fullText += chunk.Content
 		}
-		
+
 		if chunk.Thinking != "" {
 			thinking += chunk.Thinking
 		}
-		
+
 		if len(chunk.ToolUses) > 0 {
 			toolUses = append(toolUses, chunk.ToolUses...)
 		}
-		
+
 		if chunk.Usage != nil {
 			finalResult = &providers.CompletionResult{
-				ID:   chunk.Usage.String(),
-				Model: r.modelID,
-				Content: buildContentBlocks(fullText, thinking, toolUses),
+				ID:         chunk.Usage.String(),
+				Model:      r.modelID,
+				Content:    buildContentBlocks(fullText, thinking, toolUses),
 				StopReason: chunk.StopReason,
-				Usage: chunk.Usage,
+				Usage:      chunk.Usage,
 			}
 		}
 	}
-	
+
 	if finalResult == nil {
 		finalResult = &providers.CompletionResult{
-			Model: r.modelID,
+			Model:   r.modelID,
 			Content: buildContentBlocks(fullText, thinking, toolUses),
 		}
 	}
-	
+
 	return finalResult, nil
 }
 
@@ -564,9 +564,9 @@ func (r *Runtime) QueueSteeringMessage(content string) {
 	r.muQueue.Lock()
 	defer r.muQueue.Unlock()
 	r.messageQueue = append(r.messageQueue, &QueuedMessage{
-		Type: MessageSteering,
+		Type:    MessageSteering,
 		Content: content,
-		Time: time.Now(),
+		Time:    time.Now(),
 	})
 }
 
@@ -575,9 +575,9 @@ func (r *Runtime) QueueFollowUpMessage(content string) {
 	r.muQueue.Lock()
 	defer r.muQueue.Unlock()
 	r.messageQueue = append(r.messageQueue, &QueuedMessage{
-		Type: MessageFollowUp,
+		Type:    MessageFollowUp,
 		Content: content,
-		Time: time.Now(),
+		Time:    time.Now(),
 	})
 }
 
@@ -585,7 +585,7 @@ func (r *Runtime) QueueFollowUpMessage(content string) {
 func (r *Runtime) drainSteeringMessages() []*QueuedMessage {
 	r.muQueue.Lock()
 	defer r.muQueue.Unlock()
-	
+
 	var steering []*QueuedMessage
 	var remaining []*QueuedMessage
 	for _, qm := range r.messageQueue {
@@ -644,7 +644,7 @@ func containsToolCall(blocks []providers.ContentBlock) bool {
 
 func buildAssistantMessage(result *providers.CompletionResult) providers.Message {
 	return providers.Message{
-		Role: "assistant",
+		Role:    "assistant",
 		Content: result.Content,
 	}
 }
@@ -688,39 +688,39 @@ func (r *Runtime) compactIfNeeded(ctx context.Context) error {
 	}
 	r.compacting = true
 	r.mu.Unlock()
-	
+
 	defer func() {
 		r.mu.Lock()
 		r.compacting = false
 		r.mu.Unlock()
 	}()
-	
+
 	if r.compactionCtx == nil {
 		return nil
 	}
-	
+
 	// Trigger compaction via LLM
 	summary, err := r.compactionCtx.Summarize(ctx, r.provider, r.modelID, r.session)
 	if err != nil {
 		return fmt.Errorf("compaction failed: %w", err)
 	}
-	
+
 	// Determine range to compact
 	entries := r.session.GetFullHistory("")
 	compactFrom := entries[0].ID
 	compactTo := entries[len(entries)/2].ID
-	
+
 	r.session.CompactContext(summary, compactFrom, compactTo)
 	r.emit(Event{Type: EventCompaction, Payload: map[string]string{
 		"summary": summary,
 	}})
-	
+
 	return nil
 }
 
 // CompactionContext provides the context needed for compaction.
 type CompactionContext struct {
-	ReserveTokens   int
+	ReserveTokens    int
 	KeepRecentTokens int
 }
 
@@ -733,10 +733,10 @@ func (c *CompactionContext) Summarize(ctx context.Context, provider providers.Pr
 
 // ContextBuilder handles building the full context for the LLM.
 type ContextBuilder struct {
-	agencies   []string // AGENTS.md content
-	skills     []string // Skill content
-	prompts    []string // Prompt templates
-	sessions   []*sessions.SessionEntry
+	agencies []string // AGENTS.md content
+	skills   []string // Skill content
+	prompts  []string // Prompt templates
+	sessions []*sessions.SessionEntry
 }
 
 // NewContextBuilder creates a new context builder.

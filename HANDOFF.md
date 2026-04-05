@@ -1404,3 +1404,28 @@ Wrote comprehensive comparison to docs/analysis/HYPERHARNESS_VS_SUPERAI_COMPARIS
 - Both: green test suite, shared ancestor architecture
 - Key gap: hyperharness lacks agent/ depth, tools_extra.go, agents/ subpackage extensions
 - Key advantage: hyperharness has richer TUI, better module identity, exhaustive docs trail
+
+## Additional work completed on 2026-04-05 (superai foundation tools assimilation tranche)
+- Ported higher-value `../superai` native tool behavior into canonical `foundation/pi` for:
+  - `grep`
+  - `find`
+  - `ls`
+- Added new detail payloads:
+  - `GrepToolDetails`
+  - `FindToolDetails`
+  - `LsToolDetails`
+- Added focused regression coverage in:
+  - `foundation/pi/tools_extra_port_test.go`
+- Fixed remaining import-path mismatch blocking buildability during module identity migration in:
+  - `cmd/hyperharness/main.go`
+  - `internal/agent/runtime.go`
+- Added tranche documentation:
+  - `docs/analysis/SUPERAI_FOUNDATION_TOOLS_ASSIMILATION_TRANCHE_2026-04-05.md`
+
+## Latest validation after superai foundation tools assimilation tranche
+- `go test ./tui ./cmd ./foundation/...`
+
+## Updated recommendation after superai foundation tools assimilation tranche
+1. Keep assimilating `superai` into `hyperharness` via the canonical `foundation/pi` and validated package boundaries.
+2. Prefer low-blast-radius imports first: tool/runtime behavior before deeper agent autonomy surfaces.
+3. Next, begin agent-side assimilation with safer utility files (`context.go`, `compare.go`, `diff.go`) before larger autonomy loops.

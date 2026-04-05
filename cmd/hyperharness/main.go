@@ -12,16 +12,16 @@ import (
 	"strings"
 	"syscall"
 
-	"github.com/hyperharness/hyperharness/internal/agent"
 	"context"
+	"github.com/robertpelloni/hyperharness/internal/agent"
 
-	"github.com/hyperharness/hyperharness/internal/config"
-	"github.com/hyperharness/hyperharness/internal/memory"
-	"github.com/hyperharness/hyperharness/internal/mcp"
-	"github.com/hyperharness/hyperharness/internal/providers"
-	"github.com/hyperharness/hyperharness/internal/sessions"
-	"github.com/hyperharness/hyperharness/internal/tools"
-	"github.com/hyperharness/hyperharness/internal/ui"
+	"github.com/robertpelloni/hyperharness/internal/config"
+	"github.com/robertpelloni/hyperharness/internal/mcp"
+	"github.com/robertpelloni/hyperharness/internal/memory"
+	"github.com/robertpelloni/hyperharness/internal/providers"
+	"github.com/robertpelloni/hyperharness/internal/sessions"
+	"github.com/robertpelloni/hyperharness/internal/tools"
+	"github.com/robertpelloni/hyperharness/internal/ui"
 	"github.com/spf13/cobra"
 )
 
@@ -270,7 +270,7 @@ Usage examples:
 
 	// Flags
 	flags := cmd.Flags()
-	
+
 	// Mode flags
 	flags.BoolVarP(&printMode, "print", "p", false, "Print response and exit")
 	flags.BoolVar(&jsonMode, "mode", false, "Output events as JSON lines (use json)")
@@ -314,7 +314,7 @@ Usage examples:
 func loadConfig(cwd string) (*config.Manager, error) {
 	globalDir := config.ConfigDir()
 	projectDir := config.ProjectConfigDir()
-	
+
 	return config.NewManager(globalDir, projectDir)
 }
 
@@ -373,7 +373,7 @@ func resolveSession(mgr *sessions.Manager, sessionPath, forkPath string, continu
 func processAtFiles(message string, cwd string) (string, error) {
 	var result strings.Builder
 	words := strings.Fields(message)
-	
+
 	for _, word := range words {
 		if strings.HasPrefix(word, "@") {
 			filePath := word[1:]
@@ -385,14 +385,14 @@ func processAtFiles(message string, cwd string) (string, error) {
 			if err != nil {
 				return message, fmt.Errorf("failed to read file %s: %w", word, err)
 			}
-			result.WriteString(fmt.Sprintf("\n--- Contents of %s ---\n%s\n--- End of %s ---\n", 
+			result.WriteString(fmt.Sprintf("\n--- Contents of %s ---\n%s\n--- End of %s ---\n",
 				filepath.Base(filePath), string(data), filepath.Base(filePath)))
 		} else {
 			result.WriteString(word)
 			result.WriteString(" ")
 		}
 	}
-	
+
 	return strings.TrimSpace(result.String()), nil
 }
 
@@ -402,7 +402,7 @@ func runPrintMode(runtime *agent.Runtime, ctx context.Context, message string) e
 	if err != nil {
 		return err
 	}
-	
+
 	content := ""
 	for _, block := range result.Content {
 		if block.Type == "text" {
@@ -420,7 +420,7 @@ func runJSONMode(runtime *agent.Runtime, ctx context.Context, message string) er
 		fmt.Fprintf(os.Stderr, `{"type":"error","message":"%s"}%s`, err.Error(), "\n")
 		return err
 	}
-	
+
 	// Output as JSON
 	content := ""
 	for _, block := range result.Content {
@@ -441,12 +441,12 @@ func runRPCMode(runtime *agent.Runtime) error {
 	// JSONL protocol over stdin/stdout
 	// See docs/rpc.md for full specification
 	fmt.Fprintln(os.Stderr, "RPC mode: ready for JSONL input on stdin")
-	
+
 	// Implementation would read JSON events from stdin and write responses to stdout
 	// Format: {"type":"prompt","message":"...","id":"..."}
 	// Response: {"type":"chunk","content":"...","id":"..."}
 	// End: {"type":"done","id":"..."}
-	
+
 	return nil
 }
 
@@ -455,7 +455,7 @@ func runInteractiveMode(runtime *agent.Runtime, ctx context.Context, session *se
 	// Setup signal handling
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
-	
+
 	sigChan := make(chan os.Signal, 1)
 	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
 	go func() {
@@ -475,11 +475,11 @@ func runInteractiveMode(runtime *agent.Runtime, ctx context.Context, session *se
 			fmt.Print("hyperharness> ")
 			var input string
 			fmt.Scanln(&input)
-			
+
 			if input == "" {
 				continue
 			}
-			
+
 			// Check for commands
 			if strings.HasPrefix(input, "/") {
 				if err := handleCommand(input, runtime, session, cfg); err != nil {
@@ -487,14 +487,14 @@ func runInteractiveMode(runtime *agent.Runtime, ctx context.Context, session *se
 				}
 				continue
 			}
-			
+
 			// Process input
 			result, err := runtime.Prompt(ctx, input)
 			if err != nil {
 				fmt.Fprintf(os.Stderr, "Error: %v\n", err)
 				continue
 			}
-			
+
 			// Print response
 			content := ""
 			for _, block := range result.Content {
@@ -515,7 +515,7 @@ func handleCommand(input string, runtime *agent.Runtime, session *sessions.Sessi
 	if len(parts) > 1 {
 		args = parts[1]
 	}
-	
+
 	switch cmd {
 	case "model":
 		fmt.Printf("Current model: %s (provider: %s)\n", session.ModelID, session.Provider)
@@ -535,7 +535,7 @@ func handleCommand(input string, runtime *agent.Runtime, session *sessions.Sessi
 	default:
 		fmt.Printf("Unknown command: /%s. Type /help for available commands.\n", cmd)
 	}
-	
+
 	return nil
 }
 
@@ -543,13 +543,13 @@ func handleCommand(input string, runtime *agent.Runtime, session *sessions.Sessi
 func printStartupHeader(cfg *config.Settings, session *sessions.Session) {
 	fmt.Println("🧬 hyperharness " + Version)
 	fmt.Println("=" + strings.Repeat("=", 59))
-	
+
 	agentsFiles := config.FindAgentFiles()
 	if len(agentsFiles) > 0 {
 		fmt.Printf("📋 AGENTS.md: %s\n", agentsFiles)
 	}
-	
-	fmt.Printf("💾 Session: %s | Model: %s | Provider: %s\n", 
+
+	fmt.Printf("💾 Session: %s | Model: %s | Provider: %s\n",
 		session.ID, session.ModelID, session.Provider)
 	fmt.Printf("📁 Working directory: %s\n", session.CWD)
 	fmt.Println("=" + strings.Repeat("=", 59))
@@ -615,6 +615,6 @@ func getProviderAPIKey(t providers.ProviderType) string {
 
 // printVersion prints version information.
 func printVersion() {
-	fmt.Printf("hyperharness %s (commit: %s, built: %s, %s)\n", 
+	fmt.Printf("hyperharness %s (commit: %s, built: %s, %s)\n",
 		Version, Commit, BuildDate, GoVersion)
 }
