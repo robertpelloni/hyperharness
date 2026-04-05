@@ -166,6 +166,14 @@ func (r *Runtime) BranchWithSummary(sessionID, targetID, summary string, details
 	return r.sessionStore.BranchWithSummary(sessionID, targetID, summary, details)
 }
 
+func (r *Runtime) GenerateBranchSummary(ctx context.Context, prep *BranchSummaryPreparation, generator SummaryGenerator) (string, error) {
+	return r.sessionStore.GenerateBranchSummary(ctx, prep, generator)
+}
+
+func (r *Runtime) BranchWithGeneratedSummary(ctx context.Context, sessionID, targetID string, maxTokens int, generator SummaryGenerator, details any) (*SessionFile, string, error) {
+	return r.sessionStore.BranchWithGeneratedSummary(ctx, sessionID, targetID, maxTokens, generator, details)
+}
+
 func (r *Runtime) appendToolRun(sessionID, toolName string, input json.RawMessage, result *ToolResult) error {
 	session, err := r.sessionStore.Load(sessionID)
 	if err != nil {

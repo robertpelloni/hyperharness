@@ -302,3 +302,33 @@
 1. Keep `foundation/*` green and canonical.
 2. Add native summary-generation hooks and/or provider-backed summary generation next.
 3. Then begin surfacing truthful `/tree`-style CLI/TUI branch workflows on top of the new summarization substrate.
+
+## Additional work completed later on 2026-04-04 (summary-generation hooks tranche)
+- Added pluggable `SummaryGenerator` interface in `foundation/pi/summary.go`.
+- Added `SummaryGeneratorFunc` adapter for lightweight generator injection.
+- Added default local `DeterministicSummaryGenerator` that produces structured branch summaries without any network/provider dependency.
+- Added deterministic structured-summary inference helpers:
+  - `inferGoal`
+  - `inferCompletedItems`
+  - `inferNextSteps`
+  - `inferCriticalContext`
+- Added session-store generation APIs:
+  - `GenerateBranchSummary(ctx, prep, generator)`
+  - `BranchWithGeneratedSummary(ctx, sessionID, targetID, maxTokens, generator, details)`
+- Added runtime wrappers in `foundation/pi/runtime.go`:
+  - `GenerateBranchSummary`
+  - `BranchWithGeneratedSummary`
+- Added verification in new file:
+  - `foundation/pi/summary_test.go`
+- Added detailed analysis doc:
+  - `docs/analysis/PI_SUMMARY_GENERATION_HOOKS_TRANCHE_2026-04-04.md`
+
+## Latest validation after summary-generation hooks tranche
+- `gofmt -w foundation/pi/summary.go foundation/pi/runtime.go foundation/pi/summary_test.go`
+- `go test ./foundation/pi/...`
+- `go test ./foundation/...`
+
+## Updated recommendation after summary-generation hooks tranche
+1. Keep `foundation/*` green and canonical.
+2. Mirror the same hook/generator architecture for compaction preparation next.
+3. Then start surfacing the now-real summary-generation workflow in CLI/TUI branch navigation (`/tree`-style behavior).
