@@ -47,6 +47,8 @@ func ProcessSlashCommand(cmd string, m *model) (tea.Model, tea.Cmd) {
 		return handleTreeBrowser(m)
 	case "/tree-pane":
 		return handleTreePane(m)
+	case "/tree-pane-help":
+		return handleTreePaneHelp(m)
 	case "/tree-pane-show":
 		return handleTreePaneShow(m)
 	case "/tree-pane-hide":
@@ -140,6 +142,7 @@ func handleHelp(m *model) (tea.Model, tea.Cmd) {
   /tree-select - Show a numbered entry selector for the active foundation session
   /tree-browser - Open a cursor-driven tree browser for the active foundation session
   /tree-pane - Toggle a persistent tree pane while continuing normal prompt interaction
+  /tree-pane-help - Show only the tree pane/browser control surface
   /tree-pane-show - Explicitly show/pin the persistent tree pane
   /tree-pane-hide - Explicitly hide the persistent tree pane
   /tree-pane-size <n> - Set the persistent tree pane viewport height
@@ -366,6 +369,35 @@ func handleTreeBrowser(m *model) (tea.Model, tea.Cmd) {
 	m.browserItems = items
 	m.browserIndex = 0
 	m.browserActive = true
+	return *m, nil
+}
+
+func handleTreePaneHelp(m *model) (tea.Model, tea.Cmd) {
+	m.loading = false
+	m.history = append(m.history, `[Foundation Tree Pane Help]
+  /tree-pane                     - Toggle persistent pane
+  /tree-pane-show|hide           - Explicitly show or hide the pane
+  /tree-pane-focus               - Toggle pane focus
+  /tree-pane-focus-on|off        - Explicitly set pane focus
+  /tree-pane-size <n>            - Set pane viewport height
+  /tree-pane-size-cycle          - Cycle common pane heights
+  /tree-pane-position <top|bottom>
+  /tree-pane-top|bottom          - Explicitly set pane position
+  /tree-pane-position-toggle     - Toggle pane position
+  /tree-pane-preview <on|off>
+  /tree-pane-preview-on|off      - Explicit preview control
+  /tree-pane-preview-toggle      - Toggle pane preview
+  /tree-pane-grouped <on|off|toggle>
+  /tree-pane-grouped-on|off      - Explicit grouped control
+  /tree-pane-grouped-toggle      - Toggle grouped mode
+  /tree-pane-preset <name>       - Apply named preset
+  /tree-pane-compact|detailed|navigation|review
+  /tree-pane-cycle               - Cycle named presets
+  /tree-pane-status              - Show current pane state
+  /tree-pane-refresh             - Manually refresh from canonical runtime
+  /tree-pane-reset               - Reset pane config to defaults
+  /tree-browser                  - Open modal browser
+  /tree-browser-clear            - Clear transient browser state`)
 	return *m, nil
 }
 

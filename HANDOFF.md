@@ -1348,3 +1348,27 @@
 1. Keep `foundation/*`, `cmd`, and `tui` green and aligned to the same canonical runtime.
 2. Continue adding explicit aliases only where they clearly improve confidence or reduce friction.
 3. Keep direct pane position aliases as wrappers over the existing position-state transitions.
+
+## Additional work completed later on 2026-04-04 (pane position alias tranche)
+- Added direct TUI slash aliases for pane placement:
+  - `/tree-pane-top`
+  - `/tree-pane-bottom`
+- Added focused regression coverage verifying direct top/bottom pane placement aliases.
+- Added detailed analysis doc:
+  - `docs/analysis/TUI_PANE_POSITION_ALIAS_TRANCHE_2026-04-04.md`
+
+## Additional work completed later on 2026-04-04 (pane help tranche)
+- Added new TUI slash command:
+  - `/tree-pane-help`
+- Added focused regression coverage verifying pane help output and command discoverability.
+- Added detailed analysis doc:
+  - `docs/analysis/TUI_PANE_HELP_TRANCHE_2026-04-04.md`
+
+## Latest validation after pane help tranche
+- `gofmt -w tui/slash.go tui/slash_test.go`
+- `go test ./tui ./cmd ./foundation/...`
+
+## Updated recommendation after pane help tranche
+1. Keep `foundation/*`, `cmd`, and `tui` green and aligned to the same canonical runtime.
+2. Continue only where subsystem-local discoverability or tiny controls clearly reduce repeated operator friction.
+3. Keep pane help as a discoverability surface only, never as a second source of control semantics.

@@ -708,6 +708,18 @@ func TestProcessSlashCommandTreePanePresetAliases(t *testing.T) {
 	}
 }
 
+func TestProcessSlashCommandTreePaneHelp(t *testing.T) {
+	m := model{director: agents.NewDirector(&agents.DefaultProvider{})}
+	mdl, _ := ProcessSlashCommand("/tree-pane-help", &m)
+	updated := mdl.(model)
+	if len(updated.history) == 0 || !strings.Contains(updated.history[len(updated.history)-1], "[Foundation Tree Pane Help]") {
+		t.Fatalf("expected tree pane help output, got %#v", updated.history)
+	}
+	if !strings.Contains(updated.history[len(updated.history)-1], "/tree-pane-preview-toggle") {
+		t.Fatalf("expected pane help to include quick toggle commands, got %s", updated.history[len(updated.history)-1])
+	}
+}
+
 func TestProcessSlashCommandTreePaneStatus(t *testing.T) {
 	m := model{director: agents.NewDirector(&agents.DefaultProvider{}), browserPinned: true, browserPinnedFocus: true, browserPaneHeight: 10, browserPanePosition: "bottom", browserPanePreview: false, browserGrouped: true, browserFilter: "abc"}
 	mdl, _ := ProcessSlashCommand("/tree-pane-status", &m)
