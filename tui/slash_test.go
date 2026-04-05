@@ -640,6 +640,30 @@ func TestProcessSlashCommandTreePanePreset(t *testing.T) {
 	}
 }
 
+func TestProcessSlashCommandTreePanePresetAliases(t *testing.T) {
+	m := model{director: agents.NewDirector(&agents.DefaultProvider{}), browserPaneHeight: 8, browserPanePreview: true, browserPanePosition: "top", browserGrouped: false}
+	mdl, _ := ProcessSlashCommand("/tree-pane-compact", &m)
+	updated := mdl.(model)
+	if updated.browserPaneHeight != 6 || updated.browserPanePreview != false || updated.browserPanePosition != "bottom" || updated.browserGrouped != false {
+		t.Fatalf("expected compact alias to apply compact preset, got %#v", updated)
+	}
+	mdl, _ = ProcessSlashCommand("/tree-pane-navigation", &updated)
+	updated = mdl.(model)
+	if updated.browserPaneHeight != 10 || updated.browserPanePreview != false || updated.browserPanePosition != "bottom" || updated.browserGrouped != true {
+		t.Fatalf("expected navigation alias to apply navigation preset, got %#v", updated)
+	}
+	mdl, _ = ProcessSlashCommand("/tree-pane-detailed", &updated)
+	updated = mdl.(model)
+	if updated.browserPaneHeight != 12 || updated.browserPanePreview != true || updated.browserPanePosition != "top" || updated.browserGrouped != false {
+		t.Fatalf("expected detailed alias to apply detailed preset, got %#v", updated)
+	}
+	mdl, _ = ProcessSlashCommand("/tree-pane-review", &updated)
+	updated = mdl.(model)
+	if updated.browserPaneHeight != 14 || updated.browserPanePreview != true || updated.browserPanePosition != "top" || updated.browserGrouped != true {
+		t.Fatalf("expected review alias to apply review preset, got %#v", updated)
+	}
+}
+
 func TestProcessSlashCommandTreePaneStatus(t *testing.T) {
 	m := model{director: agents.NewDirector(&agents.DefaultProvider{}), browserPinned: true, browserPinnedFocus: true, browserPaneHeight: 10, browserPanePosition: "bottom", browserPanePreview: false, browserGrouped: true, browserFilter: "abc"}
 	mdl, _ := ProcessSlashCommand("/tree-pane-status", &m)

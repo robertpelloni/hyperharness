@@ -71,6 +71,14 @@ func ProcessSlashCommand(cmd string, m *model) (tea.Model, tea.Cmd) {
 		return handleTreePaneStatus(m)
 	case "/tree-pane-preset":
 		return handleTreePanePreset(m, strings.TrimSpace(strings.TrimPrefix(cmd, "/tree-pane-preset")))
+	case "/tree-pane-compact":
+		return handleTreePanePreset(m, "compact")
+	case "/tree-pane-detailed":
+		return handleTreePanePreset(m, "detailed")
+	case "/tree-pane-navigation":
+		return handleTreePanePreset(m, "navigation")
+	case "/tree-pane-review":
+		return handleTreePanePreset(m, "review")
 	case "/tree-pane-position":
 		return handleTreePanePosition(m, strings.TrimSpace(strings.TrimPrefix(cmd, "/tree-pane-position")))
 	case "/tree-pane-position-toggle":
@@ -124,6 +132,10 @@ func handleHelp(m *model) (tea.Model, tea.Cmd) {
   /tree-pane-reset - Reset pane configuration to defaults
   /tree-pane-status - Show the current persistent pane configuration
   /tree-pane-preset <compact|detailed|navigation|review> - Apply a named pane layout preset
+  /tree-pane-compact - Apply the compact pane preset
+  /tree-pane-detailed - Apply the detailed pane preset
+  /tree-pane-navigation - Apply the navigation pane preset
+  /tree-pane-review - Apply the review pane preset
   /tree-pane-position <top|bottom> - Set the persistent tree pane position
   /tree-pane-position-toggle - Quickly toggle pane position between top and bottom
   /tree-pane-focus - Toggle keyboard focus for the pinned tree pane

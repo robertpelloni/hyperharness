@@ -1242,3 +1242,22 @@
 1. Keep `foundation/*`, `cmd`, and `tui` green and aligned to the same canonical runtime.
 2. Continue only with convenience additions that clearly reduce repeated operator friction.
 3. Keep quick-toggle aliases as wrappers over existing state transitions, never new semantics.
+
+## Additional work completed later on 2026-04-04 (pane preset alias tranche)
+- Added direct TUI slash aliases for named pane presets:
+  - `/tree-pane-compact`
+  - `/tree-pane-detailed`
+  - `/tree-pane-navigation`
+  - `/tree-pane-review`
+- Added focused regression coverage verifying alias-to-preset behavior.
+- Added detailed analysis doc:
+  - `docs/analysis/TUI_PANE_PRESET_ALIAS_TRANCHE_2026-04-04.md`
+
+## Latest validation after pane preset alias tranche
+- `gofmt -w tui/slash.go tui/slash_test.go`
+- `go test ./tui ./cmd ./foundation/...`
+
+## Updated recommendation after pane preset alias tranche
+1. Keep `foundation/*`, `cmd`, and `tui` green and aligned to the same canonical runtime.
+2. Continue only with shortcut controls that clearly improve repeated-use ergonomics without fragmenting behavior.
+3. Keep pane preset aliases as direct wrappers over the same underlying preset logic.
