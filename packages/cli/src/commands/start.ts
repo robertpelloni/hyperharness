@@ -374,6 +374,39 @@ export function resolveGoConfigDir(
   return `${resolvedMainDataDir}-go`;
 }
 
+export function resolveGoRuntimeSpawnSpec(
+  repoRoot: string,
+  env: NodeJS.ProcessEnv = process.env,
+  pathExists: (path: string) => boolean = existsSync,
+): {
+  command: string;
+  args: string[];
+  cwd: string;
+  usingPrebuiltBinary: boolean;
+} {
+  const goRoot = join(repoRoot, 'go');
+  const builtBinary = process.platform === 'win32'
+    ? join(goRoot, 'hypercode.exe')
+    : join(goRoot, 'hypercode');
+  const forceSourceLaunch = env.HYPERCODE_GO_USE_SOURCE === '1';
+
+  if (!forceSourceLaunch && pathExists(builtBinary)) {
+    return {
+      command: builtBinary,
+      args: [],
+      cwd: goRoot,
+      usingPrebuiltBinary: true,
+    };
+  }
+
+  return {
+    command: 'go',
+    args: ['run', './cmd/hypercode'],
+    cwd: goRoot,
+    usingPrebuiltBinary: false,
+  };
+}
+
 export function runtimeSupportsIntegratedDashboard(runtime: Exclude<HypercodeRuntimeMode, 'auto'>): boolean {
   return runtime === 'node';
 }
@@ -654,20 +687,20 @@ export async function startGoRuntime(
   }
 
   const goConfigDir = resolveGoConfigDir(options.dataDir);
+  const launchSpec = resolveGoRuntimeSpawnSpec(options.repoRoot);
   let childExited = false;
   let launchError: string | null = null;
   const child = spawnImpl(
-    'go',
+    launchSpec.command,
     [
-      'run',
-      './cmd/hypercode',
+      ...launchSpec.args,
       'serve',
       '--host', options.host,
       '--port', String(options.port),
       '--config-dir', goConfigDir,
     ],
     {
-      cwd: goRoot,
+      cwd: launchSpec.cwd,
       stdio: 'inherit',
       env: {
         ...process.env,

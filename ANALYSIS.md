@@ -108,6 +108,18 @@ Why this matters:
 - it makes the actual launch phase match the already-validated built CLI artifact
 - it reduces dependence on root script indirection after install/build decisions are already complete
 
+#### Prebuilt Go binary runtime launch preference
+Updated `packages/cli/src/commands/start.ts` so the Go runtime launcher now:
+- prefers the already-built `go/hypercode(.exe)` binary when it exists
+- falls back to `go run ./cmd/hypercode` only when the prebuilt binary is absent
+- allows forcing source launch with:
+  - `HYPERCODE_GO_USE_SOURCE=1`
+
+Why this matters:
+- it makes Go-primary launch use the same compiled artifact that the startup build profile already validates
+- it reduces repeated `go run` compilation overhead at runtime
+- it moves the actual control-plane launch path closer to a real production-style Go-primary binary handoff
+
 #### Lockfile hygiene
 - The refreshed `pnpm-lock.yaml` no longer contains legacy-name references for the main workspace packages.
 
@@ -124,6 +136,7 @@ Results:
 
 #### Go-primary startup validation
 ```bash
+pnpm -C packages/cli exec vitest run src/commands/start.test.ts
 pnpm -C packages/cli run build
 cd go && go build -buildvcs=false ./cmd/hypercode
 node scripts/build_startup.mjs --profile=go-primary
@@ -132,6 +145,7 @@ node packages/cli/dist/cli/src/index.js start --help
 ```
 
 Results:
+- CLI start-command regression tests passed
 - CLI build passed
 - Go control-plane build passed
 - new Go-primary startup build profile passed
@@ -158,6 +172,7 @@ Result:
 - the new Go-primary startup build path succeeds
 - the new install-skip readiness probe succeeds for the current workspace state
 - the direct built-CLI launch path succeeds
+- the CLI Go runtime launcher now prefers the prebuilt Go binary when available
 - `start.bat` now validates Go-first startup surfaces by default for `auto`/`go` runtime modes instead of always requiring a full workspace build first
 - `start.bat` can now skip `pnpm install` in Go-primary mode when the workspace is already ready
 - `start.bat` now launches directly through the built CLI when available instead of depending on `pnpm start` for the final handoff

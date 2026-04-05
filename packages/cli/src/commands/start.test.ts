@@ -16,6 +16,7 @@ import {
     resolveDashboardUrl,
     resolveDataDir,
     resolveGoConfigDir,
+    resolveGoRuntimeSpawnSpec,
     resolveRuntimePreference,
     runtimeSupportsIntegratedDashboard,
     syncLockHandlePort,
@@ -379,6 +380,32 @@ describe('runtime selection helpers', () => {
     it('only treats the Node runtime as dashboard-compatible for now', () => {
         expect(runtimeSupportsIntegratedDashboard('node')).toBe(true);
         expect(runtimeSupportsIntegratedDashboard('go')).toBe(false);
+    });
+
+    it('prefers the built Go binary when available', () => {
+        const repoRoot = process.platform === 'win32'
+            ? 'C:/repo/hypercode'
+            : '/repo/hypercode';
+        const spec = resolveGoRuntimeSpawnSpec(repoRoot, {}, () => true);
+
+        if (process.platform === 'win32') {
+            expect(spec.command.replaceAll('\\', '/')).toBe('C:/repo/hypercode/go/hypercode.exe');
+        } else {
+            expect(spec.command).toBe('/repo/hypercode/go/hypercode');
+        }
+        expect(spec.args).toEqual([]);
+        expect(spec.usingPrebuiltBinary).toBe(true);
+    });
+
+    it('can force source-based Go launch when requested', () => {
+        const repoRoot = process.platform === 'win32'
+            ? 'C:/repo/hypercode'
+            : '/repo/hypercode';
+        const spec = resolveGoRuntimeSpawnSpec(repoRoot, { HYPERCODE_GO_USE_SOURCE: '1' }, () => true);
+
+        expect(spec.command).toBe('go');
+        expect(spec.args).toEqual(['run', './cmd/hypercode']);
+        expect(spec.usingPrebuiltBinary).toBe(false);
     });
 });
 
