@@ -12,11 +12,12 @@ import (
 )
 
 type model struct {
-	director *agents.Director
-	input    string
-	history  []string
-	loading  bool
-	spinner  spinner.Model
+	director            *agents.Director
+	input               string
+	history             []string
+	loading             bool
+	spinner             spinner.Model
+	foundationSessionID string
 }
 
 func initialModel() model {
@@ -66,6 +67,10 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.history = append(m.history, "You: "+req)
 				m.input = ""
 				m.loading = true
+				if sessionID, err := ensureFoundationSession(&m); err == nil {
+					m.foundationSessionID = sessionID
+					_ = appendFoundationUserText(m.director.WorkingDir, m.foundationSessionID, req)
+				}
 				cmds = append(cmds, func() tea.Msg {
 					response, err := buildPromptResponse(m.director, req)
 					if err != nil {
@@ -85,10 +90,16 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case string:
 		m.loading = false
 		m.history = append(m.history, "Borg-Go-Director: "+msg)
+		if m.foundationSessionID != "" {
+			_ = appendFoundationAssistantText(m.director.WorkingDir, m.foundationSessionID, msg)
+		}
 
 	case PromptDisplayMsg:
 		m.loading = false
 		m.history = append(m.history, "Borg-Go-Director: "+msg.Display)
+		if m.foundationSessionID != "" {
+			_ = appendFoundationAssistantText(m.director.WorkingDir, m.foundationSessionID, msg.Display)
+		}
 
 	case ShellProposalMsg:
 		m.loading = false

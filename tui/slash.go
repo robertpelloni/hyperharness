@@ -35,6 +35,12 @@ func ProcessSlashCommand(cmd string, m *model) (tea.Model, tea.Cmd) {
 		return handleAdapters(m)
 	case "/mcp", "/mcptools":
 		return handleMCPTools(m)
+	case "/summary-compact":
+		return handleSummaryCompact(m, strings.TrimSpace(strings.TrimPrefix(cmd, "/summary-compact")))
+	case "/summary-branch":
+		return handleSummaryBranch(m, strings.TrimSpace(strings.TrimPrefix(cmd, "/summary-branch")))
+	case "/fsession":
+		return handleFoundationSession(m)
 	case "/exit", "/quit":
 		return *m, tea.Quit
 	default:
@@ -54,6 +60,9 @@ func handleHelp(m *model) (tea.Model, tea.Cmd) {
   /providers - Show provider visibility and defaults
   /adapters  - Show HyperCode/Borg + MCP adapter status
   /mcp       - Show adapter-backed MCP tool hints
+  /fsession  - Show or create the active foundation session
+  /summary-compact [keepRecentTokens] - Generate a native compaction summary for the active foundation session
+  /summary-branch <targetEntryId> [maxTokens] - Generate a native branch summary toward a target entry
   /exit      - Closes hypercode`)
 	return *m, nil
 }
@@ -132,6 +141,58 @@ func handleMCPTools(m *model) (tea.Model, tea.Cmd) {
 	}
 	payload, _ := json.MarshalIndent(map[string]any{"tools": tools}, "", "  ")
 	m.history = append(m.history, "[Foundation MCP Tools]\n"+string(payload))
+	return *m, nil
+}
+
+func handleFoundationSession(m *model) (tea.Model, tea.Cmd) {
+	m.loading = false
+	sessionID, err := ensureFoundationSession(m)
+	if err != nil {
+		m.history = append(m.history, fmt.Sprintf("[Error] foundation session unavailable: %v", err))
+		return *m, nil
+	}
+	m.history = append(m.history, fmt.Sprintf("[Foundation Session]\n%s", sessionID))
+	return *m, nil
+}
+
+func handleSummaryCompact(m *model, arg string) (tea.Model, tea.Cmd) {
+	m.loading = false
+	sessionID, err := ensureFoundationSession(m)
+	if err != nil {
+		m.history = append(m.history, fmt.Sprintf("[Error] foundation session unavailable: %v", err))
+		return *m, nil
+	}
+	keepRecent := 0
+	if strings.TrimSpace(arg) != "" {
+		fmt.Sscanf(strings.TrimSpace(arg), "%d", &keepRecent)
+	}
+	display, err := buildFoundationCompactionDisplay(m.director.WorkingDir, sessionID, keepRecent)
+	if err != nil {
+		m.history = append(m.history, fmt.Sprintf("[Error] compaction summary failed: %v", err))
+		return *m, nil
+	}
+	m.history = append(m.history, display)
+	return *m, nil
+}
+
+func handleSummaryBranch(m *model, arg string) (tea.Model, tea.Cmd) {
+	m.loading = false
+	sessionID, err := ensureFoundationSession(m)
+	if err != nil {
+		m.history = append(m.history, fmt.Sprintf("[Error] foundation session unavailable: %v", err))
+		return *m, nil
+	}
+	targetID, maxTokens := parseSummaryArgs(arg)
+	if strings.TrimSpace(targetID) == "" {
+		m.history = append(m.history, "[Error] /summary-branch requires a target entry id")
+		return *m, nil
+	}
+	display, err := buildFoundationBranchSummaryDisplay(m.director.WorkingDir, sessionID, targetID, maxTokens)
+	if err != nil {
+		m.history = append(m.history, fmt.Sprintf("[Error] branch summary failed: %v", err))
+		return *m, nil
+	}
+	m.history = append(m.history, display)
 	return *m, nil
 }
 

@@ -396,3 +396,32 @@
 1. Keep `foundation/*` green and canonical.
 2. Surface the same truthful summary-generation flows in the TUI next.
 3. Then consider HTTP exposure and provider-backed generation as layered enhancements, not replacements for the deterministic baseline.
+
+## Additional work completed later on 2026-04-04 (TUI summary slash tranche)
+- Added minimal canonical foundation session bridge into the TUI model via `foundationSessionID`.
+- Added lazy foundation session creation helper:
+  - `ensureFoundationSession`
+- Added TUI→foundation session append helpers:
+  - `appendFoundationUserText`
+  - `appendFoundationAssistantText`
+- Added TUI summary bridge helpers:
+  - `buildFoundationCompactionDisplay`
+  - `buildFoundationBranchSummaryDisplay`
+  - `parseSummaryArgs`
+- Added new TUI slash commands:
+  - `/fsession`
+  - `/summary-compact [keepRecentTokens]`
+  - `/summary-branch <targetEntryId> [maxTokens]`
+- Updated `/help` output in the TUI to document those new slash commands.
+- Expanded `tui/slash_test.go` to verify the new TUI summary surfaces.
+- Added detailed analysis doc:
+  - `docs/analysis/TUI_SUMMARY_SLASH_TRANCHE_2026-04-04.md`
+
+## Latest validation after TUI summary slash tranche
+- `gofmt -w tui/chat.go tui/foundation_bridge.go tui/slash.go tui/slash_test.go`
+- `go test ./tui ./cmd ./foundation/...`
+
+## Updated recommendation after TUI summary slash tranche
+1. Keep `foundation/*`, `cmd`, and `tui` green and aligned to the same canonical runtime.
+2. Begin implementing truthful `/tree`-style TUI navigation next on top of the now-real branch/session/summary substrate.
+3. Keep provider-backed generation optional and layered above the deterministic baseline.
