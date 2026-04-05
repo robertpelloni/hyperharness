@@ -71,6 +71,7 @@ type Server struct {
 	debateHistory     *orchestration.DebateHistoryStore
 	runtimeServers    *runtimeServerRegistry
 	mcpState          *localMCPStateManager
+	sessionState      *localSessionStateManager
 	darwinState       *localDarwinStateManager
 	autoDevState      *localAutoDevManager
 	squadState        *localSquadManager
@@ -397,6 +398,7 @@ func New(cfg config.Config, detector controlplane.ToolProvider) *Server {
 		debateHistory:  orchestration.NewDebateHistoryStore(filepath.Join(cfg.WorkspaceRoot, "metamcp.db")),
 		runtimeServers: newRuntimeServerRegistry(),
 		mcpState:       newLocalMCPStateManager(filepath.Join(cfg.ConfigDir, "mcp_state.json")),
+		sessionState:   newLocalSessionStateManager(filepath.Join(cfg.WorkspaceRoot, ".hypercode-session.json")),
 		darwinState:    newLocalDarwinStateManager(filepath.Join(cfg.ConfigDir, "darwin_state.json")),
 		autoDevState:   newLocalAutoDevManager(cfg.WorkspaceRoot, filepath.Join(cfg.ConfigDir, "autodev_state.json")),
 		squadState:     newLocalSquadManager(cfg.WorkspaceRoot, filepath.Join(cfg.ConfigDir, "squad_state.json")),

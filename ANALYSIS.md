@@ -1,5 +1,98 @@
 # HyperCode Stabilization Analysis — 2026-04-03
 
+## Latest stabilization pass — native Go session-state fallback for supervisor state routes
+
+### Context
+The previous compat-layer work already taught the dashboard to prefer Go `/api/sessions/supervisor/state` over a synthetic placeholder when TypeScript `session.getState` was unavailable. That improved degraded-mode reads, but the Go endpoint itself was still effectively bridge-first without its own truthful state ownership for the small but high-signal session-state mutation cluster:
+- `session.getState`
+- `session.updateState`
+- `session.clear`
+- `session.heartbeat`
+
+In practice, that meant dashboard/session surfaces could ask Go for the truth during a TS outage, but Go still had no native local source for the session state beyond the bridge. This was the next obvious parity hole to close before attempting deeper supervisor/session mutation ownership.
+
+### What changed
+#### 1. Added a native local Go session-state manager
+Created:
+- `go/internal/httpapi/session_state_local.go`
+
+The new manager:
+- persists state to the workspace-level `.hypercode-session.json` file, matching the TypeScript `SessionManager` persistence location and intent
+- loads prior session state on startup when present
+- maintains truthful fields already consumed by the TS/dashboard world:
+  - `isAutoDriveActive`
+  - `activeGoal`
+  - `lastObjective`
+  - `lastHeartbeat`
+  - optional `threadId`
+- updates heartbeat timestamps on mutations and explicit heartbeat calls
+- writes changes back to disk so state survives runtime restarts
+
+This keeps the fallback narrow and honest: it owns the persisted session state itself, but it does **not** pretend to reproduce higher-order TS-only enrichments like agent-memory bootstrap generation or tool-advertisement synthesis.
+
+#### 2. Replaced bridge-only behavior for the session-state route cluster with upstream-first / native-fallback behavior
+Updated:
+- `go/internal/httpapi/session_supervisor_handlers.go`
+- `go/internal/httpapi/server.go`
+
+The four routes now behave like this:
+- try the upstream TS procedure first when available
+- if the bridge succeeds, preserve the existing upstream-backed behavior and metadata
+- if the bridge is unavailable, fall back to the new Go-local session-state manager
+
+Fallback semantics are explicit:
+- `GET /api/sessions/supervisor/state`
+  - returns the persisted local session snapshot
+- `POST /api/sessions/supervisor/update-state`
+  - persists the requested state fields locally
+  - returns a truthful reduced payload with:
+    - `success: true`
+    - `toolAdvertisements: []`
+    - `memoryBootstrap: null`
+    - `state: <local snapshot>`
+  - this makes the limitation visible instead of pretending TS enrichment occurred
+- `POST /api/sessions/supervisor/clear`
+  - resets the local session state to defaults and persists it
+- `POST /api/sessions/supervisor/heartbeat`
+  - updates `lastHeartbeat` and returns a truthful local timestamp
+
+All fallback responses carry explicit bridge metadata under:
+- `fallback: "go-local-session-state"`
+
+#### 3. Added focused Go regression coverage
+Updated:
+- `go/internal/httpapi/server_test.go`
+
+Added coverage for:
+- initial local empty/default state readback
+- local `update-state` persistence and response shape
+- persisted `.hypercode-session.json` contents
+- subsequent `state` reads after update
+- local `heartbeat` behavior
+- local `clear` reset behavior
+- post-clear readback to defaults
+
+The existing upstream bridge test for the same routes still passes, so the change does not break the intended TS-available path.
+
+### Validation
+Executed truthfully without killing any processes:
+- `cd go && gofmt -w internal/httpapi/session_state_local.go internal/httpapi/session_supervisor_handlers.go internal/httpapi/server.go internal/httpapi/server_test.go`
+- `cd go && go test ./internal/httpapi -run TestSupervisorSessionStateFallsBackToLocalGoState -count=1`
+- `cd go && go test ./internal/httpapi -run 'TestSessionSupervisorBridgeRoutes|TestSupervisorSessionStateFallsBackToLocalGoState' -count=1`
+
+### Why this matters
+This closes an important gap between:
+- the dashboard/web compat layer preferring Go-native session truth, and
+- the Go backend actually owning a truthful source of that truth when TS is down
+
+It does **not** yet make the whole supervisor/session mutation domain fully Go-native. But it does convert the highest-signal session-state slice from:
+- "Go can proxy it"
+
+into:
+- "Go can proxy it when TS exists, and can still persist/read the real session-state core when TS does not."
+
+That is the right intermediate step before deeper native supervisor mutation ownership.
+
 ## Latest stabilization pass — startup/build recovery after rename drift
 
 ### Context

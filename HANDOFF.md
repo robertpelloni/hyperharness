@@ -3,6 +3,40 @@
 ## Current status
 **Version:** `1.0.0-alpha.1`
 
+### Latest incremental pass — native Go session-state fallback ownership
+This follow-up moved one supervisor/session slice from bridge-only behavior into truthful native fallback ownership.
+
+#### What changed
+- Added `go/internal/httpapi/session_state_local.go`
+- Wired `go/internal/httpapi/server.go` to own a native local session-state manager backed by workspace `.hypercode-session.json`
+- Reworked these handlers in `go/internal/httpapi/session_supervisor_handlers.go` so they now behave as upstream-first with native fallback instead of bridge-only:
+  - `/api/sessions/supervisor/state`
+  - `/api/sessions/supervisor/update-state`
+  - `/api/sessions/supervisor/clear`
+  - `/api/sessions/supervisor/heartbeat`
+- Added focused regression coverage in `go/internal/httpapi/server_test.go`
+
+#### Fallback semantics
+When TS is unavailable, Go now truthfully owns the persisted session-state core:
+- `state` returns the local snapshot
+- `update-state` persists `isAutoDriveActive`, `activeGoal`, `lastObjective`, optional `threadId`, and refreshes `lastHeartbeat`
+- `clear` resets the snapshot
+- `heartbeat` refreshes the timestamp
+
+Important limitation is explicit in the fallback response shape:
+- `toolAdvertisements: []`
+- `memoryBootstrap: null`
+
+So the Go fallback does **not** pretend TS memory/bootstrap enrichment happened.
+
+#### Validation performed
+- `cd go && gofmt -w internal/httpapi/session_state_local.go internal/httpapi/session_supervisor_handlers.go internal/httpapi/server.go internal/httpapi/server_test.go`
+- `cd go && go test ./internal/httpapi -run TestSupervisorSessionStateFallsBackToLocalGoState -count=1`
+- `cd go && go test ./internal/httpapi -run 'TestSessionSupervisorBridgeRoutes|TestSupervisorSessionStateFallsBackToLocalGoState' -count=1`
+
+#### Recommended next step after this pass
+Continue deeper Go-native session/supervisor ownership beyond state-only persistence, especially higher-value mutation flows that still depend on TS bridge semantics.
+
 ### What this session completed
 1. Propagated persisted startup/runtime provenance across the remaining high-signal dashboard system views:
    - `/dashboard/system`

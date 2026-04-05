@@ -75,7 +75,7 @@ Status values:
 | Session import scan | Partial Native Go | Go scanner/import routes exist |
 | Session export | Native Go | native export path implemented |
 | Session supervisor lifecycle | Native Go (beta) | create/start/stop/status/list native endpoints exist |
-| Session state/log parity | Partial | not yet equivalent to full TS ecosystem |
+| Session state/log parity | Bridge-first with Partial Native Go fallback | Go now has native persisted fallback ownership for the session-state core (`getState`, `updateState`, `clear`, `heartbeat`) via workspace `.hypercode-session.json`, but richer supervisor/session log and TS memory/bootstrap parity is still incomplete |
 | Session CRUD authority | Mixed / bridge-heavy | still not fully Go-owned end-to-end |
 
 ---

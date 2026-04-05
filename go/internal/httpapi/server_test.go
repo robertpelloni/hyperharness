@@ -5599,6 +5599,101 @@ func TestSupervisorSessionBridgeRoutes(t *testing.T) {
 	}
 }
 
+func TestSupervisorSessionStateFallsBackToLocalGoState(t *testing.T) {
+	t.Setenv("HYPERCODE_TRPC_UPSTREAM", "http://127.0.0.1:1/trpc")
+	workspaceRoot := t.TempDir()
+	cfg := config.Default()
+	cfg.WorkspaceRoot = workspaceRoot
+	cfg.ConfigDir = filepath.Join(workspaceRoot, ".hypercode-go")
+	cfg.MainConfigDir = filepath.Join(workspaceRoot, ".hypercode")
+	if err := os.MkdirAll(cfg.ConfigDir, 0o755); err != nil {
+		t.Fatalf("failed to create go config dir: %v", err)
+	}
+	if err := os.MkdirAll(cfg.MainConfigDir, 0o755); err != nil {
+		t.Fatalf("failed to create main config dir: %v", err)
+	}
+	server := New(cfg, stubDetector{})
+
+	initialStateRecorder := httptest.NewRecorder()
+	server.Handler().ServeHTTP(initialStateRecorder, httptest.NewRequest(http.MethodGet, "/api/sessions/supervisor/state", nil))
+	if initialStateRecorder.Code != http.StatusOK {
+		t.Fatalf("expected status 200 from local state fallback, got %d %s", initialStateRecorder.Code, initialStateRecorder.Body.String())
+	}
+	for _, needle := range []string{`"fallback":"go-local-session-state"`, `"procedure":"session.getState"`, `"isAutoDriveActive":false`, `"activeGoal":null`} {
+		if !strings.Contains(initialStateRecorder.Body.String(), needle) {
+			t.Fatalf("expected initial local state payload to contain %s, got %s", needle, initialStateRecorder.Body.String())
+		}
+	}
+
+	updateStateRequest := httptest.NewRequest(http.MethodPost, "/api/sessions/supervisor/update-state", strings.NewReader(`{"isAutoDriveActive":true,"activeGoal":"ship go parity","lastObjective":"native session fallback","threadId":"thread-local-1"}`))
+	updateStateRequest.Header.Set("content-type", "application/json")
+	updateStateRecorder := httptest.NewRecorder()
+	server.Handler().ServeHTTP(updateStateRecorder, updateStateRequest)
+	if updateStateRecorder.Code != http.StatusOK {
+		t.Fatalf("expected status 200 from local update-state fallback, got %d %s", updateStateRecorder.Code, updateStateRecorder.Body.String())
+	}
+	for _, needle := range []string{`"fallback":"go-local-session-state"`, `"procedure":"session.updateState"`, `"toolAdvertisements":[]`, `"memoryBootstrap":null`, `"activeGoal":"ship go parity"`, `"threadId":"thread-local-1"`} {
+		if !strings.Contains(updateStateRecorder.Body.String(), needle) {
+			t.Fatalf("expected local update-state payload to contain %s, got %s", needle, updateStateRecorder.Body.String())
+		}
+	}
+
+	persistedStatePath := filepath.Join(workspaceRoot, ".hypercode-session.json")
+	persistedRaw, err := os.ReadFile(persistedStatePath)
+	if err != nil {
+		t.Fatalf("expected persisted local session state at %s: %v", persistedStatePath, err)
+	}
+	for _, needle := range []string{`"isAutoDriveActive": true`, `"activeGoal": "ship go parity"`, `"lastObjective": "native session fallback"`, `"threadId": "thread-local-1"`} {
+		if !strings.Contains(string(persistedRaw), needle) {
+			t.Fatalf("expected persisted local session state to contain %s, got %s", needle, string(persistedRaw))
+		}
+	}
+
+	stateRecorder := httptest.NewRecorder()
+	server.Handler().ServeHTTP(stateRecorder, httptest.NewRequest(http.MethodGet, "/api/sessions/supervisor/state", nil))
+	if stateRecorder.Code != http.StatusOK {
+		t.Fatalf("expected status 200 from local state readback, got %d %s", stateRecorder.Code, stateRecorder.Body.String())
+	}
+	for _, needle := range []string{`"activeGoal":"ship go parity"`, `"lastObjective":"native session fallback"`, `"threadId":"thread-local-1"`} {
+		if !strings.Contains(stateRecorder.Body.String(), needle) {
+			t.Fatalf("expected local state readback to contain %s, got %s", needle, stateRecorder.Body.String())
+		}
+	}
+
+	heartbeatRecorder := httptest.NewRecorder()
+	server.Handler().ServeHTTP(heartbeatRecorder, httptest.NewRequest(http.MethodPost, "/api/sessions/supervisor/heartbeat", nil))
+	if heartbeatRecorder.Code != http.StatusOK {
+		t.Fatalf("expected status 200 from local heartbeat fallback, got %d %s", heartbeatRecorder.Code, heartbeatRecorder.Body.String())
+	}
+	for _, needle := range []string{`"fallback":"go-local-session-state"`, `"procedure":"session.heartbeat"`, `"alive":true`} {
+		if !strings.Contains(heartbeatRecorder.Body.String(), needle) {
+			t.Fatalf("expected local heartbeat payload to contain %s, got %s", needle, heartbeatRecorder.Body.String())
+		}
+	}
+
+	clearRecorder := httptest.NewRecorder()
+	server.Handler().ServeHTTP(clearRecorder, httptest.NewRequest(http.MethodPost, "/api/sessions/supervisor/clear", nil))
+	if clearRecorder.Code != http.StatusOK {
+		t.Fatalf("expected status 200 from local clear fallback, got %d %s", clearRecorder.Code, clearRecorder.Body.String())
+	}
+	for _, needle := range []string{`"fallback":"go-local-session-state"`, `"procedure":"session.clear"`, `"success":true`} {
+		if !strings.Contains(clearRecorder.Body.String(), needle) {
+			t.Fatalf("expected local clear payload to contain %s, got %s", needle, clearRecorder.Body.String())
+		}
+	}
+
+	clearedStateRecorder := httptest.NewRecorder()
+	server.Handler().ServeHTTP(clearedStateRecorder, httptest.NewRequest(http.MethodGet, "/api/sessions/supervisor/state", nil))
+	if clearedStateRecorder.Code != http.StatusOK {
+		t.Fatalf("expected status 200 from cleared local state readback, got %d %s", clearedStateRecorder.Code, clearedStateRecorder.Body.String())
+	}
+	for _, needle := range []string{`"isAutoDriveActive":false`, `"activeGoal":null`, `"lastObjective":null`} {
+		if !strings.Contains(clearedStateRecorder.Body.String(), needle) {
+			t.Fatalf("expected cleared local state payload to contain %s, got %s", needle, clearedStateRecorder.Body.String())
+		}
+	}
+}
+
 func TestMCPBridgeRoutes(t *testing.T) {
 	upstream := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("content-type", "application/json")
