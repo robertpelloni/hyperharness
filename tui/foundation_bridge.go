@@ -17,10 +17,13 @@ type PromptDisplayMsg struct {
 
 type TreeBrowserItem struct {
 	ID                 string
+	ParentID           string
 	Kind               string
 	Label              string
 	Preview            string
 	IsLeaf             bool
+	Depth              int
+	ChildCount         int
 	SummaryEntries     int
 	CommonAncestorID   string
 	ReadFilesCount     int
@@ -252,7 +255,13 @@ func buildFoundationTreeBrowser(cwd, sessionID string) ([]TreeBrowserItem, error
 		return nil, err
 	}
 	items := make([]TreeBrowserItem, 0, len(session.Entries))
+	depthByID := map[string]int{}
 	for _, entry := range session.Entries {
+		depth := 0
+		if entry.ParentID != "" {
+			depth = depthByID[entry.ParentID] + 1
+		}
+		depthByID[entry.ID] = depth
 		preview := entry.Text
 		if strings.TrimSpace(preview) == "" {
 			preview = entry.ToolName
@@ -261,7 +270,8 @@ func buildFoundationTreeBrowser(cwd, sessionID string) ([]TreeBrowserItem, error
 			preview = preview[:60] + "..."
 		}
 		label, _ := runtime.GetLabel(sessionID, entry.ID)
-		item := TreeBrowserItem{ID: entry.ID, Kind: entry.Kind, Label: label, Preview: preview, IsLeaf: entry.ID == leafID}
+		children, _ := runtime.GetChildren(sessionID, entry.ID)
+		item := TreeBrowserItem{ID: entry.ID, ParentID: entry.ParentID, Kind: entry.Kind, Label: label, Preview: preview, IsLeaf: entry.ID == leafID, Depth: depth, ChildCount: len(children)}
 		if entry.ID != leafID {
 			prep, prepErr := runtime.PrepareBranchSummaryWithBudget(sessionID, entry.ID, 128)
 			if prepErr == nil && prep != nil {
@@ -317,12 +327,21 @@ func renderTreeBrowser(items []TreeBrowserItem, selected int, filter string, con
 		if strings.TrimSpace(item.Label) != "" {
 			labelSuffix = fmt.Sprintf(" label=%q", item.Label)
 		}
-		b.WriteString(fmt.Sprintf("%s%s [%d] %s [%s]%s %s\n", cursor, leaf, i+1, item.ID, item.Kind, labelSuffix, item.Preview))
+		childSuffix := ""
+		if item.ChildCount > 0 {
+			childSuffix = fmt.Sprintf(" children=%d", item.ChildCount)
+		}
+		indent := strings.Repeat("  ", item.Depth)
+		glyph := "•"
+		if item.Depth > 0 {
+			glyph = "└─"
+		}
+		b.WriteString(fmt.Sprintf("%s%s [%d] %s%s %s [%s]%s%s %s\n", cursor, leaf, i+1, indent, glyph, item.ID, item.Kind, labelSuffix, childSuffix, item.Preview))
 	}
 	if len(visible) > 0 && selected >= 0 && selected < len(visible) {
 		item := visible[selected]
 		b.WriteString("\n[Preview]\n")
-		b.WriteString(fmt.Sprintf("id=%s\nkind=%s\n", item.ID, item.Kind))
+		b.WriteString(fmt.Sprintf("id=%s\nkind=%s\ndepth=%d\nchildren=%d\n", item.ID, item.Kind, item.Depth, item.ChildCount))
 		if strings.TrimSpace(item.Label) != "" {
 			b.WriteString(fmt.Sprintf("label=%q\n", item.Label))
 		}

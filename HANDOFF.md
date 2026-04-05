@@ -656,3 +656,29 @@
   - `docs/analysis/TUI_CURSOR_TREE_BROWSER_TRANCHE_2026-04-04_APPENDIX.md`
 - Re-validated the cursor-browser tranche remains green:
   - `go test ./tui ./cmd ./foundation/...`
+
+## Additional work completed later on 2026-04-04 (tree layout cues tranche)
+- Expanded `TreeBrowserItem` with canonical-structure-derived fields:
+  - `ParentID`
+  - `Depth`
+  - `ChildCount`
+- Updated `buildFoundationTreeBrowser` to compute depth and child counts from canonical session relationships.
+- Updated browser rendering to show:
+  - indentation by depth
+  - simple branch glyphs
+  - child-count cues
+- Expanded preview pane to show:
+  - depth
+  - child count
+- Expanded `tui/slash_test.go` to assert richer tree-layout cues are present in browser output.
+- Added detailed analysis doc:
+  - `docs/analysis/TUI_TREE_LAYOUT_CUES_TRANCHE_2026-04-04.md`
+
+## Latest validation after tree layout cues tranche
+- `gofmt -w tui/foundation_bridge.go tui/slash_test.go`
+- `go test ./tui ./cmd ./foundation/...`
+
+## Updated recommendation after tree layout cues tranche
+1. Keep `foundation/*`, `cmd`, and `tui` green and aligned to the same canonical runtime.
+2. Add folding/grouping next so larger session trees become easier to navigate.
+3. Keep layout cues derived from canonical runtime structure rather than creating a separate UI-owned tree model.
