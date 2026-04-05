@@ -83,6 +83,8 @@ func ProcessSlashCommand(cmd string, m *model) (tea.Model, tea.Cmd) {
 		return handleTreePaneReset(m)
 	case "/tree-pane-status":
 		return handleTreePaneStatus(m)
+	case "/tree-pane-summary":
+		return handleTreePaneSummary(m)
 	case "/tree-pane-preset":
 		return handleTreePanePreset(m, strings.TrimSpace(strings.TrimPrefix(cmd, "/tree-pane-preset")))
 	case "/tree-pane-compact":
@@ -160,6 +162,7 @@ func handleHelp(m *model) (tea.Model, tea.Cmd) {
   /tree-browser-clear - Clear transient browser state like filter/collapse/confirm
   /tree-pane-reset - Reset pane configuration to defaults
   /tree-pane-status - Show the current persistent pane configuration
+  /tree-pane-summary - Show a compact one-line pane status summary
   /tree-pane-preset <compact|detailed|navigation|review> - Apply a named pane layout preset
   /tree-pane-compact - Apply the compact pane preset
   /tree-pane-detailed - Apply the detailed pane preset
@@ -567,6 +570,12 @@ func handleTreePaneReset(m *model) (tea.Model, tea.Cmd) {
 func handleTreePaneStatus(m *model) (tea.Model, tea.Cmd) {
 	m.loading = false
 	m.history = append(m.history, fmt.Sprintf("[Foundation Tree Pane Status]\npinned=%t\nfocus=%t\nheight=%d\nposition=%s\npreview=%t\ngrouped=%t\nfilter=%q", m.browserPinned, m.browserPinnedFocus, m.browserPaneHeight, m.browserPanePosition, m.browserPanePreview, m.browserGrouped, m.browserFilter))
+	return *m, nil
+}
+
+func handleTreePaneSummary(m *model) (tea.Model, tea.Cmd) {
+	m.loading = false
+	m.history = append(m.history, fmt.Sprintf("[Foundation Tree Pane Summary] pinned=%t focus=%t h=%d pos=%s preview=%t grouped=%t filter=%q", m.browserPinned, m.browserPinnedFocus, m.browserPaneHeight, m.browserPanePosition, m.browserPanePreview, m.browserGrouped, m.browserFilter))
 	return *m, nil
 }
 

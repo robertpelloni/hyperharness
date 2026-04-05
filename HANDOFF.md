@@ -1372,3 +1372,27 @@
 1. Keep `foundation/*`, `cmd`, and `tui` green and aligned to the same canonical runtime.
 2. Continue only where subsystem-local discoverability or tiny controls clearly reduce repeated operator friction.
 3. Keep pane help as a discoverability surface only, never as a second source of control semantics.
+
+## Additional work completed later on 2026-04-04 (pane summary tranche)
+- Added new TUI slash command:
+  - `/tree-pane-summary`
+- Added a compact one-line pane state readout covering:
+  - pinned
+  - focus
+  - height
+  - position
+  - preview
+  - grouped
+  - filter
+- Added focused regression coverage for compact pane summary output.
+- Added detailed analysis doc:
+  - `docs/analysis/TUI_PANE_SUMMARY_TRANCHE_2026-04-04.md`
+
+## Latest validation after pane summary tranche
+- `gofmt -w tui/slash.go tui/slash_test.go`
+- `go test ./tui ./cmd ./foundation/...`
+
+## Updated recommendation after pane summary tranche
+1. Keep `foundation/*`, `cmd`, and `tui` green and aligned to the same canonical runtime.
+2. Continue only with genuinely useful small controls that reduce repeated command or inspection friction.
+3. Keep compact pane summaries as read-only introspection over UI/layout state, not separate control semantics.

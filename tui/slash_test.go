@@ -720,6 +720,21 @@ func TestProcessSlashCommandTreePaneHelp(t *testing.T) {
 	}
 }
 
+func TestProcessSlashCommandTreePaneSummary(t *testing.T) {
+	m := model{director: agents.NewDirector(&agents.DefaultProvider{}), browserPinned: true, browserPinnedFocus: false, browserPaneHeight: 9, browserPanePosition: "top", browserPanePreview: true, browserGrouped: false, browserFilter: "xyz"}
+	mdl, _ := ProcessSlashCommand("/tree-pane-summary", &m)
+	updated := mdl.(model)
+	if len(updated.history) == 0 || !strings.Contains(updated.history[len(updated.history)-1], "[Foundation Tree Pane Summary]") {
+		t.Fatalf("expected pane summary output, got %#v", updated.history)
+	}
+	line := updated.history[len(updated.history)-1]
+	for _, needle := range []string{"pinned=true", "focus=false", "h=9", "pos=top", "preview=true", "grouped=false", "filter=\"xyz\""} {
+		if !strings.Contains(line, needle) {
+			t.Fatalf("expected pane summary to contain %q, got %s", needle, line)
+		}
+	}
+}
+
 func TestProcessSlashCommandTreePaneStatus(t *testing.T) {
 	m := model{director: agents.NewDirector(&agents.DefaultProvider{}), browserPinned: true, browserPinnedFocus: true, browserPaneHeight: 10, browserPanePosition: "bottom", browserPanePreview: false, browserGrouped: true, browserFilter: "abc"}
 	mdl, _ := ProcessSlashCommand("/tree-pane-status", &m)
