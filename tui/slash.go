@@ -87,6 +87,10 @@ func ProcessSlashCommand(cmd string, m *model) (tea.Model, tea.Cmd) {
 		return handleTreePanePosition(m, strings.TrimSpace(strings.TrimPrefix(cmd, "/tree-pane-position")))
 	case "/tree-pane-position-toggle":
 		return handleTreePanePosition(m, "toggle")
+	case "/tree-pane-focus-on":
+		return handleTreePaneFocusValue(m, true)
+	case "/tree-pane-focus-off":
+		return handleTreePaneFocusValue(m, false)
 	case "/tree-pane-focus-toggle":
 		return handleTreePaneFocus(m)
 	case "/tree-pane-focus":
@@ -146,6 +150,8 @@ func handleHelp(m *model) (tea.Model, tea.Cmd) {
   /tree-pane-position-toggle - Quickly toggle pane position between top and bottom
   /tree-pane-focus - Toggle keyboard focus for the pinned tree pane
   /tree-pane-focus-toggle - Quick alias for toggling keyboard focus on the pinned tree pane
+  /tree-pane-focus-on - Explicitly enable keyboard focus for the pinned tree pane
+  /tree-pane-focus-off - Explicitly disable keyboard focus for the pinned tree pane
   /tree-go <index> [maxTokens] - Switch to an indexed entry from /tree-select
   /tree-children <entryId> - Show direct child branches for an entry
   /label <entryId> <label> - Set a label on an entry (or clear with empty label unsupported in slash)
@@ -569,13 +575,13 @@ func handleTreePanePosition(m *model, arg string) (tea.Model, tea.Cmd) {
 	return *m, nil
 }
 
-func handleTreePaneFocus(m *model) (tea.Model, tea.Cmd) {
+func handleTreePaneFocusValue(m *model, enabled bool) (tea.Model, tea.Cmd) {
 	m.loading = false
 	if !m.browserPinned {
 		m.history = append(m.history, "[Error] tree pane is not pinned; use /tree-pane first")
 		return *m, nil
 	}
-	m.browserPinnedFocus = !m.browserPinnedFocus
+	m.browserPinnedFocus = enabled
 	if m.browserPinnedFocus {
 		m.history = append(m.history, "[Foundation Tree Pane] focus enabled")
 	} else {
@@ -583,6 +589,10 @@ func handleTreePaneFocus(m *model) (tea.Model, tea.Cmd) {
 		m.history = append(m.history, "[Foundation Tree Pane] focus disabled")
 	}
 	return *m, nil
+}
+
+func handleTreePaneFocus(m *model) (tea.Model, tea.Cmd) {
+	return handleTreePaneFocusValue(m, !m.browserPinnedFocus)
 }
 
 func handleTreeGo(m *model, arg string) (tea.Model, tea.Cmd) {

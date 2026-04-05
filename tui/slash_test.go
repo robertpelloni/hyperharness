@@ -787,6 +787,20 @@ func TestProcessSlashCommandTreePaneFocusQuickToggle(t *testing.T) {
 	}
 }
 
+func TestProcessSlashCommandTreePaneFocusExplicitOnOff(t *testing.T) {
+	m := model{director: agents.NewDirector(&agents.DefaultProvider{}), browserPinned: true, browserPinnedFocus: false}
+	mdl, _ := ProcessSlashCommand("/tree-pane-focus-on", &m)
+	updated := mdl.(model)
+	if !updated.browserPinnedFocus {
+		t.Fatal("expected explicit focus-on to enable focus")
+	}
+	mdl, _ = ProcessSlashCommand("/tree-pane-focus-off", &updated)
+	updated = mdl.(model)
+	if updated.browserPinnedFocus {
+		t.Fatal("expected explicit focus-off to disable focus")
+	}
+}
+
 func TestProcessSlashCommandTreePaneCycle(t *testing.T) {
 	m := model{director: agents.NewDirector(&agents.DefaultProvider{}), browserPaneHeight: 8, browserPanePreview: true, browserPanePosition: "top", browserGrouped: false}
 	mdl, _ := ProcessSlashCommand("/tree-pane-cycle", &m)

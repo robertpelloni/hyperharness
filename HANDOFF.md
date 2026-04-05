@@ -1278,3 +1278,22 @@
 1. Keep `foundation/*`, `cmd`, and `tui` green and aligned to the same canonical runtime.
 2. Continue only with operator-facing controls that clearly reduce repeated friction or ambiguity.
 3. Keep explicit show/hide as surface ergonomics over the same pane/browser state model.
+
+## Additional work completed later on 2026-04-04 (focus explicit on/off tranche)
+- Added new TUI slash commands:
+  - `/tree-pane-focus-on`
+  - `/tree-pane-focus-off`
+- Added helper:
+  - `handleTreePaneFocusValue(m, enabled bool)`
+- Added focused regression coverage verifying explicit focus on/off transitions.
+- Added detailed analysis doc:
+  - `docs/analysis/TUI_FOCUS_EXPLICIT_ON_OFF_TRANCHE_2026-04-04.md`
+
+## Latest validation after focus explicit on/off tranche
+- `gofmt -w tui/slash.go tui/slash_test.go`
+- `go test ./tui ./cmd ./foundation/...`
+
+## Updated recommendation after focus explicit on/off tranche
+1. Keep `foundation/*`, `cmd`, and `tui` green and aligned to the same canonical runtime.
+2. Continue adding explicit controls only where they measurably improve operator confidence over toggle-only behavior.
+3. Keep focus on/off commands as clearer entry points into the same pane-focus state transitions.
