@@ -262,11 +262,31 @@ func buildFoundationTreeBrowser(cwd, sessionID string) ([]TreeBrowserItem, error
 	return items, nil
 }
 
-func renderTreeBrowser(items []TreeBrowserItem, selected int) string {
+func filterTreeBrowserItems(items []TreeBrowserItem, filter string) []TreeBrowserItem {
+	filter = strings.TrimSpace(strings.ToLower(filter))
+	if filter == "" {
+		return append([]TreeBrowserItem(nil), items...)
+	}
+	out := make([]TreeBrowserItem, 0, len(items))
+	for _, item := range items {
+		haystack := strings.ToLower(strings.Join([]string{item.Kind, item.Label, item.Preview}, " "))
+		if strings.Contains(haystack, filter) {
+			out = append(out, item)
+		}
+	}
+	return out
+}
+
+func renderTreeBrowser(items []TreeBrowserItem, selected int, filter string) string {
+	visible := filterTreeBrowserItems(items, filter)
+	if selected >= len(visible) {
+		selected = max(0, len(visible)-1)
+	}
 	var b strings.Builder
 	b.WriteString("[Foundation Tree Browser]\n")
-	b.WriteString("Use ↑/↓ to move, Enter to switch, Esc to close.\n")
-	for i, item := range items {
+	b.WriteString("Use ↑/↓ to move, type to filter, Backspace to clear, Enter to switch, Esc to close.\n")
+	b.WriteString(fmt.Sprintf("filter=%q matches=%d\n", filter, len(visible)))
+	for i, item := range visible {
 		cursor := " "
 		if i == selected {
 			cursor = ">"
@@ -280,6 +300,15 @@ func renderTreeBrowser(items []TreeBrowserItem, selected int) string {
 			labelSuffix = fmt.Sprintf(" label=%q", item.Label)
 		}
 		b.WriteString(fmt.Sprintf("%s%s [%d] %s [%s]%s %s\n", cursor, leaf, i+1, item.ID, item.Kind, labelSuffix, item.Preview))
+	}
+	if len(visible) > 0 && selected >= 0 && selected < len(visible) {
+		item := visible[selected]
+		b.WriteString("\n[Preview]\n")
+		b.WriteString(fmt.Sprintf("id=%s\nkind=%s\n", item.ID, item.Kind))
+		if strings.TrimSpace(item.Label) != "" {
+			b.WriteString(fmt.Sprintf("label=%q\n", item.Label))
+		}
+		b.WriteString(fmt.Sprintf("preview=%s", item.Preview))
 	}
 	return strings.TrimSpace(b.String())
 }

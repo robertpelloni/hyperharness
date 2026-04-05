@@ -297,6 +297,19 @@ func TestTreeBrowserModeNavigation(t *testing.T) {
 	if !updated.browserActive || len(updated.browserItems) < 3 {
 		t.Fatalf("expected active browser with items, got %#v", updated)
 	}
+	if view := updated.View(); !strings.Contains(view, "[Preview]") {
+		t.Fatalf("expected preview in browser view, got %s", view)
+	}
+	mdl, _ = updated.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("B")})
+	updated = mdl.(model)
+	if updated.browserFilter != "B" {
+		t.Fatalf("expected browser filter to be set, got %q", updated.browserFilter)
+	}
+	if view := updated.View(); !strings.Contains(view, "filter=\"B\"") {
+		t.Fatalf("expected filtered browser view, got %s", view)
+	}
+	mdl, _ = updated.Update(tea.KeyMsg{Type: tea.KeyBackspace})
+	updated = mdl.(model)
 	mdl, _ = updated.Update(tea.KeyMsg{Type: tea.KeyDown})
 	updated = mdl.(model)
 	if updated.browserIndex != 1 {

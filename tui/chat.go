@@ -22,6 +22,7 @@ type model struct {
 	browserActive           bool
 	browserItems            []TreeBrowserItem
 	browserIndex            int
+	browserFilter           string
 }
 
 func initialModel() model {
@@ -48,9 +49,11 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		if m.browserActive {
+			visible := filterTreeBrowserItems(m.browserItems, m.browserFilter)
 			switch msg.Type {
 			case tea.KeyEsc:
 				m.browserActive = false
+				m.browserFilter = ""
 				m.history = append(m.history, "[Foundation Tree Browser] closed")
 				return m, nil
 			case tea.KeyUp:
@@ -59,19 +62,36 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				}
 				return m, nil
 			case tea.KeyDown:
-				if m.browserIndex < len(m.browserItems)-1 {
+				if m.browserIndex < len(visible)-1 {
 					m.browserIndex++
 				}
 				return m, nil
+			case tea.KeyBackspace, tea.KeyDelete:
+				if len(m.browserFilter) > 0 {
+					m.browserFilter = m.browserFilter[:len(m.browserFilter)-1]
+					visible = filterTreeBrowserItems(m.browserItems, m.browserFilter)
+					if m.browserIndex >= len(visible) {
+						m.browserIndex = max(0, len(visible)-1)
+					}
+				}
+				return m, nil
+			case tea.KeyRunes, tea.KeySpace:
+				m.browserFilter += msg.String()
+				visible = filterTreeBrowserItems(m.browserItems, m.browserFilter)
+				if m.browserIndex >= len(visible) {
+					m.browserIndex = max(0, len(visible)-1)
+				}
+				return m, nil
 			case tea.KeyEnter:
-				if m.browserIndex >= 0 && m.browserIndex < len(m.browserItems) {
-					display, err := openSelectedTreeBrowser(m.director.WorkingDir, m.foundationSessionID, m.browserItems, m.browserIndex, 128)
+				if m.browserIndex >= 0 && m.browserIndex < len(visible) {
+					display, err := openSelectedTreeBrowser(m.director.WorkingDir, m.foundationSessionID, visible, m.browserIndex, 128)
 					if err != nil {
 						m.history = append(m.history, fmt.Sprintf("[Error] tree browser switch failed: %v", err))
 					} else {
 						m.history = append(m.history, display)
 					}
 					m.browserActive = false
+					m.browserFilter = ""
 				}
 				return m, nil
 			}
@@ -155,7 +175,7 @@ func (m model) View() string {
 	s := strings.Join(m.history, "\n")
 	s += "\n\n"
 	if m.browserActive {
-		s += renderTreeBrowser(m.browserItems, m.browserIndex)
+		s += renderTreeBrowser(m.browserItems, m.browserIndex, m.browserFilter)
 		return s
 	}
 	if m.loading {
@@ -171,4 +191,11 @@ func StartREPL() {
 	if _, err := p.Run(); err != nil {
 		log.Fatal(err)
 	}
+}
+
+func max(a, b int) int {
+	if a > b {
+		return a
+	}
+	return b
 }
