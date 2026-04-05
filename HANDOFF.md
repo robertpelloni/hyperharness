@@ -755,3 +755,28 @@
 1. Keep `foundation/*`, `cmd`, and `tui` green and aligned to the same canonical runtime.
 2. Consider richer grouping modes or persistent browser panes next.
 3. Continue deriving every visual tree cue from canonical runtime structure rather than UI-invented semantics.
+
+## Additional work completed later on 2026-04-04 (grouped browser tranche)
+- Added grouped-mode browser state:
+  - `browserGrouped bool`
+- Expanded `TreeBrowserItem` with:
+  - `GroupKey`
+- Added canonical lineage-based group helper:
+  - `buildGroupKey`
+- Updated browser rendering to insert `[Group] ...` headings when grouped mode is enabled.
+- Added browser keyboard toggle:
+  - `Tab` toggles grouped mode on/off
+- Expanded browser-mode verification to assert grouped rendering appears after toggling.
+- Added detailed analysis doc:
+  - `docs/analysis/TUI_GROUPED_BROWSER_TRANCHE_2026-04-04.md`
+
+## Latest validation after grouped browser tranche
+- `gofmt -w tui/chat.go tui/foundation_bridge.go tui/slash_test.go`
+- `go test -run TestTreeBrowserModeNavigation -v ./tui`
+- `go test -run TestProcessSlashCommandTreeExplorerLabelAndChildren -v ./tui`
+- `go test -run TestFoundationSummaryHelpers -v ./cmd`
+
+## Updated recommendation after grouped browser tranche
+1. Keep `foundation/*`, `cmd`, and `tui` green and aligned to the same canonical runtime.
+2. Consider a persistent browser pane/view or stronger branch-head/divergence grouping next.
+3. Keep grouped mode as a presentation-only layer over canonical runtime structure.
