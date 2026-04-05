@@ -682,3 +682,28 @@
 1. Keep `foundation/*`, `cmd`, and `tui` green and aligned to the same canonical runtime.
 2. Add folding/grouping next so larger session trees become easier to navigate.
 3. Keep layout cues derived from canonical runtime structure rather than creating a separate UI-owned tree model.
+
+## Additional work completed later on 2026-04-04 (tree folding tranche)
+- Added transient browser collapse state:
+  - `browserCollapsed map[string]bool`
+- Added fold-aware visibility helper:
+  - `visibleTreeBrowserItems`
+- Updated browser keyboard handling so that in browser mode:
+  - `Left` collapses the selected subtree when it has children
+  - `Right` expands the selected subtree
+- Updated browser rendering to show fold state cues:
+  - `[+]` collapsed
+  - `[-]` expanded
+- Ensured selection index clamps correctly when collapse state changes the visible result set.
+- Expanded `tui/slash_test.go` to verify collapse/expand cues through keyboard interaction.
+- Added detailed analysis doc:
+  - `docs/analysis/TUI_TREE_FOLDING_TRANCHE_2026-04-04.md`
+
+## Latest validation after tree folding tranche
+- `gofmt -w tui/chat.go tui/foundation_bridge.go tui/slash_test.go`
+- `go test ./tui ./cmd ./foundation/...`
+
+## Updated recommendation after tree folding tranche
+1. Keep `foundation/*`, `cmd`, and `tui` green and aligned to the same canonical runtime.
+2. Add richer grouping/graph-style rendering next so the browser becomes even clearer at scale.
+3. Keep folding as a UI-only projection over canonical runtime structure, never a competing state model.

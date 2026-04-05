@@ -304,6 +304,26 @@ func TestTreeBrowserModeNavigation(t *testing.T) {
 	} else if !strings.Contains(view, "children=") {
 		t.Fatalf("expected richer tree layout with child counts, got %s", view)
 	}
+	mdl, _ = updated.Update(tea.KeyMsg{Type: tea.KeyLeft})
+	updated = mdl.(model)
+	if view := updated.View(); !strings.Contains(view, "[+]") {
+		t.Fatalf("expected collapsed cue in browser view, got %s", view)
+	}
+	mdl, _ = updated.Update(tea.KeyMsg{Type: tea.KeyRight})
+	updated = mdl.(model)
+	if view := updated.View(); !strings.Contains(view, "[-]") {
+		t.Fatalf("expected expanded cue in browser view, got %s", view)
+	}
+	mdl, _ = updated.Update(tea.KeyMsg{Type: tea.KeyLeft})
+	updated = mdl.(model)
+	if view := updated.View(); !strings.Contains(view, "[+]") {
+		t.Fatalf("expected collapsed cue in browser view, got %s", view)
+	}
+	mdl, _ = updated.Update(tea.KeyMsg{Type: tea.KeyRight})
+	updated = mdl.(model)
+	if view := updated.View(); !strings.Contains(view, "[-]") {
+		t.Fatalf("expected expanded cue in browser view, got %s", view)
+	}
 	mdl, _ = updated.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("B")})
 	updated = mdl.(model)
 	if updated.browserFilter != "B" {

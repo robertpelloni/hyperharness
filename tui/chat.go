@@ -24,6 +24,7 @@ type model struct {
 	browserIndex            int
 	browserFilter           string
 	browserConfirmPending   bool
+	browserCollapsed        map[string]bool
 }
 
 func initialModel() model {
@@ -50,7 +51,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		if m.browserActive {
-			visible := filterTreeBrowserItems(m.browserItems, m.browserFilter)
+			visible := visibleTreeBrowserItems(m.browserItems, m.browserFilter, m.browserCollapsed)
 			switch msg.Type {
 			case tea.KeyEsc:
 				if m.browserConfirmPending {
@@ -61,6 +62,35 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.browserFilter = ""
 				m.browserConfirmPending = false
 				m.history = append(m.history, "[Foundation Tree Browser] closed")
+				return m, nil
+			case tea.KeyLeft:
+				if m.browserConfirmPending {
+					return m, nil
+				}
+				if m.browserIndex >= 0 && m.browserIndex < len(visible) {
+					item := visible[m.browserIndex]
+					if item.ChildCount > 0 {
+						if m.browserCollapsed == nil {
+							m.browserCollapsed = map[string]bool{}
+						}
+						m.browserCollapsed[item.ID] = true
+						visible = visibleTreeBrowserItems(m.browserItems, m.browserFilter, m.browserCollapsed)
+						if m.browserIndex >= len(visible) {
+							m.browserIndex = max(0, len(visible)-1)
+						}
+					}
+				}
+				return m, nil
+			case tea.KeyRight:
+				if m.browserConfirmPending {
+					return m, nil
+				}
+				if m.browserIndex >= 0 && m.browserIndex < len(visible) {
+					item := visible[m.browserIndex]
+					if m.browserCollapsed != nil {
+						delete(m.browserCollapsed, item.ID)
+					}
+				}
 				return m, nil
 			case tea.KeyUp:
 				if m.browserConfirmPending {
@@ -85,7 +115,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				}
 				if len(m.browserFilter) > 0 {
 					m.browserFilter = m.browserFilter[:len(m.browserFilter)-1]
-					visible = filterTreeBrowserItems(m.browserItems, m.browserFilter)
+					visible = visibleTreeBrowserItems(m.browserItems, m.browserFilter, m.browserCollapsed)
 					if m.browserIndex >= len(visible) {
 						m.browserIndex = max(0, len(visible)-1)
 					}
@@ -117,7 +147,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					return m, nil
 				}
 				m.browserFilter += msg.String()
-				visible = filterTreeBrowserItems(m.browserItems, m.browserFilter)
+				visible = visibleTreeBrowserItems(m.browserItems, m.browserFilter, m.browserCollapsed)
 				if m.browserIndex >= len(visible) {
 					m.browserIndex = max(0, len(visible)-1)
 				}
@@ -220,7 +250,7 @@ func (m model) View() string {
 	s := strings.Join(m.history, "\n")
 	s += "\n\n"
 	if m.browserActive {
-		s += renderTreeBrowser(m.browserItems, m.browserIndex, m.browserFilter, m.browserConfirmPending)
+		s += renderTreeBrowser(m.browserItems, m.browserIndex, m.browserFilter, m.browserConfirmPending, m.browserCollapsed)
 		return s
 	}
 	if m.loading {

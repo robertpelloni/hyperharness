@@ -301,8 +301,30 @@ func filterTreeBrowserItems(items []TreeBrowserItem, filter string) []TreeBrowse
 	return out
 }
 
-func renderTreeBrowser(items []TreeBrowserItem, selected int, filter string, confirmPending bool) string {
-	visible := filterTreeBrowserItems(items, filter)
+func visibleTreeBrowserItems(items []TreeBrowserItem, filter string, collapsed map[string]bool) []TreeBrowserItem {
+	filtered := filterTreeBrowserItems(items, filter)
+	if len(collapsed) == 0 {
+		return filtered
+	}
+	out := make([]TreeBrowserItem, 0, len(filtered))
+	skipDepth := -1
+	for _, item := range filtered {
+		if skipDepth >= 0 {
+			if item.Depth > skipDepth {
+				continue
+			}
+			skipDepth = -1
+		}
+		out = append(out, item)
+		if collapsed[item.ID] {
+			skipDepth = item.Depth
+		}
+	}
+	return out
+}
+
+func renderTreeBrowser(items []TreeBrowserItem, selected int, filter string, confirmPending bool, collapsed map[string]bool) string {
+	visible := visibleTreeBrowserItems(items, filter, collapsed)
 	if selected >= len(visible) {
 		selected = max(0, len(visible)-1)
 	}
@@ -336,7 +358,15 @@ func renderTreeBrowser(items []TreeBrowserItem, selected int, filter string, con
 		if item.Depth > 0 {
 			glyph = "└─"
 		}
-		b.WriteString(fmt.Sprintf("%s%s [%d] %s%s %s [%s]%s%s %s\n", cursor, leaf, i+1, indent, glyph, item.ID, item.Kind, labelSuffix, childSuffix, item.Preview))
+		fold := "  "
+		if item.ChildCount > 0 {
+			if collapsed != nil && collapsed[item.ID] {
+				fold = "[+]"
+			} else {
+				fold = "[-]"
+			}
+		}
+		b.WriteString(fmt.Sprintf("%s%s [%d] %s%s %s %s [%s]%s%s %s\n", cursor, leaf, i+1, indent, glyph, fold, item.ID, item.Kind, labelSuffix, childSuffix, item.Preview))
 	}
 	if len(visible) > 0 && selected >= 0 && selected < len(visible) {
 		item := visible[selected]
