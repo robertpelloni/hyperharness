@@ -91,7 +91,7 @@
 
 ## Additional work completed on 2026-04-04
 - Reconciled the repository module path back to the actual local import graph:
-  - `go.mod` now uses `module github.com/robertpelloni/hypercode`
+  - `go.mod` now uses `module github.com/robertpelloni/hyperharness`
 - Ran dependency reconciliation successfully via `go mod tidy`.
 - Verified the **canonical native foundation track** instead of the duplicate experimental internal track:
   - `foundation/pi`
@@ -1396,3 +1396,11 @@
 1. Keep `foundation/*`, `cmd`, and `tui` green and aligned to the same canonical runtime.
 2. Continue only with genuinely useful small controls that reduce repeated command or inspection friction.
 3. Keep compact pane summaries as read-only introspection over UI/layout state, not separate control semantics.
+
+## HYPERHARNESS vs SUPERAI COMPARATIVE ANALYSIS (2026-04-05)
+Wrote comprehensive comparison to docs/analysis/HYPERHARNESS_VS_SUPERAI_COMPARISON_2026-04-05.md:
+- hyperharness: A+ TUI, A documentation, A foundation core, B agent depth
+- superai: B TUI, D documentation, A+ foundation core (+tools_extra), A+ agent depth, 733 test files vs 32
+- Both: green test suite, shared ancestor architecture
+- Key gap: hyperharness lacks agent/ depth, tools_extra.go, agents/ subpackage extensions
+- Key advantage: hyperharness has richer TUI, better module identity, exhaustive docs trail
