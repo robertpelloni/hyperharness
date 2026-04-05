@@ -192,6 +192,8 @@ That same operator truth is now also propagated into additional dashboard surfac
 
 This reduces the need to return to the dashboard home page just to recover runtime provenance.
 
+The next candidate pages (`/dashboard/system`, `/dashboard/mcp/system`, `/dashboard/orchestrator`) remain valid follow-up targets, but this pass intentionally shipped the two most operator-relevant secondary pages first.
+
 The Go-native `/api/runtime/status` surface now also exposes equivalent startup provenance by reading startup metadata from the main CLI lock first and falling back to the Go lock. That means the native backend is now self-describing for:
 - requested runtime / active runtime
 - launch mode
@@ -260,6 +262,7 @@ Results:
 - web build/type-check passed with the new dashboard `startupMode` rendering, the new Health/Integrations startup-mode cards, and local-compat startup fallback support
 - a focused dashboard render test was added, but `vitest` is not directly installed in `apps/web`, so that new test was validated indirectly through the successful web build rather than executed as a standalone test command in this pass
 - a focused app-route compat test assertion was added for `startupMode`, but the same `apps/web` local `vitest` command limitation applies there too; validation for that slice came from the successful web build and typed route compilation
+- Health/Integrations runtime-provenance propagation was validated through the successful `apps/web` production build, plus the already-green core/CLI startup provenance suites
 - a short-lived `start.bat --help` run also completed and showed the new install/build phase summary lines before exiting through CLI help output
 
 Validation boundary:
@@ -299,6 +302,7 @@ Result:
 - `start.bat` can now also skip the Go-primary startup build when the built CLI and Go binary artifacts are already current
 - `start.bat` now launches directly through the built CLI when available instead of depending on `pnpm start` for the final handoff
 - the main monorepo (excluding archived content and external harness submodules) no longer contains textual legacy-name references
+- the next dashboard propagation targets are now narrowed to System / MCP System / Orchestrator rather than the broader dashboard shell
 
 #### Still non-blocking / still present
 - `apps/maestro` postinstall still reports an `electron-rebuild` failure under Node 24 on Windows during install
