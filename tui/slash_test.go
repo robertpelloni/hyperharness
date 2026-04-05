@@ -574,6 +574,20 @@ func TestProcessSlashCommandTreePanePreviewToggle(t *testing.T) {
 	}
 }
 
+func TestProcessSlashCommandTreePanePreviewQuickToggle(t *testing.T) {
+	m := model{director: agents.NewDirector(&agents.DefaultProvider{}), browserPanePreview: true}
+	mdl, _ := ProcessSlashCommand("/tree-pane-preview-toggle", &m)
+	updated := mdl.(model)
+	if updated.browserPanePreview {
+		t.Fatal("expected quick preview toggle to disable preview")
+	}
+	mdl, _ = ProcessSlashCommand("/tree-pane-preview-toggle", &updated)
+	updated = mdl.(model)
+	if !updated.browserPanePreview {
+		t.Fatal("expected second quick preview toggle to enable preview")
+	}
+}
+
 func TestProcessSlashCommandTreePanePreset(t *testing.T) {
 	m := model{director: agents.NewDirector(&agents.DefaultProvider{}), browserPaneHeight: 8, browserPanePreview: true, browserPanePosition: "top", browserGrouped: false}
 	mdl, _ := ProcessSlashCommand("/tree-pane-preset compact", &m)

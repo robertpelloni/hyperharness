@@ -51,6 +51,8 @@ func ProcessSlashCommand(cmd string, m *model) (tea.Model, tea.Cmd) {
 		return handleTreePaneSize(m, strings.TrimSpace(strings.TrimPrefix(cmd, "/tree-pane-size")))
 	case "/tree-pane-preview":
 		return handleTreePanePreview(m, strings.TrimSpace(strings.TrimPrefix(cmd, "/tree-pane-preview")))
+	case "/tree-pane-preview-toggle":
+		return handleTreePanePreview(m, "toggle")
 	case "/tree-pane-grouped":
 		return handleTreePaneGrouped(m, strings.TrimSpace(strings.TrimPrefix(cmd, "/tree-pane-grouped")))
 	case "/tree-pane-cycle":
@@ -102,6 +104,7 @@ func handleHelp(m *model) (tea.Model, tea.Cmd) {
   /tree-pane - Toggle a persistent tree pane while continuing normal prompt interaction
   /tree-pane-size <n> - Set the persistent tree pane viewport height
   /tree-pane-preview <on|off> - Toggle preview details inside the persistent tree pane
+  /tree-pane-preview-toggle - Quickly toggle preview details for the persistent tree pane
   /tree-pane-grouped <on|off|toggle> - Control grouped rendering for the persistent tree pane
   /tree-pane-cycle - Cycle through common pane presets
   /tree-browser-clear - Clear transient browser state like filter/collapse/confirm
@@ -342,8 +345,13 @@ func handleTreePaneSize(m *model, arg string) (tea.Model, tea.Cmd) {
 func handleTreePanePreview(m *model, arg string) (tea.Model, tea.Cmd) {
 	m.loading = false
 	value := strings.ToLower(strings.TrimSpace(arg))
+	if value == "toggle" || value == "" {
+		m.browserPanePreview = !m.browserPanePreview
+		m.history = append(m.history, fmt.Sprintf("[Foundation Tree Pane] preview set to %t", m.browserPanePreview))
+		return *m, nil
+	}
 	if value != "on" && value != "off" {
-		m.history = append(m.history, "[Error] /tree-pane-preview requires 'on' or 'off'")
+		m.history = append(m.history, "[Error] /tree-pane-preview requires 'on', 'off', or use /tree-pane-preview-toggle")
 		return *m, nil
 	}
 	m.browserPanePreview = value == "on"

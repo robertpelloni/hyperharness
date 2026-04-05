@@ -1136,3 +1136,20 @@
 1. Keep `foundation/*`, `cmd`, and `tui` green and aligned to the same canonical runtime.
 2. Continue adding small operator-control affordances where they reduce friction, especially around pane/browser layout and state recovery.
 3. Keep grouped-mode controls as rendering-only state over the same canonical runtime-backed browser model.
+
+## Additional work completed later on 2026-04-04 (pane preview quick-toggle tranche)
+- Added new TUI slash command:
+  - `/tree-pane-preview-toggle`
+- Extended the preview handler to support toggle semantics in addition to explicit on/off.
+- Added focused regression coverage for repeated preview toggling.
+- Added detailed analysis doc:
+  - `docs/analysis/TUI_PANE_PREVIEW_QUICK_TOGGLE_TRANCHE_2026-04-04.md`
+
+## Latest validation after pane preview quick-toggle tranche
+- `gofmt -w tui/slash.go tui/slash_test.go`
+- `go test ./tui ./cmd ./foundation/...`
+
+## Updated recommendation after pane preview quick-toggle tranche
+1. Keep `foundation/*`, `cmd`, and `tui` green and aligned to the same canonical runtime.
+2. Continue adding small operator-polish controls where they reduce repeated pane/browser friction.
+3. Keep quick toggles as convenience layers over the same pane layout state rather than separate semantics.
