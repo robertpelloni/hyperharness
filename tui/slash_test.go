@@ -432,6 +432,62 @@ func TestProcessSlashCommandTreePaneToggle(t *testing.T) {
 	}
 }
 
+func TestProcessSlashCommandTreePaneFocusNavigation(t *testing.T) {
+	cwd := t.TempDir()
+	m := model{director: agents.NewDirector(&agents.DefaultProvider{})}
+	m.director.WorkingDir = cwd
+	sessionID, err := ensureFoundationSession(&m)
+	if err != nil {
+		t.Fatal(err)
+	}
+	runtime := foundationpi.NewRuntime(cwd, nil)
+	if _, err := runtime.AppendUserText(sessionID, "A"); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := runtime.AppendUserText(sessionID, "B"); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := runtime.AppendUserText(sessionID, "C"); err != nil {
+		t.Fatal(err)
+	}
+	oldLeaf, err := runtime.GetLeafID(sessionID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	mdl, _ := ProcessSlashCommand("/tree-pane", &m)
+	updated := mdl.(model)
+	mdl, _ = ProcessSlashCommand("/tree-pane-focus", &updated)
+	updated = mdl.(model)
+	if !updated.browserPinnedFocus {
+		t.Fatal("expected tree pane focus enabled")
+	}
+	if view := updated.View(); !strings.Contains(view, "[Tree Pane Focused]") {
+		t.Fatalf("expected focused pane marker, got %s", view)
+	}
+	mdl, _ = updated.Update(tea.KeyMsg{Type: tea.KeyDown})
+	updated = mdl.(model)
+	if updated.browserIndex != 1 {
+		t.Fatalf("expected pane browser index 1, got %d", updated.browserIndex)
+	}
+	mdl, _ = updated.Update(tea.KeyMsg{Type: tea.KeyEnter})
+	updated = mdl.(model)
+	if !updated.browserConfirmPending {
+		t.Fatal("expected pane confirm pending after Enter")
+	}
+	mdl, _ = updated.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("y")})
+	updated = mdl.(model)
+	if updated.browserConfirmPending {
+		t.Fatal("expected pane confirm cleared after Y")
+	}
+	newLeaf, err := runtime.GetLeafID(sessionID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if newLeaf == oldLeaf {
+		t.Fatalf("expected pane-focused navigation to switch leaf, old=%q new=%q", oldLeaf, newLeaf)
+	}
+}
+
 func TestProcessSlashCommandClearResetsDirector(t *testing.T) {
 	m := model{director: agents.NewDirector(&agents.DefaultProvider{})}
 	m.history = []string{"old"}

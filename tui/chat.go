@@ -27,6 +27,7 @@ type model struct {
 	browserCollapsed        map[string]bool
 	browserGrouped          bool
 	browserPinned           bool
+	browserPinnedFocus      bool
 }
 
 func initialModel() model {
@@ -179,6 +180,126 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				return m, nil
 			}
 		}
+		if m.browserPinned && m.browserPinnedFocus {
+			visible := visibleTreeBrowserItems(m.browserItems, m.browserFilter, m.browserCollapsed)
+			switch msg.Type {
+			case tea.KeyEsc:
+				if m.browserConfirmPending {
+					m.browserConfirmPending = false
+					return m, nil
+				}
+				m.browserPinnedFocus = false
+				return m, nil
+			case tea.KeyUp:
+				if m.browserConfirmPending {
+					return m, nil
+				}
+				if m.browserIndex > 0 {
+					m.browserIndex--
+				}
+				return m, nil
+			case tea.KeyDown:
+				if m.browserConfirmPending {
+					return m, nil
+				}
+				if m.browserIndex < len(visible)-1 {
+					m.browserIndex++
+				}
+				return m, nil
+			case tea.KeyLeft:
+				if m.browserConfirmPending {
+					return m, nil
+				}
+				if m.browserIndex >= 0 && m.browserIndex < len(visible) {
+					item := visible[m.browserIndex]
+					if item.ChildCount > 0 {
+						if m.browserCollapsed == nil {
+							m.browserCollapsed = map[string]bool{}
+						}
+						m.browserCollapsed[item.ID] = true
+					}
+				}
+				refreshPinnedFoundationTreeBrowser(&m)
+				return m, nil
+			case tea.KeyRight:
+				if m.browserConfirmPending {
+					return m, nil
+				}
+				if m.browserIndex >= 0 && m.browserIndex < len(visible) {
+					item := visible[m.browserIndex]
+					if m.browserCollapsed != nil {
+						delete(m.browserCollapsed, item.ID)
+					}
+				}
+				refreshPinnedFoundationTreeBrowser(&m)
+				return m, nil
+			case tea.KeyTab:
+				if m.browserConfirmPending {
+					return m, nil
+				}
+				m.browserGrouped = !m.browserGrouped
+				return m, nil
+			case tea.KeyBackspace, tea.KeyDelete:
+				if m.browserConfirmPending {
+					m.browserConfirmPending = false
+					return m, nil
+				}
+				if len(m.browserFilter) > 0 {
+					m.browserFilter = m.browserFilter[:len(m.browserFilter)-1]
+					visible = visibleTreeBrowserItems(m.browserItems, m.browserFilter, m.browserCollapsed)
+					if m.browserIndex >= len(visible) {
+						m.browserIndex = max(0, len(visible)-1)
+					}
+				}
+				return m, nil
+			case tea.KeyRunes, tea.KeySpace:
+				if m.browserConfirmPending {
+					if len(msg.Runes) > 0 {
+						r := strings.ToLower(string(msg.Runes))
+						if r == "y" {
+							if m.browserIndex >= 0 && m.browserIndex < len(visible) {
+								display, err := openSelectedTreeBrowser(m.director.WorkingDir, m.foundationSessionID, visible, m.browserIndex, 128)
+								if err != nil {
+									m.history = append(m.history, fmt.Sprintf("[Error] tree pane switch failed: %v", err))
+								} else {
+									m.history = append(m.history, display)
+								}
+								m.browserConfirmPending = false
+								refreshPinnedFoundationTreeBrowser(&m)
+							}
+							return m, nil
+						}
+						if r == "n" {
+							m.browserConfirmPending = false
+							return m, nil
+						}
+					}
+					return m, nil
+				}
+				m.browserFilter += msg.String()
+				visible = visibleTreeBrowserItems(m.browserItems, m.browserFilter, m.browserCollapsed)
+				if m.browserIndex >= len(visible) {
+					m.browserIndex = max(0, len(visible)-1)
+				}
+				return m, nil
+			case tea.KeyEnter:
+				if m.browserIndex >= 0 && m.browserIndex < len(visible) {
+					if !m.browserConfirmPending {
+						m.browserConfirmPending = true
+						return m, nil
+					}
+					display, err := openSelectedTreeBrowser(m.director.WorkingDir, m.foundationSessionID, visible, m.browserIndex, 128)
+					if err != nil {
+						m.history = append(m.history, fmt.Sprintf("[Error] tree pane switch failed: %v", err))
+					} else {
+						m.history = append(m.history, display)
+					}
+					m.browserConfirmPending = false
+					refreshPinnedFoundationTreeBrowser(&m)
+				}
+				return m, nil
+			}
+		}
 		switch msg.Type {
 		case tea.KeyCtrlC, tea.KeyEsc:
 			return m, tea.Quit
@@ -265,7 +386,10 @@ func (m model) View() string {
 		return s
 	}
 	if m.browserPinned {
-		s += renderTreeBrowser(m.browserItems, m.browserIndex, m.browserFilter, false, m.browserCollapsed, m.browserGrouped)
+		s += renderTreeBrowser(m.browserItems, m.browserIndex, m.browserFilter, m.browserConfirmPending && m.browserPinnedFocus, m.browserCollapsed, m.browserGrouped)
+		if m.browserPinnedFocus {
+			s += "\n[Tree Pane Focused]\n"
+		}
 		s += "\n\n"
 	}
 	if m.loading {
