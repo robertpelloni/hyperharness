@@ -1,4 +1,4 @@
-module github.com/robertpelloni/hypercode/apps/native-ui
+module github.com/robertpelloni/borg/apps/native-ui
 
 go 1.21
 

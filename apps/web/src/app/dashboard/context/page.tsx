@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle, Button, Badge, ScrollArea } from "@hypercode/ui";
+import { Card, CardContent, CardHeader, CardTitle, Button, Badge, ScrollArea } from "@borg/ui";
 import { Layers, Plus, Trash2, Loader2, RefreshCw, FileText, Code2, Copy, Check } from "lucide-react";
 import { trpc } from '@/utils/trpc';
 import { toast } from 'sonner';
@@ -110,7 +110,7 @@ export default function ContextDashboard() {
                         Context Manager
                     </h1>
                     <p className="text-zinc-500 mt-2">
-                        Manage the set of files that are injected into the HyperCode context prompt for active AI sessions.
+                        Manage the set of files that are injected into the borg context prompt for active AI sessions.
                     </p>
                 </div>
                 <Button

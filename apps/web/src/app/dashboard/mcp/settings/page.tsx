@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from 'react';
-import { Card, CardHeader, CardTitle, CardContent } from "@hypercode/ui";
-import { Button } from "@hypercode/ui";
+import { Card, CardHeader, CardTitle, CardContent } from "@borg/ui";
+import { Button } from "@borg/ui";
 import { CheckCircle2, Download, FileJson, Loader2, RefreshCcw, Save, RotateCcw } from "lucide-react";
 import { trpc } from '@/utils/trpc';
 import { toast } from 'sonner';
@@ -183,7 +183,7 @@ export default function MCPSettings() {
                                 <div>
                                     <div className="text-sm font-medium text-white">{CLIENT_LABELS[selectedClient]}</div>
                                     <div className="mt-1 text-xs text-zinc-500">
-                                        HyperCode will merge the current MCP server registry into this client config without discarding unrelated settings.
+                                        borg will merge the current MCP server registry into this client config without discarding unrelated settings.
                                     </div>
                                 </div>
 
@@ -232,7 +232,7 @@ export default function MCPSettings() {
                                     <div>
                                         <div className="text-sm font-medium text-white">Generated preview</div>
                                         <div className="text-xs text-zinc-500">
-                                            This is the exact JSON HyperCode will write for {CLIENT_LABELS[selectedClient]}.
+                                            This is the exact JSON borg will write for {CLIENT_LABELS[selectedClient]}.
                                         </div>
                                     </div>
                                     {previewDocument?.existed ? (

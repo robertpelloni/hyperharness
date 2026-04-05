@@ -1,5 +1,5 @@
 {
-    "name": "@hypercode/mcp-client",
+    "name": "@borg/mcp-client",
     "version": "1.0.0-alpha.1",
     "main": "dist/index.js",
     "types": "dist/index.d.ts",

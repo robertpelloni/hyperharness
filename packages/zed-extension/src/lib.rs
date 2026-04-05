@@ -1,7 +1,7 @@
 use zed_extension_api::{self as zed, Result, Command, CodeLabel, Worktree};
 use serde::{Deserialize, Serialize};
 
-/// HyperCode Extension for Zed Editor
+/// borg Extension for Zed Editor
 /// Provides AI Council integration via slash commands and context providers
 struct BorgExtension {
     hub_url: String,
@@ -161,7 +161,7 @@ impl BorgExtension {
             .map_err(|e| format!("Failed to read response: {}", e))
     }
 
-    /// Check connection to HyperCode hub
+    /// Check connection to borg hub
     fn check_health(&self) -> Result<HealthResponse> {
         let response = self.http_get("/api/health")?;
         serde_json::from_str(&response)
@@ -253,7 +253,7 @@ impl BorgExtension {
                 output.push_str(&format!("{}. {}\n", i + 1, step));
             }
             output.push_str(&format!(
-                "\n> To approve this plan, use `/HyperCode-approve {}`\n",
+                "\n> To approve this plan, use `/borg-approve {}`\n",
                 session.session_id
             ));
         }
@@ -388,8 +388,8 @@ impl zed::Extension for BorgExtension {
         _language_server_id: &zed::LanguageServerId,
         _worktree: &Worktree,
     ) -> Result<Command> {
-        // HyperCode doesn't provide a language server, return error to skip
-        Err("HyperCode does not provide a language server".into())
+        // borg doesn't provide a language server, return error to skip
+        Err("borg does not provide a language server".into())
     }
 }
 
@@ -412,62 +412,62 @@ fn timestamp_millis() -> u64 {
 // Command Handlers (for future slash command support)
 // ============================================================================
 
-/// Command registry for HyperCode slash commands
+/// Command registry for borg slash commands
 /// These will be registered when Zed adds slash command support to the extension API
 pub mod commands {
     use super::*;
 
-    /// /HyperCode-debate <description>
+    /// /borg-debate <description>
     /// Start a council debate on the given topic
     pub fn debate(ext: &BorgExtension, args: &str, context: &str) -> Result<String> {
         if args.is_empty() {
-            return Err("Usage: /HyperCode-debate <description>".into());
+            return Err("Usage: /borg-debate <description>".into());
         }
         ext.start_debate(args, context, vec![])
     }
 
-    /// /HyperCode-architect <task>
+    /// /borg-architect <task>
     /// Start an architect session for complex implementations
     pub fn architect(ext: &BorgExtension, args: &str) -> Result<String> {
         if args.is_empty() {
-            return Err("Usage: /HyperCode-architect <task description>".into());
+            return Err("Usage: /borg-architect <task description>".into());
         }
         ext.start_architect(args, None, None)
     }
 
-    /// /HyperCode-approve <session_id>
+    /// /borg-approve <session_id>
     /// Approve an architect plan
     pub fn approve(ext: &BorgExtension, args: &str) -> Result<String> {
         if args.is_empty() {
-            return Err("Usage: /HyperCode-approve <session_id>".into());
+            return Err("Usage: /borg-approve <session_id>".into());
         }
         ext.approve_plan(args.trim())
     }
 
-    /// /HyperCode-analytics
+    /// /borg-analytics
     /// Show supervisor analytics summary
     pub fn analytics(ext: &BorgExtension) -> Result<String> {
         ext.get_analytics()
     }
 
-    /// /HyperCode-templates
+    /// /borg-templates
     /// List available debate templates
     pub fn templates(ext: &BorgExtension) -> Result<String> {
         ext.get_templates()
     }
 
-    /// /HyperCode-worktrees
+    /// /borg-worktrees
     /// List git worktrees
     pub fn worktrees(ext: &BorgExtension) -> Result<String> {
         ext.list_worktrees()
     }
 
-    /// /HyperCode-health
-    /// Check HyperCode hub connection
+    /// /borg-health
+    /// Check borg hub connection
     pub fn health(ext: &BorgExtension) -> Result<String> {
         match ext.check_health() {
             Ok(h) => Ok(format!(
-                "## HyperCode Health\n\n\
+                "## borg Health\n\n\
                 **Status:** {}\n\
                 **Version:** {}\n\
                 **Uptime:** {}s",
@@ -476,10 +476,10 @@ pub mod commands {
                 h.uptime.unwrap_or(0)
             )),
             Err(e) => Ok(format!(
-                "## HyperCode Health\n\n\
+                "## borg Health\n\n\
                 **Status:** Disconnected\n\
                 **Error:** {}\n\n\
-                Make sure HyperCode hub is running at `{}`",
+                Make sure borg hub is running at `{}`",
                 e,
                 ext.hub_url
             )),

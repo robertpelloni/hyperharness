@@ -2,7 +2,7 @@
 'use client';
 
 import React from 'react';
-import { KnowledgeGraph } from '@hypercode/ui';
+import { KnowledgeGraph } from '@borg/ui';
 import { trpc } from '@/utils/trpc';
 
 function isSymbolGraphPayload(value: unknown): value is { nodes: unknown[]; links: unknown[] } {
@@ -34,7 +34,7 @@ export default function BrainPage() {
         <div className="h-full w-full p-6 flex flex-col">
             <header className="mb-6">
                 <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-500 to-pink-500 bg-clip-text text-transparent">
-                    The HyperCode Brain
+                    The borg Brain
                 </h1>
                 <p className="text-zinc-500 dark:text-zinc-400">
                     Visualizing the collective knowledge graph ({graphUnavailable ? '—' : nodes.length} nodes).

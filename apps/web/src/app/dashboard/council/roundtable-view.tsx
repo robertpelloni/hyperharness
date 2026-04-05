@@ -16,10 +16,10 @@ import {
   Eye,
   Plus
 } from 'lucide-react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@hypercode/ui";
-import { Badge } from "@hypercode/ui";
-import { Button } from "@hypercode/ui";
-import { Card, CardContent, CardHeader, CardTitle } from "@hypercode/ui";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@borg/ui";
+import { Badge } from "@borg/ui";
+import { Button } from "@borg/ui";
+import { Card, CardContent, CardHeader, CardTitle } from "@borg/ui";
 import { trpc } from '@/utils/trpc';
 import { RotationRoomsPanel } from './rotation-rooms-panel';
 
@@ -56,7 +56,7 @@ export function RoundtableView() {
           <div>
             <div className="flex items-center gap-3">
               <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent">
-                HyperCode Roundtable
+                borg Roundtable
               </h1>
               <Badge variant="outline" className="border-green-500/30 text-green-400 bg-green-500/10">
                 {councilStatusUnavailable ? 'Unavailable' : councilStatus.data?.enabled ? 'Online' : 'Standby'}
@@ -171,7 +171,7 @@ export function RoundtableView() {
                 </CardHeader>
                 <CardContent>
                   <div className="h-[200px] bg-black/50 rounded-lg font-mono text-xs p-4 overflow-y-auto">
-                    <div className="text-blue-400">[INFO] HyperCode Roundtable initialized</div>
+                    <div className="text-blue-400">[INFO] borg Roundtable initialized</div>
                     <div className="text-purple-400">[COUNCIL] Verifying evidence locks...</div>
                     <div className="text-green-400">[SYSTEM] All kernels healthy</div>
                   </div>

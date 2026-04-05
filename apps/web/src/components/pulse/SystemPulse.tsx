@@ -1,7 +1,7 @@
 "use client";
 
 import { trpc } from '@/utils/trpc';
-import { Card, CardHeader, CardTitle, CardContent, Badge } from '@hypercode/ui';
+import { Card, CardHeader, CardTitle, CardContent, Badge } from '@borg/ui';
 import { Activity, Cpu, HardDrive, AlertTriangle, Clock, Server, MonitorPlay } from 'lucide-react';
 
 function formatBytes(bytes: number) {
@@ -47,7 +47,7 @@ export function SystemPulse() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">HyperCode Core Status</CardTitle>
+                        <CardTitle className="text-sm font-medium">borg Core Status</CardTitle>
                         {statusUnavailable ? (
                             <Badge variant="destructive">Unavailable</Badge>
                         ) : statusData?.status === 'online' ? (

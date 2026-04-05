@@ -1,4 +1,4 @@
-# AGENTS — HyperCode Contributor & Agent Guide
+# AGENTS — borg Contributor & Agent Guide
 
 > **CRITICAL: ALL AGENTS MUST READ `docs/UNIVERSAL_LLM_INSTRUCTIONS.md` BEFORE PROCEEDING.**
 

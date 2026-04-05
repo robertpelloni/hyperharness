@@ -1,5 +1,5 @@
 /**
- * HyperCode MCP Router - Status Cards Component
+ * borg MCP Router - Status Cards Component
  *
  * Displays key statistics for registry, sessions, and system health.
  */

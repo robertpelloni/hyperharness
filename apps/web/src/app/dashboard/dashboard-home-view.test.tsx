@@ -1272,7 +1272,7 @@ describe('dashboard home helpers', () => {
     });
   });
 
-  it('surfaces hypercode-memory seeding state in memory/context startup details', () => {
+  it('surfaces borg-memory seeding state in memory/context startup details', () => {
     const startupStatus = {
       status: 'running',
       ready: false,
@@ -1807,7 +1807,7 @@ describe('DashboardHomeView', () => {
     expect(html).toContain('Integration Hub');
     expect(html).toContain('Server health and traffic');
     expect(html).toContain('Startup readiness');
-    expect(html).toContain('Install &amp; connect HyperCode');
+    expect(html).toContain('Install &amp; connect borg');
     expect(html).toContain('Browser extensions');
     expect(html).toContain('Editor surfaces');
     expect(html).toContain('Client config sync');

@@ -1,13 +1,13 @@
 import { z } from 'zod';
 import { t, publicProcedure, adminProcedure } from '../lib/trpc-core.js';
-import { resolveOrchestratorBase } from '../lib/hypercode-orchestrator.js';
+import { resolveOrchestratorBase } from '../lib/borg-orchestrator.js';
 
 /**
  * Session Export/Import Router
  *
  * Provides the ability to:
  * - Export sessions and memories to portable JSON/ZIP formats
- * - Import sessions from other HyperCode instances or environments
+ * - Import sessions from other borg instances or environments
  * - Auto-detect session formats from various CLI tools
  * - Cross-environment memory transfer
  */
@@ -93,7 +93,7 @@ const SESSION_FORMAT_SIGNATURES: Record<string, { paths: string[]; type: string 
     'opencode': { paths: ['.docs/ai-logs'], type: 'opencode' },
     'aider': { paths: ['.aider.chat.history.md', '.aider.tags.cache'], type: 'aider' },
     'windsurf': { paths: ['.windsurf', '.docs/ai-logs'], type: 'windsurf' },
-    'hypercode': { paths: ['.hypercode', '.hypercode/sessions'], type: 'hypercode' },
+    'borg': { paths: ['.borg', '.borg/sessions'], type: 'borg' },
     'continue': { paths: ['.continue', '.continue/sessions'], type: 'continue' },
     'copilot': { paths: ['.github/copilot'], type: 'copilot' },
 };
@@ -103,8 +103,8 @@ function detectSessionFormat(data: unknown): string {
 
     const record = data as Record<string, unknown>;
 
-    // Check for HyperCode export format
-    if (record.version === '1.0' && Array.isArray(record.sessions)) return 'hypercode-export';
+    // Check for borg export format
+    if (record.version === '1.0' && Array.isArray(record.sessions)) return 'borg-export';
 
     // Check for Claude Code format  
     if (record.type === 'conversation' && record.messages) return 'claude-code';
@@ -128,7 +128,7 @@ function parseImportData(rawData: string): { format: string; sessions: ExportedS
 
     const format = detectSessionFormat(parsed);
 
-    if (format === 'hypercode-export') {
+    if (format === 'borg-export') {
         const pkg = parsed as ExportPackage;
         return { format, sessions: pkg.sessions };
     }
@@ -187,8 +187,8 @@ export async function loadExportableOrchestratorSessions(
         })
         .map((record) => ({
         id: String(record.id ?? `exported_${Date.now()}`),
-        name: String(record.currentTask || 'HyperCode Session'),
-        cliType: 'hypercode',
+        name: String(record.currentTask || 'borg Session'),
+        cliType: 'borg',
         status: String(record.status || 'unknown'),
         createdAt: typeof record.startTime === 'number' ? record.startTime : Date.now(),
         workingDirectory: process.cwd(),
@@ -204,7 +204,7 @@ export async function restoreSessionViaOrchestrator(
     orchestratorBase: string | null = resolveOrchestratorBase(),
 ): Promise<{ ok: true } | { ok: false; reason: string }> {
     if (!orchestratorBase) {
-        return { ok: false, reason: 'No HyperCode Orchestrator base configured.' };
+        return { ok: false, reason: 'No borg Orchestrator base configured.' };
     }
 
     try {
@@ -251,7 +251,7 @@ export const sessionExportRouter = t.router({
                 pkg.sessions = await loadExportableOrchestratorSessions(fetch, undefined, input.sessionIds);
                 pkg.sessionCount = pkg.sessions.length;
             } catch (e: any) {
-                console.warn(`[SessionExport] HyperCode Orchestrator unavailable (${e.message}). Exporting empty sessions list.`);
+                console.warn(`[SessionExport] borg Orchestrator unavailable (${e.message}). Exporting empty sessions list.`);
             }
 
             const exportId = `export_${Date.now()}`;

@@ -1,5 +1,5 @@
 {
-    "name": "@hypercode/adk",
+    "name": "@borg/adk",
     "version": "1.0.0-alpha.1",
     "type": "module",
     "main": "dist/index.js",

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from 'react';
-import { Card, CardHeader, CardTitle, CardContent, Button, Badge, ScrollArea } from "@hypercode/ui";
+import { Card, CardHeader, CardTitle, CardContent, Button, Badge, ScrollArea } from "@borg/ui";
 import { Loader2, Search, Trash2, Database, Network, Plus, Server, Code } from "lucide-react";
 import { trpc } from '@/utils/trpc';
 import { toast } from 'sonner';
@@ -55,7 +55,7 @@ export default function VectorMemoryDashboard() {
                         Vector Memory Explorer
                     </h1>
                     <p className="text-zinc-500 mt-2">
-                        Direct low-level manipulation of the HyperCode long-term vector memory index and persistent context records.
+                        Direct low-level manipulation of the borg long-term vector memory index and persistent context records.
                     </p>
                 </div>
                 <div className="flex gap-2">

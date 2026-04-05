@@ -16,13 +16,13 @@ async function getDashboardVersionLabel(): Promise<string> {
                 continue;
             }
 
-            return `HyperCode ${version}`;
+            return `borg ${version}`;
         } catch {
             // try next candidate
         }
     }
 
-    return 'HyperCode';
+    return 'borg';
 }
 
 export default async function DashboardIndexPage() {

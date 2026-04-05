@@ -2,7 +2,7 @@
  * @file mcp-admin-schema.ts
  * @module packages/core/src/db/mcp-admin-schema
  *
- * HyperCode-native schema entry point for the MCP admin/control-plane database.
+ * borg-native schema entry point for the MCP admin/control-plane database.
  */
 
 export * from "./metamcp-schema.js";

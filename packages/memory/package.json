@@ -1,5 +1,5 @@
 {
-    "name": "@hypercode/memory",
+    "name": "@borg/memory",
     "version": "1.0.0-alpha.1",
     "type": "module",
     "main": "dist/index.js",
@@ -17,7 +17,7 @@
         "test": "vitest run test/"
     },
     "dependencies": {
-        "@hypercode/ai": "workspace:*",
+        "@borg/ai": "workspace:*",
         "@lancedb/lancedb": "^0.23.0",
         "@xenova/transformers": "^2.14.0",
         "apache-arrow": "^21.1.0",

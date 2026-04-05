@@ -59,7 +59,7 @@ export class InputTools {
             WshShell.AppActivate "Code - Insiders"
             WshShell.AppActivate "Visual Studio Code"
             WshShell.AppActivate "Code"
-            WshShell.AppActivate "hypercode"
+            WshShell.AppActivate "borg"
             WshShell.AppActivate "Terminal"
             On Error GoTo 0
             `;

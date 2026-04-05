@@ -133,7 +133,7 @@ export const FileSystemTools = [
         },
         handler: strReplaceEditorHandler
     },
-    // Aliases for HyperCode-native compatibility
+    // Aliases for borg-native compatibility
     {
         name: "replace_in_file",
         description: "(Alias for str_replace_editor) Replace a string in a file.",

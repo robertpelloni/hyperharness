@@ -1,4 +1,4 @@
-import { resolveLockedBorgBase } from './hypercode-runtime';
+import { resolveLockedBorgBase } from './borg-runtime';
 
 const DEFAULT_UPSTREAM_TRPC_URLS: string[] = [
   'http://127.0.0.1:3100/trpc',

@@ -19,7 +19,7 @@ import {
     SelectValue,
     Switch,
     Textarea,
-} from '@hypercode/ui';
+} from '@borg/ui';
 import { Loader2, Plus } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -53,7 +53,7 @@ const EXECUTION_PROFILE_OPTIONS = [
     {
         value: 'auto',
         label: 'Auto',
-        description: 'Prefer HyperCode\'s default verified shell for this host.',
+        description: 'Prefer borg\'s default verified shell for this host.',
     },
     {
         value: 'powershell',
@@ -68,7 +68,7 @@ const EXECUTION_PROFILE_OPTIONS = [
     {
         value: 'compatibility',
         label: 'Compatibility-first',
-        description: 'Use the most conservative shell posture HyperCode can verify on this host.',
+        description: 'Use the most conservative shell posture borg can verify on this host.',
     },
 ] as const;
 
@@ -139,7 +139,7 @@ export function SessionCreateDialog({ catalog, onCreated }: SessionCreateDialogP
                 <DialogHeader>
                     <DialogTitle>Create supervised session</DialogTitle>
                     <DialogDescription className="text-zinc-400">
-                        Spawn a CLI harness under HyperCode supervision with auto-restart and optional worktree isolation.
+                        Spawn a CLI harness under borg supervision with auto-restart and optional worktree isolation.
                     </DialogDescription>
                 </DialogHeader>
 
@@ -212,7 +212,7 @@ export function SessionCreateDialog({ catalog, onCreated }: SessionCreateDialogP
                             id="session-working-directory"
                             value={workingDirectory}
                             onChange={(event) => setWorkingDirectory(event.target.value)}
-                            placeholder="C:\\Users\\hyper\\workspace\\hypercode"
+                            placeholder="C:\\Users\\hyper\\workspace\\borg"
                             className="bg-zinc-900 border-white/10 text-white"
                         />
                     </div>

@@ -1,7 +1,7 @@
 'use client';
 
 import { WorkflowCanvas } from '@/components/workflows/WorkflowCanvas';
-import { Card } from '@hypercode/ui';
+import { Card } from '@borg/ui';
 import { PageStatusBanner } from '@/components/PageStatusBanner';
 
 export default function WorkflowsDashboard() {

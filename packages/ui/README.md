@@ -1,6 +1,6 @@
-# hypercode - Dashboard UI
+# borg - Dashboard UI
 
-Next.js-based dashboard for the hypercode.
+Next.js-based dashboard for the borg.
 
 ## Development
 

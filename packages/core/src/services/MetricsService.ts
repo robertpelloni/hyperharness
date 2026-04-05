@@ -304,9 +304,7 @@ export class MetricsService extends EventEmitter {
             averages,
             counters: typedStats.counters,
             gauges: typedStats.gauges,
-            histograms: typedStats.histograms
-        };
-    }
+            histograms: typedStats.histograms,
             series: this.downsample(relevant, 60)
         };
     }

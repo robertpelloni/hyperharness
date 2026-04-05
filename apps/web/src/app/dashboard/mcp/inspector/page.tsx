@@ -3,8 +3,8 @@
 import Link from 'next/link';
 import { Suspense, useEffect, useMemo, useState } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { Card, CardHeader, CardTitle, CardContent } from "@hypercode/ui";
-import { Button } from "@hypercode/ui";
+import { Card, CardHeader, CardTitle, CardContent } from "@borg/ui";
+import { Button } from "@borg/ui";
 import { Loader2, Play, Wrench, Search, ChevronRight, Layers, Database, ExternalLink, Link2, Activity, ArrowDownToLine, Sparkles, Trash2, Clock, Zap, AlertTriangle } from "lucide-react";
 import { TrafficInspector } from '@/components/TrafficInspector';
 import { trpc } from '@/utils/trpc';
@@ -98,7 +98,7 @@ type TelemetryTrendBucket = {
     label: string;
 };
 
-const INSPECTOR_TELEMETRY_FILTERS_STORAGE_KEY = 'hypercode.mcp.inspector.telemetryFilters.v1';
+const INSPECTOR_TELEMETRY_FILTERS_STORAGE_KEY = 'borg.mcp.inspector.telemetryFilters.v1';
 const INSPECTOR_TELEMETRY_TYPE_QUERY_KEY = 'telemetryType';
 const INSPECTOR_TELEMETRY_STATUS_QUERY_KEY = 'telemetryStatus';
 const INSPECTOR_TELEMETRY_WINDOW_QUERY_KEY = 'telemetryWindow';
@@ -107,7 +107,7 @@ const INSPECTOR_TELEMETRY_TOOL_QUERY_KEY = 'telemetryTool';
 const INSPECTOR_TELEMETRY_SEARCH_QUERY_KEY = 'telemetrySearch';
 const INSPECTOR_TELEMETRY_BUCKET_START_QUERY_KEY = 'telemetryBucketStart';
 const INSPECTOR_TELEMETRY_BUCKET_END_QUERY_KEY = 'telemetryBucketEnd';
-const INSPECTOR_EVICTION_FILTERS_STORAGE_KEY = 'hypercode.mcp.inspector.evictionFilters.v1';
+const INSPECTOR_EVICTION_FILTERS_STORAGE_KEY = 'borg.mcp.inspector.evictionFilters.v1';
 const INSPECTOR_EVICTION_REASON_QUERY_KEY = 'evictionReason';
 const INSPECTOR_EVICTION_TIER_QUERY_KEY = 'evictionTier';
 const INSPECTOR_EVICTION_WINDOW_QUERY_KEY = 'evictionWindow';

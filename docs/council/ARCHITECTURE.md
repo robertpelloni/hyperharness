@@ -1,7 +1,7 @@
 ## 🏗️ Technical Architecture
 
 ### Overview
-HyperCode Orchestrator is the council and session-supervision subsystem inside the HyperCode monorepo. This document describes the original standalone architecture that informed the integrated runtime now hosted in HyperCode core and the web dashboard.
+borg Orchestrator is the council and session-supervision subsystem inside the borg monorepo. This document describes the original standalone architecture that informed the integrated runtime now hosted in borg core and the web dashboard.
 
 ### Monorepo Structure
 
@@ -151,7 +151,7 @@ AUTOPILOT_CONSENSUS=0.7
 AUTOPILOT_SMART_PILOT=false
 ```
 
-**Config File** (`.hypercode/orchestrator/config.json`, with `.autopilot/config.json` still supported as a legacy fallback)
+**Config File** (`.borg/orchestrator/config.json`, with `.autopilot/config.json` still supported as a legacy fallback)
 ```json
 {
   "council": {

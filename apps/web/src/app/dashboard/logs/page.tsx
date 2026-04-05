@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { PageStatusBanner } from '@/components/PageStatusBanner';
-import { Badge, Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Input, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@hypercode/ui";
+import { Badge, Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Input, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@borg/ui";
 import { Activity, Trash2, Search, RefreshCcw, BarChart3, AlertTriangle, CheckCircle2, Clock } from "lucide-react";
 import { trpc } from '@/utils/trpc';
 import { toast } from 'sonner';

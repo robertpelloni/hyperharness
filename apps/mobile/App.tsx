@@ -3,15 +3,15 @@ import { useEffect, useState } from 'react';
 import { StyleSheet, Text, View, ScrollView } from 'react-native';
 
 export default function App() {
-  const [logs, setLogs] = useState<string[]>(['Initializing HyperCode connection...']);
+  const [logs, setLogs] = useState<string[]>(['Initializing borg connection...']);
   const [status, setStatus] = useState<string>('Disconnected');
 
   useEffect(() => {
-    // Attempt connection to HyperCode Core's MCP/Telemetry WebSocket bridge
+    // Attempt connection to borg Core's MCP/Telemetry WebSocket bridge
     const ws = new WebSocket('ws://localhost:3847');
 
     ws.onopen = () => {
-      setStatus('Connected to HyperCode Core');
+      setStatus('Connected to borg Core');
       setLogs((prev) => [...prev, '[System] Connected to ws://localhost:3847']);
     };
 
@@ -37,8 +37,8 @@ export default function App() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.header}>HyperCode Mobile Control</Text>
-      <Text style={[styles.status, status === 'Connected to HyperCode Core' ? styles.connected : styles.error]}>
+      <Text style={styles.header}>borg Mobile Control</Text>
+      <Text style={[styles.status, status === 'Connected to borg Core' ? styles.connected : styles.error]}>
         Status: {status}
       </Text>
       

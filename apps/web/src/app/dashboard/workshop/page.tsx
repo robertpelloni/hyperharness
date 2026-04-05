@@ -1,4 +1,4 @@
-import { WorkshopPage } from '@hypercode/ui';
+import { WorkshopPage } from '@borg/ui';
 
 export default function Page() {
     return <WorkshopPage />;

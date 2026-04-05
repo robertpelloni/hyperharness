@@ -1,9 +1,9 @@
 'use client';
 
-import { Card, CardHeader, CardTitle, CardContent, CardDescription, Tabs, TabsContent, TabsList, TabsTrigger } from "@hypercode/ui";
+import { Card, CardHeader, CardTitle, CardContent, CardDescription, Tabs, TabsContent, TabsList, TabsTrigger } from "@borg/ui";
 import { useEffect, useState } from "react";
 import { fetchSubmodulesAction, healSubmodulesAction, fetchUserLinksAction, fetchWorkspaceInventoryAction } from "./actions";
-import { Button } from "@hypercode/ui";
+import { Button } from "@borg/ui";
 import { Loader2, RefreshCw, GitCommit, Calendar, ExternalLink, Copy, Check, FolderTree, Package2, ScrollText } from "lucide-react";
 import {
     normalizeSubmodules,
@@ -227,7 +227,7 @@ export default function SubmodulesPage() {
                     <div className="space-y-4">
                         <Card>
                             <CardHeader>
-                                <CardTitle>HyperCode Project Structure</CardTitle>
+                                <CardTitle>borg Project Structure</CardTitle>
                                 <CardDescription>
                                     Live workspace inventory for apps, packages, docs, scripts, and reference repos.
                                 </CardDescription>

@@ -1,6 +1,6 @@
 
 import { v4 as uuidv4 } from 'uuid';
-import { LLMService } from '@hypercode/ai';
+import { LLMService } from '@borg/ai';
 import fs from 'fs';
 import path from 'path';
 
@@ -15,7 +15,7 @@ export interface Suggestion {
     status: 'PENDING' | 'APPROVED' | 'REJECTED';
 }
 
-import { Director } from '@hypercode/agents';
+import { Director } from '@borg/agents';
 
 interface LlmTextResponse {
     text?: string;

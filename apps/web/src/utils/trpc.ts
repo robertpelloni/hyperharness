@@ -1,1 +1,1 @@
-export { trpc } from '@hypercode/ui';
+export { trpc } from '@borg/ui';

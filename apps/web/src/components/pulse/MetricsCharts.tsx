@@ -1,7 +1,7 @@
 "use client";
 
 import { trpc } from '@/utils/trpc';
-import { Card, CardHeader, CardTitle, CardContent } from '@hypercode/ui';
+import { Card, CardHeader, CardTitle, CardContent } from '@borg/ui';
 import { Area, AreaChart, ResponsiveContainer, Tooltip, XAxis, YAxis, CartesianGrid } from 'recharts';
 
 export function MetricsCharts() {

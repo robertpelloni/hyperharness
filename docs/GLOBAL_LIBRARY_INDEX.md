@@ -1,6 +1,6 @@
 # Global Library Index
 
-This document is an aggregated index of all autonomous models, multi-agent frameworks, SDKs, memory backends, and contextual RAG architectures identified by the user to be assimilated into the HyperCode core.
+This document is an aggregated index of all autonomous models, multi-agent frameworks, SDKs, memory backends, and contextual RAG architectures identified by the user to be assimilated into the borg core.
 
 ---
 
@@ -1216,7 +1216,7 @@ This document is an aggregated index of all autonomous models, multi-agent frame
 - [https://github.com/robertpelloni/antigravity-auto-accept](https://github.com/robertpelloni/antigravity-auto-accept)
 - [https://github.com/robertpelloni/auto-accept-agent](https://github.com/robertpelloni/auto-accept-agent)
 - [https://github.com/robertpelloni/bobcoin/tree/c7d74f00dd51f4b14856187913322facc44738ee](https://github.com/robertpelloni/bobcoin/tree/c7d74f00dd51f4b14856187913322facc44738ee)
-- [https://github.com/robertpelloni/hypercode](https://github.com/robertpelloni/hypercode)
+- [https://github.com/robertpelloni/borg](https://github.com/robertpelloni/borg)
 - [https://github.com/robertpelloni/fwber/blob/main/README.md](https://github.com/robertpelloni/fwber/blob/main/README.md)
 - [https://github.com/robertpelloni/jules-autopilot](https://github.com/robertpelloni/jules-autopilot)
 - [https://github.com/robertpelloni/mcp-cli](https://github.com/robertpelloni/mcp-cli)
@@ -10026,7 +10026,7 @@ This document is an aggregated index of all autonomous models, multi-agent frame
 - [https://openai.com/index/equip-responses-api-computer-environment/](https://openai.com/index/equip-responses-api-computer-environment/)
 - [https://github.com/jkerdels/dependency-graph-mcp](https://github.com/jkerdels/dependency-graph-mcp)
 - [https://payo.tech/](https://payo.tech/)
-- [https://kunnas.com/articles/the-hypercodex](https://kunnas.com/articles/the-hypercodex)
+- [https://kunnas.com/articles/the-borgx](https://kunnas.com/articles/the-borgx)
 - [https://www.wsj.com/business/ai-startup-aaru-young-founders-35da7f87](https://www.wsj.com/business/ai-startup-aaru-young-founders-35da7f87)
 - [https://news.ycombinator.com/item?id=47343951](https://news.ycombinator.com/item?id=47343951)
 - [https://kling3.io/](https://kling3.io/)

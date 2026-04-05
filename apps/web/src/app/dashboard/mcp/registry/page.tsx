@@ -2,8 +2,8 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { Card, CardHeader, CardTitle, CardContent } from "@hypercode/ui";
-import { Button } from "@hypercode/ui";
+import { Card, CardHeader, CardTitle, CardContent } from "@borg/ui";
+import { Button } from "@borg/ui";
 import { Loader2, Globe, Download, ExternalLink, Database, ArrowRight, CheckCircle2, AlertCircle } from "lucide-react";
 import { trpc } from '@/utils/trpc';
 import { toast } from 'sonner';

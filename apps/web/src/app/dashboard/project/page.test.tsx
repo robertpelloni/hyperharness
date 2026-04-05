@@ -6,7 +6,7 @@ const mockState = {
   handoffsError: null as { message: string } | null,
 };
 
-vi.mock('@hypercode/ui', () => ({
+vi.mock('@borg/ui', () => ({
   Card: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   CardHeader: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   CardTitle: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,

@@ -15,10 +15,10 @@ const config = createConfig({
     walletConnect({
       projectId: WALLETCONNECT_PROJECT_ID,
       metadata: {
-        name: 'HyperCode Dashboard',
-        description: 'HyperCode - AI Operating System - Bobcoin Wallet',
-        url: 'https://hypercode.local',
-        icons: ['https://hypercode.local/icon.png'],
+        name: 'borg Dashboard',
+        description: 'borg - AI Operating System - Bobcoin Wallet',
+        url: 'https://borg.local',
+        icons: ['https://borg.local/icon.png'],
       },
       showQrModal: true,
     }),

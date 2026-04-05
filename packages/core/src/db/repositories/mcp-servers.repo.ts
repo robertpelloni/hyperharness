@@ -739,7 +739,7 @@ export class McpServersRepository {
                         server,
                         'failed',
                         new Date().toISOString(),
-                        'STDIO server is missing a command, so HyperCode could not discover tools.',
+                        'STDIO server is missing a command, so borg could not discover tools.',
                     ),
                     tools: [],
                     decision: 'binary-fresh',
@@ -752,7 +752,7 @@ export class McpServersRepository {
                         server,
                         'failed',
                         new Date().toISOString(),
-                        `${server.type} server is missing a URL, so HyperCode could not discover tools.`,
+                        `${server.type} server is missing a URL, so borg could not discover tools.`,
                     ),
                     tools: [],
                     decision: 'binary-fresh',
@@ -869,7 +869,7 @@ export class McpServersRepository {
             }
 
             client = new Client(
-                { name: `hypercode-discovery-${server.name}`, version: '1.0.0' },
+                { name: `borg-discovery-${server.name}`, version: '1.0.0' },
                 { capabilities: {} },
             );
 

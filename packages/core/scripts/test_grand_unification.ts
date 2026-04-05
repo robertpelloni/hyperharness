@@ -3,7 +3,7 @@ import { MCPServer } from '../src/MCPServer.js';
 import * as path from 'path';
 
 async function runGrandUnificationTest() {
-    console.log("🚀 Starting Grand Unification Test: 'The HyperCode Awakening'");
+    console.log("🚀 Starting Grand Unification Test: 'The borg Awakening'");
 
     // 1. Initialize Server (Core)
     const server = new MCPServer({ skipWebsocket: true, skipAutoDrive: true });
@@ -27,7 +27,7 @@ async function runGrandUnificationTest() {
         console.log("\n[3/4] 🧠 Cognee: Storing Graph Knowledge...");
         // Simulate storing a fact derived from "research"
         const fact = {
-            subject: "HyperCode Protocol",
+            subject: "borg Protocol",
             predicate: "has_status",
             object: "Operational"
         };

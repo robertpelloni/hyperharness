@@ -1,9 +1,9 @@
 [package]
-name = "HyperCode-zed-extension"
+name = "borg-zed-extension"
 version = "0.1.0"
 edition = "2021"
 license = "MIT"
-description = "HyperCode integration for Zed editor"
+description = "borg integration for Zed editor"
 
 [lib]
 crate-type = ["cdylib"]

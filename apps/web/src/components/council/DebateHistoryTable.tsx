@@ -7,8 +7,8 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@hypercode/ui";
-import { Badge } from "@hypercode/ui";
+} from "@borg/ui";
+import { Badge } from "@borg/ui";
 import { formatDistanceToNow } from 'date-fns';
 import { CheckCircle2, XCircle, AlertTriangle, Users, BarChart } from 'lucide-react';
 

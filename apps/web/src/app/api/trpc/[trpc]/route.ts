@@ -34,7 +34,7 @@ function resolveRepoRoot(): string {
 const LEGACY_REPO_ROOT = resolveRepoRoot();
 const LEGACY_MCP_JSONC_PATH = path.join(LEGACY_REPO_ROOT, 'mcp.jsonc');
 const LEGACY_MCP_JSON_PATH = path.join(LEGACY_REPO_ROOT, 'mcp.json');
-const JSONC_HEADER = `// HyperCode MCP configuration\n// This file is HyperCode-owned and may include cached server metadata under mcpServers.<name>._meta.\n`;
+const JSONC_HEADER = `// borg MCP configuration\n// This file is borg-owned and may include cached server metadata under mcpServers.<name>._meta.\n`;
 
 function resolveBorgConfigDir(): string {
   const configuredDir = process.env.BORG_CONFIG_DIR?.trim();
@@ -42,7 +42,7 @@ function resolveBorgConfigDir(): string {
     return configuredDir;
   }
 
-  return path.join(os.homedir(), '.hypercode');
+  return path.join(os.homedir(), '.borg');
 }
 
 function resolvePrimaryMcpPaths(): { jsoncPath: string; jsonPath: string } {
@@ -137,7 +137,6 @@ const LOCAL_COMPAT_RESPONSE_KEYS = {
   'mcp.getJsoncEditor': 'mcp.getJsoncEditor',
   'mcpServers.get': 'mcpServers.get',
   'apiKeys.list': 'apiKeys.list',
-  'savedScripts.list': 'savedScripts.list',
   'tools.detectCliHarnesses': 'tools.detectCliHarnesses',
   'tools.detectExecutionEnvironment': 'tools.detectExecutionEnvironment',
   'tools.detectInstallSurfaces': 'tools.detectInstallSurfaces',
@@ -168,22 +167,13 @@ const LEGACY_COMPAT_RESPONSES: Record<LegacyCompatResponseKey, unknown> = {
 
 const LEGACY_MCP_PROCEDURES = new Set(Object.keys(LEGACY_COMPAT_RESPONSE_KEYS));
 const LOCAL_COMPAT_PROCEDURES = new Set(Object.keys(LOCAL_COMPAT_RESPONSE_KEYS));
-const LOCAL_OPERATOR_MUTATION_PROCEDURES = new Set([
-  'savedScripts.create',
-  'savedScripts.delete',
-  'savedScripts.execute',
-]);
-const LOCAL_MCP_MUTATION_PROCEDURES = new Set([
+const LOCAL_COMPAT_MUTATION_PROCEDURES = new Set([
   'mcpServers.create',
   'mcpServers.update',
   'mcpServers.delete',
   'mcpServers.reloadMetadata',
   'mcpServers.clearMetadataCache',
   'serverHealth.reset',
-]);
-const LOCAL_COMPAT_MUTATION_PROCEDURES = new Set([
-  ...LOCAL_MCP_MUTATION_PROCEDURES,
-  ...LOCAL_OPERATOR_MUTATION_PROCEDURES,
 ]);
 
 const LEGACY_MCP_SERVERS_LIST_PROCEDURES = [
@@ -624,7 +614,7 @@ function buildLocalStartupStatus(servers: unknown[]): {
     ready: false,
     summary: serverCount > 0
       ? `Using local MCP config fallback for ${serverCount} configured server(s); live startup telemetry is unavailable.`
-      : 'No live HyperCode core upstream is available yet; showing local compatibility fallback.',
+      : 'No live borg core upstream is available yet; showing local compatibility fallback.',
     checks: {
       mcpAggregator: {
         ready: serverCount > 0,
@@ -691,39 +681,6 @@ function buildLocalStartupStatus(servers: unknown[]): {
       },
     },
   };
-}
-
-function resolveNativeStatusBases(): string[] {
-  return Array.from(new Set(
-    resolveUpstreamBases()
-      .map((base) => base.replace(/\/trpc\/?$/i, '').trim())
-      .filter(Boolean),
-  ));
-}
-
-async function fetchNativeControlPlaneData<T>(endpointPath: string, init?: RequestInit): Promise<T | null> {
-  for (const base of resolveNativeStatusBases()) {
-    try {
-      const response = await fetch(`${base}${endpointPath}`, {
-        cache: 'no-store',
-        ...init,
-      });
-      if (!response.ok) {
-        continue;
-      }
-
-      const payload = await response.json() as { success?: unknown; data?: unknown };
-      if (payload.success !== true) {
-        continue;
-      }
-
-      return (payload.data as T | undefined) ?? null;
-    } catch {
-      // Try the next native control-plane base.
-    }
-  }
-
-  return null;
 }
 
 async function fetchProcedureData(
@@ -800,18 +757,13 @@ async function tryResolveLegacyMcpResponse(
     status: 200,
     headers: {
       'content-type': 'application/json',
-      'x-hypercode-trpc-compat': 'legacy-mcp-dashboard-bridge',
+      'x-borg-trpc-compat': 'legacy-mcp-dashboard-bridge',
     },
   });
 }
 
 function buildLegacyCompatResponse(req: Request): Response | null {
   return null;
-}
-
-async function buildPreferredSavedScriptsList(): Promise<unknown[]> {
-  const scripts = await fetchNativeControlPlaneData<unknown[]>('/api/scripts');
-  return Array.isArray(scripts) ? scripts : [];
 }
 
 async function buildLocalCompatResponse(req: Request, body?: string): Promise<Response | null> {
@@ -827,7 +779,6 @@ async function buildLocalCompatResponse(req: Request, body?: string): Promise<Re
   const localServers = mapConfigToServerList(localConfig);
   const localStatus = buildStatusFromServers(localServers);
   const localStartupStatus = buildLocalStartupStatus(localServers);
-  const savedScripts = await buildPreferredSavedScriptsList();
 
   const dataByResponseKey: Record<LocalCompatResponseKey, unknown> = {
     'mcpServers.list': localServers,
@@ -857,7 +808,6 @@ async function buildLocalCompatResponse(req: Request, body?: string): Promise<Re
     },
     'mcpServers.get': undefined,
     'apiKeys.list': [],
-    'savedScripts.list': savedScripts,
     'tools.detectCliHarnesses': [],
     'tools.detectExecutionEnvironment': {
       os: 'unknown',
@@ -956,7 +906,7 @@ async function buildLocalCompatResponse(req: Request, body?: string): Promise<Re
     status: 200,
     headers: {
       'content-type': 'application/json',
-      'x-hypercode-trpc-compat': 'local-dashboard-fallback',
+      'x-borg-trpc-compat': 'local-dashboard-fallback',
     },
   });
 }
@@ -1205,7 +1155,7 @@ async function tryBridgeBulkImport(
         return buildTrpcResponse(req, extractTrpcData(json), {
           status: response.status,
           statusText: response.statusText,
-          headers: { 'x-hypercode-trpc-compat': 'legacy-mcp-bulk-import-bridge' },
+          headers: { 'x-borg-trpc-compat': 'legacy-mcp-bulk-import-bridge' },
         });
       } catch {
         // Try the next candidate upstream/procedure.
@@ -1263,105 +1213,13 @@ async function tryLocalBulkImport(req: Request, body: string | undefined): Promi
   await writeLocalMcpConfig(localConfig);
   return buildTrpcResponse(req, { imported, errors: [] }, {
     status: 200,
-    headers: { 'x-hypercode-trpc-compat': 'local-mcp-config-bulk-import' },
-  });
-}
-
-async function tryLocalOperatorMutation(req: Request, body: string | undefined): Promise<Response | null> {
-  const procedures = getProcedureNames(req);
-  const procedureName = procedures[0] ?? '';
-  if (req.method !== 'POST' || procedures.length !== 1 || !LOCAL_OPERATOR_MUTATION_PROCEDURES.has(procedureName)) {
-    return null;
-  }
-
-  const input = extractTrpcRequestInput(body, req);
-  if (!input || typeof input !== 'object') {
-    return buildTrpcResponse(req, undefined, {
-      status: 400,
-      statusText: 'Invalid local operator compat input',
-      headers: { 'x-hypercode-trpc-compat': 'local-operator-action' },
-    });
-  }
-
-  let endpointPath = '';
-  if (procedureName === 'savedScripts.create') {
-    endpointPath = '/api/scripts/create';
-  } else if (procedureName === 'savedScripts.delete') {
-    endpointPath = '/api/scripts/delete';
-  } else if (procedureName === 'savedScripts.execute') {
-    endpointPath = '/api/scripts/execute';
-  }
-
-  if (!endpointPath) {
-    return null;
-  }
-
-  const data = await fetchNativeControlPlaneData<unknown>(endpointPath, {
-    method: 'POST',
-    headers: {
-      'content-type': 'application/json',
-    },
-    body: JSON.stringify(input),
-  });
-  if (data === null) {
-    return null;
-  }
-
-  return buildTrpcResponse(req, data, {
-    status: 200,
-    headers: { 'x-hypercode-trpc-compat': 'local-operator-action' },
-  });
-}
-
-async function tryLocalOperatorMutation(req: Request, body: string | undefined): Promise<Response | null> {
-  const procedures = getProcedureNames(req);
-  const procedureName = procedures[0] ?? '';
-  if (req.method !== 'POST' || procedures.length !== 1 || !LOCAL_OPERATOR_MUTATION_PROCEDURES.has(procedureName)) {
-    return null;
-  }
-
-  const input = extractTrpcRequestInput(body, req);
-  if (!input || typeof input !== 'object') {
-    return buildTrpcResponse(req, undefined, {
-      status: 400,
-      statusText: 'Invalid local operator compat input',
-      headers: { 'x-hypercode-trpc-compat': 'local-operator-action' },
-    });
-  }
-
-  let endpointPath = '';
-  if (procedureName === 'savedScripts.create') {
-    endpointPath = '/api/scripts/create';
-  } else if (procedureName === 'savedScripts.delete') {
-    endpointPath = '/api/scripts/delete';
-  } else if (procedureName === 'savedScripts.execute') {
-    endpointPath = '/api/scripts/execute';
-  }
-
-  if (!endpointPath) {
-    return null;
-  }
-
-  const data = await fetchNativeControlPlaneData<unknown>(endpointPath, {
-    method: 'POST',
-    headers: {
-      'content-type': 'application/json',
-    },
-    body: JSON.stringify(input),
-  });
-  if (data === null) {
-    return null;
-  }
-
-  return buildTrpcResponse(req, data, {
-    status: 200,
-    headers: { 'x-hypercode-trpc-compat': 'local-operator-action' },
+    headers: { 'x-borg-trpc-compat': 'local-mcp-config-bulk-import' },
   });
 }
 
 async function tryLocalManagedServerMutation(req: Request, body: string | undefined): Promise<Response | null> {
   const procedures = getProcedureNames(req);
-  if (req.method !== 'POST' || procedures.length !== 1 || !LOCAL_MCP_MUTATION_PROCEDURES.has(procedures[0] ?? '')) {
+  if (req.method !== 'POST' || procedures.length !== 1 || !LOCAL_COMPAT_MUTATION_PROCEDURES.has(procedures[0] ?? '')) {
     return null;
   }
 
@@ -1370,7 +1228,7 @@ async function tryLocalManagedServerMutation(req: Request, body: string | undefi
     return buildTrpcResponse(req, undefined, {
       status: 400,
       statusText: 'Invalid local MCP compat input',
-      headers: { 'x-hypercode-trpc-compat': 'local-mcp-managed-action' },
+      headers: { 'x-borg-trpc-compat': 'local-mcp-managed-action' },
     });
   }
 
@@ -1383,7 +1241,7 @@ async function tryLocalManagedServerMutation(req: Request, body: string | undefi
       return buildTrpcResponse(req, undefined, {
         status: 400,
         statusText: 'Server name is required',
-        headers: { 'x-hypercode-trpc-compat': 'local-mcp-managed-action' },
+        headers: { 'x-borg-trpc-compat': 'local-mcp-managed-action' },
       });
     }
 
@@ -1391,7 +1249,7 @@ async function tryLocalManagedServerMutation(req: Request, body: string | undefi
       return buildTrpcResponse(req, undefined, {
         status: 409,
         statusText: 'Server already exists',
-        headers: { 'x-hypercode-trpc-compat': 'local-mcp-managed-action' },
+        headers: { 'x-borg-trpc-compat': 'local-mcp-managed-action' },
       });
     }
 
@@ -1421,7 +1279,7 @@ async function tryLocalManagedServerMutation(req: Request, body: string | undefi
 
     return buildTrpcResponse(req, buildLocalManagedServerRecord(name, localConfig.mcpServers[name]), {
       status: 200,
-      headers: { 'x-hypercode-trpc-compat': 'local-mcp-managed-action' },
+      headers: { 'x-borg-trpc-compat': 'local-mcp-managed-action' },
     });
   }
 
@@ -1431,7 +1289,7 @@ async function tryLocalManagedServerMutation(req: Request, body: string | undefi
     return buildTrpcResponse(req, undefined, {
       status: 404,
       statusText: 'Local managed MCP server not found',
-      headers: { 'x-hypercode-trpc-compat': 'local-mcp-managed-action' },
+      headers: { 'x-borg-trpc-compat': 'local-mcp-managed-action' },
     });
   }
 
@@ -1492,7 +1350,7 @@ async function tryLocalManagedServerMutation(req: Request, body: string | undefi
 
     return buildTrpcResponse(req, buildLocalManagedServerRecord(nextName, localConfig.mcpServers[nextName]), {
       status: 200,
-      headers: { 'x-hypercode-trpc-compat': 'local-mcp-managed-action' },
+      headers: { 'x-borg-trpc-compat': 'local-mcp-managed-action' },
     });
   }
 
@@ -1503,7 +1361,7 @@ async function tryLocalManagedServerMutation(req: Request, body: string | undefi
 
     return buildTrpcResponse(req, deletedServer, {
       status: 200,
-      headers: { 'x-hypercode-trpc-compat': 'local-mcp-managed-action' },
+      headers: { 'x-borg-trpc-compat': 'local-mcp-managed-action' },
     });
   }
 
@@ -1522,7 +1380,7 @@ async function tryLocalManagedServerMutation(req: Request, body: string | undefi
       metadata,
     }, {
       status: 200,
-      headers: { 'x-hypercode-trpc-compat': 'local-mcp-managed-action' },
+      headers: { 'x-borg-trpc-compat': 'local-mcp-managed-action' },
     });
   }
 
@@ -1540,7 +1398,7 @@ async function tryLocalManagedServerMutation(req: Request, body: string | undefi
       metadata,
     }, {
       status: 200,
-      headers: { 'x-hypercode-trpc-compat': 'local-mcp-managed-action' },
+      headers: { 'x-borg-trpc-compat': 'local-mcp-managed-action' },
     });
   }
 
@@ -1557,7 +1415,7 @@ async function tryLocalManagedServerMutation(req: Request, body: string | undefi
       maxAttempts: 0,
     }, {
       status: 200,
-      headers: { 'x-hypercode-trpc-compat': 'local-mcp-managed-action' },
+      headers: { 'x-borg-trpc-compat': 'local-mcp-managed-action' },
     });
   }
 
@@ -1611,16 +1469,6 @@ async function handler(req: Request): Promise<Response> {
     const bulkImportBridgeResponse = await tryBridgeBulkImport(req, upstreamBases, headers, body);
     if (bulkImportBridgeResponse) {
       return bulkImportBridgeResponse;
-    }
-
-    const localOperatorMutationResponse = await tryLocalOperatorMutation(req, body);
-    if (localOperatorMutationResponse) {
-      return localOperatorMutationResponse;
-    }
-
-    const localOperatorMutationResponse = await tryLocalOperatorMutation(req, body);
-    if (localOperatorMutationResponse) {
-      return localOperatorMutationResponse;
     }
 
     const localManagedMutationResponse = await tryLocalManagedServerMutation(req, body);

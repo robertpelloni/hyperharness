@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Card, CardHeader, CardTitle, CardContent, Button, createReconnectPolicy, getReconnectDelayMs, resolveCoreWsUrl, shouldRetryReconnect } from "@hypercode/ui";
+import { Card, CardHeader, CardTitle, CardContent, Button, createReconnectPolicy, getReconnectDelayMs, resolveCoreWsUrl, shouldRetryReconnect } from "@borg/ui";
 import { Loader2, Globe, Trash2, XCircle, Activity, Search, ExternalLink, Zap, Bug, Network, Camera, FileText, Brain, Database, AlertTriangle } from "lucide-react";
 import { trpc } from '@/utils/trpc';
 import { toast } from 'sonner';
@@ -249,7 +249,7 @@ export default function BrowserDashboard() {
                             timestamp,
                             source,
                             title: String(payload.title ?? 'Captured browser context'),
-                            detail: String(payload.preview ?? 'Saved page context into HyperCode memory.'),
+                            detail: String(payload.preview ?? 'Saved page context into borg memory.'),
                             subtitle: 'Memory capture',
                             url: String(payload.url ?? ''),
                             success: true,
@@ -525,7 +525,7 @@ export default function BrowserDashboard() {
                         Browser History Search
                     </CardTitle>
                     <p className="text-sm text-zinc-500">
-                        Search recent browser history through the live browser-extension bridge without leaving the HyperCode dashboard.
+                        Search recent browser history through the live browser-extension bridge without leaving the borg dashboard.
                     </p>
                 </CardHeader>
                 <CardContent className="p-4 space-y-4">
@@ -533,7 +533,7 @@ export default function BrowserDashboard() {
                         <input
                             type="text"
                             className="flex-1 bg-zinc-950 border border-zinc-700 rounded px-3 py-2 text-white focus:border-emerald-500 outline-none placeholder:text-zinc-600"
-                            placeholder="Search browser history (e.g. hypercode, chatgpt, docs)"
+                            placeholder="Search browser history (e.g. borg, chatgpt, docs)"
                             value={historyQuery}
                             onChange={(e) => setHistoryQuery(e.target.value)}
                             onKeyDown={(e) => e.key === 'Enter' && handleHistorySearch()}

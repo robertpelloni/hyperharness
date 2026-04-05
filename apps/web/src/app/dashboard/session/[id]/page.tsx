@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useMemo, useState } from 'react';
 import { useParams } from 'next/navigation';
-import { Card, CardContent, CardHeader, CardTitle, Button, Badge, ScrollArea } from "@hypercode/ui";
+import { Card, CardContent, CardHeader, CardTitle, Button, Badge, ScrollArea } from "@borg/ui";
 import { ArrowLeft, Terminal, Loader2, Play, Square, RotateCcw, ActivitySquare, HeartPulse, Link2, Send, Cpu, AlertTriangle, CheckCircle2, Info } from "lucide-react";
 import { trpc } from '@/utils/trpc';
 import { toast } from 'sonner';
@@ -294,7 +294,7 @@ export default function SessionDetailPage() {
                                     <div className="flex items-start gap-2 rounded-md border border-zinc-800 bg-zinc-950/50 px-3 py-2">
                                         <Info className="h-3.5 w-3.5 text-zinc-500 mt-0.5 shrink-0" />
                                         <p className="text-xs text-zinc-500 leading-relaxed">
-                                            HyperCode supervises the session process but does not pass stdin to it.
+                                            borg supervises the session process but does not pass stdin to it.
                                             Use <span className="text-zinc-300 font-medium">Run shell command</span> below to execute commands
                                             in the session&apos;s working directory. For interactive terminal access,
                                             connect directly via the CLI harness.

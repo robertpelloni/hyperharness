@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { PageHeader } from '@/components/PageHeader';
 import { PageStatusBanner } from '@/components/PageStatusBanner';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, Button, Input, Textarea } from '@hypercode/ui';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, Button, Input, Textarea } from '@borg/ui';
 import { trpc } from '@/utils/trpc';
 import {
     Users as UsersIcon,
@@ -1628,7 +1628,7 @@ export default function SwarmDashboard() {
                                     {messages.length === 0 ? (
                                         <div className="flex h-full items-center justify-center flex-col opacity-20">
                                             <RadioIcon className="w-12 h-12 mb-4 animate-ping" />
-                                            <span className="text-xs uppercase tracking-[0.3em]">Listening for HyperCode Swarm Signals...</span>
+                                            <span className="text-xs uppercase tracking-[0.3em]">Listening for borg Swarm Signals...</span>
                                         </div>
                                     ) : (
                                         messages.map((msg, i) => (

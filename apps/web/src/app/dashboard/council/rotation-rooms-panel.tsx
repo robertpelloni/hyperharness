@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { Badge, Button, Card, CardContent, CardHeader, CardTitle, Input, Textarea } from '@hypercode/ui';
+import { Badge, Button, Card, CardContent, CardHeader, CardTitle, Input, Textarea } from '@borg/ui';
 import { Bot, CheckCircle2, Loader2, Play, Plus, Radio, RotateCw, Users } from 'lucide-react';
 import { trpc } from '@/utils/trpc';
 

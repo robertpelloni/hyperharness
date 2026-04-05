@@ -108,7 +108,7 @@ function toToolDefinition(serverName: string, tool: BorgMcpToolMetadata): Tool {
 export function buildLoaderStatusToolDefinition(): Tool {
     return {
         name: BORG_CORE_LOADER_STATUS_TOOL,
-        description: 'Report whether the lightweight stdio loader is serving cached tools or proxying to a live HyperCode Core control plane.',
+        description: 'Report whether the lightweight stdio loader is serving cached tools or proxying to a live borg Core control plane.',
         inputSchema: { type: 'object', properties: {} },
     } as Tool;
 }
@@ -220,7 +220,7 @@ async function proxyToolCallToCore(name: string, args: Record<string, unknown>):
     if (!response.ok) {
         const body = await response.text().catch(() => '');
         return asTextResult(
-            `HyperCode Core returned HTTP ${response.status} while executing '${name}'.${body ? `\n${body}` : ''}`,
+            `borg Core returned HTTP ${response.status} while executing '${name}'.${body ? `\n${body}` : ''}`,
             true,
         );
     }
@@ -238,7 +238,7 @@ async function proxyToolCallToCore(name: string, args: Record<string, unknown>):
 
 function buildLoaderStatusResult(state: LoaderRuntimeState, coreHealthy: boolean): CallToolResult {
     return asTextResult(JSON.stringify({
-        loader: 'hypercode-core-stdio-loader',
+        loader: 'borg-core-stdio-loader',
         coreHealthy,
         bootstrap: state.bootstrap,
         cache: {
@@ -307,7 +307,7 @@ export async function callLoaderTool(
 
     if (!readyAfterBootstrap) {
         return asTextResult(
-            `HyperCode Core is still warming in the background, so '${name}' is not ready yet. Cached tools are available immediately, and the control plane has been ${bootstrap.status === 'already-running' ? 'detected' : 'requested'}${bootstrap.pid ? ` (PID ${bootstrap.pid})` : ''}. Retry this tool call in a moment.`,
+            `borg Core is still warming in the background, so '${name}' is not ready yet. Cached tools are available immediately, and the control plane has been ${bootstrap.status === 'already-running' ? 'detected' : 'requested'}${bootstrap.pid ? ` (PID ${bootstrap.pid})` : ''}. Retry this tool call in a moment.`,
             true,
         );
     }
@@ -317,7 +317,7 @@ export async function callLoaderTool(
 
 export async function startStdioLoader(): Promise<void> {
     const server = new Server(
-        { name: 'hypercode-core-loader', version: '0.99.1' },
+        { name: 'borg-core-loader', version: '0.99.1' },
         {
             capabilities: {
                 tools: {},
@@ -330,7 +330,7 @@ export async function startStdioLoader(): Promise<void> {
     server.setRequestHandler(ListToolsRequestSchema, async () => {
         runtimeState.cache = await loadCachedLoaderCatalog();
         void ensureLoaderBootstrap(runtimeState).catch((error) => {
-            console.error('[HyperCode Core] Background control-plane bootstrap failed:', error);
+            console.error('[borg Core] Background control-plane bootstrap failed:', error);
         });
 
         return {
@@ -351,6 +351,6 @@ export async function startStdioLoader(): Promise<void> {
     await server.connect(transport);
 
     void ensureLoaderBootstrap(runtimeState).catch((error) => {
-        console.error('[HyperCode Core] Background control-plane bootstrap failed:', error);
+        console.error('[borg Core] Background control-plane bootstrap failed:', error);
     });
 }

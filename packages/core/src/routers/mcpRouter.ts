@@ -961,7 +961,7 @@ export const mcpRouter = t.router({
                 const fallbackConfig = await loadBorgMcpConfig();
                 return {
                     path: jsoncPath,
-                    content: `// HyperCode MCP configuration\n${JSON.stringify(fallbackConfig, null, 2)}\n`,
+                    content: `// borg MCP configuration\n${JSON.stringify(fallbackConfig, null, 2)}\n`,
                 };
             }
             throw error;
@@ -1016,9 +1016,9 @@ export const mcpRouter = t.router({
                 }
                 : {},
             target: input.targetKind === 'router'
-                ? 'hypercode-router'
+                ? 'borg-router'
                 : input.serverName ?? 'unknown-server',
-            via: input.targetKind === 'router' ? 'hypercode-router' : 'direct-downstream',
+            via: input.targetKind === 'router' ? 'borg-router' : 'direct-downstream',
         };
 
         if (input.targetKind === 'server' && !input.serverName) {
@@ -1048,9 +1048,9 @@ export const mcpRouter = t.router({
                 success: false,
                 target: {
                     kind: input.targetKind,
-                    displayName: input.targetKind === 'router' ? 'HyperCode router' : input.serverName ?? 'Unknown downstream server',
+                    displayName: input.targetKind === 'router' ? 'borg router' : input.serverName ?? 'Unknown downstream server',
                     serverName: input.serverName ?? null,
-                    via: input.targetKind === 'router' ? 'hypercode-router' : 'direct-downstream',
+                    via: input.targetKind === 'router' ? 'borg-router' : 'direct-downstream',
                 },
                 operation: input.operation,
                 startedAt,
@@ -1075,7 +1075,7 @@ export const mcpRouter = t.router({
                 } | null;
 
                 if (!aggregator) {
-                    throw new Error('HyperCode MCP router is not initialized.');
+                    throw new Error('borg MCP router is not initialized.');
                 }
 
                 if (input.operation === 'tools/list') {
@@ -1116,9 +1116,9 @@ export const mcpRouter = t.router({
                 success: true,
                 target: {
                     kind: input.targetKind,
-                    displayName: input.targetKind === 'router' ? 'HyperCode router' : input.serverName!,
+                    displayName: input.targetKind === 'router' ? 'borg router' : input.serverName!,
                     serverName: input.serverName ?? null,
-                    via: input.targetKind === 'router' ? 'hypercode-router' : 'direct-downstream',
+                    via: input.targetKind === 'router' ? 'borg-router' : 'direct-downstream',
                 },
                 operation: input.operation,
                 startedAt,
@@ -1144,9 +1144,9 @@ export const mcpRouter = t.router({
                 success: false,
                 target: {
                     kind: input.targetKind,
-                    displayName: input.targetKind === 'router' ? 'HyperCode router' : input.serverName ?? 'Unknown downstream server',
+                    displayName: input.targetKind === 'router' ? 'borg router' : input.serverName ?? 'Unknown downstream server',
                     serverName: input.serverName ?? null,
-                    via: input.targetKind === 'router' ? 'hypercode-router' : 'direct-downstream',
+                    via: input.targetKind === 'router' ? 'borg-router' : 'direct-downstream',
                 },
                 operation: input.operation,
                 startedAt,

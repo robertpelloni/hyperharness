@@ -1,6 +1,6 @@
 packages:
   - 'apps/*'
-  - '!apps/hypercode-extension'
+  - '!apps/borg-extension'
   - '!apps/vscode'
   - 'packages/*'
   - 'external/MetaMCP/packages/*'

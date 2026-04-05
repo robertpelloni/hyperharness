@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { trpc } from '@/utils/trpc';
-import { Card, Switch, Label } from '@hypercode/ui';
+import { Card, Switch, Label } from '@borg/ui';
 
 function isBooleanSetting(value: unknown): value is boolean {
     return typeof value === 'boolean';

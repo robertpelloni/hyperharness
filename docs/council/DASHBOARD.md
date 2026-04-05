@@ -2,7 +2,7 @@
 
 ## Project Structure
 
-HyperCode Orchestrator is a TypeScript monorepo using Bun as the runtime.
+borg Orchestrator is a TypeScript monorepo using Bun as the runtime.
 
 ```
 packages/

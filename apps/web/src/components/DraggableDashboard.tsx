@@ -41,7 +41,7 @@ import { ShellHistoryWidget } from "../components/ShellHistoryWidget";
 import SuggestionsPanel from "../components/SuggestionsPanel";
 import { HealerWidget } from "../components/HealerWidget";
 import IngestionStatus from "../components/IngestionStatus";
-import { ActivityPulse, SystemHealth, LatencyMonitor, SecurityWidget } from "@hypercode/ui";
+import { ActivityPulse, SystemHealth, LatencyMonitor, SecurityWidget } from "@borg/ui";
 import { trpc } from "@/utils/trpc"; // Need tRPC to fetch stats
 import { HelpWidget } from "../components/HelpWidget";
 import { MirrorView } from "../components/MirrorView";

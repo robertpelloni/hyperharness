@@ -1,4 +1,4 @@
-# Ideas for Improvement: @hypercode/tools
+# Ideas for Improvement: @borg/tools
 
 Ambitious features to evolve the tool orchestration and execution layer.
 

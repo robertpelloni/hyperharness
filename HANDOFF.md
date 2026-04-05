@@ -13,10 +13,10 @@ We have addressed a major split-brain issue between the MCP database cache and t
 
 2. **The Stdio Loader Blindspot**
    - **Bug**: The `stdioLoader.ts` script (which `pi` and other extensions connect to) was explicitly bypassing the database to remain lightweight. It only read from `mcp.jsonc`. Because the tools were only in the DB and not in `mcp.jsonc` (or were wiped), the proxy served 0 downstream tools.
-   - **Fix**: We changed `syncToMcpJson` to `exportToolCache` and made it write to `.hypercode/mcp-cache.json`. This new unified cache merges both the SQLite database inventory and the manual `mcp.jsonc` configurations without destroying the manual file. The `stdioLoader` now reads `mcp-cache.json`.
+   - **Fix**: We changed `syncToMcpJson` to `exportToolCache` and made it write to `.borg/mcp-cache.json`. This new unified cache merges both the SQLite database inventory and the manual `mcp.jsonc` configurations without destroying the manual file. The `stdioLoader` now reads `mcp-cache.json`.
 
 3. **Workspace Config Resolution**
-   - **Bug**: The system hardcoded `os.homedir() + '/.hypercode'` for the configuration directory, causing confusion when a local `mcp.jsonc` existed at the project root.
+   - **Bug**: The system hardcoded `os.homedir() + '/.borg'` for the configuration directory, causing confusion when a local `mcp.jsonc` existed at the project root.
    - **Fix**: Updated `getBorgConfigDir()` in `mcpJsonConfig.ts` to respect `process.env.BORG_CONFIG_DIR`, then check for `process.cwd()/mcp.jsonc`, and finally fall back to the home directory.
 
 4. **Tool Inventory Merging**

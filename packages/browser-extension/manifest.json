@@ -1,8 +1,8 @@
 {
     "manifest_version": 3,
-    "name": "HyperCode Director Link",
+    "name": "borg Director Link",
     "version": "1.0",
-    "description": "Connects your browser to the HyperCode Director for autonomous research and interaction.",
+    "description": "Connects your browser to the borg Director for autonomous research and interaction.",
     "permissions": [
         "activeTab",
         "scripting",

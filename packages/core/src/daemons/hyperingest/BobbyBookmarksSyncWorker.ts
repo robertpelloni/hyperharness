@@ -16,7 +16,7 @@ export class BobbyBookmarksSyncWorker {
     public start(intervalMs: number = 60 * 60 * 1000): void {
         if (this.isRunning) return;
         this.isRunning = true;
-        console.log('[HyperIngest] Starting BobbyBookmarks local DB sync worker...');
+        console.log('[borgingest] Starting BobbyBookmarks local DB sync worker...');
         
         // Run immediately
         void this.sync();
@@ -32,7 +32,7 @@ export class BobbyBookmarksSyncWorker {
             clearInterval(this.interval);
             this.interval = null;
         }
-        console.log('[HyperIngest] Stopped BobbyBookmarks local DB sync worker.');
+        console.log('[borgingest] Stopped BobbyBookmarks local DB sync worker.');
     }
 
     private async sync(): Promise<void> {
@@ -43,7 +43,7 @@ export class BobbyBookmarksSyncWorker {
             const rows = db.prepare(`SELECT * FROM bookmarks`).all() as any[];
             db.close();
 
-            console.log(`[HyperIngest] Found ${rows.length} raw URLs in local BobbyBookmarks DB. Syncing to metamcp...`);
+            console.log(`[borgingest] Found ${rows.length} raw URLs in local BobbyBookmarks DB. Syncing to metamcp...`);
 
             let synced = 0;
             let errors = 0;
@@ -72,12 +72,12 @@ export class BobbyBookmarksSyncWorker {
                 }
             }
 
-            console.log(`[HyperIngest] Successfully synced ${synced} bookmarks to the Links Backlog (${errors} errors).`);
+            console.log(`[borgingest] Successfully synced ${synced} bookmarks to the Links Backlog (${errors} errors).`);
         } catch (error: any) {
             if (error.code === 'SQLITE_CANTOPEN') {
-                console.warn(`[HyperIngest] BobbyBookmarks DB not found at ${this.dbPath}. Skipping sync.`);
+                console.warn(`[borgingest] BobbyBookmarks DB not found at ${this.dbPath}. Skipping sync.`);
             } else {
-                console.error('[HyperIngest] Error during sync:', error);
+                console.error('[borgingest] Error during sync:', error);
             }
         }
     }

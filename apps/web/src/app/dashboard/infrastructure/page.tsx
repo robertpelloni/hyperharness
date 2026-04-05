@@ -3,7 +3,7 @@
 import React from "react";
 import { Server, Settings, Activity, TerminalSquare, AlertTriangle, CheckCircle2, ChevronRight, Download } from "lucide-react";
 import { trpc } from "@/utils/trpc";
-import { Button, Card, CardHeader, CardTitle, CardContent } from "@hypercode/ui";
+import { Button, Card, CardHeader, CardTitle, CardContent } from "@borg/ui";
 import { toast } from "sonner";
 
 export default function InfrastructureDashboardPage() {
@@ -44,7 +44,7 @@ export default function InfrastructureDashboardPage() {
                     Daemon Orchestration
                 </h1>
                 <p className="text-zinc-500 mt-2">
-                    Manage HyperCode infrastructure deployments from the Supervisor namespace.
+                    Manage borg infrastructure deployments from the Supervisor namespace.
                 </p>
             </div>
 
@@ -106,7 +106,7 @@ export default function InfrastructureDashboardPage() {
                     </CardHeader>
                     <CardContent className="space-y-4">
                         <p className="text-sm text-zinc-400 mb-6">
-                            Apply settings from your HyperCode infrastructure configuration across connected environments instantly.
+                            Apply settings from your borg infrastructure configuration across connected environments instantly.
                         </p>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <Button

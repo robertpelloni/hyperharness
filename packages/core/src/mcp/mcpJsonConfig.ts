@@ -69,7 +69,7 @@ export type BorgMcpJsonConfig = {
 
 import os from 'node:os';
 
-const JSONC_HEADER = `// HyperCode MCP configuration\n// This file is HyperCode-owned and may include cached server metadata under mcpServers.<name>._meta.\n`;
+const JSONC_HEADER = `// borg MCP configuration\n// This file is borg-owned and may include cached server metadata under mcpServers.<name>._meta.\n`;
 
 export function getBorgConfigDir(): string {
     // If there is an mcp.jsonc in the current working directory, use it
@@ -86,7 +86,7 @@ export function getBorgConfigDir(): string {
     } catch {
         // Fall back
     }
-    return path.join(os.homedir(), '.hypercode');
+    return path.join(os.homedir(), '.borg');
 }
 
 export function getBorgMcpJsoncPath(configDir: string = getBorgConfigDir()): string {

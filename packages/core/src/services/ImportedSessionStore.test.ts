@@ -70,7 +70,7 @@ function createSchema(database: Database.Database): void {
 }
 
 async function createTempRoot(): Promise<string> {
-    const root = await fs.mkdtemp(path.join(os.tmpdir(), 'hypercode-imported-session-store-'));
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), 'borg-imported-session-store-'));
     tempRoots.push(root);
     return root;
 }
@@ -137,7 +137,7 @@ describe('ImportedSessionStore', () => {
             get sqliteInstance() {
                 return {
                     prepare() {
-                        throw new Error('SQLite runtime is unavailable for HyperCode DB-backed features (Could not locate the bindings file. Tried: better-sqlite3.node)');
+                        throw new Error('SQLite runtime is unavailable for borg DB-backed features (Could not locate the bindings file. Tried: better-sqlite3.node)');
                     },
                 };
             },

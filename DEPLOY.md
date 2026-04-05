@@ -1,6 +1,6 @@
 # Deployment Instructions
 
-## HyperCode `1.0.0-alpha.1`
+## borg `1.0.0-alpha.1`
 
 ### 1. Build Requirements
 - Node.js >= 24
@@ -19,7 +19,7 @@ This will compile the TypeScript monorepo, build the web assets, and launch the 
 To run the Go bridge alongside the main control plane:
 ```bash
 cd go
-go run ./cmd/hypercode serve
+go run ./cmd/borg serve
 ```
 
 ### 4. Extensions
@@ -30,8 +30,8 @@ pnpm run build:extensions
 
 ### 5. Production Docker
 ```bash
-docker build -f Dockerfile.prod -t hypercode:latest .
-docker run -p 3000:3000 -p 4000:4000 -v hypercode-data:/root/.hypercode hypercode:latest
+docker build -f Dockerfile.prod -t borg:latest .
+docker run -p 3000:3000 -p 4000:4000 -v borg-data:/root/.borg borg:latest
 ```
 
 ## Health Checks

@@ -7,10 +7,10 @@
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
     "paths": {
-      "@hypercode/core": [
+      "@borg/core": [
         "../core/src/index.ts"
       ],
-      "@hypercode/core/*": [
+      "@borg/core/*": [
         "../core/src/*"
       ]
     }

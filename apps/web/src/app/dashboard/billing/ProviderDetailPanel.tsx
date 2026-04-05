@@ -9,7 +9,7 @@ import {
     SheetDescription,
     Badge,
     Progress
-} from '@hypercode/ui';
+} from '@borg/ui';
 import { 
     AlertCircle, 
     Calendar, 

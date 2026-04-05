@@ -15,7 +15,7 @@ import {
     TabsContent,
     TabsList,
     TabsTrigger,
-} from '@hypercode/ui';
+} from '@borg/ui';
 import { ActivitySquare, Check, Copy, Loader2, TerminalSquare } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -374,7 +374,7 @@ export function SessionDetailsDialog({ session, currentTimestamp }: SessionDetai
                                     ) : null}
                                 </div>
                                 <p className="mb-3 text-xs text-zinc-500">
-                                    This is the compact context HyperCode prepared when the session started, using recent summaries and observations from the native memory pipeline.
+                                    This is the compact context borg prepared when the session started, using recent summaries and observations from the native memory pipeline.
                                 </p>
                                 <pre className="whitespace-pre-wrap break-words rounded-lg border border-white/5 bg-black/30 p-3 font-mono text-xs text-zinc-200">
                                     {session.metadata.memoryBootstrap.prompt}
@@ -392,7 +392,7 @@ export function SessionDetailsDialog({ session, currentTimestamp }: SessionDetai
                                         </Badge>
                                     </div>
                                     <p className="mt-1 text-xs text-zinc-500">
-                                        HyperCode records structured observations after tool execution; this view shows the latest memory events from that native runtime pipeline.
+                                        borg records structured observations after tool execution; this view shows the latest memory events from that native runtime pipeline.
                                     </p>
                                 </div>
                                 {observationsQuery.isFetching ? <Loader2 className="h-4 w-4 animate-spin text-zinc-500" /> : null}
@@ -564,7 +564,7 @@ export function SessionDetailsDialog({ session, currentTimestamp }: SessionDetai
                                             </Button>
                                         </div>
                                         <p className="mt-2 text-xs text-zinc-500">
-                                            Runs inside the session workspace using the selected HyperCode execution policy.
+                                            Runs inside the session workspace using the selected borg execution policy.
                                         </p>
                                         {shellResult ? (
                                             <div className="mt-3 rounded-md border border-white/5 bg-black/30 p-3">

@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { trpc } from '@/utils/trpc';
-import { Button, Input, Card } from '@hypercode/ui';
+import { Button, Input, Card } from '@borg/ui';
 
 type ProviderListItem = {
     id: string;

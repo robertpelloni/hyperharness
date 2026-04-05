@@ -36,7 +36,7 @@ function getCouncilConfigPath(): string {
 }
 
 /**
- * Council router — the central tRPC namespace for the HyperCode Council of Agents.
+ * Council router — the central tRPC namespace for the borg Council of Agents.
  *
  * Top-level procedures:
  *   - `members` — reads agent definitions from config/council.json
