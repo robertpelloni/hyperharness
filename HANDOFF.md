@@ -848,3 +848,20 @@
 1. Keep `foundation/*`, `cmd`, and `tui` green and aligned to the same canonical runtime.
 2. Improve split-view ergonomics or pane viewport behavior next.
 3. Keep the focusable pane as another controller over canonical runtime truth rather than a separate navigation model.
+
+## Additional work completed later on 2026-04-04 (pane viewport tranche)
+- Extended the shared browser renderer to accept viewport parameters (`maxVisible`, `title`).
+- Added selection-centered viewport windowing logic for the browser renderer.
+- Updated the pinned tree pane to render through a bounded viewport instead of always rendering the full visible item list.
+- Added pane viewport metadata (`showing=X-Y of Z`) when the visible item set exceeds the pane window.
+- Added detailed analysis doc:
+  - `docs/analysis/TUI_PANE_VIEWPORT_TRANCHE_2026-04-04.md`
+
+## Latest validation after pane viewport tranche
+- `gofmt -w tui/foundation_bridge.go tui/chat.go tui/slash_test.go`
+- `go test ./tui ./cmd ./foundation/...`
+
+## Updated recommendation after pane viewport tranche
+1. Keep `foundation/*`, `cmd`, and `tui` green and aligned to the same canonical runtime.
+2. Continue improving pane/browser coexistence or move toward stronger split-view layout behavior next.
+3. Keep viewport behavior strictly as a rendering concern over canonical runtime-derived browser state.

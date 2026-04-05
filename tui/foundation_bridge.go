@@ -387,21 +387,39 @@ func visibleTreeBrowserItems(items []TreeBrowserItem, filter string, collapsed m
 	return out
 }
 
-func renderTreeBrowser(items []TreeBrowserItem, selected int, filter string, confirmPending bool, collapsed map[string]bool, grouped bool) string {
+func renderTreeBrowser(items []TreeBrowserItem, selected int, filter string, confirmPending bool, collapsed map[string]bool, grouped bool, maxVisible int, title string) string {
 	visible := visibleTreeBrowserItems(items, filter, collapsed)
 	if selected >= len(visible) {
 		selected = max(0, len(visible)-1)
 	}
+	start := 0
+	end := len(visible)
+	if maxVisible > 0 && len(visible) > maxVisible {
+		start = selected - maxVisible/2
+		if start < 0 {
+			start = 0
+		}
+		end = start + maxVisible
+		if end > len(visible) {
+			end = len(visible)
+			start = max(0, end-maxVisible)
+		}
+	}
+	window := visible[start:end]
 	var b strings.Builder
-	b.WriteString("[Foundation Tree Browser]\n")
+	b.WriteString(title + "\n")
 	if confirmPending {
 		b.WriteString("Confirm switch: Enter/Y = confirm, N/Esc/Backspace = cancel.\n")
 	} else {
 		b.WriteString("Use ↑/↓ to move, type to filter, Backspace to clear, Enter to arm switch, Esc to close, Tab to toggle grouping.\n")
 	}
 	b.WriteString(fmt.Sprintf("filter=%q matches=%d grouped=%t\n", filter, len(visible), grouped))
+	if maxVisible > 0 && len(visible) > maxVisible {
+		b.WriteString(fmt.Sprintf("showing=%d-%d of %d\n", start+1, end, len(visible)))
+	}
 	lastGroup := ""
-	for i, item := range visible {
+	for offset, item := range window {
+		i := start + offset
 		if grouped && item.GroupKey != lastGroup {
 			b.WriteString(fmt.Sprintf("\n[Group] %s\n", item.GroupKey))
 			lastGroup = item.GroupKey

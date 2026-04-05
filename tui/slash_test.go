@@ -422,8 +422,10 @@ func TestProcessSlashCommandTreePaneToggle(t *testing.T) {
 	if !updated.browserPinned {
 		t.Fatal("expected browser pane to be pinned")
 	}
-	if view := updated.View(); !strings.Contains(view, "[Foundation Tree Browser]") {
+	if view := updated.View(); !strings.Contains(view, "[Foundation Tree Pane]") {
 		t.Fatalf("expected pinned tree pane in view, got %s", view)
+	} else if strings.Contains(view, "matches=") && strings.Contains(view, "showing=") == false && strings.Count(view, "[message]") > 8 {
+		t.Fatalf("expected viewport metadata for large pinned pane view, got %s", view)
 	}
 	mdl, _ = ProcessSlashCommand("/tree-pane", &updated)
 	updated = mdl.(model)
