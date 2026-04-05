@@ -75,6 +75,8 @@ func ProcessSlashCommand(cmd string, m *model) (tea.Model, tea.Cmd) {
 		return handleTreePanePosition(m, strings.TrimSpace(strings.TrimPrefix(cmd, "/tree-pane-position")))
 	case "/tree-pane-position-toggle":
 		return handleTreePanePosition(m, "toggle")
+	case "/tree-pane-focus-toggle":
+		return handleTreePaneFocus(m)
 	case "/tree-pane-focus":
 		return handleTreePaneFocus(m)
 	case "/tree-go":
@@ -125,6 +127,7 @@ func handleHelp(m *model) (tea.Model, tea.Cmd) {
   /tree-pane-position <top|bottom> - Set the persistent tree pane position
   /tree-pane-position-toggle - Quickly toggle pane position between top and bottom
   /tree-pane-focus - Toggle keyboard focus for the pinned tree pane
+  /tree-pane-focus-toggle - Quick alias for toggling keyboard focus on the pinned tree pane
   /tree-go <index> [maxTokens] - Switch to an indexed entry from /tree-select
   /tree-children <entryId> - Show direct child branches for an entry
   /label <entryId> <label> - Set a label on an entry (or clear with empty label unsupported in slash)

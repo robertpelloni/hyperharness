@@ -733,6 +733,20 @@ func TestProcessSlashCommandTreePaneGroupedQuickToggle(t *testing.T) {
 	}
 }
 
+func TestProcessSlashCommandTreePaneFocusQuickToggle(t *testing.T) {
+	m := model{director: agents.NewDirector(&agents.DefaultProvider{}), browserPinned: true, browserPinnedFocus: false}
+	mdl, _ := ProcessSlashCommand("/tree-pane-focus-toggle", &m)
+	updated := mdl.(model)
+	if !updated.browserPinnedFocus {
+		t.Fatal("expected quick focus toggle to enable focus")
+	}
+	mdl, _ = ProcessSlashCommand("/tree-pane-focus-toggle", &updated)
+	updated = mdl.(model)
+	if updated.browserPinnedFocus {
+		t.Fatal("expected second quick focus toggle to disable focus")
+	}
+}
+
 func TestProcessSlashCommandTreePaneCycle(t *testing.T) {
 	m := model{director: agents.NewDirector(&agents.DefaultProvider{}), browserPaneHeight: 8, browserPanePreview: true, browserPanePosition: "top", browserGrouped: false}
 	mdl, _ := ProcessSlashCommand("/tree-pane-cycle", &m)

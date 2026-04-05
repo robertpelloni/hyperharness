@@ -1225,3 +1225,20 @@
 1. Keep `foundation/*`, `cmd`, and `tui` green and aligned to the same canonical runtime.
 2. Continue adding only the small convenience controls that clearly reduce repeated operator friction.
 3. Keep quick grouped toggles as a thin layer over existing pane grouped-state behavior.
+
+## Additional work completed later on 2026-04-04 (focus quick-toggle tranche)
+- Added new TUI slash command:
+  - `/tree-pane-focus-toggle`
+- Reused the existing focus toggle behavior through an explicit quick alias.
+- Added focused regression coverage verifying quick focus on/off transitions.
+- Added detailed analysis doc:
+  - `docs/analysis/TUI_FOCUS_QUICK_TOGGLE_TRANCHE_2026-04-04.md`
+
+## Latest validation after focus quick-toggle tranche
+- `gofmt -w tui/slash.go tui/slash_test.go`
+- `go test ./tui ./cmd ./foundation/...`
+
+## Updated recommendation after focus quick-toggle tranche
+1. Keep `foundation/*`, `cmd`, and `tui` green and aligned to the same canonical runtime.
+2. Continue only with convenience additions that clearly reduce repeated operator friction.
+3. Keep quick-toggle aliases as wrappers over existing state transitions, never new semantics.
