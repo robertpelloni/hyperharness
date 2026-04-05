@@ -453,7 +453,7 @@ export function describeStartupModeSummary(options: {
   if (options.runtime === 'go') {
     return [
       options.dashboardRequested
-        ? 'Dashboard integration: compatibility-only (use --runtime node for the integrated dashboard).'
+        ? 'Dashboard integration: compatibility-backed web runtime can start against the Go control plane.'
         : 'Dashboard integration: disabled by request.',
       options.mcpRequested
         ? 'MCP surfaces: Go-native/default API path active.'
@@ -484,7 +484,7 @@ export function describeStartupModeSummary(options: {
 }
 
 export function runtimeSupportsIntegratedDashboard(runtime: Exclude<HypercodeRuntimeMode, 'auto'>): boolean {
-  return runtime === 'node';
+  return runtime === 'node' || runtime === 'go';
 }
 
 export function resolveBrowserHost(host: string): string {
@@ -1089,107 +1089,108 @@ Examples:
           console.log(chalk.dim(`    • ${line}`));
         }
         let dashboardMode = opts.dashboard
-          ? (runtimeSupportsIntegratedDashboard(runtimeKind)
-            ? 'supported by selected runtime'
-            : 'compatibility-only; skipped for Go runtime')
+          ? (runtimeKind === 'go'
+            ? 'compatibility-backed dashboard runtime targeting the Go control plane'
+            : 'integrated dashboard runtime targeting the Node compatibility control plane')
           : 'disabled by request';
 
         if (opts.dashboard) {
-          if (!runtimeSupportsIntegratedDashboard(runtimeKind)) {
+          const browserHost = resolveBrowserHost(runtime.host);
+          const orchestratorBaseUrl = `http://${browserHost}:${runtime.trpcPort}`;
+          const dashboardSelection = await pickDashboardPort(
+            requestedDashboardPort,
+            explicitDashboardPort,
+            host,
+            {
+              allowReuseExisting: activePort === requestedPort,
+            },
+          );
+          const dashboardUrl = resolveDashboardUrl(host, dashboardSelection.port);
+          const shouldOpenDashboard = opts.openDashboard !== false && !opts.daemon;
+
+          if (dashboardSelection.reusedExisting) {
+            dashboardMode = runtimeKind === 'go'
+              ? 'reused existing compatibility-backed dashboard runtime'
+              : 'reused existing integrated dashboard runtime';
             console.log(chalk.dim(`  Dashboard mode: ${dashboardMode}`));
-            console.log(chalk.yellow('  ⚠ Dashboard startup is being skipped because the current web UI still depends heavily on the Node/tRPC compatibility backend.'));
-            console.log(chalk.yellow('  ⚠ Use --runtime node when you need the full integrated dashboard during the migration to Go-primary control-plane ownership.'));
+            console.log(chalk.green(`  ✓ Reusing dashboard runtime at ${dashboardUrl}`));
           } else {
-            const browserHost = resolveBrowserHost(runtime.host);
-            const orchestratorBaseUrl = `http://${browserHost}:${runtime.trpcPort}`;
-            const dashboardSelection = await pickDashboardPort(
-              requestedDashboardPort,
-              explicitDashboardPort,
+            const { command, args, cwd } = getDashboardSpawnSpec(
+              webRoot,
+              repoRoot,
               host,
-              {
-                allowReuseExisting: activePort === requestedPort,
-              },
+              dashboardSelection.port,
             );
-            const dashboardUrl = resolveDashboardUrl(host, dashboardSelection.port);
-            const shouldOpenDashboard = opts.openDashboard !== false && !opts.daemon;
+            let dashboardExited = false;
+            let dashboardLaunchErrorMessage: string | null = null;
 
-            if (dashboardSelection.reusedExisting) {
-              dashboardMode = 'reused existing integrated dashboard runtime';
+            dashboardChild = spawn(command, args, {
+              cwd,
+              stdio: 'inherit',
+              env: {
+                ...process.env,
+                HYPERCODE_TRPC_UPSTREAM: `${orchestratorBaseUrl}/trpc`,
+                NEXT_PUBLIC_HYPERCODE_ORCHESTRATOR_URL: orchestratorBaseUrl,
+                NEXT_PUBLIC_AUTOPILOT_URL: orchestratorBaseUrl,
+              },
+              windowsHide: true,
+            });
+            dashboardChild.once('exit', () => {
+              dashboardExited = true;
+              dashboardChild = null;
+            });
+            dashboardChild.once('error', (error) => {
+              dashboardLaunchErrorMessage = error instanceof Error ? error.message : String(error);
+              dashboardExited = true;
+              dashboardChild = null;
+            });
+
+            if (!explicitDashboardPort && dashboardSelection.port !== requestedDashboardPort) {
+              console.log(chalk.yellow(`  ↺ Dashboard port ${requestedDashboardPort} busy, falling back to ${dashboardSelection.port}`));
+              if (activePort !== requestedPort) {
+                console.log(chalk.yellow(`  ↺ Started a fresh dashboard runtime so it can target the live control plane at ${orchestratorBaseUrl}`));
+              }
+            }
+
+            const dashboardReady = await waitForHttpReady({
+              url: dashboardUrl,
+              shouldAbort: () => dashboardExited,
+            });
+
+            if (dashboardReady) {
+              dashboardMode = runtimeKind === 'go'
+                ? 'started compatibility-backed dashboard runtime'
+                : 'started integrated dashboard runtime';
               console.log(chalk.dim(`  Dashboard mode: ${dashboardMode}`));
-              console.log(chalk.green(`  ✓ Reusing dashboard runtime at ${dashboardUrl}`));
+              if (runtimeKind === 'go') {
+                console.log(chalk.yellow('  ⚠ Dashboard is running through the Node web compatibility layer against the Go control plane. Some mutation-heavy surfaces may still rely on compatibility fallbacks during the migration.'));
+              }
+              console.log(chalk.green(`  ✓ Dashboard runtime ready at ${dashboardUrl}`));
+            } else if (dashboardLaunchErrorMessage) {
+              dashboardMode = 'dashboard launch attempted but failed';
+              console.log(chalk.dim(`  Dashboard mode: ${dashboardMode}`));
+              console.log(chalk.yellow(`  ⚠ Dashboard runtime failed to launch: ${dashboardLaunchErrorMessage}`));
+            } else if (dashboardExited) {
+              dashboardMode = 'dashboard launch attempted but exited early';
+              console.log(chalk.dim(`  Dashboard mode: ${dashboardMode}`));
+              console.log(chalk.yellow(`  ⚠ Dashboard runtime exited before ${dashboardUrl} became ready.`));
             } else {
-              const { command, args, cwd } = getDashboardSpawnSpec(
-                webRoot,
-                repoRoot,
-                host,
-                dashboardSelection.port,
-              );
-              let dashboardExited = false;
-              let dashboardLaunchErrorMessage: string | null = null;
-
-              dashboardChild = spawn(command, args, {
-                cwd,
-                stdio: 'inherit',
-                env: {
-                  ...process.env,
-                  HYPERCODE_TRPC_UPSTREAM: `${orchestratorBaseUrl}/trpc`,
-                  NEXT_PUBLIC_HYPERCODE_ORCHESTRATOR_URL: orchestratorBaseUrl,
-                  NEXT_PUBLIC_AUTOPILOT_URL: orchestratorBaseUrl,
-                },
-                windowsHide: true,
-              });
-              dashboardChild.once('exit', () => {
-                dashboardExited = true;
-                dashboardChild = null;
-              });
-              dashboardChild.once('error', (error) => {
-                dashboardLaunchErrorMessage = error instanceof Error ? error.message : String(error);
-                dashboardExited = true;
-                dashboardChild = null;
-              });
-
-              if (!explicitDashboardPort && dashboardSelection.port !== requestedDashboardPort) {
-                console.log(chalk.yellow(`  ↺ Dashboard port ${requestedDashboardPort} busy, falling back to ${dashboardSelection.port}`));
-                if (activePort !== requestedPort) {
-                  console.log(chalk.yellow(`  ↺ Started a fresh dashboard runtime so it can target the live control plane at ${orchestratorBaseUrl}`));
-                }
-              }
-
-              const dashboardReady = await waitForHttpReady({
-                url: dashboardUrl,
-                shouldAbort: () => dashboardExited,
-              });
-
-              if (dashboardReady) {
-                dashboardMode = 'started integrated dashboard runtime';
-                console.log(chalk.dim(`  Dashboard mode: ${dashboardMode}`));
-                console.log(chalk.green(`  ✓ Dashboard runtime ready at ${dashboardUrl}`));
-              } else if (dashboardLaunchErrorMessage) {
-                dashboardMode = 'dashboard launch attempted but failed';
-                console.log(chalk.dim(`  Dashboard mode: ${dashboardMode}`));
-                console.log(chalk.yellow(`  ⚠ Dashboard runtime failed to launch: ${dashboardLaunchErrorMessage}`));
-              } else if (dashboardExited) {
-                dashboardMode = 'dashboard launch attempted but exited early';
-                console.log(chalk.dim(`  Dashboard mode: ${dashboardMode}`));
-                console.log(chalk.yellow(`  ⚠ Dashboard runtime exited before ${dashboardUrl} became ready.`));
-              } else {
-                dashboardMode = 'dashboard launch attempted and still starting';
-                console.log(chalk.dim(`  Dashboard mode: ${dashboardMode}`));
-                console.log(chalk.yellow(`  ⚠ Dashboard runtime is still starting. Visit ${dashboardUrl} in a moment.`));
-              }
+              dashboardMode = 'dashboard launch attempted and still starting';
+              console.log(chalk.dim(`  Dashboard mode: ${dashboardMode}`));
+              console.log(chalk.yellow(`  ⚠ Dashboard runtime is still starting. Visit ${dashboardUrl} in a moment.`));
             }
+          }
 
-            if (shouldOpenDashboard) {
-              try {
-                const open = (await import('open')).default;
-                await open(dashboardUrl);
-                console.log(chalk.green(`  ✓ Opened dashboard at ${dashboardUrl}`));
-              } catch {
-                console.log(chalk.yellow(`  ⚠ Could not open the browser automatically. Visit ${dashboardUrl} manually.`));
-              }
-            } else {
-              console.log(chalk.dim(`  Dashboard URL: ${dashboardUrl}`));
+          if (shouldOpenDashboard) {
+            try {
+              const open = (await import('open')).default;
+              await open(dashboardUrl);
+              console.log(chalk.green(`  ✓ Opened dashboard at ${dashboardUrl}`));
+            } catch {
+              console.log(chalk.yellow(`  ⚠ Could not open the browser automatically. Visit ${dashboardUrl} manually.`));
             }
+          } else {
+            console.log(chalk.dim(`  Dashboard URL: ${dashboardUrl}`));
           }
         }
         acquiredLockHandle.updateStartupMetadata({

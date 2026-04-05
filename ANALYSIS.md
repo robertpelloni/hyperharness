@@ -1,5 +1,73 @@
 # HyperCode Stabilization Analysis — 2026-04-03
 
+## Latest stabilization pass — Go-primary dashboard startup compatibility
+
+### Context
+After the previous pass, startup truth was improved and the logs were honest about Go-primary behavior — but they also showed a conservative limitation that no longer matched the current implementation reality:
+- Go-primary startup always skipped launching the web dashboard
+- the reason given was that the current web UI still depends heavily on the Node/tRPC compatibility backend
+
+That dependency is still real, but the repository has already accumulated a large amount of shared web compatibility work:
+- the Next.js dashboard has its own Node-hosted web runtime
+- the in-app `/api/trpc/[trpc]` route can already fall back to many Go-native `/api/*` endpoints when upstream `/trpc` is unavailable
+- the CLI already knows how to launch the dashboard with environment variables pointing it at the active control plane base
+
+So the old hard-skip behavior had become too pessimistic. It was blocking a now-viable compatibility-backed dashboard startup path in Go-primary mode.
+
+### What changed
+#### 1. Go-primary startup can now launch the dashboard in compatibility-backed mode
+Updated:
+- `packages/cli/src/commands/start.ts`
+- `packages/cli/src/commands/start.test.ts`
+
+The startup policy changed from:
+- Go runtime => always skip dashboard startup
+
+to:
+- Go runtime => allow the Next.js dashboard to start as a compatibility-backed web runtime targeting the live Go control plane
+
+This is still described truthfully:
+- the dashboard is **not** being presented as fully Go-native
+- the startup output now warns that some mutation-heavy surfaces may still rely on compatibility fallbacks during the migration
+
+#### 2. Updated startup summaries and runtime capability classification
+The CLI summary for Go runtime now says:
+- `Dashboard integration: compatibility-backed web runtime can start against the Go control plane.`
+
+And the startup banner/runtime-mode reporting now distinguishes Go-backed dashboard runs with labels such as:
+- `compatibility-backed dashboard runtime targeting the Go control plane`
+- `started compatibility-backed dashboard runtime`
+- `reused existing compatibility-backed dashboard runtime`
+
+That keeps the operator-facing startup contract explicit:
+- the dashboard can launch
+- it is compatibility-backed
+- the Go control plane is still the backend authority being targeted
+
+#### 3. Validated that the dashboard is buildable for this startup path
+Because this slice changes actual startup behavior, it needed stronger validation than a pure CLI unit test.
+
+Validated:
+- CLI build still succeeds
+- CLI startup tests still pass
+- `apps/web` production build still succeeds
+
+That is important because Go-primary startup will now actually try to launch the dashboard instead of hard-skipping it.
+
+### Validation
+Executed truthfully without killing any processes:
+- `pnpm -C packages/cli run build`
+- `pnpm exec vitest run packages/cli/src/commands/start.test.ts`
+- `pnpm -C apps/web run build`
+
+### Why this matters
+This closes part of the practical operator gap between "Go control plane is running" and "the dashboard is usable":
+- Go-primary startup no longer unnecessarily withholds the dashboard when the compatibility-backed web runtime is already viable
+- startup messaging remains truthful about the remaining migration limits
+- the repo now better reflects its actual maturity: Go can own the control plane while the web UI runs as a compatibility client layered on top
+
+This still does **not** mean the dashboard backend contract is fully Go-native. The remaining work is to keep converting more mutation-heavy and TS-era backend expectations into direct Go-owned contracts so the compatibility layer becomes thinner over time instead of serving as a permanent crutch.
+
 ## Latest stabilization pass — startup dashboard truthfulness and harness submodule maintenance
 
 ### Context

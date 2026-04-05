@@ -3,6 +3,29 @@
 ## Current status
 **Version:** `1.0.0-alpha.1`
 
+### Latest incremental pass — Go-primary dashboard startup compatibility
+This follow-up removed an overly pessimistic Go-primary startup limitation: the dashboard no longer has to be hard-skipped when the Go control plane is active.
+
+#### What changed
+- Updated `packages/cli/src/commands/start.ts` so `hypercode start --runtime auto|go` can now launch the Next.js dashboard against the live Go control plane instead of always skipping dashboard startup
+- Kept the startup messaging truthful by explicitly labeling this as a compatibility-backed dashboard runtime, not a fully Go-native dashboard backend
+- Updated `packages/cli/src/commands/start.test.ts` so the Go runtime is treated as dashboard-startup-capable and the summary text reflects the compatibility-backed nature of the web runtime
+- Updated planning/docs to record that Go-primary startup can now launch the dashboard while the backend contract still remains partially compatibility-dependent
+
+#### Runtime semantics
+When Go is the selected runtime:
+- the Go control plane still owns the backend/control-plane base
+- the Next.js dashboard may now be started alongside it
+- startup output explicitly reports compatibility-backed dashboard mode and warns that some mutation-heavy surfaces may still rely on compatibility fallbacks during the migration
+
+#### Validation performed
+- `pnpm -C packages/cli run build`
+- `pnpm exec vitest run packages/cli/src/commands/start.test.ts`
+- `pnpm -C apps/web run build`
+
+#### Recommended next step after this pass
+Continue shrinking the remaining Go-primary/dashboard compatibility gap by porting more mutation-heavy dashboard-backed procedures to direct Go-owned contracts so the web runtime depends less on TS-era compatibility behavior over time.
+
 ### Latest incremental pass — startup dashboard truthfulness and harness submodule maintenance
 This follow-up fixed one remaining startup-truth contradiction exposed by real operator logs and completed the requested harness-submodule maintenance work.
 

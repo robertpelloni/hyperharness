@@ -133,6 +133,7 @@ Make Go the default runtime started by operator entrypoints.
 - the web tRPC compat layer now also prefers Go-native `/api/sessions/supervisor/state` when `session.getState` is unavailable, preserving truthful session-state signals like active auto-drive and current goal instead of the synthetic session-state placeholder
 - the Go-native `/api/runtime/status` surface now also exposes startup provenance, making the native backend self-describing rather than depending on the TS compatibility surface for that truth
 - this dashboard propagation cluster is now complete; the next focus is reducing remaining TS compatibility dependence by switching more runtime-heavy dashboard/system reads onto Go-native truth where equivalent native surfaces already exist
+- Go-primary startup no longer has to hard-skip the web dashboard: `hypercode start --runtime auto|go` can now launch the Next.js dashboard in a compatibility-backed mode against the live Go control plane, while still warning explicitly that some mutation-heavy surfaces remain compatibility-dependent during the migration
 - explicit Node compatibility mode still uses the full workspace build path and still defaults to a full install/build posture
 - full builds remain available via `HYPERCODE_FULL_BUILD=1`
 

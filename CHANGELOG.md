@@ -45,6 +45,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Go-Primary Dashboard Startup Compatibility**: `hypercode start --runtime auto|go` can now launch the Next.js dashboard in a compatibility-backed mode against the live Go control plane instead of hard-skipping dashboard startup, while keeping startup messaging explicit that some mutation-heavy surfaces still rely on compatibility fallbacks during the migration.
 - **Harness Submodule Maintenance**: Fast-forwarded `submodules/hyperharness` to upstream `37830d726a39988cdb54f073c21c1a0924dfea0b` and removed the tracked `submodules/superai` submodule checkout from the workspace configuration, while leaving HyperCode's own `superai-cli` harness catalog support intact.
 - **Startup Dashboard Truthfulness**: `hypercode start` now reports dashboard intent as a request before runtime resolution and prints an explicit resolved dashboard mode later in startup, avoiding the old `Dashboard: enabled` contradiction when Go-primary mode correctly skips the integrated dashboard runtime.
 - **Worktree-Isolation Parity for Go Fallback Sessions**: Go fallback supervised sessions now allocate a real Git worktree under `.hypercode/worktrees/<session-id>` when `isolateWorktree` is requested and another active session already occupies the same requested workspace, while falling back truthfully when worktree creation is unavailable.

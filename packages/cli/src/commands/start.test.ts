@@ -379,9 +379,9 @@ describe('runtime selection helpers', () => {
         expect(resolveGoConfigDir('C:/tmp/home/.hypercode', 'C:/tmp/go-state').replaceAll('\\', '/')).toBe('C:/tmp/go-state');
     });
 
-    it('only treats the Node runtime as dashboard-compatible for now', () => {
+    it('treats both Node and Go runtimes as dashboard-startup capable', () => {
         expect(runtimeSupportsIntegratedDashboard('node')).toBe(true);
-        expect(runtimeSupportsIntegratedDashboard('go')).toBe(false);
+        expect(runtimeSupportsIntegratedDashboard('go')).toBe(true);
     });
 
     it('prefers the built Go binary when available', () => {
@@ -423,7 +423,7 @@ describe('runtime selection helpers', () => {
             supervisorRequested: true,
             autoDriveRequested: true,
         })).toEqual([
-            'Dashboard integration: compatibility-only (use --runtime node for the integrated dashboard).',
+            'Dashboard integration: compatibility-backed web runtime can start against the Go control plane.',
             'MCP flag compatibility: --no-mcp is not yet mapped for Go startup.',
             'Supervisor startup flag: Go exposes native supervisor APIs, but the startup flag is not yet mapped 1:1.',
             'Auto-Drive startup: not yet implemented for Go runtime startup.',
