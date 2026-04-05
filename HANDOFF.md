@@ -732,3 +732,26 @@
 1. Keep `foundation/*`, `cmd`, and `tui` green and aligned to the same canonical runtime.
 2. Add richer grouping/graph-style rendering next so the browser becomes even clearer at scale.
 3. Keep folding as a UI-only projection over canonical runtime structure, never a competing state model.
+
+## Additional work completed later on 2026-04-04 (graph-style rendering tranche)
+- Expanded `TreeBrowserItem` with additional structure-derived fields:
+  - `ParentID`
+  - `Prefix`
+  - `IsLastChild`
+- Added canonical prefix helper:
+  - `buildTreePrefix`
+- Updated browser rendering to distinguish sibling/last-child structure with graph-style connectors:
+  - `├─`
+  - `└─`
+- Kept rendering fully derived from canonical session relationships rather than a separate UI tree model.
+- Focused tests passed against the modified TUI/browser surfaces:
+  - `go test -run TestTreeBrowserModeNavigation -v ./tui`
+  - `go test -run TestProcessSlashCommandTreeExplorerLabelAndChildren -v ./tui`
+  - `go test -run TestFoundationSummaryHelpers -v ./cmd`
+- Added detailed analysis doc:
+  - `docs/analysis/TUI_GRAPH_STYLE_RENDERING_TRANCHE_2026-04-04.md`
+
+## Updated recommendation after graph-style rendering tranche
+1. Keep `foundation/*`, `cmd`, and `tui` green and aligned to the same canonical runtime.
+2. Consider richer grouping modes or persistent browser panes next.
+3. Continue deriving every visual tree cue from canonical runtime structure rather than UI-invented semantics.

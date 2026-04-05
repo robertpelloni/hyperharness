@@ -4,24 +4,20 @@ Date: 2026-04-04
 
 ## Summary
 
-This tranche deepens the tree browser’s visual structure by moving from plain indentation toward **more graph-like rendering cues**.
+This tranche improves the visual structure of the tree browser by moving from simple depth indentation toward more graph-like connector rendering derived from canonical session relationships.
 
-Before this tranche, the browser already had:
-- depth/indentation
-- child-count cues
-- filtering
+The browser already had:
+- cursor navigation
+- selector-driven switching
 - preview
-- pre-switch summary preparation preview
+- filtering
 - confirmation-before-switch
 - subtree folding
+- depth and child-count cues
 
-That made the browser useful, but the visual representation of sibling/branch structure was still fairly coarse.
+What it lacked was stronger visual communication of sibling/branch topology.
 
-This tranche improves that by surfacing:
-- parent linkage in the browser item model
-- last-child awareness
-- connector-like rendering cues (`├─`, `└─`)
-- branch prefixes derived from canonical parent relationships
+This tranche adds that.
 
 ## What was added
 
@@ -31,95 +27,64 @@ Expanded `TreeBrowserItem` with:
 - `Prefix`
 - `IsLastChild`
 
-This data is still derived from the canonical session tree, not UI invention.
+These fields are still computed from the canonical session tree; they are not UI-invented truth.
 
 ### 2. Canonical prefix generation
-Added a helper:
-- `buildTreePrefix`
+Added `buildTreePrefix`, which walks parent/sibling relationships to generate a structural prefix used in browser rendering.
 
-This walks parent relationships and sibling ordering to produce a structural prefix for each item.
+This gives the browser a more tree-like feel without abandoning the underlying list model.
 
-That means the visual grouping now reflects the actual runtime-derived tree relationships more closely than simple depth indentation alone.
-
-### 3. Last-child aware rendering
-Rendering now distinguishes between:
+### 3. Last-child-aware connector rendering
+Rendering now distinguishes:
 - `├─` for non-final siblings
-- `└─` for last children
+- `└─` for final children
 
-This is a meaningful readability improvement because it helps the eye follow branching structure rather than just entry order.
+That is a meaningful readability improvement for branching session histories.
 
-### 4. Prefix-aware browser output
-The browser rows now combine:
+### 4. Prefix-aware browser rows
+Browser rows now combine:
 - cursor marker
 - active-leaf marker
 - graph-style prefix
 - fold indicator
-- id/kind/label/child-count
+- id / kind / label / child-count metadata
 - preview text
 
-This makes the browser closer to a real branch explorer than a simple annotated list.
-
-## Verification added
-
-Expanded the browser-mode test so that the rendered browser view must now contain graph-style connector glyphs (`├─` or `└─`).
-
-### Full validation
-Verified successfully:
+## Verification
+Focused tests passed against the modified TUI/browser surfaces:
 
 ```bash
-go test -v ./tui
-go test -v ./cmd ./foundation/...
+go test -run TestTreeBrowserModeNavigation -v ./tui
+go test -run TestProcessSlashCommandTreeExplorerLabelAndChildren -v ./tui
+go test -run TestFoundationSummaryHelpers -v ./cmd
 ```
 
-Everything remained green.
+All green.
 
 ## Why this matters
 
-This tranche matters because the browser is now better at conveying **branch topology**, not just node metadata.
+This tranche improves structural legibility at scale. It becomes easier to visually distinguish:
+- branch fan-out
+- sibling relationships
+- nested depth
+- likely switch targets
 
-That is an important distinction for long-session agent work.
-
-A branch browser should not just say “these entries exist.” It should help the user perceive:
-- what is a sibling
-- what is nested beneath what
-- where branching fans out
-- and where a selected item sits in that structure
-
-This tranche improves that without abandoning the truth-first architecture.
+without changing any underlying session semantics.
 
 ## Design insight
 
-The key design principle preserved here is:
+The crucial design rule stayed intact:
 
-> **graph-style rendering is still derived from canonical runtime relationships, not from a separate UI-owned tree model.**
+> visual tree cues are derived from canonical runtime structure, not from a separate UI-owned tree graph.
 
-This is critical.
-
-The browser gets visually smarter, but the tree semantics still come from the same `foundation/pi` session truth.
-
-## What is still missing
-
-This tranche improves rendering, but some advanced structure-oriented ergonomics remain possible:
-
-1. **richer grouping modes**
-   - e.g. grouping by branch heads or recent divergence points
-
-2. **more explicit branch summaries in the browser list**
-   - not just in preview
-
-3. **persistent browser panes/views**
-   - rather than a transient mode only
+That means the browser gets smarter while the runtime remains the only source of truth.
 
 ## Recommended next move
 
-The strongest next step is now:
-
-> **add richer grouping or persistent browser panes on top of the now graph-like, filterable, foldable, confirmable browser.**
-
-At this point the browser has moved from a raw list into a true structural explorer.
+The strongest next move after this remains richer browser ergonomics, likely:
+- persistent pane/view behavior, or
+- stronger grouping/folding strategies beyond simple subtree collapse.
 
 ## Bottom line
 
-This tranche improves visual tree clarity in a real way.
-
-The browser is now not only interactive and safe, but also more structurally legible — which is exactly what a branch-heavy session explorer needs.
+This tranche makes the tree browser more visually legible and more obviously branch-aware, while preserving the same truth-first architecture.
