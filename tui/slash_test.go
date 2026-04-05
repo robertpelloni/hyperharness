@@ -613,6 +613,24 @@ func TestProcessSlashCommandTreePaneStatus(t *testing.T) {
 	}
 }
 
+func TestProcessSlashCommandTreeBrowserClear(t *testing.T) {
+	m := model{director: agents.NewDirector(&agents.DefaultProvider{}), browserFilter: "abc", browserConfirmPending: true, browserCollapsed: map[string]bool{"x": true}, browserIndex: 3}
+	mdl, _ := ProcessSlashCommand("/tree-browser-clear", &m)
+	updated := mdl.(model)
+	if updated.browserFilter != "" || updated.browserConfirmPending || updated.browserCollapsed != nil || updated.browserIndex != 0 {
+		t.Fatalf("expected browser transient state cleared, got %#v", updated)
+	}
+}
+
+func TestProcessSlashCommandTreePaneReset(t *testing.T) {
+	m := model{director: agents.NewDirector(&agents.DefaultProvider{}), browserPaneHeight: 20, browserPanePosition: "bottom", browserPanePreview: false, browserGrouped: true, browserPinnedFocus: true, browserConfirmPending: true, browserFilter: "abc", browserCollapsed: map[string]bool{"x": true}}
+	mdl, _ := ProcessSlashCommand("/tree-pane-reset", &m)
+	updated := mdl.(model)
+	if updated.browserPaneHeight != 8 || updated.browserPanePosition != "top" || updated.browserPanePreview != true || updated.browserGrouped != false || updated.browserPinnedFocus != false || updated.browserConfirmPending != false || updated.browserFilter != "" || updated.browserCollapsed != nil {
+		t.Fatalf("expected pane defaults restored, got %#v", updated)
+	}
+}
+
 func TestProcessSlashCommandClearResetsDirector(t *testing.T) {
 	m := model{director: agents.NewDirector(&agents.DefaultProvider{})}
 	m.history = []string{"old"}

@@ -1067,3 +1067,34 @@
 1. Keep `foundation/*`, `cmd`, and `tui` green and aligned to the same canonical runtime.
 2. Continue improving operator ergonomics around the pane/browser subsystem with complementary reset or quick-toggle controls where useful.
 3. Keep pane status as introspection over UI/layout state, not as a competing source of session/branch truth.
+
+## Additional work completed later on 2026-04-04 (reset controls tranche)
+- Added new TUI slash commands:
+  - `/tree-browser-clear`
+  - `/tree-pane-reset`
+- `/tree-browser-clear` now clears transient browser state:
+  - filter
+  - pending confirmation
+  - collapse state
+  - selection index
+- `/tree-pane-reset` now restores pane defaults:
+  - height `8`
+  - position `top`
+  - preview `true`
+  - grouped `false`
+  - focus `false`
+  - pending confirmation `false`
+  - filter cleared
+  - collapsed state cleared
+- Added focused regression coverage for both reset paths.
+- Added detailed analysis doc:
+  - `docs/analysis/TUI_RESET_CONTROLS_TRANCHE_2026-04-04.md`
+
+## Latest validation after reset controls tranche
+- `gofmt -w tui/slash.go tui/slash_test.go`
+- `go test ./tui ./cmd ./foundation/...`
+
+## Updated recommendation after reset controls tranche
+1. Keep `foundation/*`, `cmd`, and `tui` green and aligned to the same canonical runtime.
+2. Continue improving operator control with higher-level presets or additional quick toggles where they reduce friction.
+3. Keep reset/clear behavior confined to UI/layout/control state, never canonical session/branch truth.

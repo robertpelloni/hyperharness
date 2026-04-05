@@ -51,6 +51,10 @@ func ProcessSlashCommand(cmd string, m *model) (tea.Model, tea.Cmd) {
 		return handleTreePaneSize(m, strings.TrimSpace(strings.TrimPrefix(cmd, "/tree-pane-size")))
 	case "/tree-pane-preview":
 		return handleTreePanePreview(m, strings.TrimSpace(strings.TrimPrefix(cmd, "/tree-pane-preview")))
+	case "/tree-browser-clear":
+		return handleTreeBrowserClear(m)
+	case "/tree-pane-reset":
+		return handleTreePaneReset(m)
 	case "/tree-pane-status":
 		return handleTreePaneStatus(m)
 	case "/tree-pane-preset":
@@ -94,6 +98,8 @@ func handleHelp(m *model) (tea.Model, tea.Cmd) {
   /tree-pane - Toggle a persistent tree pane while continuing normal prompt interaction
   /tree-pane-size <n> - Set the persistent tree pane viewport height
   /tree-pane-preview <on|off> - Toggle preview details inside the persistent tree pane
+  /tree-browser-clear - Clear transient browser state like filter/collapse/confirm
+  /tree-pane-reset - Reset pane configuration to defaults
   /tree-pane-status - Show the current persistent pane configuration
   /tree-pane-preset <compact|detailed|navigation|review> - Apply a named pane layout preset
   /tree-pane-position <top|bottom> - Set the persistent tree pane position
@@ -336,6 +342,30 @@ func handleTreePanePreview(m *model, arg string) (tea.Model, tea.Cmd) {
 	}
 	m.browserPanePreview = value == "on"
 	m.history = append(m.history, fmt.Sprintf("[Foundation Tree Pane] preview set to %s", value))
+	return *m, nil
+}
+
+func handleTreeBrowserClear(m *model) (tea.Model, tea.Cmd) {
+	m.loading = false
+	m.browserFilter = ""
+	m.browserConfirmPending = false
+	m.browserCollapsed = nil
+	m.browserIndex = 0
+	m.history = append(m.history, "[Foundation Tree Browser] transient state cleared")
+	return *m, nil
+}
+
+func handleTreePaneReset(m *model) (tea.Model, tea.Cmd) {
+	m.loading = false
+	m.browserPaneHeight = 8
+	m.browserPanePosition = "top"
+	m.browserPanePreview = true
+	m.browserGrouped = false
+	m.browserPinnedFocus = false
+	m.browserConfirmPending = false
+	m.browserFilter = ""
+	m.browserCollapsed = nil
+	m.history = append(m.history, "[Foundation Tree Pane] reset to defaults")
 	return *m, nil
 }
 
