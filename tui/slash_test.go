@@ -573,16 +573,26 @@ func TestProcessSlashCommandTreePanePreviewToggle(t *testing.T) {
 }
 
 func TestProcessSlashCommandTreePanePreset(t *testing.T) {
-	m := model{director: agents.NewDirector(&agents.DefaultProvider{}), browserPaneHeight: 8, browserPanePreview: true, browserPanePosition: "top"}
+	m := model{director: agents.NewDirector(&agents.DefaultProvider{}), browserPaneHeight: 8, browserPanePreview: true, browserPanePosition: "top", browserGrouped: false}
 	mdl, _ := ProcessSlashCommand("/tree-pane-preset compact", &m)
 	updated := mdl.(model)
-	if updated.browserPaneHeight != 6 || updated.browserPanePreview != false || updated.browserPanePosition != "bottom" {
+	if updated.browserPaneHeight != 6 || updated.browserPanePreview != false || updated.browserPanePosition != "bottom" || updated.browserGrouped != false {
 		t.Fatalf("expected compact preset to apply, got %#v", updated)
 	}
 	mdl, _ = ProcessSlashCommand("/tree-pane-preset detailed", &updated)
 	updated = mdl.(model)
-	if updated.browserPaneHeight != 12 || updated.browserPanePreview != true || updated.browserPanePosition != "top" {
+	if updated.browserPaneHeight != 12 || updated.browserPanePreview != true || updated.browserPanePosition != "top" || updated.browserGrouped != false {
 		t.Fatalf("expected detailed preset to apply, got %#v", updated)
+	}
+	mdl, _ = ProcessSlashCommand("/tree-pane-preset navigation", &updated)
+	updated = mdl.(model)
+	if updated.browserPaneHeight != 10 || updated.browserPanePreview != false || updated.browserPanePosition != "bottom" || updated.browserGrouped != true {
+		t.Fatalf("expected navigation preset to apply, got %#v", updated)
+	}
+	mdl, _ = ProcessSlashCommand("/tree-pane-preset review", &updated)
+	updated = mdl.(model)
+	if updated.browserPaneHeight != 14 || updated.browserPanePreview != true || updated.browserPanePosition != "top" || updated.browserGrouped != true {
+		t.Fatalf("expected review preset to apply, got %#v", updated)
 	}
 }
 

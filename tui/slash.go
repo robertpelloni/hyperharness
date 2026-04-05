@@ -92,7 +92,7 @@ func handleHelp(m *model) (tea.Model, tea.Cmd) {
   /tree-pane - Toggle a persistent tree pane while continuing normal prompt interaction
   /tree-pane-size <n> - Set the persistent tree pane viewport height
   /tree-pane-preview <on|off> - Toggle preview details inside the persistent tree pane
-  /tree-pane-preset <compact|detailed> - Apply a named pane layout preset
+  /tree-pane-preset <compact|detailed|navigation|review> - Apply a named pane layout preset
   /tree-pane-position <top|bottom> - Set the persistent tree pane position
   /tree-pane-focus - Toggle keyboard focus for the pinned tree pane
   /tree-go <index> [maxTokens] - Switch to an indexed entry from /tree-select
@@ -344,14 +344,28 @@ func handleTreePanePreset(m *model, arg string) (tea.Model, tea.Cmd) {
 		m.browserPaneHeight = 6
 		m.browserPanePreview = false
 		m.browserPanePosition = "bottom"
+		m.browserGrouped = false
 		m.history = append(m.history, "[Foundation Tree Pane] preset applied: compact")
 	case "detailed":
 		m.browserPaneHeight = 12
 		m.browserPanePreview = true
 		m.browserPanePosition = "top"
+		m.browserGrouped = false
 		m.history = append(m.history, "[Foundation Tree Pane] preset applied: detailed")
+	case "navigation":
+		m.browserPaneHeight = 10
+		m.browserPanePreview = false
+		m.browserPanePosition = "bottom"
+		m.browserGrouped = true
+		m.history = append(m.history, "[Foundation Tree Pane] preset applied: navigation")
+	case "review":
+		m.browserPaneHeight = 14
+		m.browserPanePreview = true
+		m.browserPanePosition = "top"
+		m.browserGrouped = true
+		m.history = append(m.history, "[Foundation Tree Pane] preset applied: review")
 	default:
-		m.history = append(m.history, "[Error] /tree-pane-preset requires 'compact' or 'detailed'")
+		m.history = append(m.history, "[Error] /tree-pane-preset requires 'compact', 'detailed', 'navigation', or 'review'")
 	}
 	return *m, nil
 }

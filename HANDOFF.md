@@ -996,3 +996,30 @@
 1. Keep `foundation/*`, `cmd`, and `tui` green and aligned to the same canonical runtime.
 2. Continue refining pane/browser coexistence with higher-level operator presets or split-view controls next.
 3. Keep presets as bundles of rendering/layout state only, never as alternate session/branch semantics.
+
+## Additional work completed later on 2026-04-04 (pane preset extension tranche)
+- Extended `/tree-pane-preset` to support:
+  - `navigation`
+  - `review`
+- Added `navigation` preset:
+  - height `10`
+  - preview `off`
+  - position `bottom`
+  - grouped `true`
+- Added `review` preset:
+  - height `14`
+  - preview `on`
+  - position `top`
+  - grouped `true`
+- Expanded pane preset regression coverage to verify all four presets.
+- Added detailed analysis doc:
+  - `docs/analysis/TUI_PANE_PRESET_EXTENSION_TRANCHE_2026-04-04.md`
+
+## Latest validation after pane preset extension tranche
+- `gofmt -w tui/slash.go tui/slash_test.go`
+- `go test ./tui ./cmd ./foundation/...`
+
+## Updated recommendation after pane preset extension tranche
+1. Keep `foundation/*`, `cmd`, and `tui` green and aligned to the same canonical runtime.
+2. Continue refining split-view ergonomics with stronger pane/browser mode distinctions or additional workflow presets next.
+3. Keep presets as bundles of rendering/layout state only, never as alternate session/branch semantics.
