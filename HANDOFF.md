@@ -19,7 +19,7 @@
 3. Updated planning/analysis docs to record the new coverage and narrowed the next recommendation to reducing remaining TypeScript compatibility dependence where Go-native status already exists.
 4. Committed and pushed:
    - `7785a9a3` — `feat: surface startup provenance in system dashboards`
-   - `ec252efd` — `feat: surface startup provenance in orchestrator dashboard`
+   - `38b10684` — `feat: surface startup provenance in orchestrator dashboard`
 
 ### Files changed in this slice
 - `apps/web/src/app/dashboard/system/page.tsx`
