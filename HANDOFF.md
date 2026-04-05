@@ -683,6 +683,31 @@
 2. Add folding/grouping next so larger session trees become easier to navigate.
 3. Keep layout cues derived from canonical runtime structure rather than creating a separate UI-owned tree model.
 
+## Additional work completed later on 2026-04-04 (graph-style rendering tranche)
+- Expanded `TreeBrowserItem` with additional structure-derived fields:
+  - `ParentID`
+  - `Prefix`
+  - `IsLastChild`
+- Added canonical prefix helper:
+  - `buildTreePrefix`
+- Updated browser rendering to distinguish sibling/last-child structure with graph-style connectors:
+  - `├─`
+  - `└─`
+- Kept rendering fully derived from canonical session relationships rather than a separate UI tree model.
+- Expanded `tui/slash_test.go` to assert graph-style connector glyphs appear in browser output.
+- Added detailed analysis doc:
+  - `docs/analysis/TUI_GRAPH_STYLE_RENDERING_TRANCHE_2026-04-04.md`
+
+## Latest validation after graph-style rendering tranche
+- `gofmt -w tui/foundation_bridge.go tui/slash_test.go`
+- `go test -v ./tui`
+- `go test -v ./cmd ./foundation/...`
+
+## Updated recommendation after graph-style rendering tranche
+1. Keep `foundation/*`, `cmd`, and `tui` green and aligned to the same canonical runtime.
+2. Consider richer grouping modes or persistent browser panes next.
+3. Continue deriving every visual tree cue from canonical runtime structure rather than UI-invented semantics.
+
 ## Additional work completed later on 2026-04-04 (tree folding tranche)
 - Added transient browser collapse state:
   - `browserCollapsed map[string]bool`

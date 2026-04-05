@@ -303,6 +303,8 @@ func TestTreeBrowserModeNavigation(t *testing.T) {
 		t.Fatalf("expected branch-summary preview details, got %s", view)
 	} else if !strings.Contains(view, "children=") {
 		t.Fatalf("expected richer tree layout with child counts, got %s", view)
+	} else if !strings.Contains(view, "├─") && !strings.Contains(view, "└─") {
+		t.Fatalf("expected graph-style tree connectors, got %s", view)
 	}
 	mdl, _ = updated.Update(tea.KeyMsg{Type: tea.KeyLeft})
 	updated = mdl.(model)

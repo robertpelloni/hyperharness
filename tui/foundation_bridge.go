@@ -24,6 +24,8 @@ type TreeBrowserItem struct {
 	IsLeaf             bool
 	Depth              int
 	ChildCount         int
+	Prefix             string
+	IsLastChild        bool
 	SummaryEntries     int
 	CommonAncestorID   string
 	ReadFilesCount     int
@@ -256,6 +258,12 @@ func buildFoundationTreeBrowser(cwd, sessionID string) ([]TreeBrowserItem, error
 	}
 	items := make([]TreeBrowserItem, 0, len(session.Entries))
 	depthByID := map[string]int{}
+	entryByID := map[string]foundationpi.SessionEntry{}
+	childrenByParent := map[string][]string{}
+	for _, entry := range session.Entries {
+		entryByID[entry.ID] = entry
+		childrenByParent[entry.ParentID] = append(childrenByParent[entry.ParentID], entry.ID)
+	}
 	for _, entry := range session.Entries {
 		depth := 0
 		if entry.ParentID != "" {
@@ -272,6 +280,11 @@ func buildFoundationTreeBrowser(cwd, sessionID string) ([]TreeBrowserItem, error
 		label, _ := runtime.GetLabel(sessionID, entry.ID)
 		children, _ := runtime.GetChildren(sessionID, entry.ID)
 		item := TreeBrowserItem{ID: entry.ID, ParentID: entry.ParentID, Kind: entry.Kind, Label: label, Preview: preview, IsLeaf: entry.ID == leafID, Depth: depth, ChildCount: len(children)}
+		siblings := childrenByParent[entry.ParentID]
+		if len(siblings) > 0 && siblings[len(siblings)-1] == entry.ID {
+			item.IsLastChild = true
+		}
+		item.Prefix = buildTreePrefix(entry, entryByID, childrenByParent)
 		if entry.ID != leafID {
 			prep, prepErr := runtime.PrepareBranchSummaryWithBudget(sessionID, entry.ID, 128)
 			if prepErr == nil && prep != nil {
@@ -284,6 +297,37 @@ func buildFoundationTreeBrowser(cwd, sessionID string) ([]TreeBrowserItem, error
 		items = append(items, item)
 	}
 	return items, nil
+}
+
+func buildTreePrefix(entry foundationpi.SessionEntry, entryByID map[string]foundationpi.SessionEntry, childrenByParent map[string][]string) string {
+	if entry.ParentID == "" {
+		return ""
+	}
+	segments := make([]string, 0)
+	currentParentID := entry.ParentID
+	for currentParentID != "" {
+		parent, ok := entryByID[currentParentID]
+		if !ok {
+			break
+		}
+		siblings := childrenByParent[parent.ParentID]
+		isLast := len(siblings) > 0 && siblings[len(siblings)-1] == parent.ID
+		if parent.ParentID == "" {
+			if isLast {
+				segments = append([]string{"  "}, segments...)
+			} else {
+				segments = append([]string{"│ "}, segments...)
+			}
+		} else {
+			if isLast {
+				segments = append([]string{"  "}, segments...)
+			} else {
+				segments = append([]string{"│ "}, segments...)
+			}
+		}
+		currentParentID = parent.ParentID
+	}
+	return strings.Join(segments, "")
 }
 
 func filterTreeBrowserItems(items []TreeBrowserItem, filter string) []TreeBrowserItem {
@@ -353,10 +397,13 @@ func renderTreeBrowser(items []TreeBrowserItem, selected int, filter string, con
 		if item.ChildCount > 0 {
 			childSuffix = fmt.Sprintf(" children=%d", item.ChildCount)
 		}
-		indent := strings.Repeat("  ", item.Depth)
 		glyph := "•"
 		if item.Depth > 0 {
-			glyph = "└─"
+			if item.IsLastChild {
+				glyph = "└─"
+			} else {
+				glyph = "├─"
+			}
 		}
 		fold := "  "
 		if item.ChildCount > 0 {
@@ -366,7 +413,7 @@ func renderTreeBrowser(items []TreeBrowserItem, selected int, filter string, con
 				fold = "[-]"
 			}
 		}
-		b.WriteString(fmt.Sprintf("%s%s [%d] %s%s %s %s [%s]%s%s %s\n", cursor, leaf, i+1, indent, glyph, fold, item.ID, item.Kind, labelSuffix, childSuffix, item.Preview))
+		b.WriteString(fmt.Sprintf("%s%s [%d] %s%s %s %s [%s]%s%s %s\n", cursor, leaf, i+1, item.Prefix, glyph, fold, item.ID, item.Kind, labelSuffix, childSuffix, item.Preview))
 	}
 	if len(visible) > 0 && selected >= 0 && selected < len(visible) {
 		item := visible[selected]
