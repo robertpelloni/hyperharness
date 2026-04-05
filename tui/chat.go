@@ -23,6 +23,7 @@ type model struct {
 	browserItems            []TreeBrowserItem
 	browserIndex            int
 	browserFilter           string
+	browserConfirmPending   bool
 }
 
 func initialModel() model {
@@ -52,21 +53,36 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			visible := filterTreeBrowserItems(m.browserItems, m.browserFilter)
 			switch msg.Type {
 			case tea.KeyEsc:
+				if m.browserConfirmPending {
+					m.browserConfirmPending = false
+					return m, nil
+				}
 				m.browserActive = false
 				m.browserFilter = ""
+				m.browserConfirmPending = false
 				m.history = append(m.history, "[Foundation Tree Browser] closed")
 				return m, nil
 			case tea.KeyUp:
+				if m.browserConfirmPending {
+					return m, nil
+				}
 				if m.browserIndex > 0 {
 					m.browserIndex--
 				}
 				return m, nil
 			case tea.KeyDown:
+				if m.browserConfirmPending {
+					return m, nil
+				}
 				if m.browserIndex < len(visible)-1 {
 					m.browserIndex++
 				}
 				return m, nil
 			case tea.KeyBackspace, tea.KeyDelete:
+				if m.browserConfirmPending {
+					m.browserConfirmPending = false
+					return m, nil
+				}
 				if len(m.browserFilter) > 0 {
 					m.browserFilter = m.browserFilter[:len(m.browserFilter)-1]
 					visible = filterTreeBrowserItems(m.browserItems, m.browserFilter)
@@ -76,6 +92,30 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				}
 				return m, nil
 			case tea.KeyRunes, tea.KeySpace:
+				if m.browserConfirmPending {
+					if len(msg.Runes) > 0 {
+						r := strings.ToLower(string(msg.Runes))
+						if r == "y" {
+							if m.browserIndex >= 0 && m.browserIndex < len(visible) {
+								display, err := openSelectedTreeBrowser(m.director.WorkingDir, m.foundationSessionID, visible, m.browserIndex, 128)
+								if err != nil {
+									m.history = append(m.history, fmt.Sprintf("[Error] tree browser switch failed: %v", err))
+								} else {
+									m.history = append(m.history, display)
+								}
+								m.browserActive = false
+								m.browserFilter = ""
+								m.browserConfirmPending = false
+							}
+							return m, nil
+						}
+						if r == "n" {
+							m.browserConfirmPending = false
+							return m, nil
+						}
+					}
+					return m, nil
+				}
 				m.browserFilter += msg.String()
 				visible = filterTreeBrowserItems(m.browserItems, m.browserFilter)
 				if m.browserIndex >= len(visible) {
@@ -84,6 +124,10 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				return m, nil
 			case tea.KeyEnter:
 				if m.browserIndex >= 0 && m.browserIndex < len(visible) {
+					if !m.browserConfirmPending {
+						m.browserConfirmPending = true
+						return m, nil
+					}
 					display, err := openSelectedTreeBrowser(m.director.WorkingDir, m.foundationSessionID, visible, m.browserIndex, 128)
 					if err != nil {
 						m.history = append(m.history, fmt.Sprintf("[Error] tree browser switch failed: %v", err))
@@ -92,6 +136,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					}
 					m.browserActive = false
 					m.browserFilter = ""
+					m.browserConfirmPending = false
 				}
 				return m, nil
 			}
@@ -175,7 +220,7 @@ func (m model) View() string {
 	s := strings.Join(m.history, "\n")
 	s += "\n\n"
 	if m.browserActive {
-		s += renderTreeBrowser(m.browserItems, m.browserIndex, m.browserFilter)
+		s += renderTreeBrowser(m.browserItems, m.browserIndex, m.browserFilter, m.browserConfirmPending)
 		return s
 	}
 	if m.loading {

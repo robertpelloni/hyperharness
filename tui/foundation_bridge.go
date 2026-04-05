@@ -291,14 +291,18 @@ func filterTreeBrowserItems(items []TreeBrowserItem, filter string) []TreeBrowse
 	return out
 }
 
-func renderTreeBrowser(items []TreeBrowserItem, selected int, filter string) string {
+func renderTreeBrowser(items []TreeBrowserItem, selected int, filter string, confirmPending bool) string {
 	visible := filterTreeBrowserItems(items, filter)
 	if selected >= len(visible) {
 		selected = max(0, len(visible)-1)
 	}
 	var b strings.Builder
 	b.WriteString("[Foundation Tree Browser]\n")
-	b.WriteString("Use ↑/↓ to move, type to filter, Backspace to clear, Enter to switch, Esc to close.\n")
+	if confirmPending {
+		b.WriteString("Confirm switch: Enter/Y = confirm, N/Esc/Backspace = cancel.\n")
+	} else {
+		b.WriteString("Use ↑/↓ to move, type to filter, Backspace to clear, Enter to arm switch, Esc to close.\n")
+	}
 	b.WriteString(fmt.Sprintf("filter=%q matches=%d\n", filter, len(visible)))
 	for i, item := range visible {
 		cursor := " "
@@ -324,13 +328,16 @@ func renderTreeBrowser(items []TreeBrowserItem, selected int, filter string) str
 		}
 		b.WriteString(fmt.Sprintf("preview=%s\n", item.Preview))
 		if item.IsLeaf {
-			b.WriteString("branchSummary=already on active leaf")
+			b.WriteString("branchSummary=already on active leaf\n")
 		} else {
 			b.WriteString(fmt.Sprintf("branchSummaryEntries=%d\n", item.SummaryEntries))
 			if strings.TrimSpace(item.CommonAncestorID) != "" {
 				b.WriteString(fmt.Sprintf("commonAncestor=%s\n", item.CommonAncestorID))
 			}
-			b.WriteString(fmt.Sprintf("readFiles=%d modifiedFiles=%d", item.ReadFilesCount, item.ModifiedFilesCount))
+			b.WriteString(fmt.Sprintf("readFiles=%d modifiedFiles=%d\n", item.ReadFilesCount, item.ModifiedFilesCount))
+		}
+		if confirmPending {
+			b.WriteString("\n[Confirm]\nSwitch to this entry? Press Enter or Y to confirm, N/Esc/Backspace to cancel.")
 		}
 	}
 	return strings.TrimSpace(b.String())

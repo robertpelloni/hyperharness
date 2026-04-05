@@ -622,6 +622,35 @@
 2. Add another browser ergonomics layer next (folding/grouping or explicit confirmation-before-switch).
 3. Keep all pre-switch guidance derived from canonical runtime preparation rather than UI-invented heuristics.
 
+## Additional work completed later on 2026-04-04 (confirm-before-switch tranche)
+- Added transient confirm state to the TUI browser model:
+  - `browserConfirmPending bool`
+- Updated browser keyboard behavior so that:
+  - first `Enter` arms the selected switch
+  - second `Enter` confirms it
+  - `Y` confirms while pending
+  - `N`, `Esc`, or `Backspace` cancel while pending
+  - navigation is paused while confirmation is pending
+- Updated browser rendering to show:
+  - normal browser instructions in non-confirm state
+  - confirm-specific instructions in pending state
+  - `[Confirm]` block in the preview pane
+- Expanded `tui/slash_test.go` to verify:
+  - first Enter enters confirm-pending mode
+  - confirm prompt appears in the browser view
+  - second Enter performs the real canonical switch
+- Added detailed analysis doc:
+  - `docs/analysis/TUI_CONFIRM_BEFORE_SWITCH_TRANCHE_2026-04-04.md`
+
+## Latest validation after confirm-before-switch tranche
+- `gofmt -w tui/chat.go tui/slash_test.go`
+- `go test ./tui ./cmd ./foundation/...`
+
+## Updated recommendation after confirm-before-switch tranche
+1. Keep `foundation/*`, `cmd`, and `tui` green and aligned to the same canonical runtime.
+2. Add folding/grouping or richer tree layout next, since navigation, preview, filtering, and confirmation are now all in place.
+3. Preserve the rule that confirm/preview are UI workflow layers only and do not alter the canonical switch semantics underneath.
+
 ## Additional documentation completed after cursor tree browser tranche
 - Added appendix doc:
   - `docs/analysis/TUI_CURSOR_TREE_BROWSER_TRANCHE_2026-04-04_APPENDIX.md`

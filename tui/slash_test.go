@@ -319,8 +319,16 @@ func TestTreeBrowserModeNavigation(t *testing.T) {
 	}
 	mdl, _ = updated.Update(tea.KeyMsg{Type: tea.KeyEnter})
 	updated = mdl.(model)
+	if !updated.browserActive || !updated.browserConfirmPending {
+		t.Fatal("expected browser to enter confirm-pending state after first Enter")
+	}
+	if view := updated.View(); !strings.Contains(view, "[Confirm]") {
+		t.Fatalf("expected confirm prompt in browser view, got %s", view)
+	}
+	mdl, _ = updated.Update(tea.KeyMsg{Type: tea.KeyEnter})
+	updated = mdl.(model)
 	if updated.browserActive {
-		t.Fatal("expected browser to close after enter")
+		t.Fatal("expected browser to close after confirmed enter")
 	}
 	newLeaf, err := runtime.GetLeafID(sessionID)
 	if err != nil {
