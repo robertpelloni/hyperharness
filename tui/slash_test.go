@@ -326,6 +326,14 @@ func TestTreeBrowserModeNavigation(t *testing.T) {
 	if view := updated.View(); !strings.Contains(view, "[-]") {
 		t.Fatalf("expected expanded cue in browser view, got %s", view)
 	}
+	mdl, _ = updated.Update(tea.KeyMsg{Type: tea.KeyTab})
+	updated = mdl.(model)
+	if !updated.browserGrouped {
+		t.Fatal("expected browser grouping to toggle on")
+	}
+	if view := updated.View(); !strings.Contains(view, "[Group]") {
+		t.Fatalf("expected grouped browser view, got %s", view)
+	}
 	mdl, _ = updated.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("B")})
 	updated = mdl.(model)
 	if updated.browserFilter != "B" {

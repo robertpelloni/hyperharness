@@ -25,6 +25,7 @@ type model struct {
 	browserFilter           string
 	browserConfirmPending   bool
 	browserCollapsed        map[string]bool
+	browserGrouped          bool
 }
 
 func initialModel() model {
@@ -120,6 +121,12 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 						m.browserIndex = max(0, len(visible)-1)
 					}
 				}
+				return m, nil
+			case tea.KeyTab:
+				if m.browserConfirmPending {
+					return m, nil
+				}
+				m.browserGrouped = !m.browserGrouped
 				return m, nil
 			case tea.KeyRunes, tea.KeySpace:
 				if m.browserConfirmPending {
@@ -250,7 +257,7 @@ func (m model) View() string {
 	s := strings.Join(m.history, "\n")
 	s += "\n\n"
 	if m.browserActive {
-		s += renderTreeBrowser(m.browserItems, m.browserIndex, m.browserFilter, m.browserConfirmPending, m.browserCollapsed)
+		s += renderTreeBrowser(m.browserItems, m.browserIndex, m.browserFilter, m.browserConfirmPending, m.browserCollapsed, m.browserGrouped)
 		return s
 	}
 	if m.loading {

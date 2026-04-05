@@ -26,6 +26,7 @@ type TreeBrowserItem struct {
 	ChildCount         int
 	Prefix             string
 	IsLastChild        bool
+	GroupKey           string
 	SummaryEntries     int
 	CommonAncestorID   string
 	ReadFilesCount     int
@@ -280,6 +281,7 @@ func buildFoundationTreeBrowser(cwd, sessionID string) ([]TreeBrowserItem, error
 		label, _ := runtime.GetLabel(sessionID, entry.ID)
 		children, _ := runtime.GetChildren(sessionID, entry.ID)
 		item := TreeBrowserItem{ID: entry.ID, ParentID: entry.ParentID, Kind: entry.Kind, Label: label, Preview: preview, IsLeaf: entry.ID == leafID, Depth: depth, ChildCount: len(children)}
+		item.GroupKey = buildGroupKey(entry, entryByID)
 		siblings := childrenByParent[entry.ParentID]
 		if len(siblings) > 0 && siblings[len(siblings)-1] == entry.ID {
 			item.IsLastChild = true
@@ -297,6 +299,24 @@ func buildFoundationTreeBrowser(cwd, sessionID string) ([]TreeBrowserItem, error
 		items = append(items, item)
 	}
 	return items, nil
+}
+
+func buildGroupKey(entry foundationpi.SessionEntry, entryByID map[string]foundationpi.SessionEntry) string {
+	if entry.ParentID == "" {
+		return "root"
+	}
+	current := entry
+	for current.ParentID != "" {
+		parent, ok := entryByID[current.ParentID]
+		if !ok {
+			break
+		}
+		if parent.ParentID == "" {
+			return "branch:" + parent.ID
+		}
+		current = parent
+	}
+	return "root"
 }
 
 func buildTreePrefix(entry foundationpi.SessionEntry, entryByID map[string]foundationpi.SessionEntry, childrenByParent map[string][]string) string {
@@ -367,7 +387,7 @@ func visibleTreeBrowserItems(items []TreeBrowserItem, filter string, collapsed m
 	return out
 }
 
-func renderTreeBrowser(items []TreeBrowserItem, selected int, filter string, confirmPending bool, collapsed map[string]bool) string {
+func renderTreeBrowser(items []TreeBrowserItem, selected int, filter string, confirmPending bool, collapsed map[string]bool, grouped bool) string {
 	visible := visibleTreeBrowserItems(items, filter, collapsed)
 	if selected >= len(visible) {
 		selected = max(0, len(visible)-1)
@@ -377,10 +397,15 @@ func renderTreeBrowser(items []TreeBrowserItem, selected int, filter string, con
 	if confirmPending {
 		b.WriteString("Confirm switch: Enter/Y = confirm, N/Esc/Backspace = cancel.\n")
 	} else {
-		b.WriteString("Use ↑/↓ to move, type to filter, Backspace to clear, Enter to arm switch, Esc to close.\n")
+		b.WriteString("Use ↑/↓ to move, type to filter, Backspace to clear, Enter to arm switch, Esc to close, Tab to toggle grouping.\n")
 	}
-	b.WriteString(fmt.Sprintf("filter=%q matches=%d\n", filter, len(visible)))
+	b.WriteString(fmt.Sprintf("filter=%q matches=%d grouped=%t\n", filter, len(visible), grouped))
+	lastGroup := ""
 	for i, item := range visible {
+		if grouped && item.GroupKey != lastGroup {
+			b.WriteString(fmt.Sprintf("\n[Group] %s\n", item.GroupKey))
+			lastGroup = item.GroupKey
+		}
 		cursor := " "
 		if i == selected {
 			cursor = ">"
