@@ -1036,6 +1036,52 @@ async function buildPreferredToolsList(): Promise<unknown[]> {
   return LEGACY_COMPAT_RESPONSES['tools.list'] as unknown[];
 }
 
+async function buildPreferredMcpTraffic(): Promise<unknown[]> {
+  for (const base of resolveNativeStatusBases()) {
+    try {
+      const response = await fetch(`${base}/api/mcp/traffic`, { cache: 'no-store' });
+      if (!response.ok) {
+        continue;
+      }
+
+      const payload = await response.json() as { success?: unknown; data?: unknown };
+      if (!Array.isArray(payload.data)) {
+        continue;
+      }
+
+      return payload.data
+        .map((entry) => {
+          const record = asObjectRecord(entry);
+          const server = readString(record?.server);
+          const method = readString(record?.method);
+          const paramsSummary = readString(record?.paramsSummary);
+          const latencyMs = readNumber(record?.latencyMs);
+          const success = readBoolean(record?.success);
+          const timestamp = readNumber(record?.timestamp);
+          if (!server || !method || !paramsSummary || latencyMs === null || success === null || timestamp === null) {
+            return null;
+          }
+
+          return {
+            server,
+            method,
+            paramsSummary,
+            latencyMs,
+            success,
+            timestamp,
+            ...(readString(record?.toolName) ? { toolName: readString(record?.toolName) } : {}),
+            ...(readString(record?.error) ? { error: readString(record?.error) } : {}),
+          };
+        })
+        .filter((entry): entry is NonNullable<typeof entry> => entry !== null);
+    } catch {
+      // Try the next native control-plane base.
+    }
+  }
+
+  return LEGACY_COMPAT_RESPONSES['mcp.traffic'] as unknown[];
+}
+
 async function buildPreferredToolSearch(query?: string | null, limit?: number | null): Promise<unknown[]> {
   const normalizedQuery = query?.trim();
   if (!normalizedQuery) {
@@ -1341,6 +1387,63 @@ async function buildPreferredShellSystemHistory(limit?: number | null): Promise<
   }
 
   return [];
+}
+
+async function buildPreferredServerHealth(
+  serverUuid: string,
+  localConfig: LocalMcpConfig,
+): Promise<Record<string, unknown>> {
+  const normalizedUuid = serverUuid.trim();
+  if (!normalizedUuid) {
+    return {
+      status: 'unavailable',
+      crashCount: 0,
+      maxAttempts: 0,
+    };
+  }
+
+  for (const base of resolveNativeStatusBases()) {
+    try {
+      const endpoint = new URL(`${base}/api/server-health/check`);
+      endpoint.searchParams.set('serverUuid', normalizedUuid);
+
+      const response = await fetch(endpoint.toString(), { cache: 'no-store' });
+      if (!response.ok) {
+        continue;
+      }
+
+      const payload = await response.json() as { success?: unknown; data?: unknown };
+      const data = asObjectRecord(payload.data);
+      if (payload.success !== true || !data) {
+        continue;
+      }
+
+      const status = readString(data.status);
+      const crashCount = readNumber(data.crashCount);
+      const maxAttempts = readNumber(data.maxAttempts);
+      if (!status || crashCount === null || maxAttempts === null) {
+        continue;
+      }
+
+      return {
+        status,
+        crashCount,
+        maxAttempts,
+      };
+    } catch {
+      // Try the next native control-plane base.
+    }
+  }
+
+  const match = findLocalServerByUuid(localConfig, normalizedUuid);
+  const meta = match ? buildLocalServerMeta(match.name, match.server) : null;
+  return {
+    status: match
+      ? (meta?.status === 'ready' ? 'ready' : meta?.status === 'disabled' ? 'disabled' : 'unavailable')
+      : 'unavailable',
+    crashCount: meta?.crashCount ?? 0,
+    maxAttempts: meta?.maxAttempts ?? 0,
+  };
 }
 
 async function buildPreferredImportedMaintenanceStats(): Promise<ImportedMaintenanceStats> {
@@ -1952,6 +2055,7 @@ async function tryResolveLegacyMcpResponse(
   const effectiveServers = normalizedServers.length > 0 ? normalizedServers : mapConfigToServerList(localConfig);
   const status = await buildPreferredMcpStatus(effectiveServers);
   const toolsList = await buildPreferredToolsList();
+  const mcpTraffic = await buildPreferredMcpTraffic();
   const providerQuotas = await buildPreferredProviderQuotas();
   const sessionList = await buildPreferredSessionList();
 
@@ -1959,7 +2063,7 @@ async function tryResolveLegacyMcpResponse(
     'mcpServers.list': effectiveServers,
     'tools.list': toolsList,
     'mcp.getStatus': status,
-    'mcp.traffic': LEGACY_COMPAT_RESPONSES['mcp.traffic'],
+    'mcp.traffic': mcpTraffic,
     'session.list': sessionList,
     'billing.getProviderQuotas': providerQuotas,
     'billing.getFallbackChain': LEGACY_COMPAT_RESPONSES['billing.getFallbackChain'],
@@ -2012,6 +2116,7 @@ async function buildLocalCompatResponse(req: Request, body?: string): Promise<Re
   const localServers = mapConfigToServerList(localConfig);
   const localStatus = await buildPreferredMcpStatus(localServers);
   const toolsList = await buildPreferredToolsList();
+  const mcpTraffic = await buildPreferredMcpTraffic();
   const providerQuotas = await buildPreferredProviderQuotas();
   const apiKeys = await buildPreferredApiKeys();
   const cliHarnessDetections = await buildPreferredCliHarnessDetections();
@@ -2031,7 +2136,7 @@ async function buildLocalCompatResponse(req: Request, body?: string): Promise<Re
     'mcpServers.list': localServers,
     'tools.list': toolsList,
     'mcp.getStatus': localStatus,
-    'mcp.traffic': LEGACY_COMPAT_RESPONSES['mcp.traffic'],
+    'mcp.traffic': mcpTraffic,
     'session.list': sessionList,
     'billing.getProviderQuotas': providerQuotas,
     'billing.getFallbackChain': LEGACY_COMPAT_RESPONSES['billing.getFallbackChain'],
@@ -2114,15 +2219,7 @@ async function buildLocalCompatResponse(req: Request, body?: string): Promise<Re
     if (responseKey === 'serverHealth.check') {
       const input = procedureInputs[index];
       const uuid = input && typeof input === 'object' ? String((input as { serverUuid?: unknown }).serverUuid ?? '') : '';
-      const match = uuid ? findLocalServerByUuid(localConfig, uuid) : null;
-      const meta = match ? buildLocalServerMeta(match.name, match.server) : null;
-      data = {
-        status: match
-          ? (meta?.status === 'ready' ? 'ready' : meta?.status === 'disabled' ? 'disabled' : 'unavailable')
-          : 'unavailable',
-        crashCount: meta?.crashCount ?? 0,
-        maxAttempts: meta?.maxAttempts ?? 0,
-      };
+      data = await buildPreferredServerHealth(uuid, localConfig);
     }
 
     return {

@@ -289,7 +289,7 @@ describe('legacy MCP dashboard compatibility bridge', () => {
     ).toBe(true);
   });
 
-  it('prefers go-native tool catalog, MCP inspector state, and search in local dashboard fallback mode', async () => {
+  it('prefers go-native tool catalog, MCP inspector state, traffic, and search in local dashboard fallback mode', async () => {
     process.env.HYPERCODE_TRPC_UPSTREAM = 'http://127.0.0.1:4300/trpc';
     global.fetch = vi.fn(async (input) => {
       const url = String(input);
@@ -322,6 +322,25 @@ describe('legacy MCP dashboard compatibility bridge', () => {
               schemaParamCount: 2,
               mcpServerUuid: 'hypercode-router',
               always_on: false,
+            },
+          ],
+        }), {
+          status: 200,
+          headers: { 'content-type': 'application/json' },
+        });
+      }
+      if (url === 'http://127.0.0.1:4300/api/mcp/traffic') {
+        return new Response(JSON.stringify({
+          success: true,
+          data: [
+            {
+              server: 'hypercode-router',
+              method: 'tools/search',
+              paramsSummary: 'query=search',
+              latencyMs: 42,
+              success: true,
+              timestamp: 1712275201000,
+              toolName: 'search_tools',
             },
           ],
         }), {
@@ -427,12 +446,25 @@ describe('legacy MCP dashboard compatibility bridge', () => {
           headers: { 'content-type': 'application/json' },
         });
       }
+      if (url === 'http://127.0.0.1:4300/api/server-health/check?serverUuid=server-health-1') {
+        return new Response(JSON.stringify({
+          success: true,
+          data: {
+            status: 'HEALTHY',
+            crashCount: 2,
+            maxAttempts: 5,
+          },
+        }), {
+          status: 200,
+          headers: { 'content-type': 'application/json' },
+        });
+      }
 
       throw new Error(`Unexpected fetch: ${url}`);
     }) as typeof fetch;
 
     const request = new Request(
-      'http://localhost:3010/api/trpc/startupStatus,tools.list,mcp.getWorkingSet,mcp.getToolSelectionTelemetry,mcp.getToolPreferences,mcp.searchTools,mcp.getJsoncEditor,serverHealth.check?batch=1',
+      'http://localhost:3010/api/trpc/startupStatus,tools.list,mcp.getWorkingSet,mcp.getToolSelectionTelemetry,mcp.getToolPreferences,mcp.searchTools,mcp.traffic,mcp.getJsoncEditor,serverHealth.check?batch=1',
       {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
@@ -445,6 +477,7 @@ describe('legacy MCP dashboard compatibility bridge', () => {
           5: { json: { query: 'search', limit: 5 } },
           6: { json: null },
           7: { json: null },
+          8: { json: { serverUuid: 'server-health-1' } },
         }),
       },
     );
@@ -455,7 +488,7 @@ describe('legacy MCP dashboard compatibility bridge', () => {
     expect(response.status).toBe(200);
     expect(response.headers.get('x-hypercode-trpc-compat')).toBe('local-dashboard-fallback');
     expect(Array.isArray(payload)).toBe(true);
-    expect(payload).toHaveLength(8);
+    expect(payload).toHaveLength(9);
 
     expect(payload[0]?.result?.data).toEqual(expect.objectContaining({
       status: expect.stringMatching(/^(starting|degraded)$/),
@@ -554,20 +587,33 @@ describe('legacy MCP dashboard compatibility bridge', () => {
         matchReason: 'name-token match',
       }),
     ]);
-    expect(payload[6]?.result?.data).toEqual(expect.objectContaining({
+    expect(payload[6]?.result?.data).toEqual([
+      {
+        server: 'hypercode-router',
+        method: 'tools/search',
+        paramsSummary: 'query=search',
+        latencyMs: 42,
+        success: true,
+        timestamp: 1712275201000,
+        toolName: 'search_tools',
+      },
+    ]);
+    expect(payload[7]?.result?.data).toEqual(expect.objectContaining({
       path: expect.stringMatching(/mcp\.jsonc?$|mcp\.json$/),
       content: expect.stringContaining('mcpServers'),
     }));
-    expect(payload[7]?.result?.data).toEqual({
-      status: 'unavailable',
-      crashCount: 0,
-      maxAttempts: 0,
+    expect(payload[8]?.result?.data).toEqual({
+      status: 'HEALTHY',
+      crashCount: 2,
+      maxAttempts: 5,
     });
     expect((global.fetch as ReturnType<typeof vi.fn>).mock.calls.some(([url]) => String(url) === 'http://127.0.0.1:4300/api/tools')).toBe(true);
     expect((global.fetch as ReturnType<typeof vi.fn>).mock.calls.some(([url]) => String(url) === 'http://127.0.0.1:4300/api/mcp/working-set')).toBe(true);
     expect((global.fetch as ReturnType<typeof vi.fn>).mock.calls.some(([url]) => String(url) === 'http://127.0.0.1:4300/api/mcp/tool-selection-telemetry')).toBe(true);
     expect((global.fetch as ReturnType<typeof vi.fn>).mock.calls.some(([url]) => String(url) === 'http://127.0.0.1:4300/api/mcp/preferences')).toBe(true);
     expect((global.fetch as ReturnType<typeof vi.fn>).mock.calls.some(([url]) => String(url) === 'http://127.0.0.1:4300/api/tools/search?query=search&limit=5')).toBe(true);
+    expect((global.fetch as ReturnType<typeof vi.fn>).mock.calls.some(([url]) => String(url) === 'http://127.0.0.1:4300/api/mcp/traffic')).toBe(true);
+    expect((global.fetch as ReturnType<typeof vi.fn>).mock.calls.some(([url]) => String(url) === 'http://127.0.0.1:4300/api/server-health/check?serverUuid=server-health-1')).toBe(true);
   });
 
   it('prefers go-native startup and runtime status when local dashboard fallback is active', async () => {
