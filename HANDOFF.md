@@ -369,3 +369,30 @@
 1. Keep `foundation/*` green and canonical.
 2. Start surfacing the now-truthful summary-generation flows in CLI/TUI behavior next (`/tree` and compaction command flows).
 3. After that, consider provider-backed summary generation as an optional enhancement on top of the deterministic baseline.
+
+## Additional work completed later on 2026-04-04 (foundation summary CLI tranche)
+- Added new `foundation summary` command group in `cmd/foundation.go`.
+- Added `foundation summary branch` command with:
+  - `--session`
+  - `--target`
+  - `--max-tokens`
+- Added `foundation summary compact` command with:
+  - `--session`
+  - `--keep-recent-tokens`
+- Added reusable helper functions in `cmd/foundation_http.go`:
+  - `prepareFoundationBranchSummary`
+  - `generateFoundationBranchSummary`
+  - `prepareFoundationCompaction`
+  - `generateFoundationCompaction`
+- Expanded `cmd/foundation_http_test.go` to verify the new summary helper flows.
+- Added detailed analysis doc:
+  - `docs/analysis/FOUNDATION_SUMMARY_CLI_TRANCHE_2026-04-04.md`
+
+## Latest validation after foundation summary CLI tranche
+- `gofmt -w cmd/foundation.go cmd/foundation_http.go cmd/foundation_http_test.go`
+- `go test ./cmd ./foundation/...`
+
+## Updated recommendation after foundation summary CLI tranche
+1. Keep `foundation/*` green and canonical.
+2. Surface the same truthful summary-generation flows in the TUI next.
+3. Then consider HTTP exposure and provider-backed generation as layered enhancements, not replacements for the deterministic baseline.

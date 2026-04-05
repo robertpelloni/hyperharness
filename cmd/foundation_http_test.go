@@ -46,6 +46,58 @@ func TestExecuteFoundationToolAndSessions(t *testing.T) {
 	}
 }
 
+func TestFoundationSummaryHelpers(t *testing.T) {
+	cwd := t.TempDir()
+	session, err := createFoundationSession(cwd, foundationSessionCreateRequest{Name: "alpha"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	runtime := foundationpi.NewRuntime(cwd, nil)
+	id := session.Metadata.SessionID
+	if _, err := runtime.AppendUserText(id, "A"); err != nil {
+		t.Fatal(err)
+	}
+	a, err := runtime.GetLeafID(id)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := runtime.AppendUserText(id, "B"); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := runtime.AppendUserText(id, "C"); err != nil {
+		t.Fatal(err)
+	}
+	oldLeaf, err := runtime.GetLeafID(id)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := runtime.BranchSession(id, a); err != nil {
+		t.Fatal(err)
+	}
+	session, err = runtime.AppendUserText(id, "E")
+	if err != nil {
+		t.Fatal(err)
+	}
+	target := session.Metadata.LeafID
+	if _, err := runtime.BranchSession(id, oldLeaf); err != nil {
+		t.Fatal(err)
+	}
+	branchPayload, err := generateFoundationBranchSummary(cwd, foundationBranchSummaryRequest{Session: id, Target: target, MaxTokens: 128})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if branchPayload["summary"] == nil || branchPayload["session"] == nil || branchPayload["preparation"] == nil {
+		t.Fatalf("unexpected branch summary payload: %#v", branchPayload)
+	}
+	compactPayload, err := generateFoundationCompaction(cwd, foundationCompactionRequest{Session: id, KeepRecentTokens: 64})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if compactPayload["summary"] == nil || compactPayload["session"] == nil || compactPayload["preparation"] == nil {
+		t.Fatalf("unexpected compaction payload: %#v", compactPayload)
+	}
+}
+
 func TestFoundationAdaptersPayloadAndRepomap(t *testing.T) {
 	cwd := t.TempDir()
 	hypercodeDir := filepath.Join(cwd, "..", "hypercode")
