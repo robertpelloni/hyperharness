@@ -490,6 +490,18 @@ func TestProcessSlashCommandTreePaneFocusNavigation(t *testing.T) {
 	}
 }
 
+func TestProcessSlashCommandTreePaneSize(t *testing.T) {
+	m := model{director: agents.NewDirector(&agents.DefaultProvider{}), browserPaneHeight: 8}
+	mdl, _ := ProcessSlashCommand("/tree-pane-size 12", &m)
+	updated := mdl.(model)
+	if updated.browserPaneHeight != 12 {
+		t.Fatalf("expected pane height 12, got %d", updated.browserPaneHeight)
+	}
+	if len(updated.history) == 0 || !strings.Contains(updated.history[len(updated.history)-1], "height set to 12") {
+		t.Fatalf("expected pane size message, got %#v", updated.history)
+	}
+}
+
 func TestProcessSlashCommandClearResetsDirector(t *testing.T) {
 	m := model{director: agents.NewDirector(&agents.DefaultProvider{})}
 	m.history = []string{"old"}

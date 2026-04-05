@@ -28,6 +28,7 @@ type model struct {
 	browserGrouped          bool
 	browserPinned           bool
 	browserPinnedFocus      bool
+	browserPaneHeight       int
 }
 
 func initialModel() model {
@@ -36,11 +37,12 @@ func initialModel() model {
 	s.Style = lipgloss.NewStyle().Foreground(lipgloss.Color("205"))
 
 	return model{
-		director: agents.NewDirector(agents.NewHyperCodeProvider()),
-		input:    "",
-		history:  []string{},
-		loading:  false,
-		spinner:  s,
+		director:          agents.NewDirector(agents.NewHyperCodeProvider()),
+		input:             "",
+		history:           []string{},
+		loading:           false,
+		spinner:           s,
+		browserPaneHeight: 8,
 	}
 }
 
@@ -386,7 +388,11 @@ func (m model) View() string {
 		return s
 	}
 	if m.browserPinned {
-		s += renderTreeBrowser(m.browserItems, m.browserIndex, m.browserFilter, m.browserConfirmPending && m.browserPinnedFocus, m.browserCollapsed, m.browserGrouped, 8, "[Foundation Tree Pane]")
+		paneHeight := m.browserPaneHeight
+		if paneHeight <= 0 {
+			paneHeight = 8
+		}
+		s += renderTreeBrowser(m.browserItems, m.browserIndex, m.browserFilter, m.browserConfirmPending && m.browserPinnedFocus, m.browserCollapsed, m.browserGrouped, paneHeight, "[Foundation Tree Pane]")
 		if m.browserPinnedFocus {
 			s += "\n[Tree Pane Focused]\n"
 		}

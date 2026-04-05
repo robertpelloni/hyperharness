@@ -865,3 +865,25 @@
 1. Keep `foundation/*`, `cmd`, and `tui` green and aligned to the same canonical runtime.
 2. Continue improving pane/browser coexistence or move toward stronger split-view layout behavior next.
 3. Keep viewport behavior strictly as a rendering concern over canonical runtime-derived browser state.
+
+## Additional work completed later on 2026-04-04 (pane size tranche)
+- Added persistent pane height state to the TUI model:
+  - `browserPaneHeight int`
+- Initialized pane height with a default of `8`.
+- Added new TUI slash command:
+  - `/tree-pane-size <n>`
+- Updated the pinned pane render path to use the adjustable pane height with a safe fallback.
+- Added focused regression coverage:
+  - `TestProcessSlashCommandTreePaneSize`
+- Added detailed analysis doc:
+  - `docs/analysis/TUI_PANE_SIZE_TRANCHE_2026-04-04.md`
+
+## Latest validation after pane size tranche
+- `gofmt -w tui/chat.go tui/slash.go tui/slash_test.go`
+- `go test ./tui`
+- `go test ./cmd ./foundation/...`
+
+## Updated recommendation after pane size tranche
+1. Keep `foundation/*`, `cmd`, and `tui` green and aligned to the same canonical runtime.
+2. Continue strengthening pane/browser coexistence ergonomics next.
+3. Keep pane sizing strictly as a rendering concern over canonical runtime-backed browser state.
