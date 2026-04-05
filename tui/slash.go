@@ -51,6 +51,8 @@ func ProcessSlashCommand(cmd string, m *model) (tea.Model, tea.Cmd) {
 		return handleTreePaneSize(m, strings.TrimSpace(strings.TrimPrefix(cmd, "/tree-pane-size")))
 	case "/tree-pane-preview":
 		return handleTreePanePreview(m, strings.TrimSpace(strings.TrimPrefix(cmd, "/tree-pane-preview")))
+	case "/tree-pane-status":
+		return handleTreePaneStatus(m)
 	case "/tree-pane-preset":
 		return handleTreePanePreset(m, strings.TrimSpace(strings.TrimPrefix(cmd, "/tree-pane-preset")))
 	case "/tree-pane-position":
@@ -92,6 +94,7 @@ func handleHelp(m *model) (tea.Model, tea.Cmd) {
   /tree-pane - Toggle a persistent tree pane while continuing normal prompt interaction
   /tree-pane-size <n> - Set the persistent tree pane viewport height
   /tree-pane-preview <on|off> - Toggle preview details inside the persistent tree pane
+  /tree-pane-status - Show the current persistent pane configuration
   /tree-pane-preset <compact|detailed|navigation|review> - Apply a named pane layout preset
   /tree-pane-position <top|bottom> - Set the persistent tree pane position
   /tree-pane-focus - Toggle keyboard focus for the pinned tree pane
@@ -333,6 +336,12 @@ func handleTreePanePreview(m *model, arg string) (tea.Model, tea.Cmd) {
 	}
 	m.browserPanePreview = value == "on"
 	m.history = append(m.history, fmt.Sprintf("[Foundation Tree Pane] preview set to %s", value))
+	return *m, nil
+}
+
+func handleTreePaneStatus(m *model) (tea.Model, tea.Cmd) {
+	m.loading = false
+	m.history = append(m.history, fmt.Sprintf("[Foundation Tree Pane Status]\npinned=%t\nfocus=%t\nheight=%d\nposition=%s\npreview=%t\ngrouped=%t\nfilter=%q", m.browserPinned, m.browserPinnedFocus, m.browserPaneHeight, m.browserPanePosition, m.browserPanePreview, m.browserGrouped, m.browserFilter))
 	return *m, nil
 }
 

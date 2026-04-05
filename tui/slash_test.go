@@ -598,6 +598,21 @@ func TestProcessSlashCommandTreePanePreset(t *testing.T) {
 	}
 }
 
+func TestProcessSlashCommandTreePaneStatus(t *testing.T) {
+	m := model{director: agents.NewDirector(&agents.DefaultProvider{}), browserPinned: true, browserPinnedFocus: true, browserPaneHeight: 10, browserPanePosition: "bottom", browserPanePreview: false, browserGrouped: true, browserFilter: "abc"}
+	mdl, _ := ProcessSlashCommand("/tree-pane-status", &m)
+	updated := mdl.(model)
+	if len(updated.history) == 0 || !strings.Contains(updated.history[len(updated.history)-1], "[Foundation Tree Pane Status]") {
+		t.Fatalf("expected pane status output, got %#v", updated.history)
+	}
+	status := updated.history[len(updated.history)-1]
+	for _, needle := range []string{"pinned=true", "focus=true", "height=10", "position=bottom", "preview=false", "grouped=true", "filter=\"abc\""} {
+		if !strings.Contains(status, needle) {
+			t.Fatalf("expected status to contain %q, got %s", needle, status)
+		}
+	}
+}
+
 func TestProcessSlashCommandClearResetsDirector(t *testing.T) {
 	m := model{director: agents.NewDirector(&agents.DefaultProvider{})}
 	m.history = []string{"old"}

@@ -1043,3 +1043,27 @@
 1. Keep `foundation/*`, `cmd`, and `tui` green and aligned to the same canonical runtime.
 2. Continue refining split-view ergonomics with clearer layout and interaction affordances.
 3. Keep mode distinctions explicit in rendering so operators do not have to infer control state from behavior alone.
+
+## Additional work completed later on 2026-04-04 (pane status tranche)
+- Added new TUI slash command:
+  - `/tree-pane-status`
+- Added pane status output covering:
+  - pinned
+  - focus
+  - height
+  - position
+  - preview
+  - grouped
+  - filter
+- Added focused regression coverage for pane-status output.
+- Added detailed analysis doc:
+  - `docs/analysis/TUI_PANE_STATUS_TRANCHE_2026-04-04.md`
+
+## Latest validation after pane status tranche
+- `gofmt -w tui/slash.go tui/slash_test.go`
+- `go test ./tui ./cmd ./foundation/...`
+
+## Updated recommendation after pane status tranche
+1. Keep `foundation/*`, `cmd`, and `tui` green and aligned to the same canonical runtime.
+2. Continue improving operator ergonomics around the pane/browser subsystem with complementary reset or quick-toggle controls where useful.
+3. Keep pane status as introspection over UI/layout state, not as a competing source of session/branch truth.
