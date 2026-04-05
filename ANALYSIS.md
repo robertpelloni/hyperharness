@@ -186,6 +186,12 @@ In this follow-up slice, the dashboard startup-readiness section now renders a v
 - build decision + reason
 - last updated relative timestamp when available
 
+That same operator truth is now also propagated into additional dashboard surfaces:
+- **Health** now includes a `Startup mode` card in its right-hand detail column
+- **Integrations** now includes a top-level `Startup mode` card near its overview stats
+
+This reduces the need to return to the dashboard home page just to recover runtime provenance.
+
 The Go-native `/api/runtime/status` surface now also exposes equivalent startup provenance by reading startup metadata from the main CLI lock first and falling back to the Go lock. That means the native backend is now self-describing for:
 - requested runtime / active runtime
 - launch mode
@@ -251,7 +257,7 @@ Results:
 - persisted startup-provenance status coverage passed in the CLI regression suite
 - startupStatus snapshot coverage now also verifies persisted startup provenance propagation through the server/API-visible status payload
 - Go-native runtime status coverage now also verifies startup provenance propagation through `/api/runtime/status`
-- web build/type-check passed with the new dashboard `startupMode` rendering and local-compat startup fallback support
+- web build/type-check passed with the new dashboard `startupMode` rendering, the new Health/Integrations startup-mode cards, and local-compat startup fallback support
 - a focused dashboard render test was added, but `vitest` is not directly installed in `apps/web`, so that new test was validated indirectly through the successful web build rather than executed as a standalone test command in this pass
 - a focused app-route compat test assertion was added for `startupMode`, but the same `apps/web` local `vitest` command limitation applies there too; validation for that slice came from the successful web build and typed route compilation
 - a short-lived `start.bat --help` run also completed and showed the new install/build phase summary lines before exiting through CLI help output
@@ -285,6 +291,7 @@ Result:
 - startup provenance is now persisted into the local startup lock and exposed by `hypercode status` when available
 - the TypeScript `startupStatus` API surface now also exposes that persisted startup provenance to dashboard/API consumers
 - the dashboard startup-readiness section now visibly renders the persisted startup mode block instead of leaving the new payload hidden
+- the Health and Integrations dashboard pages now also visibly render startup/runtime provenance instead of limiting it to the home dashboard
 - the web local-compat startup fallback now also carries `startupMode` from the local lock when upstream startup telemetry is unavailable
 - the Go-native `/api/runtime/status` surface now also exposes startup provenance, making the native backend itself self-describing
 - `start.bat` now validates Go-first startup surfaces by default for `auto`/`go` runtime modes instead of always requiring a full workspace build first

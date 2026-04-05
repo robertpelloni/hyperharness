@@ -14,6 +14,36 @@ import { getEventBusMetric, getMcpRouterMetric } from './health-metrics';
 import { getConnectedServerKeys, normalizeHealthServers } from './health-server-list';
 import { buildHealthStartupViewModel } from './health-startup-view-model';
 
+function getStartupModeRows(startupStatus?: DashboardStartupStatus): Array<{ label: string; value: string; detail?: string }> {
+    const startupMode = startupStatus?.startupMode;
+    if (!startupMode) {
+        return [];
+    }
+
+    return [
+        {
+            label: 'Requested runtime',
+            value: startupMode.requestedRuntime?.trim() || '—',
+            detail: startupMode.activeRuntime ? `Active runtime: ${startupMode.activeRuntime}` : undefined,
+        },
+        {
+            label: 'Launch mode',
+            value: startupMode.launchMode?.trim() || '—',
+            detail: startupMode.dashboardMode?.trim() ? `Dashboard: ${startupMode.dashboardMode}` : undefined,
+        },
+        {
+            label: 'Install decision',
+            value: startupMode.installDecision?.trim() || '—',
+            detail: startupMode.installReason?.trim() || undefined,
+        },
+        {
+            label: 'Build decision',
+            value: startupMode.buildDecision?.trim() || '—',
+            detail: startupMode.buildReason?.trim() || undefined,
+        },
+    ];
+}
+
 export default function HealthDashboard() {
     const [isRefreshing, setIsRefreshing] = useState(false);
     const utils = trpc.useUtils();
@@ -53,6 +83,8 @@ export default function HealthDashboard() {
         installArtifactsQuery.data,
     );
     const startupChecks = startupViewModel.startupChecks;
+    const startupModeRows = getStartupModeRows(startupSnapshot);
+    const startupModeUpdatedAt = startupSnapshot?.startupMode?.updatedAt ? Date.parse(startupSnapshot.startupMode.updatedAt) : Number.NaN;
     const environmentRows = buildSystemEnvironmentRows(startupSnapshot);
     const startupNotice = buildSystemStartupNotice(startupSnapshot);
     const statusCards = startupViewModel.statusCards;
@@ -219,6 +251,33 @@ export default function HealthDashboard() {
                             </div>
                         </CardContent>
                     </Card>
+
+                    {startupModeRows.length > 0 ? (
+                        <Card className="bg-zinc-900 border-zinc-800">
+                            <CardHeader className="pb-4">
+                                <CardTitle className="text-lg font-medium text-white">Startup mode</CardTitle>
+                                <CardDescription>
+                                    Persisted runtime provenance from the latest startup handoff.
+                                </CardDescription>
+                            </CardHeader>
+                            <CardContent className="space-y-3">
+                                {Number.isFinite(startupModeUpdatedAt) ? (
+                                    <div className="rounded-full border border-zinc-700 bg-zinc-900 px-3 py-1 text-xs text-zinc-300 inline-flex">
+                                        Updated {Math.max(0, Math.floor((Date.now() - startupModeUpdatedAt) / 60000)) < 1 ? 'just now' : `${Math.max(1, Math.floor((Date.now() - startupModeUpdatedAt) / 60000))}m ago`}
+                                    </div>
+                                ) : null}
+                                <div className="space-y-2">
+                                    {startupModeRows.map((row) => (
+                                        <div key={row.label} className="rounded border border-zinc-800 bg-zinc-950/50 p-3">
+                                            <div className="text-[10px] uppercase tracking-wide text-zinc-500">{row.label}</div>
+                                            <div className="mt-1 text-sm font-medium text-white">{row.value}</div>
+                                            {row.detail ? <div className="mt-1 text-xs text-zinc-400">{row.detail}</div> : null}
+                                        </div>
+                                    ))}
+                                </div>
+                            </CardContent>
+                        </Card>
+                    ) : null}
 
                     <Card className="bg-zinc-900 border-zinc-800 bg-amber-950/10 border-amber-900/20">
                         <CardHeader className="pb-4">

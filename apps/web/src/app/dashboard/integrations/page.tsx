@@ -16,6 +16,7 @@ import {
     getBridgeClientStatDetail,
     getIntegrationOverview,
     getInstallSurfaceRows,
+    getStartupModeSummaryRows,
     getStatusBadgeClasses,
     type StartupStatusSummary,
 } from './integration-catalog';
@@ -126,6 +127,8 @@ export default function IntegrationsDashboard() {
         safeSyncTargets,
         safeCliDetections,
     );
+    const startupModeRows = getStartupModeSummaryRows(safeStartupStatus);
+    const startupModeUpdatedAt = safeStartupStatus?.startupMode?.updatedAt ? Date.parse(safeStartupStatus.startupMode.updatedAt) : Number.NaN;
     const clientRows = getExternalClientRows(safeSyncTargets);
     const connectedBridgeClients = getConnectedBridgeClientRows(safeStartupStatus);
     const installSurfaceRows = getInstallSurfaceRows(safeInstallArtifacts);
@@ -237,6 +240,35 @@ export default function IntegrationsDashboard() {
                     tone="text-emerald-400"
                 />
             </div>
+
+            {startupModeRows.length > 0 ? (
+                <Card className="bg-zinc-900 border-zinc-800">
+                    <CardHeader>
+                        <CardTitle className="text-white">Startup mode</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                        <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+                            <p className="text-sm text-zinc-400">
+                                Persisted runtime provenance from the most recent HyperCode startup handoff.
+                            </p>
+                            {Number.isFinite(startupModeUpdatedAt) ? (
+                                <span className="rounded-full border border-zinc-700 bg-zinc-900 px-2.5 py-1 text-xs text-zinc-300">
+                                    Updated {Math.max(0, Math.floor((Date.now() - startupModeUpdatedAt) / 60000)) < 1 ? 'just now' : `${Math.max(1, Math.floor((Date.now() - startupModeUpdatedAt) / 60000))}m ago`}
+                                </span>
+                            ) : null}
+                        </div>
+                        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+                            {startupModeRows.map((row) => (
+                                <div key={row.label} className="rounded-lg border border-zinc-800 bg-zinc-950/50 p-4">
+                                    <div className="text-[10px] uppercase tracking-wide text-zinc-500">{row.label}</div>
+                                    <div className="mt-2 text-sm font-medium text-white">{row.value}</div>
+                                    {row.detail ? <div className="mt-2 text-xs text-zinc-400">{row.detail}</div> : null}
+                                </div>
+                            ))}
+                        </div>
+                    </CardContent>
+                </Card>
+            ) : null}
 
             <div className="grid grid-cols-1 xl:grid-cols-[1.2fr_0.8fr] gap-4">
                 <Card className="bg-zinc-900 border-zinc-800">

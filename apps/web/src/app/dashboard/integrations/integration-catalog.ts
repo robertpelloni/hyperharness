@@ -12,6 +12,17 @@ export type CliHarnessDetectionSummary = {
 export type StartupStatusSummary = {
     status?: string;
     summary?: string;
+    startupMode?: {
+        requestedRuntime?: string;
+        activeRuntime?: string;
+        launchMode?: string;
+        dashboardMode?: string;
+        installDecision?: string;
+        installReason?: string;
+        buildDecision?: string;
+        buildReason?: string;
+        updatedAt?: string;
+    } | null;
     checks?: {
         extensionBridge?: {
             ready?: boolean;
@@ -55,6 +66,7 @@ export type BrowserStatusSummary = {
 export type IntegrationOverview = {
     startupDegraded: boolean;
     startupSummary: string | null;
+    startupMode: StartupStatusSummary['startupMode'];
     extensionBridgeReady: boolean;
     extensionBridgeAcceptingConnections: boolean;
     hasConnectedBridgeClients: boolean;
@@ -579,6 +591,7 @@ export function getIntegrationOverview(
     return {
         startupDegraded,
         startupSummary,
+        startupMode: startupStatus?.startupMode ?? null,
         extensionBridgeReady,
         extensionBridgeAcceptingConnections,
         hasConnectedBridgeClients,
@@ -595,6 +608,40 @@ export function getIntegrationOverview(
         verifiedExecutionToolCount,
         supportsPosixShell,
     };
+}
+
+export function getStartupModeSummaryRows(startupStatus?: StartupStatusSummary | null): Array<{
+    label: string;
+    value: string;
+    detail?: string;
+}> {
+    const startupMode = startupStatus?.startupMode;
+    if (!startupMode) {
+        return [];
+    }
+
+    return [
+        {
+            label: 'Requested runtime',
+            value: startupMode.requestedRuntime?.trim() || '—',
+            detail: startupMode.activeRuntime ? `Active runtime: ${startupMode.activeRuntime}` : undefined,
+        },
+        {
+            label: 'Launch mode',
+            value: startupMode.launchMode?.trim() || '—',
+            detail: startupMode.dashboardMode?.trim() ? `Dashboard: ${startupMode.dashboardMode}` : undefined,
+        },
+        {
+            label: 'Install decision',
+            value: startupMode.installDecision?.trim() || '—',
+            detail: startupMode.installReason?.trim() || undefined,
+        },
+        {
+            label: 'Build decision',
+            value: startupMode.buildDecision?.trim() || '—',
+            detail: startupMode.buildReason?.trim() || undefined,
+        },
+    ];
 }
 
 export function getExternalClientRows(syncTargets?: SyncTargetSummary[] | null): ExternalClientRow[] {
