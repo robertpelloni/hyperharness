@@ -1429,3 +1429,30 @@ Wrote comprehensive comparison to docs/analysis/HYPERHARNESS_VS_SUPERAI_COMPARIS
 1. Keep assimilating `superai` into `hyperharness` via the canonical `foundation/pi` and validated package boundaries.
 2. Prefer low-blast-radius imports first: tool/runtime behavior before deeper agent autonomy surfaces.
 3. Next, begin agent-side assimilation with safer utility files (`context.go`, `compare.go`, `diff.go`) before larger autonomy loops.
+
+## Additional work completed on 2026-04-05 (superai agent utilities assimilation tranche)
+- Verified that the following agent utility files were already present and parity-aligned with `../superai`:
+  - `agent/context.go`
+  - `agent/compare.go`
+  - `agent/diff.go`
+- Hardened `TrimHistory` in `agent/context.go` for edge cases:
+  - non-positive limits
+  - empty history
+  - already-small history
+  - explicit `maxMessages == 1`
+- Hardened `ApplyInlineDiff` in `agent/diff.go` to ignore unified diff headers:
+  - `---`
+  - `+++`
+  - `@@`
+- Added focused regression coverage in:
+  - `agent/utilities_assimilation_test.go`
+- Added tranche documentation:
+  - `docs/analysis/SUPERAI_AGENT_UTILITIES_ASSIMILATION_TRANCHE_2026-04-05.md`
+
+## Latest validation after superai agent utilities assimilation tranche
+- `go test ./agent ./agents ./tui ./cmd ./foundation/...`
+
+## Updated recommendation after superai agent utilities assimilation tranche
+1. Continue agent-side assimilation with `agent/oracle.go` and `agent/autocomplete.go` next.
+2. Prefer parity verification + targeted hardening where files already exist in `hyperharness`.
+3. Keep the broader repo identity migration separate from low-risk functional assimilation tranches where possible.
