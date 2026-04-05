@@ -1118,6 +1118,119 @@ async function buildPreferredToolPreferences(): Promise<Record<string, unknown>>
   };
 }
 
+function buildApiKeyPrefix(rawKey: string | null, fallbackPrefix: string | null): string | null {
+  if (fallbackPrefix) {
+    return fallbackPrefix;
+  }
+  if (!rawKey) {
+    return null;
+  }
+  return rawKey.slice(0, Math.min(rawKey.length, 8));
+}
+
+async function buildPreferredApiKeys(): Promise<unknown[]> {
+  for (const base of resolveNativeStatusBases()) {
+    try {
+      const response = await fetch(`${base}/api/api-keys`, { cache: 'no-store' });
+      if (!response.ok) {
+        continue;
+      }
+
+      const payload = await response.json() as { success?: unknown; data?: unknown };
+      if (payload.success !== true || !Array.isArray(payload.data)) {
+        continue;
+      }
+
+      return payload.data
+        .map((entry, index) => {
+          const record = asObjectRecord(entry);
+          if (!record) {
+            return null;
+          }
+
+          const uuid = readString(record.uuid) ?? `api-key-${index}`;
+          const name = readString(record.name) ?? 'Unnamed key';
+          const rawKey = readString(record.key);
+          const keyPrefix = buildApiKeyPrefix(rawKey, readString(record.key_prefix));
+          const createdAt = readString(record.created_at) ?? new Date(0).toISOString();
+          const isActive = readBoolean(record.is_active);
+
+          return {
+            uuid,
+            name,
+            key_prefix: keyPrefix ?? 'sk-...',
+            created_at: createdAt,
+            is_active: isActive ?? false,
+            ...(rawKey ? { key: rawKey } : {}),
+          };
+        })
+        .filter((entry): entry is NonNullable<typeof entry> => entry !== null);
+    } catch {
+      // Try the next native control-plane base.
+    }
+  }
+
+  return [];
+}
+
+async function buildPreferredExpertStatus(): Promise<Record<string, unknown>> {
+  const nativeExpertStatus = await fetchNativeStatusPayload<Record<string, unknown>>('/api/expert/status');
+  if (!nativeExpertStatus) {
+    return {};
+  }
+
+  return {
+    ...(readString(nativeExpertStatus.researcher) ? { researcher: readString(nativeExpertStatus.researcher) } : {}),
+    ...(readString(nativeExpertStatus.coder) ? { coder: readString(nativeExpertStatus.coder) } : {}),
+  };
+}
+
+async function buildPreferredAgentMemoryStats(): Promise<Record<string, unknown>> {
+  const nativeAgentMemoryStats = await fetchNativeStatusPayload<Record<string, unknown>>('/api/memory/agent-stats');
+  if (!nativeAgentMemoryStats) {
+    return {
+      session: 0,
+      working: 0,
+      longTerm: 0,
+      total: 0,
+    };
+  }
+
+  return {
+    session: readNumber(nativeAgentMemoryStats.session) ?? readNumber(nativeAgentMemoryStats.sessionCount) ?? 0,
+    working: readNumber(nativeAgentMemoryStats.working) ?? readNumber(nativeAgentMemoryStats.workingCount) ?? 0,
+    longTerm: readNumber(nativeAgentMemoryStats.longTerm) ?? readNumber(nativeAgentMemoryStats.longTermCount) ?? 0,
+    total: readNumber(nativeAgentMemoryStats.total) ?? readNumber(nativeAgentMemoryStats.totalCount) ?? 0,
+  };
+}
+
+async function buildPreferredShellSystemHistory(limit?: number | null): Promise<unknown[]> {
+  for (const base of resolveNativeStatusBases()) {
+    try {
+      const endpoint = new URL(`${base}/api/shell/history/system`);
+      if (typeof limit === 'number' && Number.isFinite(limit) && limit > 0) {
+        endpoint.searchParams.set('limit', String(limit));
+      }
+
+      const response = await fetch(endpoint.toString(), { cache: 'no-store' });
+      if (!response.ok) {
+        continue;
+      }
+
+      const payload = await response.json() as { success?: unknown; data?: unknown };
+      if (payload.success !== true || !Array.isArray(payload.data)) {
+        continue;
+      }
+
+      return payload.data.filter((entry): entry is string => typeof entry === 'string');
+    } catch {
+      // Try the next native control-plane base.
+    }
+  }
+
+  return [];
+}
+
 async function buildPreferredImportedMaintenanceStats(): Promise<ImportedMaintenanceStats> {
   for (const base of resolveNativeStatusBases()) {
     try {
@@ -1786,11 +1899,14 @@ async function buildLocalCompatResponse(req: Request, body?: string): Promise<Re
   const localServers = mapConfigToServerList(localConfig);
   const localStatus = await buildPreferredMcpStatus(localServers);
   const providerQuotas = await buildPreferredProviderQuotas();
+  const apiKeys = await buildPreferredApiKeys();
   const cliHarnessDetections = await buildPreferredCliHarnessDetections();
   const executionEnvironment = await buildPreferredExecutionEnvironment(cliHarnessDetections);
   const workingSet = await buildPreferredWorkingSet();
   const toolSelectionTelemetry = await buildPreferredToolSelectionTelemetry();
   const toolPreferences = await buildPreferredToolPreferences();
+  const expertStatus = await buildPreferredExpertStatus();
+  const agentMemoryStats = await buildPreferredAgentMemoryStats();
   const importedMaintenanceStats = await buildPreferredImportedMaintenanceStats();
   const installSurfaces = await buildPreferredInstallSurfaces();
   const localStartupStatus = await buildLocalStartupStatus(localServers, executionEnvironment, importedMaintenanceStats);
@@ -1815,23 +1931,18 @@ async function buildLocalCompatResponse(req: Request, body?: string): Promise<Re
       content: localConfigSource.content,
     },
     'mcpServers.get': undefined,
-    'apiKeys.list': [],
+    'apiKeys.list': apiKeys,
     'tools.detectCliHarnesses': cliHarnessDetections,
     'tools.detectExecutionEnvironment': executionEnvironment,
     'tools.detectInstallSurfaces': installSurfaces,
-    'expert.getStatus': {},
+    'expert.getStatus': expertStatus,
     'session.catalog': sessionCatalog,
     'session.importedMaintenanceStats': importedMaintenanceStats,
     'session.getState': {
       isAutoDriveActive: false,
       activeGoal: null,
     },
-    'agentMemory.stats': {
-      session: 0,
-      working: 0,
-      longTerm: 0,
-      total: 0,
-    },
+    'agentMemory.stats': agentMemoryStats,
     'shell.getSystemHistory': [],
     'serverHealth.check': {
       status: 'unavailable',
@@ -1871,6 +1982,12 @@ async function buildLocalCompatResponse(req: Request, body?: string): Promise<Re
       const input = procedureInputs[index];
       const taskType = input && typeof input === 'object' ? readString((input as { taskType?: unknown }).taskType) : null;
       data = await buildPreferredFallbackChain(taskType);
+    }
+
+    if (responseKey === 'shell.getSystemHistory') {
+      const input = procedureInputs[index];
+      const limit = input && typeof input === 'object' ? readNumber((input as { limit?: unknown }).limit) : null;
+      data = await buildPreferredShellSystemHistory(limit);
     }
 
     if (responseKey === 'serverHealth.check') {
