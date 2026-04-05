@@ -502,6 +502,18 @@ func TestProcessSlashCommandTreePaneSize(t *testing.T) {
 	}
 }
 
+func TestProcessSlashCommandTreePanePosition(t *testing.T) {
+	m := model{director: agents.NewDirector(&agents.DefaultProvider{}), browserPanePosition: "top"}
+	mdl, _ := ProcessSlashCommand("/tree-pane-position bottom", &m)
+	updated := mdl.(model)
+	if updated.browserPanePosition != "bottom" {
+		t.Fatalf("expected pane position bottom, got %q", updated.browserPanePosition)
+	}
+	if len(updated.history) == 0 || !strings.Contains(updated.history[len(updated.history)-1], "position set to bottom") {
+		t.Fatalf("expected pane position message, got %#v", updated.history)
+	}
+}
+
 func TestProcessSlashCommandClearResetsDirector(t *testing.T) {
 	m := model{director: agents.NewDirector(&agents.DefaultProvider{})}
 	m.history = []string{"old"}

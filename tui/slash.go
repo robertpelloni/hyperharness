@@ -49,6 +49,8 @@ func ProcessSlashCommand(cmd string, m *model) (tea.Model, tea.Cmd) {
 		return handleTreePane(m)
 	case "/tree-pane-size":
 		return handleTreePaneSize(m, strings.TrimSpace(strings.TrimPrefix(cmd, "/tree-pane-size")))
+	case "/tree-pane-position":
+		return handleTreePanePosition(m, strings.TrimSpace(strings.TrimPrefix(cmd, "/tree-pane-position")))
 	case "/tree-pane-focus":
 		return handleTreePaneFocus(m)
 	case "/tree-go":
@@ -85,6 +87,7 @@ func handleHelp(m *model) (tea.Model, tea.Cmd) {
   /tree-browser - Open a cursor-driven tree browser for the active foundation session
   /tree-pane - Toggle a persistent tree pane while continuing normal prompt interaction
   /tree-pane-size <n> - Set the persistent tree pane viewport height
+  /tree-pane-position <top|bottom> - Set the persistent tree pane position
   /tree-pane-focus - Toggle keyboard focus for the pinned tree pane
   /tree-go <index> [maxTokens] - Switch to an indexed entry from /tree-select
   /tree-children <entryId> - Show direct child branches for an entry
@@ -312,6 +315,18 @@ func handleTreePaneSize(m *model, arg string) (tea.Model, tea.Cmd) {
 	}
 	m.browserPaneHeight = height
 	m.history = append(m.history, fmt.Sprintf("[Foundation Tree Pane] height set to %d", height))
+	return *m, nil
+}
+
+func handleTreePanePosition(m *model, arg string) (tea.Model, tea.Cmd) {
+	m.loading = false
+	position := strings.ToLower(strings.TrimSpace(arg))
+	if position != "top" && position != "bottom" {
+		m.history = append(m.history, "[Error] /tree-pane-position requires 'top' or 'bottom'")
+		return *m, nil
+	}
+	m.browserPanePosition = position
+	m.history = append(m.history, fmt.Sprintf("[Foundation Tree Pane] position set to %s", position))
 	return *m, nil
 }
 

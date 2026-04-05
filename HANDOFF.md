@@ -894,3 +894,24 @@
 - Reconfirmed current pane-size tranche validation:
   - `go test ./tui`
   - `go test ./cmd ./foundation/...`
+
+## Additional work completed later on 2026-04-04 (pane position tranche)
+- Added pane position state to the TUI model:
+  - `browserPanePosition string`
+- Default pane position is now `top`.
+- Added new TUI slash command:
+  - `/tree-pane-position <top|bottom>`
+- Updated `model.View()` so the pinned pane can render above or below the main prompt/history flow.
+- Added focused regression coverage:
+  - `TestProcessSlashCommandTreePanePosition`
+- Added detailed analysis doc:
+  - `docs/analysis/TUI_PANE_POSITION_TRANCHE_2026-04-04.md`
+
+## Latest validation after pane position tranche
+- `gofmt -w tui/chat.go tui/slash.go tui/slash_test.go`
+- `go test ./tui ./cmd ./foundation/...`
+
+## Updated recommendation after pane position tranche
+1. Keep `foundation/*`, `cmd`, and `tui` green and aligned to the same canonical runtime.
+2. Continue improving split-view ergonomics next, especially clearer pane/history separation or stronger pane viewport behavior.
+3. Keep pane position strictly as a layout concern over canonical runtime-backed browser state.

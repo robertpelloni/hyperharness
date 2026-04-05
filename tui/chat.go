@@ -29,6 +29,7 @@ type model struct {
 	browserPinned           bool
 	browserPinnedFocus      bool
 	browserPaneHeight       int
+	browserPanePosition     string
 }
 
 func initialModel() model {
@@ -37,12 +38,13 @@ func initialModel() model {
 	s.Style = lipgloss.NewStyle().Foreground(lipgloss.Color("205"))
 
 	return model{
-		director:          agents.NewDirector(agents.NewHyperCodeProvider()),
-		input:             "",
-		history:           []string{},
-		loading:           false,
-		spinner:           s,
-		browserPaneHeight: 8,
+		director:            agents.NewDirector(agents.NewHyperCodeProvider()),
+		input:               "",
+		history:             []string{},
+		loading:             false,
+		spinner:             s,
+		browserPaneHeight:   8,
+		browserPanePosition: "top",
 	}
 }
 
@@ -381,29 +383,30 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m model) View() string {
-	s := strings.Join(m.history, "\n")
-	s += "\n\n"
+	content := strings.Join(m.history, "\n") + "\n\n"
+	if m.loading {
+		content += fmt.Sprintf("%s Processing neural inputs...\n", m.spinner.View())
+	} else {
+		content += "> " + m.input
+	}
 	if m.browserActive {
-		s += renderTreeBrowser(m.browserItems, m.browserIndex, m.browserFilter, m.browserConfirmPending, m.browserCollapsed, m.browserGrouped, 0, "[Foundation Tree Browser]")
-		return s
+		return content + "\n\n" + renderTreeBrowser(m.browserItems, m.browserIndex, m.browserFilter, m.browserConfirmPending, m.browserCollapsed, m.browserGrouped, 0, "[Foundation Tree Browser]")
 	}
 	if m.browserPinned {
 		paneHeight := m.browserPaneHeight
 		if paneHeight <= 0 {
 			paneHeight = 8
 		}
-		s += renderTreeBrowser(m.browserItems, m.browserIndex, m.browserFilter, m.browserConfirmPending && m.browserPinnedFocus, m.browserCollapsed, m.browserGrouped, paneHeight, "[Foundation Tree Pane]")
+		pane := renderTreeBrowser(m.browserItems, m.browserIndex, m.browserFilter, m.browserConfirmPending && m.browserPinnedFocus, m.browserCollapsed, m.browserGrouped, paneHeight, "[Foundation Tree Pane]")
 		if m.browserPinnedFocus {
-			s += "\n[Tree Pane Focused]\n"
+			pane += "\n[Tree Pane Focused]"
 		}
-		s += "\n\n"
+		if strings.ToLower(strings.TrimSpace(m.browserPanePosition)) == "bottom" {
+			return content + "\n\n" + pane
+		}
+		return pane + "\n\n" + content
 	}
-	if m.loading {
-		s += fmt.Sprintf("%s Processing neural inputs...\n", m.spinner.View())
-	} else {
-		s += "> " + m.input
-	}
-	return s
+	return content
 }
 
 func StartREPL() {
