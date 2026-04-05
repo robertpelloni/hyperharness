@@ -6,11 +6,24 @@ import (
 	"path/filepath"
 )
 
+type StartupProvenance struct {
+	RequestedRuntime string `json:"requestedRuntime,omitempty"`
+	ActiveRuntime    string `json:"activeRuntime,omitempty"`
+	LaunchMode       string `json:"launchMode,omitempty"`
+	DashboardMode    string `json:"dashboardMode,omitempty"`
+	InstallDecision  string `json:"installDecision,omitempty"`
+	InstallReason    string `json:"installReason,omitempty"`
+	BuildDecision    string `json:"buildDecision,omitempty"`
+	BuildReason      string `json:"buildReason,omitempty"`
+	UpdatedAt        string `json:"updatedAt,omitempty"`
+}
+
 type Record struct {
-	Host      string `json:"host"`
-	Port      int    `json:"port"`
-	Version   string `json:"version"`
-	StartedAt string `json:"startedAt"`
+	Host      string             `json:"host"`
+	Port      int                `json:"port"`
+	Version   string             `json:"version"`
+	StartedAt string             `json:"startedAt"`
+	Startup   *StartupProvenance `json:"startup,omitempty"`
 }
 
 func Write(lockPath string, record Record) error {

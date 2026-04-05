@@ -186,6 +186,13 @@ In this follow-up slice, the dashboard startup-readiness section now renders a v
 - build decision + reason
 - last updated relative timestamp when available
 
+The Go-native `/api/runtime/status` surface now also exposes equivalent startup provenance by reading startup metadata from the main CLI lock first and falling back to the Go lock. That means the native backend is now self-describing for:
+- requested runtime / active runtime
+- launch mode
+- dashboard mode
+- install/build decisions
+- provenance source (`main-lock` vs `go-lock`)
+
 Why this matters:
 - it makes Go-primary launch use the same compiled artifact that the startup build profile already validates
 - it reduces repeated `go run` compilation overhead at runtime
@@ -195,6 +202,7 @@ Why this matters:
 - it makes startup decisions queryable through `hypercode status` instead of leaving them in terminal scrollback only
 - it makes the same startup truth available to dashboard/API consumers rather than restricting it to the CLI
 - it makes the dashboard itself reflect the real startup/runtime contract rather than only the server/CLI layers
+- it makes the Go-native backend itself report that startup truth without depending on the TypeScript startup snapshot layer
 
 #### Lockfile hygiene
 - The refreshed `pnpm-lock.yaml` no longer contains legacy-name references for the main workspace packages.
@@ -226,6 +234,7 @@ Results:
 - CLI start-command regression tests passed
 - CLI status-command regression tests passed
 - core startup-status router regression tests passed
+- Go runtime-status endpoint regression tests passed
 - CLI build passed
 - core build passed
 - web build passed
@@ -238,6 +247,7 @@ Results:
 - startup mode summary helper coverage passed in the CLI regression suite
 - persisted startup-provenance status coverage passed in the CLI regression suite
 - startupStatus snapshot coverage now also verifies persisted startup provenance propagation through the server/API-visible status payload
+- Go-native runtime status coverage now also verifies startup provenance propagation through `/api/runtime/status`
 - web build/type-check passed with the new dashboard `startupMode` rendering
 - a focused dashboard render test was added, but `vitest` is not directly installed in `apps/web`, so that new test was validated indirectly through the successful web build rather than executed as a standalone test command in this pass
 - a short-lived `start.bat --help` run also completed and showed the new install/build phase summary lines before exiting through CLI help output
@@ -271,6 +281,7 @@ Result:
 - startup provenance is now persisted into the local startup lock and exposed by `hypercode status` when available
 - the TypeScript `startupStatus` API surface now also exposes that persisted startup provenance to dashboard/API consumers
 - the dashboard startup-readiness section now visibly renders the persisted startup mode block instead of leaving the new payload hidden
+- the Go-native `/api/runtime/status` surface now also exposes startup provenance, making the native backend itself self-describing
 - `start.bat` now validates Go-first startup surfaces by default for `auto`/`go` runtime modes instead of always requiring a full workspace build first
 - `start.bat` can now skip `pnpm install` in Go-primary mode when the workspace is already ready
 - `start.bat` can now also skip the Go-primary startup build when the built CLI and Go binary artifacts are already current

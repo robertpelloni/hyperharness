@@ -14427,6 +14427,17 @@ func demo() {
 		Port:      4000,
 		Version:   "0.99.1",
 		StartedAt: "2026-03-28T00:00:00Z",
+		Startup: &lockfile.StartupProvenance{
+			RequestedRuntime: "auto",
+			ActiveRuntime:    "go",
+			LaunchMode:       "prebuilt Go binary",
+			DashboardMode:    "compatibility-only; skipped for Go runtime",
+			InstallDecision:  "skipped",
+			InstallReason:    "Go-primary dependencies already ready",
+			BuildDecision:    "skipped",
+			BuildReason:      "Go-primary build artifacts already current",
+			UpdatedAt:        "2026-03-28T00:00:05Z",
+		},
 	}); err != nil {
 		t.Fatalf("failed to write main lock: %v", err)
 	}
@@ -14491,6 +14502,18 @@ func demo() {
 	}
 	if payload.Data.Service != "hypercode-go" {
 		t.Fatalf("expected hypercode-go service, got %q", payload.Data.Service)
+	}
+	if payload.Data.StartupMode == nil {
+		t.Fatalf("expected startup mode metadata in runtime status")
+	}
+	if payload.Data.StartupMode["requestedRuntime"] != "auto" || payload.Data.StartupMode["activeRuntime"] != "go" {
+		t.Fatalf("expected startup runtime provenance, got %+v", payload.Data.StartupMode)
+	}
+	if payload.Data.StartupMode["launchMode"] != "prebuilt Go binary" {
+		t.Fatalf("expected startup launch mode provenance, got %+v", payload.Data.StartupMode)
+	}
+	if payload.Data.StartupMode["source"] != "main-lock" {
+		t.Fatalf("expected startup mode source main-lock, got %+v", payload.Data.StartupMode)
 	}
 	if len(payload.Data.Locks) != 2 {
 		t.Fatalf("expected 2 lock statuses, got %d", len(payload.Data.Locks))

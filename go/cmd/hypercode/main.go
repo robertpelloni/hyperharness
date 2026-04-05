@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 	"os/signal"
+	"strings"
 	"time"
 
 	"github.com/hypercodehq/hypercode-go/internal/buildinfo"
@@ -42,6 +43,36 @@ func run(args []string) int {
 	}
 }
 
+func startupProvenanceFromEnv() *lockfile.StartupProvenance {
+	requestedRuntime := strings.TrimSpace(os.Getenv("HYPERCODE_STARTUP_REQUESTED_RUNTIME"))
+	if requestedRuntime == "" {
+		requestedRuntime = strings.TrimSpace(os.Getenv("HYPERCODE_RUNTIME"))
+	}
+	launchMode := strings.TrimSpace(os.Getenv("HYPERCODE_STARTUP_LAUNCH_MODE"))
+	if launchMode == "" {
+		if strings.TrimSpace(os.Getenv("HYPERCODE_GO_USE_SOURCE")) == "1" {
+			launchMode = "source fallback via go run"
+		} else {
+			launchMode = "direct Go runtime"
+		}
+	}
+	startup := &lockfile.StartupProvenance{
+		RequestedRuntime: requestedRuntime,
+		ActiveRuntime:    "go",
+		LaunchMode:       launchMode,
+		DashboardMode:    strings.TrimSpace(os.Getenv("HYPERCODE_STARTUP_DASHBOARD_MODE")),
+		InstallDecision:  strings.TrimSpace(os.Getenv("HYPERCODE_STARTUP_INSTALL_DECISION")),
+		InstallReason:    strings.TrimSpace(os.Getenv("HYPERCODE_STARTUP_INSTALL_REASON")),
+		BuildDecision:    strings.TrimSpace(os.Getenv("HYPERCODE_STARTUP_BUILD_DECISION")),
+		BuildReason:      strings.TrimSpace(os.Getenv("HYPERCODE_STARTUP_BUILD_REASON")),
+		UpdatedAt:        time.Now().UTC().Format(time.RFC3339),
+	}
+	if startup.RequestedRuntime == "" && startup.ActiveRuntime == "" && startup.LaunchMode == "" && startup.DashboardMode == "" && startup.InstallDecision == "" && startup.InstallReason == "" && startup.BuildDecision == "" && startup.BuildReason == "" {
+		return nil
+	}
+	return startup
+}
+
 func runServe(args []string) int {
 	cfg := config.Default()
 
@@ -59,6 +90,7 @@ func runServe(args []string) int {
 		Port:      cfg.Port,
 		Version:   buildinfo.Version,
 		StartedAt: time.Now().UTC().Format(time.RFC3339),
+		Startup:   startupProvenanceFromEnv(),
 	}
 	if err := lockfile.Write(cfg.LockPath(), record); err != nil {
 		log.Printf("failed to write lock file: %v", err)

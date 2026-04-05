@@ -743,6 +743,11 @@ export async function startGoRuntime(
     port: number;
     repoRoot: string;
     dataDir: string;
+    requestedRuntime?: string;
+    installDecision?: string;
+    installReason?: string;
+    buildDecision?: string;
+    buildReason?: string;
   },
   deps: {
     spawnImpl?: typeof spawn;
@@ -782,6 +787,13 @@ export async function startGoRuntime(
       env: {
         ...process.env,
         HYPERCODE_MAIN_CONFIG_DIR: resolveDataDir(options.dataDir),
+        HYPERCODE_STARTUP_REQUESTED_RUNTIME: options.requestedRuntime ?? process.env.HYPERCODE_STARTUP_REQUESTED_RUNTIME ?? process.env.HYPERCODE_RUNTIME ?? '',
+        HYPERCODE_STARTUP_ACTIVE_RUNTIME: 'go',
+        HYPERCODE_STARTUP_LAUNCH_MODE: describeGoRuntimeLaunchMode(launchSpec.usingPrebuiltBinary),
+        HYPERCODE_STARTUP_INSTALL_DECISION: options.installDecision ?? process.env.HYPERCODE_STARTUP_INSTALL_DECISION ?? '',
+        HYPERCODE_STARTUP_INSTALL_REASON: options.installReason ?? process.env.HYPERCODE_STARTUP_INSTALL_REASON ?? '',
+        HYPERCODE_STARTUP_BUILD_DECISION: options.buildDecision ?? process.env.HYPERCODE_STARTUP_BUILD_DECISION ?? '',
+        HYPERCODE_STARTUP_BUILD_REASON: options.buildReason ?? process.env.HYPERCODE_STARTUP_BUILD_REASON ?? '',
       },
       windowsHide: true,
     },
@@ -1025,6 +1037,11 @@ Examples:
               port: activePort,
               repoRoot,
               dataDir: opts.dataDir,
+              requestedRuntime,
+              installDecision: process.env.HYPERCODE_STARTUP_INSTALL_DECISION,
+              installReason: process.env.HYPERCODE_STARTUP_INSTALL_REASON,
+              buildDecision: process.env.HYPERCODE_STARTUP_BUILD_DECISION,
+              buildReason: process.env.HYPERCODE_STARTUP_BUILD_REASON,
             });
             runtimeKind = 'go';
             goRuntimeMode = runtime.launchMode;

@@ -32,6 +32,7 @@ import (
 	"github.com/hypercodehq/hypercode-go/internal/controlplane"
 	"github.com/hypercodehq/hypercode-go/internal/harnesses"
 	"github.com/hypercodehq/hypercode-go/internal/interop"
+	"github.com/hypercodehq/hypercode-go/internal/lockfile"
 	"github.com/hypercodehq/hypercode-go/internal/mcp"
 	"github.com/hypercodehq/hypercode-go/internal/memorystore"
 	"github.com/hypercodehq/hypercode-go/internal/mesh"
@@ -155,6 +156,7 @@ type RuntimeStatus struct {
 	Version              string                       `json:"version"`
 	BaseURL              string                       `json:"baseUrl"`
 	UptimeSec            int                          `json:"uptimeSec"`
+	StartupMode          map[string]any               `json:"startupMode,omitempty"`
 	Locks                []interop.ControlPlaneStatus `json:"locks"`
 	LockSummary          LockRuntimeSummary           `json:"lockSummary"`
 	Config               ConfigRuntimeSummary         `json:"config"`
@@ -9631,6 +9633,48 @@ func (s *Server) handleConfiguredServerMutation(w http.ResponseWriter, r *http.R
 	})
 }
 
+func readStartupProvenance(mainLockPath, goLockPath string) map[string]any {
+	candidates := []struct {
+		path   string
+		source string
+	}{
+		{path: mainLockPath, source: "main-lock"},
+		{path: goLockPath, source: "go-lock"},
+	}
+
+	for _, candidate := range candidates {
+		record, err := lockfile.Read(candidate.path)
+		if err != nil {
+			continue
+		}
+		if record.Startup == nil {
+			if candidate.source == "go-lock" {
+				return map[string]any{
+					"activeRuntime": "go",
+					"launchMode":    "direct Go runtime",
+					"updatedAt":     record.StartedAt,
+					"source":        candidate.source,
+				}
+			}
+			continue
+		}
+		return map[string]any{
+			"requestedRuntime": record.Startup.RequestedRuntime,
+			"activeRuntime":    record.Startup.ActiveRuntime,
+			"launchMode":       record.Startup.LaunchMode,
+			"dashboardMode":    record.Startup.DashboardMode,
+			"installDecision":  record.Startup.InstallDecision,
+			"installReason":    record.Startup.InstallReason,
+			"buildDecision":    record.Startup.BuildDecision,
+			"buildReason":      record.Startup.BuildReason,
+			"updatedAt":        record.Startup.UpdatedAt,
+			"source":           candidate.source,
+		}
+	}
+
+	return nil
+}
+
 func (s *Server) handleRuntimeStatus(w http.ResponseWriter, r *http.Request) {
 	candidates, err := s.scanImportSources()
 	if err != nil {
@@ -9719,6 +9763,7 @@ func (s *Server) handleRuntimeStatus(w http.ResponseWriter, r *http.Request) {
 	importSummary := sessionimport.BuildSummary(validatedCandidates)
 
 	lockStatuses := interop.DiscoverControlPlanes(s.cfg.MainLockPath(), s.cfg.LockPath())
+	startupMode := readStartupProvenance(s.cfg.MainLockPath(), s.cfg.LockPath())
 	runningLocks := 0
 	for _, status := range lockStatuses {
 		if status.Running {
@@ -9729,11 +9774,12 @@ func (s *Server) handleRuntimeStatus(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusOK, map[string]any{
 		"success": true,
 		"data": RuntimeStatus{
-			Service:   "hypercode-go",
-			Version:   buildinfo.Version,
-			BaseURL:   s.cfg.BaseURL(),
-			UptimeSec: int(time.Since(s.startedAt).Seconds()),
-			Locks:     lockStatuses,
+			Service:     "hypercode-go",
+			Version:     buildinfo.Version,
+			BaseURL:     s.cfg.BaseURL(),
+			UptimeSec:   int(time.Since(s.startedAt).Seconds()),
+			StartupMode: startupMode,
+			Locks:       lockStatuses,
 			LockSummary: LockRuntimeSummary{
 				VisibleCount: len(lockStatuses),
 				RunningCount: runningLocks,
