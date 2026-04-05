@@ -1456,3 +1456,33 @@ Wrote comprehensive comparison to docs/analysis/HYPERHARNESS_VS_SUPERAI_COMPARIS
 1. Continue agent-side assimilation with `agent/oracle.go` and `agent/autocomplete.go` next.
 2. Prefer parity verification + targeted hardening where files already exist in `hyperharness`.
 3. Keep the broader repo identity migration separate from low-risk functional assimilation tranches where possible.
+
+## Additional work completed on 2026-04-05 (superai oracle/autocomplete assimilation tranche)
+- Verified that the following files were already present and parity-aligned with `../superai`:
+  - `agent/oracle.go`
+  - `agent/autocomplete.go`
+- Hardened Oracle orchestration by extracting testable helpers:
+  - `oracleQueryWithChat`
+  - `buildOraclePlanPrompt`
+  - `buildOracleExecutionPrompt`
+  - `buildOracleSynthesisPrompt`
+- Added Oracle validation for:
+  - empty prompt rejection
+  - missing chat function rejection
+  - stage error propagation
+- Hardened autocomplete behavior by adding:
+  - missing client rejection
+  - empty completion choice rejection
+  - `buildCompletionPrompt` helper
+- Added focused regression coverage in:
+  - `agent/oracle_autocomplete_assimilation_test.go`
+- Added tranche documentation:
+  - `docs/analysis/SUPERAI_ORACLE_AUTOCOMPLETE_ASSIMILATION_TRANCHE_2026-04-05.md`
+
+## Latest validation after superai oracle/autocomplete assimilation tranche
+- `go test ./agent ./agents ./tui ./cmd ./foundation/...`
+
+## Updated recommendation after superai oracle/autocomplete assimilation tranche
+1. Continue with `agent/async.go` and `agent/shell.go` next.
+2. Keep preferring parity verification + edge hardening where files already exist in `hyperharness`.
+3. Preserve the pattern of extracting testable helpers before attempting broader autonomy-layer changes.
