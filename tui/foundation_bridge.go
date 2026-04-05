@@ -15,6 +15,14 @@ type PromptDisplayMsg struct {
 	Display string
 }
 
+type TreeBrowserItem struct {
+	ID      string
+	Kind    string
+	Label   string
+	Preview string
+	IsLeaf  bool
+}
+
 func buildPromptResponse(director *agents.Director, input string) (PromptDisplayMsg, error) {
 	response, err := director.HandleInput(context.Background(), input)
 	if err != nil {
@@ -227,6 +235,60 @@ func switchFoundationTreeSelection(cwd, sessionID string, ids []string, index in
 		return "", fmt.Errorf("selection index %d out of range", index)
 	}
 	return switchFoundationTreeDisplay(cwd, sessionID, ids[index-1], maxTokens)
+}
+
+func buildFoundationTreeBrowser(cwd, sessionID string) ([]TreeBrowserItem, error) {
+	runtime := foundationpi.NewRuntime(cwd, nil)
+	session, err := runtime.LoadSession(sessionID)
+	if err != nil {
+		return nil, err
+	}
+	leafID, err := runtime.GetLeafID(sessionID)
+	if err != nil {
+		return nil, err
+	}
+	items := make([]TreeBrowserItem, 0, len(session.Entries))
+	for _, entry := range session.Entries {
+		preview := entry.Text
+		if strings.TrimSpace(preview) == "" {
+			preview = entry.ToolName
+		}
+		if len(preview) > 60 {
+			preview = preview[:60] + "..."
+		}
+		label, _ := runtime.GetLabel(sessionID, entry.ID)
+		items = append(items, TreeBrowserItem{ID: entry.ID, Kind: entry.Kind, Label: label, Preview: preview, IsLeaf: entry.ID == leafID})
+	}
+	return items, nil
+}
+
+func renderTreeBrowser(items []TreeBrowserItem, selected int) string {
+	var b strings.Builder
+	b.WriteString("[Foundation Tree Browser]\n")
+	b.WriteString("Use ↑/↓ to move, Enter to switch, Esc to close.\n")
+	for i, item := range items {
+		cursor := " "
+		if i == selected {
+			cursor = ">"
+		}
+		leaf := " "
+		if item.IsLeaf {
+			leaf = "*"
+		}
+		labelSuffix := ""
+		if strings.TrimSpace(item.Label) != "" {
+			labelSuffix = fmt.Sprintf(" label=%q", item.Label)
+		}
+		b.WriteString(fmt.Sprintf("%s%s [%d] %s [%s]%s %s\n", cursor, leaf, i+1, item.ID, item.Kind, labelSuffix, item.Preview))
+	}
+	return strings.TrimSpace(b.String())
+}
+
+func openSelectedTreeBrowser(cwd, sessionID string, items []TreeBrowserItem, selected, maxTokens int) (string, error) {
+	if selected < 0 || selected >= len(items) {
+		return "", fmt.Errorf("selected tree item out of range")
+	}
+	return switchFoundationTreeDisplay(cwd, sessionID, items[selected].ID, maxTokens)
 }
 
 func buildShellProposal(director *agents.Director, query string) (ShellProposalMsg, error) {

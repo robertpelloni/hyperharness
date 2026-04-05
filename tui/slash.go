@@ -43,6 +43,8 @@ func ProcessSlashCommand(cmd string, m *model) (tea.Model, tea.Cmd) {
 		return handleTree(m, strings.TrimSpace(strings.TrimPrefix(cmd, "/tree")))
 	case "/tree-select":
 		return handleTreeSelect(m)
+	case "/tree-browser":
+		return handleTreeBrowser(m)
 	case "/tree-go":
 		return handleTreeGo(m, strings.TrimSpace(strings.TrimPrefix(cmd, "/tree-go")))
 	case "/tree-children":
@@ -74,6 +76,7 @@ func handleHelp(m *model) (tea.Model, tea.Cmd) {
   /tree      - Show the active foundation session tree
   /tree <targetEntryId> [maxTokens] - Switch to a target entry and preserve abandoned branch context
   /tree-select - Show a numbered entry selector for the active foundation session
+  /tree-browser - Open a cursor-driven tree browser for the active foundation session
   /tree-go <index> [maxTokens] - Switch to an indexed entry from /tree-select
   /tree-children <entryId> - Show direct child branches for an entry
   /label <entryId> <label> - Set a label on an entry (or clear with empty label unsupported in slash)
@@ -252,6 +255,24 @@ func handleTreeSelect(m *model) (tea.Model, tea.Cmd) {
 	}
 	m.foundationTreeSelection = ids
 	m.history = append(m.history, display)
+	return *m, nil
+}
+
+func handleTreeBrowser(m *model) (tea.Model, tea.Cmd) {
+	m.loading = false
+	sessionID, err := ensureFoundationSession(m)
+	if err != nil {
+		m.history = append(m.history, fmt.Sprintf("[Error] foundation session unavailable: %v", err))
+		return *m, nil
+	}
+	items, err := buildFoundationTreeBrowser(m.director.WorkingDir, sessionID)
+	if err != nil {
+		m.history = append(m.history, fmt.Sprintf("[Error] tree browser failed: %v", err))
+		return *m, nil
+	}
+	m.browserItems = items
+	m.browserIndex = 0
+	m.browserActive = true
 	return *m, nil
 }
 

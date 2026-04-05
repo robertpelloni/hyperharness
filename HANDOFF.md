@@ -539,3 +539,33 @@
 1. Keep `foundation/*`, `cmd`, and `tui` green and aligned to the same canonical runtime.
 2. Begin a truly cursor-driven in-TUI tree browser next on top of the selector groundwork.
 3. Preserve the rule that the UI can cache selector state but must not become the owner of session/branch truth.
+
+## Additional work completed later on 2026-04-04 (cursor tree browser tranche)
+- Added browser state to the TUI model:
+  - `browserActive`
+  - `browserItems`
+  - `browserIndex`
+- Added `TreeBrowserItem` in `tui/foundation_bridge.go`.
+- Added browser helpers:
+  - `buildFoundationTreeBrowser`
+  - `renderTreeBrowser`
+  - `openSelectedTreeBrowser`
+- Added new TUI slash command:
+  - `/tree-browser`
+- Updated TUI keyboard handling so that when browser mode is active:
+  - `Up` / `Down` move selection
+  - `Enter` performs a real branch switch through the canonical runtime
+  - `Esc` closes the browser without quitting the app
+- Updated TUI view rendering to show browser content when browser mode is active.
+- Expanded `tui/slash_test.go` to verify browser activation, cursor movement, selection, branch switching, and browser close behavior.
+- Added detailed analysis doc:
+  - `docs/analysis/TUI_CURSOR_TREE_BROWSER_TRANCHE_2026-04-04.md`
+
+## Latest validation after cursor tree browser tranche
+- `gofmt -w tui/chat.go tui/foundation_bridge.go tui/slash.go tui/slash_test.go`
+- `go test ./tui ./cmd ./foundation/...`
+
+## Updated recommendation after cursor tree browser tranche
+1. Keep `foundation/*`, `cmd`, and `tui` green and aligned to the same canonical runtime.
+2. Add richer browser ergonomics next (preview-before-switch, filtering/folding, better tree layout).
+3. Keep browser state transient and UI-local while all session/branch truth remains in the canonical foundation runtime.

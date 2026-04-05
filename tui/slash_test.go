@@ -6,6 +6,7 @@ import (
 	"strings"
 	"testing"
 
+	tea "github.com/charmbracelet/bubbletea"
 	"github.com/robertpelloni/hypercode/agents"
 	foundationpi "github.com/robertpelloni/hypercode/foundation/pi"
 )
@@ -266,6 +267,55 @@ func TestProcessSlashCommandTreeSelectorSurfaces(t *testing.T) {
 	}
 	if !strings.Contains(updated.history[len(updated.history)-1], "## Goal") {
 		t.Fatalf("expected structured summary in tree-go output, got %#v", updated.history[len(updated.history)-1])
+	}
+}
+
+func TestTreeBrowserModeNavigation(t *testing.T) {
+	cwd := t.TempDir()
+	m := model{director: agents.NewDirector(&agents.DefaultProvider{})}
+	m.director.WorkingDir = cwd
+	sessionID, err := ensureFoundationSession(&m)
+	if err != nil {
+		t.Fatal(err)
+	}
+	runtime := foundationpi.NewRuntime(cwd, nil)
+	if _, err := runtime.AppendUserText(sessionID, "A"); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := runtime.AppendUserText(sessionID, "B"); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := runtime.AppendUserText(sessionID, "C"); err != nil {
+		t.Fatal(err)
+	}
+	oldLeaf, err := runtime.GetLeafID(sessionID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	mdl, _ := ProcessSlashCommand("/tree-browser", &m)
+	updated := mdl.(model)
+	if !updated.browserActive || len(updated.browserItems) < 3 {
+		t.Fatalf("expected active browser with items, got %#v", updated)
+	}
+	mdl, _ = updated.Update(tea.KeyMsg{Type: tea.KeyDown})
+	updated = mdl.(model)
+	if updated.browserIndex != 1 {
+		t.Fatalf("expected browser index 1, got %d", updated.browserIndex)
+	}
+	mdl, _ = updated.Update(tea.KeyMsg{Type: tea.KeyEnter})
+	updated = mdl.(model)
+	if updated.browserActive {
+		t.Fatal("expected browser to close after enter")
+	}
+	newLeaf, err := runtime.GetLeafID(sessionID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if newLeaf == oldLeaf {
+		t.Fatalf("expected browser enter to switch leaf, old=%q new=%q", oldLeaf, newLeaf)
+	}
+	if len(updated.history) == 0 || !strings.Contains(updated.history[len(updated.history)-1], "[Foundation Tree Switch]") {
+		t.Fatalf("expected tree switch output after browser enter, got %#v", updated.history)
 	}
 }
 

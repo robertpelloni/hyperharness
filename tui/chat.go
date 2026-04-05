@@ -19,6 +19,9 @@ type model struct {
 	spinner                 spinner.Model
 	foundationSessionID     string
 	foundationTreeSelection []string
+	browserActive           bool
+	browserItems            []TreeBrowserItem
+	browserIndex            int
 }
 
 func initialModel() model {
@@ -44,6 +47,35 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
+		if m.browserActive {
+			switch msg.Type {
+			case tea.KeyEsc:
+				m.browserActive = false
+				m.history = append(m.history, "[Foundation Tree Browser] closed")
+				return m, nil
+			case tea.KeyUp:
+				if m.browserIndex > 0 {
+					m.browserIndex--
+				}
+				return m, nil
+			case tea.KeyDown:
+				if m.browserIndex < len(m.browserItems)-1 {
+					m.browserIndex++
+				}
+				return m, nil
+			case tea.KeyEnter:
+				if m.browserIndex >= 0 && m.browserIndex < len(m.browserItems) {
+					display, err := openSelectedTreeBrowser(m.director.WorkingDir, m.foundationSessionID, m.browserItems, m.browserIndex, 128)
+					if err != nil {
+						m.history = append(m.history, fmt.Sprintf("[Error] tree browser switch failed: %v", err))
+					} else {
+						m.history = append(m.history, display)
+					}
+					m.browserActive = false
+				}
+				return m, nil
+			}
+		}
 		switch msg.Type {
 		case tea.KeyCtrlC, tea.KeyEsc:
 			return m, tea.Quit
@@ -122,6 +154,10 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 func (m model) View() string {
 	s := strings.Join(m.history, "\n")
 	s += "\n\n"
+	if m.browserActive {
+		s += renderTreeBrowser(m.browserItems, m.browserIndex)
+		return s
+	}
 	if m.loading {
 		s += fmt.Sprintf("%s Processing neural inputs...\n", m.spinner.View())
 	} else {
