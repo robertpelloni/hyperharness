@@ -631,6 +631,20 @@ func TestProcessSlashCommandTreePaneReset(t *testing.T) {
 	}
 }
 
+func TestProcessSlashCommandTreePaneGrouped(t *testing.T) {
+	m := model{director: agents.NewDirector(&agents.DefaultProvider{}), browserGrouped: false}
+	mdl, _ := ProcessSlashCommand("/tree-pane-grouped on", &m)
+	updated := mdl.(model)
+	if !updated.browserGrouped {
+		t.Fatal("expected grouped to be enabled")
+	}
+	mdl, _ = ProcessSlashCommand("/tree-pane-grouped toggle", &updated)
+	updated = mdl.(model)
+	if updated.browserGrouped {
+		t.Fatal("expected grouped to toggle off")
+	}
+}
+
 func TestProcessSlashCommandTreePaneCycle(t *testing.T) {
 	m := model{director: agents.NewDirector(&agents.DefaultProvider{}), browserPaneHeight: 8, browserPanePreview: true, browserPanePosition: "top", browserGrouped: false}
 	mdl, _ := ProcessSlashCommand("/tree-pane-cycle", &m)

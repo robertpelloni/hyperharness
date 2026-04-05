@@ -1119,3 +1119,20 @@
 1. Keep `foundation/*`, `cmd`, and `tui` green and aligned to the same canonical runtime.
 2. Continue adding operator polish around pane/browser control and recovery where it reduces friction.
 3. Keep convenience commands like cycles as lightweight layers over the same underlying pane state bundles.
+
+## Additional work completed later on 2026-04-04 (grouped toggle tranche)
+- Added new TUI slash command:
+  - `/tree-pane-grouped <on|off|toggle>`
+- Added explicit command-level control for grouped rendering outside of keyboard-only browser interaction.
+- Added focused regression coverage verifying grouped mode on/toggle behavior.
+- Added detailed analysis doc:
+  - `docs/analysis/TUI_GROUPED_TOGGLE_TRANCHE_2026-04-04.md`
+
+## Latest validation after grouped toggle tranche
+- `gofmt -w tui/slash.go tui/slash_test.go`
+- `go test ./tui ./cmd ./foundation/...`
+
+## Updated recommendation after grouped toggle tranche
+1. Keep `foundation/*`, `cmd`, and `tui` green and aligned to the same canonical runtime.
+2. Continue adding small operator-control affordances where they reduce friction, especially around pane/browser layout and state recovery.
+3. Keep grouped-mode controls as rendering-only state over the same canonical runtime-backed browser model.
