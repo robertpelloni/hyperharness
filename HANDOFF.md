@@ -512,3 +512,30 @@
 1. Keep `foundation/*`, `cmd`, and `tui` green and aligned to the same canonical runtime.
 2. Consider an actual interactive in-TUI tree/selector view next, now that the selector-state groundwork exists.
 3. Continue layering UX over canonical session/summary truth rather than introducing parallel TUI-specific state machines.
+
+## Additional work completed later on 2026-04-04 (interactive tree selector tranche)
+- Added lightweight selector state to the TUI model:
+  - `foundationTreeSelection []string`
+- Added foundation bridge helpers:
+  - `buildFoundationTreeSelectionDisplay`
+  - `switchFoundationTreeSelection`
+- Added new TUI slash commands:
+  - `/tree-select`
+  - `/tree-go <index> [maxTokens]`
+- Updated TUI `/help` output to document selector-based tree workflows.
+- Expanded `tui/slash_test.go` to verify:
+  - selector output rendering
+  - selector ID caching in the TUI model
+  - selector-driven leaf movement
+  - structured branch-summary output after selection-based switching
+- Added detailed analysis doc:
+  - `docs/analysis/TUI_INTERACTIVE_TREE_SELECTOR_TRANCHE_2026-04-04.md`
+
+## Latest validation after interactive tree selector tranche
+- `gofmt -w tui/chat.go tui/foundation_bridge.go tui/slash.go tui/slash_test.go foundation/pi/runtime.go`
+- `go test ./tui ./cmd ./foundation/...`
+
+## Updated recommendation after interactive tree selector tranche
+1. Keep `foundation/*`, `cmd`, and `tui` green and aligned to the same canonical runtime.
+2. Begin a truly cursor-driven in-TUI tree browser next on top of the selector groundwork.
+3. Preserve the rule that the UI can cache selector state but must not become the owner of session/branch truth.
