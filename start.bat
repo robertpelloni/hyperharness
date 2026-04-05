@@ -17,6 +17,8 @@ set SKIP_INSTALL=0
 if /I "%HYPERCODE_SKIP_INSTALL%"=="1" set SKIP_INSTALL=1
 set INSTALL_DECISION=run
 set INSTALL_REASON=workspace install path required
+set INSTALL_COMMAND=pnpm install
+set INSTALL_COMMAND_NOTE=full workspace install
 
 if "%SKIP_INSTALL%"=="1" (
     set INSTALL_DECISION=skipped
@@ -27,11 +29,21 @@ if "%SKIP_INSTALL%"=="1" (
     if /I "%RUNTIME_MODE%"=="auto" set STARTUP_INSTALL_PROFILE=go-primary
     if /I "%RUNTIME_MODE%"=="go" set STARTUP_INSTALL_PROFILE=go-primary
 
+    if /I "%STARTUP_INSTALL_PROFILE%"=="go-primary" (
+        if /I "%HYPERCODE_STARTUP_INSTALL_SCRIPTS%"=="1" (
+            set INSTALL_COMMAND=pnpm install
+            set INSTALL_COMMAND_NOTE=full workspace install with scripts (explicit override)
+        ) else (
+            set INSTALL_COMMAND=pnpm install --ignore-scripts
+            set INSTALL_COMMAND_NOTE=minimal workspace dependency sync without postinstall scripts
+        )
+    )
+
     set INSTALL_REQUIRED=1
     if /I "%STARTUP_INSTALL_PROFILE%"=="go-primary" if /I not "%HYPERCODE_FORCE_INSTALL%"=="1" (
         echo Checking whether Go-primary startup dependencies are already ready...
         call node scripts\check_startup_install.mjs --profile=go-primary
-        set INSTALL_CHECK_EXIT=%ERRORLEVEL%
+        set INSTALL_CHECK_EXIT=!ERRORLEVEL!
         if "!INSTALL_CHECK_EXIT!"=="0" (
             set INSTALL_REQUIRED=0
             set INSTALL_DECISION=skipped
@@ -54,8 +66,8 @@ if "%SKIP_INSTALL%"=="1" (
     )
 
     if "!INSTALL_REQUIRED!"=="1" (
-        echo Running dependency install ^(!INSTALL_REASON!^)...
-        call pnpm install
+        echo Running dependency install ^(!INSTALL_REASON!; !INSTALL_COMMAND_NOTE!^)...
+        call !INSTALL_COMMAND!
         if errorlevel 1 exit /b 1
     )
 )
@@ -88,7 +100,7 @@ if "%SKIP_BUILD%"=="1" (
     if /I "%BUILD_TARGET%"=="build:startup-go" if /I not "%HYPERCODE_FORCE_BUILD%"=="1" (
         echo Checking whether Go-primary startup build artifacts are already current...
         call node scripts\check_startup_build.mjs --profile=go-primary
-        set BUILD_CHECK_EXIT=%ERRORLEVEL%
+        set BUILD_CHECK_EXIT=!ERRORLEVEL!
         if "!BUILD_CHECK_EXIT!"=="0" (
             set BUILD_REQUIRED=0
             set BUILD_DECISION=skipped

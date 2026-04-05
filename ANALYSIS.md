@@ -345,6 +345,12 @@ Results:
 - web build/type-check passed with the new dashboard `startupMode` rendering, the new Health / Integrations / System / MCP System / Orchestrator startup-mode surfaces, and the Go-enriched local-compat startup/MCP/provider/CLI-harness/session/session-catalog fallback paths
 - a focused dashboard render test was added, but `vitest` is not directly installed in `apps/web`, so that new test was validated indirectly through the successful web build rather than executed as a standalone test command in this pass
 - a focused app-route compat regression was executed successfully through the root Vitest runner (`pnpm exec vitest run apps/web/src/app/api/trpc/[trpc]/route.test.ts`), validating Go-native `/api/startup/status` + `/api/runtime/status` preference when `startupStatus` is unavailable, Go-native `/api/mcp/status` preference when `mcp.getStatus` is unavailable, Go-native provider quota/fallback-chain preference when TypeScript billing procedures are unavailable, Go-native `/api/cli/harnesses` preference when `tools.detectCliHarnesses` is unavailable, Go-native `/api/sessions` preference when `session.list` is unavailable, and Go-derived `session.catalog` fallback from the native harness inventory
+- startup truthfulness validation also reproduced the exact operator path from `start.bat` without launching a long-lived process by using `start.bat --help`; after the fix, Go-primary startup now truthfully reports and executes the build when `scripts/check_startup_build.mjs` returns non-zero, and forced Go-primary installs now use `pnpm install --ignore-scripts` by default instead of tripping unrelated Maestro/Electron postinstall rebuilds
+- concrete validation for the startup slice included:
+  - `pnpm -C packages/cli run build`
+  - `powershell.exe -NoProfile -Command '$env:HYPERCODE_FORCE_INSTALL="1"; $env:HYPERCODE_SKIP_NATIVE_PREFLIGHT="1"; $env:HYPERCODE_SKIP_BUILD="1"; cmd.exe /c "start.bat --help"'`
+  - `powershell.exe -NoProfile -Command '$env:HYPERCODE_SKIP_INSTALL="1"; cmd.exe /c "start.bat --help"'` (this exercised the corrected build-required path; native preflight still ran because the PowerShell env assignment was malformed on the first attempt, which is now documented truthfully rather than hidden)
+  - `node scripts/check_startup_build.mjs`
 - Health / Integrations / System / MCP System / Orchestrator runtime-provenance propagation and the upgraded compat fallback were validated through the successful `apps/web` production build and the focused route regression
 - a short-lived `start.bat --help` run also completed and showed the new install/build phase summary lines before exiting through CLI help output
 
@@ -385,6 +391,8 @@ Result:
 - the web compat fallback now also prefers Go-native `/api/cli/harnesses` when `tools.detectCliHarnesses` is unavailable, reducing reliance on empty harness-detection placeholders in degraded mode
 - the web compat fallback and legacy bridge now also prefer Go-native `/api/sessions` when `session.list` is unavailable, reducing reliance on empty session-list placeholders in degraded mode
 - the web compat fallback now also derives `session.catalog` from Go-native `/api/cli/harnesses` when the TypeScript catalog is unavailable, reducing reliance on empty session-harness catalog placeholders in degraded mode
+- `start.bat` no longer captures startup probe exit codes with parse-time `%ERRORLEVEL%` inside parenthesized blocks; it now uses runtime `!ERRORLEVEL!`, fixing a real contradiction where startup could print `Go-primary startup build is required` and then incorrectly claim `Skipping startup build because Go-primary build artifacts already current`
+- Go-primary startup installs now default to `pnpm install --ignore-scripts` (unless `HYPERCODE_STARTUP_INSTALL_SCRIPTS=1` is set), reducing unnecessary coupling to unrelated workspace postinstall hooks such as Maestro/Electron rebuilds while still allowing the operator to force the full scripted install path when needed
 - the Go-native `/api/runtime/status` surface now also exposes startup provenance, making the native backend itself self-describing
 - `start.bat` now validates Go-first startup surfaces by default for `auto`/`go` runtime modes instead of always requiring a full workspace build first
 - `start.bat` can now skip `pnpm install` in Go-primary mode when the workspace is already ready

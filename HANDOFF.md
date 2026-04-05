@@ -23,8 +23,10 @@
 7. Upgraded the local dashboard compat path to prefer Go-native `/api/cli/harnesses` for `tools.detectCliHarnesses` when the TypeScript harness-detection procedure is unavailable. This replaces empty degraded-mode harness detections with native Go harness inventory for integration/operator views without overstating full execution-environment parity.
 8. Upgraded both compat paths to prefer Go-native `/api/sessions` for `session.list` when the TypeScript session-list procedure is unavailable. This replaces empty degraded-mode session inventories with native Go-discovered session rows, improving dashboard-home and session/operator visibility without claiming full supervised-session mutation parity.
 9. Upgraded the local dashboard compat path to derive `session.catalog` from Go-native `/api/cli/harnesses` when the TypeScript session catalog is unavailable. This preserves a truthful harness selector for session creation in degraded mode without pretending the full TypeScript catalog runtime has been ported.
-10. Updated planning/analysis docs to record the new coverage and narrowed the next recommendation to reducing remaining TypeScript compatibility dependence where Go-native status already exists.
-11. Committed and pushed:
+10. Fixed `start.bat` Go-primary truthfulness after a real operator run exposed contradictory phase messaging. The bug was parse-time `%ERRORLEVEL%` capture inside parenthesized blocks, which could print `build required` and then still skip the build. The script now uses runtime `!ERRORLEVEL!` for both install/build probes.
+11. Reduced Go-primary install coupling to unrelated workspace postinstall hooks by defaulting startup installs to `pnpm install --ignore-scripts` unless `HYPERCODE_STARTUP_INSTALL_SCRIPTS=1` is set. This keeps Go-primary startup from tripping Maestro/Electron rebuild failures when only dependency graph readiness is needed.
+12. Updated planning/analysis docs to record the new coverage and narrowed the next recommendation to reducing remaining TypeScript compatibility dependence where Go-native status already exists.
+13. Committed and pushed:
    - `7785a9a3` — `feat: surface startup provenance in system dashboards`
    - `38b10684` — `feat: surface startup provenance in orchestrator dashboard`
    - `590d8848` — `feat: prefer go startup truth in web compat fallback`
@@ -56,6 +58,12 @@ Those passed for the startup-status compat slice. Subsequent focused `mcp.getSta
 - `pnpm -C packages/core exec vitest run src/routers/startupStatus.test.ts`
 - `pnpm -C packages/cli exec vitest run src/commands/start.test.ts src/commands/status.test.ts`
 
+The latest startup-truthfulness follow-up was validated separately with:
+- `pnpm -C packages/cli run build`
+- `powershell.exe -NoProfile -Command '$env:HYPERCODE_FORCE_INSTALL="1"; $env:HYPERCODE_SKIP_NATIVE_PREFLIGHT="1"; $env:HYPERCODE_SKIP_BUILD="1"; cmd.exe /c "start.bat --help"'`
+- `powershell.exe -NoProfile -Command '$env:HYPERCODE_SKIP_INSTALL="1"; cmd.exe /c "start.bat --help"'` (this exercised the corrected build-required path; the first attempt to suppress native preflight used malformed PowerShell env syntax and is intentionally documented as such)
+- `node scripts/check_startup_build.mjs`
+
 ### Important truthful notes
 - `apps/web` still does not have a directly usable workspace-local `vitest` command for standalone page tests in this workflow, so page/UI slices were still validated through the successful production web build; however, route-level regressions can be executed truthfully through the root Vitest runner, and that path was used for `apps/web/src/app/api/trpc/[trpc]/route.test.ts` in this slice.
 - No long-running processes were killed.
@@ -63,8 +71,8 @@ Those passed for the startup-status compat slice. Subsequent focused `mcp.getSta
 - There are still unrelated dirty/untracked paths in the workspace/submodules (for example `apps/cloud-orchestrator`, `apps/maestro`, `packages/claude-mem`, JetBrains plugin files, and a VSIX artifact) that were not part of this slice and were not staged.
 
 ### Recommended next steps
-1. Keep reducing dashboard dependence on TypeScript compatibility reads where Go-native runtime/status surfaces already exist.
-   - highest-value next shared candidates now: a truthful Go-backed replacement strategy for the broader execution-environment query, then any remaining imported-session maintenance reads that bypass the already-upgraded startup-status path
+1. Resume the next shared dashboard compatibility reduction: a truthful Go-backed replacement strategy for the broader execution-environment query.
+   - this was the next planned slice before a real startup run exposed the `start.bat` truthfulness/install-path issue
 2. Deepen Go-native orchestration parity beyond current truthful fallbacks, especially:
    - Darwin parity
    - AutoDev director-loop parity
