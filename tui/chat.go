@@ -30,6 +30,7 @@ type model struct {
 	browserPinnedFocus      bool
 	browserPaneHeight       int
 	browserPanePosition     string
+	browserPanePreview      bool
 }
 
 func initialModel() model {
@@ -45,6 +46,7 @@ func initialModel() model {
 		spinner:             s,
 		browserPaneHeight:   8,
 		browserPanePosition: "top",
+		browserPanePreview:  true,
 	}
 }
 
@@ -446,14 +448,14 @@ func (m model) View() string {
 		content += "> " + m.input
 	}
 	if m.browserActive {
-		return content + "\n\n" + renderTreeBrowser(m.browserItems, m.browserIndex, m.browserFilter, m.browserConfirmPending, m.browserCollapsed, m.browserGrouped, 0, "[Foundation Tree Browser]")
+		return content + "\n\n" + renderTreeBrowser(m.browserItems, m.browserIndex, m.browserFilter, m.browserConfirmPending, m.browserCollapsed, m.browserGrouped, 0, "[Foundation Tree Browser]", true)
 	}
 	if m.browserPinned {
 		paneHeight := m.browserPaneHeight
 		if paneHeight <= 0 {
 			paneHeight = 8
 		}
-		pane := renderTreeBrowser(m.browserItems, m.browserIndex, m.browserFilter, m.browserConfirmPending && m.browserPinnedFocus, m.browserCollapsed, m.browserGrouped, paneHeight, "[Foundation Tree Pane]")
+		pane := renderTreeBrowser(m.browserItems, m.browserIndex, m.browserFilter, m.browserConfirmPending && m.browserPinnedFocus, m.browserCollapsed, m.browserGrouped, paneHeight, "[Foundation Tree Pane]", m.browserPanePreview)
 		if m.browserPinnedFocus {
 			pane += "\n[Tree Pane Focused]"
 		}

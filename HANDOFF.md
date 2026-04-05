@@ -951,3 +951,23 @@
 1. Keep `foundation/*`, `cmd`, and `tui` green and aligned to the same canonical runtime.
 2. Continue improving split-view ergonomics, especially stronger active-pane affordances or layout controls.
 3. Keep viewport controls as navigation over canonical runtime-derived visible items, not a new tree semantics layer.
+
+## Additional work completed later on 2026-04-04 (pane preview toggle tranche)
+- Added persistent pane preview state to the TUI model:
+  - `browserPanePreview bool`
+- Extended the shared tree renderer to accept an explicit preview-visibility flag.
+- Added new TUI slash command:
+  - `/tree-pane-preview <on|off>`
+- Updated the pinned pane render path to honor the preview toggle while browser mode remains preview-rich.
+- Added focused regression coverage for pane-preview toggling.
+- Added detailed analysis doc:
+  - `docs/analysis/TUI_PANE_PREVIEW_TOGGLE_TRANCHE_2026-04-04.md`
+
+## Latest validation after pane preview toggle tranche
+- `gofmt -w tui/chat.go tui/foundation_bridge.go tui/slash.go tui/slash_test.go`
+- `go test ./tui ./cmd ./foundation/...`
+
+## Updated recommendation after pane preview toggle tranche
+1. Keep `foundation/*`, `cmd`, and `tui` green and aligned to the same canonical runtime.
+2. Continue refining pane/browser coexistence, likely with stronger pane-focused interaction affordances or alternate layout presets.
+3. Keep pane preview visibility as a pure rendering concern over canonical runtime-backed browser state.

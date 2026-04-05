@@ -387,7 +387,7 @@ func visibleTreeBrowserItems(items []TreeBrowserItem, filter string, collapsed m
 	return out
 }
 
-func renderTreeBrowser(items []TreeBrowserItem, selected int, filter string, confirmPending bool, collapsed map[string]bool, grouped bool, maxVisible int, title string) string {
+func renderTreeBrowser(items []TreeBrowserItem, selected int, filter string, confirmPending bool, collapsed map[string]bool, grouped bool, maxVisible int, title string, showPreview bool) string {
 	visible := visibleTreeBrowserItems(items, filter, collapsed)
 	if selected >= len(visible) {
 		selected = max(0, len(visible)-1)
@@ -460,20 +460,22 @@ func renderTreeBrowser(items []TreeBrowserItem, selected int, filter string, con
 	}
 	if len(visible) > 0 && selected >= 0 && selected < len(visible) {
 		item := visible[selected]
-		b.WriteString("\n[Preview]\n")
-		b.WriteString(fmt.Sprintf("id=%s\nkind=%s\ndepth=%d\nchildren=%d\n", item.ID, item.Kind, item.Depth, item.ChildCount))
-		if strings.TrimSpace(item.Label) != "" {
-			b.WriteString(fmt.Sprintf("label=%q\n", item.Label))
-		}
-		b.WriteString(fmt.Sprintf("preview=%s\n", item.Preview))
-		if item.IsLeaf {
-			b.WriteString("branchSummary=already on active leaf\n")
-		} else {
-			b.WriteString(fmt.Sprintf("branchSummaryEntries=%d\n", item.SummaryEntries))
-			if strings.TrimSpace(item.CommonAncestorID) != "" {
-				b.WriteString(fmt.Sprintf("commonAncestor=%s\n", item.CommonAncestorID))
+		if showPreview {
+			b.WriteString("\n[Preview]\n")
+			b.WriteString(fmt.Sprintf("id=%s\nkind=%s\ndepth=%d\nchildren=%d\n", item.ID, item.Kind, item.Depth, item.ChildCount))
+			if strings.TrimSpace(item.Label) != "" {
+				b.WriteString(fmt.Sprintf("label=%q\n", item.Label))
 			}
-			b.WriteString(fmt.Sprintf("readFiles=%d modifiedFiles=%d\n", item.ReadFilesCount, item.ModifiedFilesCount))
+			b.WriteString(fmt.Sprintf("preview=%s\n", item.Preview))
+			if item.IsLeaf {
+				b.WriteString("branchSummary=already on active leaf\n")
+			} else {
+				b.WriteString(fmt.Sprintf("branchSummaryEntries=%d\n", item.SummaryEntries))
+				if strings.TrimSpace(item.CommonAncestorID) != "" {
+					b.WriteString(fmt.Sprintf("commonAncestor=%s\n", item.CommonAncestorID))
+				}
+				b.WriteString(fmt.Sprintf("readFiles=%d modifiedFiles=%d\n", item.ReadFilesCount, item.ModifiedFilesCount))
+			}
 		}
 		if confirmPending {
 			b.WriteString("\n[Confirm]\nSwitch to this entry? Press Enter or Y to confirm, N/Esc/Backspace to cancel.")

@@ -560,6 +560,18 @@ func TestTreePaneViewportControls(t *testing.T) {
 	}
 }
 
+func TestProcessSlashCommandTreePanePreviewToggle(t *testing.T) {
+	m := model{director: agents.NewDirector(&agents.DefaultProvider{}), browserPanePreview: true}
+	mdl, _ := ProcessSlashCommand("/tree-pane-preview off", &m)
+	updated := mdl.(model)
+	if updated.browserPanePreview {
+		t.Fatal("expected pane preview to be disabled")
+	}
+	if len(updated.history) == 0 || !strings.Contains(updated.history[len(updated.history)-1], "preview set to off") {
+		t.Fatalf("expected pane preview message, got %#v", updated.history)
+	}
+}
+
 func TestProcessSlashCommandClearResetsDirector(t *testing.T) {
 	m := model{director: agents.NewDirector(&agents.DefaultProvider{})}
 	m.history = []string{"old"}
