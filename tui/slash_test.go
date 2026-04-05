@@ -299,6 +299,8 @@ func TestTreeBrowserModeNavigation(t *testing.T) {
 	}
 	if view := updated.View(); !strings.Contains(view, "[Preview]") {
 		t.Fatalf("expected preview in browser view, got %s", view)
+	} else if !strings.Contains(view, "branchSummaryEntries=") && !strings.Contains(view, "branchSummary=already on active leaf") {
+		t.Fatalf("expected branch-summary preview details, got %s", view)
 	}
 	mdl, _ = updated.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("B")})
 	updated = mdl.(model)

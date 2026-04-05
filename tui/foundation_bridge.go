@@ -16,11 +16,15 @@ type PromptDisplayMsg struct {
 }
 
 type TreeBrowserItem struct {
-	ID      string
-	Kind    string
-	Label   string
-	Preview string
-	IsLeaf  bool
+	ID                 string
+	Kind               string
+	Label              string
+	Preview            string
+	IsLeaf             bool
+	SummaryEntries     int
+	CommonAncestorID   string
+	ReadFilesCount     int
+	ModifiedFilesCount int
 }
 
 func buildPromptResponse(director *agents.Director, input string) (PromptDisplayMsg, error) {
@@ -257,7 +261,17 @@ func buildFoundationTreeBrowser(cwd, sessionID string) ([]TreeBrowserItem, error
 			preview = preview[:60] + "..."
 		}
 		label, _ := runtime.GetLabel(sessionID, entry.ID)
-		items = append(items, TreeBrowserItem{ID: entry.ID, Kind: entry.Kind, Label: label, Preview: preview, IsLeaf: entry.ID == leafID})
+		item := TreeBrowserItem{ID: entry.ID, Kind: entry.Kind, Label: label, Preview: preview, IsLeaf: entry.ID == leafID}
+		if entry.ID != leafID {
+			prep, prepErr := runtime.PrepareBranchSummaryWithBudget(sessionID, entry.ID, 128)
+			if prepErr == nil && prep != nil {
+				item.SummaryEntries = len(prep.EntriesToSummarize)
+				item.CommonAncestorID = prep.CommonAncestorID
+				item.ReadFilesCount = len(prep.FileOps.ReadFiles)
+				item.ModifiedFilesCount = len(prep.FileOps.ModifiedFiles)
+			}
+		}
+		items = append(items, item)
 	}
 	return items, nil
 }
@@ -308,7 +322,16 @@ func renderTreeBrowser(items []TreeBrowserItem, selected int, filter string) str
 		if strings.TrimSpace(item.Label) != "" {
 			b.WriteString(fmt.Sprintf("label=%q\n", item.Label))
 		}
-		b.WriteString(fmt.Sprintf("preview=%s", item.Preview))
+		b.WriteString(fmt.Sprintf("preview=%s\n", item.Preview))
+		if item.IsLeaf {
+			b.WriteString("branchSummary=already on active leaf")
+		} else {
+			b.WriteString(fmt.Sprintf("branchSummaryEntries=%d\n", item.SummaryEntries))
+			if strings.TrimSpace(item.CommonAncestorID) != "" {
+				b.WriteString(fmt.Sprintf("commonAncestor=%s\n", item.CommonAncestorID))
+			}
+			b.WriteString(fmt.Sprintf("readFiles=%d modifiedFiles=%d", item.ReadFilesCount, item.ModifiedFilesCount))
+		}
 	}
 	return strings.TrimSpace(b.String())
 }

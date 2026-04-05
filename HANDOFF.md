@@ -596,6 +596,32 @@
 2. Add richer browser ergonomics next (folding/grouping or pre-switch summary-preparation preview).
 3. Preserve the architecture rule that filter/preview remain UI-only enhancements and do not become competing branch/session truth.
 
+## Additional work completed later on 2026-04-04 (pre-switch summary preview tranche)
+- Expanded `TreeBrowserItem` to carry branch-summary preparation preview fields:
+  - `SummaryEntries`
+  - `CommonAncestorID`
+  - `ReadFilesCount`
+  - `ModifiedFilesCount`
+- Updated `buildFoundationTreeBrowser` so non-leaf entries query the canonical runtime via `PrepareBranchSummaryWithBudget(..., 128)` and cache preview facts in the browser items.
+- Expanded browser preview rendering to display:
+  - branch summary entry count estimate
+  - common ancestor id
+  - read file count
+  - modified file count
+  - special-case note when already on active leaf
+- Updated `tui/slash_test.go` to verify that browser preview includes branch-summary preparation details.
+- Added detailed analysis doc:
+  - `docs/analysis/TUI_PRE_SWITCH_SUMMARY_PREVIEW_TRANCHE_2026-04-04.md`
+
+## Latest validation after pre-switch summary preview tranche
+- `gofmt -w tui/foundation_bridge.go tui/slash_test.go`
+- `go test ./tui ./cmd ./foundation/...`
+
+## Updated recommendation after pre-switch summary preview tranche
+1. Keep `foundation/*`, `cmd`, and `tui` green and aligned to the same canonical runtime.
+2. Add another browser ergonomics layer next (folding/grouping or explicit confirmation-before-switch).
+3. Keep all pre-switch guidance derived from canonical runtime preparation rather than UI-invented heuristics.
+
 ## Additional documentation completed after cursor tree browser tranche
 - Added appendix doc:
   - `docs/analysis/TUI_CURSOR_TREE_BROWSER_TRANCHE_2026-04-04_APPENDIX.md`
