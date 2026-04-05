@@ -45,6 +45,8 @@ func ProcessSlashCommand(cmd string, m *model) (tea.Model, tea.Cmd) {
 		return handleTreeSelect(m)
 	case "/tree-browser":
 		return handleTreeBrowser(m)
+	case "/tree-pane":
+		return handleTreePane(m)
 	case "/tree-go":
 		return handleTreeGo(m, strings.TrimSpace(strings.TrimPrefix(cmd, "/tree-go")))
 	case "/tree-children":
@@ -77,6 +79,7 @@ func handleHelp(m *model) (tea.Model, tea.Cmd) {
   /tree <targetEntryId> [maxTokens] - Switch to a target entry and preserve abandoned branch context
   /tree-select - Show a numbered entry selector for the active foundation session
   /tree-browser - Open a cursor-driven tree browser for the active foundation session
+  /tree-pane - Toggle a persistent tree pane while continuing normal prompt interaction
   /tree-go <index> [maxTokens] - Switch to an indexed entry from /tree-select
   /tree-children <entryId> - Show direct child branches for an entry
   /label <entryId> <label> - Set a label on an entry (or clear with empty label unsupported in slash)
@@ -273,6 +276,21 @@ func handleTreeBrowser(m *model) (tea.Model, tea.Cmd) {
 	m.browserItems = items
 	m.browserIndex = 0
 	m.browserActive = true
+	return *m, nil
+}
+
+func handleTreePane(m *model) (tea.Model, tea.Cmd) {
+	m.loading = false
+	if m.browserPinned {
+		unpinFoundationTreeBrowser(m)
+		m.history = append(m.history, "[Foundation Tree Pane] hidden")
+		return *m, nil
+	}
+	if err := pinFoundationTreeBrowser(m); err != nil {
+		m.history = append(m.history, fmt.Sprintf("[Error] tree pane failed: %v", err))
+		return *m, nil
+	}
+	m.history = append(m.history, "[Foundation Tree Pane] pinned")
 	return *m, nil
 }
 

@@ -374,6 +374,33 @@ func TestTreeBrowserModeNavigation(t *testing.T) {
 	}
 }
 
+func TestProcessSlashCommandTreePaneToggle(t *testing.T) {
+	cwd := t.TempDir()
+	m := model{director: agents.NewDirector(&agents.DefaultProvider{})}
+	m.director.WorkingDir = cwd
+	sessionID, err := ensureFoundationSession(&m)
+	if err != nil {
+		t.Fatal(err)
+	}
+	runtime := foundationpi.NewRuntime(cwd, nil)
+	if _, err := runtime.AppendUserText(sessionID, "A"); err != nil {
+		t.Fatal(err)
+	}
+	mdl, _ := ProcessSlashCommand("/tree-pane", &m)
+	updated := mdl.(model)
+	if !updated.browserPinned {
+		t.Fatal("expected browser pane to be pinned")
+	}
+	if view := updated.View(); !strings.Contains(view, "[Foundation Tree Browser]") {
+		t.Fatalf("expected pinned tree pane in view, got %s", view)
+	}
+	mdl, _ = ProcessSlashCommand("/tree-pane", &updated)
+	updated = mdl.(model)
+	if updated.browserPinned {
+		t.Fatal("expected browser pane to be hidden")
+	}
+}
+
 func TestProcessSlashCommandClearResetsDirector(t *testing.T) {
 	m := model{director: agents.NewDirector(&agents.DefaultProvider{})}
 	m.history = []string{"old"}

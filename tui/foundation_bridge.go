@@ -471,6 +471,24 @@ func openSelectedTreeBrowser(cwd, sessionID string, items []TreeBrowserItem, sel
 	return switchFoundationTreeDisplay(cwd, sessionID, items[selected].ID, maxTokens)
 }
 
+func pinFoundationTreeBrowser(m *model) error {
+	sessionID, err := ensureFoundationSession(m)
+	if err != nil {
+		return err
+	}
+	items, err := buildFoundationTreeBrowser(m.director.WorkingDir, sessionID)
+	if err != nil {
+		return err
+	}
+	m.browserItems = items
+	m.browserPinned = true
+	return nil
+}
+
+func unpinFoundationTreeBrowser(m *model) {
+	m.browserPinned = false
+}
+
 func buildShellProposal(director *agents.Director, query string) (ShellProposalMsg, error) {
 	execution := adapters.PrepareProviderExecution(adapters.ProviderExecutionRequest{Prompt: query, TaskType: "analysis", CostPreference: "budget"})
 	assistant := agents.NewShellTranslator(director.Provider)

@@ -26,6 +26,7 @@ type model struct {
 	browserConfirmPending   bool
 	browserCollapsed        map[string]bool
 	browserGrouped          bool
+	browserPinned           bool
 }
 
 func initialModel() model {
@@ -259,6 +260,10 @@ func (m model) View() string {
 	if m.browserActive {
 		s += renderTreeBrowser(m.browserItems, m.browserIndex, m.browserFilter, m.browserConfirmPending, m.browserCollapsed, m.browserGrouped)
 		return s
+	}
+	if m.browserPinned {
+		s += renderTreeBrowser(m.browserItems, m.browserIndex, m.browserFilter, false, m.browserCollapsed, m.browserGrouped)
+		s += "\n\n"
 	}
 	if m.loading {
 		s += fmt.Sprintf("%s Processing neural inputs...\n", m.spinner.View())

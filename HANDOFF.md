@@ -780,3 +780,25 @@
 1. Keep `foundation/*`, `cmd`, and `tui` green and aligned to the same canonical runtime.
 2. Consider a persistent browser pane/view or stronger branch-head/divergence grouping next.
 3. Keep grouped mode as a presentation-only layer over canonical runtime structure.
+
+## Additional work completed later on 2026-04-04 (persistent tree pane tranche)
+- Added persistent pane state to the TUI model:
+  - `browserPinned bool`
+- Added foundation bridge helpers:
+  - `pinFoundationTreeBrowser`
+  - `unpinFoundationTreeBrowser`
+- Added new TUI slash command:
+  - `/tree-pane`
+- Updated `model.View()` so a pinned browser pane renders alongside the normal prompt when browser mode is not active.
+- Expanded `tui/slash_test.go` to verify pin/unpin behavior and pane visibility in the TUI view.
+- Added detailed analysis doc:
+  - `docs/analysis/TUI_PERSISTENT_TREE_PANE_TRANCHE_2026-04-04.md`
+
+## Latest validation after persistent tree pane tranche
+- `gofmt -w tui/chat.go tui/foundation_bridge.go tui/slash.go tui/slash_test.go`
+- `go test ./tui ./cmd ./foundation/...`
+
+## Updated recommendation after persistent tree pane tranche
+1. Keep `foundation/*`, `cmd`, and `tui` green and aligned to the same canonical runtime.
+2. Consider refresh and stronger pane ergonomics next, or evolve toward a richer split-view browser layout.
+3. Keep the pane as a view over canonical runtime truth rather than a parallel session/branch model.
