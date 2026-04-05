@@ -39,6 +39,8 @@ func ProcessSlashCommand(cmd string, m *model) (tea.Model, tea.Cmd) {
 		return handleSummaryCompact(m, strings.TrimSpace(strings.TrimPrefix(cmd, "/summary-compact")))
 	case "/summary-branch":
 		return handleSummaryBranch(m, strings.TrimSpace(strings.TrimPrefix(cmd, "/summary-branch")))
+	case "/tree":
+		return handleTree(m, strings.TrimSpace(strings.TrimPrefix(cmd, "/tree")))
 	case "/fsession":
 		return handleFoundationSession(m)
 	case "/exit", "/quit":
@@ -61,6 +63,8 @@ func handleHelp(m *model) (tea.Model, tea.Cmd) {
   /adapters  - Show HyperCode/Borg + MCP adapter status
   /mcp       - Show adapter-backed MCP tool hints
   /fsession  - Show or create the active foundation session
+  /tree      - Show the active foundation session tree
+  /tree <targetEntryId> [maxTokens] - Switch to a target entry and preserve abandoned branch context
   /summary-compact [keepRecentTokens] - Generate a native compaction summary for the active foundation session
   /summary-branch <targetEntryId> [maxTokens] - Generate a native branch summary toward a target entry
   /exit      - Closes hypercode`)
@@ -190,6 +194,32 @@ func handleSummaryBranch(m *model, arg string) (tea.Model, tea.Cmd) {
 	display, err := buildFoundationBranchSummaryDisplay(m.director.WorkingDir, sessionID, targetID, maxTokens)
 	if err != nil {
 		m.history = append(m.history, fmt.Sprintf("[Error] branch summary failed: %v", err))
+		return *m, nil
+	}
+	m.history = append(m.history, display)
+	return *m, nil
+}
+
+func handleTree(m *model, arg string) (tea.Model, tea.Cmd) {
+	m.loading = false
+	sessionID, err := ensureFoundationSession(m)
+	if err != nil {
+		m.history = append(m.history, fmt.Sprintf("[Error] foundation session unavailable: %v", err))
+		return *m, nil
+	}
+	if strings.TrimSpace(arg) == "" {
+		display, err := buildFoundationTreeDisplay(m.director.WorkingDir, sessionID)
+		if err != nil {
+			m.history = append(m.history, fmt.Sprintf("[Error] tree display failed: %v", err))
+			return *m, nil
+		}
+		m.history = append(m.history, display)
+		return *m, nil
+	}
+	targetID, maxTokens := parseSummaryArgs(arg)
+	display, err := switchFoundationTreeDisplay(m.director.WorkingDir, sessionID, targetID, maxTokens)
+	if err != nil {
+		m.history = append(m.history, fmt.Sprintf("[Error] tree switch failed: %v", err))
 		return *m, nil
 	}
 	m.history = append(m.history, display)

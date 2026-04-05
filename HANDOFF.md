@@ -425,3 +425,29 @@
 1. Keep `foundation/*`, `cmd`, and `tui` green and aligned to the same canonical runtime.
 2. Begin implementing truthful `/tree`-style TUI navigation next on top of the now-real branch/session/summary substrate.
 3. Keep provider-backed generation optional and layered above the deterministic baseline.
+
+## Additional work completed later on 2026-04-04 (TUI tree navigation tranche)
+- Added foundation-backed TUI tree display helper:
+  - `buildFoundationTreeDisplay`
+- Added foundation-backed TUI tree switch helper:
+  - `switchFoundationTreeDisplay`
+- Added TUI slash command surfaces:
+  - `/tree`
+  - `/tree <targetEntryId> [maxTokens]`
+- Updated TUI `/help` output to document the new `/tree` behavior.
+- Expanded `tui/slash_test.go` to verify:
+  - tree display output
+  - tree switch output
+  - structured branch-summary content during switch
+  - actual leaf movement after switch
+- Added detailed analysis doc:
+  - `docs/analysis/TUI_TREE_NAVIGATION_TRANCHE_2026-04-04.md`
+
+## Latest validation after TUI tree navigation tranche
+- `gofmt -w tui/foundation_bridge.go tui/slash.go tui/slash_test.go`
+- `go test ./tui ./cmd ./foundation/...`
+
+## Updated recommendation after TUI tree navigation tranche
+1. Keep `foundation/*`, `cmd`, and `tui` green and aligned to the same canonical runtime.
+2. Expand `/tree` from minimal command-driven navigation into a richer TUI branch explorer next.
+3. Continue resisting duplicated semantics in the UI layer; richer UX should sit on top of the same verified foundation behavior.

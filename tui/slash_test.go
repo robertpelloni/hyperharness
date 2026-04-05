@@ -107,6 +107,65 @@ func TestProcessSlashCommandFoundationSummarySurfaces(t *testing.T) {
 	}
 }
 
+func TestProcessSlashCommandTreeSurfaces(t *testing.T) {
+	cwd := t.TempDir()
+	m := model{director: agents.NewDirector(&agents.DefaultProvider{})}
+	m.director.WorkingDir = cwd
+	sessionID, err := ensureFoundationSession(&m)
+	if err != nil {
+		t.Fatal(err)
+	}
+	runtime := foundationpi.NewRuntime(cwd, nil)
+	if _, err := runtime.AppendUserText(sessionID, "A"); err != nil {
+		t.Fatal(err)
+	}
+	aID, err := runtime.GetLeafID(sessionID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := runtime.AppendUserText(sessionID, "B"); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := runtime.AppendUserText(sessionID, "C"); err != nil {
+		t.Fatal(err)
+	}
+	oldLeaf, err := runtime.GetLeafID(sessionID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := runtime.BranchSession(sessionID, aID); err != nil {
+		t.Fatal(err)
+	}
+	session, err := runtime.AppendUserText(sessionID, "E")
+	if err != nil {
+		t.Fatal(err)
+	}
+	targetID := session.Metadata.LeafID
+	if _, err := runtime.BranchSession(sessionID, oldLeaf); err != nil {
+		t.Fatal(err)
+	}
+	mdl, _ := ProcessSlashCommand("/tree", &m)
+	updated := mdl.(model)
+	if len(updated.history) == 0 || !strings.Contains(updated.history[len(updated.history)-1], "[Foundation Tree]") {
+		t.Fatalf("expected tree output, got %#v", updated.history)
+	}
+	mdl, _ = ProcessSlashCommand("/tree "+targetID+" 128", &updated)
+	updated = mdl.(model)
+	if len(updated.history) == 0 || !strings.Contains(updated.history[len(updated.history)-1], "[Foundation Tree Switch]") {
+		t.Fatalf("expected tree switch output, got %#v", updated.history)
+	}
+	if !strings.Contains(updated.history[len(updated.history)-1], "## Goal") {
+		t.Fatalf("expected structured branch summary in tree switch output, got %#v", updated.history[len(updated.history)-1])
+	}
+	newLeaf, err := runtime.GetLeafID(sessionID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if newLeaf == oldLeaf {
+		t.Fatalf("expected leaf to move away from old leaf %q", oldLeaf)
+	}
+}
+
 func TestProcessSlashCommandClearResetsDirector(t *testing.T) {
 	m := model{director: agents.NewDirector(&agents.DefaultProvider{})}
 	m.history = []string{"old"}

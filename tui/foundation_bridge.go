@@ -82,6 +82,55 @@ func parseSummaryArgs(input string) (string, int) {
 	return target, maxTokens
 }
 
+func buildFoundationTreeDisplay(cwd, sessionID string) (string, error) {
+	runtime := foundationpi.NewRuntime(cwd, nil)
+	session, err := runtime.LoadSession(sessionID)
+	if err != nil {
+		return "", err
+	}
+	leafID, err := runtime.GetLeafID(sessionID)
+	if err != nil {
+		return "", err
+	}
+	var b strings.Builder
+	b.WriteString("[Foundation Tree]\n")
+	b.WriteString(fmt.Sprintf("session=%s leaf=%s\n", sessionID, leafID))
+	for _, entry := range session.Entries {
+		marker := " "
+		if entry.ID == leafID {
+			marker = "*"
+		}
+		preview := entry.Text
+		if strings.TrimSpace(preview) == "" {
+			preview = entry.ToolName
+		}
+		if len(preview) > 60 {
+			preview = preview[:60] + "..."
+		}
+		b.WriteString(fmt.Sprintf("%s %s <- %s [%s] %s\n", marker, entry.ID, entry.ParentID, entry.Kind, preview))
+	}
+	return strings.TrimSpace(b.String()), nil
+}
+
+func switchFoundationTreeDisplay(cwd, sessionID, targetID string, maxTokens int) (string, error) {
+	runtime := foundationpi.NewRuntime(cwd, nil)
+	currentLeaf, err := runtime.GetLeafID(sessionID)
+	if err != nil {
+		return "", err
+	}
+	if targetID == "" {
+		return "", fmt.Errorf("target entry id is required")
+	}
+	if currentLeaf == targetID {
+		return fmt.Sprintf("[Foundation Tree]\nAlready on branch leaf %s", targetID), nil
+	}
+	_, summary, err := runtime.BranchWithGeneratedSummary(context.Background(), sessionID, targetID, maxTokens, nil, nil)
+	if err != nil {
+		return "", err
+	}
+	return "[Foundation Tree Switch]\n" + summary, nil
+}
+
 func buildShellProposal(director *agents.Director, query string) (ShellProposalMsg, error) {
 	execution := adapters.PrepareProviderExecution(adapters.ProviderExecutionRequest{Prompt: query, TaskType: "analysis", CostPreference: "budget"})
 	assistant := agents.NewShellTranslator(director.Provider)
