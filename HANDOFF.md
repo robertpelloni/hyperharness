@@ -971,3 +971,28 @@
 1. Keep `foundation/*`, `cmd`, and `tui` green and aligned to the same canonical runtime.
 2. Continue refining pane/browser coexistence, likely with stronger pane-focused interaction affordances or alternate layout presets.
 3. Keep pane preview visibility as a pure rendering concern over canonical runtime-backed browser state.
+
+## Additional work completed later on 2026-04-04 (pane preset tranche)
+- Added new TUI slash command:
+  - `/tree-pane-preset <compact|detailed>`
+- Added `compact` preset:
+  - height `6`
+  - preview `off`
+  - position `bottom`
+- Added `detailed` preset:
+  - height `12`
+  - preview `on`
+  - position `top`
+- Updated TUI help text to document the preset command.
+- Added focused regression coverage for preset application.
+- Added detailed analysis doc:
+  - `docs/analysis/TUI_PANE_PRESET_TRANCHE_2026-04-04.md`
+
+## Latest validation after pane preset tranche
+- `gofmt -w tui/slash.go tui/slash_test.go`
+- `go test ./tui ./cmd ./foundation/...`
+
+## Updated recommendation after pane preset tranche
+1. Keep `foundation/*`, `cmd`, and `tui` green and aligned to the same canonical runtime.
+2. Continue refining pane/browser coexistence with higher-level operator presets or split-view controls next.
+3. Keep presets as bundles of rendering/layout state only, never as alternate session/branch semantics.

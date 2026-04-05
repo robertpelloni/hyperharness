@@ -51,6 +51,8 @@ func ProcessSlashCommand(cmd string, m *model) (tea.Model, tea.Cmd) {
 		return handleTreePaneSize(m, strings.TrimSpace(strings.TrimPrefix(cmd, "/tree-pane-size")))
 	case "/tree-pane-preview":
 		return handleTreePanePreview(m, strings.TrimSpace(strings.TrimPrefix(cmd, "/tree-pane-preview")))
+	case "/tree-pane-preset":
+		return handleTreePanePreset(m, strings.TrimSpace(strings.TrimPrefix(cmd, "/tree-pane-preset")))
 	case "/tree-pane-position":
 		return handleTreePanePosition(m, strings.TrimSpace(strings.TrimPrefix(cmd, "/tree-pane-position")))
 	case "/tree-pane-focus":
@@ -90,6 +92,7 @@ func handleHelp(m *model) (tea.Model, tea.Cmd) {
   /tree-pane - Toggle a persistent tree pane while continuing normal prompt interaction
   /tree-pane-size <n> - Set the persistent tree pane viewport height
   /tree-pane-preview <on|off> - Toggle preview details inside the persistent tree pane
+  /tree-pane-preset <compact|detailed> - Apply a named pane layout preset
   /tree-pane-position <top|bottom> - Set the persistent tree pane position
   /tree-pane-focus - Toggle keyboard focus for the pinned tree pane
   /tree-go <index> [maxTokens] - Switch to an indexed entry from /tree-select
@@ -330,6 +333,26 @@ func handleTreePanePreview(m *model, arg string) (tea.Model, tea.Cmd) {
 	}
 	m.browserPanePreview = value == "on"
 	m.history = append(m.history, fmt.Sprintf("[Foundation Tree Pane] preview set to %s", value))
+	return *m, nil
+}
+
+func handleTreePanePreset(m *model, arg string) (tea.Model, tea.Cmd) {
+	m.loading = false
+	preset := strings.ToLower(strings.TrimSpace(arg))
+	switch preset {
+	case "compact":
+		m.browserPaneHeight = 6
+		m.browserPanePreview = false
+		m.browserPanePosition = "bottom"
+		m.history = append(m.history, "[Foundation Tree Pane] preset applied: compact")
+	case "detailed":
+		m.browserPaneHeight = 12
+		m.browserPanePreview = true
+		m.browserPanePosition = "top"
+		m.history = append(m.history, "[Foundation Tree Pane] preset applied: detailed")
+	default:
+		m.history = append(m.history, "[Error] /tree-pane-preset requires 'compact' or 'detailed'")
+	}
 	return *m, nil
 }
 
