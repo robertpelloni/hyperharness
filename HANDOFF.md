@@ -1187,3 +1187,25 @@
 1. Keep `foundation/*`, `cmd`, and `tui` green and aligned to the same canonical runtime.
 2. Continue adding explicit operator controls where they improve confidence and reduce friction.
 3. Keep refresh controls as canonical-runtime-backed sync actions rather than separate local state mutations.
+
+## Additional work completed later on 2026-04-04 (pane size cycle tranche)
+- Added new TUI slash command:
+  - `/tree-pane-size-cycle`
+- Added quick cycling across common pane heights:
+  - `6`
+  - `8`
+  - `10`
+  - `12`
+  - `14`
+- Added focused regression coverage verifying expected size-cycle transitions.
+- Added detailed analysis doc:
+  - `docs/analysis/TUI_PANE_SIZE_CYCLE_TRANCHE_2026-04-04.md`
+
+## Latest validation after pane size cycle tranche
+- `gofmt -w tui/slash.go tui/slash_test.go`
+- `go test ./tui ./cmd ./foundation/...`
+
+## Updated recommendation after pane size cycle tranche
+1. Keep `foundation/*`, `cmd`, and `tui` green and aligned to the same canonical runtime.
+2. Continue adding small convenience controls where they reduce repeated pane/browser adjustment overhead.
+3. Keep size cycling as a pure layout convenience over the same pane state model.

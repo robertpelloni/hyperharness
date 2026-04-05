@@ -49,6 +49,8 @@ func ProcessSlashCommand(cmd string, m *model) (tea.Model, tea.Cmd) {
 		return handleTreePane(m)
 	case "/tree-pane-size":
 		return handleTreePaneSize(m, strings.TrimSpace(strings.TrimPrefix(cmd, "/tree-pane-size")))
+	case "/tree-pane-size-cycle":
+		return handleTreePaneSizeCycle(m)
 	case "/tree-pane-preview":
 		return handleTreePanePreview(m, strings.TrimSpace(strings.TrimPrefix(cmd, "/tree-pane-preview")))
 	case "/tree-pane-preview-toggle":
@@ -107,6 +109,7 @@ func handleHelp(m *model) (tea.Model, tea.Cmd) {
   /tree-browser - Open a cursor-driven tree browser for the active foundation session
   /tree-pane - Toggle a persistent tree pane while continuing normal prompt interaction
   /tree-pane-size <n> - Set the persistent tree pane viewport height
+  /tree-pane-size-cycle - Quickly cycle common persistent tree pane heights
   /tree-pane-preview <on|off> - Toggle preview details inside the persistent tree pane
   /tree-pane-preview-toggle - Quickly toggle preview details for the persistent tree pane
   /tree-pane-grouped <on|off|toggle> - Control grouped rendering for the persistent tree pane
@@ -345,6 +348,26 @@ func handleTreePaneSize(m *model, arg string) (tea.Model, tea.Cmd) {
 	}
 	m.browserPaneHeight = height
 	m.history = append(m.history, fmt.Sprintf("[Foundation Tree Pane] height set to %d", height))
+	return *m, nil
+}
+
+func handleTreePaneSizeCycle(m *model) (tea.Model, tea.Cmd) {
+	m.loading = false
+	next := 6
+	switch m.browserPaneHeight {
+	case 6:
+		next = 8
+	case 8:
+		next = 10
+	case 10:
+		next = 12
+	case 12:
+		next = 14
+	case 14:
+		next = 6
+	}
+	m.browserPaneHeight = next
+	m.history = append(m.history, fmt.Sprintf("[Foundation Tree Pane] height cycled to %d", next))
 	return *m, nil
 }
 

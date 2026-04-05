@@ -562,6 +562,20 @@ func TestTreePaneViewportControls(t *testing.T) {
 	}
 }
 
+func TestProcessSlashCommandTreePaneSizeCycle(t *testing.T) {
+	m := model{director: agents.NewDirector(&agents.DefaultProvider{}), browserPaneHeight: 8}
+	mdl, _ := ProcessSlashCommand("/tree-pane-size-cycle", &m)
+	updated := mdl.(model)
+	if updated.browserPaneHeight != 10 {
+		t.Fatalf("expected first size cycle to 10, got %d", updated.browserPaneHeight)
+	}
+	mdl, _ = ProcessSlashCommand("/tree-pane-size-cycle", &updated)
+	updated = mdl.(model)
+	if updated.browserPaneHeight != 12 {
+		t.Fatalf("expected second size cycle to 12, got %d", updated.browserPaneHeight)
+	}
+}
+
 func TestProcessSlashCommandTreePanePositionToggle(t *testing.T) {
 	m := model{director: agents.NewDirector(&agents.DefaultProvider{}), browserPanePosition: "top"}
 	mdl, _ := ProcessSlashCommand("/tree-pane-position-toggle", &m)
