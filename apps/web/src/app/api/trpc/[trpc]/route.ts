@@ -145,6 +145,10 @@ const LOCAL_COMPAT_RESPONSE_KEYS = {
   'session.catalog': 'session.catalog',
   'session.importedMaintenanceStats': 'session.importedMaintenanceStats',
   'session.getState': 'session.getState',
+  'session.get': 'session.get',
+  'session.logs': 'session.logs',
+  'session.attachInfo': 'session.attachInfo',
+  'session.health': 'session.health',
   'agentMemory.stats': 'agentMemory.stats',
   'shell.getSystemHistory': 'shell.getSystemHistory',
   'serverHealth.check': 'serverHealth.check',
@@ -170,13 +174,26 @@ const LEGACY_COMPAT_RESPONSES: Record<LegacyCompatResponseKey, unknown> = {
 
 const LEGACY_MCP_PROCEDURES = new Set(Object.keys(LEGACY_COMPAT_RESPONSE_KEYS));
 const LOCAL_COMPAT_PROCEDURES = new Set(Object.keys(LOCAL_COMPAT_RESPONSE_KEYS));
-const LOCAL_COMPAT_MUTATION_PROCEDURES = new Set([
+const LOCAL_MCP_MUTATION_PROCEDURES = new Set([
   'mcpServers.create',
   'mcpServers.update',
   'mcpServers.delete',
   'mcpServers.reloadMetadata',
   'mcpServers.clearMetadataCache',
   'serverHealth.reset',
+]);
+const LOCAL_SESSION_MUTATION_PROCEDURES = new Set([
+  'session.create',
+  'session.start',
+  'session.stop',
+  'session.restart',
+  'session.executeShell',
+  'session.updateState',
+  'session.clear',
+]);
+const LOCAL_COMPAT_MUTATION_PROCEDURES = new Set([
+  ...LOCAL_MCP_MUTATION_PROCEDURES,
+  ...LOCAL_SESSION_MUTATION_PROCEDURES,
 ]);
 
 const LEGACY_MCP_SERVERS_LIST_PROCEDURES = [
@@ -785,6 +802,34 @@ async function fetchNativeStatusPayload<T extends Record<string, unknown>>(endpo
       if (data) {
         return data as T;
       }
+    } catch {
+      // Try the next native control-plane base.
+    }
+  }
+
+  return null;
+}
+
+async function fetchNativeControlPlaneData<T>(
+  endpointPath: string,
+  init?: RequestInit,
+): Promise<T | null> {
+  for (const base of resolveNativeStatusBases()) {
+    try {
+      const response = await fetch(`${base}${endpointPath}`, {
+        cache: 'no-store',
+        ...init,
+      });
+      if (!response.ok) {
+        continue;
+      }
+
+      const payload = await response.json() as { success?: unknown; data?: unknown };
+      if (payload.success !== true) {
+        continue;
+      }
+
+      return (payload.data as T | undefined) ?? null;
     } catch {
       // Try the next native control-plane base.
     }
@@ -1637,6 +1682,57 @@ async function buildPreferredSessionList(): Promise<unknown[]> {
   return LEGACY_COMPAT_RESPONSES['session.list'] as unknown[];
 }
 
+async function buildPreferredSessionSnapshot(id: string | null): Promise<unknown | null> {
+  const normalizedId = id?.trim();
+  if (!normalizedId) {
+    return null;
+  }
+
+  const endpoint = new URL('/api/sessions/supervisor/get', 'http://127.0.0.1');
+  endpoint.searchParams.set('id', normalizedId);
+  return await fetchNativeControlPlaneData<unknown>(`${endpoint.pathname}${endpoint.search}`);
+}
+
+async function buildPreferredSessionLogs(id: string | null, limit?: number | null): Promise<unknown[]> {
+  const normalizedId = id?.trim();
+  if (!normalizedId) {
+    return [];
+  }
+
+  const endpoint = new URL('/api/sessions/supervisor/logs', 'http://127.0.0.1');
+  endpoint.searchParams.set('id', normalizedId);
+  if (typeof limit === 'number' && Number.isFinite(limit) && limit > 0) {
+    endpoint.searchParams.set('limit', String(limit));
+  }
+
+  const logs = await fetchNativeControlPlaneData<unknown[]>(`${endpoint.pathname}${endpoint.search}`);
+  return Array.isArray(logs) ? logs : [];
+}
+
+async function buildPreferredSessionAttachInfo(id: string | null): Promise<Record<string, unknown> | null> {
+  const normalizedId = id?.trim();
+  if (!normalizedId) {
+    return null;
+  }
+
+  const endpoint = new URL('/api/sessions/supervisor/attach-info', 'http://127.0.0.1');
+  endpoint.searchParams.set('id', normalizedId);
+  const attachInfo = await fetchNativeControlPlaneData<Record<string, unknown>>(`${endpoint.pathname}${endpoint.search}`);
+  return asObjectRecord(attachInfo);
+}
+
+async function buildPreferredSessionHealth(id: string | null): Promise<Record<string, unknown> | null> {
+  const normalizedId = id?.trim();
+  if (!normalizedId) {
+    return null;
+  }
+
+  const endpoint = new URL('/api/sessions/supervisor/health', 'http://127.0.0.1');
+  endpoint.searchParams.set('id', normalizedId);
+  const health = await fetchNativeControlPlaneData<Record<string, unknown>>(`${endpoint.pathname}${endpoint.search}`);
+  return asObjectRecord(health);
+}
+
 async function buildPreferredProviderQuotas(): Promise<unknown[]> {
   for (const base of resolveNativeStatusBases()) {
     try {
@@ -2174,6 +2270,10 @@ async function buildLocalCompatResponse(req: Request, body?: string): Promise<Re
     'session.catalog': sessionCatalog,
     'session.importedMaintenanceStats': importedMaintenanceStats,
     'session.getState': sessionState,
+    'session.get': null,
+    'session.logs': [],
+    'session.attachInfo': null,
+    'session.health': null,
     'agentMemory.stats': agentMemoryStats,
     'shell.getSystemHistory': [],
     'serverHealth.check': {
@@ -2227,6 +2327,31 @@ async function buildLocalCompatResponse(req: Request, body?: string): Promise<Re
       const input = procedureInputs[index];
       const limit = input && typeof input === 'object' ? readNumber((input as { limit?: unknown }).limit) : null;
       data = await buildPreferredShellSystemHistory(limit);
+    }
+
+    if (responseKey === 'session.get') {
+      const input = procedureInputs[index];
+      const id = input && typeof input === 'object' ? readString((input as { id?: unknown }).id) : null;
+      data = await buildPreferredSessionSnapshot(id);
+    }
+
+    if (responseKey === 'session.logs') {
+      const input = procedureInputs[index];
+      const id = input && typeof input === 'object' ? readString((input as { id?: unknown }).id) : null;
+      const limit = input && typeof input === 'object' ? readNumber((input as { limit?: unknown }).limit) : null;
+      data = await buildPreferredSessionLogs(id, limit);
+    }
+
+    if (responseKey === 'session.attachInfo') {
+      const input = procedureInputs[index];
+      const id = input && typeof input === 'object' ? readString((input as { id?: unknown }).id) : null;
+      data = await buildPreferredSessionAttachInfo(id);
+    }
+
+    if (responseKey === 'session.health') {
+      const input = procedureInputs[index];
+      const id = input && typeof input === 'object' ? readString((input as { id?: unknown }).id) : null;
+      data = await buildPreferredSessionHealth(id);
     }
 
     if (responseKey === 'serverHealth.check') {
@@ -2562,9 +2687,74 @@ async function tryLocalBulkImport(req: Request, body: string | undefined): Promi
   });
 }
 
+async function tryLocalSessionMutation(req: Request, body: string | undefined): Promise<Response | null> {
+  const procedures = getProcedureNames(req);
+  const procedureName = procedures[0] ?? '';
+  if (req.method !== 'POST' || procedures.length !== 1 || !LOCAL_SESSION_MUTATION_PROCEDURES.has(procedureName)) {
+    return null;
+  }
+
+  const input = extractTrpcRequestInput(body, req);
+  if ((procedureName === 'session.clear' && (input === null || input === undefined || typeof input === 'object')) || (input && typeof input === 'object')) {
+    let endpointPath = '';
+    let method: 'POST' = 'POST';
+    let requestBody: string | undefined;
+
+    if (procedureName === 'session.create') {
+      endpointPath = '/api/sessions/supervisor/create';
+      requestBody = JSON.stringify(input ?? {});
+    } else if (procedureName === 'session.start') {
+      endpointPath = '/api/sessions/supervisor/start';
+      requestBody = JSON.stringify(input ?? {});
+    } else if (procedureName === 'session.stop') {
+      endpointPath = '/api/sessions/supervisor/stop';
+      requestBody = JSON.stringify(input ?? {});
+    } else if (procedureName === 'session.restart') {
+      endpointPath = '/api/sessions/supervisor/restart';
+      requestBody = JSON.stringify(input ?? {});
+    } else if (procedureName === 'session.executeShell') {
+      endpointPath = '/api/sessions/supervisor/execute-shell';
+      requestBody = JSON.stringify(input ?? {});
+    } else if (procedureName === 'session.updateState') {
+      endpointPath = '/api/sessions/supervisor/update-state';
+      requestBody = JSON.stringify(input ?? {});
+    } else if (procedureName === 'session.clear') {
+      endpointPath = '/api/sessions/supervisor/clear';
+      requestBody = JSON.stringify(input ?? {});
+    }
+
+    if (!endpointPath) {
+      return null;
+    }
+
+    const data = await fetchNativeControlPlaneData<unknown>(endpointPath, {
+      method,
+      headers: {
+        'content-type': 'application/json',
+      },
+      ...(requestBody ? { body: requestBody } : {}),
+    });
+
+    if (data === null && procedureName !== 'session.clear') {
+      return null;
+    }
+
+    return buildTrpcResponse(req, data ?? { success: true }, {
+      status: 200,
+      headers: { 'x-hypercode-trpc-compat': 'local-session-supervisor-action' },
+    });
+  }
+
+  return buildTrpcResponse(req, undefined, {
+    status: 400,
+    statusText: 'Invalid local session compat input',
+    headers: { 'x-hypercode-trpc-compat': 'local-session-supervisor-action' },
+  });
+}
+
 async function tryLocalManagedServerMutation(req: Request, body: string | undefined): Promise<Response | null> {
   const procedures = getProcedureNames(req);
-  if (req.method !== 'POST' || procedures.length !== 1 || !LOCAL_COMPAT_MUTATION_PROCEDURES.has(procedures[0] ?? '')) {
+  if (req.method !== 'POST' || procedures.length !== 1 || !LOCAL_MCP_MUTATION_PROCEDURES.has(procedures[0] ?? '')) {
     return null;
   }
 
@@ -2814,6 +3004,11 @@ async function handler(req: Request): Promise<Response> {
     const bulkImportBridgeResponse = await tryBridgeBulkImport(req, upstreamBases, headers, body);
     if (bulkImportBridgeResponse) {
       return bulkImportBridgeResponse;
+    }
+
+    const localSessionMutationResponse = await tryLocalSessionMutation(req, body);
+    if (localSessionMutationResponse) {
+      return localSessionMutationResponse;
     }
 
     const localManagedMutationResponse = await tryLocalManagedServerMutation(req, body);

@@ -3,6 +3,39 @@
 ## Current status
 **Version:** `1.0.0-alpha.1`
 
+### Latest incremental pass — Go-backed session dashboard compatibility in web fallback mode
+This follow-up made the Go-primary dashboard materially more usable by teaching the local dashboard compat route to use the already-existing Go session-supervisor HTTP surface for key session reads/mutations.
+
+#### What changed
+- Updated `apps/web/src/app/api/trpc/[trpc]/route.ts` so local fallback now supports Go-backed session-supervisor reads for:
+  - `session.get`
+  - `session.logs`
+  - `session.attachInfo`
+  - `session.health`
+- Added local compat mutation support for:
+  - `session.create`
+  - `session.start`
+  - `session.stop`
+  - `session.restart`
+  - `session.executeShell`
+  - `session.updateState`
+  - `session.clear`
+- These now target the live Go control-plane routes under `/api/sessions/supervisor/*` instead of failing just because `/trpc` is unavailable
+- Added focused regression coverage in `apps/web/src/app/api/trpc/[trpc]/route.test.ts`
+
+#### Runtime truth confirmed by operator logs
+The latest pasted `start.bat` evidence now also confirms the previous dashboard-startup slice is working in practice:
+- Go control plane started on `4001`
+- the Next.js dashboard started on `3000`
+- startup now reports compatibility-backed dashboard mode truthfully instead of hard-skipping the dashboard
+
+#### Validation performed
+- `pnpm exec vitest run apps/web/src/app/api/trpc/[trpc]/route.test.ts`
+- `pnpm -C apps/web run build`
+
+#### Recommended next step after this pass
+Continue shrinking the remaining dashboard compatibility gap by porting more mutation-heavy dashboard-backed surfaces to direct Go-owned contracts, using the same shared compat-layer strategy rather than page-by-page one-offs.
+
 ### Latest incremental pass — Go-primary dashboard startup compatibility
 This follow-up removed an overly pessimistic Go-primary startup limitation: the dashboard no longer has to be hard-skipped when the Go control plane is active.
 

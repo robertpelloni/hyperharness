@@ -1,5 +1,97 @@
 # HyperCode Stabilization Analysis — 2026-04-03
 
+## Latest stabilization pass — Go-backed session dashboard compatibility in web fallback mode
+
+### Context
+After the previous pass, Go-primary startup could finally launch the Next.js dashboard instead of hard-skipping it. Real operator logs now confirm that behavior is working in practice:
+- Go control plane started on port `4001`
+- the Next.js dashboard started on port `3000`
+- startup truthfully reported:
+  - `Dashboard request: requested`
+  - `Dashboard integration: compatibility-backed web runtime can start against the Go control plane.`
+  - `Dashboard mode: started compatibility-backed dashboard runtime`
+
+That closed the dashboard-startup gap, but one important operator problem still remained:
+- the session dashboard and session details views used `trpc.session.*` reads/mutations
+- the local dashboard compat bridge could already fall back to Go for many read-heavy procedures
+- but it still did **not** translate the key session-supervisor reads/mutations onto the existing Go `/api/sessions/supervisor/*` routes when `/trpc` was unavailable
+
+That meant the dashboard could launch against Go-primary runtime, yet session create/start/stop/restart/details actions could still fail purely because the web compat layer had not been taught to use the Go session-supervisor HTTP surface that already existed.
+
+### What changed
+#### 1. Extended the local dashboard compat route to cover Go-backed session-supervisor reads
+Updated:
+- `apps/web/src/app/api/trpc/[trpc]/route.ts`
+
+The local compat route now supports Go-backed fallback for these dashboard/session-detail reads:
+- `session.get`
+- `session.logs`
+- `session.attachInfo`
+- `session.health`
+
+These now map onto the existing Go control-plane routes:
+- `/api/sessions/supervisor/get`
+- `/api/sessions/supervisor/logs`
+- `/api/sessions/supervisor/attach-info`
+- `/api/sessions/supervisor/health`
+
+#### 2. Added Go-backed session mutation fallback for the session dashboard
+Updated:
+- `apps/web/src/app/api/trpc/[trpc]/route.ts`
+
+The local compat mutation path now also supports these session procedures when upstream `/trpc` is unavailable:
+- `session.create`
+- `session.start`
+- `session.stop`
+- `session.restart`
+- `session.executeShell`
+- `session.updateState`
+- `session.clear`
+
+These are translated onto the already-existing Go HTTP routes under:
+- `/api/sessions/supervisor/create`
+- `/api/sessions/supervisor/start`
+- `/api/sessions/supervisor/stop`
+- `/api/sessions/supervisor/restart`
+- `/api/sessions/supervisor/execute-shell`
+- `/api/sessions/supervisor/update-state`
+- `/api/sessions/supervisor/clear`
+
+This is exactly the kind of slice the migration now needs most:
+- not inventing new backend behavior
+- but teaching the dashboard compatibility layer to use Go-owned truth that already exists
+
+#### 3. Added focused regression coverage for the full session dashboard compat contract
+Updated:
+- `apps/web/src/app/api/trpc/[trpc]/route.test.ts`
+
+Added a focused test proving that when `/trpc` is unavailable, the local dashboard compat layer now prefers Go-native session-supervisor reads/mutations for:
+- `session.get`
+- `session.logs`
+- `session.attachInfo`
+- `session.health`
+- `session.getState`
+- `session.create`
+- `session.start`
+- `session.stop`
+- `session.restart`
+- `session.executeShell`
+- `session.updateState`
+- `session.clear`
+
+### Validation
+Executed truthfully without killing any processes:
+- `pnpm exec vitest run apps/web/src/app/api/trpc/[trpc]/route.test.ts`
+- `pnpm -C apps/web run build`
+
+### Why this matters
+This pass makes the new Go-primary dashboard startup materially more useful:
+- the dashboard can now start against the Go control plane
+- the session dashboard is no longer read-only-ish in degraded mode
+- operators can now use the session dashboard and session detail surfaces for the highest-value supervisor actions even when the TS `/trpc` backend is unavailable
+
+This still does **not** mean the entire dashboard backend contract is Go-native. But it does mean one of the most operator-critical dashboard clusters — supervised session lifecycle/details/state actions — is now much closer to functioning truthfully on top of the Go control plane.
+
 ## Latest stabilization pass — Go-primary dashboard startup compatibility
 
 ### Context

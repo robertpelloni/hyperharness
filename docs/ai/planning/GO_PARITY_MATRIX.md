@@ -76,7 +76,7 @@ Status values:
 | Session export | Native Go | native export path implemented |
 | Session supervisor lifecycle | Bridge-first with Partial Native Go fallback | the public supervisor route family now tries TS first and falls back natively in Go for `list/get/create/start/stop/restart/logs/attach-info/health/execute-shell/restore`; the native Go fallback is now durable across Go runtime restarts via `.hypercode-go/session-supervisor.json` and can explicitly reload persisted inventory on demand, but full TS parity and shared authority are still incomplete |
 | Session state/log parity | Bridge-first with Partial Native Go fallback | Go now has native persisted fallback ownership for the shared session-state core (`getState`, `updateState`, `clear`, `heartbeat`) via workspace `.hypercode-session.json`, plus native persisted supervisor lifecycle/log/attach/health/session-shell fallback behavior for public supervised sessions; execution-policy visibility and worktree/isolation behavior are now much closer to TS parity, but fuller memory-bootstrap parity is still incomplete |
-| Session CRUD authority | Mixed / bridge-heavy | Go now owns more public supervisor CRUD/read behavior during TS outage and can restore its own fallback inventory durably, but full end-to-end authority and shared TS/Go restore semantics are still incomplete |
+| Session CRUD authority | Mixed / bridge-heavy | Go now owns more public supervisor CRUD/read behavior during TS outage and can restore its own fallback inventory durably; the shared Next.js compat route now also maps the session dashboard's key supervisor reads/mutations onto Go `/api/sessions/supervisor/*` routes when `/trpc` is unavailable, but full end-to-end authority and shared TS/Go restore semantics are still incomplete |
 
 ---
 
@@ -138,7 +138,7 @@ Status values:
 3. **MCP write/config parity is incomplete in Go**
    - CRUD/mutation/cache/telemetry surfaces still lag.
 4. **Dashboard still depends heavily on TS-era backend contracts**
-   - Go can now host the primary control plane while startup launches the Next.js dashboard in compatibility-backed mode, but the UI still does not yet rely on a fully Go-authoritative backend contract.
+   - Go can now host the primary control plane while startup launches the Next.js dashboard in compatibility-backed mode, and the supervised-session dashboard cluster now maps its core reads/mutations onto Go routes during `/trpc` outage, but the UI still does not yet rely on a fully Go-authoritative backend contract.
 5. **Background-service LLM execution is still partly TS-owned**
    - despite OpenRouter-free default migration, execution ownership is not fully in Go.
 

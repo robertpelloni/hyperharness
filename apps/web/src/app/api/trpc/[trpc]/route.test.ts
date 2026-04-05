@@ -1429,6 +1429,276 @@ describe('legacy MCP dashboard compatibility bridge', () => {
     expect((global.fetch as ReturnType<typeof vi.fn>).mock.calls.some(([url]) => String(url) === 'http://127.0.0.1:4200/api/sessions')).toBe(true);
   });
 
+  it('prefers go-native supervised session reads and mutations in local dashboard fallback mode', async () => {
+    process.env.HYPERCODE_TRPC_UPSTREAM = 'http://127.0.0.1:4400/trpc';
+    global.fetch = vi.fn(async (input, init) => {
+      const url = String(input);
+
+      if (url.includes('/trpc/')) {
+        throw new Error('connect ECONNREFUSED');
+      }
+
+      if (url === 'http://127.0.0.1:4400/api/sessions/supervisor/get?id=sess-live-1') {
+        return new Response(JSON.stringify({
+          success: true,
+          data: {
+            id: 'sess-live-1',
+            name: 'Live Go Session',
+            cliType: 'hypercode',
+            command: 'hypercode',
+            args: ['agent'],
+            env: {},
+            executionProfile: 'auto',
+            executionPolicy: {
+              requestedProfile: 'auto',
+              effectiveProfile: 'powershell',
+              shellId: 'pwsh',
+              shellLabel: 'PowerShell 7',
+              shellFamily: 'powershell',
+              shellPath: 'C:/Program Files/PowerShell/7/pwsh.exe',
+              supportsPowerShell: true,
+              supportsPosixShell: true,
+              reason: 'Prefer PowerShell 7.',
+            },
+            requestedWorkingDirectory: 'C:/repo',
+            workingDirectory: 'C:/repo',
+            autoRestart: true,
+            isolateWorktree: false,
+            status: 'running',
+            createdAt: 1712300000000,
+            lastActivityAt: 1712300001000,
+            restartCount: 1,
+            maxRestartAttempts: 5,
+            metadata: {},
+            logs: [],
+          },
+        }), { status: 200, headers: { 'content-type': 'application/json' } });
+      }
+
+      if (url === 'http://127.0.0.1:4400/api/sessions/supervisor/logs?id=sess-live-1&limit=5') {
+        return new Response(JSON.stringify({
+          success: true,
+          data: [{ timestamp: 1712300002000, stream: 'system', message: 'Go fallback log line' }],
+        }), { status: 200, headers: { 'content-type': 'application/json' } });
+      }
+
+      if (url === 'http://127.0.0.1:4400/api/sessions/supervisor/attach-info?id=sess-live-1') {
+        return new Response(JSON.stringify({
+          success: true,
+          data: {
+            id: 'sess-live-1',
+            pid: 4242,
+            command: 'hypercode',
+            args: ['agent'],
+            cwd: 'C:/repo',
+            status: 'running',
+            attachable: true,
+            attachReadiness: 'ready',
+            attachReadinessReason: 'running-with-pid',
+          },
+        }), { status: 200, headers: { 'content-type': 'application/json' } });
+      }
+
+      if (url === 'http://127.0.0.1:4400/api/sessions/supervisor/health?id=sess-live-1') {
+        return new Response(JSON.stringify({
+          success: true,
+          data: {
+            status: 'healthy',
+            lastCheck: 1712300003000,
+            consecutiveFailures: 0,
+            restartCount: 1,
+          },
+        }), { status: 200, headers: { 'content-type': 'application/json' } });
+      }
+
+      if (url === 'http://127.0.0.1:4400/api/sessions/supervisor/state') {
+        return new Response(JSON.stringify({
+          success: true,
+          data: {
+            isAutoDriveActive: true,
+            activeGoal: 'ship go session compat',
+            lastObjective: 'wire dashboard mutations',
+          },
+        }), { status: 200, headers: { 'content-type': 'application/json' } });
+      }
+
+      if (url === 'http://127.0.0.1:4400/api/sessions/supervisor/create' && init?.method === 'POST') {
+        return new Response(JSON.stringify({
+          success: true,
+          data: {
+            id: 'sess-created-1',
+            name: 'Created from dashboard',
+            cliType: 'hypercode',
+            workingDirectory: 'C:/repo',
+            requestedWorkingDirectory: 'C:/repo',
+            command: 'hypercode',
+            args: [],
+            env: {},
+            executionProfile: 'auto',
+            executionPolicy: null,
+            autoRestart: true,
+            isolateWorktree: false,
+            status: 'created',
+            createdAt: 1712300010000,
+            lastActivityAt: 1712300010000,
+            restartCount: 0,
+            maxRestartAttempts: 5,
+            metadata: {},
+            logs: [],
+          },
+        }), { status: 200, headers: { 'content-type': 'application/json' } });
+      }
+
+      if (url === 'http://127.0.0.1:4400/api/sessions/supervisor/start' && init?.method === 'POST') {
+        return new Response(JSON.stringify({ success: true, data: { id: 'sess-live-1', status: 'running' } }), { status: 200, headers: { 'content-type': 'application/json' } });
+      }
+
+      if (url === 'http://127.0.0.1:4400/api/sessions/supervisor/stop' && init?.method === 'POST') {
+        return new Response(JSON.stringify({ success: true, data: { id: 'sess-live-1', status: 'stopped' } }), { status: 200, headers: { 'content-type': 'application/json' } });
+      }
+
+      if (url === 'http://127.0.0.1:4400/api/sessions/supervisor/restart' && init?.method === 'POST') {
+        return new Response(JSON.stringify({ success: true, data: { id: 'sess-live-1', status: 'restarting' } }), { status: 200, headers: { 'content-type': 'application/json' } });
+      }
+
+      if (url === 'http://127.0.0.1:4400/api/sessions/supervisor/execute-shell' && init?.method === 'POST') {
+        return new Response(JSON.stringify({
+          success: true,
+          data: {
+            command: 'pwd',
+            cwd: 'C:/repo',
+            shellFamily: 'powershell',
+            shellPath: 'C:/Program Files/PowerShell/7/pwsh.exe',
+            stdout: 'C:/repo',
+            stderr: '',
+            output: 'C:/repo',
+            exitCode: 0,
+            durationMs: 12,
+            succeeded: true,
+          },
+        }), { status: 200, headers: { 'content-type': 'application/json' } });
+      }
+
+      if (url === 'http://127.0.0.1:4400/api/sessions/supervisor/update-state' && init?.method === 'POST') {
+        return new Response(JSON.stringify({
+          success: true,
+          data: {
+            success: true,
+            toolAdvertisements: [],
+            memoryBootstrap: null,
+            state: {
+              isAutoDriveActive: false,
+              activeGoal: 'updated goal',
+              lastObjective: 'updated objective',
+            },
+          },
+        }), { status: 200, headers: { 'content-type': 'application/json' } });
+      }
+
+      if (url === 'http://127.0.0.1:4400/api/sessions/supervisor/clear' && init?.method === 'POST') {
+        return new Response(JSON.stringify({ success: true, data: { success: true } }), { status: 200, headers: { 'content-type': 'application/json' } });
+      }
+
+      if (url.startsWith('http://127.0.0.1:4400/api/')) {
+        return new Response(JSON.stringify({ success: false }), {
+          status: 503,
+          headers: { 'content-type': 'application/json' },
+        });
+      }
+
+      throw new Error(`Unexpected fetch: ${url}`);
+    }) as typeof fetch;
+
+    const readResponse = await POST(new Request(
+      'http://localhost:3010/api/trpc/session.get,session.logs,session.attachInfo,session.health,session.getState?batch=1',
+      {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          0: { json: { id: 'sess-live-1' } },
+          1: { json: { id: 'sess-live-1', limit: 5 } },
+          2: { json: { id: 'sess-live-1' } },
+          3: { json: { id: 'sess-live-1' } },
+          4: { json: null },
+        }),
+      },
+    ));
+    const readPayload = await readResponse.json();
+
+    expect(readResponse.status).toBe(200);
+    expect(readResponse.headers.get('x-hypercode-trpc-compat')).toBe('local-dashboard-fallback');
+    expect(readPayload?.[0]?.result?.data).toEqual(expect.objectContaining({ id: 'sess-live-1', status: 'running' }));
+    expect(readPayload?.[1]?.result?.data).toEqual([
+      expect.objectContaining({ stream: 'system', message: 'Go fallback log line' }),
+    ]);
+    expect(readPayload?.[2]?.result?.data).toEqual(expect.objectContaining({ attachReadiness: 'ready', pid: 4242 }));
+    expect(readPayload?.[3]?.result?.data).toEqual(expect.objectContaining({ status: 'healthy', restartCount: 1 }));
+    expect(readPayload?.[4]?.result?.data).toEqual(expect.objectContaining({ isAutoDriveActive: true, activeGoal: 'ship go session compat' }));
+
+    const createResponse = await POST(new Request('http://localhost:3010/api/trpc/session.create', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ json: { cliType: 'hypercode', workingDirectory: 'C:/repo', autoRestart: true } }),
+    }));
+    expect(createResponse.headers.get('x-hypercode-trpc-compat')).toBe('local-session-supervisor-action');
+    expect((await createResponse.json())?.result?.data).toEqual(expect.objectContaining({ id: 'sess-created-1', status: 'created' }));
+
+    const startResponse = await POST(new Request('http://localhost:3010/api/trpc/session.start', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ json: { id: 'sess-live-1' } }),
+    }));
+    expect((await startResponse.json())?.result?.data).toEqual(expect.objectContaining({ id: 'sess-live-1', status: 'running' }));
+
+    const stopResponse = await POST(new Request('http://localhost:3010/api/trpc/session.stop', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ json: { id: 'sess-live-1', force: true } }),
+    }));
+    expect((await stopResponse.json())?.result?.data).toEqual(expect.objectContaining({ id: 'sess-live-1', status: 'stopped' }));
+
+    const restartResponse = await POST(new Request('http://localhost:3010/api/trpc/session.restart', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ json: { id: 'sess-live-1' } }),
+    }));
+    expect((await restartResponse.json())?.result?.data).toEqual(expect.objectContaining({ id: 'sess-live-1', status: 'restarting' }));
+
+    const executeResponse = await POST(new Request('http://localhost:3010/api/trpc/session.executeShell', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ json: { id: 'sess-live-1', command: 'pwd' } }),
+    }));
+    expect((await executeResponse.json())?.result?.data).toEqual(expect.objectContaining({ succeeded: true, output: 'C:/repo', shellFamily: 'powershell' }));
+
+    const updateStateResponse = await POST(new Request('http://localhost:3010/api/trpc/session.updateState', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ json: { activeGoal: 'updated goal', lastObjective: 'updated objective' } }),
+    }));
+    expect((await updateStateResponse.json())?.result?.data).toEqual(expect.objectContaining({ success: true, state: expect.objectContaining({ activeGoal: 'updated goal' }) }));
+
+    const clearResponse = await POST(new Request('http://localhost:3010/api/trpc/session.clear', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ json: null }),
+    }));
+    expect((await clearResponse.json())?.result?.data).toEqual({ success: true });
+
+    expect((global.fetch as ReturnType<typeof vi.fn>).mock.calls.some(([url]) => String(url) === 'http://127.0.0.1:4400/api/sessions/supervisor/get?id=sess-live-1')).toBe(true);
+    expect((global.fetch as ReturnType<typeof vi.fn>).mock.calls.some(([url]) => String(url) === 'http://127.0.0.1:4400/api/sessions/supervisor/logs?id=sess-live-1&limit=5')).toBe(true);
+    expect((global.fetch as ReturnType<typeof vi.fn>).mock.calls.some(([url]) => String(url) === 'http://127.0.0.1:4400/api/sessions/supervisor/attach-info?id=sess-live-1')).toBe(true);
+    expect((global.fetch as ReturnType<typeof vi.fn>).mock.calls.some(([url]) => String(url) === 'http://127.0.0.1:4400/api/sessions/supervisor/health?id=sess-live-1')).toBe(true);
+    expect((global.fetch as ReturnType<typeof vi.fn>).mock.calls.some(([url]) => String(url) === 'http://127.0.0.1:4400/api/sessions/supervisor/state')).toBe(true);
+    expect((global.fetch as ReturnType<typeof vi.fn>).mock.calls.some(([url]) => String(url) === 'http://127.0.0.1:4400/api/sessions/supervisor/create')).toBe(true);
+    expect((global.fetch as ReturnType<typeof vi.fn>).mock.calls.some(([url]) => String(url) === 'http://127.0.0.1:4400/api/sessions/supervisor/start')).toBe(true);
+    expect((global.fetch as ReturnType<typeof vi.fn>).mock.calls.some(([url]) => String(url) === 'http://127.0.0.1:4400/api/sessions/supervisor/stop')).toBe(true);
+    expect((global.fetch as ReturnType<typeof vi.fn>).mock.calls.some(([url]) => String(url) === 'http://127.0.0.1:4400/api/sessions/supervisor/restart')).toBe(true);
+    expect((global.fetch as ReturnType<typeof vi.fn>).mock.calls.some(([url]) => String(url) === 'http://127.0.0.1:4400/api/sessions/supervisor/execute-shell')).toBe(true);
+    expect((global.fetch as ReturnType<typeof vi.fn>).mock.calls.some(([url]) => String(url) === 'http://127.0.0.1:4400/api/sessions/supervisor/update-state')).toBe(true);
+    expect((global.fetch as ReturnType<typeof vi.fn>).mock.calls.some(([url]) => String(url) === 'http://127.0.0.1:4400/api/sessions/supervisor/clear')).toBe(true);
+  });
+
   it('normalizes batched bulk import payloads before proxying them upstream', async () => {
     process.env.HYPERCODE_TRPC_UPSTREAM = 'http://127.0.0.1:3100/trpc';
     const upstreamResponse = [
