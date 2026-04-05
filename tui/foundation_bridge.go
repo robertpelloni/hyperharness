@@ -485,6 +485,25 @@ func pinFoundationTreeBrowser(m *model) error {
 	return nil
 }
 
+func refreshPinnedFoundationTreeBrowser(m *model) {
+	if !m.browserPinned {
+		return
+	}
+	sessionID, err := ensureFoundationSession(m)
+	if err != nil {
+		return
+	}
+	items, err := buildFoundationTreeBrowser(m.director.WorkingDir, sessionID)
+	if err != nil {
+		return
+	}
+	m.browserItems = items
+	visible := visibleTreeBrowserItems(m.browserItems, m.browserFilter, m.browserCollapsed)
+	if m.browserIndex >= len(visible) {
+		m.browserIndex = max(0, len(visible)-1)
+	}
+}
+
 func unpinFoundationTreeBrowser(m *model) {
 	m.browserPinned = false
 }

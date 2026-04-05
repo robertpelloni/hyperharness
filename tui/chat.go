@@ -206,6 +206,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				if sessionID, err := ensureFoundationSession(&m); err == nil {
 					m.foundationSessionID = sessionID
 					_ = appendFoundationUserText(m.director.WorkingDir, m.foundationSessionID, req)
+					refreshPinnedFoundationTreeBrowser(&m)
 				}
 				cmds = append(cmds, func() tea.Msg {
 					response, err := buildPromptResponse(m.director, req)
@@ -228,6 +229,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.history = append(m.history, "Borg-Go-Director: "+msg)
 		if m.foundationSessionID != "" {
 			_ = appendFoundationAssistantText(m.director.WorkingDir, m.foundationSessionID, msg)
+			refreshPinnedFoundationTreeBrowser(&m)
 		}
 
 	case PromptDisplayMsg:
@@ -235,6 +237,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.history = append(m.history, "Borg-Go-Director: "+msg.Display)
 		if m.foundationSessionID != "" {
 			_ = appendFoundationAssistantText(m.director.WorkingDir, m.foundationSessionID, msg.Display)
+			refreshPinnedFoundationTreeBrowser(&m)
 		}
 
 	case ShellProposalMsg:

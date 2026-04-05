@@ -374,6 +374,37 @@ func TestTreeBrowserModeNavigation(t *testing.T) {
 	}
 }
 
+func TestPinnedTreePaneAutoRefreshesAfterSessionMutation(t *testing.T) {
+	cwd := t.TempDir()
+	m := model{director: agents.NewDirector(&agents.DefaultProvider{})}
+	m.director.WorkingDir = cwd
+	sessionID, err := ensureFoundationSession(&m)
+	if err != nil {
+		t.Fatal(err)
+	}
+	runtime := foundationpi.NewRuntime(cwd, nil)
+	if _, err := runtime.AppendUserText(sessionID, "A"); err != nil {
+		t.Fatal(err)
+	}
+	mdl, _ := ProcessSlashCommand("/tree-pane", &m)
+	updated := mdl.(model)
+	if !updated.browserPinned {
+		t.Fatal("expected tree pane pinned")
+	}
+	before := updated.View()
+	updated.foundationSessionID = sessionID
+	updated.history = append(updated.history, "You: extra")
+	_ = appendFoundationUserText(cwd, sessionID, "extra")
+	refreshPinnedFoundationTreeBrowser(&updated)
+	after := updated.View()
+	if before == after {
+		t.Fatalf("expected pinned tree pane to refresh after mutation; before=%s after=%s", before, after)
+	}
+	if !strings.Contains(after, "extra") {
+		t.Fatalf("expected refreshed pane to include new session content, got %s", after)
+	}
+}
+
 func TestProcessSlashCommandTreePaneToggle(t *testing.T) {
 	cwd := t.TempDir()
 	m := model{director: agents.NewDirector(&agents.DefaultProvider{})}
