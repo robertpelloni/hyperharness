@@ -143,6 +143,7 @@ const LOCAL_COMPAT_RESPONSE_KEYS = {
   'tools.detectInstallSurfaces': 'tools.detectInstallSurfaces',
   'expert.getStatus': 'expert.getStatus',
   'session.catalog': 'session.catalog',
+  'session.importedMaintenanceStats': 'session.importedMaintenanceStats',
   'session.getState': 'session.getState',
   'agentMemory.stats': 'agentMemory.stats',
   'shell.getSystemHistory': 'shell.getSystemHistory',
@@ -991,6 +992,39 @@ async function buildPreferredExecutionEnvironment(cliHarnessDetections: unknown[
   };
 }
 
+async function buildPreferredImportedMaintenanceStats(): Promise<ImportedMaintenanceStats> {
+  for (const base of resolveNativeStatusBases()) {
+    try {
+      const response = await fetch(`${base}/api/sessions/imported/maintenance-stats`, { cache: 'no-store' });
+      if (!response.ok) {
+        continue;
+      }
+
+      const payload = await response.json() as { success?: unknown; data?: unknown };
+      const data = asObjectRecord(payload.data);
+      if (payload.success !== true || !data) {
+        continue;
+      }
+
+      return {
+        totalSessions: readNumber(data.totalSessions) ?? 0,
+        inlineTranscriptCount: readNumber(data.inlineTranscriptCount) ?? 0,
+        archivedTranscriptCount: readNumber(data.archivedTranscriptCount) ?? 0,
+        missingRetentionSummaryCount: readNumber(data.missingRetentionSummaryCount) ?? 0,
+      };
+    } catch {
+      // Try the next native control-plane base.
+    }
+  }
+
+  return {
+    totalSessions: 0,
+    inlineTranscriptCount: 0,
+    archivedTranscriptCount: 0,
+    missingRetentionSummaryCount: 0,
+  };
+}
+
 async function buildPreferredInstallSurfaces(): Promise<unknown[]> {
   for (const base of resolveNativeStatusBases()) {
     try {
@@ -1312,9 +1346,17 @@ async function buildPreferredMcpStatus(servers: unknown[]): Promise<Record<strin
   return mergedStatus;
 }
 
+type ImportedMaintenanceStats = {
+  totalSessions: number;
+  inlineTranscriptCount: number;
+  archivedTranscriptCount: number;
+  missingRetentionSummaryCount: number;
+};
+
 async function buildLocalStartupStatus(
   servers: unknown[],
   executionEnvironment?: Record<string, unknown> | null,
+  importedMaintenanceStats?: ImportedMaintenanceStats | null,
 ): Promise<LocalCompatStartupStatus> {
   const baseStatus = buildLocalCompatStartupStatusBase(servers);
   const [nativeStartupStatus, nativeRuntimeStatus] = await Promise.all([
@@ -1492,6 +1534,18 @@ async function buildLocalStartupStatus(
     };
   }
 
+  if (!mergedStatus.checks.importedSessions && importedMaintenanceStats) {
+    mergedStatus.checks = {
+      ...mergedStatus.checks,
+      importedSessions: {
+        totalSessions: importedMaintenanceStats.totalSessions,
+        inlineTranscriptCount: importedMaintenanceStats.inlineTranscriptCount,
+        archivedTranscriptCount: importedMaintenanceStats.archivedTranscriptCount,
+        missingRetentionSummaryCount: importedMaintenanceStats.missingRetentionSummaryCount,
+      },
+    };
+  }
+
   return mergedStatus;
 }
 
@@ -1608,8 +1662,9 @@ async function buildLocalCompatResponse(req: Request, body?: string): Promise<Re
   const providerQuotas = await buildPreferredProviderQuotas();
   const cliHarnessDetections = await buildPreferredCliHarnessDetections();
   const executionEnvironment = await buildPreferredExecutionEnvironment(cliHarnessDetections);
+  const importedMaintenanceStats = await buildPreferredImportedMaintenanceStats();
   const installSurfaces = await buildPreferredInstallSurfaces();
-  const localStartupStatus = await buildLocalStartupStatus(localServers, executionEnvironment);
+  const localStartupStatus = await buildLocalStartupStatus(localServers, executionEnvironment, importedMaintenanceStats);
   const sessionCatalog = buildPreferredSessionCatalog(cliHarnessDetections);
   const sessionList = await buildPreferredSessionList();
 
@@ -1646,6 +1701,7 @@ async function buildLocalCompatResponse(req: Request, body?: string): Promise<Re
     'tools.detectInstallSurfaces': installSurfaces,
     'expert.getStatus': {},
     'session.catalog': sessionCatalog,
+    'session.importedMaintenanceStats': importedMaintenanceStats,
     'session.getState': {
       isAutoDriveActive: false,
       activeGoal: null,

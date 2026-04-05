@@ -27,8 +27,9 @@
 11. Reduced Go-primary install coupling to unrelated workspace postinstall hooks by defaulting startup installs to `pnpm install --ignore-scripts` unless `HYPERCODE_STARTUP_INSTALL_SCRIPTS=1` is set. This keeps Go-primary startup from tripping Maestro/Electron rebuild failures when only dependency graph readiness is needed.
 12. Upgraded the local dashboard compat path to prefer Go-native `/api/tools/detect-execution-environment` for `tools.detectExecutionEnvironment` when the TypeScript procedure is unavailable. The compat layer now normalizes native shell/tool posture into the existing AI Tools/dashboard contract and reuses the same summary inside degraded `startupStatus.checks.executionEnvironment` so dashboard-home/system summaries no longer drift away from the AI Tools page.
 13. Upgraded the local dashboard compat path to prefer Go-native `/api/tools/detect-install-surfaces` for `tools.detectInstallSurfaces` when the TypeScript procedure is unavailable. This preserves truthful install-artifact summaries for browser extensions, VS Code packaging, and MCP client sync instead of collapsing those pages to empty arrays in degraded mode.
-14. Updated planning/analysis docs to record the new coverage and narrowed the next recommendation to reducing remaining TypeScript compatibility dependence where Go-native status already exists.
-15. Committed and pushed:
+14. Upgraded the local dashboard compat path to prefer Go-native `/api/sessions/imported/maintenance-stats` for `session.importedMaintenanceStats` when the TypeScript procedure is unavailable, and to backfill degraded `startupStatus.checks.importedSessions` from that same native maintenance endpoint when startup telemetry omits imported-session archive counters.
+15. Updated planning/analysis docs to record the new coverage and narrowed the next recommendation to reducing remaining TypeScript compatibility dependence where Go-native status already exists.
+16. Committed and pushed:
    - `7785a9a3` — `feat: surface startup provenance in system dashboards`
    - `38b10684` — `feat: surface startup provenance in orchestrator dashboard`
    - `590d8848` — `feat: prefer go startup truth in web compat fallback`
@@ -69,7 +70,7 @@ The latest startup-truthfulness follow-up was validated separately with:
 - `powershell.exe -NoProfile -Command '$env:HYPERCODE_SKIP_INSTALL="1"; cmd.exe /c "start.bat --help"'` (this exercised the corrected build-required path; the first attempt to suppress native preflight used malformed PowerShell env syntax and is intentionally documented as such)
 - `node scripts/check_startup_build.mjs`
 
-The latest execution-environment + install-surface compat follow-up was validated with:
+The latest execution-environment + install-surface + imported-maintenance compat follow-up was validated with:
 - `pnpm exec vitest run apps/web/src/app/api/trpc/[trpc]/route.test.ts`
 - `pnpm -C apps/web run build`
 
@@ -80,8 +81,8 @@ The latest execution-environment + install-surface compat follow-up was validate
 - There are still unrelated dirty/untracked paths in the workspace/submodules (for example `apps/cloud-orchestrator`, `apps/maestro`, `packages/claude-mem`, JetBrains plugin files, and a VSIX artifact) that were not part of this slice and were not staged.
 
 ### Recommended next steps
-1. Resume the next shared dashboard compatibility reduction adjacent to the install-surface slice.
-   - highest-value remaining nearby candidates: imported-session maintenance reads that still bypass the already-upgraded startup-status path, then any other runtime-heavy `tools.*` queries still using synthetic placeholders
+1. Resume the next shared dashboard compatibility reduction adjacent to the imported-maintenance slice.
+   - highest-value remaining nearby candidates: any other runtime-heavy `tools.*` queries still using synthetic placeholders, then broader imported-session read surfaces if they become active web consumers
 2. Deepen Go-native orchestration parity beyond current truthful fallbacks, especially:
    - Darwin parity
    - AutoDev director-loop parity

@@ -663,7 +663,7 @@ describe('legacy MCP dashboard compatibility bridge', () => {
     expect((global.fetch as ReturnType<typeof vi.fn>).mock.calls.some(([url]) => String(url) === 'http://127.0.0.1:4100/api/billing/fallback-chain?taskType=coding')).toBe(true);
   });
 
-  it('prefers go-native install surfaces, execution environment, provider quotas, fallback chain, cli harnesses, session catalog, and sessions in local dashboard fallback mode', async () => {
+  it('prefers go-native imported maintenance stats, install surfaces, execution environment, provider quotas, fallback chain, cli harnesses, session catalog, and sessions in local dashboard fallback mode', async () => {
     process.env.HYPERCODE_TRPC_UPSTREAM = 'http://127.0.0.1:4200/trpc';
     global.fetch = vi.fn(async (input) => {
       const url = String(input);
@@ -865,6 +865,20 @@ describe('legacy MCP dashboard compatibility bridge', () => {
           headers: { 'content-type': 'application/json' },
         });
       }
+      if (url === 'http://127.0.0.1:4200/api/sessions/imported/maintenance-stats') {
+        return new Response(JSON.stringify({
+          success: true,
+          data: {
+            totalSessions: 11,
+            inlineTranscriptCount: 4,
+            archivedTranscriptCount: 7,
+            missingRetentionSummaryCount: 2,
+          },
+        }), {
+          status: 200,
+          headers: { 'content-type': 'application/json' },
+        });
+      }
       if (url === 'http://127.0.0.1:4200/api/sessions') {
         return new Response(JSON.stringify({
           success: true,
@@ -897,11 +911,11 @@ describe('legacy MCP dashboard compatibility bridge', () => {
     }) as typeof fetch;
 
     const response = await POST(new Request(
-      'http://localhost:3010/api/trpc/startupStatus,billing.getProviderQuotas,billing.getFallbackChain,tools.detectCliHarnesses,tools.detectExecutionEnvironment,tools.detectInstallSurfaces,session.catalog,session.list?batch=1',
+      'http://localhost:3010/api/trpc/startupStatus,billing.getProviderQuotas,billing.getFallbackChain,tools.detectCliHarnesses,tools.detectExecutionEnvironment,tools.detectInstallSurfaces,session.catalog,session.importedMaintenanceStats,session.list?batch=1',
       {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ 0: { json: null }, 1: { json: null }, 2: { json: null }, 3: { json: null }, 4: { json: null }, 5: { json: null }, 6: { json: null }, 7: { json: null } }),
+        body: JSON.stringify({ 0: { json: null }, 1: { json: null }, 2: { json: null }, 3: { json: null }, 4: { json: null }, 5: { json: null }, 6: { json: null }, 7: { json: null }, 8: { json: null } }),
       },
     ));
     const payload = await response.json();
@@ -924,6 +938,12 @@ describe('legacy MCP dashboard compatibility bridge', () => {
           supportsPosixShell: true,
           notes: ['Prefer PowerShell 7 for default shell execution.'],
         }),
+        importedSessions: {
+          totalSessions: 11,
+          inlineTranscriptCount: 4,
+          archivedTranscriptCount: 7,
+          missingRetentionSummaryCount: 2,
+        },
       }),
     }));
     expect(payload?.[1]?.result?.data).toEqual([
@@ -1030,7 +1050,13 @@ describe('legacy MCP dashboard compatibility bridge', () => {
         category: 'cli',
       }),
     ]);
-    expect(payload?.[7]?.result?.data).toEqual([
+    expect(payload?.[7]?.result?.data).toEqual({
+      totalSessions: 11,
+      inlineTranscriptCount: 4,
+      archivedTranscriptCount: 7,
+      missingRetentionSummaryCount: 2,
+    });
+    expect(payload?.[8]?.result?.data).toEqual([
       expect.objectContaining({
         id: 'sess-1',
         name: 'Refactor startup fallback',
@@ -1047,6 +1073,7 @@ describe('legacy MCP dashboard compatibility bridge', () => {
     expect((global.fetch as ReturnType<typeof vi.fn>).mock.calls.some(([url]) => String(url) === 'http://127.0.0.1:4200/api/cli/harnesses')).toBe(true);
     expect((global.fetch as ReturnType<typeof vi.fn>).mock.calls.some(([url]) => String(url) === 'http://127.0.0.1:4200/api/tools/detect-execution-environment')).toBe(true);
     expect((global.fetch as ReturnType<typeof vi.fn>).mock.calls.some(([url]) => String(url) === 'http://127.0.0.1:4200/api/tools/detect-install-surfaces')).toBe(true);
+    expect((global.fetch as ReturnType<typeof vi.fn>).mock.calls.some(([url]) => String(url) === 'http://127.0.0.1:4200/api/sessions/imported/maintenance-stats')).toBe(true);
     expect((global.fetch as ReturnType<typeof vi.fn>).mock.calls.some(([url]) => String(url) === 'http://127.0.0.1:4200/api/sessions')).toBe(true);
   });
 

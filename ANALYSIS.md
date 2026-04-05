@@ -303,6 +303,13 @@ The next adjacent degraded-mode gap was `tools.detectInstallSurfaces`. This was 
 
 This means degraded-mode install surfaces no longer collapse to empty arrays when the TypeScript detector is unavailable, and browser-extension / VS Code / MCP client sync setup pages can keep showing truthful artifact presence and freshness data from the native Go path.
 
+After that, the remaining adjacent gap was imported-session maintenance reads that bypass the already-upgraded startup-status path. There was no active direct web consumer at the time of this slice, but the shared compat layer still had a hole: if a page started using `session.importedMaintenanceStats`, it would not inherit the same native truth that the Go control plane already exposed via `/api/sessions/imported/maintenance-stats`. That is now fixed. The local dashboard compat path now:
+- prefers Go-native `/api/sessions/imported/maintenance-stats` for `session.importedMaintenanceStats`
+- preserves the existing maintenance contract (`totalSessions`, `inlineTranscriptCount`, `archivedTranscriptCount`, `missingRetentionSummaryCount`)
+- backfills degraded `startupStatus.checks.importedSessions` from that same native maintenance endpoint when `/api/startup/status` does not already provide imported-session telemetry
+
+That keeps direct imported-session maintenance queries truthful for future consumers and also prevents system/dashboard startup summaries from dropping imported-session archive telemetry just because the startup endpoint is temporarily unavailable while the dedicated maintenance endpoint still works.
+
 Why this matters:
 - it makes Go-primary launch use the same compiled artifact that the startup build profile already validates
 - it reduces repeated `go run` compilation overhead at runtime
@@ -363,10 +370,10 @@ Results:
 - a focused dashboard render test was added, but `vitest` is not directly installed in `apps/web`, so that new test was validated indirectly through the successful web build rather than executed as a standalone test command in this pass
 - a focused app-route compat regression was executed successfully through the root Vitest runner (`pnpm exec vitest run apps/web/src/app/api/trpc/[trpc]/route.test.ts`), validating Go-native `/api/startup/status` + `/api/runtime/status` preference when `startupStatus` is unavailable, Go-native `/api/mcp/status` preference when `mcp.getStatus` is unavailable, Go-native provider quota/fallback-chain preference when TypeScript billing procedures are unavailable, Go-native `/api/cli/harnesses` preference when `tools.detectCliHarnesses` is unavailable, Go-native `/api/sessions` preference when `session.list` is unavailable, and Go-derived `session.catalog` fallback from the native harness inventory
 - startup truthfulness validation also reproduced the exact operator path from `start.bat` without launching a long-lived process by using `start.bat --help`; after the fix, Go-primary startup now truthfully reports and executes the build when `scripts/check_startup_build.mjs` returns non-zero, and forced Go-primary installs now use `pnpm install --ignore-scripts` by default instead of tripping unrelated Maestro/Electron postinstall rebuilds
-- the execution-environment + install-surface compat slice was validated with:
+- the execution-environment + install-surface + imported-maintenance compat slice was validated with:
   - `pnpm exec vitest run apps/web/src/app/api/trpc/[trpc]/route.test.ts`
   - `pnpm -C apps/web run build`
-  - the route regression now proves Go-native `/api/tools/detect-execution-environment` preference for `tools.detectExecutionEnvironment`, verifies that the same normalized summary is injected into degraded `startupStatus.checks.executionEnvironment`, and validates Go-native `/api/tools/detect-install-surfaces` preference for `tools.detectInstallSurfaces`
+  - the route regression now proves Go-native `/api/tools/detect-execution-environment` preference for `tools.detectExecutionEnvironment`, verifies that the same normalized summary is injected into degraded `startupStatus.checks.executionEnvironment`, validates Go-native `/api/tools/detect-install-surfaces` preference for `tools.detectInstallSurfaces`, and validates both direct `session.importedMaintenanceStats` fallback plus degraded `startupStatus.checks.importedSessions` backfill from `/api/sessions/imported/maintenance-stats`
 - concrete validation for the startup slice included:
   - `pnpm -C packages/cli run build`
   - `powershell.exe -NoProfile -Command '$env:HYPERCODE_FORCE_INSTALL="1"; $env:HYPERCODE_SKIP_NATIVE_PREFLIGHT="1"; $env:HYPERCODE_SKIP_BUILD="1"; cmd.exe /c "start.bat --help"'`
@@ -416,6 +423,7 @@ Result:
 - Go-primary startup installs now default to `pnpm install --ignore-scripts` (unless `HYPERCODE_STARTUP_INSTALL_SCRIPTS=1` is set), reducing unnecessary coupling to unrelated workspace postinstall hooks such as Maestro/Electron rebuilds while still allowing the operator to force the full scripted install path when needed
 - the web compat fallback now also prefers Go-native `/api/tools/detect-execution-environment` when `tools.detectExecutionEnvironment` is unavailable, and reuses that same normalized summary inside degraded `startupStatus.checks.executionEnvironment`
 - the web compat fallback now also prefers Go-native `/api/tools/detect-install-surfaces` when `tools.detectInstallSurfaces` is unavailable, reducing reliance on empty install-artifact placeholders in degraded mode
+- the web compat fallback now also prefers Go-native `/api/sessions/imported/maintenance-stats` when `session.importedMaintenanceStats` is unavailable, and uses that same maintenance data to backfill degraded `startupStatus.checks.importedSessions` when startup telemetry is incomplete
 - the Go-native `/api/runtime/status` surface now also exposes startup provenance, making the native backend itself self-describing
 - `start.bat` now validates Go-first startup surfaces by default for `auto`/`go` runtime modes instead of always requiring a full workspace build first
 - `start.bat` can now skip `pnpm install` in Go-primary mode when the workspace is already ready
