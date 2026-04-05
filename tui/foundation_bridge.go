@@ -411,7 +411,7 @@ func renderTreeBrowser(items []TreeBrowserItem, selected int, filter string, con
 	if confirmPending {
 		b.WriteString("Confirm switch: Enter/Y = confirm, N/Esc/Backspace = cancel.\n")
 	} else {
-		b.WriteString("Use ↑/↓ to move, type to filter, Backspace to clear, Enter to arm switch, Esc to close, Tab to toggle grouping.\n")
+		b.WriteString("Use ↑/↓ to move, PgUp/PgDn/Home/End for viewport jumps, type to filter, Backspace to clear, Enter to arm switch, Esc to close, Tab to toggle grouping.\n")
 	}
 	b.WriteString(fmt.Sprintf("filter=%q matches=%d grouped=%t\n", filter, len(visible), grouped))
 	if maxVisible > 0 && len(visible) > maxVisible {

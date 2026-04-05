@@ -1,6 +1,7 @@
 package tui
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -513,6 +514,49 @@ func TestProcessSlashCommandTreePanePosition(t *testing.T) {
 	}
 	if len(updated.history) == 0 || !strings.Contains(updated.history[len(updated.history)-1], "position set to bottom") {
 		t.Fatalf("expected pane position message, got %#v", updated.history)
+	}
+}
+
+func TestTreePaneViewportControls(t *testing.T) {
+	cwd := t.TempDir()
+	m := model{director: agents.NewDirector(&agents.DefaultProvider{}), browserPaneHeight: 4}
+	m.director.WorkingDir = cwd
+	sessionID, err := ensureFoundationSession(&m)
+	if err != nil {
+		t.Fatal(err)
+	}
+	runtime := foundationpi.NewRuntime(cwd, nil)
+	for i := 0; i < 12; i++ {
+		if _, err := runtime.AppendUserText(sessionID, fmt.Sprintf("entry-%02d", i)); err != nil {
+			t.Fatal(err)
+		}
+	}
+	mdl, _ := ProcessSlashCommand("/tree-pane", &m)
+	updated := mdl.(model)
+	mdl, _ = ProcessSlashCommand("/tree-pane-focus", &updated)
+	updated = mdl.(model)
+	mdl, _ = updated.Update(tea.KeyMsg{Type: tea.KeyEnd})
+	updated = mdl.(model)
+	if updated.browserIndex == 0 {
+		t.Fatal("expected End to move selection to the end")
+	}
+	if view := updated.View(); !strings.Contains(view, "showing=") {
+		t.Fatalf("expected viewport metadata in focused pane view, got %s", view)
+	}
+	mdl, _ = updated.Update(tea.KeyMsg{Type: tea.KeyHome})
+	updated = mdl.(model)
+	if updated.browserIndex != 0 {
+		t.Fatalf("expected Home to reset selection to 0, got %d", updated.browserIndex)
+	}
+	mdl, _ = updated.Update(tea.KeyMsg{Type: tea.KeyPgDown})
+	updated = mdl.(model)
+	if updated.browserIndex < 4 {
+		t.Fatalf("expected PgDown to advance by viewport step, got %d", updated.browserIndex)
+	}
+	mdl, _ = updated.Update(tea.KeyMsg{Type: tea.KeyPgUp})
+	updated = mdl.(model)
+	if updated.browserIndex != 0 {
+		t.Fatalf("expected PgUp to move back toward 0, got %d", updated.browserIndex)
 	}
 }
 

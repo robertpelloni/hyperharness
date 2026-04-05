@@ -99,6 +99,30 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					}
 				}
 				return m, nil
+			case tea.KeyHome:
+				if m.browserConfirmPending {
+					return m, nil
+				}
+				m.browserIndex = 0
+				return m, nil
+			case tea.KeyEnd:
+				if m.browserConfirmPending {
+					return m, nil
+				}
+				m.browserIndex = max(0, len(visible)-1)
+				return m, nil
+			case tea.KeyPgUp:
+				if m.browserConfirmPending {
+					return m, nil
+				}
+				m.browserIndex = max(0, m.browserIndex-10)
+				return m, nil
+			case tea.KeyPgDown:
+				if m.browserConfirmPending {
+					return m, nil
+				}
+				m.browserIndex = min(max(0, len(visible)-1), m.browserIndex+10)
+				return m, nil
 			case tea.KeyUp:
 				if m.browserConfirmPending {
 					return m, nil
@@ -193,6 +217,38 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					return m, nil
 				}
 				m.browserPinnedFocus = false
+				return m, nil
+			case tea.KeyHome:
+				if m.browserConfirmPending {
+					return m, nil
+				}
+				m.browserIndex = 0
+				return m, nil
+			case tea.KeyEnd:
+				if m.browserConfirmPending {
+					return m, nil
+				}
+				m.browserIndex = max(0, len(visible)-1)
+				return m, nil
+			case tea.KeyPgUp:
+				if m.browserConfirmPending {
+					return m, nil
+				}
+				step := m.browserPaneHeight
+				if step <= 0 {
+					step = 8
+				}
+				m.browserIndex = max(0, m.browserIndex-step)
+				return m, nil
+			case tea.KeyPgDown:
+				if m.browserConfirmPending {
+					return m, nil
+				}
+				step := m.browserPaneHeight
+				if step <= 0 {
+					step = 8
+				}
+				m.browserIndex = min(max(0, len(visible)-1), m.browserIndex+step)
 				return m, nil
 			case tea.KeyUp:
 				if m.browserConfirmPending {
@@ -419,6 +475,13 @@ func StartREPL() {
 
 func max(a, b int) int {
 	if a > b {
+		return a
+	}
+	return b
+}
+
+func min(a, b int) int {
+	if a < b {
 		return a
 	}
 	return b

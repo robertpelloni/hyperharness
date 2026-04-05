@@ -931,3 +931,23 @@
 1. Keep `foundation/*`, `cmd`, and `tui` green and aligned to the same canonical runtime.
 2. Continue improving pane/browser coexistence through stronger viewport controls or more explicit pane-focused interaction affordances.
 3. Keep split-view clarity improvements as rendering-only changes layered over canonical runtime-backed state.
+
+## Additional work completed later on 2026-04-04 (viewport controls tranche)
+- Added Home/End/PgUp/PgDn navigation for the modal tree browser.
+- Added Home/End/PgUp/PgDn navigation for the focused pinned tree pane.
+- Tied focused pane PgUp/PgDn movement to the current pane height.
+- Added `min` helper for safe index clamping.
+- Updated browser guidance text to mention viewport controls.
+- Added focused regression coverage:
+  - `TestTreePaneViewportControls`
+- Added detailed analysis doc:
+  - `docs/analysis/TUI_VIEWPORT_CONTROLS_TRANCHE_2026-04-04.md`
+
+## Latest validation after viewport controls tranche
+- `gofmt -w tui/chat.go tui/slash_test.go`
+- `go test ./tui ./cmd ./foundation/...`
+
+## Updated recommendation after viewport controls tranche
+1. Keep `foundation/*`, `cmd`, and `tui` green and aligned to the same canonical runtime.
+2. Continue improving split-view ergonomics, especially stronger active-pane affordances or layout controls.
+3. Keep viewport controls as navigation over canonical runtime-derived visible items, not a new tree semantics layer.
