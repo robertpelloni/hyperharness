@@ -92,9 +92,14 @@ func buildFoundationTreeDisplay(cwd, sessionID string) (string, error) {
 	if err != nil {
 		return "", err
 	}
+	sessionName, _ := runtime.GetSessionName(sessionID)
 	var b strings.Builder
 	b.WriteString("[Foundation Tree]\n")
-	b.WriteString(fmt.Sprintf("session=%s leaf=%s\n", sessionID, leafID))
+	b.WriteString(fmt.Sprintf("session=%s", sessionID))
+	if sessionName != "" {
+		b.WriteString(fmt.Sprintf(" name=%q", sessionName))
+	}
+	b.WriteString(fmt.Sprintf(" leaf=%s\n", leafID))
 	for _, entry := range session.Entries {
 		marker := " "
 		if entry.ID == leafID {
@@ -107,7 +112,17 @@ func buildFoundationTreeDisplay(cwd, sessionID string) (string, error) {
 		if len(preview) > 60 {
 			preview = preview[:60] + "..."
 		}
-		b.WriteString(fmt.Sprintf("%s %s <- %s [%s] %s\n", marker, entry.ID, entry.ParentID, entry.Kind, preview))
+		children, _ := runtime.GetChildren(sessionID, entry.ID)
+		label, _ := runtime.GetLabel(sessionID, entry.ID)
+		labelSuffix := ""
+		if strings.TrimSpace(label) != "" {
+			labelSuffix = fmt.Sprintf(" label=%q", label)
+		}
+		childSuffix := ""
+		if len(children) > 0 {
+			childSuffix = fmt.Sprintf(" children=%d", len(children))
+		}
+		b.WriteString(fmt.Sprintf("%s %s <- %s [%s]%s%s %s\n", marker, entry.ID, entry.ParentID, entry.Kind, labelSuffix, childSuffix, preview))
 	}
 	return strings.TrimSpace(b.String()), nil
 }
@@ -129,6 +144,45 @@ func switchFoundationTreeDisplay(cwd, sessionID, targetID string, maxTokens int)
 		return "", err
 	}
 	return "[Foundation Tree Switch]\n" + summary, nil
+}
+
+func buildFoundationChildrenDisplay(cwd, sessionID, parentID string) (string, error) {
+	runtime := foundationpi.NewRuntime(cwd, nil)
+	children, err := runtime.GetChildren(sessionID, parentID)
+	if err != nil {
+		return "", err
+	}
+	var b strings.Builder
+	b.WriteString("[Foundation Tree Children]\n")
+	b.WriteString(fmt.Sprintf("parent=%s\n", parentID))
+	for _, entry := range children {
+		preview := entry.Text
+		if strings.TrimSpace(preview) == "" {
+			preview = entry.ToolName
+		}
+		if len(preview) > 60 {
+			preview = preview[:60] + "..."
+		}
+		label, _ := runtime.GetLabel(sessionID, entry.ID)
+		labelSuffix := ""
+		if strings.TrimSpace(label) != "" {
+			labelSuffix = fmt.Sprintf(" label=%q", label)
+		}
+		b.WriteString(fmt.Sprintf("- %s [%s]%s %s\n", entry.ID, entry.Kind, labelSuffix, preview))
+	}
+	return strings.TrimSpace(b.String()), nil
+}
+
+func setFoundationLabel(cwd, sessionID, targetID, label string) (string, error) {
+	runtime := foundationpi.NewRuntime(cwd, nil)
+	_, err := runtime.AppendLabelChange(sessionID, targetID, label)
+	if err != nil {
+		return "", err
+	}
+	if strings.TrimSpace(label) == "" {
+		return fmt.Sprintf("[Foundation Label]\nCleared label on %s", targetID), nil
+	}
+	return fmt.Sprintf("[Foundation Label]\nSet label %q on %s", label, targetID), nil
 }
 
 func buildShellProposal(director *agents.Director, query string) (ShellProposalMsg, error) {

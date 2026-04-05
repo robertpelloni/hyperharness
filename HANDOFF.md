@@ -451,3 +451,37 @@
 1. Keep `foundation/*`, `cmd`, and `tui` green and aligned to the same canonical runtime.
 2. Expand `/tree` from minimal command-driven navigation into a richer TUI branch explorer next.
 3. Continue resisting duplicated semantics in the UI layer; richer UX should sit on top of the same verified foundation behavior.
+
+## Additional work completed later on 2026-04-04 (TUI tree explorer tranche)
+- Added runtime wrappers in `foundation/pi/runtime.go` for richer tree inspection:
+  - `GetChildren`
+  - `GetLabel`
+  - `GetSessionName`
+- Expanded TUI tree display to include:
+  - session name
+  - active leaf
+  - per-entry child counts
+  - per-entry labels
+- Added TUI foundation bridge helpers:
+  - `buildFoundationChildrenDisplay`
+  - `setFoundationLabel`
+- Added new TUI slash commands:
+  - `/tree-children <entryId>`
+  - `/label <entryId> <label>`
+- Updated TUI `/help` output to document the richer tree-explorer surfaces.
+- Expanded `tui/slash_test.go` to verify:
+  - label-setting output
+  - labeled tree output
+  - tree-children output
+  - child-branch previews
+- Added detailed analysis doc:
+  - `docs/analysis/TUI_TREE_EXPLORER_TRANCHE_2026-04-04.md`
+
+## Latest validation after TUI tree explorer tranche
+- `gofmt -w foundation/pi/runtime.go tui/foundation_bridge.go tui/slash.go tui/slash_test.go`
+- `go test ./tui ./cmd ./foundation/...`
+
+## Updated recommendation after TUI tree explorer tranche
+1. Keep `foundation/*`, `cmd`, and `tui` green and aligned to the same canonical runtime.
+2. Begin building an interactive TUI tree/branch selector next on top of the now-richer runtime surfaces.
+3. Keep all richer UX as a thin layer over canonical runtime truth, not a competing state model.

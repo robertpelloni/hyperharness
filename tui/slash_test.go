@@ -166,6 +166,62 @@ func TestProcessSlashCommandTreeSurfaces(t *testing.T) {
 	}
 }
 
+func TestProcessSlashCommandTreeExplorerLabelAndChildren(t *testing.T) {
+	cwd := t.TempDir()
+	m := model{director: agents.NewDirector(&agents.DefaultProvider{})}
+	m.director.WorkingDir = cwd
+	sessionID, err := ensureFoundationSession(&m)
+	if err != nil {
+		t.Fatal(err)
+	}
+	runtime := foundationpi.NewRuntime(cwd, nil)
+	if _, err := runtime.AppendUserText(sessionID, "A"); err != nil {
+		t.Fatal(err)
+	}
+	aID, err := runtime.GetLeafID(sessionID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := runtime.AppendUserText(sessionID, "B"); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := runtime.AppendUserText(sessionID, "C"); err != nil {
+		t.Fatal(err)
+	}
+	oldLeaf, err := runtime.GetLeafID(sessionID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := runtime.BranchSession(sessionID, aID); err != nil {
+		t.Fatal(err)
+	}
+	_, err = runtime.AppendUserText(sessionID, "E")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := runtime.BranchSession(sessionID, oldLeaf); err != nil {
+		t.Fatal(err)
+	}
+	mdl, _ := ProcessSlashCommand("/label "+aID+" checkpoint-1", &m)
+	updated := mdl.(model)
+	if len(updated.history) == 0 || !strings.Contains(updated.history[len(updated.history)-1], "[Foundation Label]") {
+		t.Fatalf("expected label output, got %#v", updated.history)
+	}
+	mdl, _ = ProcessSlashCommand("/tree", &updated)
+	updated = mdl.(model)
+	if len(updated.history) == 0 || !strings.Contains(updated.history[len(updated.history)-1], "label=\"checkpoint-1\"") {
+		t.Fatalf("expected labeled tree output, got %#v", updated.history[len(updated.history)-1])
+	}
+	mdl, _ = ProcessSlashCommand("/tree-children "+aID, &updated)
+	updated = mdl.(model)
+	if len(updated.history) == 0 || !strings.Contains(updated.history[len(updated.history)-1], "[Foundation Tree Children]") {
+		t.Fatalf("expected tree children output, got %#v", updated.history)
+	}
+	if !strings.Contains(updated.history[len(updated.history)-1], "B") && !strings.Contains(updated.history[len(updated.history)-1], "E") {
+		t.Fatalf("expected child branch previews in output, got %#v", updated.history[len(updated.history)-1])
+	}
+}
+
 func TestProcessSlashCommandClearResetsDirector(t *testing.T) {
 	m := model{director: agents.NewDirector(&agents.DefaultProvider{})}
 	m.history = []string{"old"}

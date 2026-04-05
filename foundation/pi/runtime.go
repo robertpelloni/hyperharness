@@ -138,6 +138,18 @@ func (r *Runtime) BuildSessionContext(sessionID, leafID string) (*SessionContext
 	return r.sessionStore.BuildSessionContext(sessionID, leafID)
 }
 
+func (r *Runtime) GetChildren(sessionID, parentID string) ([]SessionEntry, error) {
+	return r.sessionStore.GetChildren(sessionID, parentID)
+}
+
+func (r *Runtime) GetLabel(sessionID, targetID string) (string, error) {
+	return r.sessionStore.GetLabel(sessionID, targetID)
+}
+
+func (r *Runtime) GetSessionName(sessionID string) (string, error) {
+	return r.sessionStore.GetSessionName(sessionID)
+}
+
 func (r *Runtime) GetLeafID(sessionID string) (string, error) {
 	return r.sessionStore.GetLeafID(sessionID)
 }

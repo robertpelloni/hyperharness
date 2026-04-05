@@ -41,6 +41,10 @@ func ProcessSlashCommand(cmd string, m *model) (tea.Model, tea.Cmd) {
 		return handleSummaryBranch(m, strings.TrimSpace(strings.TrimPrefix(cmd, "/summary-branch")))
 	case "/tree":
 		return handleTree(m, strings.TrimSpace(strings.TrimPrefix(cmd, "/tree")))
+	case "/tree-children":
+		return handleTreeChildren(m, strings.TrimSpace(strings.TrimPrefix(cmd, "/tree-children")))
+	case "/label":
+		return handleLabel(m, strings.TrimSpace(strings.TrimPrefix(cmd, "/label")))
 	case "/fsession":
 		return handleFoundationSession(m)
 	case "/exit", "/quit":
@@ -65,6 +69,8 @@ func handleHelp(m *model) (tea.Model, tea.Cmd) {
   /fsession  - Show or create the active foundation session
   /tree      - Show the active foundation session tree
   /tree <targetEntryId> [maxTokens] - Switch to a target entry and preserve abandoned branch context
+  /tree-children <entryId> - Show direct child branches for an entry
+  /label <entryId> <label> - Set a label on an entry (or clear with empty label unsupported in slash)
   /summary-compact [keepRecentTokens] - Generate a native compaction summary for the active foundation session
   /summary-branch <targetEntryId> [maxTokens] - Generate a native branch summary toward a target entry
   /exit      - Closes hypercode`)
@@ -220,6 +226,50 @@ func handleTree(m *model, arg string) (tea.Model, tea.Cmd) {
 	display, err := switchFoundationTreeDisplay(m.director.WorkingDir, sessionID, targetID, maxTokens)
 	if err != nil {
 		m.history = append(m.history, fmt.Sprintf("[Error] tree switch failed: %v", err))
+		return *m, nil
+	}
+	m.history = append(m.history, display)
+	return *m, nil
+}
+
+func handleTreeChildren(m *model, arg string) (tea.Model, tea.Cmd) {
+	m.loading = false
+	sessionID, err := ensureFoundationSession(m)
+	if err != nil {
+		m.history = append(m.history, fmt.Sprintf("[Error] foundation session unavailable: %v", err))
+		return *m, nil
+	}
+	parentID := strings.TrimSpace(arg)
+	if parentID == "" {
+		m.history = append(m.history, "[Error] /tree-children requires an entry id")
+		return *m, nil
+	}
+	display, err := buildFoundationChildrenDisplay(m.director.WorkingDir, sessionID, parentID)
+	if err != nil {
+		m.history = append(m.history, fmt.Sprintf("[Error] tree children failed: %v", err))
+		return *m, nil
+	}
+	m.history = append(m.history, display)
+	return *m, nil
+}
+
+func handleLabel(m *model, arg string) (tea.Model, tea.Cmd) {
+	m.loading = false
+	sessionID, err := ensureFoundationSession(m)
+	if err != nil {
+		m.history = append(m.history, fmt.Sprintf("[Error] foundation session unavailable: %v", err))
+		return *m, nil
+	}
+	parts := strings.Fields(strings.TrimSpace(arg))
+	if len(parts) < 2 {
+		m.history = append(m.history, "[Error] /label requires <entryId> <label>")
+		return *m, nil
+	}
+	targetID := parts[0]
+	label := strings.Join(parts[1:], " ")
+	display, err := setFoundationLabel(m.director.WorkingDir, sessionID, targetID, label)
+	if err != nil {
+		m.history = append(m.history, fmt.Sprintf("[Error] label failed: %v", err))
 		return *m, nil
 	}
 	m.history = append(m.history, display)
