@@ -1261,3 +1261,20 @@
 1. Keep `foundation/*`, `cmd`, and `tui` green and aligned to the same canonical runtime.
 2. Continue only with shortcut controls that clearly improve repeated-use ergonomics without fragmenting behavior.
 3. Keep pane preset aliases as direct wrappers over the same underlying preset logic.
+
+## Additional work completed later on 2026-04-04 (pane show/hide tranche)
+- Added new TUI slash commands:
+  - `/tree-pane-show`
+  - `/tree-pane-hide`
+- Added focused regression coverage verifying explicit show/hide behavior.
+- Added detailed analysis doc:
+  - `docs/analysis/TUI_PANE_SHOW_HIDE_TRANCHE_2026-04-04.md`
+
+## Latest validation after pane show/hide tranche
+- `gofmt -w tui/slash.go tui/slash_test.go`
+- `go test ./tui ./cmd ./foundation/...`
+
+## Updated recommendation after pane show/hide tranche
+1. Keep `foundation/*`, `cmd`, and `tui` green and aligned to the same canonical runtime.
+2. Continue only with operator-facing controls that clearly reduce repeated friction or ambiguity.
+3. Keep explicit show/hide as surface ergonomics over the same pane/browser state model.

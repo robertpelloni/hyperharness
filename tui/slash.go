@@ -47,6 +47,10 @@ func ProcessSlashCommand(cmd string, m *model) (tea.Model, tea.Cmd) {
 		return handleTreeBrowser(m)
 	case "/tree-pane":
 		return handleTreePane(m)
+	case "/tree-pane-show":
+		return handleTreePaneShow(m)
+	case "/tree-pane-hide":
+		return handleTreePaneHide(m)
 	case "/tree-pane-size":
 		return handleTreePaneSize(m, strings.TrimSpace(strings.TrimPrefix(cmd, "/tree-pane-size")))
 	case "/tree-pane-size-cycle":
@@ -120,6 +124,8 @@ func handleHelp(m *model) (tea.Model, tea.Cmd) {
   /tree-select - Show a numbered entry selector for the active foundation session
   /tree-browser - Open a cursor-driven tree browser for the active foundation session
   /tree-pane - Toggle a persistent tree pane while continuing normal prompt interaction
+  /tree-pane-show - Explicitly show/pin the persistent tree pane
+  /tree-pane-hide - Explicitly hide the persistent tree pane
   /tree-pane-size <n> - Set the persistent tree pane viewport height
   /tree-pane-size-cycle - Quickly cycle common persistent tree pane heights
   /tree-pane-preview <on|off> - Toggle preview details inside the persistent tree pane
@@ -353,6 +359,33 @@ func handleTreePane(m *model) (tea.Model, tea.Cmd) {
 		return *m, nil
 	}
 	m.history = append(m.history, "[Foundation Tree Pane] pinned")
+	return *m, nil
+}
+
+func handleTreePaneShow(m *model) (tea.Model, tea.Cmd) {
+	m.loading = false
+	if m.browserPinned {
+		m.history = append(m.history, "[Foundation Tree Pane] already visible")
+		return *m, nil
+	}
+	if err := pinFoundationTreeBrowser(m); err != nil {
+		m.history = append(m.history, fmt.Sprintf("[Error] tree pane failed: %v", err))
+		return *m, nil
+	}
+	m.history = append(m.history, "[Foundation Tree Pane] shown")
+	return *m, nil
+}
+
+func handleTreePaneHide(m *model) (tea.Model, tea.Cmd) {
+	m.loading = false
+	if !m.browserPinned {
+		m.history = append(m.history, "[Foundation Tree Pane] already hidden")
+		return *m, nil
+	}
+	unpinFoundationTreeBrowser(m)
+	m.browserPinnedFocus = false
+	m.browserConfirmPending = false
+	m.history = append(m.history, "[Foundation Tree Pane] hidden")
 	return *m, nil
 }
 

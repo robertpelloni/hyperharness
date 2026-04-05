@@ -495,6 +495,22 @@ func TestProcessSlashCommandTreePaneFocusNavigation(t *testing.T) {
 	}
 }
 
+func TestProcessSlashCommandTreePaneShowHide(t *testing.T) {
+	cwd := t.TempDir()
+	m := model{director: agents.NewDirector(&agents.DefaultProvider{})}
+	m.director.WorkingDir = cwd
+	mdl, _ := ProcessSlashCommand("/tree-pane-show", &m)
+	updated := mdl.(model)
+	if !updated.browserPinned {
+		t.Fatal("expected tree pane to be shown")
+	}
+	mdl, _ = ProcessSlashCommand("/tree-pane-hide", &updated)
+	updated = mdl.(model)
+	if updated.browserPinned {
+		t.Fatal("expected tree pane to be hidden")
+	}
+}
+
 func TestProcessSlashCommandTreePaneSize(t *testing.T) {
 	m := model{director: agents.NewDirector(&agents.DefaultProvider{}), browserPaneHeight: 8}
 	mdl, _ := ProcessSlashCommand("/tree-pane-size 12", &m)
