@@ -887,3 +887,10 @@
 1. Keep `foundation/*`, `cmd`, and `tui` green and aligned to the same canonical runtime.
 2. Continue strengthening pane/browser coexistence ergonomics next.
 3. Keep pane sizing strictly as a rendering concern over canonical runtime-backed browser state.
+
+## Additional documentation completed after pane size tranche
+- Added notes doc:
+  - `docs/analysis/TUI_SPLIT_VIEW_ERGONOMICS_NOTES_2026-04-04.md`
+- Reconfirmed current pane-size tranche validation:
+  - `go test ./tui`
+  - `go test ./cmd ./foundation/...`
