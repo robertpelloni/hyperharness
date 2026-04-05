@@ -170,6 +170,34 @@ func TestManagerPersistsAndRestoresCreatedSessions(t *testing.T) {
 	}
 }
 
+func initGitRepositoryForWorktreeTest(t *testing.T) string {
+	t.Helper()
+	gitBinary, err := exec.LookPath("git")
+	if err != nil {
+		t.Skip("git binary not available")
+	}
+	repoRoot := t.TempDir()
+	run := func(args ...string) {
+		t.Helper()
+		cmd := exec.Command(gitBinary, args...)
+		cmd.Dir = repoRoot
+		output, err := cmd.CombinedOutput()
+		if err != nil {
+			t.Fatalf("git %v failed: %v\n%s", args, err, string(output))
+		}
+	}
+	run("init")
+	run("config", "user.email", "hypercode@example.com")
+	run("config", "user.name", "HyperCode Test")
+	readmePath := filepath.Join(repoRoot, "README.md")
+	if err := os.WriteFile(readmePath, []byte("worktree test\n"), 0o644); err != nil {
+		t.Fatalf("write README: %v", err)
+	}
+	run("add", "README.md")
+	run("commit", "-m", "init")
+	return repoRoot
+}
+
 func TestManagerRestoreNormalizesTransientRunningStateToStoppedWithoutAutoResume(t *testing.T) {
 	persistencePath := filepath.Join(t.TempDir(), "session-supervisor.json")
 	state := persistedState{
@@ -208,6 +236,61 @@ func TestManagerRestoreNormalizesTransientRunningStateToStoppedWithoutAutoResume
 	}
 	if session.ScheduledRestartAt != 0 {
 		t.Fatalf("expected cleared scheduled restart time, got %#v", session)
+	}
+}
+
+func TestManagerAllocatesWorktreeForConflictingSession(t *testing.T) {
+	repoRoot := initGitRepositoryForWorktreeTest(t)
+	manager := NewManager(ManagerOptions{PersistencePath: filepath.Join(t.TempDir(), "session-supervisor.json"), WorktreeRoot: repoRoot})
+	first, err := manager.CreateSessionWithOptions(CreateSessionOptions{
+		ID:                  "base-session",
+		Name:                "Base Session",
+		CliType:             "custom",
+		Command:             "go",
+		Args:                []string{"version"},
+		RequestedWorkingDir: repoRoot,
+		WorkingDirectory:    repoRoot,
+		ExecutionProfile:    "auto",
+		AutoRestart:         false,
+		IsolateWorktree:     false,
+		Metadata:            map[string]any{},
+		MaxRestarts:         0,
+	})
+	if err != nil {
+		t.Fatalf("CreateSessionWithOptions(first) failed: %v", err)
+	}
+	if first.IsolateWorktree {
+		t.Fatalf("expected first session to remain on base workspace, got %#v", first)
+	}
+
+	isolated, err := manager.CreateSessionWithOptions(CreateSessionOptions{
+		ID:                  "isolated-session",
+		Name:                "Isolated Session",
+		CliType:             "custom",
+		Command:             "go",
+		Args:                []string{"version"},
+		RequestedWorkingDir: repoRoot,
+		WorkingDirectory:    repoRoot,
+		ExecutionProfile:    "auto",
+		AutoRestart:         false,
+		IsolateWorktree:     true,
+		Metadata:            map[string]any{},
+		MaxRestarts:         0,
+	})
+	if err != nil {
+		t.Fatalf("CreateSessionWithOptions(isolated) failed: %v", err)
+	}
+	if !isolated.IsolateWorktree {
+		t.Fatalf("expected isolated session to allocate worktree, got %#v", isolated)
+	}
+	if strings.TrimSpace(isolated.WorktreePath) == "" || isolated.WorkingDirectory != isolated.WorktreePath {
+		t.Fatalf("expected worktree-backed working directory, got %#v", isolated)
+	}
+	if !strings.Contains(filepath.ToSlash(isolated.WorktreePath), ".hypercode/worktrees/") {
+		t.Fatalf("expected worktree path under .hypercode/worktrees, got %s", isolated.WorktreePath)
+	}
+	if _, err := os.Stat(isolated.WorktreePath); err != nil {
+		t.Fatalf("expected worktree path to exist: %v", err)
 	}
 }
 

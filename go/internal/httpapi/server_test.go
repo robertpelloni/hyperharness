@@ -5982,6 +5982,73 @@ func TestSupervisorSessionRestoreFallsBackToLocalGoPersistence(t *testing.T) {
 	}
 }
 
+func initGitWorkspaceForHTTPWorktreeTest(t *testing.T) string {
+	t.Helper()
+	gitBinary, err := exec.LookPath("git")
+	if err != nil {
+		t.Skip("git binary not available")
+	}
+	repoRoot := t.TempDir()
+	run := func(args ...string) {
+		t.Helper()
+		cmd := exec.Command(gitBinary, args...)
+		cmd.Dir = repoRoot
+		output, err := cmd.CombinedOutput()
+		if err != nil {
+			t.Fatalf("git %v failed: %v\n%s", args, err, string(output))
+		}
+	}
+	run("init")
+	run("config", "user.email", "hypercode@example.com")
+	run("config", "user.name", "HyperCode Test")
+	if err := os.WriteFile(filepath.Join(repoRoot, "README.md"), []byte("http worktree test\n"), 0o644); err != nil {
+		t.Fatalf("write README: %v", err)
+	}
+	run("add", "README.md")
+	run("commit", "-m", "init")
+	return repoRoot
+}
+
+func TestSupervisorSessionCreateFallsBackToLocalGoWorktreeIsolation(t *testing.T) {
+	t.Setenv("HYPERCODE_TRPC_UPSTREAM", "http://127.0.0.1:1/trpc")
+	workspaceRoot := initGitWorkspaceForHTTPWorktreeTest(t)
+	cfg := config.Default()
+	cfg.WorkspaceRoot = workspaceRoot
+	cfg.ConfigDir = filepath.Join(workspaceRoot, ".hypercode-go")
+	cfg.MainConfigDir = filepath.Join(workspaceRoot, ".hypercode")
+	if err := os.MkdirAll(cfg.ConfigDir, 0o755); err != nil {
+		t.Fatalf("failed to create go config dir: %v", err)
+	}
+	if err := os.MkdirAll(cfg.MainConfigDir, 0o755); err != nil {
+		t.Fatalf("failed to create main config dir: %v", err)
+	}
+	server := New(cfg, stubDetector{})
+
+	firstReq := httptest.NewRequest(http.MethodPost, "/api/sessions/supervisor/create", strings.NewReader(`{"id":"base-http-session","name":"Base HTTP Session","cliType":"custom","workingDirectory":"`+strings.ReplaceAll(workspaceRoot, `\`, `\\`)+`","command":"go","args":["version"],"autoRestart":false,"maxRestartAttempts":0,"isolateWorktree":false}`))
+	firstReq.Header.Set("content-type", "application/json")
+	firstRecorder := httptest.NewRecorder()
+	server.Handler().ServeHTTP(firstRecorder, firstReq)
+	if firstRecorder.Code != http.StatusOK {
+		t.Fatalf("expected status 200 from base local create fallback, got %d %s", firstRecorder.Code, firstRecorder.Body.String())
+	}
+
+	isolateReq := httptest.NewRequest(http.MethodPost, "/api/sessions/supervisor/create", strings.NewReader(`{"id":"isolated-http-session","name":"Isolated HTTP Session","cliType":"custom","workingDirectory":"`+strings.ReplaceAll(workspaceRoot, `\`, `\\`)+`","command":"go","args":["version"],"autoRestart":false,"maxRestartAttempts":0,"isolateWorktree":true}`))
+	isolateReq.Header.Set("content-type", "application/json")
+	isolateRecorder := httptest.NewRecorder()
+	server.Handler().ServeHTTP(isolateRecorder, isolateReq)
+	if isolateRecorder.Code != http.StatusOK {
+		t.Fatalf("expected status 200 from isolated local create fallback, got %d %s", isolateRecorder.Code, isolateRecorder.Body.String())
+	}
+	for _, needle := range []string{`"fallback":"go-local-supervisor"`, `"procedure":"session.create"`, `"isolated-http-session"`, `"isolateWorktree":true`, `"worktreePath":"`} {
+		if !strings.Contains(isolateRecorder.Body.String(), needle) {
+			t.Fatalf("expected isolated local create payload to contain %s, got %s", needle, isolateRecorder.Body.String())
+		}
+	}
+	if !strings.Contains(isolateRecorder.Body.String(), `.hypercode\\worktrees\\isolated-http-session`) {
+		t.Fatalf("expected isolated local create payload to mention the dedicated worktree path, got %s", isolateRecorder.Body.String())
+	}
+}
+
 func TestMCPBridgeRoutes(t *testing.T) {
 	upstream := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("content-type", "application/json")

@@ -371,6 +371,7 @@ func New(cfg config.Config, detector controlplane.ToolProvider) *Server {
 	supMgr := supervisor.NewManager(supervisor.ManagerOptions{
 		PersistencePath:   filepath.Join(cfg.ConfigDir, "session-supervisor.json"),
 		AutoResumeOnStart: true,
+		WorktreeRoot:      cfg.WorkspaceRoot,
 	})
 
 	// Create workflow engine with built-in workflows
@@ -1085,7 +1086,7 @@ func (s *Server) handleAPIIndex(w http.ResponseWriter, _ *http.Request) {
 				{Path: "/api/sessions/supervisor/catalog", Category: "sessions", Description: "Bridge to the TypeScript session harness catalog."},
 				{Path: "/api/sessions/supervisor/list", Category: "sessions", Description: "List supervised sessions through the TypeScript control plane when available, with native Go persisted supervisor fallback when unavailable."},
 				{Path: "/api/sessions/supervisor/get", Category: "sessions", Description: "Read a supervised session snapshot through TypeScript when available, with native Go persisted supervisor fallback when unavailable."},
-				{Path: "/api/sessions/supervisor/create", Category: "sessions", Description: "Create a supervised session through the TypeScript control plane when available, with native Go persisted supervisor fallback when unavailable."},
+				{Path: "/api/sessions/supervisor/create", Category: "sessions", Description: "Create a supervised session through the TypeScript control plane when available, with native Go persisted supervisor fallback including conflict-aware worktree isolation when unavailable."},
 				{Path: "/api/sessions/supervisor/start", Category: "sessions", Description: "Start a supervised session through TypeScript when available, with native Go supervised runtime fallback when unavailable."},
 				{Path: "/api/sessions/supervisor/stop", Category: "sessions", Description: "Stop a supervised session through TypeScript when available, with native Go supervised runtime fallback when unavailable."},
 				{Path: "/api/sessions/supervisor/restart", Category: "sessions", Description: "Restart a supervised session through TypeScript when available, with native Go supervised runtime fallback when unavailable."},

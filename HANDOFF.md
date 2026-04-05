@@ -3,6 +3,32 @@
 ## Current status
 **Version:** `1.0.0-alpha.1`
 
+### Latest incremental pass — worktree/isolation parity for Go fallback sessions
+This follow-up gave Go fallback sessions truthful worktree allocation behavior when multiple active sessions target the same requested working directory.
+
+#### What changed
+- Added a native Go git-worktree helper in `go/internal/git/worktree.go`
+- Wired `go/internal/supervisor/supervisor.go` to use that helper when `isolateWorktree` is requested and another active session already occupies the same workspace
+- Wired `go/internal/httpapi/server.go` to pass the workspace root into the Go supervisor manager so the fallback path can actually create worktrees
+- Added focused regression coverage in:
+  - `go/internal/supervisor/supervisor_test.go`
+  - `go/internal/httpapi/server_test.go`
+
+#### Fallback semantics
+When TS is unavailable, Go fallback supervised sessions now follow a truthful isolation rule similar to the TypeScript supervisor:
+- first session on a workspace stays on the requested working directory
+- conflicting later session with `isolateWorktree: true` gets a dedicated worktree under:
+  - `.hypercode/worktrees/<session-id>`
+- if worktree creation fails, the session still gets created but Go logs the limitation and does not pretend isolation succeeded
+
+#### Validation performed
+- `cd go && gofmt -w internal/git/worktree.go internal/supervisor/supervisor.go internal/supervisor/supervisor_test.go internal/httpapi/server.go internal/httpapi/server_test.go`
+- `cd go && go test ./internal/supervisor ./internal/httpapi ./internal/git -run 'TestManagerAllocatesWorktreeForConflictingSession|TestSupervisorSessionCreateFallsBackToLocalGoWorktreeIsolation|TestCreateSessionCapturesMetadata|TestSupervisorSessionRoutesFallBackToLocalGoSupervisor' -count=1`
+- `cd go && go test ./internal/httpapi ./internal/supervisor ./internal/git -count=1`
+
+#### Recommended next step after this pass
+Continue deeper Go-native supervisor parity by narrowing the remaining restore/control semantics gap now that lifecycle, persistence, restore, execution-policy visibility, and worktree isolation all have native fallback ownership.
+
 ### Latest incremental pass — execution-policy parity for Go fallback sessions
 This follow-up gave Go fallback sessions a truthful `executionPolicy` payload and made native `execute-shell` respect that policy instead of using only a generic shell fallback.
 

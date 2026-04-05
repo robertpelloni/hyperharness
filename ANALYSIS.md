@@ -1,5 +1,77 @@
 # HyperCode Stabilization Analysis — 2026-04-03
 
+## Latest stabilization pass — worktree/isolation parity for Go fallback sessions
+
+### Context
+After the recent Go supervisor lifecycle, restore, and execution-policy work, the highest-value remaining parity gap in the fallback supervisor lane was still worktree/isolation ownership.
+
+The TypeScript supervisor already had a truthful pattern here:
+- only allocate a worktree when another active session is already occupying the same requested working directory
+- otherwise keep the first session on the requested workspace directly
+
+The Go fallback sessions still exposed `worktreePath` / `isolateWorktree` fields in their shape, but they did not actually own any comparable worktree allocation behavior yet.
+
+### What changed
+#### 1. Added a native Go git-worktree manager
+Created:
+- `go/internal/git/worktree.go`
+
+The new Go helper provides a narrow, truthful worktree surface:
+- detect whether the configured root is a Git working tree
+- create a task worktree under:
+  - `.hypercode/worktrees/<session-id>`
+- create a `task/<session-id>` branch when needed
+- clean up a named task worktree if/when that surface is used later
+
+This is intentionally smaller than trying to port the entire TypeScript orchestration ecosystem around worktrees all at once.
+
+#### 2. Wired the Go supervisor manager to allocate worktrees only for conflicting sessions
+Updated:
+- `go/internal/supervisor/supervisor.go`
+- `go/internal/httpapi/server.go`
+
+The Go supervisor manager now accepts a worktree root and uses the new Go git-worktree manager.
+
+Its fallback behavior now mirrors the TypeScript rule closely:
+- if `isolateWorktree` is not requested, stay on the requested working directory
+- if `isolateWorktree` is requested but no conflicting active session already occupies that working directory, stay on the requested working directory
+- if `isolateWorktree` is requested **and** another active session already occupies that working directory, allocate a dedicated worktree and set:
+  - `workingDirectory = worktreePath`
+  - `isolateWorktree = true`
+
+If worktree creation fails, the Go fallback stays truthful:
+- the session still gets created
+- it logs that isolation was requested but unavailable
+- it continues without pretending a worktree exists
+
+#### 3. Added focused regression coverage for both manager-level and HTTP-level worktree fallback behavior
+Updated:
+- `go/internal/supervisor/supervisor_test.go`
+- `go/internal/httpapi/server_test.go`
+
+Added coverage for:
+- creating a real temporary Git repo in tests
+- creating a first fallback session that stays on the base workspace
+- creating a second conflicting fallback session that gets a dedicated Go worktree
+- verifying the HTTP create fallback exposes:
+  - `isolateWorktree: true`
+  - `worktreePath`
+  - a worktree-backed `workingDirectory`
+
+### Validation
+Executed truthfully without killing any processes:
+- `cd go && gofmt -w internal/git/worktree.go internal/supervisor/supervisor.go internal/supervisor/supervisor_test.go internal/httpapi/server.go internal/httpapi/server_test.go`
+- `cd go && go test ./internal/supervisor ./internal/httpapi ./internal/git -run 'TestManagerAllocatesWorktreeForConflictingSession|TestSupervisorSessionCreateFallsBackToLocalGoWorktreeIsolation|TestCreateSessionCapturesMetadata|TestSupervisorSessionRoutesFallBackToLocalGoSupervisor' -count=1`
+- `cd go && go test ./internal/httpapi ./internal/supervisor ./internal/git -count=1`
+
+### Why this matters
+This closes a major structural gap in the Go fallback supervisor lane:
+- fallback sessions now have truthful worktree isolation behavior instead of only shape-level placeholders
+- dashboard/session views can now see real `worktreePath` / `isolateWorktree` behavior from the Go-owned supervisor path
+- Go fallback session creation is closer to TypeScript parity for parallel session safety on the same repo workspace
+
+This still does **not** mean full TS supervisor parity. The biggest remaining gaps are now deeper around richer restore/control semantics and any niche orchestration behaviors built around the broader TypeScript supervisor ecosystem. But worktree/isolation is no longer just a missing checkbox in the Go fallback path.
+
 ## Latest stabilization pass — execution-policy parity for Go fallback sessions
 
 ### Context

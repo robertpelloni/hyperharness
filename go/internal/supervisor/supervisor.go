@@ -13,6 +13,8 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	worktreegit "github.com/hypercodehq/hypercode-go/internal/git"
 )
 
 type SessionState string
@@ -96,6 +98,7 @@ type ManagerOptions struct {
 	MaxLogEntries     int
 	AutoResumeOnStart bool
 	RestartDelay      time.Duration
+	WorktreeRoot      string
 }
 
 type RestoreStatus struct {
@@ -155,6 +158,7 @@ type Manager struct {
 	autoResumeOnStart bool
 	restartDelay      time.Duration
 	restoreStatus     RestoreStatus
+	worktreeManager   *worktreegit.WorktreeManager
 }
 
 func NewManager(options ...ManagerOptions) *Manager {
@@ -182,6 +186,9 @@ func NewManager(options ...ManagerOptions) *Manager {
 			RestoredSessionCount: 0,
 			AutoResumeCount:      0,
 		},
+	}
+	if strings.TrimSpace(cfg.WorktreeRoot) != "" {
+		manager.worktreeManager = worktreegit.NewWorktreeManager(cfg.WorktreeRoot)
 	}
 	manager.restoreSessions()
 	return manager
@@ -236,6 +243,10 @@ func (m *Manager) CreateSessionWithOptions(input CreateSessionOptions) (*Supervi
 	if requestedWorkingDirectory == "" {
 		requestedWorkingDirectory = workingDirectory
 	}
+	usesWorktree, worktreePath, worktreeReason := m.allocateWorktreeLocked(id, requestedWorkingDirectory, input.IsolateWorktree)
+	if usesWorktree {
+		workingDirectory = worktreePath
+	}
 	name := strings.TrimSpace(input.Name)
 	if name == "" {
 		name = fmt.Sprintf("%s-%s", cliType, shortenID(id))
@@ -271,8 +282,9 @@ func (m *Manager) CreateSessionWithOptions(input CreateSessionOptions) (*Supervi
 		ExecutionPolicy:           executionPolicy,
 		RequestedWorkingDirectory: requestedWorkingDirectory,
 		WorkingDirectory:          workingDirectory,
+		WorktreePath:              worktreePath,
 		AutoRestart:               autoRestart,
-		IsolateWorktree:           input.IsolateWorktree,
+		IsolateWorktree:           usesWorktree,
 		State:                     StateCreated,
 		RestartCount:              0,
 		MaxRestarts:               maxRestarts,
@@ -289,6 +301,9 @@ func (m *Manager) CreateSessionWithOptions(input CreateSessionOptions) (*Supervi
 	}
 	m.sessions[id] = session
 	m.appendLogLocked(session, "system", fmt.Sprintf("Session created for %s in %s", session.CliType, session.WorkingDirectory))
+	if strings.TrimSpace(worktreeReason) != "" {
+		m.appendLogLocked(session, "system", worktreeReason)
+	}
 	if executionPolicy != nil && strings.TrimSpace(executionPolicy.Reason) != "" {
 		m.appendLogLocked(session, "system", fmt.Sprintf("Execution policy %s selected%s (%s)", executionPolicy.EffectiveProfile, executionPolicyLogShellSuffix(executionPolicy), executionPolicy.Reason))
 	}
@@ -559,6 +574,55 @@ func (m *Manager) restoreSessions() {
 		go func(id string) {
 			_ = m.StartSession(context.Background(), id)
 		}(sessionID)
+	}
+}
+
+func (m *Manager) allocateWorktreeLocked(sessionID string, requestedWorkingDirectory string, requestedIsolation bool) (bool, string, string) {
+	if !requestedIsolation {
+		return false, "", ""
+	}
+	if m.worktreeManager == nil {
+		return false, "", "Worktree isolation requested, but no Go worktree manager is configured; continuing without isolation."
+	}
+	if !m.shouldUseWorktreeLocked(requestedWorkingDirectory) {
+		return false, "", ""
+	}
+	worktreePath, err := m.worktreeManager.CreateTaskEnvironment(sessionID)
+	if err != nil {
+		return false, "", "Worktree isolation requested, but native Go worktree creation failed; continuing without isolation: " + err.Error()
+	}
+	return true, worktreePath, "Worktree isolation enabled at " + worktreePath
+}
+
+func (m *Manager) shouldUseWorktreeLocked(workingDirectory string) bool {
+	resolvedDir, err := filepath.Abs(strings.TrimSpace(workingDirectory))
+	if err != nil {
+		resolvedDir = filepath.Clean(strings.TrimSpace(workingDirectory))
+	}
+	if strings.TrimSpace(resolvedDir) == "" {
+		return false
+	}
+	for _, session := range m.sessions {
+		if !sessionUsesActiveWorkspace(session) {
+			continue
+		}
+		activeDir, err := filepath.Abs(strings.TrimSpace(session.WorkingDirectory))
+		if err != nil {
+			activeDir = filepath.Clean(strings.TrimSpace(session.WorkingDirectory))
+		}
+		if activeDir == resolvedDir {
+			return true
+		}
+	}
+	return false
+}
+
+func sessionUsesActiveWorkspace(session *SupervisedSession) bool {
+	switch session.State {
+	case StateCreated, StateStarting, StateRunning, StateRestarting:
+		return true
+	default:
+		return false
 	}
 }
 
