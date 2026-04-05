@@ -13,6 +13,10 @@ type SummaryGenerator interface {
 	GenerateBranchSummary(ctx context.Context, prep *BranchSummaryPreparation) (string, error)
 }
 
+type CompactionSummaryGenerator interface {
+	GenerateCompactionSummary(ctx context.Context, prep *CompactionPreparation) (string, error)
+}
+
 // SummaryGeneratorFunc adapts a function to SummaryGenerator.
 type SummaryGeneratorFunc func(ctx context.Context, prep *BranchSummaryPreparation) (string, error)
 
@@ -130,6 +134,58 @@ func inferNextSteps(prep *BranchSummaryPreparation) []string {
 	return steps
 }
 
+func (DeterministicSummaryGenerator) GenerateCompactionSummary(ctx context.Context, prep *CompactionPreparation) (string, error) {
+	if prep == nil {
+		return "", fmt.Errorf("compaction preparation is nil")
+	}
+	select {
+	case <-ctx.Done():
+		return "", ctx.Err()
+	default:
+	}
+	var b strings.Builder
+	b.WriteString("## Goal\n")
+	b.WriteString("Compress earlier conversation context while preserving enough recent work to continue safely.")
+	b.WriteString("\n\n## Constraints & Preferences\n")
+	if prep.KeepRecentTokens > 0 {
+		b.WriteString(fmt.Sprintf("- Keep approximately %d estimated recent tokens uncompressed\n", prep.KeepRecentTokens))
+	}
+	if prep.FirstKeptEntryID != "" {
+		b.WriteString(fmt.Sprintf("- Recent context resumes at entry `%s`\n", prep.FirstKeptEntryID))
+	}
+	b.WriteString("\n## Progress\n### Done\n")
+	b.WriteString(fmt.Sprintf("- [x] Prepared %d older entries for compaction\n", len(prep.EntriesToSummarize)))
+	if prep.EstimatedTokens > 0 {
+		b.WriteString(fmt.Sprintf("- [x] Serialized compacted span (~%d estimated tokens)\n", prep.EstimatedTokens))
+	}
+	b.WriteString("\n### In Progress\n- [ ] Continue from the kept recent context plus this compaction summary\n")
+	b.WriteString("\n### Blocked\n- No explicit blockers recorded in the compacted span\n")
+	b.WriteString("\n## Key Decisions\n")
+	b.WriteString("- **Compaction**: summarize older context while preserving recent entries outside the compaction span\n")
+	if len(prep.FileOps.ReadFiles) > 0 || len(prep.FileOps.ModifiedFiles) > 0 {
+		b.WriteString("- **File context retained**: cumulative read/modified files from the compacted span are preserved\n")
+	}
+	b.WriteString("\n## Next Steps\n")
+	b.WriteString("1. Continue from the first kept entry and this summary instead of replaying the full compacted span\n")
+	if len(prep.FileOps.ModifiedFiles) > 0 {
+		b.WriteString("2. Re-open modified files if more implementation detail is needed\n")
+	}
+	b.WriteString("\n## Critical Context\n")
+	b.WriteString(fmt.Sprintf("- Tokens before compaction: %d\n", prep.TokensBefore))
+	if prep.SerializedConversation != "" {
+		b.WriteString(fmt.Sprintf("- Serialized compacted payload length: %d chars\n", len(prep.SerializedConversation)))
+	}
+	if prep.FirstKeptEntryID != "" {
+		b.WriteString(fmt.Sprintf("- Recent context resumes at `%s`\n", prep.FirstKeptEntryID))
+	}
+	b.WriteString("\n<read-files>\n")
+	b.WriteString(strings.Join(prep.FileOps.ReadFiles, "\n"))
+	b.WriteString("\n</read-files>\n\n<modified-files>\n")
+	b.WriteString(strings.Join(prep.FileOps.ModifiedFiles, "\n"))
+	b.WriteString("\n</modified-files>")
+	return strings.TrimSpace(b.String()), nil
+}
+
 func inferCriticalContext(prep *BranchSummaryPreparation) []string {
 	items := []string{}
 	if prep.OldLeafID != "" {
@@ -166,6 +222,29 @@ func (s *SessionStore) BranchWithGeneratedSummary(ctx context.Context, sessionID
 		return nil, "", err
 	}
 	session, err := s.BranchWithSummary(sessionID, targetID, summary, details)
+	if err != nil {
+		return nil, "", err
+	}
+	return session, summary, nil
+}
+
+func (s *SessionStore) GenerateCompactionSummary(ctx context.Context, prep *CompactionPreparation, generator CompactionSummaryGenerator) (string, error) {
+	if generator == nil {
+		generator = DeterministicSummaryGenerator{}
+	}
+	return generator.GenerateCompactionSummary(ctx, prep)
+}
+
+func (s *SessionStore) CompactWithGeneratedSummary(ctx context.Context, sessionID string, keepRecentTokens int, generator CompactionSummaryGenerator, details any) (*SessionFile, string, error) {
+	prep, err := s.PrepareCompactionWithBudget(sessionID, keepRecentTokens)
+	if err != nil {
+		return nil, "", err
+	}
+	summary, err := s.GenerateCompactionSummary(ctx, prep, generator)
+	if err != nil {
+		return nil, "", err
+	}
+	session, err := s.AppendCompaction(sessionID, summary, prep.FirstKeptEntryID, prep.TokensBefore, details)
 	if err != nil {
 		return nil, "", err
 	}

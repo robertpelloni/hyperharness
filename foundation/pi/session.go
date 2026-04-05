@@ -83,6 +83,17 @@ type BranchSummaryPreparation struct {
 	MaxTokens              int                  `json:"maxTokens,omitempty"`
 }
 
+type CompactionPreparation struct {
+	LeafID                 string               `json:"leafId,omitempty"`
+	EntriesToSummarize     []SessionEntry       `json:"entriesToSummarize"`
+	SerializedConversation string               `json:"serializedConversation,omitempty"`
+	FileOps                BranchSummaryFileOps `json:"fileOps,omitempty"`
+	EstimatedTokens        int                  `json:"estimatedTokens,omitempty"`
+	TokensBefore           int                  `json:"tokensBefore,omitempty"`
+	FirstKeptEntryID       string               `json:"firstKeptEntryId,omitempty"`
+	KeepRecentTokens       int                  `json:"keepRecentTokens,omitempty"`
+}
+
 type sessionRecord struct {
 	Type string          `json:"type"`
 	Data json.RawMessage `json:"data"`
@@ -713,6 +724,71 @@ func DefaultStructuredSummaryTemplate(prep *BranchSummaryPreparation) string {
 		return ""
 	}
 	return fmt.Sprintf("## Goal\n[What the user is trying to accomplish]\n\n## Constraints & Preferences\n- [Requirements mentioned by user]\n\n## Progress\n### Done\n- [x] [Completed tasks]\n\n### In Progress\n- [ ] [Current work]\n\n### Blocked\n- [Issues, if any]\n\n## Key Decisions\n- **[Decision]**: [Rationale]\n\n## Next Steps\n1. [What should happen next]\n\n## Critical Context\n- [Data needed to continue]\n\n<read-files>\n%s\n</read-files>\n\n<modified-files>\n%s\n</modified-files>", strings.Join(prep.FileOps.ReadFiles, "\n"), strings.Join(prep.FileOps.ModifiedFiles, "\n"))
+}
+
+func (s *SessionStore) PrepareCompaction(sessionID string) (*CompactionPreparation, error) {
+	return s.PrepareCompactionWithBudget(sessionID, 0)
+}
+
+func (s *SessionStore) PrepareCompactionWithBudget(sessionID string, keepRecentTokens int) (*CompactionPreparation, error) {
+	session, err := s.Load(sessionID)
+	if err != nil {
+		return nil, err
+	}
+	leafID := session.Metadata.LeafID
+	if leafID == "" && len(session.Entries) > 0 {
+		leafID = session.Entries[len(session.Entries)-1].ID
+	}
+	branch, err := s.GetBranch(sessionID, leafID)
+	if err != nil {
+		return nil, err
+	}
+	contextEntries := make([]SessionEntry, 0, len(branch))
+	for _, entry := range branch {
+		switch entry.Kind {
+		case "custom", "session_info", "label":
+			continue
+		default:
+			contextEntries = append(contextEntries, entry)
+		}
+	}
+	serializedAll := serializeConversation(contextEntries)
+	tokensBefore := estimateSerializedTokens(serializedAll)
+	if keepRecentTokens <= 0 {
+		trimmed := append([]SessionEntry(nil), contextEntries...)
+		return &CompactionPreparation{
+			LeafID:                 leafID,
+			EntriesToSummarize:     trimmed,
+			SerializedConversation: serializeConversation(trimmed),
+			FileOps:                collectBranchFileOps(trimmed),
+			EstimatedTokens:        estimateSerializedTokens(serializeConversation(trimmed)),
+			TokensBefore:           tokensBefore,
+			KeepRecentTokens:       keepRecentTokens,
+		}, nil
+	}
+	kept := trimEntriesToBudget(contextEntries, keepRecentTokens)
+	firstKeptID := ""
+	if len(kept) > 0 {
+		firstKeptID = kept[0].ID
+	}
+	summarized := make([]SessionEntry, 0)
+	for _, entry := range contextEntries {
+		if firstKeptID != "" && entry.ID == firstKeptID {
+			break
+		}
+		summarized = append(summarized, entry)
+	}
+	serialized := serializeConversation(summarized)
+	return &CompactionPreparation{
+		LeafID:                 leafID,
+		EntriesToSummarize:     summarized,
+		SerializedConversation: serialized,
+		FileOps:                collectBranchFileOps(summarized),
+		EstimatedTokens:        estimateSerializedTokens(serialized),
+		TokensBefore:           tokensBefore,
+		FirstKeptEntryID:       firstKeptID,
+		KeepRecentTokens:       keepRecentTokens,
+	}, nil
 }
 
 func (s *SessionStore) GetLabel(sessionID, targetID string) (string, error) {

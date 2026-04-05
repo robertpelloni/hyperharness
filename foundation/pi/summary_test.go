@@ -42,6 +42,31 @@ func TestDeterministicSummaryGeneratorProducesStructuredSummary(t *testing.T) {
 	}
 }
 
+func TestDeterministicCompactionGeneratorProducesStructuredSummary(t *testing.T) {
+	prep := &CompactionPreparation{
+		LeafID:                 "leaf-1",
+		EntriesToSummarize:     []SessionEntry{{Kind: "message", Role: "user", Text: "Older conversation"}},
+		SerializedConversation: "[User]: Older conversation",
+		FileOps: BranchSummaryFileOps{
+			ReadFiles:     []string{"old.go"},
+			ModifiedFiles: []string{"old.go", "state.go"},
+		},
+		EstimatedTokens:  64,
+		TokensBefore:     512,
+		FirstKeptEntryID: "kept-1",
+		KeepRecentTokens: 128,
+	}
+	summary, err := DeterministicSummaryGenerator{}.GenerateCompactionSummary(context.Background(), prep)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, needle := range []string{"## Goal", "## Progress", "## Key Decisions", "<read-files>", "old.go", "state.go", "kept-1"} {
+		if !strings.Contains(summary, needle) {
+			t.Fatalf("expected compaction summary to contain %q, got:\n%s", needle, summary)
+		}
+	}
+}
+
 func TestBranchWithGeneratedSummaryAppendsSummaryEntry(t *testing.T) {
 	dir := t.TempDir()
 	runtime := NewRuntime(dir, DefaultSessionStore(dir))
@@ -100,5 +125,54 @@ func TestBranchWithGeneratedSummaryAppendsSummaryEntry(t *testing.T) {
 	}
 	if !strings.Contains(last.Summary, "## Goal") {
 		t.Fatalf("expected structured generated summary, got:\n%s", last.Summary)
+	}
+}
+
+func TestCompactWithGeneratedSummaryAppendsCompactionEntry(t *testing.T) {
+	dir := t.TempDir()
+	runtime := NewRuntime(dir, DefaultSessionStore(dir))
+	session, err := runtime.CreateSession("alpha")
+	if err != nil {
+		t.Fatal(err)
+	}
+	id := session.Metadata.SessionID
+
+	if _, err := runtime.AppendUserText(id, strings.Repeat("older ", 40)); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := runtime.AppendUserText(id, strings.Repeat("middle ", 40)); err != nil {
+		t.Fatal(err)
+	}
+	session, err = runtime.AppendUserText(id, strings.Repeat("recent ", 40))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	session, summary, err := runtime.CompactWithGeneratedSummary(context.Background(), id, 60, nil, map[string]any{"readFiles": []string{"ctx.go"}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if strings.TrimSpace(summary) == "" {
+		t.Fatal("expected generated compaction summary")
+	}
+	last := session.Entries[len(session.Entries)-1]
+	if last.Kind != "compaction" {
+		t.Fatalf("expected compaction entry, got %#v", last)
+	}
+	if !strings.Contains(last.Summary, "## Goal") {
+		t.Fatalf("expected structured compaction summary, got:\n%s", last.Summary)
+	}
+	if last.FirstKeptID == "" {
+		t.Fatal("expected compaction to record first kept entry")
+	}
+	if last.TokensBefore == 0 {
+		t.Fatal("expected compaction tokensBefore to be populated")
+	}
+	ctx, err := runtime.BuildSessionContext(id, "")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !ctx.CompactionUsed {
+		t.Fatal("expected context to mark compaction use")
 	}
 }

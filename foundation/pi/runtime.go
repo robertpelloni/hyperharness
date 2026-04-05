@@ -174,6 +174,22 @@ func (r *Runtime) BranchWithGeneratedSummary(ctx context.Context, sessionID, tar
 	return r.sessionStore.BranchWithGeneratedSummary(ctx, sessionID, targetID, maxTokens, generator, details)
 }
 
+func (r *Runtime) PrepareCompaction(sessionID string) (*CompactionPreparation, error) {
+	return r.sessionStore.PrepareCompaction(sessionID)
+}
+
+func (r *Runtime) PrepareCompactionWithBudget(sessionID string, keepRecentTokens int) (*CompactionPreparation, error) {
+	return r.sessionStore.PrepareCompactionWithBudget(sessionID, keepRecentTokens)
+}
+
+func (r *Runtime) GenerateCompactionSummary(ctx context.Context, prep *CompactionPreparation, generator CompactionSummaryGenerator) (string, error) {
+	return r.sessionStore.GenerateCompactionSummary(ctx, prep, generator)
+}
+
+func (r *Runtime) CompactWithGeneratedSummary(ctx context.Context, sessionID string, keepRecentTokens int, generator CompactionSummaryGenerator, details any) (*SessionFile, string, error) {
+	return r.sessionStore.CompactWithGeneratedSummary(ctx, sessionID, keepRecentTokens, generator, details)
+}
+
 func (r *Runtime) appendToolRun(sessionID, toolName string, input json.RawMessage, result *ToolResult) error {
 	session, err := r.sessionStore.Load(sessionID)
 	if err != nil {

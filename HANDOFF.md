@@ -332,3 +332,40 @@
 1. Keep `foundation/*` green and canonical.
 2. Mirror the same hook/generator architecture for compaction preparation next.
 3. Then start surfacing the now-real summary-generation workflow in CLI/TUI branch navigation (`/tree`-style behavior).
+
+## Additional work completed later on 2026-04-04 (compaction generation hooks tranche)
+- Added native `CompactionPreparation` carrying:
+  - `LeafID`
+  - `EntriesToSummarize`
+  - `SerializedConversation`
+  - `FileOps`
+  - `EstimatedTokens`
+  - `TokensBefore`
+  - `FirstKeptEntryID`
+  - `KeepRecentTokens`
+- Added session-store preparation APIs:
+  - `PrepareCompaction(sessionID)`
+  - `PrepareCompactionWithBudget(sessionID, keepRecentTokens)`
+- Added pluggable `CompactionSummaryGenerator` interface.
+- Extended `DeterministicSummaryGenerator` to implement deterministic local compaction summary generation.
+- Added session-store generation APIs:
+  - `GenerateCompactionSummary(ctx, prep, generator)`
+  - `CompactWithGeneratedSummary(ctx, sessionID, keepRecentTokens, generator, details)`
+- Added runtime wrappers in `foundation/pi/runtime.go`:
+  - `PrepareCompaction`
+  - `PrepareCompactionWithBudget`
+  - `GenerateCompactionSummary`
+  - `CompactWithGeneratedSummary`
+- Expanded `foundation/pi/summary_test.go` to verify compaction generation and append behavior.
+- Added detailed analysis doc:
+  - `docs/analysis/PI_COMPACTION_GENERATION_HOOKS_TRANCHE_2026-04-04.md`
+
+## Latest validation after compaction generation hooks tranche
+- `gofmt -w foundation/pi/summary.go foundation/pi/runtime.go foundation/pi/summary_test.go foundation/pi/session.go`
+- `go test ./foundation/pi/...`
+- `go test ./foundation/...`
+
+## Updated recommendation after compaction generation hooks tranche
+1. Keep `foundation/*` green and canonical.
+2. Start surfacing the now-truthful summary-generation flows in CLI/TUI behavior next (`/tree` and compaction command flows).
+3. After that, consider provider-backed summary generation as an optional enhancement on top of the deterministic baseline.
