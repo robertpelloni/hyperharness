@@ -12,12 +12,13 @@ import (
 )
 
 type model struct {
-	director            *agents.Director
-	input               string
-	history             []string
-	loading             bool
-	spinner             spinner.Model
-	foundationSessionID string
+	director                *agents.Director
+	input                   string
+	history                 []string
+	loading                 bool
+	spinner                 spinner.Model
+	foundationSessionID     string
+	foundationTreeSelection []string
 }
 
 func initialModel() model {

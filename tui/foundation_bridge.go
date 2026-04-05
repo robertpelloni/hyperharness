@@ -185,6 +185,50 @@ func setFoundationLabel(cwd, sessionID, targetID, label string) (string, error) 
 	return fmt.Sprintf("[Foundation Label]\nSet label %q on %s", label, targetID), nil
 }
 
+func buildFoundationTreeSelectionDisplay(cwd, sessionID string) (string, []string, error) {
+	runtime := foundationpi.NewRuntime(cwd, nil)
+	session, err := runtime.LoadSession(sessionID)
+	if err != nil {
+		return "", nil, err
+	}
+	leafID, err := runtime.GetLeafID(sessionID)
+	if err != nil {
+		return "", nil, err
+	}
+	ids := make([]string, 0, len(session.Entries))
+	var b strings.Builder
+	b.WriteString("[Foundation Tree Select]\n")
+	b.WriteString("Use /tree-go <index> [maxTokens] to switch to a numbered entry.\n")
+	for i, entry := range session.Entries {
+		ids = append(ids, entry.ID)
+		marker := " "
+		if entry.ID == leafID {
+			marker = "*"
+		}
+		preview := entry.Text
+		if strings.TrimSpace(preview) == "" {
+			preview = entry.ToolName
+		}
+		if len(preview) > 60 {
+			preview = preview[:60] + "..."
+		}
+		label, _ := runtime.GetLabel(sessionID, entry.ID)
+		labelSuffix := ""
+		if strings.TrimSpace(label) != "" {
+			labelSuffix = fmt.Sprintf(" label=%q", label)
+		}
+		b.WriteString(fmt.Sprintf("%s [%d] %s [%s]%s %s\n", marker, i+1, entry.ID, entry.Kind, labelSuffix, preview))
+	}
+	return strings.TrimSpace(b.String()), ids, nil
+}
+
+func switchFoundationTreeSelection(cwd, sessionID string, ids []string, index int, maxTokens int) (string, error) {
+	if index <= 0 || index > len(ids) {
+		return "", fmt.Errorf("selection index %d out of range", index)
+	}
+	return switchFoundationTreeDisplay(cwd, sessionID, ids[index-1], maxTokens)
+}
+
 func buildShellProposal(director *agents.Director, query string) (ShellProposalMsg, error) {
 	execution := adapters.PrepareProviderExecution(adapters.ProviderExecutionRequest{Prompt: query, TaskType: "analysis", CostPreference: "budget"})
 	assistant := agents.NewShellTranslator(director.Provider)

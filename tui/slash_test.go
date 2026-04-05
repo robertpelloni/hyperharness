@@ -222,6 +222,53 @@ func TestProcessSlashCommandTreeExplorerLabelAndChildren(t *testing.T) {
 	}
 }
 
+func TestProcessSlashCommandTreeSelectorSurfaces(t *testing.T) {
+	cwd := t.TempDir()
+	m := model{director: agents.NewDirector(&agents.DefaultProvider{})}
+	m.director.WorkingDir = cwd
+	sessionID, err := ensureFoundationSession(&m)
+	if err != nil {
+		t.Fatal(err)
+	}
+	runtime := foundationpi.NewRuntime(cwd, nil)
+	if _, err := runtime.AppendUserText(sessionID, "A"); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := runtime.AppendUserText(sessionID, "B"); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := runtime.AppendUserText(sessionID, "C"); err != nil {
+		t.Fatal(err)
+	}
+	mdl, _ := ProcessSlashCommand("/tree-select", &m)
+	updated := mdl.(model)
+	if len(updated.history) == 0 || !strings.Contains(updated.history[len(updated.history)-1], "[Foundation Tree Select]") {
+		t.Fatalf("expected tree select output, got %#v", updated.history)
+	}
+	if len(updated.foundationTreeSelection) < 3 {
+		t.Fatalf("expected selection ids, got %#v", updated.foundationTreeSelection)
+	}
+	oldLeaf, err := runtime.GetLeafID(sessionID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	mdl, _ = ProcessSlashCommand("/tree-go 1 128", &updated)
+	updated = mdl.(model)
+	if len(updated.history) == 0 || !strings.Contains(updated.history[len(updated.history)-1], "[Foundation Tree Switch]") {
+		t.Fatalf("expected tree-go switch output, got %#v", updated.history)
+	}
+	newLeaf, err := runtime.GetLeafID(sessionID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if newLeaf == oldLeaf {
+		t.Fatalf("expected leaf to change after tree-go, old=%q new=%q", oldLeaf, newLeaf)
+	}
+	if !strings.Contains(updated.history[len(updated.history)-1], "## Goal") {
+		t.Fatalf("expected structured summary in tree-go output, got %#v", updated.history[len(updated.history)-1])
+	}
+}
+
 func TestProcessSlashCommandClearResetsDirector(t *testing.T) {
 	m := model{director: agents.NewDirector(&agents.DefaultProvider{})}
 	m.history = []string{"old"}

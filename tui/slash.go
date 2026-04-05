@@ -41,6 +41,10 @@ func ProcessSlashCommand(cmd string, m *model) (tea.Model, tea.Cmd) {
 		return handleSummaryBranch(m, strings.TrimSpace(strings.TrimPrefix(cmd, "/summary-branch")))
 	case "/tree":
 		return handleTree(m, strings.TrimSpace(strings.TrimPrefix(cmd, "/tree")))
+	case "/tree-select":
+		return handleTreeSelect(m)
+	case "/tree-go":
+		return handleTreeGo(m, strings.TrimSpace(strings.TrimPrefix(cmd, "/tree-go")))
 	case "/tree-children":
 		return handleTreeChildren(m, strings.TrimSpace(strings.TrimPrefix(cmd, "/tree-children")))
 	case "/label":
@@ -69,6 +73,8 @@ func handleHelp(m *model) (tea.Model, tea.Cmd) {
   /fsession  - Show or create the active foundation session
   /tree      - Show the active foundation session tree
   /tree <targetEntryId> [maxTokens] - Switch to a target entry and preserve abandoned branch context
+  /tree-select - Show a numbered entry selector for the active foundation session
+  /tree-go <index> [maxTokens] - Switch to an indexed entry from /tree-select
   /tree-children <entryId> - Show direct child branches for an entry
   /label <entryId> <label> - Set a label on an entry (or clear with empty label unsupported in slash)
   /summary-compact [keepRecentTokens] - Generate a native compaction summary for the active foundation session
@@ -226,6 +232,50 @@ func handleTree(m *model, arg string) (tea.Model, tea.Cmd) {
 	display, err := switchFoundationTreeDisplay(m.director.WorkingDir, sessionID, targetID, maxTokens)
 	if err != nil {
 		m.history = append(m.history, fmt.Sprintf("[Error] tree switch failed: %v", err))
+		return *m, nil
+	}
+	m.history = append(m.history, display)
+	return *m, nil
+}
+
+func handleTreeSelect(m *model) (tea.Model, tea.Cmd) {
+	m.loading = false
+	sessionID, err := ensureFoundationSession(m)
+	if err != nil {
+		m.history = append(m.history, fmt.Sprintf("[Error] foundation session unavailable: %v", err))
+		return *m, nil
+	}
+	display, ids, err := buildFoundationTreeSelectionDisplay(m.director.WorkingDir, sessionID)
+	if err != nil {
+		m.history = append(m.history, fmt.Sprintf("[Error] tree selector failed: %v", err))
+		return *m, nil
+	}
+	m.foundationTreeSelection = ids
+	m.history = append(m.history, display)
+	return *m, nil
+}
+
+func handleTreeGo(m *model, arg string) (tea.Model, tea.Cmd) {
+	m.loading = false
+	sessionID, err := ensureFoundationSession(m)
+	if err != nil {
+		m.history = append(m.history, fmt.Sprintf("[Error] foundation session unavailable: %v", err))
+		return *m, nil
+	}
+	parts := strings.Fields(strings.TrimSpace(arg))
+	if len(parts) == 0 {
+		m.history = append(m.history, "[Error] /tree-go requires an index from /tree-select")
+		return *m, nil
+	}
+	index := 0
+	fmt.Sscanf(parts[0], "%d", &index)
+	maxTokens := 0
+	if len(parts) > 1 {
+		fmt.Sscanf(parts[1], "%d", &maxTokens)
+	}
+	display, err := switchFoundationTreeSelection(m.director.WorkingDir, sessionID, m.foundationTreeSelection, index, maxTokens)
+	if err != nil {
+		m.history = append(m.history, fmt.Sprintf("[Error] tree-go failed: %v", err))
 		return *m, nil
 	}
 	m.history = append(m.history, display)

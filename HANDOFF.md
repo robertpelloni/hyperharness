@@ -485,3 +485,30 @@
 1. Keep `foundation/*`, `cmd`, and `tui` green and aligned to the same canonical runtime.
 2. Begin building an interactive TUI tree/branch selector next on top of the now-richer runtime surfaces.
 3. Keep all richer UX as a thin layer over canonical runtime truth, not a competing state model.
+
+## Additional work completed later on 2026-04-04 (TUI tree selector tranche)
+- Added selector state to the TUI model:
+  - `foundationTreeSelection []string`
+- Added foundation bridge helpers:
+  - `buildFoundationTreeSelectionDisplay`
+  - `switchFoundationTreeSelection`
+- Added new TUI slash commands:
+  - `/tree-select`
+  - `/tree-go <index> [maxTokens]`
+- Updated TUI `/help` output to document those selector-style tree commands.
+- Expanded `tui/slash_test.go` to verify:
+  - selector output
+  - selector state persistence in the TUI model
+  - selector-driven branch switching
+  - actual leaf movement after selection-based switch
+- Added detailed analysis doc:
+  - `docs/analysis/TUI_TREE_SELECTOR_TRANCHE_2026-04-04.md`
+
+## Latest validation after TUI tree selector tranche
+- `gofmt -w tui/chat.go tui/foundation_bridge.go tui/slash.go tui/slash_test.go foundation/pi/runtime.go`
+- `go test ./tui ./cmd ./foundation/...`
+
+## Updated recommendation after TUI tree selector tranche
+1. Keep `foundation/*`, `cmd`, and `tui` green and aligned to the same canonical runtime.
+2. Consider an actual interactive in-TUI tree/selector view next, now that the selector-state groundwork exists.
+3. Continue layering UX over canonical session/summary truth rather than introducing parallel TUI-specific state machines.
