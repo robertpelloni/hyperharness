@@ -724,6 +724,18 @@ type NativeHarnessPayload = {
   upstream?: unknown;
 };
 
+type NativeSessionPayload = {
+  id?: unknown;
+  cliType?: unknown;
+  status?: unknown;
+  task?: unknown;
+  startedAt?: unknown;
+  sourcePath?: unknown;
+  sessionFormat?: unknown;
+  valid?: unknown;
+  detectedModels?: unknown;
+};
+
 function asObjectRecord(value: unknown): Record<string, unknown> | null {
   return value && typeof value === 'object' && !Array.isArray(value)
     ? value as Record<string, unknown>
@@ -777,6 +789,31 @@ async function fetchNativeStatusPayload<T extends Record<string, unknown>>(endpo
   }
 
   return null;
+}
+
+function readTimestamp(value: unknown): number | null {
+  if (typeof value === 'number' && Number.isFinite(value)) {
+    return value;
+  }
+  if (typeof value === 'string' && value.trim().length > 0) {
+    const parsed = Date.parse(value);
+    return Number.isFinite(parsed) ? parsed : null;
+  }
+  return null;
+}
+
+function normalizeNativeSessionStatus(value: unknown): string {
+  const normalized = readString(value)?.toLowerCase();
+  if (normalized === 'running' || normalized === 'starting' || normalized === 'stopping' || normalized === 'stopped' || normalized === 'restarting' || normalized === 'error' || normalized === 'created') {
+    return normalized;
+  }
+  if (normalized === 'active') {
+    return 'running';
+  }
+  if (normalized === 'idle' || normalized === 'ready') {
+    return 'stopped';
+  }
+  return 'created';
 }
 
 async function buildPreferredCliHarnessDetections(): Promise<unknown[]> {
@@ -835,6 +872,69 @@ async function buildPreferredCliHarnessDetections(): Promise<unknown[]> {
   }
 
   return [];
+}
+
+async function buildPreferredSessionList(): Promise<unknown[]> {
+  for (const base of resolveNativeStatusBases()) {
+    try {
+      const response = await fetch(`${base}/api/sessions`, { cache: 'no-store' });
+      if (!response.ok) {
+        continue;
+      }
+
+      const payload = await response.json() as { success?: unknown; data?: unknown };
+      if (payload.success !== true || !Array.isArray(payload.data)) {
+        continue;
+      }
+
+      return payload.data
+        .map((entry, index) => {
+          const record = asObjectRecord(entry);
+          if (!record) {
+            return null;
+          }
+
+          const id = readString(record.id);
+          const cliType = readString(record.cliType);
+          if (!id || !cliType) {
+            return null;
+          }
+
+          const task = readString(record.task);
+          const sourcePath = readString(record.sourcePath);
+          const startedAt = readString(record.startedAt);
+          const lastActivityAt = readTimestamp(record.startedAt) ?? Date.now();
+          const detectedModels = Array.isArray(record.detectedModels)
+            ? record.detectedModels.filter((item): item is string => typeof item === 'string' && item.trim().length > 0)
+            : [];
+          const sessionFormat = readString(record.sessionFormat);
+          const valid = readBoolean(record.valid);
+
+          return {
+            id,
+            name: task ?? `${cliType} session`,
+            cliType,
+            workingDirectory: sourcePath ?? '',
+            autoRestart: false,
+            status: normalizeNativeSessionStatus(record.status),
+            restartCount: 0,
+            maxRestartAttempts: 0,
+            lastActivityAt,
+            logs: [],
+            ...(startedAt ? { startedAt } : {}),
+            ...(sessionFormat ? { sessionFormat } : {}),
+            ...(sourcePath ? { sourcePath } : {}),
+            ...(detectedModels.length > 0 ? { detectedModels } : {}),
+            ...(valid !== null ? { valid } : {}),
+          };
+        })
+        .filter((entry): entry is NonNullable<typeof entry> => entry !== null);
+    } catch {
+      // Try the next native control-plane base.
+    }
+  }
+
+  return LEGACY_COMPAT_RESPONSES['session.list'] as unknown[];
 }
 
 async function buildPreferredProviderQuotas(): Promise<unknown[]> {
@@ -1230,13 +1330,14 @@ async function tryResolveLegacyMcpResponse(
   const effectiveServers = normalizedServers.length > 0 ? normalizedServers : mapConfigToServerList(localConfig);
   const status = await buildPreferredMcpStatus(effectiveServers);
   const providerQuotas = await buildPreferredProviderQuotas();
+  const sessionList = await buildPreferredSessionList();
 
   const dataByResponseKey: Record<LegacyCompatResponseKey, unknown> = {
     'mcpServers.list': effectiveServers,
     'tools.list': LEGACY_COMPAT_RESPONSES['tools.list'],
     'mcp.getStatus': status,
     'mcp.traffic': LEGACY_COMPAT_RESPONSES['mcp.traffic'],
-    'session.list': LEGACY_COMPAT_RESPONSES['session.list'],
+    'session.list': sessionList,
     'billing.getProviderQuotas': providerQuotas,
     'billing.getFallbackChain': LEGACY_COMPAT_RESPONSES['billing.getFallbackChain'],
   };
@@ -1290,13 +1391,14 @@ async function buildLocalCompatResponse(req: Request, body?: string): Promise<Re
   const localStartupStatus = await buildLocalStartupStatus(localServers);
   const providerQuotas = await buildPreferredProviderQuotas();
   const cliHarnessDetections = await buildPreferredCliHarnessDetections();
+  const sessionList = await buildPreferredSessionList();
 
   const dataByResponseKey: Record<LocalCompatResponseKey, unknown> = {
     'mcpServers.list': localServers,
     'tools.list': LEGACY_COMPAT_RESPONSES['tools.list'],
     'mcp.getStatus': localStatus,
     'mcp.traffic': LEGACY_COMPAT_RESPONSES['mcp.traffic'],
-    'session.list': LEGACY_COMPAT_RESPONSES['session.list'],
+    'session.list': sessionList,
     'billing.getProviderQuotas': providerQuotas,
     'billing.getFallbackChain': LEGACY_COMPAT_RESPONSES['billing.getFallbackChain'],
     startupStatus: localStartupStatus,

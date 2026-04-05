@@ -263,6 +263,17 @@ The next adjacent shared improvement in that same compat layer is now `tools.det
 
 This is intentionally narrower than a full execution-environment replacement: it upgrades the harness inventory first without over-claiming that the entire `tools.detectExecutionEnvironment` surface is Go-native yet.
 
+The next adjacent shared improvement is `session.list`. Instead of returning `[]` during degraded mode, both compat paths now prefer the Go-native `/api/sessions` inventory and normalize those discovered sessions into the existing dashboard/session-page row shape. That means degraded-mode operator views can now retain truthful native session visibility for:
+- session ids
+- cli type
+- current status (mapped truthfully from native states such as `active` → `running`)
+- task/title
+- source-path-backed working directory field
+- started/last-activity timing
+- detected model hints when present
+
+This still does not claim full Go-native supervised-session parity; it is specifically a read-surface improvement so dashboards stop collapsing to empty session inventories when the TypeScript session list is unavailable.
+
 Why this matters:
 - it makes Go-primary launch use the same compiled artifact that the startup build profile already validates
 - it reduces repeated `go run` compilation overhead at runtime
@@ -319,9 +330,9 @@ Results:
 - persisted startup-provenance status coverage passed in the CLI regression suite
 - startupStatus snapshot coverage now also verifies persisted startup provenance propagation through the server/API-visible status payload
 - Go-native runtime status coverage now also verifies startup provenance propagation through `/api/runtime/status`
-- web build/type-check passed with the new dashboard `startupMode` rendering, the new Health / Integrations / System / MCP System / Orchestrator startup-mode surfaces, and the Go-enriched local-compat startup/MCP/provider/CLI-harness fallback paths
+- web build/type-check passed with the new dashboard `startupMode` rendering, the new Health / Integrations / System / MCP System / Orchestrator startup-mode surfaces, and the Go-enriched local-compat startup/MCP/provider/CLI-harness/session fallback paths
 - a focused dashboard render test was added, but `vitest` is not directly installed in `apps/web`, so that new test was validated indirectly through the successful web build rather than executed as a standalone test command in this pass
-- a focused app-route compat regression was executed successfully through the root Vitest runner (`pnpm exec vitest run apps/web/src/app/api/trpc/[trpc]/route.test.ts`), validating Go-native `/api/startup/status` + `/api/runtime/status` preference when `startupStatus` is unavailable, Go-native `/api/mcp/status` preference when `mcp.getStatus` is unavailable, Go-native provider quota/fallback-chain preference when TypeScript billing procedures are unavailable, and Go-native `/api/cli/harnesses` preference when `tools.detectCliHarnesses` is unavailable
+- a focused app-route compat regression was executed successfully through the root Vitest runner (`pnpm exec vitest run apps/web/src/app/api/trpc/[trpc]/route.test.ts`), validating Go-native `/api/startup/status` + `/api/runtime/status` preference when `startupStatus` is unavailable, Go-native `/api/mcp/status` preference when `mcp.getStatus` is unavailable, Go-native provider quota/fallback-chain preference when TypeScript billing procedures are unavailable, Go-native `/api/cli/harnesses` preference when `tools.detectCliHarnesses` is unavailable, and Go-native `/api/sessions` preference when `session.list` is unavailable
 - Health / Integrations / System / MCP System / Orchestrator runtime-provenance propagation and the upgraded compat fallback were validated through the successful `apps/web` production build and the focused route regression
 - a short-lived `start.bat --help` run also completed and showed the new install/build phase summary lines before exiting through CLI help output
 
@@ -360,6 +371,7 @@ Result:
 - the web compat fallback and legacy MCP bridge now also prefer Go-native `/api/mcp/status` when the TypeScript `mcp.getStatus` procedure is unavailable, reducing reliance on placeholder local server-count guesses for MCP/router state
 - the web compat fallback and legacy bridge now also prefer Go-native `/api/billing/provider-quotas` and `/api/billing/fallback-chain` when the TypeScript billing procedures are unavailable, reducing reliance on empty provider/fallback placeholders in degraded mode
 - the web compat fallback now also prefers Go-native `/api/cli/harnesses` when `tools.detectCliHarnesses` is unavailable, reducing reliance on empty harness-detection placeholders in degraded mode
+- the web compat fallback and legacy bridge now also prefer Go-native `/api/sessions` when `session.list` is unavailable, reducing reliance on empty session-list placeholders in degraded mode
 - the Go-native `/api/runtime/status` surface now also exposes startup provenance, making the native backend itself self-describing
 - `start.bat` now validates Go-first startup surfaces by default for `auto`/`go` runtime modes instead of always requiring a full workspace build first
 - `start.bat` can now skip `pnpm install` in Go-primary mode when the workspace is already ready

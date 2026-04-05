@@ -663,7 +663,7 @@ describe('legacy MCP dashboard compatibility bridge', () => {
     expect((global.fetch as ReturnType<typeof vi.fn>).mock.calls.some(([url]) => String(url) === 'http://127.0.0.1:4100/api/billing/fallback-chain?taskType=coding')).toBe(true);
   });
 
-  it('prefers go-native provider quotas and fallback chain in local dashboard fallback mode', async () => {
+  it('prefers go-native provider quotas, fallback chain, cli harnesses, and sessions in local dashboard fallback mode', async () => {
     process.env.HYPERCODE_TRPC_UPSTREAM = 'http://127.0.0.1:4200/trpc';
     global.fetch = vi.fn(async (input) => {
       const url = String(input);
@@ -743,6 +743,27 @@ describe('legacy MCP dashboard compatibility bridge', () => {
           headers: { 'content-type': 'application/json' },
         });
       }
+      if (url === 'http://127.0.0.1:4200/api/sessions') {
+        return new Response(JSON.stringify({
+          success: true,
+          data: [
+            {
+              id: 'sess-1',
+              cliType: 'claude-code',
+              status: 'active',
+              task: 'Refactor startup fallback',
+              startedAt: '2026-04-04T00:00:00.000Z',
+              sourcePath: 'C:/repo-a/.claude/sessions/session-1.jsonl',
+              sessionFormat: 'jsonl',
+              valid: true,
+              detectedModels: ['claude-3.7-sonnet'],
+            },
+          ],
+        }), {
+          status: 200,
+          headers: { 'content-type': 'application/json' },
+        });
+      }
       if (url === 'http://127.0.0.1:4200/api/mcp/status' || url === 'http://127.0.0.1:4200/api/startup/status' || url === 'http://127.0.0.1:4200/api/runtime/status') {
         return new Response(JSON.stringify({ success: false }), {
           status: 503,
@@ -754,11 +775,11 @@ describe('legacy MCP dashboard compatibility bridge', () => {
     }) as typeof fetch;
 
     const response = await POST(new Request(
-      'http://localhost:3010/api/trpc/billing.getProviderQuotas,billing.getFallbackChain,tools.detectCliHarnesses?batch=1',
+      'http://localhost:3010/api/trpc/billing.getProviderQuotas,billing.getFallbackChain,tools.detectCliHarnesses,session.list?batch=1',
       {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ 0: { json: null }, 1: { json: null }, 2: { json: null } }),
+        body: JSON.stringify({ 0: { json: null }, 1: { json: null }, 2: { json: null }, 3: { json: null } }),
       },
     ));
     const payload = await response.json();
@@ -805,9 +826,22 @@ describe('legacy MCP dashboard compatibility bridge', () => {
         installed: false,
       }),
     ]);
+    expect(payload?.[3]?.result?.data).toEqual([
+      expect.objectContaining({
+        id: 'sess-1',
+        name: 'Refactor startup fallback',
+        cliType: 'claude-code',
+        workingDirectory: 'C:/repo-a/.claude/sessions/session-1.jsonl',
+        status: 'running',
+        restartCount: 0,
+        maxRestartAttempts: 0,
+        logs: [],
+      }),
+    ]);
     expect((global.fetch as ReturnType<typeof vi.fn>).mock.calls.some(([url]) => String(url) === 'http://127.0.0.1:4200/api/billing/provider-quotas')).toBe(true);
     expect((global.fetch as ReturnType<typeof vi.fn>).mock.calls.some(([url]) => String(url) === 'http://127.0.0.1:4200/api/billing/fallback-chain')).toBe(true);
     expect((global.fetch as ReturnType<typeof vi.fn>).mock.calls.some(([url]) => String(url) === 'http://127.0.0.1:4200/api/cli/harnesses')).toBe(true);
+    expect((global.fetch as ReturnType<typeof vi.fn>).mock.calls.some(([url]) => String(url) === 'http://127.0.0.1:4200/api/sessions')).toBe(true);
   });
 
   it('normalizes batched bulk import payloads before proxying them upstream', async () => {
