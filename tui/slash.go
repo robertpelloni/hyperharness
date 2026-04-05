@@ -57,6 +57,8 @@ func ProcessSlashCommand(cmd string, m *model) (tea.Model, tea.Cmd) {
 		return handleTreePaneGrouped(m, strings.TrimSpace(strings.TrimPrefix(cmd, "/tree-pane-grouped")))
 	case "/tree-pane-cycle":
 		return handleTreePaneCycle(m)
+	case "/tree-pane-refresh":
+		return handleTreePaneRefresh(m)
 	case "/tree-browser-clear":
 		return handleTreeBrowserClear(m)
 	case "/tree-pane-reset":
@@ -109,6 +111,7 @@ func handleHelp(m *model) (tea.Model, tea.Cmd) {
   /tree-pane-preview-toggle - Quickly toggle preview details for the persistent tree pane
   /tree-pane-grouped <on|off|toggle> - Control grouped rendering for the persistent tree pane
   /tree-pane-cycle - Cycle through common pane presets
+  /tree-pane-refresh - Manually refresh the persistent tree pane from canonical runtime state
   /tree-browser-clear - Clear transient browser state like filter/collapse/confirm
   /tree-pane-reset - Reset pane configuration to defaults
   /tree-pane-status - Show the current persistent pane configuration
@@ -394,6 +397,17 @@ func handleTreePaneCycle(m *model) (tea.Model, tea.Cmd) {
 		preset = "compact"
 	}
 	return handleTreePanePreset(m, preset)
+}
+
+func handleTreePaneRefresh(m *model) (tea.Model, tea.Cmd) {
+	m.loading = false
+	if !m.browserPinned {
+		m.history = append(m.history, "[Error] tree pane is not pinned; use /tree-pane first")
+		return *m, nil
+	}
+	refreshPinnedFoundationTreeBrowser(m)
+	m.history = append(m.history, "[Foundation Tree Pane] refreshed")
+	return *m, nil
 }
 
 func handleTreeBrowserClear(m *model) (tea.Model, tea.Cmd) {

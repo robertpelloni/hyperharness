@@ -1170,3 +1170,20 @@
 1. Keep `foundation/*`, `cmd`, and `tui` green and aligned to the same canonical runtime.
 2. Continue adding small convenience controls where they reduce repeated pane/browser friction.
 3. Keep quick position toggles as layout-only controls over the same pane/browser state model.
+
+## Additional work completed later on 2026-04-04 (pane refresh tranche)
+- Added new TUI slash command:
+  - `/tree-pane-refresh`
+- Implemented explicit manual pane refresh on top of the existing canonical refresh helper.
+- Added focused regression coverage verifying pane refresh after session mutation.
+- Added detailed analysis doc:
+  - `docs/analysis/TUI_PANE_REFRESH_TRANCHE_2026-04-04.md`
+
+## Latest validation after pane refresh tranche
+- `gofmt -w tui/slash.go tui/slash_test.go`
+- `go test ./tui ./cmd ./foundation/...`
+
+## Updated recommendation after pane refresh tranche
+1. Keep `foundation/*`, `cmd`, and `tui` green and aligned to the same canonical runtime.
+2. Continue adding explicit operator controls where they improve confidence and reduce friction.
+3. Keep refresh controls as canonical-runtime-backed sync actions rather than separate local state mutations.

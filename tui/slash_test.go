@@ -641,6 +641,38 @@ func TestProcessSlashCommandTreePaneStatus(t *testing.T) {
 	}
 }
 
+func TestProcessSlashCommandTreePaneRefresh(t *testing.T) {
+	cwd := t.TempDir()
+	m := model{director: agents.NewDirector(&agents.DefaultProvider{})}
+	m.director.WorkingDir = cwd
+	sessionID, err := ensureFoundationSession(&m)
+	if err != nil {
+		t.Fatal(err)
+	}
+	runtime := foundationpi.NewRuntime(cwd, nil)
+	if _, err := runtime.AppendUserText(sessionID, "A"); err != nil {
+		t.Fatal(err)
+	}
+	mdl, _ := ProcessSlashCommand("/tree-pane", &m)
+	updated := mdl.(model)
+	before := updated.View()
+	if _, err := runtime.AppendUserText(sessionID, "B"); err != nil {
+		t.Fatal(err)
+	}
+	mdl, _ = ProcessSlashCommand("/tree-pane-refresh", &updated)
+	updated = mdl.(model)
+	after := updated.View()
+	if before == after {
+		t.Fatalf("expected pane refresh to change view after session mutation; before=%s after=%s", before, after)
+	}
+	if !strings.Contains(updated.history[len(updated.history)-1], "refreshed") {
+		t.Fatalf("expected pane refresh message, got %#v", updated.history)
+	}
+	if !strings.Contains(after, "B") {
+		t.Fatalf("expected refreshed pane to include new entry, got %s", after)
+	}
+}
+
 func TestProcessSlashCommandTreeBrowserClear(t *testing.T) {
 	m := model{director: agents.NewDirector(&agents.DefaultProvider{}), browserFilter: "abc", browserConfirmPending: true, browserCollapsed: map[string]bool{"x": true}, browserIndex: 3}
 	mdl, _ := ProcessSlashCommand("/tree-browser-clear", &m)
