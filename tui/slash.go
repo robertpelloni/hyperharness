@@ -61,6 +61,10 @@ func ProcessSlashCommand(cmd string, m *model) (tea.Model, tea.Cmd) {
 		return handleTreePanePreview(m, "toggle")
 	case "/tree-pane-grouped":
 		return handleTreePaneGrouped(m, strings.TrimSpace(strings.TrimPrefix(cmd, "/tree-pane-grouped")))
+	case "/tree-pane-grouped-on":
+		return handleTreePaneGrouped(m, "on")
+	case "/tree-pane-grouped-off":
+		return handleTreePaneGrouped(m, "off")
 	case "/tree-pane-grouped-toggle":
 		return handleTreePaneGrouped(m, "toggle")
 	case "/tree-pane-cycle":
@@ -135,6 +139,8 @@ func handleHelp(m *model) (tea.Model, tea.Cmd) {
   /tree-pane-preview <on|off> - Toggle preview details inside the persistent tree pane
   /tree-pane-preview-toggle - Quickly toggle preview details for the persistent tree pane
   /tree-pane-grouped <on|off|toggle> - Control grouped rendering for the persistent tree pane
+  /tree-pane-grouped-on - Explicitly enable grouped rendering for the persistent tree pane
+  /tree-pane-grouped-off - Explicitly disable grouped rendering for the persistent tree pane
   /tree-pane-grouped-toggle - Quickly toggle grouped rendering for the persistent tree pane
   /tree-pane-cycle - Cycle through common pane presets
   /tree-pane-refresh - Manually refresh the persistent tree pane from canonical runtime state

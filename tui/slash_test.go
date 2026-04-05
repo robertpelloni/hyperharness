@@ -759,6 +759,20 @@ func TestProcessSlashCommandTreePaneGrouped(t *testing.T) {
 	}
 }
 
+func TestProcessSlashCommandTreePaneGroupedExplicitOnOff(t *testing.T) {
+	m := model{director: agents.NewDirector(&agents.DefaultProvider{}), browserGrouped: false}
+	mdl, _ := ProcessSlashCommand("/tree-pane-grouped-on", &m)
+	updated := mdl.(model)
+	if !updated.browserGrouped {
+		t.Fatal("expected explicit grouped-on to enable grouped mode")
+	}
+	mdl, _ = ProcessSlashCommand("/tree-pane-grouped-off", &updated)
+	updated = mdl.(model)
+	if updated.browserGrouped {
+		t.Fatal("expected explicit grouped-off to disable grouped mode")
+	}
+}
+
 func TestProcessSlashCommandTreePaneGroupedQuickToggle(t *testing.T) {
 	m := model{director: agents.NewDirector(&agents.DefaultProvider{}), browserGrouped: false}
 	mdl, _ := ProcessSlashCommand("/tree-pane-grouped-toggle", &m)
