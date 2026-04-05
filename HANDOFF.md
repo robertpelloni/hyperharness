@@ -1486,3 +1486,30 @@ Wrote comprehensive comparison to docs/analysis/HYPERHARNESS_VS_SUPERAI_COMPARIS
 1. Continue with `agent/async.go` and `agent/shell.go` next.
 2. Keep preferring parity verification + edge hardening where files already exist in `hyperharness`.
 3. Preserve the pattern of extracting testable helpers before attempting broader autonomy-layer changes.
+
+## Additional work completed on 2026-04-05 (superai async/shell assimilation tranche)
+- Verified that the following files were already present and parity-aligned with `../superai`:
+  - `agent/async.go`
+  - `agent/shell.go`
+- Hardened async worker behavior by adding:
+  - nil-safe enqueue
+  - closed-worker-safe enqueue
+  - idempotent `Close()`
+  - explicit `asyncWorkerBufferSize`
+  - helper functions for async status messages
+- Hardened shell suggestion behavior by adding:
+  - missing client rejection
+  - empty choice rejection
+  - `buildShellPrompt` helper
+- Added focused regression coverage in:
+  - `agent/async_shell_assimilation_test.go`
+- Added tranche documentation:
+  - `docs/analysis/SUPERAI_ASYNC_SHELL_ASSIMILATION_TRANCHE_2026-04-05.md`
+
+## Latest validation after superai async/shell assimilation tranche
+- `go test ./agent ./agents ./tui ./cmd ./foundation/...`
+
+## Updated recommendation after superai async/shell assimilation tranche
+1. Continue with `agent/autopilot.go` next, then `agent/orchestrator.go`.
+2. Keep extracting testable helpers before touching broader control loops.
+3. Continue keeping broader repo identity migration concerns separate from these low-blast-radius assimilation tranches.
