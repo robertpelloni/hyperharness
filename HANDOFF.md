@@ -1023,3 +1023,23 @@
 1. Keep `foundation/*`, `cmd`, and `tui` green and aligned to the same canonical runtime.
 2. Continue refining split-view ergonomics with stronger pane/browser mode distinctions or additional workflow presets next.
 3. Keep presets as bundles of rendering/layout state only, never as alternate session/branch semantics.
+
+## Additional work completed later on 2026-04-04 (mode distinction tranche)
+- Updated modal browser title to:
+  - `[Foundation Tree Browser :: Modal]`
+- Updated passive pinned pane title to:
+  - `[Foundation Tree Pane :: Passive]`
+- Updated focused pinned pane title to:
+  - `[Foundation Tree Pane :: Focused]`
+- Expanded TUI regression assertions so the mode-specific titles are explicitly verified.
+- Added detailed analysis doc:
+  - `docs/analysis/TUI_MODE_DISTINCTION_TRANCHE_2026-04-04.md`
+
+## Latest validation after mode distinction tranche
+- `gofmt -w tui/chat.go tui/slash_test.go`
+- `go test ./tui ./cmd ./foundation/...`
+
+## Updated recommendation after mode distinction tranche
+1. Keep `foundation/*`, `cmd`, and `tui` green and aligned to the same canonical runtime.
+2. Continue refining split-view ergonomics with clearer layout and interaction affordances.
+3. Keep mode distinctions explicit in rendering so operators do not have to infer control state from behavior alone.

@@ -448,17 +448,18 @@ func (m model) View() string {
 		content += "> " + m.input
 	}
 	if m.browserActive {
-		return content + "\n\n" + renderTreeBrowser(m.browserItems, m.browserIndex, m.browserFilter, m.browserConfirmPending, m.browserCollapsed, m.browserGrouped, 0, "[Foundation Tree Browser]", true)
+		return content + "\n\n" + renderTreeBrowser(m.browserItems, m.browserIndex, m.browserFilter, m.browserConfirmPending, m.browserCollapsed, m.browserGrouped, 0, "[Foundation Tree Browser :: Modal]", true)
 	}
 	if m.browserPinned {
 		paneHeight := m.browserPaneHeight
 		if paneHeight <= 0 {
 			paneHeight = 8
 		}
-		pane := renderTreeBrowser(m.browserItems, m.browserIndex, m.browserFilter, m.browserConfirmPending && m.browserPinnedFocus, m.browserCollapsed, m.browserGrouped, paneHeight, "[Foundation Tree Pane]", m.browserPanePreview)
+		title := "[Foundation Tree Pane :: Passive]"
 		if m.browserPinnedFocus {
-			pane += "\n[Tree Pane Focused]"
+			title = "[Foundation Tree Pane :: Focused]"
 		}
+		pane := renderTreeBrowser(m.browserItems, m.browserIndex, m.browserFilter, m.browserConfirmPending && m.browserPinnedFocus, m.browserCollapsed, m.browserGrouped, paneHeight, title, m.browserPanePreview)
 		divider := "\n════════════════════════════════════════════════════════════\n"
 		if strings.ToLower(strings.TrimSpace(m.browserPanePosition)) == "bottom" {
 			return content + divider + pane

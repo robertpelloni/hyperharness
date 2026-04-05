@@ -298,7 +298,9 @@ func TestTreeBrowserModeNavigation(t *testing.T) {
 	if !updated.browserActive || len(updated.browserItems) < 3 {
 		t.Fatalf("expected active browser with items, got %#v", updated)
 	}
-	if view := updated.View(); !strings.Contains(view, "[Preview]") {
+	if view := updated.View(); !strings.Contains(view, "[Foundation Tree Browser :: Modal]") {
+		t.Fatalf("expected modal browser title in view, got %s", view)
+	} else if !strings.Contains(view, "[Preview]") {
 		t.Fatalf("expected preview in browser view, got %s", view)
 	} else if !strings.Contains(view, "branchSummaryEntries=") && !strings.Contains(view, "branchSummary=already on active leaf") {
 		t.Fatalf("expected branch-summary preview details, got %s", view)
@@ -423,7 +425,7 @@ func TestProcessSlashCommandTreePaneToggle(t *testing.T) {
 	if !updated.browserPinned {
 		t.Fatal("expected browser pane to be pinned")
 	}
-	if view := updated.View(); !strings.Contains(view, "[Foundation Tree Pane]") {
+	if view := updated.View(); !strings.Contains(view, "[Foundation Tree Pane :: Passive]") {
 		t.Fatalf("expected pinned tree pane in view, got %s", view)
 	} else if !strings.Contains(view, "════════") {
 		t.Fatalf("expected clearer pane/history divider in view, got %s", view)
@@ -466,8 +468,8 @@ func TestProcessSlashCommandTreePaneFocusNavigation(t *testing.T) {
 	if !updated.browserPinnedFocus {
 		t.Fatal("expected tree pane focus enabled")
 	}
-	if view := updated.View(); !strings.Contains(view, "[Tree Pane Focused]") {
-		t.Fatalf("expected focused pane marker, got %s", view)
+	if view := updated.View(); !strings.Contains(view, "[Foundation Tree Pane :: Focused]") {
+		t.Fatalf("expected focused pane title, got %s", view)
 	}
 	mdl, _ = updated.Update(tea.KeyMsg{Type: tea.KeyDown})
 	updated = mdl.(model)
