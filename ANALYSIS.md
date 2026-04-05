@@ -232,6 +232,27 @@ Importantly, this was wired into both compat paths:
 
 So the improvement reaches both older MCP page query shapes and the broader dashboard/system pages that still depend on `trpc.mcp.getStatus`.
 
+That same shared route layer now also prefers the Go-native provider-routing read surfaces when the TypeScript billing procedures are unavailable:
+- `/api/billing/provider-quotas`
+- `/api/billing/fallback-chain`
+
+This replaces the previous empty placeholder compat responses for:
+- `billing.getProviderQuotas`
+- `billing.getFallbackChain`
+
+with truthful native Go provider-routing previews. In practice that means dashboard fallback mode can now preserve:
+- configured/authenticated provider inventory
+- auth method / availability hints
+- quota preview rows
+- fallback-chain provider/model ordering
+- task-type-aware fallback-chain previews
+
+Again, this lands in both compat paths:
+1. the legacy MCP dashboard bridge batches, and
+2. the richer local dashboard fallback route
+
+So the dashboard home and any other provider-summary surfaces no longer have to collapse to empty quota/fallback state just because the TypeScript billing router is unavailable.
+
 Why this matters:
 - it makes Go-primary launch use the same compiled artifact that the startup build profile already validates
 - it reduces repeated `go run` compilation overhead at runtime
@@ -288,9 +309,9 @@ Results:
 - persisted startup-provenance status coverage passed in the CLI regression suite
 - startupStatus snapshot coverage now also verifies persisted startup provenance propagation through the server/API-visible status payload
 - Go-native runtime status coverage now also verifies startup provenance propagation through `/api/runtime/status`
-- web build/type-check passed with the new dashboard `startupMode` rendering, the new Health / Integrations / System / MCP System / Orchestrator startup-mode surfaces, and the Go-enriched local-compat startup/MCP fallback paths
+- web build/type-check passed with the new dashboard `startupMode` rendering, the new Health / Integrations / System / MCP System / Orchestrator startup-mode surfaces, and the Go-enriched local-compat startup/MCP/provider fallback paths
 - a focused dashboard render test was added, but `vitest` is not directly installed in `apps/web`, so that new test was validated indirectly through the successful web build rather than executed as a standalone test command in this pass
-- a focused app-route compat regression was executed successfully through the root Vitest runner (`pnpm exec vitest run apps/web/src/app/api/trpc/[trpc]/route.test.ts`), validating both Go-native `/api/startup/status` + `/api/runtime/status` preference when `startupStatus` is unavailable and Go-native `/api/mcp/status` preference when `mcp.getStatus` is unavailable
+- a focused app-route compat regression was executed successfully through the root Vitest runner (`pnpm exec vitest run apps/web/src/app/api/trpc/[trpc]/route.test.ts`), validating Go-native `/api/startup/status` + `/api/runtime/status` preference when `startupStatus` is unavailable, Go-native `/api/mcp/status` preference when `mcp.getStatus` is unavailable, and Go-native provider quota/fallback-chain preference when TypeScript billing procedures are unavailable
 - Health / Integrations / System / MCP System / Orchestrator runtime-provenance propagation and the upgraded compat fallback were validated through the successful `apps/web` production build and the focused route regression
 - a short-lived `start.bat --help` run also completed and showed the new install/build phase summary lines before exiting through CLI help output
 
@@ -327,6 +348,7 @@ Result:
 - the web local-compat startup fallback now also carries `startupMode` from the local lock when upstream startup telemetry is unavailable
 - that same web compat fallback now also prefers Go-native `/api/startup/status` and `/api/runtime/status` when the TypeScript `startupStatus` procedure is unavailable, reducing reliance on placeholder local lock/config guesses
 - the web compat fallback and legacy MCP bridge now also prefer Go-native `/api/mcp/status` when the TypeScript `mcp.getStatus` procedure is unavailable, reducing reliance on placeholder local server-count guesses for MCP/router state
+- the web compat fallback and legacy bridge now also prefer Go-native `/api/billing/provider-quotas` and `/api/billing/fallback-chain` when the TypeScript billing procedures are unavailable, reducing reliance on empty provider/fallback placeholders in degraded mode
 - the Go-native `/api/runtime/status` surface now also exposes startup provenance, making the native backend itself self-describing
 - `start.bat` now validates Go-first startup surfaces by default for `auto`/`go` runtime modes instead of always requiring a full workspace build first
 - `start.bat` can now skip `pnpm install` in Go-primary mode when the workspace is already ready

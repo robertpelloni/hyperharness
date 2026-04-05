@@ -691,6 +691,27 @@ type NativeMcpStatusPayload = {
   aggregatorStatus?: unknown;
 };
 
+type NativeProviderQuotaPayload = {
+  provider?: unknown;
+  name?: unknown;
+  configured?: unknown;
+  authenticated?: unknown;
+  authMethod?: unknown;
+  tier?: unknown;
+  limit?: unknown;
+  used?: unknown;
+  remaining?: unknown;
+  resetDate?: unknown;
+  rateLimitRpm?: unknown;
+  availability?: unknown;
+  lastError?: unknown;
+};
+
+type NativeFallbackChainPayload = {
+  selectedTaskType?: unknown;
+  chain?: unknown;
+};
+
 function asObjectRecord(value: unknown): Record<string, unknown> | null {
   return value && typeof value === 'object' && !Array.isArray(value)
     ? value as Record<string, unknown>
@@ -744,6 +765,117 @@ async function fetchNativeStatusPayload<T extends Record<string, unknown>>(endpo
   }
 
   return null;
+}
+
+async function buildPreferredProviderQuotas(): Promise<unknown[]> {
+  for (const base of resolveNativeStatusBases()) {
+    try {
+      const response = await fetch(`${base}/api/billing/provider-quotas`, { cache: 'no-store' });
+      if (!response.ok) {
+        continue;
+      }
+
+      const payload = await response.json() as { success?: unknown; data?: unknown };
+      if (payload.success !== true || !Array.isArray(payload.data)) {
+        continue;
+      }
+
+      return payload.data
+        .map((entry) => {
+          const record = asObjectRecord(entry);
+          if (!record) {
+            return null;
+          }
+
+          const provider = readString(record.provider);
+          const name = readString(record.name);
+          const configured = readBoolean(record.configured);
+          const tier = readString(record.tier);
+          const used = readNumber(record.used);
+
+          if (!provider || !name || configured === null || !tier || used === null) {
+            return null;
+          }
+
+          return {
+            provider,
+            name,
+            configured,
+            ...(readBoolean(record.authenticated) !== null ? { authenticated: readBoolean(record.authenticated) } : {}),
+            ...(readString(record.authMethod) ? { authMethod: readString(record.authMethod) } : {}),
+            tier,
+            limit: readNumber(record.limit),
+            used,
+            remaining: readNumber(record.remaining),
+            resetDate: readString(record.resetDate),
+            rateLimitRpm: readNumber(record.rateLimitRpm),
+            availability: readString(record.availability) ?? undefined,
+            lastError: readString(record.lastError),
+          };
+        })
+        .filter((entry): entry is NonNullable<typeof entry> => entry !== null);
+    } catch {
+      // Try the next native control-plane base.
+    }
+  }
+
+  return LEGACY_COMPAT_RESPONSES['billing.getProviderQuotas'] as unknown[];
+}
+
+async function buildPreferredFallbackChain(taskType?: string | null): Promise<Record<string, unknown>> {
+  for (const base of resolveNativeStatusBases()) {
+    try {
+      const endpoint = new URL(`${base}/api/billing/fallback-chain`);
+      if (taskType && taskType.trim().length > 0) {
+        endpoint.searchParams.set('taskType', taskType.trim());
+      }
+
+      const response = await fetch(endpoint.toString(), { cache: 'no-store' });
+      if (!response.ok) {
+        continue;
+      }
+
+      const payload = await response.json() as { success?: unknown; data?: unknown };
+      if (payload.success !== true) {
+        continue;
+      }
+
+      const data = asObjectRecord(payload.data);
+      const chain = Array.isArray(data?.chain)
+        ? data.chain
+          .map((entry) => {
+            const record = asObjectRecord(entry);
+            if (!record) {
+              return null;
+            }
+
+            const priority = readNumber(record.priority);
+            const provider = readString(record.provider);
+            const reason = readString(record.reason);
+            if (priority === null || !provider || !reason) {
+              return null;
+            }
+
+            return {
+              priority,
+              provider,
+              ...(readString(record.model) ? { model: readString(record.model) } : {}),
+              reason,
+            };
+          })
+          .filter((entry): entry is NonNullable<typeof entry> => entry !== null)
+        : [];
+
+      return {
+        selectedTaskType: readString(data?.selectedTaskType) ?? null,
+        chain,
+      };
+    } catch {
+      // Try the next native control-plane base.
+    }
+  }
+
+  return LEGACY_COMPAT_RESPONSES['billing.getFallbackChain'] as Record<string, unknown>;
 }
 
 async function buildPreferredMcpStatus(servers: unknown[]): Promise<Record<string, unknown>> {
@@ -1012,6 +1144,7 @@ async function tryResolveLegacyMcpResponse(
   req: Request,
   upstreamBases: string[],
   headers: Headers,
+  body?: string,
 ): Promise<Response | null> {
   if (!isLegacyMcpRequest(req)) {
     return null;
@@ -1019,12 +1152,14 @@ async function tryResolveLegacyMcpResponse(
 
   const procedures = getProcedureNames(req);
   const isBatch = new URL(req.url).searchParams.get('batch') === '1';
+  const procedureInputs = extractTrpcProcedureInputs(body, req);
 
   const rawServers = await fetchProcedureData(upstreamBases, headers, [...LEGACY_MCP_SERVERS_LIST_PROCEDURES]);
   const localConfig = await loadLocalMcpConfig();
   const normalizedServers = normalizeServerList(rawServers);
   const effectiveServers = normalizedServers.length > 0 ? normalizedServers : mapConfigToServerList(localConfig);
   const status = await buildPreferredMcpStatus(effectiveServers);
+  const providerQuotas = await buildPreferredProviderQuotas();
 
   const dataByResponseKey: Record<LegacyCompatResponseKey, unknown> = {
     'mcpServers.list': effectiveServers,
@@ -1032,7 +1167,7 @@ async function tryResolveLegacyMcpResponse(
     'mcp.getStatus': status,
     'mcp.traffic': LEGACY_COMPAT_RESPONSES['mcp.traffic'],
     'session.list': LEGACY_COMPAT_RESPONSES['session.list'],
-    'billing.getProviderQuotas': LEGACY_COMPAT_RESPONSES['billing.getProviderQuotas'],
+    'billing.getProviderQuotas': providerQuotas,
     'billing.getFallbackChain': LEGACY_COMPAT_RESPONSES['billing.getFallbackChain'],
   };
 
@@ -1040,10 +1175,21 @@ async function tryResolveLegacyMcpResponse(
     return null;
   }
 
-  const entries = procedures.map((procedureName) => ({
-    result: {
-      data: dataByResponseKey[getLegacyCompatResponseKey(procedureName) ?? 'mcp.getStatus'],
-    },
+  const entries = await Promise.all(procedures.map(async (procedureName, index) => {
+    const responseKey = getLegacyCompatResponseKey(procedureName) ?? 'mcp.getStatus';
+    let data = dataByResponseKey[responseKey];
+
+    if (responseKey === 'billing.getFallbackChain') {
+      const input = procedureInputs[index];
+      const taskType = input && typeof input === 'object' ? readString((input as { taskType?: unknown }).taskType) : null;
+      data = await buildPreferredFallbackChain(taskType);
+    }
+
+    return {
+      result: {
+        data,
+      },
+    };
   }));
 
   return new Response(JSON.stringify(isBatch ? entries : entries[0]), {
@@ -1072,6 +1218,7 @@ async function buildLocalCompatResponse(req: Request, body?: string): Promise<Re
   const localServers = mapConfigToServerList(localConfig);
   const localStatus = await buildPreferredMcpStatus(localServers);
   const localStartupStatus = await buildLocalStartupStatus(localServers);
+  const providerQuotas = await buildPreferredProviderQuotas();
 
   const dataByResponseKey: Record<LocalCompatResponseKey, unknown> = {
     'mcpServers.list': localServers,
@@ -1079,7 +1226,7 @@ async function buildLocalCompatResponse(req: Request, body?: string): Promise<Re
     'mcp.getStatus': localStatus,
     'mcp.traffic': LEGACY_COMPAT_RESPONSES['mcp.traffic'],
     'session.list': LEGACY_COMPAT_RESPONSES['session.list'],
-    'billing.getProviderQuotas': LEGACY_COMPAT_RESPONSES['billing.getProviderQuotas'],
+    'billing.getProviderQuotas': providerQuotas,
     'billing.getFallbackChain': LEGACY_COMPAT_RESPONSES['billing.getFallbackChain'],
     startupStatus: localStartupStatus,
     'mcp.getWorkingSet': {
@@ -1142,7 +1289,7 @@ async function buildLocalCompatResponse(req: Request, body?: string): Promise<Re
     },
   };
 
-  const compatEntries = procedureNames.map((procedureName, index) => {
+  const compatEntries = await Promise.all(procedureNames.map(async (procedureName, index) => {
     const responseKey = getLocalCompatResponseKey(procedureName);
     if (!responseKey) {
       return null;
@@ -1169,6 +1316,12 @@ async function buildLocalCompatResponse(req: Request, body?: string): Promise<Re
       data = buildLocalManagedServerRecord(match.name, match.server);
     }
 
+    if (responseKey === 'billing.getFallbackChain') {
+      const input = procedureInputs[index];
+      const taskType = input && typeof input === 'object' ? readString((input as { taskType?: unknown }).taskType) : null;
+      data = await buildPreferredFallbackChain(taskType);
+    }
+
     if (responseKey === 'serverHealth.check') {
       const input = procedureInputs[index];
       const uuid = input && typeof input === 'object' ? String((input as { serverUuid?: unknown }).serverUuid ?? '') : '';
@@ -1188,7 +1341,7 @@ async function buildLocalCompatResponse(req: Request, body?: string): Promise<Re
         data,
       },
     };
-  });
+  }));
 
   if (compatEntries.some((entry) => entry === null)) {
     return null;
@@ -1774,7 +1927,7 @@ async function handler(req: Request): Promise<Response> {
       return localBulkImportResponse;
     }
 
-    const bridgeResponse = await tryResolveLegacyMcpResponse(req, upstreamBases, headers);
+    const bridgeResponse = await tryResolveLegacyMcpResponse(req, upstreamBases, headers, body);
     if (bridgeResponse) {
       return bridgeResponse;
     }

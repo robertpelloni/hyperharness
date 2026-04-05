@@ -19,8 +19,9 @@
 3. Upgraded the web tRPC compatibility layer so `startupStatus` now prefers the Go-native `/api/startup/status` and `/api/runtime/status` surfaces when the TypeScript startup-status procedure is unavailable. This means dashboard fallback mode now preserves native Go startup readiness, blocking reasons, uptime, memory/import counts, supervisor-bridge readiness, runtime version, and startup provenance instead of only local lock/config guesses.
 4. Added focused regression coverage for that compat-path upgrade in `apps/web/src/app/api/trpc/[trpc]/route.test.ts`, and validated it through the root Vitest runner plus a full `apps/web` production build.
 5. Upgraded the same web compat layer to prefer Go-native `/api/mcp/status` when the TypeScript `mcp.getStatus` procedure is unavailable. This applies to both the legacy MCP bridge batches and the richer local dashboard fallback path, so dashboard/system/MCP views now preserve native Go MCP/router truth for initialization state, counts, and lifecycle flags during TS outage/degraded mode.
-6. Updated planning/analysis docs to record the new coverage and narrowed the next recommendation to reducing remaining TypeScript compatibility dependence where Go-native status already exists.
-7. Committed and pushed:
+6. Upgraded the same web compat layer again to prefer Go-native `/api/billing/provider-quotas` and `/api/billing/fallback-chain` when the TypeScript billing procedures are unavailable. This replaces empty degraded-mode provider/fallback placeholders with native Go provider-routing previews in both the legacy bridge path and the richer local dashboard fallback path.
+7. Updated planning/analysis docs to record the new coverage and narrowed the next recommendation to reducing remaining TypeScript compatibility dependence where Go-native status already exists.
+8. Committed and pushed:
    - `7785a9a3` — `feat: surface startup provenance in system dashboards`
    - `38b10684` — `feat: surface startup provenance in orchestrator dashboard`
    - `590d8848` — `feat: prefer go startup truth in web compat fallback`
@@ -42,9 +43,11 @@
 - `pnpm -C packages/core exec vitest run src/routers/startupStatus.test.ts`
 - `pnpm -C packages/cli exec vitest run src/commands/start.test.ts src/commands/status.test.ts`
 
-Those passed for the startup-status compat slice. A subsequent focused `mcp.getStatus` compat upgrade in the same route layer was also validated with:
+Those passed for the startup-status compat slice. Subsequent focused `mcp.getStatus` and provider-routing compat upgrades in the same route layer were also validated with:
 - `pnpm exec vitest run apps/web/src/app/api/trpc/[trpc]/route.test.ts`
 - `pnpm -C apps/web run build`
+- `pnpm -C packages/core exec vitest run src/routers/startupStatus.test.ts`
+- `pnpm -C packages/cli exec vitest run src/commands/start.test.ts src/commands/status.test.ts`
 
 ### Important truthful notes
 - `apps/web` still does not have a directly usable workspace-local `vitest` command for standalone page tests in this workflow, so page/UI slices were still validated through the successful production web build; however, route-level regressions can be executed truthfully through the root Vitest runner, and that path was used for `apps/web/src/app/api/trpc/[trpc]/route.test.ts` in this slice.
@@ -54,7 +57,7 @@ Those passed for the startup-status compat slice. A subsequent focused `mcp.getS
 
 ### Recommended next steps
 1. Keep reducing dashboard dependence on TypeScript compatibility reads where Go-native runtime/status surfaces already exist.
-   - highest-value next shared candidates: provider quota/routing summaries, CLI summary/readiness, and import/session summary surfaces where Go already exposes HTTP summaries
+   - highest-value next shared candidates now: CLI summary/readiness and import/session summary surfaces where Go already exposes HTTP summaries
 2. Deepen Go-native orchestration parity beyond current truthful fallbacks, especially:
    - Darwin parity
    - AutoDev director-loop parity

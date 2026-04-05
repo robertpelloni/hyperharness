@@ -565,6 +565,45 @@ describe('legacy MCP dashboard compatibility bridge', () => {
           headers: { 'content-type': 'application/json' },
         });
       }
+      if (url === 'http://127.0.0.1:4100/api/billing/provider-quotas') {
+        return new Response(JSON.stringify({
+          success: true,
+          data: [
+            {
+              provider: 'openrouter',
+              name: 'OpenRouter',
+              configured: true,
+              authenticated: true,
+              authMethod: 'api_key',
+              tier: 'free',
+              limit: null,
+              used: 0,
+              remaining: null,
+              resetDate: null,
+              rateLimitRpm: null,
+              availability: 'available',
+              lastError: null,
+            },
+          ],
+        }), {
+          status: 200,
+          headers: { 'content-type': 'application/json' },
+        });
+      }
+      if (url === 'http://127.0.0.1:4100/api/billing/fallback-chain?taskType=coding') {
+        return new Response(JSON.stringify({
+          success: true,
+          data: {
+            selectedTaskType: 'coding',
+            chain: [
+              { priority: 1, provider: 'openrouter', model: 'xiaomi/mimo-v2-flash:free', reason: 'free-first' },
+            ],
+          },
+        }), {
+          status: 200,
+          headers: { 'content-type': 'application/json' },
+        });
+      }
       if (url === 'http://127.0.0.1:4100/api/startup/status' || url === 'http://127.0.0.1:4100/api/runtime/status') {
         return new Response(JSON.stringify({ success: false }), {
           status: 503,
@@ -576,11 +615,11 @@ describe('legacy MCP dashboard compatibility bridge', () => {
     }) as typeof fetch;
 
     const request = new Request(
-      'http://localhost:3010/api/trpc/mcp.listServers,mcp.getStatus?batch=1',
+      'http://localhost:3010/api/trpc/mcp.listServers,mcp.getStatus,billing.getProviderQuotas,billing.getFallbackChain?batch=1',
       {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ 0: { json: null }, 1: { json: null } }),
+        body: JSON.stringify({ 0: { json: null }, 1: { json: null }, 2: { json: null }, 3: { json: { taskType: 'coding' } } }),
       },
     );
 
@@ -600,7 +639,129 @@ describe('legacy MCP dashboard compatibility bridge', () => {
         singleActiveServerMode: false,
       }),
     }));
+    expect(payload?.[2]?.result?.data).toEqual([
+      expect.objectContaining({
+        provider: 'openrouter',
+        name: 'OpenRouter',
+        configured: true,
+        tier: 'free',
+      }),
+    ]);
+    expect(payload?.[3]?.result?.data).toEqual({
+      selectedTaskType: 'coding',
+      chain: [
+        {
+          priority: 1,
+          provider: 'openrouter',
+          model: 'xiaomi/mimo-v2-flash:free',
+          reason: 'free-first',
+        },
+      ],
+    });
     expect((global.fetch as ReturnType<typeof vi.fn>).mock.calls.some(([url]) => String(url) === 'http://127.0.0.1:4100/api/mcp/status')).toBe(true);
+    expect((global.fetch as ReturnType<typeof vi.fn>).mock.calls.some(([url]) => String(url) === 'http://127.0.0.1:4100/api/billing/provider-quotas')).toBe(true);
+    expect((global.fetch as ReturnType<typeof vi.fn>).mock.calls.some(([url]) => String(url) === 'http://127.0.0.1:4100/api/billing/fallback-chain?taskType=coding')).toBe(true);
+  });
+
+  it('prefers go-native provider quotas and fallback chain in local dashboard fallback mode', async () => {
+    process.env.HYPERCODE_TRPC_UPSTREAM = 'http://127.0.0.1:4200/trpc';
+    global.fetch = vi.fn(async (input) => {
+      const url = String(input);
+
+      if (url.includes('/trpc/')) {
+        throw new Error('connect ECONNREFUSED');
+      }
+      if (url === 'http://127.0.0.1:4200/api/billing/provider-quotas') {
+        return new Response(JSON.stringify({
+          success: true,
+          data: [
+            {
+              provider: 'anthropic',
+              name: 'Anthropic',
+              configured: true,
+              authenticated: true,
+              authMethod: 'api_key',
+              tier: 'pro',
+              limit: 1000,
+              used: 250,
+              remaining: 750,
+              resetDate: null,
+              rateLimitRpm: 50,
+              availability: 'healthy',
+              lastError: null,
+            },
+          ],
+        }), {
+          status: 200,
+          headers: { 'content-type': 'application/json' },
+        });
+      }
+      if (url === 'http://127.0.0.1:4200/api/billing/fallback-chain') {
+        return new Response(JSON.stringify({
+          success: true,
+          data: {
+            selectedTaskType: null,
+            chain: [
+              { priority: 1, provider: 'anthropic', model: 'claude-3.7-sonnet', reason: 'best-default' },
+              { priority: 2, provider: 'openrouter', model: 'xiaomi/mimo-v2-flash:free', reason: 'free-fallback' },
+            ],
+          },
+        }), {
+          status: 200,
+          headers: { 'content-type': 'application/json' },
+        });
+      }
+      if (url === 'http://127.0.0.1:4200/api/mcp/status' || url === 'http://127.0.0.1:4200/api/startup/status' || url === 'http://127.0.0.1:4200/api/runtime/status') {
+        return new Response(JSON.stringify({ success: false }), {
+          status: 503,
+          headers: { 'content-type': 'application/json' },
+        });
+      }
+
+      throw new Error(`Unexpected fetch: ${url}`);
+    }) as typeof fetch;
+
+    const response = await POST(new Request(
+      'http://localhost:3010/api/trpc/billing.getProviderQuotas,billing.getFallbackChain?batch=1',
+      {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ 0: { json: null }, 1: { json: null } }),
+      },
+    ));
+    const payload = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get('x-hypercode-trpc-compat')).toBe('legacy-mcp-dashboard-bridge');
+    expect(payload?.[0]?.result?.data).toEqual([
+      expect.objectContaining({
+        provider: 'anthropic',
+        name: 'Anthropic',
+        configured: true,
+        tier: 'pro',
+        used: 250,
+        remaining: 750,
+      }),
+    ]);
+    expect(payload?.[1]?.result?.data).toEqual({
+      selectedTaskType: null,
+      chain: [
+        {
+          priority: 1,
+          provider: 'anthropic',
+          model: 'claude-3.7-sonnet',
+          reason: 'best-default',
+        },
+        {
+          priority: 2,
+          provider: 'openrouter',
+          model: 'xiaomi/mimo-v2-flash:free',
+          reason: 'free-fallback',
+        },
+      ],
+    });
+    expect((global.fetch as ReturnType<typeof vi.fn>).mock.calls.some(([url]) => String(url) === 'http://127.0.0.1:4200/api/billing/provider-quotas')).toBe(true);
+    expect((global.fetch as ReturnType<typeof vi.fn>).mock.calls.some(([url]) => String(url) === 'http://127.0.0.1:4200/api/billing/fallback-chain')).toBe(true);
   });
 
   it('normalizes batched bulk import payloads before proxying them upstream', async () => {
