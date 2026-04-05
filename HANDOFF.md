@@ -915,3 +915,19 @@
 1. Keep `foundation/*`, `cmd`, and `tui` green and aligned to the same canonical runtime.
 2. Continue improving split-view ergonomics next, especially clearer pane/history separation or stronger pane viewport behavior.
 3. Keep pane position strictly as a layout concern over canonical runtime-backed browser state.
+
+## Additional work completed later on 2026-04-04 (pane separation tranche)
+- Updated the TUI view to render a stronger divider between the pinned tree pane and the main prompt/history flow.
+- Applied the same separation behavior for both top and bottom pane positions.
+- Expanded pinned-pane verification to assert the presence of the divider.
+- Added detailed analysis doc:
+  - `docs/analysis/TUI_PANE_SEPARATION_TRANCHE_2026-04-04.md`
+
+## Latest validation after pane separation tranche
+- `gofmt -w tui/chat.go tui/slash_test.go`
+- `go test ./tui ./cmd ./foundation/...`
+
+## Updated recommendation after pane separation tranche
+1. Keep `foundation/*`, `cmd`, and `tui` green and aligned to the same canonical runtime.
+2. Continue improving pane/browser coexistence through stronger viewport controls or more explicit pane-focused interaction affordances.
+3. Keep split-view clarity improvements as rendering-only changes layered over canonical runtime-backed state.

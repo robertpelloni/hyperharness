@@ -401,10 +401,11 @@ func (m model) View() string {
 		if m.browserPinnedFocus {
 			pane += "\n[Tree Pane Focused]"
 		}
+		divider := "\n════════════════════════════════════════════════════════════\n"
 		if strings.ToLower(strings.TrimSpace(m.browserPanePosition)) == "bottom" {
-			return content + "\n\n" + pane
+			return content + divider + pane
 		}
-		return pane + "\n\n" + content
+		return pane + divider + content
 	}
 	return content
 }
