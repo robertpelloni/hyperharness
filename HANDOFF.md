@@ -1785,3 +1785,25 @@ Wrote comprehensive comparison to docs/analysis/HYPERHARNESS_VS_SUPERAI_COMPARIS
 1. Continue through remaining runtime/integration seams where adapters, tools, and CLI flows meet.
 2. Keep prioritizing boundary files that assemble exact-name tool context for model-facing use.
 3. Keep emphasizing helper extraction, fallback clarity, deterministic behavior, and regression coverage.
+
+## Additional work completed on 2026-04-05 (superai MCP adapter assimilation tranche)
+- Verified that `foundation/adapters/mcp.go` was already present and parity-aligned with `../superai`.
+- Added nil-safe MCP adapter status and lookup behavior.
+- Extracted helper seams:
+  - `sortedMCPServerNames`
+  - `buildMCPServerStatus`
+  - `routeHintForAdapter`
+  - `mcpAdapterWorkingDir`
+  - `startMCPServer`
+- Added focused regression coverage in:
+  - `foundation/adapters/mcp_assimilation_test.go`
+- Added tranche documentation:
+  - `docs/analysis/SUPERAI_MCP_ADAPTER_ASSIMILATION_TRANCHE_2026-04-05.md`
+
+## Latest validation after superai MCP adapter assimilation tranche
+- `go test ./foundation/adapters ./tools ./agent ./agents ./tui ./cmd ./foundation/...`
+
+## Updated recommendation after superai MCP adapter assimilation tranche
+1. Continue through remaining runtime/integration seams where adapters, tools, and CLI flow meet.
+2. Keep prioritizing files that assemble model-facing context or wrap exact-name tool behavior for model use.
+3. Keep emphasizing helper extraction, deterministic behavior, and regression coverage.
