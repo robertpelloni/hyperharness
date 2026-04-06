@@ -3526,12 +3526,17 @@ func (s *Server) handleMemoryAgentSearch(w http.ResponseWriter, r *http.Request)
 		return
 	}
 	payload := map[string]any{"query": query}
-	if limit := strings.TrimSpace(r.URL.Query().Get("limit")); limit != "" {
-		if parsed, err := strconv.Atoi(limit); err == nil {
+	limit := 10
+	if limitParam := strings.TrimSpace(r.URL.Query().Get("limit")); limitParam != "" {
+		if parsed, err := strconv.Atoi(limitParam); err == nil {
 			payload["limit"] = parsed
+			if parsed > 0 {
+				limit = parsed
+			}
 		}
 	}
-	if memoryType := strings.TrimSpace(r.URL.Query().Get("type")); memoryType != "" {
+	memoryType := strings.TrimSpace(r.URL.Query().Get("type"))
+	if memoryType != "" {
 		payload["type"] = memoryType
 	}
 	var result any
@@ -3548,13 +3553,19 @@ func (s *Server) handleMemoryAgentSearch(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
+	records, localErr := s.localSearchAgentMemoryRecords(query, localAgentMemorySearchOptions{Limit: limit, Type: memoryType})
+	if localErr != nil {
+		writeJSON(w, http.StatusServiceUnavailable, map[string]any{"success": false, "error": localErr.Error(), "detail": localErr.Error()})
+		return
+	}
+
 	writeJSON(w, http.StatusOK, map[string]any{
 		"success": true,
-		"data":    []map[string]any{},
+		"data":    localAgentMemoryMaps(records),
 		"bridge": map[string]any{
 			"fallback":  "go-local-memory",
 			"procedure": "memory.searchAgentMemory",
-			"reason":    "upstream unavailable; local memory fallback has no agent search index",
+			"reason":    "upstream unavailable; using local persisted agent memory search",
 		},
 	})
 }
@@ -3571,7 +3582,24 @@ func (s *Server) handleMemoryAddFact(w http.ResponseWriter, r *http.Request) {
 		writeJSON(w, http.StatusOK, map[string]any{"success": true, "data": result, "bridge": map[string]any{"upstreamBase": upstreamBase, "procedure": "memory.addFact"}})
 		return
 	}
-	writeJSON(w, http.StatusServiceUnavailable, map[string]any{"success": false, "error": "Memory fact persistence is unavailable: upstream memory service is unavailable and the local fallback cannot persist facts.", "data": map[string]any{"success": false}, "bridge": map[string]any{"fallback": "go-local-memory", "procedure": "memory.addFact", "reason": "upstream unavailable; local memory fallback cannot persist facts"}})
+
+	memory, localErr := s.localAddFactMemory(payload)
+	if localErr != nil {
+		writeJSON(w, http.StatusServiceUnavailable, map[string]any{"success": false, "error": localErr.Error(), "detail": localErr.Error()})
+		return
+	}
+	writeJSON(w, http.StatusOK, map[string]any{
+		"success": true,
+		"data": map[string]any{
+			"success": true,
+			"memory":  memory,
+		},
+		"bridge": map[string]any{
+			"fallback":  "go-local-memory",
+			"procedure": "memory.addFact",
+			"reason":    "upstream unavailable; persisted memory fact locally",
+		},
+	})
 }
 
 func (s *Server) handleMemoryRecordObservation(w http.ResponseWriter, r *http.Request) {
@@ -3586,7 +3614,24 @@ func (s *Server) handleMemoryRecordObservation(w http.ResponseWriter, r *http.Re
 		writeJSON(w, http.StatusOK, map[string]any{"success": true, "data": result, "bridge": map[string]any{"upstreamBase": upstreamBase, "procedure": "memory.recordObservation"}})
 		return
 	}
-	writeJSON(w, http.StatusServiceUnavailable, map[string]any{"success": false, "error": "Memory observation persistence is unavailable: upstream memory service is unavailable and the local fallback cannot persist observations.", "data": map[string]any{"success": false}, "bridge": map[string]any{"fallback": "go-local-memory", "procedure": "memory.recordObservation", "reason": "upstream unavailable; local memory fallback cannot persist observations"}})
+
+	memory, localErr := s.localRecordObservationMemory(payload)
+	if localErr != nil {
+		writeJSON(w, http.StatusServiceUnavailable, map[string]any{"success": false, "error": localErr.Error(), "detail": localErr.Error()})
+		return
+	}
+	writeJSON(w, http.StatusOK, map[string]any{
+		"success": true,
+		"data": map[string]any{
+			"success": true,
+			"memory":  memory,
+		},
+		"bridge": map[string]any{
+			"fallback":  "go-local-memory",
+			"procedure": "memory.recordObservation",
+			"reason":    "upstream unavailable; persisted structured observation locally",
+		},
+	})
 }
 
 func (s *Server) handleMemoryRecentObservations(w http.ResponseWriter, r *http.Request) {
@@ -3648,15 +3693,21 @@ func (s *Server) handleMemorySearchObservations(w http.ResponseWriter, r *http.R
 		return
 	}
 	payload := map[string]any{"query": query, "limit": 10}
-	if limit := strings.TrimSpace(r.URL.Query().Get("limit")); limit != "" {
-		if parsed, err := strconv.Atoi(limit); err == nil {
+	limit := 10
+	if limitParam := strings.TrimSpace(r.URL.Query().Get("limit")); limitParam != "" {
+		if parsed, err := strconv.Atoi(limitParam); err == nil {
 			payload["limit"] = parsed
+			if parsed > 0 {
+				limit = parsed
+			}
 		}
 	}
-	if namespace := strings.TrimSpace(r.URL.Query().Get("namespace")); namespace != "" {
+	namespace := strings.TrimSpace(r.URL.Query().Get("namespace"))
+	if namespace != "" {
 		payload["namespace"] = namespace
 	}
-	if observationType := strings.TrimSpace(r.URL.Query().Get("type")); observationType != "" {
+	observationType := strings.TrimSpace(r.URL.Query().Get("type"))
+	if observationType != "" {
 		payload["type"] = observationType
 	}
 	var result any
@@ -3673,13 +3724,19 @@ func (s *Server) handleMemorySearchObservations(w http.ResponseWriter, r *http.R
 		return
 	}
 
+	records, localErr := s.localSearchObservationMemories(query, limit, namespace, observationType)
+	if localErr != nil {
+		writeJSON(w, http.StatusServiceUnavailable, map[string]any{"success": false, "error": localErr.Error(), "detail": localErr.Error()})
+		return
+	}
+
 	writeJSON(w, http.StatusOK, map[string]any{
 		"success": true,
-		"data":    []map[string]any{},
+		"data":    records,
 		"bridge": map[string]any{
 			"fallback":  "go-local-memory",
 			"procedure": "memory.searchObservations",
-			"reason":    "upstream unavailable; local memory fallback has no observation search index",
+			"reason":    "upstream unavailable; using local persisted observation search",
 		},
 	})
 }
@@ -3696,7 +3753,24 @@ func (s *Server) handleMemoryCaptureUserPrompt(w http.ResponseWriter, r *http.Re
 		writeJSON(w, http.StatusOK, map[string]any{"success": true, "data": result, "bridge": map[string]any{"upstreamBase": upstreamBase, "procedure": "memory.captureUserPrompt"}})
 		return
 	}
-	writeJSON(w, http.StatusServiceUnavailable, map[string]any{"success": false, "error": "User prompt capture is unavailable: upstream memory service is unavailable and the local fallback cannot persist user prompts.", "data": map[string]any{"success": false}, "bridge": map[string]any{"fallback": "go-local-memory", "procedure": "memory.captureUserPrompt", "reason": "upstream unavailable; local memory fallback cannot persist user prompts"}})
+
+	memory, localErr := s.localCaptureUserPromptMemory(payload)
+	if localErr != nil {
+		writeJSON(w, http.StatusServiceUnavailable, map[string]any{"success": false, "error": localErr.Error(), "detail": localErr.Error()})
+		return
+	}
+	writeJSON(w, http.StatusOK, map[string]any{
+		"success": true,
+		"data": map[string]any{
+			"success": true,
+			"memory":  memory,
+		},
+		"bridge": map[string]any{
+			"fallback":  "go-local-memory",
+			"procedure": "memory.captureUserPrompt",
+			"reason":    "upstream unavailable; persisted user prompt locally",
+		},
+	})
 }
 
 func (s *Server) handleMemoryRecentUserPrompts(w http.ResponseWriter, r *http.Request) {
@@ -3754,12 +3828,17 @@ func (s *Server) handleMemorySearchUserPrompts(w http.ResponseWriter, r *http.Re
 		return
 	}
 	payload := map[string]any{"query": query, "limit": 10}
-	if limit := strings.TrimSpace(r.URL.Query().Get("limit")); limit != "" {
-		if parsed, err := strconv.Atoi(limit); err == nil {
+	limit := 10
+	if limitParam := strings.TrimSpace(r.URL.Query().Get("limit")); limitParam != "" {
+		if parsed, err := strconv.Atoi(limitParam); err == nil {
 			payload["limit"] = parsed
+			if parsed > 0 {
+				limit = parsed
+			}
 		}
 	}
-	if role := strings.TrimSpace(r.URL.Query().Get("role")); role != "" {
+	role := strings.TrimSpace(r.URL.Query().Get("role"))
+	if role != "" {
 		payload["role"] = role
 	}
 	var result any
@@ -3776,13 +3855,19 @@ func (s *Server) handleMemorySearchUserPrompts(w http.ResponseWriter, r *http.Re
 		return
 	}
 
+	records, localErr := s.localSearchUserPromptMemories(query, limit, role)
+	if localErr != nil {
+		writeJSON(w, http.StatusServiceUnavailable, map[string]any{"success": false, "error": localErr.Error(), "detail": localErr.Error()})
+		return
+	}
+
 	writeJSON(w, http.StatusOK, map[string]any{
 		"success": true,
-		"data":    []map[string]any{},
+		"data":    records,
 		"bridge": map[string]any{
 			"fallback":  "go-local-memory",
 			"procedure": "memory.searchUserPrompts",
-			"reason":    "upstream unavailable; local memory fallback has no prompt search index",
+			"reason":    "upstream unavailable; using local persisted user prompt search",
 		},
 	})
 }
@@ -3915,7 +4000,24 @@ func (s *Server) handleMemoryCaptureSessionSummary(w http.ResponseWriter, r *htt
 		writeJSON(w, http.StatusOK, map[string]any{"success": true, "data": result, "bridge": map[string]any{"upstreamBase": upstreamBase, "procedure": "memory.captureSessionSummary"}})
 		return
 	}
-	writeJSON(w, http.StatusServiceUnavailable, map[string]any{"success": false, "error": "Session summary capture is unavailable: upstream memory service is unavailable and the local fallback cannot persist session summaries.", "data": map[string]any{"success": false}, "bridge": map[string]any{"fallback": "go-local-memory", "procedure": "memory.captureSessionSummary", "reason": "upstream unavailable; local memory fallback cannot persist session summaries"}})
+
+	memory, localErr := s.localCaptureSessionSummaryMemory(payload)
+	if localErr != nil {
+		writeJSON(w, http.StatusServiceUnavailable, map[string]any{"success": false, "error": localErr.Error(), "detail": localErr.Error()})
+		return
+	}
+	writeJSON(w, http.StatusOK, map[string]any{
+		"success": true,
+		"data": map[string]any{
+			"success": true,
+			"memory":  memory,
+		},
+		"bridge": map[string]any{
+			"fallback":  "go-local-memory",
+			"procedure": "memory.captureSessionSummary",
+			"reason":    "upstream unavailable; persisted session summary locally",
+		},
+	})
 }
 
 func (s *Server) handleMemoryRecentSessionSummaries(w http.ResponseWriter, r *http.Request) {
@@ -3969,9 +4071,13 @@ func (s *Server) handleMemorySearchSessionSummaries(w http.ResponseWriter, r *ht
 		return
 	}
 	payload := map[string]any{"query": query, "limit": 10}
-	if limit := strings.TrimSpace(r.URL.Query().Get("limit")); limit != "" {
-		if parsed, err := strconv.Atoi(limit); err == nil {
+	limit := 10
+	if limitParam := strings.TrimSpace(r.URL.Query().Get("limit")); limitParam != "" {
+		if parsed, err := strconv.Atoi(limitParam); err == nil {
 			payload["limit"] = parsed
+			if parsed > 0 {
+				limit = parsed
+			}
 		}
 	}
 	var result any
@@ -3988,13 +4094,19 @@ func (s *Server) handleMemorySearchSessionSummaries(w http.ResponseWriter, r *ht
 		return
 	}
 
+	records, localErr := s.localSearchSessionSummaryMemories(query, limit)
+	if localErr != nil {
+		writeJSON(w, http.StatusServiceUnavailable, map[string]any{"success": false, "error": localErr.Error(), "detail": localErr.Error()})
+		return
+	}
+
 	writeJSON(w, http.StatusOK, map[string]any{
 		"success": true,
-		"data":    []map[string]any{},
+		"data":    records,
 		"bridge": map[string]any{
 			"fallback":  "go-local-memory",
 			"procedure": "memory.searchSessionSummaries",
-			"reason":    "upstream unavailable; local memory fallback has no session summary search index",
+			"reason":    "upstream unavailable; using local persisted session summary search",
 		},
 	})
 }
@@ -4092,15 +4204,21 @@ func (s *Server) handleAgentMemorySearch(w http.ResponseWriter, r *http.Request)
 		return
 	}
 	payload := map[string]any{"query": query}
-	if namespace := strings.TrimSpace(r.URL.Query().Get("namespace")); namespace != "" {
+	namespace := strings.TrimSpace(r.URL.Query().Get("namespace"))
+	if namespace != "" {
 		payload["namespace"] = namespace
 	}
-	if memoryType := strings.TrimSpace(r.URL.Query().Get("type")); memoryType != "" {
+	memoryType := strings.TrimSpace(r.URL.Query().Get("type"))
+	if memoryType != "" {
 		payload["type"] = memoryType
 	}
-	if limit := strings.TrimSpace(r.URL.Query().Get("limit")); limit != "" {
-		if parsed, err := strconv.Atoi(limit); err == nil {
+	limit := 10
+	if limitParam := strings.TrimSpace(r.URL.Query().Get("limit")); limitParam != "" {
+		if parsed, err := strconv.Atoi(limitParam); err == nil {
 			payload["limit"] = parsed
+			if parsed > 0 {
+				limit = parsed
+			}
 		}
 	}
 	var result any
@@ -4117,21 +4235,73 @@ func (s *Server) handleAgentMemorySearch(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	s.writeAgentMemoryListFallback(w, "agentMemory.search")
+	records, localErr := s.localSearchAgentMemoryRecords(query, localAgentMemorySearchOptions{Limit: limit, Type: memoryType, Namespace: namespace})
+	if localErr != nil {
+		writeJSON(w, http.StatusServiceUnavailable, map[string]any{"success": false, "error": localErr.Error(), "detail": localErr.Error()})
+		return
+	}
+
+	writeJSON(w, http.StatusOK, map[string]any{
+		"success": true,
+		"data":    localAgentMemoryMaps(records),
+		"bridge": map[string]any{
+			"fallback":  "go-local-agent-memory",
+			"procedure": "agentMemory.search",
+			"reason":    "upstream unavailable; using local persisted agent memory search",
+		},
+	})
 }
 
 func (s *Server) handleAgentMemoryAdd(w http.ResponseWriter, r *http.Request) {
-	s.handleTRPCBridgeBodyCall(w, r, "agentMemory.add")
+	var payload map[string]any
+	if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
+		writeJSON(w, http.StatusBadRequest, map[string]any{"success": false, "error": "invalid JSON body"})
+		return
+	}
+	var result any
+	upstreamBase, err := s.callUpstreamJSON(r.Context(), "agentMemory.add", payload, &result)
+	if err == nil {
+		writeJSON(w, http.StatusOK, map[string]any{"success": true, "data": result, "bridge": map[string]any{"upstreamBase": upstreamBase, "procedure": "agentMemory.add"}})
+		return
+	}
+
+	metadata := localAgentMemoryMetadata(payload["metadata"])
+	metadata["tags"] = localUniqueStrings(localAgentMemoryTags(metadata), stringArray(payload["tags"])...)
+	record, localErr := s.localAddAgentMemoryEntry(
+		stringValue(payload["content"]),
+		localNormalizeAgentMemoryType(stringValue(payload["type"]), "working"),
+		localNormalizeAgentMemoryNamespace(stringValue(payload["namespace"]), "project"),
+		metadata,
+	)
+	if localErr != nil {
+		writeJSON(w, http.StatusServiceUnavailable, map[string]any{"success": false, "error": localErr.Error(), "detail": localErr.Error()})
+		return
+	}
+
+	writeJSON(w, http.StatusOK, map[string]any{
+		"success": true,
+		"data":    localAgentMemoryMap(record),
+		"bridge": map[string]any{
+			"fallback":  "go-local-agent-memory",
+			"procedure": "agentMemory.add",
+			"reason":    "upstream unavailable; persisted agent memory locally",
+		},
+	})
 }
 
 func (s *Server) handleAgentMemoryRecent(w http.ResponseWriter, r *http.Request) {
 	payload := map[string]any{}
-	if memoryType := strings.TrimSpace(r.URL.Query().Get("type")); memoryType != "" {
+	memoryType := strings.TrimSpace(r.URL.Query().Get("type"))
+	if memoryType != "" {
 		payload["type"] = memoryType
 	}
-	if limit := strings.TrimSpace(r.URL.Query().Get("limit")); limit != "" {
-		if parsed, err := strconv.Atoi(limit); err == nil {
+	limit := 10
+	if limitParam := strings.TrimSpace(r.URL.Query().Get("limit")); limitParam != "" {
+		if parsed, err := strconv.Atoi(limitParam); err == nil {
 			payload["limit"] = parsed
+			if parsed > 0 {
+				limit = parsed
+			}
 		}
 	}
 	var result any
@@ -4148,7 +4318,21 @@ func (s *Server) handleAgentMemoryRecent(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	s.writeAgentMemoryListFallback(w, "agentMemory.getRecent")
+	records, localErr := s.localRecentAgentMemoryRecords(limit, localAgentMemorySearchOptions{Type: memoryType})
+	if localErr != nil {
+		writeJSON(w, http.StatusServiceUnavailable, map[string]any{"success": false, "error": localErr.Error(), "detail": localErr.Error()})
+		return
+	}
+
+	writeJSON(w, http.StatusOK, map[string]any{
+		"success": true,
+		"data":    localAgentMemoryMaps(records),
+		"bridge": map[string]any{
+			"fallback":  "go-local-agent-memory",
+			"procedure": "agentMemory.getRecent",
+			"reason":    "upstream unavailable; using local persisted recent agent memories",
+		},
+	})
 }
 
 func (s *Server) handleAgentMemoryByType(w http.ResponseWriter, r *http.Request) {
@@ -4174,7 +4358,20 @@ func (s *Server) handleAgentMemoryByType(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	s.writeAgentMemoryListFallback(w, "agentMemory.getByType")
+	records, localErr := s.localRecentAgentMemoryRecords(0, localAgentMemorySearchOptions{Type: memoryType})
+	if localErr != nil {
+		writeJSON(w, http.StatusServiceUnavailable, map[string]any{"success": false, "error": localErr.Error(), "detail": localErr.Error()})
+		return
+	}
+	writeJSON(w, http.StatusOK, map[string]any{
+		"success": true,
+		"data":    localAgentMemoryMaps(records),
+		"bridge": map[string]any{
+			"fallback":  "go-local-agent-memory",
+			"procedure": "agentMemory.getByType",
+			"reason":    "upstream unavailable; using local persisted agent memories filtered by type",
+		},
+	})
 }
 
 func (s *Server) handleAgentMemoryByNamespace(w http.ResponseWriter, r *http.Request) {
@@ -4200,7 +4397,20 @@ func (s *Server) handleAgentMemoryByNamespace(w http.ResponseWriter, r *http.Req
 		return
 	}
 
-	s.writeAgentMemoryListFallback(w, "agentMemory.getByNamespace")
+	records, localErr := s.localRecentAgentMemoryRecords(0, localAgentMemorySearchOptions{Namespace: namespace})
+	if localErr != nil {
+		writeJSON(w, http.StatusServiceUnavailable, map[string]any{"success": false, "error": localErr.Error(), "detail": localErr.Error()})
+		return
+	}
+	writeJSON(w, http.StatusOK, map[string]any{
+		"success": true,
+		"data":    localAgentMemoryMaps(records),
+		"bridge": map[string]any{
+			"fallback":  "go-local-agent-memory",
+			"procedure": "agentMemory.getByNamespace",
+			"reason":    "upstream unavailable; using local persisted agent memories filtered by namespace",
+		},
+	})
 }
 
 func (s *Server) writeAgentMemoryListFallback(w http.ResponseWriter, procedure string) {
@@ -4217,11 +4427,59 @@ func (s *Server) writeAgentMemoryListFallback(w http.ResponseWriter, procedure s
 }
 
 func (s *Server) handleAgentMemoryDelete(w http.ResponseWriter, r *http.Request) {
-	s.handleTRPCBridgeBodyCall(w, r, "agentMemory.delete")
+	var payload map[string]any
+	if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
+		writeJSON(w, http.StatusBadRequest, map[string]any{"success": false, "error": "invalid JSON body"})
+		return
+	}
+	var result any
+	upstreamBase, err := s.callUpstreamJSON(r.Context(), "agentMemory.delete", payload, &result)
+	if err == nil {
+		writeJSON(w, http.StatusOK, map[string]any{"success": true, "data": result, "bridge": map[string]any{"upstreamBase": upstreamBase, "procedure": "agentMemory.delete"}})
+		return
+	}
+
+	deleted, localErr := s.localDeleteAgentMemory(stringValue(payload["id"]))
+	if localErr != nil {
+		writeJSON(w, http.StatusServiceUnavailable, map[string]any{"success": false, "error": localErr.Error(), "detail": localErr.Error()})
+		return
+	}
+	writeJSON(w, http.StatusOK, map[string]any{
+		"success": true,
+		"data":    deleted,
+		"bridge": map[string]any{
+			"fallback":  "go-local-agent-memory",
+			"procedure": "agentMemory.delete",
+			"reason":    "upstream unavailable; deleting persisted agent memory locally",
+		},
+	})
 }
 
 func (s *Server) handleAgentMemoryClearSession(w http.ResponseWriter, r *http.Request) {
-	s.handleTRPCBridgeCall(w, r, http.MethodPost, "agentMemory.clearSession", nil)
+	var result any
+	upstreamBase, err := s.callUpstreamJSON(r.Context(), "agentMemory.clearSession", nil, &result)
+	if err == nil {
+		writeJSON(w, http.StatusOK, map[string]any{"success": true, "data": result, "bridge": map[string]any{"upstreamBase": upstreamBase, "procedure": "agentMemory.clearSession"}})
+		return
+	}
+
+	cleared, localErr := s.localClearSessionAgentMemories()
+	if localErr != nil {
+		writeJSON(w, http.StatusServiceUnavailable, map[string]any{"success": false, "error": localErr.Error(), "detail": localErr.Error()})
+		return
+	}
+	writeJSON(w, http.StatusOK, map[string]any{
+		"success": true,
+		"data": map[string]any{
+			"success": true,
+			"cleared": cleared,
+		},
+		"bridge": map[string]any{
+			"fallback":  "go-local-agent-memory",
+			"procedure": "agentMemory.clearSession",
+			"reason":    "upstream unavailable; cleared persisted session-tier agent memories locally",
+		},
+	})
 }
 
 func (s *Server) handleAgentMemoryExport(w http.ResponseWriter, r *http.Request) {
@@ -4239,18 +4497,18 @@ func (s *Server) handleAgentMemoryExport(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	writeJSON(w, http.StatusServiceUnavailable, map[string]any{
-		"success": false,
-		"error":   "Agent memory export is unavailable: upstream agent memory service is unavailable and the local agent memory runtime is not initialized.",
-		"data": map[string]any{
-			"session":   []any{},
-			"working":   []any{},
-			"long_term": []any{},
-		},
+	exported, localErr := s.localAgentMemoryExport()
+	if localErr != nil {
+		writeJSON(w, http.StatusServiceUnavailable, map[string]any{"success": false, "error": localErr.Error(), "detail": localErr.Error()})
+		return
+	}
+	writeJSON(w, http.StatusOK, map[string]any{
+		"success": true,
+		"data":    exported,
 		"bridge": map[string]any{
 			"fallback":  "go-local-agent-memory",
 			"procedure": "agentMemory.export",
-			"reason":    "upstream unavailable; local agent memory runtime is not initialized",
+			"reason":    "upstream unavailable; exporting persisted agent memories locally",
 		},
 	})
 }
@@ -4278,19 +4536,18 @@ func (s *Server) handleAgentMemoryStats(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	writeJSON(w, http.StatusServiceUnavailable, map[string]any{
-		"success": false,
-		"error":   "Agent memory stats are unavailable: upstream agent memory service is unavailable and the local agent memory runtime is not initialized.",
-		"data": map[string]any{
-			"session":  0,
-			"working":  0,
-			"longTerm": 0,
-			"total":    0,
-		},
+	stats, localErr := s.localAgentMemoryStatsCompact()
+	if localErr != nil {
+		writeJSON(w, http.StatusServiceUnavailable, map[string]any{"success": false, "error": localErr.Error(), "detail": localErr.Error()})
+		return
+	}
+	writeJSON(w, http.StatusOK, map[string]any{
+		"success": true,
+		"data":    stats,
 		"bridge": map[string]any{
 			"fallback":  "go-local-agent-memory",
 			"procedure": "agentMemory.stats",
-			"reason":    "upstream unavailable; local agent memory runtime is not initialized",
+			"reason":    "upstream unavailable; using local persisted agent memory stats",
 		},
 	})
 }

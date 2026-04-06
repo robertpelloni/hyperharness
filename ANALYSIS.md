@@ -4617,3 +4617,69 @@ Executed in the primary workspace:
 - `pnpm -C apps/web run build`
 
 Result: passed.
+
+
+## Latest stabilization pass — Go-native persisted memory and agent-memory fallback ownership (2026-04-05)
+
+### Scope
+This pass targeted a real remaining Go-primary backend gap instead of another UI-only slice:
+- public memory mutation routes still admitted they could not persist facts, observations, user prompts, or session summaries when TypeScript was unavailable
+- the direct `/api/agent-memory/*` family still returned "runtime not initialized" or zero-state placeholders in Go fallback mode
+- several persisted-memory search routes still returned synthetic empty results even though the local Go runtime already understood the underlying persisted record format
+
+### What changed
+Updated:
+- `go/internal/httpapi/server.go`
+- `go/internal/httpapi/server_test.go`
+- `go/internal/httpapi/agent_memory_local.go` (new)
+
+Added a real persisted local Go runtime for `.hypercode/agent_memory/memories.json` and wired it into both the public memory surface and the direct agent-memory surface when `/trpc` is unavailable.
+
+#### Newly Go-owned fallback writes
+Public memory routes now persist locally instead of failing:
+- `POST /api/memory/facts/add`
+- `POST /api/memory/observations/record`
+- `POST /api/memory/user-prompts/capture`
+- `POST /api/memory/session-summaries/capture`
+
+Direct agent-memory routes now persist locally instead of reporting an uninitialized runtime:
+- `POST /api/agent-memory/add`
+- `POST /api/agent-memory/delete`
+- `POST /api/agent-memory/clear-session`
+
+#### Newly Go-owned fallback reads/searches
+These Go fallback reads now return real persisted data from `.hypercode/agent_memory/memories.json`:
+- `GET /api/memory/agent-search`
+- `GET /api/memory/observations/search`
+- `GET /api/memory/user-prompts/search`
+- `GET /api/memory/session-summaries/search`
+- `GET /api/agent-memory/search`
+- `GET /api/agent-memory/recent`
+- `GET /api/agent-memory/by-type`
+- `GET /api/agent-memory/by-namespace`
+- `GET /api/agent-memory/export`
+- `GET /api/agent-memory/stats`
+
+### Behavior notes
+- upstream TypeScript still wins whenever it is available
+- Go fallback persists records into the existing workspace-local agent-memory snapshot file instead of inventing a parallel store
+- the local runtime now preserves and reuses the structured metadata shapes already expected by the existing Go read paths for:
+  - structured observations
+  - structured user prompts
+  - structured session summaries
+- `agentMemory.export` now returns a real JSON export string from the persisted local snapshot, which is much closer to the TypeScript contract than the old synthetic bucket placeholder
+- `agentMemory.stats` now returns truthful compact counts derived from the persisted local snapshot instead of a hardcoded zero-state payload
+- `memory.recordObservation` now normalizes unsupported legacy `type: "fact"` inputs into a valid local structured observation type so the persisted fallback remains searchable by the existing Go observation readers
+
+### Validation
+Executed in the primary workspace without killing any processes:
+- `cd go && gofmt -w internal/httpapi/agent_memory_local.go internal/httpapi/server.go internal/httpapi/server_test.go`
+- `cd go && go test ./internal/httpapi -run 'Test(ReadOnlyMemoryRoutesFallBackLocally|MemoryServiceBackedMutationsFallBackLocally|AgentMemoryStatsFallsBackToPersistedState|AgentMemoryExportFallsBackToPersistedSnapshot|AgentMemoryReadRoutesFallBackToPersistedResults|AgentMemoryMutationRoutesFallBackToLocalPersistence)' -count=1`
+- `cd go && go test ./internal/httpapi -count=1`
+
+### Why this matters
+This is a real Go-primary backend migration slice, not just dashboard polish:
+- the Go runtime now owns more of HyperCode's local-first memory behavior during TypeScript outage
+- public memory APIs are less placeholder-driven and more durable
+- direct agent-memory APIs now expose truthful persisted local state instead of pretending the runtime is absent
+- persisted local observations/prompts/session summaries can now participate in more fallback search/read flows instead of only recent-list surfaces

@@ -708,3 +708,37 @@ This follow-up made the existing client-config sync result operator-visible in t
 
 #### Validation performed
 - `pnpm -C apps/web run build` (executed in the primary workspace)
+
+
+### Latest incremental pass — Go-native persisted memory and agent-memory fallback ownership
+This follow-up converted another bridge-heavy backend cluster into truthful Go-owned local behavior.
+
+#### What changed
+- Added `go/internal/httpapi/agent_memory_local.go`.
+- Updated `go/internal/httpapi/server.go` so Go fallback now persists and serves real local data for:
+  - `POST /api/memory/facts/add`
+  - `POST /api/memory/observations/record`
+  - `POST /api/memory/user-prompts/capture`
+  - `POST /api/memory/session-summaries/capture`
+  - `GET /api/memory/agent-search`
+  - `GET /api/memory/observations/search`
+  - `GET /api/memory/user-prompts/search`
+  - `GET /api/memory/session-summaries/search`
+  - `GET /api/agent-memory/search`
+  - `GET /api/agent-memory/recent`
+  - `GET /api/agent-memory/by-type`
+  - `GET /api/agent-memory/by-namespace`
+  - `GET /api/agent-memory/export`
+  - `GET /api/agent-memory/stats`
+  - `POST /api/agent-memory/add`
+  - `POST /api/agent-memory/delete`
+  - `POST /api/agent-memory/clear-session`
+- Updated `go/internal/httpapi/server_test.go` to replace the old zero-state/uninitialized fallback assertions with persisted-local-state assertions and direct mutation coverage.
+
+#### Validation performed
+- `cd go && gofmt -w internal/httpapi/agent_memory_local.go internal/httpapi/server.go internal/httpapi/server_test.go`
+- `cd go && go test ./internal/httpapi -run 'Test(ReadOnlyMemoryRoutesFallBackLocally|MemoryServiceBackedMutationsFallBackLocally|AgentMemoryStatsFallsBackToPersistedState|AgentMemoryExportFallsBackToPersistedSnapshot|AgentMemoryReadRoutesFallBackToPersistedResults|AgentMemoryMutationRoutesFallBackToLocalPersistence)' -count=1`
+- `cd go && go test ./internal/httpapi -count=1`
+
+#### Recommended next step after this pass
+Continue the same Go-primary backend migration pattern on remaining bridge-heavy local-first data surfaces, especially where Go already has durable on-disk state but some routes still return synthetic empties or explicit "runtime unavailable" placeholders.

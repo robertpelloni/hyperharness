@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.0.0-alpha.1] - 2026-04-02
 
 ### Added
+- **Go-Native Memory Fallback Ownership**: Go now persists and serves truthful local fallback behavior for memory fact/observation/user-prompt/session-summary capture plus direct agent-memory search/recent/filter/export/stats/mutation routes through `.hypercode/agent_memory/memories.json` when `/trpc` is unavailable.
 - **MCP Settings Sync Result Panel**: The MCP Settings dashboard now renders the latest client-config sync result inline, showing the target client and written config path instead of only using toasts.
 - **Registry Detail Action Result Panel**: The MCP Registry detail page now renders the latest validate/install result inline, showing summary state and key identifiers instead of only using transient toasts.
 - **Registry Action Summary Panel**: The MCP Registry dashboard now renders the latest sync and batch-validation summary inline, showing aggregate counts and per-source details instead of only using transient toasts.
