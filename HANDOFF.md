@@ -591,3 +591,15 @@ This follow-up exposed the already-supported `savedScripts.update` path in the o
 
 #### Validation performed
 - `pnpm -C apps/web run build`
+
+
+### Latest incremental pass — saved-scripts execution result visibility
+This follow-up made the existing execute path operator-visible in the page itself.
+
+#### What changed
+- Updated `apps/web/src/app/dashboard/mcp/scripts/page.tsx`.
+- Successful `savedScripts.execute` calls now populate a visible execution-result panel in the dashboard.
+- The panel shows script name, success/failure state, timing, output/error text, and can be dismissed.
+
+#### Validation performed
+- `pnpm -C apps/web run build` (executed in the primary workspace because the clean push worktree has no installed Next.js toolchain)

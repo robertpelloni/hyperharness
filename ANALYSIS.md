@@ -4386,3 +4386,25 @@ Executed in the primary workspace:
 - `pnpm -C apps/web run build`
 
 Result: passed.
+
+
+## Latest stabilization pass — saved-scripts execution result visibility (2026-04-05)
+
+### Problem
+The Saved Scripts dashboard could execute scripts, but successful runs only emitted a toast and logged the returned payload to the browser console. Operators could not see the truthful execution result, output, or timing in the page itself.
+
+### What changed
+Updated:
+- `apps/web/src/app/dashboard/mcp/scripts/page.tsx`
+
+The dashboard now surfaces the most recent execution result directly in the UI:
+- captures the real `savedScripts.execute` payload
+- renders script name, success/failure state, timing, and output/error text
+- allows dismissal of the last execution panel
+- keeps the existing create/edit/delete flow intact
+
+### Validation
+Executed in the primary workspace (the clean push worktree does not have installed `node_modules` for Next.js builds):
+- `pnpm -C apps/web run build`
+
+Result: passed.

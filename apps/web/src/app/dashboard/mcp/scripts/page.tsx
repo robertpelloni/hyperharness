@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from "@hypercode/ui";
 import { Button } from "@hypercode/ui";
-import { Loader2, Plus, FileCode, Trash2, Play, Edit2 } from "lucide-react";
+import { Loader2, Plus, FileCode, Trash2, Play, Edit2, TerminalSquare, XCircle } from "lucide-react";
 import { trpc } from '@/utils/trpc';
 import { toast } from 'sonner';
 import { normalizeSavedScripts } from './scripts-page-normalizers';
@@ -29,11 +29,25 @@ type SavedScriptFormData = {
     code: string;
 };
 
+type SavedScriptExecutionResult = {
+    success: boolean;
+    result?: string;
+    error?: string;
+    execution?: {
+        scriptUuid?: string;
+        scriptName?: string;
+        startedAt?: string;
+        finishedAt?: string;
+        durationMs?: number;
+    };
+};
+
 export default function ScriptsDashboard() {
     const scriptsQuery = trpc.savedScripts.list.useQuery();
     const { data: scripts, isLoading, refetch } = scriptsQuery;
     const [isCreateOpen, setIsCreateOpen] = useState(false);
     const [editingScript, setEditingScript] = useState<SavedScriptFormData | null>(null);
+    const [lastExecution, setLastExecution] = useState<SavedScriptExecutionResult | null>(null);
     const normalizedScripts = normalizeSavedScripts(scripts);
     const scriptsUnavailable = scriptsQuery.isError
         || (scripts != null && (!Array.isArray(scripts) || !scripts.every(isSavedScriptRowPayload)));
@@ -84,6 +98,50 @@ export default function ScriptsDashboard() {
                 />
             )}
 
+            {lastExecution && (
+                <Card className="bg-zinc-900 border-zinc-700 border-l-4 border-l-emerald-600 shadow-xl">
+                    <CardHeader className="flex flex-row items-start justify-between gap-4">
+                        <div>
+                            <CardTitle className="text-lg text-white flex items-center gap-2">
+                                <TerminalSquare className="h-5 w-5 text-emerald-400" />
+                                Last Script Execution
+                            </CardTitle>
+                            <p className="text-sm text-zinc-400 mt-1">
+                                {lastExecution.execution?.scriptName || 'Unknown script'}
+                                {typeof lastExecution.execution?.durationMs === 'number' ? ` • ${lastExecution.execution.durationMs} ms` : ''}
+                            </p>
+                        </div>
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setLastExecution(null)}
+                            className="text-zinc-500 hover:text-white h-8 w-8 p-0"
+                            title="Dismiss execution result"
+                        >
+                            <XCircle className="h-4 w-4" />
+                        </Button>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                        <div className={`text-sm font-medium ${lastExecution.success ? 'text-emerald-400' : 'text-red-400'}`}>
+                            {lastExecution.success ? 'Execution succeeded' : 'Execution failed'}
+                        </div>
+                        {(lastExecution.result || lastExecution.error) && (
+                            <div className="bg-black/30 p-3 rounded border border-zinc-800">
+                                <pre className="text-xs text-zinc-300 whitespace-pre-wrap break-words font-mono max-h-80 overflow-auto">
+                                    {lastExecution.result || lastExecution.error}
+                                </pre>
+                            </div>
+                        )}
+                        {(lastExecution.execution?.startedAt || lastExecution.execution?.finishedAt) && (
+                            <div className="text-xs text-zinc-500 space-y-1">
+                                {lastExecution.execution?.startedAt && <p>Started: {lastExecution.execution.startedAt}</p>}
+                                {lastExecution.execution?.finishedAt && <p>Finished: {lastExecution.execution.finishedAt}</p>}
+                            </div>
+                        )}
+                    </CardContent>
+                </Card>
+            )}
+
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                 {isLoading ? (
                     <div className="col-span-3 flex justify-center p-12">
@@ -106,6 +164,7 @@ export default function ScriptsDashboard() {
                         key={script.uuid}
                         script={script}
                         onUpdate={refetch}
+                        onExecution={setLastExecution}
                         onEdit={(nextScript) => {
                             setIsCreateOpen(false);
                             setEditingScript(nextScript);
@@ -120,10 +179,12 @@ export default function ScriptsDashboard() {
 function ScriptCard({
     script,
     onUpdate,
+    onExecution,
     onEdit,
 }: {
     script: SavedScriptFormData;
     onUpdate: () => void;
+    onExecution: (result: SavedScriptExecutionResult) => void;
     onEdit: (script: SavedScriptFormData) => void;
 }) {
     const deleteMutation = trpc.savedScripts.delete.useMutation({
@@ -139,8 +200,7 @@ function ScriptCard({
     const runMutation = trpc.savedScripts.execute.useMutation({
         onSuccess: (result) => {
             toast.success("Script executed");
-            console.log("Script Result:", result);
-            // Could show a modal result dialog here
+            onExecution(result as SavedScriptExecutionResult);
         },
         onError: (err) => {
             toast.error(`Execution failed: ${err.message}`);
