@@ -1537,3 +1537,31 @@ Wrote comprehensive comparison to docs/analysis/HYPERHARNESS_VS_SUPERAI_COMPARIS
 1. Continue with `agent/orchestrator.go` next.
 2. Keep using `../hypercode` as strategic context for control-plane maturity and bridge-vs-canonical boundary decisions.
 3. Continue converting already-present parity surfaces into explicit, safer, regression-tested behavior before expanding deeper autonomy loops.
+
+## Additional work completed on 2026-04-05 (superai orchestrator assimilation tranche)
+- Verified that `agent/orchestrator.go` was already present and parity-aligned with `../superai` aside from expected module-path normalization.
+- Improved orchestration determinism by sorting agent names before delegated execution.
+- Extracted testable helpers:
+  - `renderOrchestrationPlan`
+  - `buildDelegatedExecutionTask`
+  - `executeDelegatedPlan`
+  - `sortedAgentNames`
+- Added nil-receiver / nil-map defensive handling for:
+  - `Spawn`
+  - `Delegate`
+  - `PlanAndExecute`
+- Extracted default executor values into constants:
+  - `defaultExecutorAgentName`
+  - `defaultExecutorSystemPrompt`
+- Added focused regression coverage in:
+  - `agent/orchestrator_assimilation_test.go`
+- Added tranche documentation:
+  - `docs/analysis/SUPERAI_ORCHESTRATOR_ASSIMILATION_TRANCHE_2026-04-05.md`
+
+## Latest validation after superai orchestrator assimilation tranche
+- `go test ./agent ./agents ./tui ./cmd ./foundation/...`
+
+## Updated recommendation after superai orchestrator assimilation tranche
+1. Continue into the richer `agents/` package surface next.
+2. Start with lower-blast-radius coordination files such as `agents/interfaces.go`, `agents/director.go`, and `agents/disclosure.go`.
+3. Keep favoring deterministic output, helper extraction, and regression coverage before broader autonomy expansion.
