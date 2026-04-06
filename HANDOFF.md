@@ -1565,3 +1565,32 @@ Wrote comprehensive comparison to docs/analysis/HYPERHARNESS_VS_SUPERAI_COMPARIS
 1. Continue into the richer `agents/` package surface next.
 2. Start with lower-blast-radius coordination files such as `agents/interfaces.go`, `agents/director.go`, and `agents/disclosure.go`.
 3. Keep favoring deterministic output, helper extraction, and regression coverage before broader autonomy expansion.
+
+## Additional work completed on 2026-04-05 (superai agents coordination assimilation tranche)
+- Verified that the following `agents/` coordination files were already present and parity-aligned with `../superai`:
+  - `agents/interfaces.go`
+  - `agents/director.go`
+  - `agents/disclosure.go`
+- Hardened `agents/director.go` for:
+  - nil director receiver rejection
+  - missing provider rejection
+  - nil state-map initialization
+  - empty history initialization
+  - safer `InjectSystemContext` handling
+- Hardened `agents/disclosure.go` for:
+  - nil proxy handling
+  - missing base provider handling in `Chat`
+  - missing base provider handling in `Stream`
+  - safe empty-model behavior in `GetModelName`
+- Added focused regression coverage in:
+  - `agents/coordination_assimilation_test.go`
+- Added tranche documentation:
+  - `docs/analysis/SUPERAI_AGENTS_COORDINATION_ASSIMILATION_TRANCHE_2026-04-05.md`
+
+## Latest validation after superai agents coordination assimilation tranche
+- `go test ./agent ./agents ./tui ./cmd ./foundation/...`
+
+## Updated recommendation after superai agents coordination assimilation tranche
+1. Continue into richer `agents/` surfaces next.
+2. Prioritize `agents/council.go`, `agents/auton.go`, and `agents/shell_assistant.go`.
+3. Keep preferring contract hardening and regression coverage before broader autonomy expansion.
