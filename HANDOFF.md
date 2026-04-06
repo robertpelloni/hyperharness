@@ -653,3 +653,14 @@ This follow-up made the existing BobbyBookmarks sync result operator-visible in 
 
 #### Validation performed
 - `pnpm -C apps/web run build` (executed in the primary workspace)
+
+
+### Latest incremental pass — infrastructure deploy result visibility
+This follow-up made the existing deploy/apply result operator-visible in the page itself.
+
+#### What changed
+- Updated `apps/web/src/app/dashboard/infrastructure/page.tsx`.
+- Successful or failed configuration apply runs now populate an inline result panel with status and output text.
+
+#### Validation performed
+- `pnpm -C apps/web run build` (executed in the primary workspace)

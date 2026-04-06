@@ -4501,3 +4501,24 @@ Executed in the primary workspace:
 - `pnpm -C apps/web run build`
 
 Result: passed.
+
+
+## Latest stabilization pass — infrastructure deploy result visibility (2026-04-05)
+
+### Problem
+The Infrastructure dashboard's `Deploy Configuration` action returned useful output, but the page only emitted success/failure toasts. Operators could not inspect the latest apply result inline.
+
+### What changed
+Updated:
+- `apps/web/src/app/dashboard/infrastructure/page.tsx`
+
+The page now stores and renders the most recent infrastructure apply/deploy result directly in the UI:
+- success/failure state
+- returned output text
+- persistent inline panel parallel to the health-check result panel
+
+### Validation
+Executed in the primary workspace:
+- `pnpm -C apps/web run build`
+
+Result: passed.

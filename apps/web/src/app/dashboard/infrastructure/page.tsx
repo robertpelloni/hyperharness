@@ -6,7 +6,7 @@ import { trpc } from "@/utils/trpc";
 import { Button, Card, CardHeader, CardTitle, CardContent } from "@hypercode/ui";
 import { toast } from "sonner";
 
-type InfrastructureDoctorResult = {
+type InfrastructureCommandResult = {
     success?: boolean;
     output?: string;
 };
@@ -15,10 +15,12 @@ export default function InfrastructureDashboardPage() {
     const infrastructureClient = trpc.infrastructure as any;
     const { data: status, isLoading: isLoadingStatus, error: statusError, refetch } = infrastructureClient.getInfrastructureStatus.useQuery();
     const statusUnavailable = Boolean(statusError) || (status !== undefined && (!status || typeof status !== "object"));
-    const [lastDoctorResult, setLastDoctorResult] = React.useState<InfrastructureDoctorResult | null>(null);
+    const [lastDoctorResult, setLastDoctorResult] = React.useState<InfrastructureCommandResult | null>(null);
+    const [lastApplyResult, setLastApplyResult] = React.useState<InfrastructureCommandResult | null>(null);
 
     const applyMutation = trpc.infrastructure.applyConfigurations.useMutation({
         onSuccess: (data: any) => {
+            setLastApplyResult(data);
             if (data.success) {
                 toast.success("Applied infrastructure configuration successfully.");
                 refetch();
@@ -140,6 +142,27 @@ export default function InfrastructureDashboardPage() {
                     </CardContent>
                 </Card>
             </div>
+
+            {lastApplyResult && (
+                <Card className="bg-zinc-900 border-zinc-800">
+                    <CardHeader>
+                        <CardTitle className="text-lg flex items-center gap-2">
+                            <Download className="h-5 w-5 text-zinc-400" />
+                            Last Deploy Output
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                        <div className={`text-sm font-medium ${lastApplyResult.success ? 'text-emerald-400' : 'text-red-400'}`}>
+                            {lastApplyResult.success ? 'Configuration apply succeeded' : 'Configuration apply failed'}
+                        </div>
+                        <div className="rounded-md border border-zinc-800 bg-black/40 p-3">
+                            <pre className="whitespace-pre-wrap break-words text-xs text-zinc-300 font-mono max-h-80 overflow-auto">
+                                {lastApplyResult.output || '// No output returned'}
+                            </pre>
+                        </div>
+                    </CardContent>
+                </Card>
+            )}
 
             {lastDoctorResult && (
                 <Card className="bg-zinc-900 border-zinc-800">
