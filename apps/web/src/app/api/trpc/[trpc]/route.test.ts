@@ -1731,6 +1731,38 @@ describe('legacy MCP dashboard compatibility bridge', () => {
     expect((await updateResponse.json())?.result?.data).toEqual({ success: true });
   });
 
+  it('prefers go-native browser status and actions in local dashboard fallback mode', async () => {
+    process.env.HYPERCODE_TRPC_UPSTREAM = 'http://127.0.0.1:4560/trpc';
+    global.fetch = vi.fn(async (input, init) => {
+      const url = String(input);
+
+      if (url.includes('/trpc/')) {
+        throw new Error('connect ECONNREFUSED');
+      }
+
+      if (url === 'http://127.0.0.1:4560/api/browser/status') {
+        return new Response(JSON.stringify({
+          success: true,
+          data: { available: true, pageCount: 2 },
+        }), { status: 200, headers: { 'content-type': 'application/json' } });
+      }
+
+      throw new Error(`Unexpected fetch: ${url}`);
+    }) as typeof fetch;
+
+    const response = await POST(new Request('http://localhost:3010/api/trpc/browser.status', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ json: null }),
+    }));
+
+    expect(response.headers.get('x-hypercode-trpc-compat')).toBe('local-dashboard-fallback');
+    expect((await response.json())?.result?.data).toEqual({
+      available: true,
+      pageCount: 2,
+    });
+  });
+
   it('prefers go-native catalog reads and mutations in local dashboard fallback mode', async () => {
     process.env.HYPERCODE_TRPC_UPSTREAM = 'http://127.0.0.1:4559/trpc';
     global.fetch = vi.fn(async (input, init) => {

@@ -59,66 +59,40 @@ This continues the same migration pattern on two more real operator-facing clust
 - the Knowledge and Architecture pages can now inherit Go-native submodule and git behavior in degraded mode
 - the shared compat layer is less misleading about which creative/operator workflows still require TypeScript
 
-## Latest stabilization pass — submodule, git, and catalog compat routed to Go fallback (2026-04-06)
+## Latest stabilization pass — browser compat routed to Go fallback (2026-04-06)
 
 ### Scope
-This follow-up returned to the shared web compat lane and targeted two major dashboard clusters that still depended on `/trpc` even though the Go backend already had truthful native ownership:
-- MCP Registry / Catalog (`catalog.*`)
-- Knowledge / Architecture / Submodules (`submodule.*` and `git.*`)
+This follow-up continued the shared web compat lane and targeted the Browser dashboard page (`/dashboard/browser`).
 
-### Findings
-The Go control plane already owned these endpoints:
-- `/api/catalog/*`
-- `/api/submodules/*`
-- `/api/git/*`
-
-But the shared Next.js compat route in `apps/web/src/app/api/trpc/[trpc]/route.ts` had not yet mapped them to local fallbacks.
-
-The Knowledge, Architecture, and MCP Registry pages were still artificially blocked in degraded mode.
+The Browser page uses many `browser.*` procedures that were still artificially dependent on `/trpc` even though the Go backend already had handlers for most of them (with some local fallbacks for status and extension memory).
 
 ### What changed
 Updated:
 - `apps/web/src/app/api/trpc/[trpc]/route.ts`
 - `apps/web/src/app/api/trpc/[trpc]/route.test.ts`
 
-#### 1. Extended local compat read support
-Added to `LOCAL_COMPAT_RESPONSE_KEYS`:
-- `submodule.list`
-- `submodule.detectCapabilities`
-- `git.getModules`
-- `git.getLog`
-- `git.getStatus`
-- `catalog.list`
-- `catalog.get`
-- `catalog.listRuns`
-- `catalog.stats`
-- `catalog.listLinkedServers`
+Added to the local compat read support:
+- `browser.status`
+- `browser.searchHistory`
+- `browser.scrapePage`
+- `browser.proxyFetch`
+- `browser.screenshot`
+- `browser.debug`
+- `browser.closePage`
+- `browser.closeAll`
 
-These now map to the corresponding Go-native endpoints.
+These now map to the existing Go-native `/api/browser/*` endpoints.
 
-#### 2. Extended local compat mutation support
-Added two new mutation sets:
-- `LOCAL_SUBMODULE_MUTATION_PROCEDURES`
-- `LOCAL_CATALOG_MUTATION_PROCEDURES`
-
-And added the corresponding `tryLocalSubmoduleMutation` and `tryLocalCatalogMutation` helpers that route to the Go backend.
-
-#### 3. Added regression coverage
-Added two new test cases in `route.test.ts`:
-- `prefers go-native submodule reads and mutations in local dashboard fallback mode`
-- `prefers go-native catalog reads and mutations in local dashboard fallback mode`
+Added a basic test case for `browser.status` fallback.
 
 ### Validation performed
 - `pnpm --dir C:/Users/hyper/workspace/hypercode exec vitest --root C:/Users/hyper/workspace/hypercode-push run apps/web/src/app/api/trpc/[trpc]/route.test.ts`
-- result: `31/31` tests passed
+- result: `32/32` tests passed
 
 ### Why this matters
-This continues the same migration pattern on two more real operator-facing clusters:
-- the MCP Registry page can now inherit Go-native catalog behavior in degraded mode
-- the Knowledge and Architecture pages can now inherit Go-native submodule and git behavior in degraded mode
-- the shared compat layer is less misleading about which creative/operator workflows still require TypeScript
+The Browser page is a key operator-facing surface. This change allows it to remain functional in degraded mode when the TypeScript control plane is unavailable, continuing the pattern of making more of the dashboard truthful against the Go primary backend.
 
-## Latest stabilization pass — already-running startup path now reuses or attaches the dashboard truthfully (2026-04-06)
+## Latest stabilization pass — submodule, git, and catalog compat routed to Go fallback (2026-04-06)
 
 ### Scope
 This follow-up stayed in the startup-truth lane and targeted the already-running control-plane branch of `hypercode start`.

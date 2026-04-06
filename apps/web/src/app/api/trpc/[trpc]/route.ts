@@ -196,6 +196,14 @@ const LOCAL_COMPAT_RESPONSE_KEYS = {
   'catalog.listRuns': 'catalog.listRuns',
   'catalog.stats': 'catalog.stats',
   'catalog.listLinkedServers': 'catalog.listLinkedServers',
+  'browser.status': 'browser.status',
+  'browser.searchHistory': 'browser.searchHistory',
+  'browser.scrapePage': 'browser.scrapePage',
+  'browser.proxyFetch': 'browser.proxyFetch',
+  'browser.screenshot': 'browser.screenshot',
+  'browser.debug': 'browser.debug',
+  'browser.closePage': 'browser.closePage',
+  'browser.closeAll': 'browser.closeAll',
 } as const;
 
 type LocalCompatProcedure = keyof typeof LOCAL_COMPAT_RESPONSE_KEYS;
@@ -2499,6 +2507,14 @@ async function buildLocalCompatResponse(req: Request, body?: string): Promise<Re
     'catalog.listRuns': [],
     'catalog.stats': { total: 0, by_status: {}, by_transport: {}, last_ingest_at: null, providers: 0 },
     'catalog.listLinkedServers': [],
+    'browser.status': { available: false, pageCount: 0 },
+    'browser.searchHistory': [],
+    'browser.scrapePage': null,
+    'browser.proxyFetch': null,
+    'browser.screenshot': null,
+    'browser.debug': null,
+    'browser.closePage': null,
+    'browser.closeAll': { success: true },
   };
 
   const compatEntries = await Promise.all(procedureNames.map(async (procedureName, index) => {
@@ -2847,6 +2863,49 @@ async function buildLocalCompatResponse(req: Request, body?: string): Promise<Re
       if (data === null) {
         data = [];
       }
+    }
+
+    if (responseKey === 'browser.status') {
+      data = await fetchNativeControlPlaneData<unknown>('/api/browser/status');
+      if (data === null) {
+        data = { available: false, pageCount: 0 };
+      }
+    }
+
+    if (responseKey === 'browser.searchHistory') {
+      const input = procedureInputs[index];
+      const query = input && typeof input === 'object' ? readString((input as { query?: unknown }).query) : null;
+      const maxResults = input && typeof input === 'object' ? readNumber((input as { maxResults?: unknown }).maxResults) : null;
+      data = await fetchNativeControlPlaneData<unknown>(`/api/browser/search-history${buildMemoryQueryString({ query, maxResults })}`);
+      if (data === null) {
+        data = [];
+      }
+    }
+
+    if (responseKey === 'browser.scrapePage') {
+      data = await fetchNativeControlPlaneData<unknown>('/api/browser/scrape');
+    }
+
+    if (responseKey === 'browser.proxyFetch' || responseKey === 'browser.screenshot' || responseKey === 'browser.debug' || responseKey === 'browser.closePage' || responseKey === 'browser.closeAll') {
+      const input = procedureInputs[index];
+      let endpointPath = '';
+      if (responseKey === 'browser.proxyFetch') endpointPath = '/api/browser/proxy-fetch';
+      else if (responseKey === 'browser.screenshot') endpointPath = '/api/browser/screenshot';
+      else if (responseKey === 'browser.debug') endpointPath = '/api/browser/debug';
+      else if (responseKey === 'browser.closePage') endpointPath = '/api/browser/close-page';
+      else if (responseKey === 'browser.closeAll') endpointPath = '/api/browser/close-all';
+
+      let browserData = await fetchNativeControlPlaneData<unknown>(endpointPath, {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+        },
+        body: input ? JSON.stringify(input) : undefined,
+      });
+      if (browserData === null) {
+        browserData = responseKey === 'browser.closeAll' ? { success: true } : null;
+      }
+      data = browserData;
     }
 
     return {
