@@ -1696,3 +1696,27 @@ Wrote comprehensive comparison to docs/analysis/HYPERHARNESS_VS_SUPERAI_COMPARIS
 1. Continue through any remaining richer `agents/` surfaces not yet hardened.
 2. Then widen back out to adjacent runtime/provider integration layers as needed.
 3. Keep emphasizing explicit helper seams, deterministic behavior, and regression coverage.
+
+## Additional work completed on 2026-04-05 (superai agent core assimilation tranche)
+- Verified that `agent/agent.go` was already present and parity-aligned with `../superai`.
+- Extracted core helper seams:
+  - `buildAgentSystemPrompt`
+  - `firstChoiceMessage`
+  - `executeToolCall`
+- Hardened central agent validation for:
+  - nil agent receiver
+  - missing OpenAI client
+  - missing tool registry
+  - empty completion choice arrays
+- Added focused regression coverage in:
+  - `agent/core_assimilation_test.go`
+- Added tranche documentation:
+  - `docs/analysis/SUPERAI_AGENT_CORE_ASSIMILATION_TRANCHE_2026-04-05.md`
+
+## Latest validation after superai agent core assimilation tranche
+- `go test ./agent ./agents ./tui ./cmd ./foundation/...`
+
+## Updated recommendation after superai agent core assimilation tranche
+1. Continue through remaining central `agent/` seams such as `agent/pipe.go` next.
+2. Keep focusing on boundary files where multiple subsystems meet.
+3. Continue emphasizing explicit helper seams, deterministic behavior, and regression coverage.
