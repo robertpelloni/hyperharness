@@ -3,6 +3,60 @@
 ## Current status
 **Version:** `1.0.0-alpha.1`
 
+### Latest incremental pass — startup port fallback provenance made durable and visible
+This follow-up stayed in the startup-truth lane after widening the fallback scan. The goal was to make the selected control-plane port and fallback reason durable and visible after startup, not only during the transient console launch log.
+
+#### What changed
+- Extended startup provenance schema with:
+  - `requestedPort`
+  - `activePort`
+  - `portDecision`
+  - `portReason`
+- Updated startup provenance surfaces in:
+  - `packages/cli/src/commands/start.ts`
+  - `packages/cli/src/control-plane.ts`
+  - `packages/core/src/lib/startup-provenance.ts`
+  - `apps/web/src/lib/hypercode-runtime.ts`
+  - `go/internal/lockfile/lockfile.go`
+  - `go/cmd/hypercode/main.go`
+  - `go/internal/httpapi/server.go`
+- CLI startup now persists truthful control-plane port outcomes such as:
+  - explicit port selection
+  - requested/default port selected directly
+  - stale-lock port reuse
+  - fallback before launch
+  - bind-time fallback retry
+- Surfaced the port decision in operator-visible status views:
+  - CLI `hypercode status`
+  - Dashboard Home startup card
+  - System dashboard startup card
+  - Health dashboard startup card
+  - Integrations startup summary card
+  - MCP System startup card
+  - Autopilot startup card
+
+#### Validation performed
+- Green targeted TS suite:
+  - `pnpm --dir C:/Users/hyper/workspace/hypercode exec vitest --root C:/Users/hyper/workspace/hypercode-push run packages/cli/src/commands/start.test.ts packages/cli/src/commands/status.test.ts packages/core/src/routers/startupStatus.test.ts`
+- Go HTTP suite:
+  - `cd ../hypercode-push/go && go test ./internal/httpapi -count=1`
+- Additional attempted dashboard render invocation:
+  - `pnpm --dir C:/Users/hyper/workspace/hypercode exec vitest --root C:/Users/hyper/workspace/hypercode-push run packages/cli/src/commands/start.test.ts packages/cli/src/commands/status.test.ts packages/core/src/routers/startupStatus.test.ts apps/web/src/app/dashboard/dashboard-home-view.test.tsx`
+
+#### Validation results
+Passed:
+- `packages/cli/src/commands/start.test.ts`
+- `packages/cli/src/commands/status.test.ts`
+- `packages/core/src/routers/startupStatus.test.ts`
+- `go/internal/httpapi`
+
+#### Validation limitation
+- `apps/web/src/app/dashboard/dashboard-home-view.test.tsx` was attempted but did not execute successfully in the clean push worktree because that worktree still lacks its own UI dependency install tree on this path; Vitest failed to resolve `react-dom/server` from the clean worktree.
+- So the honest claim for this pass is startup-schema + CLI/core/go validation, with the dashboard render test attempt documented as blocked by clean-worktree dependency resolution.
+
+#### Recommended next step after this pass
+Use the next real operator `start.bat` run to verify that when `4000` is occupied, the chosen fallback port now shows up durably in CLI/API/dashboard status surfaces. After that, continue either with the next operator-facing startup truth gap or return to the highest-value shared compat cluster still blocked on `/trpc` despite existing Go `/api/*` ownership.
+
 ### Latest incremental pass — startup port fallback widened after real operator `start.bat` failure
 This follow-up pivoted from dashboard compat back to startup reliability because a fresh operator `start.bat` log showed startup still aborting non-destructively but too early when port `4000` was occupied.
 

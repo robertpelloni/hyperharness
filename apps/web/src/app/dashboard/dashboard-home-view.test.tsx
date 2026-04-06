@@ -1926,6 +1926,10 @@ describe('DashboardHomeView', () => {
           startupMode: {
             requestedRuntime: 'auto',
             activeRuntime: 'go',
+            requestedPort: 4000,
+            activePort: 4012,
+            portDecision: 'fallback port selected before launch',
+            portReason: 'Port 4000 was already occupied before startup, so HyperCode selected 4012.',
             launchMode: 'prebuilt Go binary',
             dashboardMode: 'compatibility-only; skipped for Go runtime',
             installDecision: 'skipped',
@@ -1986,6 +1990,10 @@ describe('DashboardHomeView', () => {
     expect(html).toContain('Launch mode');
     expect(html).toContain('prebuilt Go binary');
     expect(html).toContain('Dashboard: compatibility-only; skipped for Go runtime');
+    expect(html).toContain('Control-plane port');
+    expect(html).toContain('4012');
+    expect(html).toContain('Requested: 4000');
+    expect(html).toContain('fallback port selected before launch');
     expect(html).toContain('Install decision');
     expect(html).toContain('Go-primary dependencies already ready');
     expect(html).toContain('Build decision');

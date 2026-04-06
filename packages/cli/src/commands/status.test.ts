@@ -47,6 +47,10 @@ describe('registerStatusCommand', () => {
     readLocalStartupProvenanceMock.mockReturnValue({
       requestedRuntime: 'auto',
       activeRuntime: 'go',
+      requestedPort: 4000,
+      activePort: 4012,
+      portDecision: 'fallback port selected before launch',
+      portReason: 'Port 4000 was already occupied before startup, so HyperCode selected 4012.',
       launchMode: 'prebuilt Go binary',
       dashboardMode: 'compatibility-only; skipped for Go runtime',
       installDecision: 'skipped',
@@ -93,6 +97,10 @@ describe('registerStatusCommand', () => {
       startupMode: {
         requestedRuntime: 'auto',
         activeRuntime: 'go',
+        requestedPort: 4000,
+        activePort: 4012,
+        portDecision: 'fallback port selected before launch',
+        portReason: 'Port 4000 was already occupied before startup, so HyperCode selected 4012.',
         launchMode: 'prebuilt Go binary',
         dashboardMode: 'compatibility-only; skipped for Go runtime',
         installDecision: 'skipped',

@@ -167,6 +167,14 @@ Examples:
             [
               startupProvenance.requestedRuntime ? `Requested: ${startupProvenance.requestedRuntime}` : null,
               startupProvenance.activeRuntime ? `Active: ${startupProvenance.activeRuntime}` : null,
+              typeof startupProvenance.activePort === 'number'
+                ? `Port: ${startupProvenance.activePort}`
+                : null,
+              typeof startupProvenance.requestedPort === 'number' && typeof startupProvenance.activePort === 'number'
+                ? `Requested port: ${startupProvenance.requestedPort}`
+                : null,
+              startupProvenance.portDecision ? `Port decision: ${startupProvenance.portDecision}` : null,
+              startupProvenance.portReason ? `Port note: ${startupProvenance.portReason}` : null,
               startupProvenance.launchMode ? `Launch: ${startupProvenance.launchMode}` : null,
               startupProvenance.dashboardMode ? `Dashboard: ${startupProvenance.dashboardMode}` : null,
               startupProvenance.installDecision ? `Install: ${startupProvenance.installDecision}` : null,

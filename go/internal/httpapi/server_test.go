@@ -15628,6 +15628,10 @@ func demo() {
 		Startup: &lockfile.StartupProvenance{
 			RequestedRuntime: "auto",
 			ActiveRuntime:    "go",
+			RequestedPort:    4000,
+			ActivePort:       4012,
+			PortDecision:     "fallback port selected before launch",
+			PortReason:       "Port 4000 was already occupied before startup, so HyperCode selected 4012.",
 			LaunchMode:       "prebuilt Go binary",
 			DashboardMode:    "compatibility-only; skipped for Go runtime",
 			InstallDecision:  "skipped",
@@ -15706,6 +15710,12 @@ func demo() {
 	}
 	if payload.Data.StartupMode["requestedRuntime"] != "auto" || payload.Data.StartupMode["activeRuntime"] != "go" {
 		t.Fatalf("expected startup runtime provenance, got %+v", payload.Data.StartupMode)
+	}
+	if payload.Data.StartupMode["requestedPort"] != float64(4000) || payload.Data.StartupMode["activePort"] != float64(4012) {
+		t.Fatalf("expected startup port provenance, got %+v", payload.Data.StartupMode)
+	}
+	if payload.Data.StartupMode["portDecision"] != "fallback port selected before launch" {
+		t.Fatalf("expected startup port decision provenance, got %+v", payload.Data.StartupMode)
 	}
 	if payload.Data.StartupMode["launchMode"] != "prebuilt Go binary" {
 		t.Fatalf("expected startup launch mode provenance, got %+v", payload.Data.StartupMode)

@@ -9,6 +9,10 @@ const DEFAULT_TRPC_PORT = 4000;
 export interface HypercodeStartupProvenance {
   requestedRuntime?: string;
   activeRuntime?: string;
+  requestedPort?: number;
+  activePort?: number;
+  portDecision?: string;
+  portReason?: string;
   launchMode?: string;
   dashboardMode?: string;
   installDecision?: string;

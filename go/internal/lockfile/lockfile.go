@@ -9,6 +9,10 @@ import (
 type StartupProvenance struct {
 	RequestedRuntime string `json:"requestedRuntime,omitempty"`
 	ActiveRuntime    string `json:"activeRuntime,omitempty"`
+	RequestedPort    int    `json:"requestedPort,omitempty"`
+	ActivePort       int    `json:"activePort,omitempty"`
+	PortDecision     string `json:"portDecision,omitempty"`
+	PortReason       string `json:"portReason,omitempty"`
 	LaunchMode       string `json:"launchMode,omitempty"`
 	DashboardMode    string `json:"dashboardMode,omitempty"`
 	InstallDecision  string `json:"installDecision,omitempty"`

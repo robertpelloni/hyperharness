@@ -26,6 +26,10 @@ export interface DashboardStartupStatus {
     startupMode?: {
         requestedRuntime?: string;
         activeRuntime?: string;
+        requestedPort?: number;
+        activePort?: number;
+        portDecision?: string;
+        portReason?: string;
         launchMode?: string;
         dashboardMode?: string;
         installDecision?: string;
@@ -1176,6 +1180,15 @@ function buildStartupModeEntries(startupStatus: DashboardStartupStatus): Array<{
             label: 'Launch mode',
             value: startupMode.launchMode?.trim() || '—',
             detail: startupMode.dashboardMode ? `Dashboard: ${startupMode.dashboardMode}` : undefined,
+        },
+        {
+            label: 'Control-plane port',
+            value: typeof startupMode.activePort === 'number' ? String(startupMode.activePort) : '—',
+            detail: [
+                typeof startupMode.requestedPort === 'number' ? `Requested: ${startupMode.requestedPort}` : null,
+                startupMode.portDecision?.trim() || null,
+                startupMode.portReason?.trim() || null,
+            ].filter(Boolean).join(' • ') || undefined,
         },
         {
             label: 'Install decision',

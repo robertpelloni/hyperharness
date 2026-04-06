@@ -1,5 +1,114 @@
 # HyperCode Stabilization Analysis — 2026-04-03
 
+## Latest stabilization pass — startup port fallback provenance made durable and visible (2026-04-06)
+
+### Scope
+This follow-up stayed in the same startup-truth lane after widening the non-destructive port fallback scan.
+
+The previous fix made default startup much more likely to succeed when port `4000` was occupied, but the operator still had a truthfulness gap afterward:
+- the chosen control-plane port and fallback reason were mostly transient console output
+- later status surfaces did not preserve that decision in a durable, inspectable way
+
+This pass addressed that gap by persisting the control-plane port decision into startup provenance and surfacing it across CLI/API/dashboard paths that already expose startup metadata.
+
+### Findings
+- Startup provenance already had a durable path through:
+  - CLI startup lock metadata
+  - `packages/core` `startupStatus`
+  - Go-native `/api/runtime/status`
+  - dashboard startup-mode cards
+- But the schema only captured runtime/install/build/dashboard launch facts, not the control-plane port decision itself.
+- That meant operators could see *how* HyperCode launched, but not *which port* it settled on or *why* it did not remain on the requested/default port.
+
+### What changed
+#### 1. Extended startup provenance schema with control-plane port decision metadata
+Updated:
+- `packages/cli/src/commands/start.ts`
+- `packages/cli/src/control-plane.ts`
+- `packages/core/src/lib/startup-provenance.ts`
+- `apps/web/src/lib/hypercode-runtime.ts`
+- `go/internal/lockfile/lockfile.go`
+- `go/cmd/hypercode/main.go`
+- `go/internal/httpapi/server.go`
+
+The shared startup provenance schema now carries:
+- `requestedPort`
+- `activePort`
+- `portDecision`
+- `portReason`
+
+#### 2. Persisted truthful port decision metadata during startup
+Updated:
+- `packages/cli/src/commands/start.ts`
+
+The CLI now records truthful control-plane port decisions such as:
+- explicit port selection
+- requested/default port selected directly
+- stale-lock port reuse
+- fallback port selected before launch
+- fallback port selected at bind time
+
+This metadata is written into the startup lock record alongside the existing runtime/build/install provenance.
+
+#### 3. Propagated port decision metadata into Go-native runtime status
+Updated:
+- `go/cmd/hypercode/main.go`
+- `go/internal/httpapi/server.go`
+- `go/internal/lockfile/lockfile.go`
+
+The Go runtime now receives/persists the new startup port env hints where applicable, and Go-native `/api/runtime/status` now exposes them as part of `startupMode`.
+
+It also falls back sensibly when only a Go lock exists:
+- `requestedPort` / `activePort` now default to the recorded lock port when startup metadata is absent
+
+#### 4. Surfaced control-plane port provenance in operator-facing status/dashboard views
+Updated:
+- `packages/cli/src/commands/status.ts`
+- `apps/web/src/app/dashboard/dashboard-home-view.tsx`
+- `apps/web/src/app/dashboard/system/page.tsx`
+- `apps/web/src/app/dashboard/health/page.tsx`
+- `apps/web/src/app/dashboard/integrations/integration-catalog.ts`
+- `apps/web/src/app/dashboard/mcp/system/page.tsx`
+- `apps/web/src/app/dashboard/autopilot/page.tsx`
+
+These startup-mode views now include a dedicated control-plane port row showing:
+- active port
+- requested port
+- port decision
+- port reason
+
+### Validation performed
+Executed truthfully without killing any processes:
+- Green targeted TS suite against the clean push worktree, using the primary workspace's installed Vitest toolchain:
+  - `pnpm --dir C:/Users/hyper/workspace/hypercode exec vitest --root C:/Users/hyper/workspace/hypercode-push run packages/cli/src/commands/start.test.ts packages/cli/src/commands/status.test.ts packages/core/src/routers/startupStatus.test.ts`
+- Go HTTP suite:
+  - `cd ../hypercode-push/go && go test ./internal/httpapi -count=1`
+- Additional attempted dashboard render test invocation:
+  - `pnpm --dir C:/Users/hyper/workspace/hypercode exec vitest --root C:/Users/hyper/workspace/hypercode-push run packages/cli/src/commands/start.test.ts packages/cli/src/commands/status.test.ts packages/core/src/routers/startupStatus.test.ts apps/web/src/app/dashboard/dashboard-home-view.test.tsx`
+
+### Validation results
+Passed:
+- `packages/cli/src/commands/start.test.ts`
+- `packages/cli/src/commands/status.test.ts`
+- `packages/core/src/routers/startupStatus.test.ts`
+- `go/internal/httpapi` full package test suite
+
+### Validation limitation
+- The dashboard home render test was attempted but did not run successfully in the clean push worktree because that worktree still lacks its own install tree for some UI dependencies. On this execution path Vitest failed to resolve `react-dom/server` from:
+  - `apps/web/src/app/dashboard/dashboard-home-view.test.tsx`
+- I am therefore **not** claiming that dashboard render test as passed for this slice.
+- The honest validation claim is:
+  - CLI tests passed
+  - core startup snapshot tests passed
+  - Go HTTP suite passed
+  - one dashboard render test was attempted but blocked by clean-worktree dependency resolution
+
+### Why this matters
+This completes another operator-truthfulness gap exposed by the real startup work:
+- startup port fallback is not just more resilient now; it is also more inspectable afterward
+- operators can see which control-plane port HyperCode actually chose and why
+- the provenance survives beyond transient console logs into CLI status, startup status API consumers, Go-native runtime status, and dashboard startup cards
+
 ## Latest stabilization pass — startup port fallback widened after real operator `start.bat` failure (2026-04-06)
 
 ### Scope

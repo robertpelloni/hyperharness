@@ -10772,6 +10772,8 @@ func readStartupProvenance(mainLockPath, goLockPath string) map[string]any {
 		if record.Startup == nil {
 			if candidate.source == "go-lock" {
 				return map[string]any{
+					"requestedPort": record.Port,
+					"activePort":    record.Port,
 					"activeRuntime": "go",
 					"launchMode":    "direct Go runtime",
 					"updatedAt":     record.StartedAt,
@@ -10780,9 +10782,21 @@ func readStartupProvenance(mainLockPath, goLockPath string) map[string]any {
 			}
 			continue
 		}
+		requestedPort := record.Startup.RequestedPort
+		if requestedPort <= 0 {
+			requestedPort = record.Port
+		}
+		activePort := record.Startup.ActivePort
+		if activePort <= 0 {
+			activePort = record.Port
+		}
 		return map[string]any{
 			"requestedRuntime": record.Startup.RequestedRuntime,
 			"activeRuntime":    record.Startup.ActiveRuntime,
+			"requestedPort":    requestedPort,
+			"activePort":       activePort,
+			"portDecision":     record.Startup.PortDecision,
+			"portReason":       record.Startup.PortReason,
 			"launchMode":       record.Startup.LaunchMode,
 			"dashboardMode":    record.Startup.DashboardMode,
 			"installDecision":  record.Startup.InstallDecision,

@@ -5,6 +5,10 @@ import path from 'node:path';
 export type HypercodeStartupProvenance = {
   requestedRuntime?: string;
   activeRuntime?: string;
+  requestedPort?: number;
+  activePort?: number;
+  portDecision?: string;
+  portReason?: string;
   launchMode?: string;
   dashboardMode?: string;
   installDecision?: string;

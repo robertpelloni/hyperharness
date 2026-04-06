@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 	"os/signal"
+	"strconv"
 	"strings"
 	"time"
 
@@ -56,9 +57,15 @@ func startupProvenanceFromEnv() *lockfile.StartupProvenance {
 			launchMode = "direct Go runtime"
 		}
 	}
+	requestedPort, _ := strconv.Atoi(strings.TrimSpace(os.Getenv("HYPERCODE_STARTUP_REQUESTED_PORT")))
+	activePort, _ := strconv.Atoi(strings.TrimSpace(os.Getenv("HYPERCODE_STARTUP_ACTIVE_PORT")))
 	startup := &lockfile.StartupProvenance{
 		RequestedRuntime: requestedRuntime,
 		ActiveRuntime:    "go",
+		RequestedPort:    requestedPort,
+		ActivePort:       activePort,
+		PortDecision:     strings.TrimSpace(os.Getenv("HYPERCODE_STARTUP_PORT_DECISION")),
+		PortReason:       strings.TrimSpace(os.Getenv("HYPERCODE_STARTUP_PORT_REASON")),
 		LaunchMode:       launchMode,
 		DashboardMode:    strings.TrimSpace(os.Getenv("HYPERCODE_STARTUP_DASHBOARD_MODE")),
 		InstallDecision:  strings.TrimSpace(os.Getenv("HYPERCODE_STARTUP_INSTALL_DECISION")),
@@ -67,7 +74,7 @@ func startupProvenanceFromEnv() *lockfile.StartupProvenance {
 		BuildReason:      strings.TrimSpace(os.Getenv("HYPERCODE_STARTUP_BUILD_REASON")),
 		UpdatedAt:        time.Now().UTC().Format(time.RFC3339),
 	}
-	if startup.RequestedRuntime == "" && startup.ActiveRuntime == "" && startup.LaunchMode == "" && startup.DashboardMode == "" && startup.InstallDecision == "" && startup.InstallReason == "" && startup.BuildDecision == "" && startup.BuildReason == "" {
+	if startup.RequestedRuntime == "" && startup.ActiveRuntime == "" && startup.RequestedPort == 0 && startup.ActivePort == 0 && startup.PortDecision == "" && startup.PortReason == "" && startup.LaunchMode == "" && startup.DashboardMode == "" && startup.InstallDecision == "" && startup.InstallReason == "" && startup.BuildDecision == "" && startup.BuildReason == "" {
 		return nil
 	}
 	return startup

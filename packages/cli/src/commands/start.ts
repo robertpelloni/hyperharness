@@ -25,6 +25,10 @@ import { readCanonicalVersion } from '../version.js';
 export interface HypercodeStartupProvenance {
   requestedRuntime?: string;
   activeRuntime?: string;
+  requestedPort?: number;
+  activePort?: number;
+  portDecision?: string;
+  portReason?: string;
   launchMode?: string;
   dashboardMode?: string;
   installDecision?: string;
@@ -739,6 +743,9 @@ export async function startGoRuntime(
     repoRoot: string;
     dataDir: string;
     requestedRuntime?: string;
+    requestedPort?: number;
+    portDecision?: string;
+    portReason?: string;
     installDecision?: string;
     installReason?: string;
     buildDecision?: string;
@@ -784,6 +791,10 @@ export async function startGoRuntime(
         HYPERCODE_MAIN_CONFIG_DIR: resolveDataDir(options.dataDir),
         HYPERCODE_STARTUP_REQUESTED_RUNTIME: options.requestedRuntime ?? process.env.HYPERCODE_STARTUP_REQUESTED_RUNTIME ?? process.env.HYPERCODE_RUNTIME ?? '',
         HYPERCODE_STARTUP_ACTIVE_RUNTIME: 'go',
+        HYPERCODE_STARTUP_REQUESTED_PORT: String(options.requestedPort ?? options.port),
+        HYPERCODE_STARTUP_ACTIVE_PORT: String(options.port),
+        HYPERCODE_STARTUP_PORT_DECISION: options.portDecision ?? process.env.HYPERCODE_STARTUP_PORT_DECISION ?? '',
+        HYPERCODE_STARTUP_PORT_REASON: options.portReason ?? process.env.HYPERCODE_STARTUP_PORT_REASON ?? '',
         HYPERCODE_STARTUP_LAUNCH_MODE: describeGoRuntimeLaunchMode(launchSpec.usingPrebuiltBinary),
         HYPERCODE_STARTUP_INSTALL_DECISION: options.installDecision ?? process.env.HYPERCODE_STARTUP_INSTALL_DECISION ?? '',
         HYPERCODE_STARTUP_INSTALL_REASON: options.installReason ?? process.env.HYPERCODE_STARTUP_INSTALL_REASON ?? '',
@@ -963,11 +974,25 @@ Examples:
         console.log(chalk.dim(`  Runtime preference: ${requestedRuntime}`));
         console.log(chalk.dim(`  Dashboard request: ${opts.dashboard ? 'requested' : 'disabled'}`));
         console.log(chalk.dim(`  Lock: ${acquiredLockHandle.lockPath}`));
+
+        let startupPortDecision = explicitPort
+          ? 'explicit port selection'
+          : 'requested port selected';
+        let startupPortReason = explicitPort
+          ? `Explicit --port selection was honored for port ${port}.`
+          : `Requested startup port ${port} was available.`;
+
         if (acquiredLockHandle.clearedStaleLock) {
           console.log(chalk.yellow(`  ↺ Cleared stale HyperCode lock${acquiredLockHandle.reusedStalePort ? ` and reused port ${port}` : ''}`));
+          if (acquiredLockHandle.reusedStalePort) {
+            startupPortDecision = 'reused stale lock port';
+            startupPortReason = `Recovered previously recorded free port ${port} from a stale HyperCode lock.`;
+          }
         }
         if (!explicitPort && requestedPort !== port) {
           console.log(chalk.yellow(`  ↺ Port ${requestedPort} was already occupied before startup; using ${port} instead.`));
+          startupPortDecision = 'fallback port selected before launch';
+          startupPortReason = `Port ${requestedPort} was already occupied before startup, so HyperCode selected ${port}.`;
         }
         console.log('');
 
@@ -1010,6 +1035,8 @@ Examples:
             if (acquiredLockHandle.port !== resolvedFallbackPort) {
               console.log(chalk.yellow(`  ↺ Port ${activePort} was unavailable at bind time; retrying control-plane startup on port ${resolvedFallbackPort}.`));
             }
+            startupPortDecision = 'fallback port selected at bind time';
+            startupPortReason = `Port ${activePort} became unavailable at bind time, so HyperCode retried on port ${resolvedFallbackPort}.`;
             activePort = resolvedFallbackPort;
 
             const startedRuntime = await startCoreRuntime({
@@ -1033,6 +1060,9 @@ Examples:
               repoRoot,
               dataDir: opts.dataDir,
               requestedRuntime,
+              requestedPort,
+              portDecision: startupPortDecision,
+              portReason: startupPortReason,
               installDecision: process.env.HYPERCODE_STARTUP_INSTALL_DECISION,
               installReason: process.env.HYPERCODE_STARTUP_INSTALL_REASON,
               buildDecision: process.env.HYPERCODE_STARTUP_BUILD_DECISION,
@@ -1191,6 +1221,10 @@ Examples:
         acquiredLockHandle.updateStartupMetadata({
           requestedRuntime,
           activeRuntime: runtimeKind,
+          requestedPort,
+          activePort,
+          portDecision: startupPortDecision,
+          portReason: startupPortReason,
           launchMode: runtimeKind === 'go'
             ? describeGoRuntimeLaunchMode(goRuntimeMode === 'prebuilt-binary')
             : (nodeRuntimeMode === 'go-fallback'
