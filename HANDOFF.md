@@ -1807,3 +1807,24 @@ Wrote comprehensive comparison to docs/analysis/HYPERHARNESS_VS_SUPERAI_COMPARIS
 1. Continue through remaining runtime/integration seams where adapters, tools, and CLI flow meet.
 2. Keep prioritizing files that assemble model-facing context or wrap exact-name tool behavior for model use.
 3. Keep emphasizing helper extraction, deterministic behavior, and regression coverage.
+
+## Additional work completed on 2026-04-06 (superai provider execution/routing assimilation tranche)
+- Verified that `foundation/adapters/provider_execution.go` and `provider_routing.go` were already present and parity-aligned with `../superai`.
+- Extracted provider execution helper seams:
+  - `normalizeTaskType`
+  - `promptPreview`
+  - `buildExecutionHint`
+- Extracted provider routing helper seams:
+  - `normalizedPreference`
+  - `normalizedTaskType`
+  - `firstOr`
+  - `defaultModelForProvider`
+  - explicit default model constants
+- Added focused regression coverage in:
+  - `foundation/adapters/provider_execution_assimilation_test.go`
+  - `foundation/adapters/provider_routing_assimilation_test.go`
+- Added tranche documentation:
+  - `docs/analysis/SUPERAI_PROVIDER_EXECUTION_ROUTING_ASSIMILATION_TRANCHE_2026-04-06.md`
+
+## Latest validation after superai provider execution/routing assimilation tranche
+- `go test ./foundation/adapters ./tools ./agent ./agents ./tui ./cmd ./foundation/...`
