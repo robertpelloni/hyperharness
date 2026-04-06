@@ -4426,3 +4426,18 @@ The Resource Library now includes:
 
 ### Validation
 This exact shape already built successfully in the primary workspace prior to replay, and the change is a direct forward-port of that working implementation onto current `origin/main`.
+
+
+## Latest stabilization pass — dashboard prompts route parity (2026-04-05)
+
+### Problem
+The Resource Library now exposed a `Prompts & Templates` card pointing at `/dashboard/prompts`, but current `origin/main` only had the standalone prompt page under the non-dashboard app route shape in some histories. That left a real operator-navigation gap on the clean remote baseline.
+
+### What changed
+Added:
+- `apps/web/src/app/dashboard/prompts/page.tsx`
+
+The new dashboard route is a thin wrapper around the existing `PromptLibrary` UI so the operator-facing library link resolves inside the dashboard shell.
+
+### Validation
+This file was forward-ported from the already-working primary workspace shape where the dashboard prompt route existed and built successfully.

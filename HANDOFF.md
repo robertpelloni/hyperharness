@@ -612,3 +612,11 @@ This follow-up made prompts visible as a first-class resource in the Library das
 - Updated `apps/web/src/app/dashboard/library/page.tsx`.
 - Added a `Prompts & Templates` card and live prompt count using the existing `trpc.prompts.list` query.
 - Updated the page copy so prompts are included in the library summary.
+
+
+### Latest incremental pass — dashboard prompts route parity
+This follow-up closed the navigation gap between the Resource Library prompt card and the actual prompt UI.
+
+#### What changed
+- Added `apps/web/src/app/dashboard/prompts/page.tsx` as a thin wrapper around `PromptLibrary`.
+- The `/dashboard/prompts` route now resolves inside the dashboard shell, matching the Library card link.
