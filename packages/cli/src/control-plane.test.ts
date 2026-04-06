@@ -4,7 +4,7 @@ import { tmpdir } from 'node:os';
 
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { queryTrpc, resolveControlPlaneLocation } from './control-plane.js';
+import { queryTrpc, readLocalStartupProvenance, resolveControlPlaneLocation } from './control-plane.js';
 
 const tempDirs: string[] = [];
 
@@ -61,6 +61,27 @@ describe('resolveControlPlaneLocation', () => {
       baseUrl: 'http://127.0.0.1:4000/trpc',
       host: '127.0.0.1',
       port: 4000,
+    });
+  });
+});
+
+describe('readLocalStartupProvenance', () => {
+  it('derives control-plane port provenance from legacy lock files', () => {
+    const dataDir = createTempDir();
+    writeFileSync(join(dataDir, 'lock'), JSON.stringify({
+      instanceId: 'hypercode-legacy',
+      pid: 1234,
+      port: 4555,
+      host: '127.0.0.1',
+      createdAt: '2026-04-06T09:00:00.000Z',
+    }), 'utf8');
+
+    expect(readLocalStartupProvenance(dataDir)).toEqual({
+      requestedPort: 4555,
+      activePort: 4555,
+      portDecision: 'derived from lock record',
+      portReason: 'Detailed startup port provenance was unavailable; using the current control-plane lock port.',
+      updatedAt: '2026-04-06T09:00:00.000Z',
     });
   });
 });

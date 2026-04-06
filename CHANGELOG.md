@@ -62,6 +62,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - **MCP Settings Compat Routed to Go Fallbacks**: The shared Next.js `/api/trpc/[trpc]` compat route now translates the MCP Settings dashboard cluster onto Go-native `/api/config/*` and `/api/mcp/servers/*` routes when `/trpc` is unavailable, including config list/update plus client sync target discovery, export preview, and sync execution.
 - **Startup Port Provenance Surfaced Across Status Views**: Startup provenance now records the requested/active control-plane port plus the port decision/reason, and those details are surfaced in CLI status plus the existing dashboard startup-mode cards.
+- **Legacy Lock Port Provenance Normalization**: Older HyperCode lock files now derive truthful startup port provenance from the lock record itself so CLI/core/web status surfaces do not go blank just because the lock predates the richer startup metadata schema.
 
 ### Fixed
 - **Startup Port Fallback Is Less Fragile**: After real operator `start.bat` output showed default startup still aborting when port `4000` was occupied, the CLI control-plane fallback scan was widened so non-explicit startup can fall forward across a much broader nearby port range instead of giving up after only a tiny window.

@@ -31,6 +31,29 @@ interface HypercodeStartLockRecord {
   startup?: HypercodeStartupProvenance;
 }
 
+function normalizeStartupProvenance(record: HypercodeStartLockRecord | null): HypercodeStartupProvenance | null {
+  if (!record || typeof record.port !== 'number' || record.port <= 0) {
+    return null;
+  }
+
+  const startup = record.startup ?? {};
+  const activePort = typeof startup.activePort === 'number' && startup.activePort > 0
+    ? startup.activePort
+    : record.port;
+  const requestedPort = typeof startup.requestedPort === 'number' && startup.requestedPort > 0
+    ? startup.requestedPort
+    : activePort;
+
+  return {
+    ...startup,
+    requestedPort,
+    activePort,
+    portDecision: startup.portDecision?.trim() || 'derived from lock record',
+    portReason: startup.portReason?.trim() || 'Detailed startup port provenance was unavailable; using the current control-plane lock port.',
+    updatedAt: startup.updatedAt?.trim() || record.createdAt,
+  };
+}
+
 export interface ControlPlaneLocation {
   source: 'env' | 'lock' | 'default';
   baseUrl: string;
@@ -88,7 +111,7 @@ function readStartLockRecord(dataDir: string): HypercodeStartLockRecord | null {
 }
 
 export function readLocalStartupProvenance(dataDir: string = '~/.hypercode'): HypercodeStartupProvenance | null {
-  return readStartLockRecord(dataDir)?.startup ?? null;
+  return normalizeStartupProvenance(readStartLockRecord(dataDir));
 }
 
 export function resolveControlPlaneLocation(options: {

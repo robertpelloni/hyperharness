@@ -3,6 +3,38 @@
 ## Current status
 **Version:** `1.0.0-alpha.1`
 
+### Latest incremental pass — legacy startup locks now derive truthful port provenance
+This follow-up stayed in the startup-truth lane and tightened backward compatibility for the new port provenance metadata.
+
+#### What changed
+- Updated shared startup-provenance readers in:
+  - `packages/cli/src/control-plane.ts`
+  - `packages/core/src/lib/startup-provenance.ts`
+  - `apps/web/src/lib/hypercode-runtime.ts`
+- These readers no longer return `lock.startup` verbatim only.
+- Legacy lock files now derive truthful fallback startup provenance from the lock itself, including:
+  - `requestedPort`
+  - `activePort`
+  - `portDecision: derived from lock record`
+  - `portReason: Detailed startup port provenance was unavailable; using the current control-plane lock port.`
+  - `updatedAt` from the lock timestamp when needed
+- Added focused regression coverage in:
+  - `packages/cli/src/control-plane.test.ts`
+  - `packages/core/src/lib/startup-provenance.test.ts`
+  - `apps/web/src/lib/hypercode-runtime.test.ts`
+
+#### Validation performed
+- `pnpm --dir C:/Users/hyper/workspace/hypercode exec vitest --root C:/Users/hyper/workspace/hypercode-push run packages/cli/src/control-plane.test.ts packages/core/src/lib/startup-provenance.test.ts apps/web/src/lib/hypercode-runtime.test.ts`
+- `pnpm --dir C:/Users/hyper/workspace/hypercode exec vitest --root C:/Users/hyper/workspace/hypercode-push run packages/cli/src/commands/start.test.ts packages/cli/src/commands/status.test.ts packages/core/src/routers/startupStatus.test.ts`
+
+#### Validation results
+Passed:
+- legacy-lock reader tests across CLI/core/web
+- existing startup provenance/start/status snapshot suites
+
+#### Recommended next step after this pass
+The next highest-value startup slice is likely another real operator `start.bat` replay. With both richer new-port provenance and legacy-lock normalization in place, the next pasted log should tell us whether the remaining startup truth gap is now in runtime reuse, dashboard reuse, or a different operator-facing branch.
+
 ### Latest incremental pass — startup port fallback provenance made durable and visible
 This follow-up stayed in the startup-truth lane after widening the fallback scan. The goal was to make the selected control-plane port and fallback reason durable and visible after startup, not only during the transient console launch log.
 

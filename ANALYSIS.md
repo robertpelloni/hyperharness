@@ -1,5 +1,78 @@
 # HyperCode Stabilization Analysis — 2026-04-03
 
+## Latest stabilization pass — legacy startup locks now derive truthful port provenance (2026-04-06)
+
+### Scope
+This follow-up stayed in the startup-truth lane and tightened backward compatibility for the new control-plane port provenance fields.
+
+The previous slice added durable startup port metadata to new lock records, but older lock files still had a truth gap:
+- CLI/API/dashboard readers returned `startup` verbatim
+- older lock records often had no `startup` object at all
+- that meant operator status surfaces could still show no control-plane port provenance even though the lock itself already contained a truthful live port
+
+### Findings
+Three independent startup-provenance readers had the same backward-compat issue:
+- `packages/cli/src/control-plane.ts`
+- `packages/core/src/lib/startup-provenance.ts`
+- `apps/web/src/lib/hypercode-runtime.ts`
+
+Each one effectively did:
+- `return lock.startup ?? null`
+
+So older lock files with only:
+- `port`
+- `host`
+- `createdAt`
+
+would still lose the startup-mode/port card data entirely.
+
+### What changed
+Updated:
+- `packages/cli/src/control-plane.ts`
+- `packages/core/src/lib/startup-provenance.ts`
+- `apps/web/src/lib/hypercode-runtime.ts`
+
+Each reader now normalizes the lock record into a backward-compatible startup provenance object.
+
+For legacy lock files, status surfaces now derive:
+- `requestedPort`
+- `activePort`
+- `portDecision: 'derived from lock record'`
+- `portReason: 'Detailed startup port provenance was unavailable; using the current control-plane lock port.'`
+- `updatedAt` from the lock timestamp when needed
+
+This means older locks still produce truthful operator-facing port provenance instead of empty startup-mode metadata.
+
+### Regression coverage
+Added focused unit coverage for all three readers:
+- `packages/cli/src/control-plane.test.ts`
+- `packages/core/src/lib/startup-provenance.test.ts`
+- `apps/web/src/lib/hypercode-runtime.test.ts`
+
+These tests verify that a legacy lock file without a `startup` object still yields truthful derived control-plane port provenance.
+
+### Validation performed
+Executed truthfully without killing any processes:
+- Legacy-lock reader coverage:
+  - `pnpm --dir C:/Users/hyper/workspace/hypercode exec vitest --root C:/Users/hyper/workspace/hypercode-push run packages/cli/src/control-plane.test.ts packages/core/src/lib/startup-provenance.test.ts apps/web/src/lib/hypercode-runtime.test.ts`
+- Existing startup provenance regression suite:
+  - `pnpm --dir C:/Users/hyper/workspace/hypercode exec vitest --root C:/Users/hyper/workspace/hypercode-push run packages/cli/src/commands/start.test.ts packages/cli/src/commands/status.test.ts packages/core/src/routers/startupStatus.test.ts`
+
+### Validation results
+Passed:
+- `packages/cli/src/control-plane.test.ts`
+- `packages/core/src/lib/startup-provenance.test.ts`
+- `apps/web/src/lib/hypercode-runtime.test.ts`
+- `packages/cli/src/commands/start.test.ts`
+- `packages/cli/src/commands/status.test.ts`
+- `packages/core/src/routers/startupStatus.test.ts`
+
+### Why this matters
+This completes the practical operator story for the new port provenance work:
+- new lock files persist rich startup port decisions
+- older lock files now degrade truthfully instead of going blank
+- CLI/API/dashboard status surfaces can still explain the live control-plane port even when the running instance predates the new schema
+
 ## Latest stabilization pass — startup port fallback provenance made durable and visible (2026-04-06)
 
 ### Scope

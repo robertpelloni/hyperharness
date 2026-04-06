@@ -21,8 +21,32 @@ export type HypercodeStartupProvenance = {
 type HypercodeLockRecord = {
   port?: number;
   host?: string;
+  createdAt?: string;
   startup?: HypercodeStartupProvenance | null;
 };
+
+function normalizeStartupProvenance(record: HypercodeLockRecord | null): HypercodeStartupProvenance | null {
+  if (!record || typeof record.port !== 'number' || record.port <= 0) {
+    return null;
+  }
+
+  const startup = record.startup ?? {};
+  const activePort = typeof startup.activePort === 'number' && startup.activePort > 0
+    ? startup.activePort
+    : record.port;
+  const requestedPort = typeof startup.requestedPort === 'number' && startup.requestedPort > 0
+    ? startup.requestedPort
+    : activePort;
+
+  return {
+    ...startup,
+    requestedPort,
+    activePort,
+    portDecision: startup.portDecision?.trim() || 'derived from lock record',
+    portReason: startup.portReason?.trim() || 'Detailed startup port provenance was unavailable; using the current control-plane lock port.',
+    updatedAt: startup.updatedAt?.trim() || (typeof record.createdAt === 'string' ? record.createdAt : undefined),
+  };
+}
 
 function resolveBrowserHost(host: string): string {
   return host === '0.0.0.0' || host === '::' || host === '[::]'
@@ -57,7 +81,7 @@ function readHypercodeLockRecord(): HypercodeLockRecord | null {
 }
 
 export function readLocalStartupProvenance(): HypercodeStartupProvenance | null {
-  return readHypercodeLockRecord()?.startup ?? null;
+  return normalizeStartupProvenance(readHypercodeLockRecord());
 }
 
 export function resolveLockedHypercodeBase(): string | null {
