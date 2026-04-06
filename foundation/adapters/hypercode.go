@@ -7,7 +7,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/robertpelloni/hypercode/borg"
+	"github.com/robertpelloni/hyperharness/borg"
 )
 
 type HyperCodeStatus struct {
@@ -37,11 +37,13 @@ func NewHyperCodeAdapter(workingDir string) *HyperCodeAdapter {
 }
 
 func (a *HyperCodeAdapter) Status() HyperCodeStatus {
-	status := HyperCodeStatus{
-		Assimilated:   a.borgAdapter != nil && a.borgAdapter.Assimilated,
-		MemoryContext: a.MemoryContext(),
-		Provider:      BuildProviderStatus(),
+	status := HyperCodeStatus{Provider: BuildProviderStatus()}
+	if a == nil {
+		status.Warnings = append(status.Warnings, "hypercode adapter is nil")
+		return status
 	}
+	status.Assimilated = a.borgAdapter != nil && a.borgAdapter.Assimilated
+	status.MemoryContext = a.MemoryContext()
 	if a.borgAdapter != nil {
 		status.BorgCoreURL = a.borgAdapter.BorgCoreURL
 	}
@@ -74,7 +76,10 @@ func (a *HyperCodeAdapter) RouteMCP(request string) string {
 }
 
 func (a *HyperCodeAdapter) BuildSystemContext() string {
-	status := a.Status()
+	return renderHyperCodeSystemContext(a.Status())
+}
+
+func renderHyperCodeSystemContext(status HyperCodeStatus) string {
 	parts := []string{
 		"[HyperCode Adapter]",
 		fmt.Sprintf("Assimilated: %t", status.Assimilated),
@@ -101,7 +106,11 @@ func (a *HyperCodeAdapter) BuildSystemContext() string {
 }
 
 func (a *HyperCodeAdapter) listMCPServers() (string, []string, error) {
-	configPath, config, err := ParseMCPConfig(a.homeDir)
+	homeDir := ""
+	if a != nil {
+		homeDir = a.homeDir
+	}
+	configPath, config, err := ParseMCPConfig(homeDir)
 	if err != nil {
 		return configPath, nil, fmt.Errorf("mcp config unavailable: %w", err)
 	}
@@ -114,21 +123,39 @@ func (a *HyperCodeAdapter) listMCPServers() (string, []string, error) {
 }
 
 func (a *HyperCodeAdapter) findHyperCodeRepo() (string, bool) {
-	candidates := []string{}
-	if a.workingDir != "" {
-		candidates = append(candidates,
-			filepath.Join(a.workingDir, "..", "hypercode"),
-			filepath.Join(a.workingDir, "../hypercode"),
-		)
+	workingDir, homeDir := "", ""
+	if a != nil {
+		workingDir, homeDir = a.workingDir, a.homeDir
 	}
-	if a.homeDir != "" {
-		candidates = append(candidates, filepath.Join(a.homeDir, "workspace", "hypercode"))
-	}
-	for _, candidate := range candidates {
+	for _, candidate := range hyperCodeRepoCandidates(workingDir, homeDir) {
 		clean := filepath.Clean(candidate)
 		if stat, err := os.Stat(filepath.Join(clean, "README.md")); err == nil && !stat.IsDir() {
 			return clean, true
 		}
 	}
 	return "", false
+}
+
+func hyperCodeRepoCandidates(workingDir, homeDir string) []string {
+	seen := map[string]struct{}{}
+	var candidates []string
+	add := func(path string) {
+		clean := filepath.Clean(path)
+		if clean == "." {
+			return
+		}
+		if _, ok := seen[clean]; ok {
+			return
+		}
+		seen[clean] = struct{}{}
+		candidates = append(candidates, clean)
+	}
+	if strings.TrimSpace(workingDir) != "" {
+		add(filepath.Join(workingDir, "..", "hypercode"))
+		add(filepath.Join(workingDir, "../hypercode"))
+	}
+	if strings.TrimSpace(homeDir) != "" {
+		add(filepath.Join(homeDir, "workspace", "hypercode"))
+	}
+	return candidates
 }
