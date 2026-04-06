@@ -10,6 +10,7 @@ import {
     createLockLifecycleHandlers,
     isAddrInUseError,
     isHypercodeServer,
+    attachDashboardToRunningControlPlane,
     pickAvailableControlPlaneFallbackPort,
     pickDashboardPort,
     resolveAlreadyRunningDashboardReuse,
@@ -573,6 +574,7 @@ describe('dashboard startup helpers', () => {
         })).resolves.toEqual({
             dashboardMode: 'reused existing dashboard runtime',
             dashboardUrl: 'http://127.0.0.1:3010/dashboard',
+            dashboardPort: 3010,
             reusedExisting: true,
             shouldOpenDashboard: true,
         });
@@ -590,9 +592,46 @@ describe('dashboard startup helpers', () => {
         })).resolves.toEqual({
             dashboardMode: 'requested dashboard runtime not detected',
             dashboardUrl: 'http://127.0.0.1:3000/dashboard',
+            dashboardPort: 3000,
             reusedExisting: false,
             shouldOpenDashboard: false,
         });
+    });
+
+    it('starts a dashboard runtime attached to an existing control plane when none is already running', async () => {
+        const onceHandlers: Record<string, (...args: unknown[]) => void> = {};
+        const unref = vi.fn();
+        const spawnImpl = vi.fn().mockReturnValue({
+            once: (event: string, handler: (...args: unknown[]) => void) => {
+                onceHandlers[event] = handler;
+                return undefined;
+            },
+            unref,
+        });
+
+        await expect(attachDashboardToRunningControlPlane({
+            requestedDashboardPort: 3000,
+            explicitDashboardPort: false,
+            host: '127.0.0.1',
+            shouldOpenDashboard: true,
+            controlPlaneBaseUrl: 'http://127.0.0.1:4000',
+            webRoot: 'C:/repo/apps/web',
+            repoRoot: 'C:/repo',
+        }, {
+            pickDashboardPortFn: vi.fn().mockResolvedValue({ port: 3010, reusedExisting: false }) as any,
+            spawnImpl: spawnImpl as any,
+            waitForHttpReadyFn: vi.fn().mockResolvedValue(true) as any,
+        })).resolves.toEqual({
+            dashboardMode: 'started dashboard runtime attached to existing control plane',
+            dashboardUrl: 'http://127.0.0.1:3010/dashboard',
+            dashboardPort: 3010,
+            reusedExisting: false,
+            shouldOpenDashboard: true,
+        });
+
+        expect(spawnImpl).toHaveBeenCalled();
+        expect(unref).toHaveBeenCalled();
+        expect(Object.keys(onceHandlers)).toEqual(expect.arrayContaining(['exit', 'error']));
     });
 });
 

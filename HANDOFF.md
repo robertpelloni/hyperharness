@@ -3,7 +3,7 @@
 ## Current status
 **Version:** `1.0.0-alpha.1`
 
-### Latest incremental pass — already-running startup path now explains dashboard reuse truthfully
+### Latest incremental pass — already-running startup path now reuses or attaches the dashboard truthfully
 This follow-up stayed in the startup-truth lane and improved the `hypercode start` branch where an existing control plane is detected.
 
 #### What changed
@@ -11,12 +11,16 @@ This follow-up stayed in the startup-truth lane and improved the `hypercode star
   - reports whether the existing instance was detected via startup lock or live port probe
   - probes for an existing dashboard runtime too
   - reuses and opens the dashboard when one is already running and opening is allowed
-  - otherwise explains clearly that the control plane is running but no dashboard runtime was detected
-  - prints the live control-plane API index for operators who still want to inspect the running instance immediately
-- Added `resolveAlreadyRunningDashboardReuse(...)` helper to centralize the already-running dashboard decision path
+  - otherwise starts a dashboard-only runtime attached to the live control plane
+  - reports truthfully if that dashboard attach fails, exits early, or is still starting
+  - prints the live control-plane API index alongside the dashboard outcome
+- Added helpers:
+  - `resolveAlreadyRunningDashboardReuse(...)`
+  - `attachDashboardToRunningControlPlane(...)`
 - Updated `packages/cli/src/commands/start.test.ts` with focused coverage for:
   - dashboard reuse during control-plane reuse
   - truthful absence reporting when no running dashboard runtime is detected
+  - starting a dashboard-only runtime attached to an already-running control plane
 
 #### Validation performed
 - `pnpm --dir C:/Users/hyper/workspace/hypercode exec vitest --root C:/Users/hyper/workspace/hypercode-push run packages/cli/src/commands/start.test.ts`
@@ -24,15 +28,16 @@ This follow-up stayed in the startup-truth lane and improved the `hypercode star
 #### Validation results
 Passed:
 - `packages/cli/src/commands/start.test.ts`
-  - `41/41` tests passed
+  - `42/42` tests passed
 
 #### Recommended next step after this pass
-The next best startup-truth slice is another real operator `start.bat` replay. At this point the startup path has improved in three meaningful ways:
+The next best startup-truth slice is another real operator `start.bat` replay. At this point the startup path has improved in four meaningful ways:
 - broader non-destructive control-plane port fallback
 - durable port provenance across status surfaces
-- clearer already-running dashboard reuse behavior
+- backward-compatible legacy-lock provenance
+- clearer already-running dashboard reuse/attach behavior
 
-The next pasted operator log should tell us whether the next remaining truth gap is in dashboard absence handling, explicit-port behavior, or some different startup/runtime branch.
+The next pasted operator log should tell us whether the next remaining truth gap is in explicit-port behavior, dashboard launch failures on the real machine, or some different startup/runtime branch.
 
 ### Latest incremental pass — legacy startup locks now derive truthful port provenance
 This follow-up stayed in the startup-truth lane and tightened backward compatibility for the new port provenance metadata.

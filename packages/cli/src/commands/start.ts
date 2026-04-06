@@ -512,6 +512,7 @@ export async function resolveAlreadyRunningDashboardReuse(options: {
 } = {}): Promise<{
   dashboardMode: string;
   dashboardUrl: string | null;
+  dashboardPort: number | null;
   reusedExisting: boolean;
   shouldOpenDashboard: boolean;
 }> {
@@ -519,6 +520,7 @@ export async function resolveAlreadyRunningDashboardReuse(options: {
     return {
       dashboardMode: 'disabled by request',
       dashboardUrl: null,
+      dashboardPort: null,
       reusedExisting: false,
       shouldOpenDashboard: false,
     };
@@ -537,6 +539,7 @@ export async function resolveAlreadyRunningDashboardReuse(options: {
     return {
       dashboardMode: 'reused existing dashboard runtime',
       dashboardUrl,
+      dashboardPort: dashboardSelection.port,
       reusedExisting: true,
       shouldOpenDashboard: options.shouldOpenDashboard,
     };
@@ -547,8 +550,123 @@ export async function resolveAlreadyRunningDashboardReuse(options: {
       ? 'requested dashboard runtime not detected'
       : 'no existing dashboard runtime detected',
     dashboardUrl,
+    dashboardPort: dashboardSelection.port,
     reusedExisting: false,
     shouldOpenDashboard: false,
+  };
+}
+
+export async function attachDashboardToRunningControlPlane(options: {
+  requestedDashboardPort: number;
+  explicitDashboardPort: boolean;
+  host: string;
+  shouldOpenDashboard: boolean;
+  controlPlaneBaseUrl: string;
+  webRoot: string;
+  repoRoot: string;
+}, deps: {
+  pickDashboardPortFn?: typeof pickDashboardPort;
+  spawnImpl?: typeof spawn;
+  waitForHttpReadyFn?: typeof waitForHttpReady;
+} = {}): Promise<{
+  dashboardMode: string;
+  dashboardUrl: string;
+  dashboardPort: number;
+  reusedExisting: boolean;
+  shouldOpenDashboard: boolean;
+}> {
+  const pickDashboardPortFn = deps.pickDashboardPortFn ?? pickDashboardPort;
+  const spawnImpl = deps.spawnImpl ?? spawn;
+  const waitForHttpReadyFn = deps.waitForHttpReadyFn ?? waitForHttpReady;
+
+  const dashboardSelection = await pickDashboardPortFn(
+    options.requestedDashboardPort,
+    options.explicitDashboardPort,
+    options.host,
+    { allowReuseExisting: true },
+  );
+  const dashboardUrl = resolveDashboardUrl(options.host, dashboardSelection.port);
+
+  if (dashboardSelection.reusedExisting) {
+    return {
+      dashboardMode: 'reused existing dashboard runtime',
+      dashboardUrl,
+      dashboardPort: dashboardSelection.port,
+      reusedExisting: true,
+      shouldOpenDashboard: options.shouldOpenDashboard,
+    };
+  }
+
+  const { command, args, cwd } = getDashboardSpawnSpec(
+    options.webRoot,
+    options.repoRoot,
+    options.host,
+    dashboardSelection.port,
+  );
+  let dashboardExited = false;
+  let dashboardLaunchErrorMessage: string | null = null;
+
+  const dashboardChild = spawnImpl(command, args, {
+    cwd,
+    stdio: 'inherit',
+    env: {
+      ...process.env,
+      HYPERCODE_TRPC_UPSTREAM: `${options.controlPlaneBaseUrl}/trpc`,
+      NEXT_PUBLIC_HYPERCODE_ORCHESTRATOR_URL: options.controlPlaneBaseUrl,
+      NEXT_PUBLIC_AUTOPILOT_URL: options.controlPlaneBaseUrl,
+    },
+    windowsHide: true,
+  });
+  dashboardChild.once('exit', () => {
+    dashboardExited = true;
+  });
+  dashboardChild.once('error', (error) => {
+    dashboardLaunchErrorMessage = error instanceof Error ? error.message : String(error);
+    dashboardExited = true;
+  });
+  dashboardChild.unref?.();
+
+  const dashboardReady = await waitForHttpReadyFn({
+    url: dashboardUrl,
+    shouldAbort: () => dashboardExited,
+  });
+
+  if (dashboardReady) {
+    return {
+      dashboardMode: 'started dashboard runtime attached to existing control plane',
+      dashboardUrl,
+      dashboardPort: dashboardSelection.port,
+      reusedExisting: false,
+      shouldOpenDashboard: options.shouldOpenDashboard,
+    };
+  }
+
+  if (dashboardLaunchErrorMessage) {
+    return {
+      dashboardMode: 'dashboard launch attempted but failed',
+      dashboardUrl,
+      dashboardPort: dashboardSelection.port,
+      reusedExisting: false,
+      shouldOpenDashboard: false,
+    };
+  }
+
+  if (dashboardExited) {
+    return {
+      dashboardMode: 'dashboard launch attempted but exited early',
+      dashboardUrl,
+      dashboardPort: dashboardSelection.port,
+      reusedExisting: false,
+      shouldOpenDashboard: false,
+    };
+  }
+
+  return {
+    dashboardMode: 'dashboard launch attempted and still starting',
+    dashboardUrl,
+    dashboardPort: dashboardSelection.port,
+    reusedExisting: false,
+    shouldOpenDashboard: options.shouldOpenDashboard,
   };
 }
 
@@ -1335,15 +1453,19 @@ Examples:
           console.log(chalk.dim(`  Detection source: ${err.source === 'lock' ? 'startup lock' : 'live port probe'}`));
           console.log(chalk.dim('  Reusing the existing control plane instead of starting a duplicate instance.'));
 
+          if (!opts.dashboard) {
+            return;
+          }
+
           const dashboardReuse = await resolveAlreadyRunningDashboardReuse({
-            dashboardRequested: Boolean(opts.dashboard),
+            dashboardRequested: true,
             requestedDashboardPort,
             explicitDashboardPort,
             host,
             shouldOpenDashboard: opts.openDashboard !== false && !opts.daemon,
           });
 
-          if (dashboardReuse.dashboardUrl && dashboardReuse.reusedExisting) {
+          if (dashboardReuse.reusedExisting && dashboardReuse.dashboardUrl) {
             console.log(chalk.dim(`  Dashboard mode: ${dashboardReuse.dashboardMode}`));
             console.log(chalk.green(`  ✓ Reusing dashboard runtime at ${dashboardReuse.dashboardUrl}`));
             if (dashboardReuse.shouldOpenDashboard) {
@@ -1357,14 +1479,52 @@ Examples:
             } else {
               console.log(chalk.dim(`  Dashboard URL: ${dashboardReuse.dashboardUrl}`));
             }
-          } else if (opts.dashboard) {
-            console.log(chalk.dim(`  Dashboard mode: ${dashboardReuse.dashboardMode}`));
-            if (dashboardReuse.dashboardUrl) {
-              console.log(chalk.yellow(`  ⚠ No running dashboard runtime was detected at ${dashboardReuse.dashboardUrl}.`));
-            }
-            console.log(chalk.dim(`  Control plane API index: ${existingControlPlaneBase}/api/index`));
-            console.log(chalk.dim('  Start or refresh the dashboard separately if you still want the web UI attached to this running control plane.'));
+            return;
           }
+
+          if (!explicitDashboardPort && dashboardReuse.dashboardPort !== null && dashboardReuse.dashboardPort !== requestedDashboardPort) {
+            console.log(chalk.yellow(`  ↺ Dashboard port ${requestedDashboardPort} busy, falling back to ${dashboardReuse.dashboardPort}`));
+          }
+          if (dashboardReuse.dashboardUrl) {
+            console.log(chalk.yellow(`  ⚠ No running dashboard runtime was detected at ${dashboardReuse.dashboardUrl}.`));
+          }
+
+          const attachedDashboard = await attachDashboardToRunningControlPlane({
+            requestedDashboardPort,
+            explicitDashboardPort,
+            host,
+            shouldOpenDashboard: opts.openDashboard !== false && !opts.daemon,
+            controlPlaneBaseUrl: existingControlPlaneBase,
+            webRoot,
+            repoRoot,
+          });
+
+          console.log(chalk.dim(`  Dashboard mode: ${attachedDashboard.dashboardMode}`));
+          if (!attachedDashboard.reusedExisting && attachedDashboard.dashboardPort !== requestedDashboardPort && !explicitDashboardPort) {
+            console.log(chalk.yellow(`  ↺ Started a dashboard runtime on ${attachedDashboard.dashboardPort} so it can target the live control plane at ${existingControlPlaneBase}`));
+          }
+          if (attachedDashboard.dashboardMode === 'started dashboard runtime attached to existing control plane') {
+            console.log(chalk.green(`  ✓ Dashboard runtime ready at ${attachedDashboard.dashboardUrl}`));
+          } else if (attachedDashboard.dashboardMode === 'dashboard launch attempted but failed') {
+            console.log(chalk.yellow(`  ⚠ Dashboard runtime failed to launch for ${attachedDashboard.dashboardUrl}.`));
+          } else if (attachedDashboard.dashboardMode === 'dashboard launch attempted but exited early') {
+            console.log(chalk.yellow(`  ⚠ Dashboard runtime exited before ${attachedDashboard.dashboardUrl} became ready.`));
+          } else if (attachedDashboard.dashboardMode === 'dashboard launch attempted and still starting') {
+            console.log(chalk.yellow(`  ⚠ Dashboard runtime is still starting. Visit ${attachedDashboard.dashboardUrl} in a moment.`));
+          }
+
+          if (attachedDashboard.shouldOpenDashboard) {
+            try {
+              const open = (await import('open')).default;
+              await open(attachedDashboard.dashboardUrl);
+              console.log(chalk.green(`  ✓ Opened dashboard at ${attachedDashboard.dashboardUrl}`));
+            } catch {
+              console.log(chalk.yellow(`  ⚠ Could not open the browser automatically. Visit ${attachedDashboard.dashboardUrl} manually.`));
+            }
+          } else {
+            console.log(chalk.dim(`  Dashboard URL: ${attachedDashboard.dashboardUrl}`));
+          }
+          console.log(chalk.dim(`  Control plane API index: ${existingControlPlaneBase}/api/index`));
           return;
         }
 
