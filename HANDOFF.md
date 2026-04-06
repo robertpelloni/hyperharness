@@ -1594,3 +1594,38 @@ Wrote comprehensive comparison to docs/analysis/HYPERHARNESS_VS_SUPERAI_COMPARIS
 1. Continue into richer `agents/` surfaces next.
 2. Prioritize `agents/council.go`, `agents/auton.go`, and `agents/shell_assistant.go`.
 3. Keep preferring contract hardening and regression coverage before broader autonomy expansion.
+
+## Additional work completed on 2026-04-05 (superai agents autonomy assimilation tranche)
+- Verified that the following richer `agents/` files were already present and parity-aligned with `../superai`:
+  - `agents/council.go`
+  - `agents/auton.go`
+  - `agents/shell_assistant.go`
+- Hardened `agents/council.go` by adding:
+  - deterministic post-concurrency vote ordering
+  - `defaultCouncilPersonas`
+  - `councilApprovedFromReason`
+  - `councilFinalVerdict`
+- Hardened `agents/auton.go` by adding:
+  - `autoDriveStart`
+  - `buildAutoDrivePrompt`
+  - `autoDriveToolResultMessage`
+  - validation for nil/missing dependencies and invalid inputs
+  - nil-safe `Abort()`
+  - reliable `IsRunning` reset
+  - abort responsiveness during the wait window
+- Hardened `agents/shell_assistant.go` by adding:
+  - missing provider rejection
+  - empty intent rejection
+  - `buildShellTranslationMessages`
+- Added focused regression coverage in:
+  - `agents/autonomy_assimilation_test.go`
+- Added tranche documentation:
+  - `docs/analysis/SUPERAI_AGENTS_AUTONOMY_ASSIMILATION_TRANCHE_2026-04-05.md`
+
+## Latest validation after superai agents autonomy assimilation tranche
+- `go test ./agent ./agents ./tui ./cmd ./foundation/...`
+
+## Updated recommendation after superai agents autonomy assimilation tranche
+1. Continue into the remaining richer `agents/` surfaces.
+2. Prioritize `agents/codemode.go`, `agents/rag.go`, and `agents/provider_hypercode.go` next.
+3. Keep emphasizing deterministic outputs, helper extraction, and control-loop hardening before broader feature expansion.

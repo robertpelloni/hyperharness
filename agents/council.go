@@ -7,6 +7,8 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"sort"
+	"strings"
 	"sync"
 )
 
@@ -65,12 +67,7 @@ func executeCouncilInference(apiKey string, persona string, systemPrompt string,
 	}
 
 	content := aiOutput.Choices[0].Message.Content
-	approved := false
-	if len(content) > 13 && content[:14] == "VOTE: APPROVED" {
-		approved = true
-	}
-
-	return CouncilVote{Persona: persona, Approved: approved, Reason: content}
+	return CouncilVote{Persona: persona, Approved: councilApprovedFromReason(content), Reason: content}
 }
 
 // RunCouncilDebate establishes the TS-parity RoundTable of agents dynamically querying OpenAi arrays!
@@ -83,12 +80,7 @@ func RunCouncilDebate(apiKey string, planContext string) (bool, []CouncilVote) {
 	var wg sync.WaitGroup
 	var mu sync.Mutex
 	var results []CouncilVote
-
-	personas := map[string]string{
-		"Security Architect": "You are a ruthless Security Architect. Your job is to search for arbitrary code execution limits, missing bounds in vectors, or RM command destruction.",
-		"Senior Engineer":    "You are a Senior Staff Engineer evaluating code stability. Your job is to find null pointer failures, TS-to-Go parity flaws, or syntax exceptions mapping pure code.",
-		"DevOps Chief":       "You are the DevOps Chief evaluating pipeline logic context. You check Docker paths, OS execution bridges, and ensure file paths exist locally resolving commands like git reset.",
-	}
+	personas := defaultCouncilPersonas()
 
 	log.Printf("[Council] Spinning up %d parallel Autonomous Model Evaluators mapping TS logic exactly...", len(personas))
 
@@ -116,19 +108,28 @@ func RunCouncilDebate(apiKey string, planContext string) (bool, []CouncilVote) {
 	}
 
 	wg.Wait()
+	sort.Slice(results, func(i, j int) bool { return results[i].Persona < results[j].Persona })
+	return councilFinalVerdict(results), results
+}
 
-	// 2/3 Consensus bounds dynamically verifying parity
+func defaultCouncilPersonas() map[string]string {
+	return map[string]string{
+		"Security Architect": "You are a ruthless Security Architect. Your job is to search for arbitrary code execution limits, missing bounds in vectors, or RM command destruction.",
+		"Senior Engineer":    "You are a Senior Staff Engineer evaluating code stability. Your job is to find null pointer failures, TS-to-Go parity flaws, or syntax exceptions mapping pure code.",
+		"DevOps Chief":       "You are the DevOps Chief evaluating pipeline logic context. You check Docker paths, OS execution bridges, and ensure file paths exist locally resolving commands like git reset.",
+	}
+}
+
+func councilApprovedFromReason(reason string) bool {
+	return strings.HasPrefix(strings.TrimSpace(reason), "VOTE: APPROVED")
+}
+
+func councilFinalVerdict(results []CouncilVote) bool {
 	approvalCount := 0
 	for _, v := range results {
 		if v.Approved {
 			approvalCount++
 		}
 	}
-
-	finalVerdict := false
-	if approvalCount >= 2 {
-		finalVerdict = true
-	}
-
-	return finalVerdict, results
+	return approvalCount >= 2
 }
