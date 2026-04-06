@@ -1720,3 +1720,27 @@ Wrote comprehensive comparison to docs/analysis/HYPERHARNESS_VS_SUPERAI_COMPARIS
 1. Continue through remaining central `agent/` seams such as `agent/pipe.go` next.
 2. Keep focusing on boundary files where multiple subsystems meet.
 3. Continue emphasizing explicit helper seams, deterministic behavior, and regression coverage.
+
+## Additional work completed on 2026-04-05 (superai agent pipe assimilation tranche)
+- Verified that `agent/pipe.go` was already present and parity-aligned with `../superai`.
+- Extracted helper seams:
+  - `processPipeWithReader`
+  - `buildPipePrompt`
+  - `formatPipeResponse`
+- Hardened pipe-processing validation for:
+  - nil agent receiver
+  - no piped stdin input
+  - nil reader
+  - nil chat function
+- Added focused regression coverage in:
+  - `agent/pipe_assimilation_test.go`
+- Added tranche documentation:
+  - `docs/analysis/SUPERAI_AGENT_PIPE_ASSIMILATION_TRANCHE_2026-04-05.md`
+
+## Latest validation after superai agent pipe assimilation tranche
+- `go test ./agent ./agents ./tui ./cmd ./foundation/...`
+
+## Updated recommendation after superai agent pipe assimilation tranche
+1. Review any remaining central `agent/` seams for unhardened behavior.
+2. If the `agent/` layer is sufficiently stabilized, widen back out to adjacent integration layers.
+3. Keep emphasizing helper extraction, explicit contract behavior, and regression coverage.
