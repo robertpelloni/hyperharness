@@ -1670,6 +1670,83 @@ describe('legacy MCP dashboard compatibility bridge', () => {
     expect((global.fetch as ReturnType<typeof vi.fn>).mock.calls.some(([url]) => String(url) === 'http://127.0.0.1:4546/api/memory/convert')).toBe(true);
   });
 
+  it('prefers go-native skills reads and assimilation in local dashboard fallback mode', async () => {
+    process.env.HYPERCODE_TRPC_UPSTREAM = 'http://127.0.0.1:4542/trpc';
+    global.fetch = vi.fn(async (input, init) => {
+      const url = String(input);
+
+      if (url.includes('/trpc/')) {
+        throw new Error('connect ECONNREFUSED');
+      }
+
+      if (url === 'http://127.0.0.1:4542/api/skills') {
+        return new Response(JSON.stringify({
+          success: true,
+          data: [
+            { id: 'debug', name: 'debug', description: 'Debug help', content: 'Use rg', path: 'C:/repo/.hypercode/skills/debug/SKILL.md' },
+          ],
+        }), { status: 200, headers: { 'content-type': 'application/json' } });
+      }
+
+      if (url === 'http://127.0.0.1:4542/api/skills/read?name=debug') {
+        return new Response(JSON.stringify({
+          success: true,
+          data: { content: [{ type: 'text', text: 'Debugging skill content' }] },
+        }), { status: 200, headers: { 'content-type': 'application/json' } });
+      }
+
+      if (url === 'http://127.0.0.1:4542/api/skills/assimilate' && init?.method === 'POST') {
+        return new Response(JSON.stringify({
+          success: true,
+          data: {
+            success: true,
+            logs: ['Starting assimilation for: debugging', 'Phase 4 complete'],
+            toolName: 'debugging',
+          },
+        }), { status: 200, headers: { 'content-type': 'application/json' } });
+      }
+
+      throw new Error(`Unexpected fetch: ${url}`);
+    }) as typeof fetch;
+
+    const readResponse = await POST(new Request(
+      'http://localhost:3010/api/trpc/skills.list,skills.read?batch=1',
+      {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          0: { json: null },
+          1: { json: { name: 'debug' } },
+        }),
+      },
+    ));
+    const readPayload = await readResponse.json();
+
+    expect(readResponse.status).toBe(200);
+    expect(readResponse.headers.get('x-hypercode-trpc-compat')).toBe('local-dashboard-fallback');
+    expect(readPayload?.[0]?.result?.data).toEqual([
+      expect.objectContaining({ id: 'debug', name: 'debug', description: 'Debug help' }),
+    ]);
+    expect(readPayload?.[1]?.result?.data).toEqual(expect.objectContaining({
+      content: [expect.objectContaining({ type: 'text', text: 'Debugging skill content' })],
+    }));
+
+    const assimilateResponse = await POST(new Request('http://localhost:3010/api/trpc/skills.assimilate', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ json: { topic: 'debugging' } }),
+    }));
+    expect(assimilateResponse.headers.get('x-hypercode-trpc-compat')).toBe('local-skill-action');
+    expect((await assimilateResponse.json())?.result?.data).toEqual(expect.objectContaining({
+      success: true,
+      toolName: 'debugging',
+    }));
+
+    expect((global.fetch as ReturnType<typeof vi.fn>).mock.calls.some(([url]) => String(url) === 'http://127.0.0.1:4542/api/skills')).toBe(true);
+    expect((global.fetch as ReturnType<typeof vi.fn>).mock.calls.some(([url]) => String(url) === 'http://127.0.0.1:4542/api/skills/read?name=debug')).toBe(true);
+    expect((global.fetch as ReturnType<typeof vi.fn>).mock.calls.some(([url]) => String(url) === 'http://127.0.0.1:4542/api/skills/assimilate')).toBe(true);
+  });
+
   it('prefers go-native project reads and mutations in local dashboard fallback mode', async () => {
     process.env.HYPERCODE_TRPC_UPSTREAM = 'http://127.0.0.1:4543/trpc';
     global.fetch = vi.fn(async (input, init) => {

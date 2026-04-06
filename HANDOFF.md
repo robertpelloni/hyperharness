@@ -3,6 +3,30 @@
 ## Current status
 **Version:** `1.0.0-alpha.1`
 
+### Latest incremental pass — dashboard skills compat routed to Go fallback ownership
+This follow-up stayed in the shared compat lane and extended the Skills dashboard/library cluster onto the Go control plane during `/trpc` outage.
+
+#### What changed
+- Updated `apps/web/src/app/api/trpc/[trpc]/route.ts` so local dashboard fallback now supports:
+  - `skills.list` → `/api/skills`
+  - `skills.read` → `/api/skills/read?name=...`
+  - `skills.assimilate` → `/api/skills/assimilate`
+- Added dedicated local skill mutation compat routing with header:
+  - `x-hypercode-trpc-compat: local-skill-action`
+- Updated `apps/web/src/app/api/trpc/[trpc]/route.test.ts` with focused compat coverage for:
+  - skills list/read
+  - skill assimilation
+
+#### Validation performed
+- `pnpm --dir C:/Users/hyper/workspace/hypercode exec vitest --root C:/Users/hyper/workspace/hypercode-push run apps/web/src/app/api/trpc/[trpc]/route.test.ts`
+
+#### Validation limitation
+- `apps/web` production build was not run from the clean push worktree because that worktree still lacks its own installed Next.js toolchain.
+- This slice is validated by the shared route-level compat suite.
+
+#### Recommended next step after this pass
+Keep shrinking the remaining Go-primary/dashboard compatibility gap by targeting the next operator-facing cluster with existing truthful Go `/api/*` ownership that still does not flow through the shared compat route.
+
 ### Latest incremental pass — dashboard project compat routed to Go fallback ownership
 This follow-up stayed in the shared compat lane and extended the Project Constitution dashboard cluster onto the Go control plane during `/trpc` outage.
 

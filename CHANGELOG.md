@@ -60,6 +60,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Dashboard Skills Compat Routed to Go Fallbacks**: The shared Next.js `/api/trpc/[trpc]` compat route now translates the operator-facing `skills.*` cluster onto the Go `/api/skills/*` surface when `/trpc` is unavailable, including local skill list/read plus skill assimilation.
 - **Dashboard Project Compat Routed to Go Fallbacks**: The shared Next.js `/api/trpc/[trpc]` compat route now translates the Project Constitution dashboard cluster onto the Go `/api/project/*` surface when `/trpc` is unavailable, and Go now also owns truthful local fallback behavior for `project.updateContext` by writing `.hypercode/project_context.md` when the TypeScript control plane is unavailable.
 - **Dashboard Agent-Memory Compat Routed to Go Fallbacks**: The shared Next.js `/api/trpc/[trpc]` compat route now translates the operator-facing `agentMemory.*` cluster onto the Go `/api/agent-memory/*` surface when `/trpc` is unavailable, including recent/search/export reads plus add/delete/clear-session/handoff/pickup mutations.
 - **Dashboard Memory Compat Routed to Go Fallbacks**: The shared Next.js `/api/trpc/[trpc]` compat route now translates the memory dashboard’s key reads and actions onto the Go `/api/memory/*` surface when `/trpc` is unavailable, including memory stats, recent/search result queries, pivot/timeline/cross-session detail reads, interchange-format/export reads, and add/import/convert mutations.

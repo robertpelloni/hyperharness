@@ -1,5 +1,75 @@
 # HyperCode Stabilization Analysis — 2026-04-03
 
+## Latest stabilization pass — dashboard skills compat routed to Go fallback ownership (2026-04-06)
+
+### Scope
+This follow-up stayed in the same shared compat lane and targeted the operator-facing skills cluster used by the Library, Skills page, and Skills Viewer.
+
+The Go backend already had truthful local fallback ownership for the key skill procedures the dashboard uses, but the shared `/api/trpc/[trpc]` compat route still did not expose them. That left the skills dashboard artificially `/trpc`-dependent despite the backend already being capable of serving useful degraded-mode truth.
+
+### Findings
+- `apps/web/src` currently uses these `skills.*` procedures in operator-facing paths:
+  - `skills.list`
+  - `skills.read`
+  - `skills.assimilate`
+- The Go backend already had truthful local fallback behavior for all three:
+  - `skills.list` → local skill metadata scan
+  - `skills.read` → local skill document read
+  - `skills.assimilate` → local starter-skill scaffold generation
+- The missing piece was the shared Next.js compat routing that would let the dashboard inherit those Go-native fallbacks when `/trpc` is unavailable.
+
+### What changed
+#### 1. Extended local compat read support for the skills cluster
+Updated:
+- `apps/web/src/app/api/trpc/[trpc]/route.ts`
+
+The shared local compat route now supports:
+- `skills.list`
+- `skills.read`
+
+These now map onto:
+- `/api/skills`
+- `/api/skills/read?name=...`
+
+#### 2. Added local compat mutation support for skill assimilation
+Updated:
+- `apps/web/src/app/api/trpc/[trpc]/route.ts`
+
+The shared compat route now also supports:
+- `skills.assimilate`
+
+This now maps onto:
+- `/api/skills/assimilate`
+
+A dedicated compat response header distinguishes the mutation path as:
+- `x-hypercode-trpc-compat: local-skill-action`
+
+### Regression coverage
+Updated:
+- `apps/web/src/app/api/trpc/[trpc]/route.test.ts`
+
+Added focused compat coverage for:
+- skills list/read in local dashboard fallback mode
+- skill assimilation mutation in local dashboard fallback mode
+
+This validates that the shared compat route now prefers the Go control plane for the dashboard’s skills cluster instead of leaving that path blocked on TypeScript availability.
+
+### Validation performed
+Executed truthfully without killing any processes:
+- Route-level compat validation against the clean push worktree, using the primary workspace's installed Vitest toolchain:
+  - `pnpm --dir C:/Users/hyper/workspace/hypercode exec vitest --root C:/Users/hyper/workspace/hypercode-push run apps/web/src/app/api/trpc/[trpc]/route.test.ts`
+
+### Validation limitation
+- I did not claim an `apps/web` production build for the clean push worktree.
+- As with the previous compat slices, the clean worktree still lacks its own installed Next.js toolchain.
+- This slice is validated by the shared route-level compat suite.
+
+### Why this matters
+This continues the same migration pattern on another real operator-facing cluster:
+- the skills dashboard/library path can now inherit Go-native list/read/assimilate behavior in degraded mode
+- the shared compat layer is less misleading about which creative/operator workflows still require TypeScript
+- Go-primary startup gains another practical UI slice where existing backend ownership now reaches the dashboard surface
+
 ## Latest stabilization pass — dashboard project compat routed to Go fallback ownership (2026-04-06)
 
 ### Scope

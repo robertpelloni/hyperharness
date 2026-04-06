@@ -181,6 +181,8 @@ const LOCAL_COMPAT_RESPONSE_KEYS = {
   'serverHealth.check': 'serverHealth.check',
   'project.getContext': 'project.getContext',
   'project.getHandoffs': 'project.getHandoffs',
+  'skills.list': 'skills.list',
+  'skills.read': 'skills.read',
 } as const;
 
 type LocalCompatProcedure = keyof typeof LOCAL_COMPAT_RESPONSE_KEYS;
@@ -261,6 +263,9 @@ const LOCAL_SESSION_MUTATION_PROCEDURES = new Set([
 const LOCAL_PROJECT_MUTATION_PROCEDURES = new Set([
   'project.updateContext',
 ]);
+const LOCAL_SKILL_MUTATION_PROCEDURES = new Set([
+  'skills.assimilate',
+]);
 const LOCAL_COMPAT_MUTATION_PROCEDURES = new Set([
   ...LOCAL_OPERATOR_MUTATION_PROCEDURES,
   ...LOCAL_TOOL_MUTATION_PROCEDURES,
@@ -270,6 +275,7 @@ const LOCAL_COMPAT_MUTATION_PROCEDURES = new Set([
   ...LOCAL_MCP_RUNTIME_MUTATION_PROCEDURES,
   ...LOCAL_SESSION_MUTATION_PROCEDURES,
   ...LOCAL_PROJECT_MUTATION_PROCEDURES,
+  ...LOCAL_SKILL_MUTATION_PROCEDURES,
 ]);
 
 const LEGACY_MCP_SERVERS_LIST_PROCEDURES = [
@@ -2445,6 +2451,8 @@ async function buildLocalCompatResponse(req: Request, body?: string): Promise<Re
     },
     'project.getContext': '',
     'project.getHandoffs': [],
+    'skills.list': [],
+    'skills.read': { content: [] },
   };
 
   const compatEntries = await Promise.all(procedureNames.map(async (procedureName, index) => {
@@ -2663,6 +2671,22 @@ async function buildLocalCompatResponse(req: Request, body?: string): Promise<Re
       data = await fetchNativeControlPlaneData<unknown>('/api/project/handoffs');
       if (data === null) {
         data = [];
+      }
+    }
+
+    if (responseKey === 'skills.list') {
+      data = await fetchNativeControlPlaneData<unknown>('/api/skills');
+      if (data === null) {
+        data = [];
+      }
+    }
+
+    if (responseKey === 'skills.read') {
+      const input = procedureInputs[index];
+      const name = input && typeof input === 'object' ? readString((input as { name?: unknown }).name) : null;
+      data = name ? await fetchNativeControlPlaneData<unknown>(`/api/skills/read${buildMemoryQueryString({ name })}`) : null;
+      if (data === null) {
+        data = { content: [] };
       }
     }
 
@@ -3287,6 +3311,39 @@ async function tryLocalProjectMutation(req: Request, body: string | undefined): 
   });
 }
 
+async function tryLocalSkillMutation(req: Request, body: string | undefined): Promise<Response | null> {
+  const procedures = getProcedureNames(req);
+  const procedureName = procedures[0] ?? '';
+  if (req.method !== 'POST' || procedures.length !== 1 || !LOCAL_SKILL_MUTATION_PROCEDURES.has(procedureName)) {
+    return null;
+  }
+
+  const input = extractTrpcRequestInput(body, req);
+  if (!input || typeof input !== 'object') {
+    return buildTrpcResponse(req, undefined, {
+      status: 400,
+      statusText: 'Invalid local skill compat input',
+      headers: { 'x-hypercode-trpc-compat': 'local-skill-action' },
+    });
+  }
+
+  const data = await fetchNativeControlPlaneData<unknown>('/api/skills/assimilate', {
+    method: 'POST',
+    headers: {
+      'content-type': 'application/json',
+    },
+    body: JSON.stringify(input),
+  });
+  if (data === null) {
+    return null;
+  }
+
+  return buildTrpcResponse(req, data, {
+    status: 200,
+    headers: { 'x-hypercode-trpc-compat': 'local-skill-action' },
+  });
+}
+
 async function tryLocalMCPRuntimeMutation(req: Request, body: string | undefined): Promise<Response | null> {
   const procedures = getProcedureNames(req);
   const procedureName = procedures[0] ?? '';
@@ -3630,6 +3687,11 @@ async function handler(req: Request): Promise<Response> {
     const localProjectMutationResponse = await tryLocalProjectMutation(req, body);
     if (localProjectMutationResponse) {
       return localProjectMutationResponse;
+    }
+
+    const localSkillMutationResponse = await tryLocalSkillMutation(req, body);
+    if (localSkillMutationResponse) {
+      return localSkillMutationResponse;
     }
 
     const localMCPRuntimeMutationResponse = await tryLocalMCPRuntimeMutation(req, body);
