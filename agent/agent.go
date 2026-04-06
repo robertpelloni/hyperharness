@@ -171,18 +171,16 @@ func executeToolCall(registry *tools.Registry, tc openai.ToolCall) string {
 	}
 	var args map[string]interface{}
 	_ = json.Unmarshal([]byte(tc.Function.Arguments), &args)
-	for _, t := range registry.Tools {
-		if t.Name != tc.Function.Name {
-			continue
-		}
-		out, err := t.Execute(args)
-		if err != nil {
-			if out != "" {
-				return out
-			}
-			return fmt.Sprintf("Error executing %s: %v", t.Name, err)
-		}
-		return out
+	tool, ok := registry.Find(tc.Function.Name)
+	if !ok {
+		return fmt.Sprintf("Unknown tool: %s", tc.Function.Name)
 	}
-	return fmt.Sprintf("Unknown tool: %s", tc.Function.Name)
+	out, err := tool.Execute(args)
+	if err != nil {
+		if out != "" {
+			return out
+		}
+		return fmt.Sprintf("Error executing %s: %v", tool.Name, err)
+	}
+	return out
 }

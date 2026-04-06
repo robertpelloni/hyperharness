@@ -1744,3 +1744,23 @@ Wrote comprehensive comparison to docs/analysis/HYPERHARNESS_VS_SUPERAI_COMPARIS
 1. Review any remaining central `agent/` seams for unhardened behavior.
 2. If the `agent/` layer is sufficiently stabilized, widen back out to adjacent integration layers.
 3. Keep emphasizing helper extraction, explicit contract behavior, and regression coverage.
+
+## Additional work completed on 2026-04-05 (superai tools registry assimilation tranche)
+- Verified that `tools/registry.go` was already present and parity-aligned with `../superai`.
+- Added explicit exact-name registry lookup:
+  - `(*Registry).Find(name string)`
+- Extracted foundation-tool wrapping into:
+  - `newFoundationTool(...)`
+- Updated the central agent tool-call path in `agent/agent.go` to use explicit registry lookup instead of open-coded iteration.
+- Added focused regression coverage in:
+  - `tools/registry_assimilation_test.go`
+- Added tranche documentation:
+  - `docs/analysis/SUPERAI_TOOLS_REGISTRY_ASSIMILATION_TRANCHE_2026-04-05.md`
+
+## Latest validation after superai tools registry assimilation tranche
+- `go test ./tools ./agent ./agents ./tui ./cmd ./foundation/...`
+
+## Updated recommendation after superai tools registry assimilation tranche
+1. Continue through remaining runtime/integration seams around tool exposure and execution.
+2. Prefer boundary files where exact-name tool contracts meet providers, adapters, or CLI flows.
+3. Keep emphasizing explicit lookup contracts, helper extraction, and regression coverage.

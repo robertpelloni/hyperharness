@@ -10,14 +10,30 @@ import (
 	"runtime"
 	"strings"
 
-	"github.com/robertpelloni/hypercode/foundation/compat"
-	foundationpi "github.com/robertpelloni/hypercode/foundation/pi"
-	foundationrepomap "github.com/robertpelloni/hypercode/foundation/repomap"
+	"github.com/robertpelloni/hyperharness/foundation/compat"
+	foundationpi "github.com/robertpelloni/hyperharness/foundation/pi"
+	foundationrepomap "github.com/robertpelloni/hyperharness/foundation/repomap"
 )
 
 // Registry holds all available tools for the agent.
 type Registry struct {
 	Tools []Tool
+}
+
+func (r *Registry) Find(name string) (Tool, bool) {
+	if r == nil {
+		return Tool{}, false
+	}
+	name = strings.TrimSpace(name)
+	if name == "" {
+		return Tool{}, false
+	}
+	for _, tool := range r.Tools {
+		if tool.Name == name {
+			return tool, true
+		}
+	}
+	return Tool{}, false
 }
 
 // Tool describes a model-facing callable tool surface.
@@ -56,27 +72,31 @@ func (r *Registry) registerFoundationTools() {
 	runtime := foundationpi.NewRuntime(cwd, nil)
 	catalog := compat.DefaultCatalog()
 	for _, contract := range catalog.ContractsBySource("pi") {
-		contract := contract
-		r.Tools = append(r.Tools, Tool{
-			Name:        contract.Name,
-			Description: contract.Description,
-			Parameters:  append(json.RawMessage(nil), contract.Parameters...),
-			Execute: func(args map[string]interface{}) (string, error) {
-				raw, err := json.Marshal(args)
-				if err != nil {
-					return "", fmt.Errorf("marshal args for %s: %w", contract.Name, err)
+		r.Tools = append(r.Tools, newFoundationTool(runtime, contract))
+	}
+}
+
+func newFoundationTool(runtime *foundationpi.Runtime, contract compat.ToolContract) Tool {
+	contract = contract.Clone()
+	return Tool{
+		Name:        contract.Name,
+		Description: contract.Description,
+		Parameters:  append(json.RawMessage(nil), contract.Parameters...),
+		Execute: func(args map[string]interface{}) (string, error) {
+			raw, err := json.Marshal(args)
+			if err != nil {
+				return "", fmt.Errorf("marshal args for %s: %w", contract.Name, err)
+			}
+			result, execErr := runtime.ExecuteTool(context.Background(), "", contract.Name, raw, nil)
+			formatted := formatFoundationToolResult(result)
+			if execErr != nil {
+				if formatted != "" {
+					return formatted, execErr
 				}
-				result, execErr := runtime.ExecuteTool(context.Background(), "", contract.Name, raw, nil)
-				formatted := formatFoundationToolResult(result)
-				if execErr != nil {
-					if formatted != "" {
-						return formatted, execErr
-					}
-					return "", execErr
-				}
-				return formatted, nil
-			},
-		})
+				return "", execErr
+			}
+			return formatted, nil
+		},
 	}
 }
 
