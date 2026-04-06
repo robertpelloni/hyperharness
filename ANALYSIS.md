@@ -1,5 +1,71 @@
 # HyperCode Stabilization Analysis — 2026-04-03
 
+## Latest stabilization pass — startup port fallback widened after real operator `start.bat` failure (2026-04-06)
+
+### Scope
+This pass pivoted away from dashboard compat work because the latest real operator `start.bat` log exposed a more urgent startup reliability failure.
+
+The user ran `start.bat` without `--port`, with Go-primary startup artifacts building successfully, and startup still aborted with:
+- `Port 4000 is already in use by another process. Stop that process or start HyperCode with --port <free-port>.`
+
+That behavior contradicted the explicit project goal for non-destructive startup:
+- do not kill processes
+- reuse an existing HyperCode instance when possible
+- otherwise fall forward to another port instead of requiring manual operator intervention
+
+### Findings
+- The CLI already had a non-destructive startup design in `packages/cli/src/commands/start.ts`:
+  - detect/reuse an already-running HyperCode instance
+  - fall forward when the default control-plane port is occupied by another process
+- However, the control-plane fallback scan was still too narrow:
+  - `CONTROL_PLANE_FALLBACK_OFFSETS = [1, 2, 3, 4, 5]`
+  - this effectively only searched a tiny window after the requested port
+- If that small window was also unavailable, startup still failed with the old destructive-sounding guidance to stop another process manually.
+- The pasted operator log is therefore useful evidence that the previous fallback window was not durable enough for real workstation conditions.
+
+### What changed
+Updated:
+- `packages/cli/src/commands/start.ts`
+- `packages/cli/src/commands/start.test.ts`
+
+#### 1. Widened control-plane fallback scanning
+The CLI now scans a much broader fallback range instead of only probing a handful of nearby ports.
+
+Specifically:
+- replaced the tiny fixed offset tuple with:
+  - `CONTROL_PLANE_FALLBACK_SCAN_LIMIT = 100`
+- `pickAvailableControlPlaneFallbackPort(...)` now searches sequentially from the preferred fallback port across a wider window before giving up
+
+This keeps explicit `--port` semantics unchanged while making the default startup path much more resilient when `4000` is already occupied.
+
+#### 2. Added regression coverage for broader fall-forward behavior
+Added focused CLI coverage proving fallback can now move beyond the old narrow range:
+- `pickAvailableControlPlaneFallbackPort(4001)` can now legitimately resolve to a later port such as `4012`
+
+### Validation performed
+Executed truthfully without killing any processes:
+- CLI startup tests in the clean push worktree, using the primary workspace's installed Vitest toolchain:
+  - `pnpm --dir C:/Users/hyper/workspace/hypercode exec vitest --root C:/Users/hyper/workspace/hypercode-push run packages/cli/src/commands/start.test.ts`
+
+Result:
+- `39/39` CLI start tests passed
+
+### Additional validation attempt and limitation
+I also attempted a direct CLI TypeScript compile path from the primary workspace toolchain:
+- `pnpm --dir C:/Users/hyper/workspace/hypercode exec tsc -p C:/Users/hyper/workspace/hypercode-push/packages/cli/tsconfig.json --pretty false`
+
+That compile did **not** provide a clean signal for this slice because the clean push worktree currently contains broad, pre-existing type/dependency problems outside this startup change, including unrelated router/module resolution errors in `packages/core` and other workspace packages.
+
+So the honest validation claim for this startup fix is:
+- focused CLI unit coverage passed
+- broader TypeScript compilation is still noisy for unrelated reasons in this worktree and was not used as a success signal for this slice
+
+### Why this matters
+This directly addresses the latest real operator startup failure:
+- `start.bat` no longer needs such a tiny luck-based nearby port window to succeed
+- the default startup path is more aligned with the repo’s non-destructive operator guidance
+- the fix improves real workstation resilience without changing explicit port behavior or killing any existing process
+
 ## Latest stabilization pass — MCP Settings dashboard compat routed to Go fallback ownership (2026-04-06)
 
 ### Scope

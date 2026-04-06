@@ -634,6 +634,12 @@ describe('control-plane fallback helpers', () => {
         })).resolves.toBe(4003);
     });
 
+    it('can fall forward beyond the old narrow control-plane scan window', async () => {
+        await expect(pickAvailableControlPlaneFallbackPort(4001, {
+            isPortFree: async (port) => port === 4012,
+        })).resolves.toBe(4012);
+    });
+
     it('returns null when no fallback port is available in the scan window', async () => {
         await expect(pickAvailableControlPlaneFallbackPort(4001, {
             isPortFree: async () => false,

@@ -117,7 +117,7 @@ class HypercodeAlreadyRunningError extends Error {
 }
 
 const DASHBOARD_PORT_CANDIDATES = [3000, 3010, 3020, 3030, 3040] as const;
-const CONTROL_PLANE_FALLBACK_OFFSETS = [1, 2, 3, 4, 5] as const;
+const CONTROL_PLANE_FALLBACK_SCAN_LIMIT = 100;
 const DEFAULT_DASHBOARD_READY_TIMEOUT_MS = 30_000;
 const DEFAULT_DASHBOARD_POLL_INTERVAL_MS = 500;
 const DEFAULT_GO_READY_TIMEOUT_MS = 45_000;
@@ -708,12 +708,7 @@ export async function pickAvailableControlPlaneFallbackPort(
 ): Promise<number | null> {
   const checkPortFree = deps.isPortFree ?? isPortFree;
 
-  if (await checkPortFree(preferredPort)) {
-    return preferredPort;
-  }
-
-  for (const offset of CONTROL_PLANE_FALLBACK_OFFSETS) {
-    const candidate = preferredPort + offset;
+  for (let candidate = preferredPort; candidate < preferredPort + CONTROL_PLANE_FALLBACK_SCAN_LIMIT; candidate += 1) {
     if (await checkPortFree(candidate)) {
       return candidate;
     }

@@ -3,6 +3,40 @@
 ## Current status
 **Version:** `1.0.0-alpha.1`
 
+### Latest incremental pass — startup port fallback widened after real operator `start.bat` failure
+This follow-up pivoted from dashboard compat back to startup reliability because a fresh operator `start.bat` log showed startup still aborting non-destructively but too early when port `4000` was occupied.
+
+#### Operator evidence
+Real operator log excerpt:
+- Go-primary dependency/build flow completed successfully
+- launch reached the built CLI entrypoint
+- startup then failed with:
+  - `Port 4000 is already in use by another process. Stop that process or start HyperCode with --port <free-port>.`
+
+That contradicted the intended operator experience for the default startup path.
+
+#### What changed
+- Updated `packages/cli/src/commands/start.ts`:
+  - replaced the tiny control-plane fallback window with a broader scan:
+    - `CONTROL_PLANE_FALLBACK_SCAN_LIMIT = 100`
+  - `pickAvailableControlPlaneFallbackPort(...)` now scans sequentially across a much wider range before giving up
+- Updated `packages/cli/src/commands/start.test.ts`:
+  - added regression coverage proving fallback can move beyond the old narrow nearby-port window
+
+#### Validation performed
+- `pnpm --dir C:/Users/hyper/workspace/hypercode exec vitest --root C:/Users/hyper/workspace/hypercode-push run packages/cli/src/commands/start.test.ts`
+  - result: `39/39` tests passed
+
+#### Additional validation attempt and limitation
+- attempted:
+  - `pnpm --dir C:/Users/hyper/workspace/hypercode exec tsc -p C:/Users/hyper/workspace/hypercode-push/packages/cli/tsconfig.json --pretty false`
+- result:
+  - failed due to broad pre-existing clean-worktree type/dependency issues outside this slice, especially in `packages/core` and unrelated router/module resolution surfaces
+- honest validation claim for this pass remains the focused CLI test suite above
+
+#### Recommended next step after this pass
+Re-run the real startup path in the primary workspace and inspect whether the broader port scan now falls forward successfully when `4000` is occupied. If another operator-visible startup edge still appears, continue using pasted `start.bat` evidence to prioritize the next non-destructive fix.
+
 ### Latest incremental pass — MCP Settings dashboard compat routed to Go fallback ownership
 This follow-up stayed in the shared compat lane and extended the MCP Settings dashboard cluster onto the Go control plane during `/trpc` outage.
 
