@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.0.0-alpha.1] - 2026-04-02
 
 ### Added
+- **Infrastructure Health Check Result Panel**: The Infrastructure dashboard now renders the latest doctor/health-check result inline, showing success/failure state and returned output instead of only emitting a toast and logging to the console.
 - **Library Navigation Copy Truthfulness**: Updated the shared `Library` nav description so it now mentions prompts/templates alongside scripts, skills, tool sets, memory, plans, and documentation, matching the actual dashboard contents.
 - **Dashboard Prompt Route Parity**: Added a dedicated `/dashboard/prompts` wrapper page around `PromptLibrary`, so the Resource Library prompt card now resolves to a real dashboard route instead of a navigation dead-end on remote baseline histories.
 - **Resource Library Prompt Inventory**: The Resource Library dashboard now includes a `Prompts & Templates` card with a live prompt count backed by the existing `trpc.prompts.list` surface, making prompt templates visible alongside scripts and skills.

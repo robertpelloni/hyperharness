@@ -4459,3 +4459,24 @@ Executed in the primary workspace:
 - `pnpm -C apps/web run build`
 
 Result: passed.
+
+
+## Latest stabilization pass — infrastructure health-check result visibility (2026-04-05)
+
+### Problem
+The Infrastructure dashboard's `Run Health Check` action returned useful output, but the page only emitted a toast and wrote the payload to `console.log`. Operators could not inspect the result inline in the dashboard.
+
+### What changed
+Updated:
+- `apps/web/src/app/dashboard/infrastructure/page.tsx`
+
+The page now stores and renders the most recent doctor/health-check result directly in the UI:
+- success/failure status
+- returned output text
+- persistent inline panel instead of console-only output
+
+### Validation
+Executed in the primary workspace:
+- `pnpm -C apps/web run build`
+
+Result: passed.

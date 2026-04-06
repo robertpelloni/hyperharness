@@ -631,3 +631,14 @@ This follow-up aligned the shared navigation copy with the actual Library dashbo
 
 #### Validation performed
 - `pnpm -C apps/web run build` (executed in the primary workspace)
+
+
+### Latest incremental pass — infrastructure health-check result visibility
+This follow-up made the existing infrastructure doctor result operator-visible in the page itself.
+
+#### What changed
+- Updated `apps/web/src/app/dashboard/infrastructure/page.tsx`.
+- Successful or failed doctor runs now populate an inline result panel with status and output text.
+
+#### Validation performed
+- `pnpm -C apps/web run build` (executed in the primary workspace)
