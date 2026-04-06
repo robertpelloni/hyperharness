@@ -697,3 +697,14 @@ This follow-up made the MCP Registry detail page's validate/install results oper
 
 #### Validation performed
 - `pnpm -C apps/web run build` (executed in the primary workspace)
+
+
+### Latest incremental pass — MCP settings sync result visibility
+This follow-up made the existing client-config sync result operator-visible in the page itself.
+
+#### What changed
+- Updated `apps/web/src/app/dashboard/mcp/settings/page.tsx`.
+- Successful client-config syncs now populate an inline summary with client name and written target path.
+
+#### Validation performed
+- `pnpm -C apps/web run build` (executed in the primary workspace)

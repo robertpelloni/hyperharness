@@ -28,6 +28,11 @@ type ClientConfigSyncResult = ClientConfigPreview & {
     written: boolean;
 };
 
+type ClientConfigSyncSummary = {
+    client: SupportedClient;
+    targetPath: string;
+};
+
 const CLIENT_LABELS: Record<SupportedClient, string> = {
     'claude-desktop': 'Claude Desktop',
     'cursor': 'Cursor',
@@ -50,6 +55,7 @@ export default function MCPSettings() {
     const syncTargetsUnavailable = Boolean(syncTargetsError) || (rawSyncTargets != null && !Array.isArray(rawSyncTargets));
     const [editing, setEditing] = useState<Record<string, string>>({});
     const [selectedClient, setSelectedClient] = useState<SupportedClient>('claude-desktop');
+    const [lastSyncResult, setLastSyncResult] = useState<ClientConfigSyncSummary | null>(null);
 
     const previewQuery = mcpServersClient.exportClientConfig.useQuery(
         { client: selectedClient },
@@ -76,6 +82,7 @@ export default function MCPSettings() {
 
     const syncMutation = mcpServersClient.syncClientConfig.useMutation({
         onSuccess: (result: ClientConfigSyncResult) => {
+            setLastSyncResult({ client: result.client, targetPath: result.targetPath });
             toast.success(`Synced ${CLIENT_LABELS[result.client]} config to ${result.targetPath}`);
             void refetchTargets();
             void previewQuery.refetch();
@@ -126,6 +133,19 @@ export default function MCPSettings() {
                     </Button>
                 </div>
             </div>
+
+            {lastSyncResult ? (
+                <Card className="bg-zinc-900 border-zinc-800">
+                    <CardHeader>
+                        <CardTitle className="text-lg font-medium text-zinc-200">Last Client Sync</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-2 text-sm">
+                        <div className="text-emerald-400 font-medium">Configuration synced successfully</div>
+                        <div className="text-zinc-300">Client: {CLIENT_LABELS[lastSyncResult.client]}</div>
+                        <div className="text-zinc-500 break-all font-mono text-xs">{lastSyncResult.targetPath}</div>
+                    </CardContent>
+                </Card>
+            ) : null}
 
             <Card className="bg-zinc-900 border-zinc-800">
                 <CardHeader>

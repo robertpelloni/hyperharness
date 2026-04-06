@@ -4596,3 +4596,24 @@ Executed in the primary workspace:
 - `pnpm -C apps/web run build`
 
 Result: passed.
+
+
+## Latest stabilization pass — MCP settings sync result visibility (2026-04-05)
+
+### Problem
+The MCP Settings page could sync generated client configs into Claude Desktop / Cursor / VS Code, but the result was only shown through a toast.
+
+### What changed
+Updated:
+- `apps/web/src/app/dashboard/mcp/settings/page.tsx`
+
+The page now stores and renders the latest client-config sync result directly in the UI:
+- selected client label
+- synced target path
+- success summary after the write completes
+
+### Validation
+Executed in the primary workspace:
+- `pnpm -C apps/web run build`
+
+Result: passed.
