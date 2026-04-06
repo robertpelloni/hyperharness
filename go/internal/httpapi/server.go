@@ -3458,6 +3458,36 @@ func (s *Server) handleMemoryContextGet(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
+	contextRecord, found, localErr := s.localFindMemoryContext(id)
+	if localErr != nil {
+		writeJSON(w, http.StatusServiceUnavailable, map[string]any{"success": false, "error": localErr.Error(), "detail": localErr.Error()})
+		return
+	}
+	if found && strings.TrimSpace(stringValue(contextRecord["content"])) != "" {
+		metadata, _ := contextRecord["metadata"].(map[string]any)
+		responseMetadata := cloneMap(metadata)
+		responseMetadata["title"] = stringValue(contextRecord["title"])
+		responseMetadata["source"] = stringValue(contextRecord["source"])
+		responseMetadata["createdAt"] = contextRecord["createdAt"]
+		responseMetadata["chunks"] = contextRecord["chunks"]
+		response := map[string]any{
+			"id":       localMemoryContextID(contextRecord, 0),
+			"content":  stringValue(contextRecord["content"]),
+			"metadata": responseMetadata,
+			"score":    1,
+		}
+		writeJSON(w, http.StatusOK, map[string]any{
+			"success": true,
+			"data":    response,
+			"bridge": map[string]any{
+				"fallback":  "go-local-memory",
+				"procedure": "memory.getContext",
+				"reason":    "upstream unavailable; using local persisted memory context body",
+			},
+		})
+		return
+	}
+
 	writeJSON(w, http.StatusServiceUnavailable, map[string]any{
 		"success": false,
 		"error":   "memory context unavailable",
@@ -3482,7 +3512,26 @@ func (s *Server) handleMemoryContextDelete(w http.ResponseWriter, r *http.Reques
 		writeJSON(w, http.StatusOK, map[string]any{"success": true, "data": result, "bridge": map[string]any{"upstreamBase": upstreamBase, "procedure": "memory.deleteContext"}})
 		return
 	}
-	writeJSON(w, http.StatusServiceUnavailable, map[string]any{"success": false, "error": "Memory context deletion is unavailable: upstream memory service is unavailable and the local fallback cannot delete persisted contexts.", "data": map[string]any{"success": false}, "bridge": map[string]any{"fallback": "go-local-memory", "procedure": "memory.deleteContext", "reason": "upstream unavailable; local memory fallback cannot delete persisted contexts"}})
+
+	id := strings.TrimSpace(stringValue(payload["id"]))
+	if id == "" {
+		writeJSON(w, http.StatusBadRequest, map[string]any{"success": false, "error": "missing id"})
+		return
+	}
+	deleted, localErr := s.localDeleteMemoryContext(id)
+	if localErr != nil {
+		writeJSON(w, http.StatusServiceUnavailable, map[string]any{"success": false, "error": localErr.Error(), "detail": localErr.Error()})
+		return
+	}
+	writeJSON(w, http.StatusOK, map[string]any{
+		"success": true,
+		"data":    map[string]any{"success": deleted},
+		"bridge": map[string]any{
+			"fallback":  "go-local-memory",
+			"procedure": "memory.deleteContext",
+			"reason":    "upstream unavailable; using local memory context registry deletion",
+		},
+	})
 }
 
 func (s *Server) handleMemoryAgentStats(w http.ResponseWriter, r *http.Request) {

@@ -3,6 +3,35 @@
 ## Current status
 **Version:** `1.0.0-alpha.1`
 
+### Latest incremental pass — local Go memory query/context fallback ownership
+This follow-up stayed in the Go-primary memory lane and closed another truthful degraded-mode gap around saved memory contexts.
+
+#### What changed
+- Added `go/internal/httpapi/memory_context_local.go` to centralize local saved-context fallback helpers for:
+  - context-registry path resolution
+  - persisted registry writes
+  - context lookup by id
+  - local registry deletion
+  - registry/export-backed query results
+- Updated `go/internal/httpapi/memory_handlers.go` so degraded `memory.query` now merges:
+  - existing local SQLite-backed memory search results
+  - persisted `.hypercode/memory/contexts.json` / local-export-backed context results
+- Updated `go/internal/httpapi/server.go` so degraded local fallback now supports:
+  - `GET /api/memory/context/get` returning a real local body when inline `content` exists in the saved-context registry
+  - `POST /api/memory/context/delete` removing local `.hypercode/memory/contexts.json` entries instead of hard-failing
+- Updated focused Go coverage in `go/internal/httpapi/server_test.go` so read-only and mutation fallback tests now seed real local saved contexts and assert:
+  - generic memory query returns persisted local results
+  - local context bodies are readable
+  - local context deletion mutates the registry
+
+#### Validation performed
+- `cd ../hypercode-push/go && gofmt -w internal/httpapi/memory_handlers.go internal/httpapi/memory_context_local.go internal/httpapi/server.go internal/httpapi/server_test.go`
+- `cd ../hypercode-push/go && go test ./internal/httpapi -run 'Test(MemoryContextsFallsBackToLocalRegistry|ReadOnlyMemoryRoutesFallBackLocally|MemoryServiceBackedMutationsFallBackLocally)' -count=1`
+- `cd ../hypercode-push/go && go test ./internal/httpapi -count=1`
+
+#### Recommended next step after this pass
+Keep finishing the remaining high-value persisted-memory truth gaps in similarly small slices, especially any public memory routes that still collapse to placeholders or hard failures despite already having durable local state on disk.
+
 ### Latest incremental pass — Hyperharness refresh + saved-scripts degraded-mode parity
 This follow-up advanced the tracked harness submodule and completed the saved-scripts degraded-mode parity slice.
 

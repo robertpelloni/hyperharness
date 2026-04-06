@@ -899,14 +899,7 @@ func TestMemorySectionedStatusAndFormatsFallBackLocally(t *testing.T) {
 
 func TestMemoryContextsFallsBackToLocalRegistry(t *testing.T) {
 	workspaceRoot := t.TempDir()
-	contextsDir := filepath.Join(workspaceRoot, ".hypercode", "memory")
-	if err := os.MkdirAll(contextsDir, 0o755); err != nil {
-		t.Fatalf("failed to create memory dir: %v", err)
-	}
-	contexts := `[{"id":"ctx-local-1","title":"Saved context","source":"docs","createdAt":12345,"chunks":2,"metadata":{"topic":"parity"}}]`
-	if err := os.WriteFile(filepath.Join(contextsDir, "contexts.json"), []byte(contexts), 0o644); err != nil {
-		t.Fatalf("failed to seed contexts registry: %v", err)
-	}
+	seedPersistedMemoryContexts(t, workspaceRoot)
 
 	t.Setenv("HYPERCODE_TRPC_UPSTREAM", "http://127.0.0.1:1/trpc")
 	cfg := config.Default()
@@ -925,8 +918,8 @@ func TestMemoryContextsFallsBackToLocalRegistry(t *testing.T) {
 	if !strings.Contains(body, `"ctx-local-1"`) || !strings.Contains(body, `"fallback":"go-local-memory"`) {
 		t.Fatalf("expected local contexts fallback response, got %s", body)
 	}
-	if !strings.Contains(body, `using local memory context list`) {
-		t.Fatalf("expected local context-list fallback reason, got %s", body)
+	if !strings.Contains(body, `using local memory context list`) || !strings.Contains(body, `"topic":"parity"`) {
+		t.Fatalf("expected local context-list fallback reason and metadata, got %s", body)
 	}
 }
 
@@ -1102,6 +1095,7 @@ func TestReadOnlyMemoryRoutesFallBackLocally(t *testing.T) {
 	cfg.ConfigDir = t.TempDir()
 	cfg.MainConfigDir = t.TempDir()
 	seedPersistedAgentMemories(t, cfg.WorkspaceRoot)
+	seedPersistedMemoryContexts(t, cfg.WorkspaceRoot)
 	server := New(cfg, stubDetector{})
 
 	cases := []struct {
@@ -1109,7 +1103,8 @@ func TestReadOnlyMemoryRoutesFallBackLocally(t *testing.T) {
 		method      string
 		containsAny []string
 	}{
-		{path: "/api/memory/search?query=bootstrap&limit=3", method: http.MethodGet, containsAny: []string{`"fallback":"go-local-memory"`, `local memory fallback has no full-text memory query index`}},
+		{path: "/api/memory/search?query=bootstrap&limit=3", method: http.MethodGet, containsAny: []string{`"fallback":"go-local-memory"`, `using local persisted memory search`, `"id":"ctx-local-1"`, `Bootstrapped Go parity plan`}},
+		{path: "/api/memory/context/get?id=ctx-local-1", method: http.MethodGet, containsAny: []string{`"fallback":"go-local-memory"`, `using local persisted memory context body`, `Bootstrapped Go parity plan`}},
 		{path: "/api/memory/context/get?id=ctx-missing", method: http.MethodGet, containsAny: []string{`"fallback":"go-local-memory"`, `local memory context fallback has no persisted context body`}},
 		{path: "/api/memory/agent-search?query=memory&type=working&limit=5", method: http.MethodGet, containsAny: []string{`"fallback":"go-local-memory"`, `using local persisted agent memory search`, `Updated search_tools fallback to read persisted memory`}},
 		{path: "/api/memory/observations/search?query=search_tools&limit=5&namespace=project&type=fix", method: http.MethodGet, containsAny: []string{`"fallback":"go-local-memory"`, `using local persisted observation search`, `"obs-fix-1"`}},
@@ -1138,6 +1133,21 @@ func TestReadOnlyMemoryRoutesFallBackLocally(t *testing.T) {
 		if !matched {
 			t.Fatalf("%s %s: expected response to contain one of %v, got %s", tc.method, tc.path, tc.containsAny, recorder.Body.String())
 		}
+	}
+}
+
+func seedPersistedMemoryContexts(t *testing.T, workspaceRoot string) {
+	t.Helper()
+	contextsDir := filepath.Join(workspaceRoot, ".hypercode", "memory")
+	if err := os.MkdirAll(contextsDir, 0o755); err != nil {
+		t.Fatalf("failed to create memory dir: %v", err)
+	}
+	contexts := `[
+	  {"id":"ctx-local-1","title":"Bootstrap plan","source":"docs","content":"Bootstrapped Go parity plan for dashboard truthfulness.","createdAt":12345,"chunks":2,"metadata":{"topic":"parity","tags":["go","dashboard"]}},
+	  {"id":"ctx-local-2","title":"Session note","source":"handoff","content":"Recorded local session supervisor restore behavior.","createdAt":23456,"chunks":1,"metadata":{"topic":"sessions"}}
+	]`
+	if err := os.WriteFile(filepath.Join(contextsDir, "contexts.json"), []byte(contexts), 0o644); err != nil {
+		t.Fatalf("failed to seed contexts registry: %v", err)
 	}
 }
 
@@ -1265,6 +1275,7 @@ func TestMemoryServiceBackedMutationsFallBackLocally(t *testing.T) {
 	cfg.WorkspaceRoot = t.TempDir()
 	cfg.ConfigDir = t.TempDir()
 	cfg.MainConfigDir = t.TempDir()
+	seedPersistedMemoryContexts(t, cfg.WorkspaceRoot)
 	server := New(cfg, stubDetector{})
 
 	cases := []struct {
@@ -1273,7 +1284,7 @@ func TestMemoryServiceBackedMutationsFallBackLocally(t *testing.T) {
 		expectedStatus int
 		containsAny    []string
 	}{
-		{path: "/api/memory/context/delete", body: `{"id":"ctx-1"}`, expectedStatus: http.StatusServiceUnavailable, containsAny: []string{`"fallback":"go-local-memory"`, `local memory fallback cannot delete persisted contexts`}},
+		{path: "/api/memory/context/delete", body: `{"id":"ctx-local-2"}`, expectedStatus: http.StatusOK, containsAny: []string{`"fallback":"go-local-memory"`, `using local memory context registry deletion`, `"success":true`}},
 		{path: "/api/memory/facts/add", body: `{"content":"remember this","type":"working"}`, expectedStatus: http.StatusOK, containsAny: []string{`"fallback":"go-local-memory"`, `persisted memory fact locally`, `"content":"remember this"`}},
 		{path: "/api/memory/observations/record", body: `{"content":"Observation","type":"fact","namespace":"project"}`, expectedStatus: http.StatusOK, containsAny: []string{`"fallback":"go-local-memory"`, `persisted structured observation locally`, `"structuredObservation"`}},
 		{path: "/api/memory/user-prompts/capture", body: `{"content":"Need help","role":"user"}`, expectedStatus: http.StatusOK, containsAny: []string{`"fallback":"go-local-memory"`, `persisted user prompt locally`, `"promptRole":"user"`}},
@@ -1320,6 +1331,12 @@ func TestMemoryServiceBackedMutationsFallBackLocally(t *testing.T) {
 	server.Handler().ServeHTTP(summaryRecorder, httptest.NewRequest(http.MethodGet, "/api/memory/session-summaries/recent?limit=5", nil))
 	if summaryRecorder.Code != http.StatusOK || !strings.Contains(summaryRecorder.Body.String(), `"sessionId":"sess-1"`) {
 		t.Fatalf("expected persisted local session summary after mutation, got %d %s", summaryRecorder.Code, summaryRecorder.Body.String())
+	}
+
+	contextsRecorder := httptest.NewRecorder()
+	server.Handler().ServeHTTP(contextsRecorder, httptest.NewRequest(http.MethodGet, "/api/memory/contexts", nil))
+	if contextsRecorder.Code != http.StatusOK || strings.Contains(contextsRecorder.Body.String(), `"ctx-local-2"`) {
+		t.Fatalf("expected deleted local memory context to be removed from registry, got %d %s", contextsRecorder.Code, contextsRecorder.Body.String())
 	}
 }
 

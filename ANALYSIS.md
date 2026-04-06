@@ -1,5 +1,99 @@
 # HyperCode Stabilization Analysis — 2026-04-03
 
+## Latest stabilization pass — local Go memory query/context fallback ownership (2026-04-06)
+
+### Scope
+This pass stayed inside the same Go-primary memory lane and targeted the remaining truthful local-state gaps around legacy memory context routes:
+- stop treating generic `memory.query` as a placeholder/empty degraded-mode response when persisted local memory data already exists
+- let `memory.getContext` return a real local body when the workspace context registry already carries inline content
+- let `memory.deleteContext` mutate the local context registry instead of hard-failing during TypeScript outage
+- keep the implementation honest about what is and is not actually persisted locally
+
+### Findings
+- The TypeScript `memoryRouter` contract is still simple here:
+  - `memory.query` returns search rows from `MemoryManager.search(...)`
+  - `memory.getContext` returns a record or `null`
+  - `memory.deleteContext` returns `{ success: true }` after deletion
+- The local workspace already had a durable registry at `.hypercode/memory/contexts.json`.
+- The previous Go fallback path could already list those contexts, but it still left three operator-visible truth gaps:
+  - `memory.query` could collapse to a placeholder/partial fallback even when local persisted memory/context data existed
+  - `memory.getContext` always claimed no persisted body even when a registry entry included inline `content`
+  - `memory.deleteContext` still claimed local deletion was impossible
+- In the clean push worktree, a separate SQLite-backed fallback search already existed through `go/internal/memorystore/search.go`, but it only covered local SQLite-backed memory sources (`web_memories`, `imported_session_memories`) and did not close the context-registry gap.
+
+### What changed
+#### 1. Added dedicated local context-registry helpers
+Created:
+- `go/internal/httpapi/memory_context_local.go`
+
+New local helpers now provide:
+- canonical local context-registry path resolution
+- durable writes back to `.hypercode/memory/contexts.json`
+- context id normalization across `id` / `uuid`
+- local context lookup by id
+- local context deletion from the persisted registry
+- local persisted query fallback built from exported memory/context records
+
+#### 2. Upgraded generic memory search fallback to merge real local sources
+Updated:
+- `go/internal/httpapi/memory_handlers.go`
+
+Behavior now:
+- upstream TypeScript `memory.query` still wins when available
+- local fallback first reuses the existing SQLite-backed search over persisted local memory tables
+- then merges in registry/export-backed local memory/context results from `.hypercode/memory/contexts.json` and the local export path
+- the fallback now returns truthful persisted search results instead of implying the local runtime has no useful query path
+
+#### 3. Added truthful local `memory.getContext` ownership when inline content exists
+Updated:
+- `go/internal/httpapi/server.go`
+
+Behavior now:
+- upstream TypeScript `memory.getContext` still wins when available
+- if the local registry entry includes inline `content`, Go now returns a real context payload with:
+  - `id`
+  - `content`
+  - `metadata`
+  - `score`
+- if no local body exists, the route still truthfully reports that the local fallback has no persisted context body
+
+#### 4. Added truthful local `memory.deleteContext` ownership
+Updated:
+- `go/internal/httpapi/server.go`
+
+Behavior now:
+- upstream TypeScript `memory.deleteContext` still wins when available
+- when TypeScript is unavailable, Go removes the requested entry from `.hypercode/memory/contexts.json`
+- the response stays explicit that this was handled by the local Go memory fallback
+- the returned data remains simple and truthful: `{ success: <deleted> }`
+
+### Regression coverage
+Updated:
+- `go/internal/httpapi/server_test.go`
+
+Expanded focused coverage so degraded-mode memory behavior is now tested against real local context state:
+- `TestMemoryContextsFallsBackToLocalRegistry`
+- `TestReadOnlyMemoryRoutesFallBackLocally`
+- `TestMemoryServiceBackedMutationsFallBackLocally`
+
+The tests now explicitly seed `.hypercode/memory/contexts.json` with inline content and verify that:
+- `memory.query` returns real persisted local search results
+- `memory.getContext` returns a real local body for stored contexts
+- `memory.deleteContext` removes the persisted local entry instead of failing
+
+### Validation performed
+Executed truthfully without killing any processes, in the clean push worktree:
+- `cd ../hypercode-push/go && gofmt -w internal/httpapi/memory_handlers.go internal/httpapi/memory_context_local.go internal/httpapi/server.go internal/httpapi/server_test.go`
+- `cd ../hypercode-push/go && go test ./internal/httpapi -run 'Test(MemoryContextsFallsBackToLocalRegistry|ReadOnlyMemoryRoutesFallBackLocally|MemoryServiceBackedMutationsFallBackLocally)' -count=1`
+- `cd ../hypercode-push/go && go test ./internal/httpapi -count=1`
+
+### Why this matters
+This closes another small but meaningful truthfulness gap in Go-primary degraded mode:
+- persisted local memory contexts are now searchable in a useful way instead of being partially hidden behind placeholder fallback behavior
+- locally stored inline context bodies are now actually readable through the public API
+- operators can now delete persisted local contexts during TypeScript outage instead of being told the action is impossible
+- the local Go memory story is incrementally more coherent without pretending full vector/LanceDB parity already exists
+
 ## Latest stabilization pass — Hyperharness update, saved-scripts parity, and build-drift repair (2026-04-05)
 
 ### Scope

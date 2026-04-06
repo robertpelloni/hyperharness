@@ -37,18 +37,66 @@ func (s *Server) handleMemorySearch(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	results, searchErr := memorystore.Search(s.cfg.WorkspaceRoot, query, limit)
+	sqliteResults, searchErr := memorystore.Search(s.cfg.WorkspaceRoot, query, limit)
 	if searchErr != nil {
-		results = []memorystore.SearchResult{}
+		sqliteResults = []memorystore.SearchResult{}
+	}
+	contextResults, localErr := s.localMemoryQueryResults(query, limit)
+	if localErr != nil {
+		contextResults = []map[string]any{}
+	}
+
+	merged := make([]map[string]any, 0, maxInt(len(sqliteResults), len(contextResults)))
+	seen := map[string]struct{}{}
+	for _, row := range sqliteResults {
+		id := strings.TrimSpace(row.ID)
+		if id == "" {
+			continue
+		}
+		if _, exists := seen[id]; exists {
+			continue
+		}
+		seen[id] = struct{}{}
+		merged = append(merged, map[string]any{
+			"id":      id,
+			"content": row.Content,
+			"metadata": map[string]any{
+				"type":      row.Type,
+				"source":    row.Source,
+				"url":       row.URL,
+				"title":     row.Title,
+				"createdAt": row.CreatedAt,
+			},
+			"score": 1,
+		})
+		if limit > 0 && len(merged) >= limit {
+			break
+		}
+	}
+	if limit <= 0 || len(merged) < limit {
+		for _, row := range contextResults {
+			id := strings.TrimSpace(stringValue(row["id"]))
+			if id == "" {
+				continue
+			}
+			if _, exists := seen[id]; exists {
+				continue
+			}
+			seen[id] = struct{}{}
+			merged = append(merged, row)
+			if limit > 0 && len(merged) >= limit {
+				break
+			}
+		}
 	}
 
 	writeJSON(w, http.StatusOK, map[string]any{
 		"success": true,
-		"data":    results,
+		"data":    merged,
 		"bridge": map[string]any{
 			"fallback":  "go-local-memory",
 			"procedure": "memory.query",
-			"reason":    "upstream unavailable; using local full-text memory fallback",
+			"reason":    "upstream unavailable; using local persisted memory search",
 		},
 	})
 }
