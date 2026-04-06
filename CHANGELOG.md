@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.0.0-alpha.1] - 2026-04-02
 
 ### Added
+- **Registry Detail Action Result Panel**: The MCP Registry detail page now renders the latest validate/install result inline, showing summary state and key identifiers instead of only using transient toasts.
 - **Registry Action Summary Panel**: The MCP Registry dashboard now renders the latest sync and batch-validation summary inline, showing aggregate counts and per-source details instead of only using transient toasts.
 - **Billing Connection Test Result Panel**: The Billing dashboard now renders the latest provider connection test inline, showing provider name, success/failure state, latency, and error text instead of only using toasts.
 - **Infrastructure Deploy Result Panel**: The Infrastructure dashboard now renders the latest configuration apply/deploy result inline, showing success/failure state and returned output instead of only using toasts.

@@ -686,3 +686,14 @@ This follow-up made the MCP Registry page's top-level action summaries operator-
 
 #### Validation performed
 - `pnpm -C apps/web run build` (executed in the primary workspace)
+
+
+### Latest incremental pass — registry detail action result visibility
+This follow-up made the MCP Registry detail page's validate/install results operator-visible in the page itself.
+
+#### What changed
+- Updated `apps/web/src/app/dashboard/registry/[uuid]/page.tsx`.
+- Single-server validation and install now populate an inline result panel with summary and key details.
+
+#### Validation performed
+- `pnpm -C apps/web run build` (executed in the primary workspace)

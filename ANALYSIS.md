@@ -4570,3 +4570,29 @@ Executed in the primary workspace:
 - `pnpm -C apps/web run build`
 
 Result: passed.
+
+
+## Latest stabilization pass — registry detail action result visibility (2026-04-05)
+
+### Problem
+The MCP Registry detail page exposed validate/install actions, but their result was only surfaced through transient toasts. Operators could not inspect the latest action result inline once the toast disappeared.
+
+### What changed
+Updated:
+- `apps/web/src/app/dashboard/registry/[uuid]/page.tsx`
+
+The page now stores and renders the latest detail-page action result directly in the UI for:
+- single-server validation
+- install from recipe
+
+Surfaced details include:
+- action title
+- success/warning/error tone
+- summary text
+- key identifiers such as `server_uuid`, `failure_class`, and installed managed name when available
+
+### Validation
+Executed in the primary workspace:
+- `pnpm -C apps/web run build`
+
+Result: passed.
