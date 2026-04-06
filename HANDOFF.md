@@ -1666,3 +1666,33 @@ Wrote comprehensive comparison to docs/analysis/HYPERHARNESS_VS_SUPERAI_COMPARIS
 1. Continue through provider-adjacent `agents/` surfaces next.
 2. Inspect `agents/provider.go` and `agents/provider_stub.go` next.
 3. Keep extracting bridge helpers and validating exact contract behavior before broader feature expansion.
+
+## Additional work completed on 2026-04-05 (superai agents provider assimilation tranche)
+- Verified that the following provider-adjacent `agents/` files were already present and parity-aligned with `../superai`:
+  - `agents/provider.go`
+  - `agents/provider_stub.go`
+- Hardened `agents/provider.go` by adding:
+  - `defaultGeminiBaseURL`
+  - `defaultGeminiModel`
+  - `defaultLegacyTools`
+  - `lastProviderMessageContent`
+  - nil provider validation in `Chat`
+  - nil provider + nil chunk channel validation in `Stream`
+  - default model fallback in `GetModelName`
+  - fresh-copy legacy tool array behavior
+- Hardened `agents/provider_stub.go` by adding:
+  - nil provider validation in `Chat`
+  - nil provider + nil chunk channel validation in `Stream`
+  - shared prompt extraction helper use
+- Added focused regression coverage in:
+  - `agents/provider_assimilation_test.go`
+- Added tranche documentation:
+  - `docs/analysis/SUPERAI_AGENTS_PROVIDER_ASSIMILATION_TRANCHE_2026-04-05.md`
+
+## Latest validation after superai agents provider assimilation tranche
+- `go test ./agent ./agents ./tui ./cmd ./foundation/...`
+
+## Updated recommendation after superai agents provider assimilation tranche
+1. Continue through any remaining richer `agents/` surfaces not yet hardened.
+2. Then widen back out to adjacent runtime/provider integration layers as needed.
+3. Keep emphasizing explicit helper seams, deterministic behavior, and regression coverage.
