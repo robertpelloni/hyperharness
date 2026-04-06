@@ -1629,3 +1629,40 @@ Wrote comprehensive comparison to docs/analysis/HYPERHARNESS_VS_SUPERAI_COMPARIS
 1. Continue into the remaining richer `agents/` surfaces.
 2. Prioritize `agents/codemode.go`, `agents/rag.go`, and `agents/provider_hypercode.go` next.
 3. Keep emphasizing deterministic outputs, helper extraction, and control-loop hardening before broader feature expansion.
+
+## Additional work completed on 2026-04-05 (superai codemode/rag/hypercode assimilation tranche)
+- Verified that the following `agents/` files were already present and parity-aligned with `../superai`:
+  - `agents/codemode.go`
+  - `agents/rag.go`
+  - `agents/provider_hypercode.go`
+- Hardened `agents/codemode.go` by adding:
+  - `resolveCodeMode`
+  - `codeModeExecution`
+  - explicit file-name constants
+  - normalized language selection
+  - deferred temp-file cleanup
+- Hardened `agents/rag.go` by adding:
+  - `defaultRAGVectorStore`
+  - `defaultEmbeddingVector`
+  - validation for nil/empty ingest inputs
+  - validation for empty embedding text
+  - copied embedding slice results
+- Hardened `agents/provider_hypercode.go` by adding:
+  - `buildHyperCodeChatRequest`
+  - `parseHyperCodeChatResponse`
+  - `normalizeHyperCodeBaseURL`
+  - nil provider validation
+  - nil chunk-channel validation
+  - base-URL normalization/defaulting
+- Added focused regression coverage in:
+  - `agents/codemode_rag_hypercode_assimilation_test.go`
+- Added tranche documentation:
+  - `docs/analysis/SUPERAI_CODEMODE_RAG_HYPERCODE_ASSIMILATION_TRANCHE_2026-04-05.md`
+
+## Latest validation after superai codemode/rag/hypercode assimilation tranche
+- `go test ./agent ./agents ./tui ./cmd ./foundation/...`
+
+## Updated recommendation after superai codemode/rag/hypercode assimilation tranche
+1. Continue through provider-adjacent `agents/` surfaces next.
+2. Inspect `agents/provider.go` and `agents/provider_stub.go` next.
+3. Keep extracting bridge helpers and validating exact contract behavior before broader feature expansion.
