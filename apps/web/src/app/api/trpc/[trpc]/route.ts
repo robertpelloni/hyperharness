@@ -153,6 +153,16 @@ const LOCAL_COMPAT_RESPONSE_KEYS = {
   'session.attachInfo': 'session.attachInfo',
   'session.health': 'session.health',
   'toolSets.list': 'toolSets.list',
+  'agentMemory.search': 'agentMemory.search',
+  'agentMemory.add': 'agentMemory.add',
+  'agentMemory.getRecent': 'agentMemory.getRecent',
+  'agentMemory.getByType': 'agentMemory.getByType',
+  'agentMemory.getByNamespace': 'agentMemory.getByNamespace',
+  'agentMemory.delete': 'agentMemory.delete',
+  'agentMemory.clearSession': 'agentMemory.clearSession',
+  'agentMemory.export': 'agentMemory.export',
+  'agentMemory.handoff': 'agentMemory.handoff',
+  'agentMemory.pickup': 'agentMemory.pickup',
   'agentMemory.stats': 'agentMemory.stats',
   'memory.getAgentStats': 'memory.getAgentStats',
   'memory.getRecentObservations': 'memory.getRecentObservations',
@@ -214,6 +224,13 @@ const LOCAL_MEMORY_MUTATION_PROCEDURES = new Set([
   'memory.importMemories',
   'memory.convertMemories',
 ]);
+const LOCAL_AGENT_MEMORY_MUTATION_PROCEDURES = new Set([
+  'agentMemory.add',
+  'agentMemory.delete',
+  'agentMemory.clearSession',
+  'agentMemory.handoff',
+  'agentMemory.pickup',
+]);
 const LOCAL_MCP_CONFIG_MUTATION_PROCEDURES = new Set([
   'mcpServers.create',
   'mcpServers.update',
@@ -243,6 +260,7 @@ const LOCAL_COMPAT_MUTATION_PROCEDURES = new Set([
   ...LOCAL_OPERATOR_MUTATION_PROCEDURES,
   ...LOCAL_TOOL_MUTATION_PROCEDURES,
   ...LOCAL_MEMORY_MUTATION_PROCEDURES,
+  ...LOCAL_AGENT_MEMORY_MUTATION_PROCEDURES,
   ...LOCAL_MCP_CONFIG_MUTATION_PROCEDURES,
   ...LOCAL_MCP_RUNTIME_MUTATION_PROCEDURES,
   ...LOCAL_SESSION_MUTATION_PROCEDURES,
@@ -2389,6 +2407,16 @@ async function buildLocalCompatResponse(req: Request, body?: string): Promise<Re
     'session.attachInfo': null,
     'session.health': null,
     'toolSets.list': await buildPreferredToolSetsList(),
+    'agentMemory.search': [],
+    'agentMemory.add': null,
+    'agentMemory.getRecent': [],
+    'agentMemory.getByType': [],
+    'agentMemory.getByNamespace': [],
+    'agentMemory.delete': false,
+    'agentMemory.clearSession': { success: false },
+    'agentMemory.export': {},
+    'agentMemory.handoff': null,
+    'agentMemory.pickup': null,
     'agentMemory.stats': agentMemoryStats,
     'memory.getAgentStats': memoryStats,
     'memory.getRecentObservations': [],
@@ -2455,6 +2483,43 @@ async function buildLocalCompatResponse(req: Request, body?: string): Promise<Re
       const input = procedureInputs[index];
       const limit = input && typeof input === 'object' ? readNumber((input as { limit?: unknown }).limit) : null;
       data = await buildPreferredShellSystemHistory(limit);
+    }
+
+    if (responseKey === 'agentMemory.search' || responseKey === 'agentMemory.getRecent' || responseKey === 'agentMemory.getByType' || responseKey === 'agentMemory.getByNamespace' || responseKey === 'agentMemory.export') {
+      const input = procedureInputs[index];
+      const record = input && typeof input === 'object' ? (input as Record<string, unknown>) : {};
+      let endpointPath = '';
+
+      if (responseKey === 'agentMemory.search') {
+        endpointPath = `/api/agent-memory/search${buildMemoryQueryString({
+          query: readString(record.query),
+          namespace: readString(record.namespace),
+          type: readString(record.type),
+          limit: readNumber(record.limit),
+        })}`;
+      } else if (responseKey === 'agentMemory.getRecent') {
+        endpointPath = `/api/agent-memory/recent${buildMemoryQueryString({
+          limit: readNumber(record.limit),
+          type: readString(record.type),
+        })}`;
+      } else if (responseKey === 'agentMemory.getByType') {
+        endpointPath = `/api/agent-memory/by-type${buildMemoryQueryString({
+          type: readString(record.type),
+        })}`;
+      } else if (responseKey === 'agentMemory.getByNamespace') {
+        endpointPath = `/api/agent-memory/by-namespace${buildMemoryQueryString({
+          namespace: readString(record.namespace),
+        })}`;
+      } else if (responseKey === 'agentMemory.export') {
+        endpointPath = '/api/agent-memory/export';
+      }
+
+      if (endpointPath) {
+        data = await fetchNativeControlPlaneData<unknown>(endpointPath);
+        if (data === null) {
+          data = responseKey === 'agentMemory.export' ? {} : [];
+        }
+      }
     }
 
     if (responseKey === 'memory.getRecentObservations' || responseKey === 'memory.searchObservations' || responseKey === 'memory.getRecentUserPrompts' || responseKey === 'memory.searchUserPrompts' || responseKey === 'memory.getRecentSessionSummaries' || responseKey === 'memory.searchSessionSummaries' || responseKey === 'memory.searchAgentMemory' || responseKey === 'memory.listInterchangeFormats' || responseKey === 'memory.exportMemories') {
@@ -3116,6 +3181,57 @@ async function tryLocalMemoryMutation(req: Request, body: string | undefined): P
   });
 }
 
+async function tryLocalAgentMemoryMutation(req: Request, body: string | undefined): Promise<Response | null> {
+  const procedures = getProcedureNames(req);
+  const procedureName = procedures[0] ?? '';
+  if (req.method !== 'POST' || procedures.length !== 1 || !LOCAL_AGENT_MEMORY_MUTATION_PROCEDURES.has(procedureName)) {
+    return null;
+  }
+
+  const input = extractTrpcRequestInput(body, req);
+  const expectsObject = procedureName !== 'agentMemory.clearSession';
+  if ((expectsObject && (!input || typeof input !== 'object')) || (!expectsObject && input !== null && input !== undefined && typeof input !== 'object')) {
+    return buildTrpcResponse(req, undefined, {
+      status: 400,
+      statusText: 'Invalid local agent memory compat input',
+      headers: { 'x-hypercode-trpc-compat': 'local-agent-memory-action' },
+    });
+  }
+
+  let endpointPath = '';
+  if (procedureName === 'agentMemory.add') {
+    endpointPath = '/api/agent-memory/add';
+  } else if (procedureName === 'agentMemory.delete') {
+    endpointPath = '/api/agent-memory/delete';
+  } else if (procedureName === 'agentMemory.clearSession') {
+    endpointPath = '/api/agent-memory/clear-session';
+  } else if (procedureName === 'agentMemory.handoff') {
+    endpointPath = '/api/agent-memory/handoff';
+  } else if (procedureName === 'agentMemory.pickup') {
+    endpointPath = '/api/agent-memory/pickup';
+  }
+
+  if (!endpointPath) {
+    return null;
+  }
+
+  const data = await fetchNativeControlPlaneData<unknown>(endpointPath, {
+    method: 'POST',
+    headers: {
+      'content-type': 'application/json',
+    },
+    body: JSON.stringify((input && typeof input === 'object') ? input : {}),
+  });
+  if (data === null) {
+    return null;
+  }
+
+  return buildTrpcResponse(req, data, {
+    status: 200,
+    headers: { 'x-hypercode-trpc-compat': 'local-agent-memory-action' },
+  });
+}
+
 async function tryLocalMCPRuntimeMutation(req: Request, body: string | undefined): Promise<Response | null> {
   const procedures = getProcedureNames(req);
   const procedureName = procedures[0] ?? '';
@@ -3449,6 +3565,11 @@ async function handler(req: Request): Promise<Response> {
     const localMemoryMutationResponse = await tryLocalMemoryMutation(req, body);
     if (localMemoryMutationResponse) {
       return localMemoryMutationResponse;
+    }
+
+    const localAgentMemoryMutationResponse = await tryLocalAgentMemoryMutation(req, body);
+    if (localAgentMemoryMutationResponse) {
+      return localAgentMemoryMutationResponse;
     }
 
     const localMCPRuntimeMutationResponse = await tryLocalMCPRuntimeMutation(req, body);

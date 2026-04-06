@@ -3,6 +3,38 @@
 ## Current status
 **Version:** `1.0.0-alpha.1`
 
+### Latest incremental pass — dashboard agent-memory compat routed to Go fallback ownership
+This follow-up stayed in the shared compat lane and extended the dashboard's `agentMemory.*` procedures onto the Go control plane during `/trpc` outage.
+
+#### What changed
+- Updated `apps/web/src/app/api/trpc/[trpc]/route.ts` so local dashboard fallback now supports Go-backed agent-memory reads for:
+  - `agentMemory.search`
+  - `agentMemory.getRecent`
+  - `agentMemory.getByType`
+  - `agentMemory.getByNamespace`
+  - `agentMemory.export`
+  - `agentMemory.stats`
+- Added dedicated local agent-memory mutation compat routing for:
+  - `agentMemory.add`
+  - `agentMemory.delete`
+  - `agentMemory.clearSession`
+  - `agentMemory.handoff`
+  - `agentMemory.pickup`
+- These now target the live Go control-plane routes under `/api/agent-memory/*` instead of failing only because `/trpc` is unavailable.
+- Updated `apps/web/src/app/api/trpc/[trpc]/route.test.ts` with focused compat coverage for:
+  - agent-memory reads
+  - add/handoff/pickup mutations
+
+#### Validation performed
+- `pnpm --dir C:/Users/hyper/workspace/hypercode exec vitest --root C:/Users/hyper/workspace/hypercode-push run apps/web/src/app/api/trpc/[trpc]/route.test.ts`
+
+#### Validation limitation
+- `apps/web` production build was not run from the clean push worktree because that worktree still lacks its own installed Next.js toolchain.
+- This slice is validated by the shared route-level compat suite.
+
+#### Recommended next step after this pass
+Keep shrinking the remaining Go-primary/dashboard compatibility gap by identifying other operator-facing clusters that already have truthful Go `/api/*` ownership but still do not flow through the shared web compat layer.
+
 ### Latest incremental pass — dashboard memory compat routed to Go fallback ownership
 This follow-up stayed in the same Go-memory lane but closed the shared compat-layer gap that still left the dashboard memory page overly dependent on `/trpc`.
 

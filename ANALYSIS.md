@@ -1,5 +1,99 @@
 # HyperCode Stabilization Analysis — 2026-04-03
 
+## Latest stabilization pass — dashboard agent-memory compat routed to Go fallback ownership (2026-04-06)
+
+### Scope
+This follow-up stayed in the same operator-facing compat lane and targeted the adjacent `agentMemory.*` family used by multiple widgets/pages.
+
+The shared Next.js compat route already exposed `agentMemory.stats`, but the rest of the agent-memory cluster was still missing despite the Go HTTP layer already owning truthful local fallback behavior for reads, handoff/pickup, and mutations.
+
+### Findings
+- `apps/web/src` uses `agentMemory.*` beyond stats in several operator-facing places:
+  - `SessionHandoffWidget` uses `agentMemory.handoff` and `agentMemory.pickup`
+  - `ContextHealthWidget` uses `agentMemory.handoff`
+  - `dashboard/intake` uses `agentMemory.add` and `agentMemory.getRecent`
+  - `dashboard/project` uses `agentMemory.pickup`
+- The Go backend already had truthful native/local fallback ownership for:
+  - `agentMemory.search`
+  - `agentMemory.add`
+  - `agentMemory.getRecent`
+  - `agentMemory.getByType`
+  - `agentMemory.getByNamespace`
+  - `agentMemory.delete`
+  - `agentMemory.clearSession`
+  - `agentMemory.export`
+  - `agentMemory.handoff`
+  - `agentMemory.pickup`
+  - `agentMemory.stats`
+- But the shared `/api/trpc/[trpc]` compat route still only exposed `agentMemory.stats`, leaving the rest of that UI cluster artificially `/trpc`-dependent.
+
+### What changed
+#### 1. Extended local compat read support for the agent-memory cluster
+Updated:
+- `apps/web/src/app/api/trpc/[trpc]/route.ts`
+
+The shared local compat route now supports these agent-memory read procedures when `/trpc` is unavailable:
+- `agentMemory.search`
+- `agentMemory.getRecent`
+- `agentMemory.getByType`
+- `agentMemory.getByNamespace`
+- `agentMemory.export`
+- `agentMemory.stats` (already present)
+
+These now map onto the Go HTTP surface under `/api/agent-memory/*` instead of failing just because the TypeScript backend is unavailable.
+
+#### 2. Added local compat mutation support for the agent-memory cluster
+Updated:
+- `apps/web/src/app/api/trpc/[trpc]/route.ts`
+
+The shared compat route now also supports these agent-memory mutations:
+- `agentMemory.add`
+- `agentMemory.delete`
+- `agentMemory.clearSession`
+- `agentMemory.handoff`
+- `agentMemory.pickup`
+
+These now route onto the existing Go endpoints:
+- `/api/agent-memory/add`
+- `/api/agent-memory/delete`
+- `/api/agent-memory/clear-session`
+- `/api/agent-memory/handoff`
+- `/api/agent-memory/pickup`
+
+#### 3. Kept compat payloads aligned with current widget/page expectations
+The compat layer now preserves the Go-native response shapes closely enough for the current UI consumers:
+- `getRecent` returns agent-memory rows directly
+- `handoff` returns the generated artifact payload directly
+- `pickup` returns the Go-native restore result directly
+- `add` returns the created agent-memory record directly
+- `export` returns the Go-native export object
+
+### Regression coverage
+Updated:
+- `apps/web/src/app/api/trpc/[trpc]/route.test.ts`
+
+Added focused compat coverage for:
+- agent-memory reads (`getRecent`, `export`, `stats`)
+- agent-memory mutations (`add`, `handoff`, `pickup`)
+
+This validates that the shared compat route now prefers the Go control plane for the operator-facing agent-memory cluster instead of only for the generic memory dashboard procedures landed in the previous pass.
+
+### Validation performed
+Executed truthfully without killing any processes:
+- Route-level compat validation against the clean push worktree, using the primary workspace's installed Vitest toolchain:
+  - `pnpm --dir C:/Users/hyper/workspace/hypercode exec vitest --root C:/Users/hyper/workspace/hypercode-push run apps/web/src/app/api/trpc/[trpc]/route.test.ts`
+
+### Validation limitation
+- I did not claim an `apps/web` production build for the clean push worktree.
+- As with the previous compat slice, the clean worktree does not have its own installed Next/toolchain binaries.
+- This slice is therefore validated by the shared route-level compat suite.
+
+### Why this matters
+This continues the same migration pattern one layer higher than the Go HTTP server:
+- the operator-facing handoff/pickup and intake flows can now inherit Go-native agent-memory truth during `/trpc` outage
+- the shared compat route is less selective and less misleading about which memory-related clusters are actually Go-usable
+- more dashboard features now benefit automatically from the growing Go-native memory ownership already landed underneath
+
 ## Latest stabilization pass — dashboard memory compat routed to Go fallback ownership (2026-04-06)
 
 ### Scope

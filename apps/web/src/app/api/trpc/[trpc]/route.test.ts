@@ -1670,6 +1670,110 @@ describe('legacy MCP dashboard compatibility bridge', () => {
     expect((global.fetch as ReturnType<typeof vi.fn>).mock.calls.some(([url]) => String(url) === 'http://127.0.0.1:4546/api/memory/convert')).toBe(true);
   });
 
+  it('prefers go-native agent-memory reads and mutations in local dashboard fallback mode', async () => {
+    process.env.HYPERCODE_TRPC_UPSTREAM = 'http://127.0.0.1:4544/trpc';
+    global.fetch = vi.fn(async (input, init) => {
+      const url = String(input);
+
+      if (url.includes('/trpc/')) {
+        throw new Error('connect ECONNREFUSED');
+      }
+
+      if (url === 'http://127.0.0.1:4544/api/agent-memory/recent?limit=5&type=long_term') {
+        return new Response(JSON.stringify({
+          success: true,
+          data: [
+            { id: 'am-1', content: 'Recent long-term note', type: 'long_term', namespace: 'project', metadata: { tags: ['intake'] } },
+          ],
+        }), { status: 200, headers: { 'content-type': 'application/json' } });
+      }
+
+      if (url === 'http://127.0.0.1:4544/api/agent-memory/export') {
+        return new Response(JSON.stringify({
+          success: true,
+          data: {
+            session: [],
+            working: [],
+            long_term: [{ id: 'am-1', content: 'Recent long-term note' }],
+          },
+        }), { status: 200, headers: { 'content-type': 'application/json' } });
+      }
+
+      if (url === 'http://127.0.0.1:4544/api/agent-memory/add' && init?.method === 'POST') {
+        return new Response(JSON.stringify({
+          success: true,
+          data: { id: 'am-created-1', content: 'Manual intake memory', type: 'long_term', namespace: 'project' },
+        }), { status: 200, headers: { 'content-type': 'application/json' } });
+      }
+
+      if (url === 'http://127.0.0.1:4544/api/agent-memory/handoff' && init?.method === 'POST') {
+        return new Response(JSON.stringify({
+          success: true,
+          data: { artifact: '{"kind":"handoff"}' },
+        }), { status: 200, headers: { 'content-type': 'application/json' } });
+      }
+
+      if (url === 'http://127.0.0.1:4544/api/agent-memory/pickup' && init?.method === 'POST') {
+        return new Response(JSON.stringify({
+          success: true,
+          data: { success: true, count: 3, restored: 3 },
+        }), { status: 200, headers: { 'content-type': 'application/json' } });
+      }
+
+      throw new Error(`Unexpected fetch: ${url}`);
+    }) as typeof fetch;
+
+    const recentResponse = await POST(new Request('http://localhost:3010/api/trpc/agentMemory.getRecent', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ json: { limit: 5, type: 'long_term' } }),
+    }));
+    expect(recentResponse.headers.get('x-hypercode-trpc-compat')).toBe('local-dashboard-fallback');
+    expect((await recentResponse.json())?.result?.data).toEqual([
+      expect.objectContaining({ id: 'am-1', content: 'Recent long-term note', type: 'long_term' }),
+    ]);
+
+    const exportResponse = await POST(new Request('http://localhost:3010/api/trpc/agentMemory.export', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ json: null }),
+    }));
+    expect(exportResponse.headers.get('x-hypercode-trpc-compat')).toBe('local-dashboard-fallback');
+    expect((await exportResponse.json())?.result?.data).toEqual(expect.objectContaining({
+      long_term: [expect.objectContaining({ id: 'am-1' })],
+    }));
+
+    const addResponse = await POST(new Request('http://localhost:3010/api/trpc/agentMemory.add', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ json: { content: 'Manual intake memory', type: 'long_term', namespace: 'project', tags: ['manual_intake'] } }),
+    }));
+    expect(addResponse.headers.get('x-hypercode-trpc-compat')).toBe('local-agent-memory-action');
+    expect((await addResponse.json())?.result?.data).toEqual(expect.objectContaining({ id: 'am-created-1', type: 'long_term' }));
+
+    const handoffResponse = await POST(new Request('http://localhost:3010/api/trpc/agentMemory.handoff', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ json: { notes: 'dashboard compaction' } }),
+    }));
+    expect(handoffResponse.headers.get('x-hypercode-trpc-compat')).toBe('local-agent-memory-action');
+    expect((await handoffResponse.json())?.result?.data).toEqual(expect.objectContaining({ artifact: '{"kind":"handoff"}' }));
+
+    const pickupResponse = await POST(new Request('http://localhost:3010/api/trpc/agentMemory.pickup', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ json: { artifact: '{"kind":"handoff"}' } }),
+    }));
+    expect(pickupResponse.headers.get('x-hypercode-trpc-compat')).toBe('local-agent-memory-action');
+    expect((await pickupResponse.json())?.result?.data).toEqual(expect.objectContaining({ success: true, count: 3, restored: 3 }));
+
+    expect((global.fetch as ReturnType<typeof vi.fn>).mock.calls.some(([url]) => String(url) === 'http://127.0.0.1:4544/api/agent-memory/recent?limit=5&type=long_term')).toBe(true);
+    expect((global.fetch as ReturnType<typeof vi.fn>).mock.calls.some(([url]) => String(url) === 'http://127.0.0.1:4544/api/agent-memory/export')).toBe(true);
+    expect((global.fetch as ReturnType<typeof vi.fn>).mock.calls.some(([url]) => String(url) === 'http://127.0.0.1:4544/api/agent-memory/add')).toBe(true);
+    expect((global.fetch as ReturnType<typeof vi.fn>).mock.calls.some(([url]) => String(url) === 'http://127.0.0.1:4544/api/agent-memory/handoff')).toBe(true);
+    expect((global.fetch as ReturnType<typeof vi.fn>).mock.calls.some(([url]) => String(url) === 'http://127.0.0.1:4544/api/agent-memory/pickup')).toBe(true);
+  });
+
   it('prefers go-native supervised session reads and mutations in local dashboard fallback mode', async () => {
     process.env.HYPERCODE_TRPC_UPSTREAM = 'http://127.0.0.1:4400/trpc';
     global.fetch = vi.fn(async (input, init) => {
