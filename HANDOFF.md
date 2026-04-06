@@ -28,7 +28,11 @@ This follow-up stayed in the startup-truth lane and improved the `hypercode star
 #### Validation results
 Passed:
 - `packages/cli/src/commands/start.test.ts`
-  - `42/42` tests passed
+  - `43/43` tests passed
+
+#### Additional refinement included in this pass
+- tightened the new attach flow so it can reuse the already-selected dashboard port/URL instead of re-probing and potentially drifting to a different port
+- attach helper now also returns detailed failure text when available, so operator logs can be more exact than a generic “failed to launch” message
 
 #### Recommended next step after this pass
 The next best startup-truth slice is another real operator `start.bat` replay. At this point the startup path has improved in four meaningful ways:

@@ -73,13 +73,24 @@ Executed truthfully without killing any processes:
 ### Validation results
 Passed:
 - `packages/cli/src/commands/start.test.ts`
-  - `42/42` tests passed
+  - `43/43` tests passed
+
+### Refinement in this pass
+After implementing the attach flow, I tightened one remaining truthfulness issue in the same branch:
+- the already-running path had been probing for dashboard reuse once, then the attach helper could probe again and potentially choose a different port
+- the attach helper also returned only generic failure modes, not the underlying launch detail
+
+That is now fixed:
+- the attach helper can consume the already-selected dashboard port/URL directly instead of re-probing
+- attach results now include detailed failure text when available
+- operator logs can therefore stay consistent about which dashboard port was selected and why attach failed
 
 ### Why this matters
 This improves a real operator branch that appears naturally during repeated startup attempts:
 - reusing an existing control plane is now more informative
 - dashboard reuse is no longer implicit or mysterious
 - when only the control plane is running, `hypercode start` can now attach a dashboard runtime for the operator instead of merely telling them to do it manually
+- that attach path now also avoids port-selection drift and surfaces more exact failure detail
 - startup remains non-destructive while offering a clearer path to the existing UI surface
 
 ## Latest stabilization pass — legacy startup locks now derive truthful port provenance (2026-04-06)

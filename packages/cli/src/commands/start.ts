@@ -564,6 +564,8 @@ export async function attachDashboardToRunningControlPlane(options: {
   controlPlaneBaseUrl: string;
   webRoot: string;
   repoRoot: string;
+  dashboardPort?: number | null;
+  dashboardUrl?: string | null;
 }, deps: {
   pickDashboardPortFn?: typeof pickDashboardPort;
   spawnImpl?: typeof spawn;
@@ -574,18 +576,27 @@ export async function attachDashboardToRunningControlPlane(options: {
   dashboardPort: number;
   reusedExisting: boolean;
   shouldOpenDashboard: boolean;
+  detail?: string;
 }> {
   const pickDashboardPortFn = deps.pickDashboardPortFn ?? pickDashboardPort;
   const spawnImpl = deps.spawnImpl ?? spawn;
   const waitForHttpReadyFn = deps.waitForHttpReadyFn ?? waitForHttpReady;
 
-  const dashboardSelection = await pickDashboardPortFn(
-    options.requestedDashboardPort,
-    options.explicitDashboardPort,
-    options.host,
-    { allowReuseExisting: true },
-  );
-  const dashboardUrl = resolveDashboardUrl(options.host, dashboardSelection.port);
+  let dashboardSelection: { port: number; reusedExisting: boolean };
+  let dashboardUrl: string;
+
+  if (typeof options.dashboardPort === 'number' && options.dashboardPort > 0) {
+    dashboardSelection = { port: options.dashboardPort, reusedExisting: false };
+    dashboardUrl = options.dashboardUrl ?? resolveDashboardUrl(options.host, options.dashboardPort);
+  } else {
+    dashboardSelection = await pickDashboardPortFn(
+      options.requestedDashboardPort,
+      options.explicitDashboardPort,
+      options.host,
+      { allowReuseExisting: true },
+    );
+    dashboardUrl = resolveDashboardUrl(options.host, dashboardSelection.port);
+  }
 
   if (dashboardSelection.reusedExisting) {
     return {
@@ -648,6 +659,7 @@ export async function attachDashboardToRunningControlPlane(options: {
       dashboardPort: dashboardSelection.port,
       reusedExisting: false,
       shouldOpenDashboard: false,
+      detail: dashboardLaunchErrorMessage,
     };
   }
 
@@ -658,6 +670,7 @@ export async function attachDashboardToRunningControlPlane(options: {
       dashboardPort: dashboardSelection.port,
       reusedExisting: false,
       shouldOpenDashboard: false,
+      detail: `Dashboard runtime exited before ${dashboardUrl} became ready.`,
     };
   }
 
@@ -667,6 +680,7 @@ export async function attachDashboardToRunningControlPlane(options: {
     dashboardPort: dashboardSelection.port,
     reusedExisting: false,
     shouldOpenDashboard: options.shouldOpenDashboard,
+    detail: `Dashboard runtime is still starting at ${dashboardUrl}.`,
   };
 }
 
@@ -1497,6 +1511,8 @@ Examples:
             controlPlaneBaseUrl: existingControlPlaneBase,
             webRoot,
             repoRoot,
+            dashboardPort: dashboardReuse.dashboardPort,
+            dashboardUrl: dashboardReuse.dashboardUrl,
           });
 
           console.log(chalk.dim(`  Dashboard mode: ${attachedDashboard.dashboardMode}`));
@@ -1506,11 +1522,11 @@ Examples:
           if (attachedDashboard.dashboardMode === 'started dashboard runtime attached to existing control plane') {
             console.log(chalk.green(`  ✓ Dashboard runtime ready at ${attachedDashboard.dashboardUrl}`));
           } else if (attachedDashboard.dashboardMode === 'dashboard launch attempted but failed') {
-            console.log(chalk.yellow(`  ⚠ Dashboard runtime failed to launch for ${attachedDashboard.dashboardUrl}.`));
+            console.log(chalk.yellow(`  ⚠ Dashboard runtime failed to launch: ${attachedDashboard.detail ?? attachedDashboard.dashboardUrl}`));
           } else if (attachedDashboard.dashboardMode === 'dashboard launch attempted but exited early') {
-            console.log(chalk.yellow(`  ⚠ Dashboard runtime exited before ${attachedDashboard.dashboardUrl} became ready.`));
+            console.log(chalk.yellow(`  ⚠ ${attachedDashboard.detail ?? `Dashboard runtime exited before ${attachedDashboard.dashboardUrl} became ready.`}`));
           } else if (attachedDashboard.dashboardMode === 'dashboard launch attempted and still starting') {
-            console.log(chalk.yellow(`  ⚠ Dashboard runtime is still starting. Visit ${attachedDashboard.dashboardUrl} in a moment.`));
+            console.log(chalk.yellow(`  ⚠ ${attachedDashboard.detail ?? `Dashboard runtime is still starting. Visit ${attachedDashboard.dashboardUrl} in a moment.`}`));
           }
 
           if (attachedDashboard.shouldOpenDashboard) {

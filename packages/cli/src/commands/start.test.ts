@@ -608,6 +608,7 @@ describe('dashboard startup helpers', () => {
             },
             unref,
         });
+        const pickDashboardPortFn = vi.fn();
 
         await expect(attachDashboardToRunningControlPlane({
             requestedDashboardPort: 3000,
@@ -617,8 +618,10 @@ describe('dashboard startup helpers', () => {
             controlPlaneBaseUrl: 'http://127.0.0.1:4000',
             webRoot: 'C:/repo/apps/web',
             repoRoot: 'C:/repo',
+            dashboardPort: 3010,
+            dashboardUrl: 'http://127.0.0.1:3010/dashboard',
         }, {
-            pickDashboardPortFn: vi.fn().mockResolvedValue({ port: 3010, reusedExisting: false }) as any,
+            pickDashboardPortFn: pickDashboardPortFn as any,
             spawnImpl: spawnImpl as any,
             waitForHttpReadyFn: vi.fn().mockResolvedValue(true) as any,
         })).resolves.toEqual({
@@ -629,9 +632,44 @@ describe('dashboard startup helpers', () => {
             shouldOpenDashboard: true,
         });
 
+        expect(pickDashboardPortFn).not.toHaveBeenCalled();
         expect(spawnImpl).toHaveBeenCalled();
         expect(unref).toHaveBeenCalled();
         expect(Object.keys(onceHandlers)).toEqual(expect.arrayContaining(['exit', 'error']));
+    });
+
+    it('returns detailed dashboard attach failure information', async () => {
+        const spawnImpl = vi.fn().mockReturnValue({
+            once: (event: string, handler: (...args: unknown[]) => void) => {
+                if (event === 'error') {
+                    handler(new Error('next missing'));
+                }
+                return undefined;
+            },
+            unref: vi.fn(),
+        });
+
+        await expect(attachDashboardToRunningControlPlane({
+            requestedDashboardPort: 3000,
+            explicitDashboardPort: true,
+            host: '127.0.0.1',
+            shouldOpenDashboard: true,
+            controlPlaneBaseUrl: 'http://127.0.0.1:4000',
+            webRoot: 'C:/repo/apps/web',
+            repoRoot: 'C:/repo',
+            dashboardPort: 3000,
+            dashboardUrl: 'http://127.0.0.1:3000/dashboard',
+        }, {
+            spawnImpl: spawnImpl as any,
+            waitForHttpReadyFn: vi.fn().mockResolvedValue(false) as any,
+        })).resolves.toEqual({
+            dashboardMode: 'dashboard launch attempted but failed',
+            dashboardUrl: 'http://127.0.0.1:3000/dashboard',
+            dashboardPort: 3000,
+            reusedExisting: false,
+            shouldOpenDashboard: false,
+            detail: 'next missing',
+        });
     });
 });
 
