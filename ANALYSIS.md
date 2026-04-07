@@ -59,6 +59,44 @@ This continues the same migration pattern on two more real operator-facing clust
 - the Knowledge and Architecture pages can now inherit Go-native submodule and git behavior in degraded mode
 - the shared compat layer is less misleading about which creative/operator workflows still require TypeScript
 
+## Latest stabilization pass — council and director compat routed to Go fallback (2026-04-06)
+
+### Scope
+This follow-up continued the shared web compat lane and targeted the core orchestrator surfaces: the Council and Director.
+
+The goal was to allow the Autopilot and Director dashboard pages to function in degraded mode by wiring their core procedures to the Go control plane.
+
+### Findings
+The Go backend already had native handlers for many council and director procedures, but the shared compat route was still treating them as TS-only. This slice bridged the gap for the most essential orchestration reads and some key mutations.
+
+### What changed
+Updated:
+- `apps/web/src/app/api/trpc/[trpc]/route.ts`
+- `apps/web/src/app/api/trpc/[trpc]/route.test.ts`
+
+Added local compat support for:
+- `council.base.status`
+- `council.members`
+- `council.updateMembers`
+- `council.sessions.list`
+- `council.sessions.stats`
+- `council.history.list`
+- `council.quota.allStats`
+- `council.smartPilot.status`
+- `council.visual.systemDiagram`
+- `director.chat`
+- `directorConfig.get`
+- `directorConfig.update`
+
+These now map to their corresponding Go-native `/api/council/*` and `/api/director/*` endpoints.
+
+### Validation performed
+- `pnpm --dir C:/Users/hyper/workspace/hypercode exec vitest --root C:/Users/hyper/workspace/hypercode-push run apps/web/src/app/api/trpc/[trpc]/route.test.ts`
+- result: `33/33` tests passed
+
+### Why this matters
+The Council and Director are the "brain" of the HyperCode orchestrator. Bridging these to Go allows the main orchestration UI to remain truthful and interactive even when the TypeScript control plane is offline, further cementing Go as the primary, reliable backend.
+
 ## Latest stabilization pass — browser compat routed to Go fallback (2026-04-06)
 
 ### Scope

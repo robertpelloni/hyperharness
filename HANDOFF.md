@@ -3,6 +3,24 @@
 ## Current status
 **Version:** `1.0.0-alpha.1`
 
+### Latest incremental pass — council and director compat routed to Go fallback
+This follow-up continued the shared web compat lane and wired the core orchestrator surfaces (Council and Director) to the Go backend.
+
+#### What changed
+- Updated `apps/web/src/app/api/trpc/[trpc]/route.ts` to support:
+  - `council.base.status`, `council.members`, `council.updateMembers`
+  - `council.sessions.list`, `council.sessions.stats`, `council.history.list`
+  - `council.quota.allStats`, `council.smartPilot.status`, `council.visual.systemDiagram`
+  - `director.chat`, `directorConfig.get`, `directorConfig.update`
+- Added focused regression tests in `route.test.ts` for council and director fallbacks.
+
+#### Validation performed
+- `pnpm --dir C:/Users/hyper/workspace/hypercode exec vitest --root C:/Users/hyper/workspace/hypercode-push run apps/web/src/app/api/trpc/[trpc]/route.test.ts`
+- result: `33/33` tests passed
+
+#### Recommended next step after this pass
+The main orchestration UI (Autopilot and Director) is now much more functional in degraded mode. The next high-value compat target is likely the remaining mutation surfaces in the MCP Registry or starting the **Maestro (Visual Orchestrator)** Go/Wails port refinement.
+
 ### Latest incremental pass — submodule, git, and catalog compat routed to Go fallback
 This follow-up returned to the shared web compat lane and wired two major dashboard clusters that still depended on `/trpc` even though Go already had native ownership.
 
@@ -19,25 +37,7 @@ This follow-up returned to the shared web compat lane and wired two major dashbo
 - result: `31/31` tests passed
 
 #### Recommended next step after this pass
-The Knowledge, Architecture, and MCP Registry pages are now much more functional in degraded mode. The next highest-value compat target is likely `browser.*` (Browser page) or deeper director/council orchestration surfaces. Alternatively, we can do another real `start.bat` validation pass to see what the current runtime surfaces.
-
-### Latest incremental pass — submodule, git, and catalog compat routed to Go fallback
-This follow-up returned to the shared web compat lane and wired two major dashboard clusters that still depended on `/trpc` even though Go already had native ownership.
-
-#### What changed
-- Updated `apps/web/src/app/api/trpc/[trpc]/route.ts` to support:
-  - `submodule.list`, `submodule.detectCapabilities`
-  - `git.getModules`, `git.getLog`, `git.getStatus`
-  - `catalog.list`, `catalog.get`, `catalog.listRuns`, `catalog.stats`, `catalog.listLinkedServers`
-- Added mutation support for submodule and catalog operations
-- Added two new test cases in `route.test.ts` for submodule and catalog fallback
-
-#### Validation performed
-- `pnpm --dir C:/Users/hyper/workspace/hypercode exec vitest --root C:/Users/hyper/workspace/hypercode-push run apps/web/src/app/api/trpc/[trpc]/route.test.ts`
-- result: `31/31` tests passed
-
-#### Recommended next step after this pass
-The Knowledge, Architecture, and MCP Registry pages are now much more functional in degraded mode. The next highest-value compat target is likely `browser.*` (Browser page) or deeper director/council orchestration surfaces. Alternatively, we can do another real `start.bat` validation pass to see what the current runtime surfaces.
+The Knowledge, Architecture, and MCP Registry pages are now much more functional in degraded mode. The next highest-value compat target is likely `browser.*` (Browser page) or deeper director/council orchestration surfaces.
 
 ### Latest incremental pass — already-running startup path now reuses or attaches the dashboard truthfully
 

@@ -204,6 +204,18 @@ const LOCAL_COMPAT_RESPONSE_KEYS = {
   'browser.debug': 'browser.debug',
   'browser.closePage': 'browser.closePage',
   'browser.closeAll': 'browser.closeAll',
+  'council.base.status': 'council.base.status',
+  'council.members': 'council.members',
+  'council.updateMembers': 'council.updateMembers',
+  'council.sessions.list': 'council.sessions.list',
+  'council.sessions.stats': 'council.sessions.stats',
+  'council.history.list': 'council.history.list',
+  'council.quota.allStats': 'council.quota.allStats',
+  'council.smartPilot.status': 'council.smartPilot.status',
+  'council.visual.systemDiagram': 'council.visual.systemDiagram',
+  'director.chat': 'director.chat',
+  'directorConfig.get': 'directorConfig.get',
+  'directorConfig.update': 'directorConfig.update',
 } as const;
 
 type LocalCompatProcedure = keyof typeof LOCAL_COMPAT_RESPONSE_KEYS;
@@ -2515,6 +2527,16 @@ async function buildLocalCompatResponse(req: Request, body?: string): Promise<Re
     'browser.debug': null,
     'browser.closePage': null,
     'browser.closeAll': { success: true },
+    'council.base.status': { supervisors: [] },
+    'council.sessions.list': [],
+    'council.sessions.stats': { total: 0, active: 0 },
+    'council.history.list': [],
+    'council.quota.allStats': {},
+    'council.smartPilot.status': { enabled: false },
+    'council.visual.systemDiagram': '',
+    'director.chat': { response: '' },
+    'directorConfig.get': {},
+    'directorConfig.update': { success: true },
   };
 
   const compatEntries = await Promise.all(procedureNames.map(async (procedureName, index) => {
@@ -2906,6 +2928,42 @@ async function buildLocalCompatResponse(req: Request, body?: string): Promise<Re
         browserData = responseKey === 'browser.closeAll' ? { success: true } : null;
       }
       data = browserData;
+    }
+
+    if (responseKey.startsWith('council.') || responseKey.startsWith('director')) {
+      const input = procedureInputs[index];
+      let endpointPath = '';
+      let method = 'GET';
+
+      if (responseKey === 'council.base.status') endpointPath = '/api/council/status';
+      else if (responseKey === 'council.members') endpointPath = '/api/council/members';
+      else if (responseKey === 'council.updateMembers') { endpointPath = '/api/council/members/update'; method = 'POST'; }
+      else if (responseKey === 'council.sessions.list') endpointPath = '/api/council/sessions';
+      else if (responseKey === 'council.sessions.stats') endpointPath = '/api/council/sessions/stats';
+      else if (responseKey === 'council.history.list') endpointPath = '/api/council/history/list';
+      else if (responseKey === 'council.quota.allStats') endpointPath = '/api/council/quota/stats';
+      else if (responseKey === 'council.smartPilot.status') endpointPath = '/api/council/smart-pilot/status';
+      else if (responseKey === 'council.visual.systemDiagram') endpointPath = '/api/council/visual/system-diagram';
+      else if (responseKey === 'director.chat') { endpointPath = '/api/director/chat'; method = 'POST'; }
+      else if (responseKey === 'directorConfig.get') endpointPath = '/api/director-config';
+      else if (responseKey === 'directorConfig.update') { endpointPath = '/api/director-config/update'; method = 'POST'; }
+
+      if (endpointPath) {
+        data = await fetchNativeControlPlaneData<unknown>(endpointPath, {
+          method,
+          headers: {
+            'content-type': 'application/json',
+          },
+          body: method === 'POST' && input ? JSON.stringify(input) : undefined,
+        });
+        if (data === null) {
+          if (responseKey.includes('list') || responseKey.includes('stats') || responseKey.includes('history')) {
+            data = [];
+          } else {
+            data = {};
+          }
+        }
+      }
     }
 
     return {

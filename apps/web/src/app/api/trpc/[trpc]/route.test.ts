@@ -1731,6 +1731,59 @@ describe('legacy MCP dashboard compatibility bridge', () => {
     expect((await updateResponse.json())?.result?.data).toEqual({ success: true });
   });
 
+  it('prefers go-native council and director reads and mutations in local dashboard fallback mode', async () => {
+    process.env.HYPERCODE_TRPC_UPSTREAM = 'http://127.0.0.1:4570/trpc';
+    global.fetch = vi.fn(async (input, init) => {
+      const url = String(input);
+
+      if (url.includes('/trpc/')) {
+        throw new Error('connect ECONNREFUSED');
+      }
+
+      if (url === 'http://127.0.0.1:4570/api/council/status') {
+        return new Response(JSON.stringify({
+          success: true,
+          data: { supervisors: [{ name: 'planner', status: 'online' }] },
+        }), { status: 200, headers: { 'content-type': 'application/json' } });
+      }
+
+      if (url === 'http://127.0.0.1:4570/api/director/chat' && init?.method === 'POST') {
+        return new Response(JSON.stringify({
+          success: true,
+          data: { response: 'Hello from director' },
+        }), { status: 200, headers: { 'content-type': 'application/json' } });
+      }
+
+      throw new Error(`Unexpected fetch: ${url}`);
+    }) as typeof fetch;
+
+    const readResponse = await POST(new Request('http://localhost:3010/api/trpc/council.base.status', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ json: null }),
+    }));
+    const readPayload = await readResponse.json();
+
+    expect(readResponse.status).toBe(200);
+    expect(readResponse.headers.get('x-hypercode-trpc-compat')).toBe('local-dashboard-fallback');
+    expect(readPayload?.[0]?.result?.data ?? readPayload?.result?.data).toEqual({
+      supervisors: [expect.objectContaining({ name: 'planner' })],
+    });
+
+    const chatResponse = await POST(new Request('http://localhost:3010/api/trpc/director.chat', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ json: { message: 'hi' } }),
+    }));
+    const chatPayload = await chatResponse.json();
+    expect(chatPayload?.[0]?.result?.data ?? chatPayload?.result?.data).toEqual({
+      response: 'Hello from director',
+    });
+
+    expect((global.fetch as ReturnType<typeof vi.fn>).mock.calls.some(([url]) => String(url) === 'http://127.0.0.1:4570/api/council/status')).toBe(true);
+    expect((global.fetch as ReturnType<typeof vi.fn>).mock.calls.some(([url]) => String(url) === 'http://127.0.0.1:4570/api/director/chat')).toBe(true);
+  });
+
   it('prefers go-native browser status and actions in local dashboard fallback mode', async () => {
     process.env.HYPERCODE_TRPC_UPSTREAM = 'http://127.0.0.1:4560/trpc';
     global.fetch = vi.fn(async (input, init) => {
