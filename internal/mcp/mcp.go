@@ -13,7 +13,7 @@ package mcp
 import (
 	"encoding/json"
 	"fmt"
-	"io"
+	
 	"os"
 	"os/exec"
 	"sync"
@@ -183,10 +183,11 @@ func (r *Registry) connectStdio(server *MCPServer) error {
 		Capabilities:    map[string]interface{}{},
 	}
 	
+	id := json.Number("1")
 	initData, _ := json.Marshal(JSONRPCMessage{
 		JSONRPC: "2.0",
 		Method:  "initialize",
-		ID:      (*json.Number)(new(int64)),
+		ID:      &id,
 		Params:  mustMarshal(initReq),
 	})
 	
@@ -249,7 +250,7 @@ func (r *Registry) CallTool(name string, args map[string]interface{}) (ToolResul
 	}
 	
 	// Check MCP server tools
-	tool, ok := r.allTools[name]
+	_, ok := r.allTools[name]
 	r.mu.RUnlock()
 	
 	if !ok {
@@ -304,7 +305,7 @@ func (r *Registry) GetToolInventory() map[string]interface{} {
 		servers[name] = map[string]interface{}{
 			"connected": srv.Connected,
 			"tools":     len(srv.Tools),
-			'transport': srv.Transport,
+			"transport": srv.Transport,
 		}
 	}
 	

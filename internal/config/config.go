@@ -22,28 +22,28 @@ const (
 
 // ProviderConfig holds provider-specific settings.
 type ProviderConfig struct {
-	APIKey      string `json:"apiKey,omitempty"`
-	BaseURL     string `json:"baseURL,omitempty"`
-	Timeout     int    `json:"timeout,omitempty"`     // seconds
-	MaxRetries  int    `json:"maxRetries,omitempty"`  // default 3
-	RetryDelay  int    `json:"retryDelay,omitempty"`  // ms, default 2000
+	APIKey     string `json:"apiKey,omitempty"`
+	BaseURL    string `json:"baseURL,omitempty"`
+	Timeout    int    `json:"timeout,omitempty"`    // seconds
+	MaxRetries int    `json:"maxRetries,omitempty"` // default 3
+	RetryDelay int    `json:"retryDelay,omitempty"` // ms, default 2000
 }
 
 // ModelConfig holds model-specific settings.
 type ModelConfig struct {
-	Provider       string  `json:"provider"`
-	ModelID        string  `json:"modelId"`
-	MaxTokens      int     `json:"maxTokens,omitempty"`
-	Temperature    float64 `json:"temperature,omitempty"`
-	TopP           float64 `json:"topP,omitempty"`
+	Provider         string  `json:"provider"`
+	ModelID          string  `json:"modelId"`
+	MaxTokens        int     `json:"maxTokens,omitempty"`
+	Temperature      float64 `json:"temperature,omitempty"`
+	TopP             float64 `json:"topP,omitempty"`
 	FrequencyPenalty float64 `json:"frequencyPenalty,omitempty"`
 }
 
 // CompactionSettings controls context compaction behavior.
 type CompactionSettings struct {
-	Enabled         bool `json:"enabled"`
-	ReserveTokens   int  `json:"reserveTokens"`  // default 16384
-	KeepRecentTokens int `json:"keepRecentTokens"` // default 20000
+	Enabled          bool `json:"enabled"`
+	ReserveTokens    int  `json:"reserveTokens"`    // default 16384
+	KeepRecentTokens int  `json:"keepRecentTokens"` // default 20000
 }
 
 // RetrySettings controls retry behavior.
@@ -62,12 +62,12 @@ type SessionSettings struct {
 
 // ToolSettings controls which tools are enabled.
 type ToolSettings struct {
-	Enabled    []string `json:"enabled,omitempty"`
-	Disabled   []string `json:"disabled,omitempty"`
-	MaxLines         int `json:"maxLines,omitempty"`
-	MaxBytes         int64 `json:"maxBytes,omitempty"`
-	Timeout  int    `json:"timeout,omitempty"`
-	CWD      string `json:"cwd,omitempty"`
+	Enabled  []string `json:"enabled,omitempty"`
+	Disabled []string `json:"disabled,omitempty"`
+	MaxLines int      `json:"maxLines,omitempty"`
+	MaxBytes int64    `json:"maxBytes,omitempty"`
+	Timeout  int      `json:"timeout,omitempty"`
+	CWD      string   `json:"cwd,omitempty"`
 }
 
 // UISettings controls terminal UI behavior.
@@ -85,52 +85,52 @@ type UISettings struct {
 
 // MemorySettings controls memory/KB behavior.
 type MemorySettings struct {
-	Enabled       bool     `json:"enabled"`
-	Backend       string   `json:"backend"` // "sqlite", "memory", "file"
-	Path          string   `json:"path,omitempty"`
-	AutoIndex     bool     `json:"autoIndex"`
-	Scope         string   `json:"scope"` // "global", "project", "session"
+	Enabled   bool   `json:"enabled"`
+	Backend   string `json:"backend"` // "sqlite", "memory", "file"
+	Path      string `json:"path,omitempty"`
+	AutoIndex bool   `json:"autoIndex"`
+	Scope     string `json:"scope"` // "global", "project", "session"
 }
 
 // MCPSettings controls MCP client/server behavior.
 type MCPSettings struct {
-	Enabled         bool              `json:"enabled"`
-	ServerMode      bool              `json:"serverMode"`
-	ClientMode      bool              `json:"clientMode"`
-	Servers         map[string]MCPConn `json:"servers,omitempty"`
-	StdioTimeout    int               `json:"stdioTimeout,omitempty"`
-	SSETimeout      int               `json:"sseTimeout,omitempty"`
-	RegistryPath    string            `json:"registryPath,omitempty"`
+	Enabled      bool               `json:"enabled"`
+	ServerMode   bool               `json:"serverMode"`
+	ClientMode   bool               `json:"clientMode"`
+	Servers      map[string]MCPConn `json:"servers,omitempty"`
+	StdioTimeout int                `json:"stdioTimeout,omitempty"`
+	SSETimeout   int                `json:"sseTimeout,omitempty"`
+	RegistryPath string             `json:"registryPath,omitempty"`
 }
 
 // MCPConn defines an MCP server connection.
 type MCPConn struct {
-	Command string            `json:"command,omitempty"`
-	Args    []string          `json:"args,omitempty"`
-	URL     string            `json:"url,omitempty"`
-	Transport string          `json:"transport,omitempty"` // "stdio", "sse"
-	Env     map[string]string `json:"env,omitempty"`
+	Command   string            `json:"command,omitempty"`
+	Args      []string          `json:"args,omitempty"`
+	URL       string            `json:"url,omitempty"`
+	Transport string            `json:"transport,omitempty"` // "stdio", "sse"
+	Env       map[string]string `json:"env,omitempty"`
 }
 
 // SkillSettings controls skill loading.
 type SkillSettings struct {
-	Enabled    bool     `json:"enabled"`
-	Paths      []string `json:"paths,omitempty"`
-	AutoLoad   bool     `json:"autoLoad"`
+	Enabled  bool     `json:"enabled"`
+	Paths    []string `json:"paths,omitempty"`
+	AutoLoad bool     `json:"autoLoad"`
 }
 
 // ExtensionSettings controls extension loading.
 type ExtensionSettings struct {
-	Enabled    bool     `json:"enabled"`
-	Paths      []string `json:"paths,omitempty"`
-	AutoDiscover bool   `json:"autoDiscover"`
+	Enabled      bool     `json:"enabled"`
+	Paths        []string `json:"paths,omitempty"`
+	AutoDiscover bool     `json:"autoDiscover"`
 }
 
 // PromptSettings controls prompt templates.
 type PromptSettings struct {
-	Enabled    bool     `json:"enabled"`
-	Paths      []string `json:"paths,omitempty"`
-	AutoDiscover bool   `json:"autoDiscover"`
+	Enabled      bool     `json:"enabled"`
+	Paths        []string `json:"paths,omitempty"`
+	AutoDiscover bool     `json:"autoDiscover"`
 }
 
 // PackageSettings controls package management.
@@ -152,14 +152,14 @@ type PackageSource struct {
 // Settings is the complete hyperharness configuration.
 type Settings struct {
 	// Model & Provider
-	DefaultProvider    string                    `json:"defaultProvider"`
-	DefaultModel       string                    `json:"defaultModel"`
-	DefaultThinkingLevel string                  `json:"defaultThinkingLevel"`
-	HideThinkingBlock  bool                      `json:"hideThinkingBlock"`
-	Providers          map[string]*ProviderConfig `json:"providers,omitempty"`
-	Models             map[string]*ModelConfig    `json:"models,omitempty"`
-	ThinkingBudgets    map[string]int            `json:"thinkingBudgets,omitempty"`
-	EnabledModels      []string                 `json:"enabledModels,omitempty"`
+	DefaultProvider      string                     `json:"defaultProvider"`
+	DefaultModel         string                     `json:"defaultModel"`
+	DefaultThinkingLevel string                     `json:"defaultThinkingLevel"`
+	HideThinkingBlock    bool                       `json:"hideThinkingBlock"`
+	Providers            map[string]*ProviderConfig `json:"providers,omitempty"`
+	Models               map[string]*ModelConfig    `json:"models,omitempty"`
+	ThinkingBudgets      map[string]int             `json:"thinkingBudgets,omitempty"`
+	EnabledModels        []string                   `json:"enabledModels,omitempty"`
 
 	// UI
 	UI *UISettings `json:"ui,omitempty"`
@@ -197,19 +197,19 @@ type Settings struct {
 	// Shell
 	ShellPath          string   `json:"shellPath,omitempty"`
 	ShellCommandPrefix string   `json:"shellCommandPrefix,omitempty"`
-	NPMCommand    []string `json:"npmCommand,omitempty"`
+	NPMCommand         []string `json:"npmCommand,omitempty"`
 
 	// Message delivery
-	SteeringMode  string `json:"steeringMode"`  // "one-at-a-time", "all"
-	FollowUpMode  string `json:"followUpMode"`  // "one-at-a-time", "all"
-	Transport     string `json:"transport"`     // "sse", "websocket", "auto"
+	SteeringMode string `json:"steeringMode"` // "one-at-a-time", "all"
+	FollowUpMode string `json:"followUpMode"` // "one-at-a-time", "all"
+	Transport    string `json:"transport"`    // "sse", "websocket", "auto"
 
 	// Markdown
 	MarkdownCodeBlockIndent string `json:"markdownCodeBlockIndent,omitempty"`
 
 	// System prompt
-	SystemPrompt        string `json:"systemPrompt,omitempty"`
-	AppendSystemPrompt  string `json:"appendSystemPrompt,omitempty"`
+	SystemPrompt       string `json:"systemPrompt,omitempty"`
+	AppendSystemPrompt string `json:"appendSystemPrompt,omitempty"`
 
 	mu sync.RWMutex
 }
@@ -249,7 +249,7 @@ func Defaults() *Settings {
 			Servers:    make(map[string]MCPConn),
 		},
 		Skills: &SkillSettings{
-			Enabled:   true,
+			Enabled:  true,
 			AutoLoad: true,
 		},
 		Extensions: &ExtensionSettings{
@@ -274,7 +274,7 @@ type Manager struct {
 // NewManager creates a new configuration manager.
 func NewManager(globalDir, projectDir string) (*Manager, error) {
 	m := &Manager{
-		globalDir: globalDir,
+		globalDir:  globalDir,
 		projectDir: projectDir,
 		settings:   Defaults(),
 	}
@@ -390,7 +390,7 @@ func (m *Manager) Update(newSettings *Settings) error {
 func (m *Manager) Save() error {
 	m.mu.RLock()
 	defer m.mu.RUnlock()
-	
+
 	dir := m.projectDir
 	if dir == "" {
 		dir = m.globalDir
@@ -398,12 +398,12 @@ func (m *Manager) Save() error {
 	if err := os.MkdirAll(dir, 0o755); err != nil {
 		return err
 	}
-	
+
 	data, err := json.MarshalIndent(m.settings, "", "  ")
 	if err != nil {
 		return err
 	}
-	
+
 	path := filepath.Join(dir, ProjectConfig)
 	return os.WriteFile(path, data, 0o644)
 }
@@ -450,7 +450,7 @@ func FindAgentFiles() []string {
 	if err != nil {
 		return files
 	}
-	
+
 	checkDirs := []string{cwd}
 	// Also check standard agent skill dirs
 	home, _ := os.UserHomeDir()
@@ -463,7 +463,7 @@ func FindAgentFiles() []string {
 			checkDirs = append(checkDirs, d)
 		}
 	}
-	
+
 	for dir := cwd; dir != "" && dir != filepath.Dir(dir); dir = filepath.Dir(dir) {
 		// Check for AGENTS.md or CLAUDE.md
 		for _, name := range []string{"AGENTS.md", "CLAUDE.md"} {

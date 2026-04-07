@@ -24,7 +24,6 @@ package tools
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -34,14 +33,14 @@ import (
 
 // Tool registry - all built-in tools.
 var BuiltInTools = map[string]func(cwd string) ToolExecutor{
-	"read":   NewReadTool,
-	"bash":   NewBashTool,
-	"edit":   NewEditTool,
-	"write":  NewWriteTool,
-	"grep":   NewGrepTool,
-	"find":   NewFindTool,
-	"ls":     NewLSTool,
-	"patch":  NewPatchTool,
+	"read":  NewReadTool,
+	"bash":  NewBashTool,
+	"edit":  NewEditTool,
+	"write": NewWriteTool,
+	"grep":  NewGrepTool,
+	"find":  NewFindTool,
+	"ls":    NewLSTool,
+	"patch": NewPatchTool,
 }
 
 // ToolExecutor is the interface for all tools.
@@ -57,9 +56,9 @@ type ToolExecutor interface {
 
 // ToolResult is the result of tool execution.
 type ToolResult struct {
-	Content     []Block             `json:"content"`
-	Details     map[string]*Detail  `json:"details,omitempty"`
-	ErrorOutput string              `json:"error,omitempty"`
+	Content     []Block            `json:"content"`
+	Details     map[string]*Detail `json:"details,omitempty"`
+	ErrorOutput string             `json:"error,omitempty"`
 }
 
 // Block is a single content block in a tool result.
@@ -70,15 +69,15 @@ type Block struct {
 
 // Detail holds tool-specific metadata.
 type Detail struct {
-	Diff       *DiffResult `json:"diff,omitempty"`
-	FullOutputPath string `json:"fullOutputPath,omitempty"`
+	Diff           *DiffResult `json:"diff,omitempty"`
+	FullOutputPath string      `json:"fullOutputPath,omitempty"`
 }
 
 // DiffResult describes an edit diff.
 type DiffResult struct {
-	Patch           string `json:"patch"`
-	FirstChangedLine int   `json:"firstChangedLine"`
-	Status          string `json:"status"` // "success", "conflict", "not_found"
+	Patch            string `json:"patch"`
+	FirstChangedLine int    `json:"firstChangedLine"`
+	Status           string `json:"status"` // "success", "conflict", "not_found"
 }
 
 // ---- Pi-Exact Tools ----
@@ -92,7 +91,7 @@ func NewReadTool(cwd string) ToolExecutor {
 	return &ReadTool{cwd: cwd}
 }
 
-func (t *ReadTool) Name() string { return "read" }
+func (t *ReadTool) Name() string  { return "read" }
 func (t *ReadTool) Label() string { return "read" }
 func (t *ReadTool) Description() string {
 	return "Read the contents of a file. Supports text files and images (jpg, png, gif, webp). Images are sent as attachments. For text files, output is truncated to 2000 lines or 50KB (whichever is hit first). Use offset/limit for large files. When you need the full file, continue with offset until complete."
@@ -134,20 +133,20 @@ func (t *ReadTool) Execute(ctx context.Context, args map[string]interface{}, sig
 	if !ok {
 		return ToolResult{ErrorOutput: "missing required argument: path"}, fmt.Errorf("missing required argument: path")
 	}
-	
+
 	path := pathVal.(string)
 	absPath := t.resolvePath(path)
-	
+
 	offset := 1
 	limit := 2000
-	
+
 	if off, ok := args["offset"].(float64); ok && off > 0 {
 		offset = int(off)
 	}
 	if lim, ok := args["limit"].(float64); ok && lim > 0 {
 		limit = int(lim)
 	}
-	
+
 	// Check file extension for images
 	ext := strings.ToLower(filepath.Ext(absPath))
 	if isImageExtension(ext) {
@@ -161,41 +160,41 @@ func (t *ReadTool) Execute(ctx context.Context, args map[string]interface{}, sig
 			Content: []Block{{Type: "text", Text: "[PDF file: " + absPath + " - PDF parsing not yet implemented]"}},
 		}, nil
 	}
-	
+
 	// Read text file
 	data, err := os.ReadFile(absPath)
 	if err != nil {
 		return ToolResult{ErrorOutput: fmt.Sprintf("failed to read file %s: %v", path, err)}, err
 	}
-	
+
 	lines := strings.Split(string(data), "\n")
-	
+
 	// Apply offset (1-indexed)
 	startIdx := offset - 1
 	if startIdx >= len(lines) {
 		return ToolResult{Content: []Block{{Type: "text", Text: "(file has fewer than " + fmt.Sprint(offset) + " lines)"}}}, nil
 	}
 	lines[startIdx] = lines[startIdx] // Keep the offset line
-	
+
 	// Apply limit
 	endIdx := startIdx + limit
 	if endIdx > len(lines) {
 		endIdx = len(lines)
 	}
-	
+
 	content := strings.Join(lines[startIdx:endIdx], "\n")
-	
+
 	// 50KB limit check
 	if len(content) > 50*1024 {
 		content = content[:50*1024] + "\n... [truncated at 50KB]"
 	}
-	
+
 	if offset > 1 || limit < 2000 {
 		// Show context
-		content = fmt.Sprintf("(reading lines %d-%d of %d)\n\n%s", 
+		content = fmt.Sprintf("(reading lines %d-%d of %d)\n\n%s",
 			offset, endIdx, len(lines), content)
 	}
-	
+
 	return ToolResult{
 		Content: []Block{{Type: "text", Text: content}},
 	}, nil
@@ -224,24 +223,24 @@ func (t *ReadTool) resolvePath(path string) string {
 
 // BashTool executes bash commands. Exact parameter parity with Pi's bash tool.
 type BashTool struct {
-	cwd         string
-	commandPrefix string
+	cwd            string
+	commandPrefix  string
 	timeoutDefault int
-	maxLines    int
-	maxBytes    int64
+	maxLines       int
+	maxBytes       int64
 }
 
 func NewBashTool(cwd string) ToolExecutor {
 	return &BashTool{
-		cwd:          cwd,
+		cwd:            cwd,
 		timeoutDefault: 0, // no default timeout
-		maxLines:     2000,
-		maxBytes:     50 * 1024, // 50KB
+		maxLines:       2000,
+		maxBytes:       50 * 1024, // 50KB
 	}
 }
 
-func (t *BashTool) Name() string              { return "bash" }
-func (t *BashTool) Label() string             { return "bash" }
+func (t *BashTool) Name() string  { return "bash" }
+func (t *BashTool) Label() string { return "bash" }
 func (t *BashTool) Description() string {
 	return fmt.Sprintf("Execute a bash command in the current working directory. Returns stdout and stderr. Output is truncated to last %d lines or %dKB (whichever is hit first). If truncated, full output is saved to a temp file. Optionally provide a timeout in seconds.", t.maxLines, t.maxBytes/1024)
 }
@@ -277,28 +276,27 @@ func (t *BashTool) Execute(ctx context.Context, args map[string]interface{}, sig
 	if !ok {
 		return ToolResult{ErrorOutput: "missing required argument: command"}, fmt.Errorf("missing required argument: command")
 	}
-	
+
 	command := cmdVal.(string)
 	timeout := 0
 	if to, ok := args["timeout"].(float64); ok {
 		timeout = int(to)
 	}
-	
+
 	return t.executeCommand(ctx, command, timeout)
 }
 
 func (t *BashTool) executeCommand(ctx context.Context, command string, timeout int) (ToolResult, error) {
-	execCtx := context.Background()
 	if timeout > 0 {
 		var cancel context.CancelFunc
-		execCtx, cancel = context.WithTimeout(ctx, time.Duration(timeout)*time.Second)
+		_, cancel = context.WithTimeout(ctx, time.Duration(timeout)*time.Second)
 		defer cancel()
 	}
-	
+
 	// Use exec with bash -c
 	// This is handled through the os/exec package
 	// Implementation would use the full bash executor like Pi's createLocalBashOperations
-	
+
 	// For now, we use a simple approach
 	return ToolResult{
 		ErrorOutput: "bash execution not yet fully implemented (requires child process spawning)",
@@ -314,7 +312,7 @@ func NewEditTool(cwd string) ToolExecutor {
 	return &EditTool{cwd: cwd}
 }
 
-func (t *EditTool) Name() string { return "edit" }
+func (t *EditTool) Name() string  { return "edit" }
 func (t *EditTool) Label() string { return "edit" }
 func (t *EditTool) Description() string {
 	return "Edit a single file using exact text replacement. Every edits[].oldText must match a unique, non-overlapping region of the original file. If two changes affect the same block or nearby lines, merge them into one edit instead of emitting overlapping edits. Do not include large unchanged regions just to connect distant changes."
@@ -349,7 +347,7 @@ func (t *EditTool) Parameters() map[string]interface{} {
 							"description": "Exact text for one targeted replacement. It must be unique in the original file and must not overlap with any other edits[].oldText in the same call.",
 						},
 						"newText": map[string]interface{}{
-							"type":        "string", 
+							"type":        "string",
 							"description": "Replacement text for this targeted edit.",
 						},
 					},
@@ -368,42 +366,42 @@ func (t *EditTool) Execute(ctx context.Context, args map[string]interface{}, sig
 	if !ok {
 		return ToolResult{ErrorOutput: "missing required argument: path"}, fmt.Errorf("missing required argument: path")
 	}
-	
+
 	editsVal, ok := args["edits"]
 	if !ok {
 		return ToolResult{ErrorOutput: "missing required argument: edits"}, fmt.Errorf("missing required argument: edits")
 	}
-	
+
 	editsRaw, ok := editsVal.([]interface{})
 	if !ok || len(editsRaw) == 0 {
 		return ToolResult{ErrorOutput: "edits must be a non-empty array"}, fmt.Errorf("edits must be a non-empty array")
 	}
-	
+
 	path := pathVal.(string)
 	absPath := t.resolvePath(path)
-	
+
 	// Check file exists and writable
 	if _, err := os.Stat(absPath); err != nil {
 		return ToolResult{ErrorOutput: fmt.Sprintf("File not found: %s", path)}, err
 	}
-	
+
 	// Read original content
 	original, err := os.ReadFile(absPath)
 	if err != nil {
 		return ToolResult{ErrorOutput: err.Error()}, err
 	}
-	
+
 	content := string(original)
 	diffParts := []string{}
 	totalReplacements := 0
-	
+
 	// Apply each edit
 	for _, editRaw := range editsRaw {
 		editMap, ok := editRaw.(map[string]interface{})
 		if !ok {
 			continue
 		}
-		
+
 		oldText, ok := editMap["oldText"].(string)
 		if !ok {
 			return ToolResult{ErrorOutput: "each edit must have an oldText string"}, fmt.Errorf("each edit must have an oldText string")
@@ -412,43 +410,43 @@ func (t *EditTool) Execute(ctx context.Context, args map[string]interface{}, sig
 		if !ok {
 			return ToolResult{ErrorOutput: "each edit must have a newText string"}, fmt.Errorf("each edit must have a newText string")
 		}
-		
+
 		// Find the old text
 		idx := strings.Index(content, oldText)
 		if idx == -1 {
-			return ToolResult{ErrorOutput: fmt.Sprintf("oldText not found in file: %s", truncate(oldText, 100))}, 
+			return ToolResult{ErrorOutput: fmt.Sprintf("oldText not found in file: %s", truncate(oldText, 100))},
 				fmt.Errorf("oldText not found in file")
 		}
-		
+
 		// Check for multiple matches (should be unique)
 		if strings.Index(content[idx+1:], oldText) != -1 {
 			return ToolResult{ErrorOutput: fmt.Sprintf("oldText matches multiple times, must be unique: %s", truncate(oldText, 100))},
 				fmt.Errorf("oldText matches multiple times")
 		}
-		
+
 		// Calculate line number for diff
 		lineNum := strings.Count(content[:idx], "\n") + 1
-		
+
 		// Apply the edit
 		content = content[:idx] + newText + content[idx+len(oldText):]
 		totalReplacements++
-		
+
 		diffParts = append(diffParts, formatDiffLine(path, lineNum, oldText, newText))
 	}
-	
+
 	// Write the modified content
 	if err := os.WriteFile(absPath, []byte(content), 0644); err != nil {
 		return ToolResult{ErrorOutput: err.Error()}, err
 	}
-	
+
 	return ToolResult{
 		Content: []Block{{Type: "text", Text: fmt.Sprintf("Successfully applied %d edit(s) to %s", totalReplacements, path)}},
 		Details: map[string]*Detail{
 			"diff": {
 				Diff: &DiffResult{
-					Patch:           strings.Join(diffParts, "\n"),
+					Patch:            strings.Join(diffParts, "\n"),
 					FirstChangedLine: 0,
-					Status:          "success",
+					Status:           "success",
 				},
 			},
 		},
@@ -471,7 +469,7 @@ func NewWriteTool(cwd string) ToolExecutor {
 	return &WriteTool{cwd: cwd}
 }
 
-func (t *WriteTool) Name() string { return "write" }
+func (t *WriteTool) Name() string  { return "write" }
 func (t *WriteTool) Label() string { return "write" }
 func (t *WriteTool) Description() string {
 	return "Create a new file or completely overwrite an existing file with new content. Use with caution as it will overwrite existing files without warning. Handles text content with proper encoding. To append to a file instead of overwriting, set mode to \"append\". For creating PDF files, use write_pdf instead."
@@ -518,21 +516,21 @@ func (t *WriteTool) Execute(ctx context.Context, args map[string]interface{}, si
 	if !ok {
 		return ToolResult{ErrorOutput: "missing required argument: content"}, fmt.Errorf("missing argument: content")
 	}
-	
+
 	path := pathVal.(string)
 	content := contentVal.(string)
 	mode := "rewrite"
 	if m, ok := args["mode"].(string); ok {
 		mode = m
 	}
-	
+
 	absPath := resolvePathToCwd(path, t.cwd)
-	
+
 	// Create parent directories
 	if err := os.MkdirAll(filepath.Dir(absPath), 0755); err != nil {
 		return ToolResult{ErrorOutput: err.Error()}, err
 	}
-	
+
 	var err error
 	if mode == "append" {
 		err = os.WriteFile(absPath, []byte(content), 0644)
@@ -546,17 +544,17 @@ func (t *WriteTool) Execute(ctx context.Context, args map[string]interface{}, si
 	} else {
 		err = os.WriteFile(absPath, []byte(content), 0644)
 	}
-	
+
 	if err != nil {
 		return ToolResult{ErrorOutput: err.Error()}, err
 	}
-	
+
 	// Count lines
 	lineCount := strings.Count(content, "\n")
 	if len(content) > 0 && !strings.HasSuffix(content, "\n") {
 		lineCount++
 	}
-	
+
 	return ToolResult{
 		Content: []Block{{Type: "text", Text: fmt.Sprintf("Successfully wrote %d characters, %d lines to %s", len(content), lineCount, path)}},
 		Details: map[string]*Detail{
@@ -574,7 +572,7 @@ func NewGrepTool(cwd string) ToolExecutor {
 	return &GrepTool{cwd: cwd}
 }
 
-func (t *GrepTool) Name() string { return "grep" }
+func (t *GrepTool) Name() string  { return "grep" }
 func (t *GrepTool) Label() string { return "grep" }
 func (t *GrepTool) Description() string {
 	return "Search file contents for patterns. Returns matching lines with file paths and line numbers. Respects .gitignore. Output is truncated to 100 matches or 50KB (whichever is hit first). Long lines are truncated to 500 chars."
@@ -633,7 +631,7 @@ func (t *GrepTool) Execute(ctx context.Context, args map[string]interface{}, sig
 	if !ok {
 		return ToolResult{ErrorOutput: "missing required argument: pattern"}, fmt.Errorf("missing argument: pattern")
 	}
-	
+
 	pattern := patternVal.(string)
 	searchPath := t.cwd
 	if p, ok := args["path"].(string); ok && p != "" {
@@ -647,7 +645,7 @@ func (t *GrepTool) Execute(ctx context.Context, args map[string]interface{}, sig
 	if l, ok := args["limit"].(float64); ok {
 		limit = int(l)
 	}
-	
+
 	// Walk files
 	matches := []string{}
 	filepath.WalkDir(searchPath, func(currentPath string, d os.DirEntry, err error) error {
@@ -661,7 +659,7 @@ func (t *GrepTool) Execute(ctx context.Context, args map[string]interface{}, sig
 			}
 			return nil
 		}
-		
+
 		// Check glob filter
 		if globPattern != "" {
 			matched, _ := filepath.Match(globPattern, d.Name())
@@ -669,13 +667,13 @@ func (t *GrepTool) Execute(ctx context.Context, args map[string]interface{}, sig
 				return nil
 			}
 		}
-		
+
 		// Read file and search
 		data, err := os.ReadFile(currentPath)
 		if err != nil {
 			return nil
 		}
-		
+
 		lines := strings.Split(string(data), "\n")
 		for i, line := range lines {
 			if strings.Contains(strings.ToLower(line), strings.ToLower(pattern)) {
@@ -687,15 +685,15 @@ func (t *GrepTool) Execute(ctx context.Context, args map[string]interface{}, sig
 				}
 			}
 		}
-		
+
 		return nil
 	})
-	
+
 	output := fmt.Sprintf("Found %d matches for pattern \"%s\"", len(matches), pattern)
 	if len(matches) > 0 {
 		output += "\n\n" + strings.Join(matches, "\n")
 	}
-	
+
 	return ToolResult{
 		Content: []Block{{Type: "text", Text: output}},
 	}, nil
@@ -717,7 +715,7 @@ func NewFindTool(cwd string) ToolExecutor {
 	return &FindTool{cwd: cwd}
 }
 
-func (t *FindTool) Name() string { return "find" }
+func (t *FindTool) Name() string  { return "find" }
 func (t *FindTool) Label() string { return "find" }
 func (t *FindTool) Description() string {
 	return "Search for files by glob pattern. Returns matching file paths relative to the search directory. Respects .gitignore. Output is truncated to 1000 results or 50KB (whichever is hit first)."
@@ -758,7 +756,7 @@ func (t *FindTool) Execute(ctx context.Context, args map[string]interface{}, sig
 	if !ok {
 		return ToolResult{ErrorOutput: "missing required argument: pattern"}, fmt.Errorf("missing argument: pattern")
 	}
-	
+
 	pattern := patternVal.(string)
 	searchPath := t.cwd
 	if p, ok := args["path"].(string); ok && p != "" {
@@ -768,9 +766,9 @@ func (t *FindTool) Execute(ctx context.Context, args map[string]interface{}, sig
 	if l, ok := args["limit"].(float64); ok {
 		limit = int(l)
 	}
-	
+
 	results := findFiles(searchPath, pattern, t.cwd, limit)
-	
+
 	return ToolResult{
 		Content: []Block{{Type: "text", Text: formatFindResults(results, searchPath)}},
 	}, nil
@@ -792,7 +790,7 @@ func NewLSTool(cwd string) ToolExecutor {
 	return &LSTool{cwd: cwd}
 }
 
-func (t *LSTool) Name() string { return "ls" }
+func (t *LSTool) Name() string  { return "ls" }
 func (t *LSTool) Label() string { return "ls" }
 func (t *LSTool) Description() string {
 	return "List directory contents. Returns entries sorted alphabetically, with '/' suffix for directories. Includes dotfiles. Output is truncated to 500 entries or 50KB (whichever is hit first)."
@@ -832,12 +830,12 @@ func (t *LSTool) Execute(ctx context.Context, args map[string]interface{}, signa
 	if l, ok := args["limit"].(float64); ok {
 		limit = int(l)
 	}
-	
+
 	entries, err := os.ReadDir(listPath)
 	if err != nil {
 		return ToolResult{ErrorOutput: err.Error()}, err
 	}
-	
+
 	var lines []string
 	for _, entry := range entries {
 		name := entry.Name()
@@ -849,13 +847,13 @@ func (t *LSTool) Execute(ctx context.Context, args map[string]interface{}, signa
 			prefix = "[DIR]"
 		}
 		lines = append(lines, fmt.Sprintf("%s %s", prefix, name))
-		
+
 		if len(lines) >= limit {
 			lines = append(lines, fmt.Sprintf("\n... (%d more entries hidden)", len(entries)-limit))
 			break
 		}
 	}
-	
+
 	return ToolResult{
 		Content: []Block{{Type: "text", Text: strings.Join(lines, "\n")}},
 	}, nil
@@ -877,7 +875,7 @@ func NewPatchTool(cwd string) ToolExecutor {
 	return &PatchTool{cwd: cwd}
 }
 
-func (t *PatchTool) Name() string { return "patch" }
+func (t *PatchTool) Name() string  { return "patch" }
 func (t *PatchTool) Label() string { return "patch" }
 func (t *PatchTool) Description() string {
 	return "Apply SEARCH/REPLACE block patches to files. Multiple patches can be applied in a single call. Each block must contain unique SEARCH text that matches the file exactly, surrounded by ======= markers."
@@ -918,35 +916,35 @@ func (t *PatchTool) Execute(ctx context.Context, args map[string]interface{}, si
 	if !ok {
 		return ToolResult{ErrorOutput: "missing required argument: patch"}, fmt.Errorf("missing argument: patch")
 	}
-	
+
 	path := pathVal.(string)
 	patch := patchVal.(string)
 	absPath := resolvePathToCwd(path, t.cwd)
-	
+
 	content, err := os.ReadFile(absPath)
 	if err != nil {
 		return ToolResult{ErrorOutput: fmt.Sprintf("File not found: %s", path)}, err
 	}
-	
+
 	// Parse and apply SEARCH/REPLACE blocks
 	modified := string(content)
 	blocks := parseSearchReplaceBlocks(patch)
 	applied := 0
-	
+
 	for _, block := range blocks {
 		if idx := strings.Index(modified, block.Search); idx != -1 {
 			modified = modified[:idx] + block.Replace + modified[idx+len(block.Search):]
 			applied++
 		} else {
-			return ToolResult{ErrorOutput: fmt.Sprintf("SEARCH text not found: %s", truncate(block.Search, 100))}, 
+			return ToolResult{ErrorOutput: fmt.Sprintf("SEARCH text not found: %s", truncate(block.Search, 100))},
 				fmt.Errorf("search text not found")
 		}
 	}
-	
+
 	if err := os.WriteFile(absPath, []byte(modified), 0644); err != nil {
 		return ToolResult{ErrorOutput: err.Error()}, err
 	}
-	
+
 	return ToolResult{
 		Content: []Block{{Type: "text", Text: fmt.Sprintf("Successfully applied %d patch(s) to %s", applied, path)}},
 	}, nil
@@ -961,10 +959,10 @@ type SearchReplaceBlock struct {
 func parseSearchReplaceBlocks(patch string) []SearchReplaceBlock {
 	var blocks []SearchReplaceBlock
 	lines := strings.Split(patch, "\n")
-	
+
 	var currentSearch, currentReplace string
 	inSearch, inReplace := false, false
-	
+
 	for _, line := range lines {
 		if strings.HasPrefix(line, "<<<<<<< SEARCH") || strings.TrimRight(line, " ") == "<<<<<<< SEARCH" {
 			inSearch = true
@@ -986,7 +984,7 @@ func parseSearchReplaceBlocks(patch string) []SearchReplaceBlock {
 			inReplace = false
 			continue
 		}
-		
+
 		if inSearch {
 			if currentSearch != "" {
 				currentSearch += "\n"
@@ -1000,7 +998,7 @@ func parseSearchReplaceBlocks(patch string) []SearchReplaceBlock {
 			currentReplace += line
 		}
 	}
-	
+
 	return blocks
 }
 
@@ -1023,7 +1021,7 @@ func resolvePathToCwd(path, cwd string) string {
 func formatDiffLine(path string, lineNum int, oldText, newText string) string {
 	oldLines := strings.Split(oldText, "\n")
 	newLines := strings.Split(newText, "\n")
-	
+
 	var buf strings.Builder
 	for _, line := range oldLines {
 		buf.WriteString(fmt.Sprintf("--- %s:%d: %s\n", path, lineNum, line))
@@ -1050,7 +1048,7 @@ func shouldSkipDir(path string) bool {
 
 func findFiles(root, pattern, relativeTo string, limit int) []string {
 	var results []string
-	
+
 	filepath.WalkDir(root, func(path string, d os.DirEntry, err error) error {
 		if err != nil || len(results) >= limit {
 			return nil
@@ -1061,12 +1059,12 @@ func findFiles(root, pattern, relativeTo string, limit int) []string {
 			}
 			return nil
 		}
-		
+
 		matched, _ := filepath.Match(pattern, d.Name())
 		if !matched {
 			return nil
 		}
-		
+
 		relPath, err := filepath.Rel(relativeTo, path)
 		if err != nil {
 			relPath = path
@@ -1074,7 +1072,7 @@ func findFiles(root, pattern, relativeTo string, limit int) []string {
 		results = append(results, relPath)
 		return nil
 	})
-	
+
 	return results
 }
 
@@ -1082,7 +1080,7 @@ func formatFindResults(results []string, root string) string {
 	if len(results) == 0 {
 		return "No files found"
 	}
-	
+
 	lines := make([]string, len(results))
 	for i, r := range results {
 		lines[i] = fmt.Sprintf("  %s", r)
@@ -1092,7 +1090,7 @@ func formatFindResults(results []string, root string) string {
 
 func isImageExtension(ext string) bool {
 	images := map[string]bool{
-		".jpg": true, ".jpeg": true, ".png": true, 
+		".jpg": true, ".jpeg": true, ".png": true,
 		".gif": true, ".webp": true, ".svg": true,
 	}
 	return images[ext]
@@ -1103,7 +1101,7 @@ func isImageExtension(ext string) bool {
 func ToolSchemas() []map[string]interface{} {
 	names := []string{"read", "bash", "edit", "write", "grep", "find", "ls", "patch"}
 	var schemas []map[string]interface{}
-	
+
 	for _, name := range names {
 		creator := BuiltInTools[name]
 		if creator != nil {

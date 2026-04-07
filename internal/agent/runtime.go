@@ -211,7 +211,7 @@ func (r *Runtime) SetMemory(kb *memory.KnowledgeBase) {
 // Prompt processes a user message and returns the assistant's response.
 func (r *Runtime) Prompt(ctx context.Context, message string) (*providers.CompletionResult, error) {
 	// Build context from system prompt, session history, and message
-	messages, err := r.buildContext(message)
+	messages, err := r.buildContext(ctx, message)
 	if err != nil {
 		return nil, fmt.Errorf("failed to build context: %w", err)
 	}
@@ -224,7 +224,7 @@ func (r *Runtime) Prompt(ctx context.Context, message string) (*providers.Comple
 }
 
 // buildContext constructs the message history for the LLM.
-func (r *Runtime) buildContext(userMessage string) ([]providers.Message, error) {
+func (r *Runtime) buildContext(ctx context.Context, userMessage string) ([]providers.Message, error) {
 	var messages []providers.Message
 
 	// Add system message if present
@@ -540,7 +540,7 @@ func (r *Runtime) executeStreaming(ctx context.Context, req providers.Completion
 
 		if chunk.Usage != nil {
 			finalResult = &providers.CompletionResult{
-				ID:         chunk.Usage.String(),
+				ID:         fmt.Sprintf("usage-%d", chunk.Usage.InputTokens+chunk.Usage.OutputTokens),
 				Model:      r.modelID,
 				Content:    buildContentBlocks(fullText, thinking, toolUses),
 				StopReason: chunk.StopReason,

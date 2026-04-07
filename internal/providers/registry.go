@@ -18,42 +18,42 @@ import (
 type ProviderType string
 
 const (
-	ProviderAnthropic  ProviderType = "anthropic"
-	ProviderOpenAI     ProviderType = "openai"
-	ProviderGoogle     ProviderType = "google"
-	ProviderAzure      ProviderType = "azure"
-	ProviderGroq       ProviderType = "groq"
-	ProviderCerebras   ProviderType = "cerebras"
-	ProviderXAI        ProviderType = "xai"
-	ProviderMistral    ProviderType = "mistral"
-	ProviderOpenRouter ProviderType = "openrouter"
-	ProviderBedrock    ProviderType = "bedrock"
-	ProviderVertex     ProviderType = "vertex"
-	ProviderMiniMax    ProviderType = "minimax"
+	ProviderAnthropic   ProviderType = "anthropic"
+	ProviderOpenAI      ProviderType = "openai"
+	ProviderGoogle      ProviderType = "google"
+	ProviderAzure       ProviderType = "azure"
+	ProviderGroq        ProviderType = "groq"
+	ProviderCerebras    ProviderType = "cerebras"
+	ProviderXAI         ProviderType = "xai"
+	ProviderMistral     ProviderType = "mistral"
+	ProviderOpenRouter  ProviderType = "openrouter"
+	ProviderBedrock     ProviderType = "bedrock"
+	ProviderVertex      ProviderType = "vertex"
+	ProviderMiniMax     ProviderType = "minimax"
 	ProviderHuggingFace ProviderType = "huggingface"
-	ProviderOpenCode   ProviderType = "opencode"
-	ProviderCustom     ProviderType = "custom"
+	ProviderOpenCode    ProviderType = "opencode"
+	ProviderCustom      ProviderType = "custom"
 )
 
 // Transport defines the API transport type.
 type Transport string
 
 const (
-	TransportSSE      Transport = "sse"
+	TransportSSE       Transport = "sse"
 	TransportWebsocket Transport = "websocket"
-	TransportAuto     Transport = "auto"
+	TransportAuto      Transport = "auto"
 )
 
 // ThinkingLevel maps to provider-specific thinking/thinking budgets.
 type ThinkingLevel string
 
 const (
-	ThinkingOff      ThinkingLevel = "off"
-	ThinkingMinimal  ThinkingLevel = "minimal"
-	ThinkingLow      ThinkingLevel = "low"
-	ThinkingMedium   ThinkingLevel = "medium"
-	ThinkingHigh     ThinkingLevel = "high"
-	ThinkingXHigh    ThinkingLevel = "xhigh"
+	ThinkingOff     ThinkingLevel = "off"
+	ThinkingMinimal ThinkingLevel = "minimal"
+	ThinkingLow     ThinkingLevel = "low"
+	ThinkingMedium  ThinkingLevel = "medium"
+	ThinkingHigh    ThinkingLevel = "high"
+	ThinkingXHigh   ThinkingLevel = "xhigh"
 )
 
 // ThinkingBudget maps levels to token counts.
@@ -67,34 +67,34 @@ var DefaultThinkingBudgets = map[ThinkingLevel]int{
 
 // ProviderConfig holds everything needed to call a provider API.
 type ProviderConfig struct {
-	Type        ProviderType  `json:"type"`
-	APIKey      string        `json:"apiKey,omitempty"`
-	BaseURL     string        `json:"baseURL,omitempty"`
-	APIVersion  string        `json:"apiVersion,omitempty"`
-	Region      string        `json:"region,omitempty"`
-	ProjectID   string        `json:"projectID,omitempty"`
-	Timeout     time.Duration `json:"timeout"`
-	MaxRetries  int           `json:"maxRetries"`
-	RetryDelay  time.Duration `json:"retryDelay"`
-	Transport   Transport     `json:"transport"`
+	Type       ProviderType  `json:"type"`
+	APIKey     string        `json:"apiKey,omitempty"`
+	BaseURL    string        `json:"baseURL,omitempty"`
+	APIVersion string        `json:"apiVersion,omitempty"`
+	Region     string        `json:"region,omitempty"`
+	ProjectID  string        `json:"projectID,omitempty"`
+	Timeout    time.Duration `json:"timeout"`
+	MaxRetries int           `json:"maxRetries"`
+	RetryDelay time.Duration `json:"retryDelay"`
+	Transport  Transport     `json:"transport"`
 }
 
 // ModelInfo describes a model available on a provider.
 type ModelInfo struct {
-	ID               string        `json:"id"`
-	Name             string        `json:"name"`
-	Provider         ProviderType  `json:"provider"`
-	ContextWindow    int           `json:"contextWindow"`
-	MaxOutput        int            `json:"maxOutput"`
-	SupportsVision   bool          `json:"supportsVision"`
-	SupportsStreaming bool         `json:"supportsStreaming"`
-	SupportsThinking bool          `json:"supportsThinking"`
-	CacheSupport     bool          `json:"cacheSupport"`
-	CostPerInputMT   float64       `json:"costPerInputMT"`  // per million tokens
-	CostPerOutputMT  float64       `json:"costPerOutputMT"`
-	CostPerCacheReadMT float64     `json:"costPerCacheReadMT"`
-	CostPerCacheCreationMT float64 `json:"costPerCacheCreationMT"`
-	Tags             []string      `json:"tags,omitempty"`
+	ID                     string       `json:"id"`
+	Name                   string       `json:"name"`
+	Provider               ProviderType `json:"provider"`
+	ContextWindow          int          `json:"contextWindow"`
+	MaxOutput              int          `json:"maxOutput"`
+	SupportsVision         bool         `json:"supportsVision"`
+	SupportsStreaming      bool         `json:"supportsStreaming"`
+	SupportsThinking       bool         `json:"supportsThinking"`
+	CacheSupport           bool         `json:"cacheSupport"`
+	CostPerInputMT         float64      `json:"costPerInputMT"` // per million tokens
+	CostPerOutputMT        float64      `json:"costPerOutputMT"`
+	CostPerCacheReadMT     float64      `json:"costPerCacheReadMT"`
+	CostPerCacheCreationMT float64      `json:"costPerCacheCreationMT"`
+	Tags                   []string     `json:"tags,omitempty"`
 }
 
 // Provider is the interface all provider implementations must satisfy.
@@ -121,31 +121,31 @@ type StreamingToolUse struct {
 
 // StreamChunk is a single chunk from a streaming response.
 type StreamChunk struct {
-	Type     string               `json:"type"`
-	Content  string               `json:"content,omitempty"`
+	Type       string             `json:"type"`
+	Content    string             `json:"content,omitempty"`
 	StopReason string             `json:"stopReason,omitempty"`
-	Usage    *TokenUsage          `json:"usage,omitempty"`
-	ToolUses []StreamingToolUse   `json:"toolUses,omitempty"`
-	Thinking string               `json:"thinking,omitempty"`
-	Err      error                `json:"-"`
+	Usage      *TokenUsage        `json:"usage,omitempty"`
+	ToolUses   []StreamingToolUse `json:"toolUses,omitempty"`
+	Thinking   string             `json:"thinking,omitempty"`
+	Err        error              `json:"-"`
 }
 
 // TokenUsage tracks token consumption.
 type TokenUsage struct {
-	InputTokens      int `json:"inputTokens"`
-	OutputTokens     int `json:"outputTokens"`
-	CacheReadTokens  int `json:"cacheReadTokens"`
+	InputTokens         int `json:"inputTokens"`
+	OutputTokens        int `json:"outputTokens"`
+	CacheReadTokens     int `json:"cacheReadTokens"`
 	CacheCreationTokens int `json:"cacheCreationTokens"`
 }
 
 // CostReport tracks costs.
 type CostReport struct {
-	InputCost      float64 `json:"inputCost"`
-	OutputCost     float64 `json:"outputCost"`
-	CacheReadCost  float64 `json:"cacheReadCost"`
+	InputCost       float64 `json:"inputCost"`
+	OutputCost      float64 `json:"outputCost"`
+	CacheReadCost   float64 `json:"cacheReadCost"`
 	CacheCreateCost float64 `json:"cacheCreateCost"`
-	TotalCost      float64 `json:"totalCost"`
-	Currency       string  `json:"currency"`
+	TotalCost       float64 `json:"totalCost"`
+	Currency        string  `json:"currency"`
 }
 
 // ComputeCost calculates cost based on model pricing and usage.
@@ -154,31 +154,31 @@ func (u *TokenUsage) ComputeCost(model ModelInfo) *CostReport {
 	mtIn := float64(u.InputTokens-u.CacheReadTokens) / 1e6
 	mtOut := float64(u.OutputTokens) / 1e6
 	mtCacheRead := float64(u.CacheReadTokens) / 1e6
-	mtCache_create := float64(u.CacheCreationTokens) / 1e6
+	mtCacheCreate := float64(u.CacheCreationTokens) / 1e6
 
 	report.InputCost = mtIn * model.CostPerInputMT
 	report.OutputCost = mtOut * model.CostPerOutputMT
-	report.CacheReadCost = mtCache_read * model.CostPerCacheReadMT
-	report.CacheCreateCost = mtCache_create * model.CostPerCacheCreationMT
+	report.CacheReadCost = mtCacheRead * model.CostPerCacheReadMT
+	report.CacheCreateCost = mtCacheCreate * model.CostPerCacheCreationMT
 	report.TotalCost = report.InputCost + report.OutputCost + report.CacheReadCost + report.CacheCreateCost
 	return report
 }
 
 // Message represents a chat message (compatible with OpenAI/Anthropic formats).
 type Message struct {
-	Role    string    `json:"role"`    // "user", "assistant", "system", "tool"
+	Role    string         `json:"role"` // "user", "assistant", "system", "tool"
 	Content []ContentBlock `json:"content"`
 }
 
 // ContentBlock is a single block of content in a message.
 type ContentBlock struct {
-	Type  string `json:"type"` // "text", "image", "tool_use", "tool_result"
-	Text  string `json:"text,omitempty"`
-	Image *ImageContent `json:"image,omitempty"`
-	ToolID string `json:"toolId,omitempty"`
-	ToolType string `json:"toolType,omitempty"`
-	Input map[string]interface{} `json:"input,omitempty"`
-	Name   string `json:"name,omitempty"`
+	Type     string                 `json:"type"` // "text", "image", "tool_use", "tool_result"
+	Text     string                 `json:"text,omitempty"`
+	Image    *ImageContent          `json:"image,omitempty"`
+	ToolID   string                 `json:"toolId,omitempty"`
+	ToolType string                 `json:"toolType,omitempty"`
+	Input    map[string]interface{} `json:"input,omitempty"`
+	Name     string                 `json:"name,omitempty"`
 }
 
 // ImageContent is an image in a message.
@@ -189,28 +189,28 @@ type ImageContent struct {
 
 // ToolDefinition describes a tool the model can call.
 type ToolDefinition struct {
-	Name         string                 `json:"name"`
-	Description  string                 `json:"description"`
-	Parameters   map[string]interface{} `json:"parameters"` // JSON Schema
+	Name        string                 `json:"name"`
+	Description string                 `json:"description"`
+	Parameters  map[string]interface{} `json:"parameters"` // JSON Schema
 }
 
 // CompletionRequest is a unified request across all providers.
 type CompletionRequest struct {
-	ModelID        string             `json:"modelId"`
-	System         string             `json:"system,omitempty"`
-	Messages       []Message          `json:"messages"`
-	MaxTokens      int                `json:"maxTokens,omitempty"`
-	Temperature    float64            `json:"temperature,omitempty"`
-	TopP           float64            `json:"topP,omitempty"`
-	TopK           int                `json:"topK,omitempty"`
-	FrequencyPenalty float64          `json:"frequencyPenalty,omitempty"`
-	StopSequences  []string           `json:"stop,omitempty"`
-	Tools          []ToolDefinition   `json:"tools,omitempty"`
-	ToolChoice     string             `json:"toolChoice,omitempty"` // "auto", "any", "tool", "none"
-	Stream         bool               `json:"stream"`
-	ThinkingBudget int                `json:"thinkingBudget,omitempty"`
-	ThinkingType   ThinkingLevel      `json:"thinkingType,omitempty"`
-	Metadata       map[string]string  `json:"metadata,omitempty"`
+	ModelID          string            `json:"modelId"`
+	System           string            `json:"system,omitempty"`
+	Messages         []Message         `json:"messages"`
+	MaxTokens        int               `json:"maxTokens,omitempty"`
+	Temperature      float64           `json:"temperature,omitempty"`
+	TopP             float64           `json:"topP,omitempty"`
+	TopK             int               `json:"topK,omitempty"`
+	FrequencyPenalty float64           `json:"frequencyPenalty,omitempty"`
+	StopSequences    []string          `json:"stop,omitempty"`
+	Tools            []ToolDefinition  `json:"tools,omitempty"`
+	ToolChoice       string            `json:"toolChoice,omitempty"` // "auto", "any", "tool", "none"
+	Stream           bool              `json:"stream"`
+	ThinkingBudget   int               `json:"thinkingBudget,omitempty"`
+	ThinkingType     ThinkingLevel     `json:"thinkingType,omitempty"`
+	Metadata         map[string]string `json:"metadata,omitempty"`
 }
 
 // CompletionResult is a unified completion response.
@@ -368,8 +368,8 @@ func matchesModelPattern(m ModelInfo, pattern string) bool {
 	}
 	// Simple glob matching
 	if strings.Contains(pattern, "*") {
-		prefix := strings.TrimSuffix(pattern, "*-*")
-		if prefix == modelID[:min(len(prefix), len(modelID))] {
+		prefix := strings.TrimSuffix(pattern, "*")
+		if strings.HasPrefix(m.ID, prefix) {
 			return true
 		}
 	}
@@ -403,8 +403,8 @@ func CreateProvider(pType ProviderType, config ProviderConfig) (Provider, error)
 
 // baseProvider provides common HTTP client and retry logic.
 type baseProvider struct {
-	config  ProviderConfig
-	client  *http.Client
+	config ProviderConfig
+	client *http.Client
 }
 
 func newBaseProvider(config ProviderConfig) baseProvider {
@@ -609,7 +609,7 @@ func newGenericProvider(config ProviderConfig) (Provider, error) {
 	return &genericProvider{
 		baseProvider: bp,
 		models: []ModelInfo{
-			{ID: "custom", Name: "Custom Model", Provider: ProviderCustom, ContextWindow: 128000, MaxOutput: 4096, SupportsStreaming: true, SupportedVision: false, SupportsThinking: false, CacheSupport: false},
+			{ID: "custom", Name: "Custom Model", Provider: ProviderCustom, ContextWindow: 128000, MaxOutput: 4096, SupportsStreaming: true, SupportsVision: false, SupportsThinking: false, CacheSupport: false},
 		},
 	}, nil
 }
@@ -620,7 +620,7 @@ func (p *genericProvider) Configure(config ProviderConfig) error {
 	p.baseProvider.config = config
 	return nil
 }
-func (p *genericProvider) GetModels() ([]ModelInfo, error) { return p.models, nil }
+func (p *genericProvider) GetModels() ([]ModelInfo, error)  { return p.models, nil }
 func (p *genericProvider) MatchesModel(pattern string) bool { return true }
 func (p *genericProvider) EstimateTokens(text string) int {
 	return int(float64(len(text)) / 4.0)

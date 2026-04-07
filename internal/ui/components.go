@@ -24,75 +24,75 @@ import (
 // Theme defines the color scheme and styling for the TUI.
 type Theme struct {
 	Name string
-	
+
 	// Colors
-	Accent            string `json:"accent"`
-	AccentMuted       string `json:"accentMuted"`
-	Background        string `json:"background"`
-	Foreground        string `json:"foreground"`
-	UserMessage       string `json:"userMessage"`
-	AssistantMessage  string `json:"assistantMessage"`
-	ToolTitle         string `json:"toolTitle"`
-	ToolOutput        string `json:"toolOutput"`
-	ToolOutputMuted   string `json:"toolOutputMuted"`
-	Error             string `json:"error"`
-	Warning           string `json:"warning"`
-	Info              string `json:"info"`
-	Muted             string `json:"muted"`
-	Success           string `json:"success"`
-	Border            string `json:"border"`
-	EditorBorder      string `json:"editorBorder"`
-	FooterBackground  string `json:"footerBackground"`
-	FooterForeground  string `json:"footerForeground"`
-	ThinkingBlock     string `json:"thinkingBlock"`
-	ModelSelector     string `json:"modelSelector"`
+	Accent           string `json:"accent"`
+	AccentMuted      string `json:"accentMuted"`
+	Background       string `json:"background"`
+	Foreground       string `json:"foreground"`
+	UserMessage      string `json:"userMessage"`
+	AssistantMessage string `json:"assistantMessage"`
+	ToolTitle        string `json:"toolTitle"`
+	ToolOutput       string `json:"toolOutput"`
+	ToolOutputMuted  string `json:"toolOutputMuted"`
+	Error            string `json:"error"`
+	Warning          string `json:"warning"`
+	Info             string `json:"info"`
+	Muted            string `json:"muted"`
+	Success          string `json:"success"`
+	Border           string `json:"border"`
+	EditorBorder     string `json:"editorBorder"`
+	FooterBackground string `json:"footerBackground"`
+	FooterForeground string `json:"footerForeground"`
+	ThinkingBlock    string `json:"thinkingBlock"`
+	ModelSelector    string `json:"modelSelector"`
 }
 
 // DefaultDark returns the dark theme (matching Pi's dark theme).
 func DefaultDark() Theme {
 	return Theme{
-		Name:            "dark",
-		Accent:          "#7aa2f7",
-		AccentMuted:     "#5577aa",
-		Background:      "#1a1b26",
-		Foreground:      "#c0caf5",
-		UserMessage:     "#9ece6a",
+		Name:             "dark",
+		Accent:           "#7aa2f7",
+		AccentMuted:      "#5577aa",
+		Background:       "#1a1b26",
+		Foreground:       "#c0caf5",
+		UserMessage:      "#9ece6a",
 		AssistantMessage: "#c0caf5",
-		ToolTitle:       "#7aa2f7",
-		ToolOutput:      "#a9b1d6",
-		ToolOutputMuted: "#565f89",
-		Error:           "#f7768e",
-		Warning:         "#e0af68",
-		Info:            "#7dcfff",
-		Muted:           "#565f89",
-		Success:         "#9ece6a",
-		Border:          "#5577aa",
-		EditorBorder:    "#7aa2f7",
-		ThinkingBlock:   "#565f89",
+		ToolTitle:        "#7aa2f7",
+		ToolOutput:       "#a9b1d6",
+		ToolOutputMuted:  "#565f89",
+		Error:            "#f7768e",
+		Warning:          "#e0af68",
+		Info:             "#7dcfff",
+		Muted:            "#565f89",
+		Success:          "#9ece6a",
+		Border:           "#5577aa",
+		EditorBorder:     "#7aa2f7",
+		ThinkingBlock:    "#565f89",
 	}
 }
 
 // DefaultLight returns the light theme.
 func DefaultLight() Theme {
 	return Theme{
-		Name:            "light",
-		Accent:          "#2563eb",
-		AccentMuted:     "#64748b",
-		Background:      "#ffffff",
-		Foreground:      "#1e293b",
-		UserMessage:     "#16a34a",
+		Name:             "light",
+		Accent:           "#2563eb",
+		AccentMuted:      "#64748b",
+		Background:       "#ffffff",
+		Foreground:       "#1e293b",
+		UserMessage:      "#16a34a",
 		AssistantMessage: "#1e293b",
-		ToolTitle:       "#2563eb",
-		ToolOutput:      "#475569",
-		ToolOutputMuted: "#94a3b8",
-		Error:           "#dc2626",
-		Warning:         "#d97706",
-		Info:            "#0284c7",
-		Muted:           "#94a3b8",
-		Success:         "#16a34a",
-		Border:          "#cbd5e1",
-		EditorBorder:    "#2563eb",
-		ThinkingBlock:   "#94a3b8",
+		ToolTitle:        "#2563eb",
+		ToolOutput:       "#475569",
+		ToolOutputMuted:  "#94a3b8",
+		Error:            "#dc2626",
+		Warning:          "#d97706",
+		Info:             "#0284c7",
+		Muted:            "#94a3b8",
+		Success:          "#16a34a",
+		Border:           "#cbd5e1",
+		EditorBorder:     "#2563eb",
+		ThinkingBlock:    "#94a3b8",
 	}
 }
 
@@ -103,27 +103,27 @@ type Message struct {
 	Timestamp time.Time `json:"timestamp"`
 	Model     string    `json:"model,omitempty"`
 	Provider  string    `json:"provider,omitempty"`
-	
+
 	// Tool specific
 	ToolName   string `json:"toolName,omitempty"`
 	ToolStatus string `json:"toolStatus,omitempty"` // "running", "completed", "failed"
 	Duration   string `json:"duration,omitempty"`
 	ErrorText  string `json:"errorText,omitempty"`
-	
+
 	// Thinking
-	Thinking    string `json:"thinking,omitempty"`
-	ThinkingVisible bool `json:"thinkingVisible"`
-	
+	Thinking        string `json:"thinking,omitempty"`
+	ThinkingVisible bool   `json:"thinkingVisible"`
+
 	// Context
-	BranchID    string `json:"branchId,omitempty"`
-	ParentID    string `json:"parentId,omitempty"`
-	LabelText   string `json:"labelText,omitempty"`
-	Labeled     bool   `json:"labeled"`
-	
+	BranchID  string `json:"branchId,omitempty"`
+	ParentID  string `json:"parentId,omitempty"`
+	LabelText string `json:"labelText,omitempty"`
+	Labeled   bool   `json:"labeled"`
+
 	// Token tracking
-	TokenCount  int     `json:"tokenCount,omitempty"`
-	CostUSD     float64 `json:"costUSD,omitempty"`
-	
+	TokenCount int     `json:"tokenCount,omitempty"`
+	CostUSD    float64 `json:"costUSD,omitempty"`
+
 	// Render cache
 	renderedLines []string
 	renderedWidth int
@@ -131,18 +131,18 @@ type Message struct {
 
 // FooterState tracks the footer display data.
 type FooterState struct {
-	CWD          string
-	SessionName  string
-	ModelID      string
-	Provider     string
-	TotalTokens  int
-	TotalCost    float64
+	CWD           string
+	SessionName   string
+	ModelID       string
+	Provider      string
+	TotalTokens   int
+	TotalCost     float64
 	ThinkingLevel string
-	
+
 	// Message queue
 	QueuedMessages int
 	QueuedType     string // "steering", "follow-up"
-	
+
 	// Agent state
 	AgentStatus string // "idle", "thinking", "tool_call", "error"
 	Progress    string // Progress indicator for ongoing operations
@@ -150,10 +150,10 @@ type FooterState struct {
 
 // EditorState tracks the editor status.
 type EditorState struct {
-	Content    string
-	CursorPos  int
-	Focused    bool
-	Width      int
+	Content      string
+	CursorPos    int
+	Focused      bool
+	Width        int
 	AutoComplete struct {
 		Visible    bool
 		Items      []AutoCompleteItem
@@ -253,25 +253,25 @@ func (f *ToolOutputFormatter) FormatToolCall(toolName string, args map[string]in
 // FormatToolResult formats a tool result for display.
 func (f *ToolOutputFormatter) FormatToolResult(toolName string, result string, duration time.Duration, isError bool) string {
 	var parts []string
-	
+
 	// Title
 	title := fmt.Sprintf("%s %s", f.Theme.ToolTitle, toolName)
 	if isError {
 		title = fmt.Sprintf("%s %s (error)", f.Theme.Error, toolName)
 	}
 	parts = append(parts, title)
-	
+
 	// Duration
 	if duration > 0 {
 		parts = append(parts, fmt.Sprintf(" (%s)", FormatDuration(duration.Milliseconds())))
 	}
-	
+
 	// Output
 	if result != "" {
 		truncated := truncateResult(result, 2000)
 		parts = append(parts, "\n"+f.Theme.ToolOutput+truncated)
 	}
-	
+
 	return strings.Join(parts, "")
 }
 
@@ -287,12 +287,12 @@ func (f *ToolOutputFormatter) FormatThinking(content string) string {
 
 // SystemPromptBuilder builds the complete system prompt.
 type SystemPromptBuilder struct {
-	basePrompt       string
-	skills           []string
-	agencies         []string // AGENTS.md contents
-	promptTemplate   string
-	memoryContext    string
-	customPrompts    []string
+	basePrompt     string
+	skills         []string
+	agencies       []string // AGENTS.md contents
+	promptTemplate string
+	memoryContext  string
+	customPrompts  []string
 }
 
 // NewSystemPromptBuilder creates a new builder.
@@ -341,33 +341,33 @@ func (b *SystemPromptBuilder) WithCustomPrompts(prompts []string) *SystemPromptB
 // Build returns the complete system prompt.
 func (b *SystemPromptBuilder) Build() string {
 	var parts []string
-	
+
 	parts = append(parts, b.basePrompt)
-	
+
 	// Add AGENTS.md content
 	for _, content := range b.agencies {
 		if content != "" {
 			parts = append(parts, "\n## Project Instructions (from AGENTS.md)\n\n"+content)
 		}
 	}
-	
+
 	// Add memory context
 	if b.memoryContext != "" {
 		parts = append(parts, "\n## Relevant Context\n\n"+b.memoryContext)
 	}
-	
+
 	// Add skill descriptions
 	if len(b.skills) > 0 {
 		parts = append(parts, "\n## Available Skills\n\n"+strings.Join(b.skills, "\n\n"))
 	}
-	
+
 	// Add custom prompts
 	for _, prompt := range b.customPrompts {
 		if prompt != "" {
 			parts = append(parts, "\n"+prompt)
 		}
 	}
-	
+
 	return strings.Join(parts, "\n")
 }
 

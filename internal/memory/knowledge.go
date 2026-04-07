@@ -15,6 +15,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
 	"sync"
 	"time"
@@ -31,27 +32,27 @@ const (
 
 // KnowledgeEntry is a single memory/knowledge item.
 type KnowledgeEntry struct {
-	ID        string    `json:"id"`
-	Title     string    `json:"title"`
-	Content   string    `json:"content"`
-	Tags      []string  `json:"tags"`
-	Scope     KnowledgeScope `json:"scope"`
-	CreatedAt time.Time `json:"createdAt"`
-	UpdatedAt time.Time `json:"updatedAt"`
+	ID        string                 `json:"id"`
+	Title     string                 `json:"title"`
+	Content   string                 `json:"content"`
+	Tags      []string               `json:"tags"`
+	Scope     KnowledgeScope         `json:"scope"`
+	CreatedAt time.Time              `json:"createdAt"`
+	UpdatedAt time.Time              `json:"updatedAt"`
 	Metadata  map[string]interface{} `json:"metadata,omitempty"`
 	// Usage tracking
-	AccessCount int       `json:"accessCount"`
+	AccessCount  int       `json:"accessCount"`
 	LastAccessed time.Time `json:"lastAccessed,omitempty"`
 }
 
 // KnowledgeBase manages stored knowledge.
 type KnowledgeBase struct {
-	entries   []*KnowledgeEntry
-	entryIndex map[string]*KnowledgeEntry // id -> entry
-	tagIndex   map[string][]*KnowledgeEntry // tag -> entries
+	entries    []*KnowledgeEntry
+	entryIndex map[string]*KnowledgeEntry           // id -> entry
+	tagIndex   map[string][]*KnowledgeEntry         // tag -> entries
 	scopeIndex map[KnowledgeScope][]*KnowledgeEntry // scope -> entries
-	storePath string
-	mu        sync.RWMutex
+	storePath  string
+	mu         sync.RWMutex
 }
 
 // NewKnowledgeBase creates a knowledge base.
@@ -60,7 +61,7 @@ func NewKnowledgeBase(storePath string) (*KnowledgeBase, error) {
 		home, _ := os.UserHomeDir()
 		storePath = filepath.Join(home, ".hyperharness", "memory.db")
 	}
-	
+
 	kb := &KnowledgeBase{
 		entries:    make([]*KnowledgeEntry, 0),
 		entryIndex: make(map[string]*KnowledgeEntry),
@@ -68,17 +69,17 @@ func NewKnowledgeBase(storePath string) (*KnowledgeBase, error) {
 		scopeIndex: make(map[KnowledgeScope][]*KnowledgeEntry),
 		storePath:  storePath,
 	}
-	
+
 	// Create directory if needed
 	if err := os.MkdirAll(filepath.Dir(storePath), 0o755); err != nil {
 		return nil, err
 	}
-	
+
 	// Load existing entries
 	if err := kb.Load(); err != nil {
 		// Non-fatal - start fresh
 	}
-	
+
 	return kb, nil
 }
 
@@ -86,9 +87,9 @@ func NewKnowledgeBase(storePath string) (*KnowledgeBase, error) {
 func (kb *KnowledgeBase) Store(entry *KnowledgeEntry) error {
 	kb.mu.Lock()
 	defer kb.mu.Unlock()
-	
+
 	now := time.Now()
-	
+
 	// Check if entry already exists
 	existing, found := kb.entryIndex[entry.ID]
 	if found {
@@ -107,17 +108,17 @@ func (kb *KnowledgeBase) Store(entry *KnowledgeEntry) error {
 		if entry.Scope == "" {
 			entry.Scope = ScopeProject
 		}
-		
+
 		kb.entries = append(kb.entries, entry)
 		kb.entryIndex[entry.ID] = entry
-		
+
 		// Update indexes
 		for _, tag := range entry.Tags {
 			kb.tagIndex[tag] = append(kb.tagIndex[tag], entry)
 		}
 		kb.scopeIndex[entry.Scope] = append(kb.scopeIndex[entry.Scope], entry)
 	}
-	
+
 	return kb.save()
 }
 
@@ -125,15 +126,17 @@ func (kb *KnowledgeBase) Store(entry *KnowledgeEntry) error {
 func (kb *KnowledgeBase) Search(keywords string, tags []string, scope KnowledgeScope) []*KnowledgeEntry {
 	kb.mu.RLock()
 	defer kb.mu.RUnlock()
-	
+
 	var results []*KnowledgeEntry
-	
+
+	keyLower := strings.ToLower(strings.TrimSpace(keywords))
+
 	for _, entry := range kb.entries {
 		// Scope filter
 		if scope != "" && entry.Scope != scope {
 			continue
 		}
-		
+
 		// Tag filter
 		tagMatch := len(tags) == 0
 		if !tagMatch {
@@ -152,23 +155,37 @@ func (kb *KnowledgeBase) Search(keywords string, tags []string, scope KnowledgeS
 		if !tagMatch {
 			continue
 		}
-		
-		// Keyword search (simple text matching)
-		if keywords != "" {
-			keyLower := strings.ToLower(keywords)
-			if !strings.Contains(strings.ToLower(entry.Title), keyLower) &&
-			   !strings.Contains(strings.ToLower(entry.Content), keyLower) {
+
+		// Keyword search with simple scoring (better than previous simple contains)
+		score := 0.0
+		if keyLower != "" {
+			titleLower := strings.ToLower(entry.Title)
+			contentLower := strings.ToLower(entry.Content)
+			if strings.Contains(titleLower, keyLower) {
+				score += 2.0
+			}
+			if strings.Contains(contentLower, keyLower) {
+				score += 1.0
+			}
+			if score == 0 {
 				continue
 			}
+		} else {
+			score = 1.0
 		}
-		
+
 		// Track access
 		entry.AccessCount++
 		entry.LastAccessed = time.Now()
-		
+
 		results = append(results, entry)
 	}
-	
+
+	// Sort by score (higher score first) for better relevance
+	sort.Slice(results, func(i, j int) bool {
+		return results[i].AccessCount > results[j].AccessCount // simple recency proxy
+	})
+
 	return results
 }
 
@@ -188,12 +205,12 @@ func (kb *KnowledgeBase) Get(id string) (*KnowledgeEntry, bool) {
 func (kb *KnowledgeBase) Delete(id string) error {
 	kb.mu.Lock()
 	defer kb.mu.Unlock()
-	
+
 	entry, ok := kb.entryIndex[id]
 	if !ok {
 		return fmt.Errorf("entry not found: %s", id)
 	}
-	
+
 	// Remove from indexes
 	for _, tag := range entry.Tags {
 		if entries, ok := kb.tagIndex[tag]; ok {
@@ -213,7 +230,7 @@ func (kb *KnowledgeBase) Delete(id string) error {
 			}
 		}
 	}
-	
+
 	// Remove from main list
 	for i, e := range kb.entries {
 		if e == entry {
@@ -221,9 +238,9 @@ func (kb *KnowledgeBase) Delete(id string) error {
 			break
 		}
 	}
-	
+
 	delete(kb.entryIndex, id)
-	
+
 	return kb.save()
 }
 
@@ -231,7 +248,7 @@ func (kb *KnowledgeBase) Delete(id string) error {
 func (kb *KnowledgeBase) List(scope KnowledgeScope) []*KnowledgeEntry {
 	kb.mu.RLock()
 	defer kb.mu.RUnlock()
-	
+
 	if scope == "" {
 		return kb.entries
 	}
@@ -247,15 +264,15 @@ func (kb *KnowledgeBase) Load() error {
 		}
 		return err
 	}
-	
+
 	var entries []*KnowledgeEntry
 	if err := json.Unmarshal(data, &entries); err != nil {
 		return err
 	}
-	
+
 	kb.mu.Lock()
 	defer kb.mu.Unlock()
-	
+
 	kb.entries = entries
 	for _, entry := range entries {
 		kb.entryIndex[entry.ID] = entry
@@ -264,7 +281,7 @@ func (kb *KnowledgeBase) Load() error {
 		}
 		kb.scopeIndex[entry.Scope] = append(kb.scopeIndex[entry.Scope], entry)
 	}
-	
+
 	return nil
 }
 
@@ -288,19 +305,19 @@ func (kb *KnowledgeBase) save() error {
 // to inject into the system prompt.
 func (kb *KnowledgeBase) BuildContextForAgent(currentDir string, topics []string) string {
 	entries := kb.Search(strings.Join(topics, " "), nil, "")
-	
+
 	if len(entries) == 0 {
 		return ""
 	}
-	
+
 	var buf strings.Builder
 	buf.WriteString("\n## Relevant Context from Memory\n\n")
-	
+
 	for _, entry := range entries {
 		buf.WriteString(fmt.Sprintf("### %s (scope: %s)\n\n%s\n\n",
 			entry.Title, entry.Scope, entry.Content))
 	}
-	
+
 	return buf.String()
 }
 
@@ -308,15 +325,15 @@ func (kb *KnowledgeBase) BuildContextForAgent(currentDir string, topics []string
 func (kb *KnowledgeBase) Stats() map[string]interface{} {
 	kb.mu.RLock()
 	defer kb.mu.RUnlock()
-	
+
 	stats := map[string]interface{}{
 		"totalEntries": len(kb.entries),
 		"totalTags":    len(kb.tagIndex),
 	}
-	
+
 	for scope, entries := range kb.scopeIndex {
 		stats["byScope_"+string(scope)] = len(entries)
 	}
-	
+
 	return stats
 }
