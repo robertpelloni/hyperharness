@@ -29,9 +29,7 @@ func newNativeTestServer(t *testing.T) (*Server, string) {
 	if err := os.MkdirAll(cfg.MainConfigDir, 0o755); err != nil {
 		t.Fatalf("failed to create main config dir: %v", err)
 	}
-	srv := New(cfg, stubDetector{})
-	t.Cleanup(func() { srv.Close() })
-	return srv, workspace
+	return New(cfg, stubDetector{}), workspace
 }
 
 func TestNativeWorkflowEndpoints(t *testing.T) {

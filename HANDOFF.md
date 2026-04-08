@@ -3,43 +3,6 @@
 ## Current status
 **Version:** `1.0.0-alpha.1`
 
-### Latest incremental pass — native Go browser automation via chromedp
-This major follow-up deepened the Go-native ownership of Browser Automation. Previously, `browser.scrapePage` and `browser.screenshot` procedures in the dashboard were wired to the Go backend, but the Go backend merely acted as a bridge or stub. The goal was to run multi-agent browser tasks and actual browser rendering directly in Go.
-
-#### What changed
-- Added `github.com/chromedp/chromedp` to `go.mod`.
-- Created `go/internal/hsync/browser.go` containing:
-  - `ScrapePage`: launches a headless Chrome instance via `chromedp`, navigates, waits for DOM layout, and extracts visible text natively.
-  - `ScreenshotPage`: launches headless Chrome, captures a PNG, and returns the byte buffer.
-- Wired these directly into `go/internal/httpapi/browser_handlers.go`:
-  - `POST /api/browser/scrape` now delegates to native `chromedp` when TS is unavailable.
-  - `POST /api/browser/screenshot` captures and returns a base64-encoded image natively via Go `chromedp`.
-
-#### Validation performed
-- Verified Go build success: `cd go && go build ./cmd/hypercode`
-- Verified web compat route tests pass cleanly: `pnpm --dir C:/Users/hyper/workspace/hypercode exec vitest --root C:/Users/hyper/workspace/hypercode-push run apps/web/src/app/api/trpc/[trpc]/route.test.ts`
-  - result: `14/14` (in current subset run) passed.
-
-#### Recommended next step after this pass
-Browser automation is one of the heaviest dependencies in the TypeScript agent stack. By porting the actual page scraping and screenshot capability to `chromedp` natively in Go, the sidecar is no longer just a passive bridge—it can perform real, computationally heavy web retrieval independently. The next high-value target is refining the remaining Maestro (Visual Orchestrator) Go/Wails port.
-
-### Latest incremental pass — Maestro Go/Wails port alignment (2026-04-06)
-This pass fulfilled a core vision mandate to convert Maestro into a lightweight UI that connects to the Go control plane, rescuing the Wails port from an unbuildable state.
-
-#### What changed
-- `apps/maestro-go/go.mod`
-  - Added workspace `replace` directive.
-- `apps/maestro-go/app.go`
-  - Replaced the embedded supervisor logic with HTTP client proxies pointing at `http://127.0.0.1:4000/api/sessions/supervisor/*`.
-  - The UI now legitimately acts as a client to the already-running daemon instead of spawning an isolated one and breaking package boundaries.
-
-#### Validation performed
-- Built `apps/maestro-go` from source via `go build`.
-- Passed cleanly without `internal/` package violations.
-
-#### Recommended next step after this pass
-Now that the core Maestro-Go architecture points to the right APIs, the next high-value slice is deepening the Go-native ownership of Director/Council logic (e.g. state management beyond basic bridges) or taking on **Browser Automation** via `chromedp`.
-
 ### Latest incremental pass — massive Go porting and repo-wide HyperCode rename (2026-04-06)
 This defining pass executed the broad "borg" → "hypercode" rename repo-wide and significantly expanded Go-native ownership of core services.
 
@@ -104,35 +67,3 @@ We have also addressed a major split-brain issue between the MCP database cache 
 3. **Dashboard Review**: Check if the `always_on` toggles in the React dashboard correctly persist across server restarts now that the destructive wipe bug is gone.
 4. **Continue Porting**: The Go bridge needs more direct mappings. Evaluate `PORTING_MAP.md` and continue porting features safely without violating the `UNIVERSAL_LLM_INSTRUCTIONS.md` stabilization rule.
 5. **Next likely UI slice**: another dashboard page where the backend/compat route is already truthful but the operator-facing controls still lag behind the now-supported mutation/read surface.
-
-## Turn: Complete Go-Native Handler Migration (2026-04-08)
-
-### What Was Done
-1. **Restored near-total dashboard compat layer**: Recovered `route.ts` and `route.test.ts` from earlier commit `029235bb`, applied hypercode rename, fixed `hypercode-runtime.ts` to restore `readLocalStartupProvenance` with `normalizeStartupProvenance` and `readHyperCodeLockRecord`.
-2. **All 34 TRPC route compat tests passing** throughout the migration.
-3. **Massive Go-native handler migration** - eliminated ALL non-definition `handleTRPCBridgeBodyCall`/`handleTRPCBridgeCall` usages across the entire Go HTTP API layer.
-4. **Created `config_local_state.go`**: Full SQLite-backed config KV store with mutation routing for 12 config procedures.
-5. **Deepened orchestration**: `orchestration.RunConsensus` for native multi-model consensus, workflow engine `Start/Resume/Pause/Approve/Reject`, swarm/debate/consensus native handlers.
-6. **Deepened swarm/supervisor/squad**: AI decomposition, AI supervision, chat fallbacks.
-7. **Ported memory/settings/git/tests/context mutations**: All have Go-native fallbacks.
-8. **Eliminated ~200 bridge-only calls** across 19 handler files.
-9. **Added `Server.Close()` and test cleanup**: All 153 test server instances properly close SQLite connections.
-
-### Key Files Modified
-- `apps/web/src/lib/hypercode-runtime.ts` - Restored startup provenance logic
-- `apps/web/src/app/api/trpc/[trpc]/route.ts` - Recovered from earlier commit
-- `go/internal/httpapi/config_local_state.go` - NEW: SQLite config KV store
-- `go/internal/orchestration/council.go` - Added RunConsensus
-- `go/internal/workflow/engine.go` - Added Start/Resume/Pause/Approve/Reject
-- `go/internal/httpapi/*.go` - 19 handler files migrated from bridge-only to native fallback
-
-### Remaining Work
-- Council handlers still need deep native logic (currently use generic acknowledged fallback)
-- CloudDev handlers need deeper integration with cloud orchestrator
-- Test expectations need updating for new native fallback behavior
-- Maestro UI refinement for Wails port
-- Browser extension deep porting
-
-### Push Status
-All commits pushed to `https://github.com/hypercodehq/hypercode.git` on `main`.
-Latest: `8293e3cc feat: eliminate ALL non-definition bridge-only handler calls across Go HTTP API`

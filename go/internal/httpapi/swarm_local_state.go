@@ -99,17 +99,3 @@ func (m *localSwarmManager) DeleteMission(id string) bool {
 	}
 	return false
 }
-
-func (m *localSwarmManager) SetMissionStatus(id string, status string) bool {
-	m.mu.Lock()
-	defer m.mu.Unlock()
-
-	for i, mission := range m.state.Missions {
-		if mission.MissionID == id {
-			m.state.Missions[i].Status = status
-			m.save()
-			return true
-		}
-	}
-	return false
-}
