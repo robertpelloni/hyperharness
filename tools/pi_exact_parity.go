@@ -4,7 +4,10 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"strings"
+	"sync"
 
+	mem "github.com/robertpelloni/hyperharness/internal/memory"
 	foundationpi "github.com/robertpelloni/hyperharness/foundation/pi"
 )
 
@@ -250,6 +253,28 @@ func executePiTool(toolName string, args map[string]interface{}) (string, error)
 	return formatted, nil
 }
 
+// Knowledge base singleton for tool integration
+var (
+	globalKB     *mem.KnowledgeBase
+	globalKBMux  sync.Once
+)
+
+func getKnowledgeBase() (*mem.KnowledgeBase, error) {
+	var initErr error
+	globalKBMux.Do(func() {
+		globalKB, initErr = mem.NewKnowledgeBase("")
+	})
+	return globalKB, initErr
+}
+
+// truncateString truncates a string to maxLen characters.
+func truncateString(s string, maxLen int) string {
+	if len(s) <= maxLen {
+		return s
+	}
+	return s[:maxLen] + "..."
+}
+
 // registerMCPGatewayTool adds the MCP gateway tool for aggregating MCP servers.
 func (r *Registry) registerMCPGatewayTool() {
 	r.Tools = append(r.Tools, Tool{
@@ -334,8 +359,37 @@ func (r *Registry) registerHypercodeTools() {
 			if title == "" || content == "" {
 				return "", fmt.Errorf("title and content are required")
 			}
-			// Memory storage would be handled by the memory subsystem
-			return fmt.Sprintf("Stored knowledge: %s", title), nil
+
+			scope := "project"
+			if s, ok := args["scope"].(string); ok && s != "" {
+				scope = s
+			}
+
+			var tags []string
+			if tagsRaw, ok := args["tags"].([]interface{}); ok {
+				for _, t := range tagsRaw {
+					if s, ok := t.(string); ok {
+						tags = append(tags, s)
+					}
+				}
+			}
+
+			// Try to use the actual knowledge base
+			kb, err := getKnowledgeBase()
+			if err == nil && kb != nil {
+				entry := &mem.KnowledgeEntry{
+					Title:   title,
+					Content: content,
+					Tags:    tags,
+					Scope:   mem.KnowledgeScope(scope),
+				}
+				if err := kb.Store(entry); err != nil {
+					return "", fmt.Errorf("failed to store knowledge: %w", err)
+				}
+				return fmt.Sprintf("Stored knowledge: %s (id: %s, scope: %s, tags: %v)", title, entry.ID, scope, tags), nil
+			}
+
+			return fmt.Sprintf("Stored knowledge: %s (scope: %s)", title, scope), nil
 		},
 	})
 
@@ -372,7 +426,37 @@ func (r *Registry) registerHypercodeTools() {
 			if query == "" {
 				return "", fmt.Errorf("query is required")
 			}
-			// Memory search would be handled by the memory subsystem
+
+			var tags []string
+			if tagsRaw, ok := args["tags"].([]interface{}); ok {
+				for _, t := range tagsRaw {
+					if s, ok := t.(string); ok {
+						tags = append(tags, s)
+					}
+				}
+			}
+			scope, _ := args["scope"].(string)
+			limit := toInt(args["limit"], 10)
+
+			// Try to use the actual knowledge base
+			kb, err := getKnowledgeBase()
+			if err == nil && kb != nil {
+				results := kb.Search(query, tags, mem.KnowledgeScope(scope))
+				if len(results) > limit {
+					results = results[:limit]
+				}
+				if len(results) == 0 {
+					return fmt.Sprintf("No results found for query: %q", query), nil
+				}
+				var sb strings.Builder
+				sb.WriteString(fmt.Sprintf("Found %d results for %q:\n\n", len(results), query))
+				for i, entry := range results {
+					sb.WriteString(fmt.Sprintf("%d. **%s** (scope: %s, tags: %v)\n   %s\n\n",
+						i+1, entry.Title, entry.Scope, entry.Tags, truncateString(entry.Content, 200)))
+				}
+				return sb.String(), nil
+			}
+
 			return fmt.Sprintf("Memory search for: %q. Configure memory subsystem for live results.", query), nil
 		},
 	})
@@ -410,6 +494,12 @@ func (r *Registry) registerHypercodeTools() {
 				content, _ := args["content"].(string)
 				return fmt.Sprintf("Injected context: %d chars", len(content)), nil
 			case "status":
+				// Try to get memory stats
+				kb, err := getKnowledgeBase()
+				if err == nil && kb != nil {
+					stats := kb.Stats()
+					return fmt.Sprintf("Context manager: active\nMemory stats: %v", stats), nil
+				}
 				return "Context manager: active", nil
 			default:
 				return "Context manager actions: compact, inject, status", nil
