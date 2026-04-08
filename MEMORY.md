@@ -68,4 +68,14 @@
 **Resolution**: Implemented `ToolPredictor` which uses a fast LLM turn to predict needed capabilities and preloads them into the working set before the main agent turn.
 **Implication**: Preloading makes tools visible in `list_tools` without explicit model search.
 
+### 15. Go Native Tool Execution Pattern (Added 2026-04-08)
+**Observation**: Relying on the Node control plane for every tool call creates a single point of failure and higher latency.
+**Resolution**: Ported core standard library and parity tools (read, write, bash, edit) to native Go in `go/internal/tools/`. The Go sidecar now implements a "Native First, Bridge Second" strategy in `handleAgentRunTool`.
+**Implication**: The Go sidecar can fulfill many critical developer tasks autonomously even if the TypeScript server is restarting or unreachable.
+
+### 16. Package Build Dependency in Monorepo (Added 2026-04-08)
+**Observation**: Adding new files and exports to sub-packages (like `@hypercode/agents`) requires an explicit build of those packages before the main control plane (`@hypercode/core`) or CLI can see the changes, especially if they depend on built artifacts or have strict type checking.
+**Resolution**: Run `pnpm build` in the affected sub-packages before building the consumer.
+**Implication**: Automated build scripts should handle package topological sorting or ensure all dependencies are built.
+
 *Update this file whenever a major systemic pattern, recurring bug, or deep architectural quirk is discovered.*
