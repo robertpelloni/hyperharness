@@ -127,7 +127,8 @@ import {
     MetaTools,
     SystemStatusTool,
     ChainExecutor,
-    type ChainRequest
+    type ChainRequest,
+    getAllParityTools
 } from "@hypercode/tools";
 mcpServerDebugLog('[MCPServer] ✓ All Tools & ChainExecutor');
 
@@ -2251,7 +2252,20 @@ ${env.tools.filter((tool) => tool.installed).map((tool) => `- **${tool.name}**: 
             else {
                 // Check Standard Library
                 const terminalTools = this.terminalService.getTools();
-                const standardTool = [...FileSystemTools, ...terminalTools, ...MemoryTools, ...TunnelTools, ...LogTools, ...ConfigTools, ...SearchTools, ...ReaderTools, ...WorktreeTools, ...MetaTools, WebSearchTool].find(t => t.name === name);
+                const standardTool = [
+                    ...FileSystemTools,
+                    ...terminalTools,
+                    ...MemoryTools,
+                    ...TunnelTools,
+                    ...LogTools,
+                    ...ConfigTools,
+                    ...SearchTools,
+                    ...ReaderTools,
+                    ...WorktreeTools,
+                    ...MetaTools,
+                    ...getAllParityTools(),
+                    WebSearchTool
+                ].find(t => t.name === name);
                 if (standardTool && this.isToolWithHandler(standardTool)) {
                     result = await standardTool.handler(args);
 
@@ -3253,7 +3267,18 @@ ${env.tools.filter((tool) => tool.installed).map((tool) => `- **${tool.name}**: 
 
         // Standard Library Tools
         const terminalTools = this.terminalService.getTools();
-        const standardTools = [...FileSystemTools, ...terminalTools, ...MemoryTools, ...TunnelTools, ...LogTools, ...ConfigTools, ...SearchTools, ...ReaderTools, ...WorktreeTools].map(t => ({
+        const standardTools = [
+            ...FileSystemTools,
+            ...terminalTools,
+            ...MemoryTools,
+            ...TunnelTools,
+            ...LogTools,
+            ...ConfigTools,
+            ...SearchTools,
+            ...ReaderTools,
+            ...WorktreeTools,
+            ...getAllParityTools()
+        ].map(t => ({
             name: t.name,
             description: t.description,
             inputSchema: t.inputSchema

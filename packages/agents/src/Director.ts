@@ -3,6 +3,7 @@ import { LLMService } from "@hypercode/ai";
 import { Council } from "./Council.js";
 import { DIRECTOR_SYSTEM_PROMPT } from "@hypercode/ai";
 import { WorktreeManager } from "./orchestration/WorktreeManager.js";
+import { ToolPredictor } from "./orchestration/ToolPredictor.js";
 
 interface AgentContext {
     goal: string;
@@ -530,8 +531,10 @@ class ConversationMonitor {
     private server: IMCPServer;
     private llmService: LLMService;
     private director: Director;
+    private predictor: ToolPredictor;
     private interval: NodeJS.Timeout | null = null;
     private summaryInterval: NodeJS.Timeout | null = null; // 2-min summary timer
+    private predictionInterval: NodeJS.Timeout | null = null; // 5-min prediction timer
     private lastActivityTime: number = Date.now();
     private isRunningTask: boolean = false;
 
@@ -539,11 +542,13 @@ class ConversationMonitor {
         this.server = server;
         this.llmService = llmService;
         this.director = director;
+        this.predictor = new ToolPredictor(server, llmService);
     }
 
     start() {
         if (this.interval) clearTimeout(this.interval); // Cleanup old standard
         if (this.summaryInterval) clearTimeout(this.summaryInterval);
+        if (this.predictionInterval) clearTimeout(this.predictionInterval);
 
         this.isRunningTask = false;
 
@@ -573,11 +578,24 @@ class ConversationMonitor {
             this.summaryInterval = setTimeout(runSummary, delay);
         };
 
+        // Start Prediction Loop
+        const runPrediction = async () => {
+            if (!this.director.getIsActive()) return;
+
+            await this.runToolPrediction();
+
+            const delay = 300000; // 5 minutes
+            // @ts-ignore
+            this.predictionInterval = setTimeout(runPrediction, delay);
+        };
+
         // Kickoff
         // @ts-ignore
         this.interval = setTimeout(runHeartbeat, 1000);
         // @ts-ignore
         this.summaryInterval = setTimeout(runSummary, 60000);
+        // @ts-ignore
+        this.predictionInterval = setTimeout(runPrediction, 30000);
 
         console.log(`[ConversationMonitor] Started dynamic loops.`);
     }
@@ -585,11 +603,35 @@ class ConversationMonitor {
     stop() {
         if (this.interval) clearTimeout(this.interval);
         if (this.summaryInterval) clearTimeout(this.summaryInterval);
+        if (this.predictionInterval) clearTimeout(this.predictionInterval);
         this.interval = null;
         this.summaryInterval = null;
+        this.predictionInterval = null;
     }
 
     private lastSummary: string = "";
+
+    /**
+     * Periodically predicts tools based on conversation history.
+     */
+    private async runToolPrediction() {
+        if (!this.director.getIsActive()) return;
+        if (this.isRunningTask) return;
+
+        try {
+            // Get chat history
+            const chatRes = await this.server.executeTool('get_chat_history', {});
+            const chatHistory = chatRes.content?.[0]?.text || "";
+            if (!chatHistory || chatHistory.includes("Error")) return;
+
+            // @ts-ignore
+            const activeGoal = this.director.activeGoal;
+
+            await this.predictor.predictAndPreload(chatHistory, activeGoal);
+        } catch (e: any) {
+            console.error(`[ConversationMonitor] Tool Prediction Error: ${e.message}`);
+        }
+    }
 
     /**
      * Posts a periodic summary to the chat to keep the development loop alive.

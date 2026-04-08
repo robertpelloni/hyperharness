@@ -1,10 +1,19 @@
 # Handoff — Session 2026-04-08 (Extended)
 
-**Version:** `1.0.0-alpha.11`
+**Version:** `1.0.0-alpha.12`
 **Branch:** `main`
-**Commits this session:** 16 (alpha.8 → alpha.11)
+**Commits this session:** 18 (alpha.8 → alpha.12)
 
 ## Session Summary
+
+### Phase 7: Local LLM Prioritization (commits 17-18)
+- Reconfigured "utility calls" (worker tasks) to prioritize local LM Studio (`http://localhost:1234/v1`).
+- Target model: `C:/Users/hyper/.lmstudio/models/HauhauCS/Gemma-4-E2B-Uncensored-HauhauCS-Aggressive/Gemma-4-E2B-Uncensored-HauhauCS-Aggressive-Q2_K_P.gguf gemma-4-e2b-uncensored-hauhaucs-aggressive`.
+- Updated `ProviderRegistry`, `ModelSelector` (base), and `CoreModelSelector` (specialized).
+- Set `openrouter/free` as the immediate fallback for utility calls.
+- Switched "Local Assistant" in `council.json` to use LM Studio.
+- Bumped version to `1.0.0-alpha.12`.
+- Synced all 57 package.json files.
 
 ### Phase 1: Submodule Sync (commits 1-3)
 - Updated all submodules to latest upstream
