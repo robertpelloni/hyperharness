@@ -191,7 +191,7 @@ var foundationRepomapCmd = &cobra.Command{
 
 var foundationAdaptersCmd = &cobra.Command{
 	Use:   "adapters",
-	Short: "Inspect HyperCode/Borg, provider, and MCP adapter seams for the foundation runtime",
+	Short: "Inspect HyperCode/HyperCode, provider, and MCP adapter seams for the foundation runtime",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		cwd, err := os.Getwd()
 		if err != nil {

@@ -409,7 +409,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 	case string:
 		m.loading = false
-		m.history = append(m.history, "Borg-Go-Director: "+msg)
+		m.history = append(m.history, "HyperCode-Go-Director: "+msg)
 		if m.foundationSessionID != "" {
 			_ = appendFoundationAssistantText(m.director.WorkingDir, m.foundationSessionID, msg)
 			refreshPinnedFoundationTreeBrowser(&m)
@@ -417,7 +417,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case PromptDisplayMsg:
 		m.loading = false
-		m.history = append(m.history, "Borg-Go-Director: "+msg.Display)
+		m.history = append(m.history, "HyperCode-Go-Director: "+msg.Display)
 		if m.foundationSessionID != "" {
 			_ = appendFoundationAssistantText(m.director.WorkingDir, m.foundationSessionID, msg.Display)
 			refreshPinnedFoundationTreeBrowser(&m)

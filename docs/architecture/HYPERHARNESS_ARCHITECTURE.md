@@ -55,7 +55,7 @@ hyperharness/
 │   ├── extensions/            # Extension system - FUTURE
 │   ├── skills/                # Skill loading - FUTURE
 │   ├── compaction/            # Context compaction strategies - FUTURE
-│   ├── borg/                  # Tool inventory management for HyperCode
+│   ├── hypercode/                  # Tool inventory management for HyperCode
 │   └── rpc/                   # JSON-RPC protocol (stdin/stdout) - FUTURE
 └── docs/                      # Architecture and design documentation
 ```

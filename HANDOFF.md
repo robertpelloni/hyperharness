@@ -23,7 +23,7 @@
   - `tools.Registry` now exposes exact-name native Pi-compatible tools from `foundation/pi`
   - `agent.Agent` now registers per-tool schemas instead of one placeholder schema
   - legacy `tools/repomap.go` now delegates to `foundation/repomap`
-- Added the first HyperCode/Borg adapter seam:
+- Added the first HyperCode/HyperCode adapter seam:
   - `foundation/adapters/hypercode.go` exposes assimilation status, memory context, provider status, MCP config visibility, and adjacent HyperCode repo discovery
   - `foundation/adapters/providers.go` exposes current provider/model visibility, detected providers, Ollama model discovery, and provider-route selection groundwork
   - `foundation/adapters/provider_routing.go` provides shared route-selection logic for CLI and HTTP surfaces
@@ -49,7 +49,7 @@
 - Added deeper verification coverage:
   - snapshot-style tests for baseline tool results
   - top-level agent schema registration test
-  - HyperCode/Borg adapter seam test
+  - HyperCode/HyperCode adapter seam test
   - provider adapter seam test
   - provider-route selection test
   - provider execution-preparation test
@@ -86,7 +86,7 @@
 1. Continue routing remaining top-level placeholder orchestration/tool surfaces onto the new `foundation/pi` runtime.
 2. Expand verified result-shape and snapshot tests for `read`, `write`, `edit`, and `bash` plus CLI/HTTP smoke coverage.
 3. Deepen `foundation/repomap` from graph-ranking groundwork toward fuller Aider-style graph ranking and richer edit engines.
-4. Expand `foundation/adapters` from visibility, route-selection, and execution-preparation seams into richer provider routing, memory, and richer MCP runtime adapters backed by HyperCode/Borg.
+4. Expand `foundation/adapters` from visibility, route-selection, and execution-preparation seams into richer provider routing, memory, and richer MCP runtime adapters backed by HyperCode/HyperCode.
 5. Migrate TUI and orchestration code to the new truthful foundation instead of placeholder parity claims, with special attention to adapter-backed execution paths.
 
 ## Additional work completed on 2026-04-04

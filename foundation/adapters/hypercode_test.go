@@ -18,7 +18,7 @@ func TestHyperCodeAdapterBuildsStatusWithoutPanicking(t *testing.T) {
 	adapter := NewHyperCodeAdapter(dir)
 	status := adapter.Status()
 	if !status.Assimilated {
-		t.Fatal("expected assimilated borg adapter")
+		t.Fatal("expected assimilated hypercode adapter")
 	}
 	if status.MemoryContext == "" {
 		t.Fatal("expected memory context")

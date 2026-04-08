@@ -23,7 +23,7 @@ This is the right move because the existing foundation packages are already:
 - test-backed,
 - integrated into the repo’s existing Cobra CLI surfaces,
 - aligned with `foundation/compat` and `foundation/assimilation`, and
-- conceptually closer to the clean-room compatibility layer we need for Borg/HyperCode integration.
+- conceptually closer to the clean-room compatibility layer we need for HyperCode/HyperCode integration.
 
 ## What I Verified
 
@@ -113,7 +113,7 @@ The canonical near-term foundation should be:
 - `foundation/compat` for model-facing compatibility inventory
 - `foundation/assimilation` for upstream inventory and sequencing
 - `foundation/repomap` for Aider-style repo condensation
-- `foundation/adapters` for Borg/HyperCode/MCP/provider bridging
+- `foundation/adapters` for HyperCode/HyperCode/MCP/provider bridging
 - `foundation/orchestration` for higher-order planning/daemon layers
 
 ### Why not center on `internal/*` first?
@@ -164,7 +164,7 @@ The harness should own:
 - native tool execution layer
 - compatibility shims and harness semantics
 
-This is the cleanest architecture for Borg as well.
+This is the cleanest architecture for HyperCode as well.
 
 ## Current verified state
 

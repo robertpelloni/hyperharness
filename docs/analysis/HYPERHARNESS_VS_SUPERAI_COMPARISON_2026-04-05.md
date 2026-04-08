@@ -5,7 +5,7 @@ Date: 2026-04-05
 ## Executive Summary
 
 Both repositories share a common ancestor module (`github.com/robertpelloni/hypercode`) and nearly
-identical top-level package layout (`agent/`, `agents/`, `borg/`, `cmd/`, `config/`, `foundation/`,
+identical top-level package layout (`agent/`, `agents/`, `hypercode/`, `cmd/`, `config/`, `foundation/`,
 `git/`, `llm/`, `mcp/`, `orchestrator/`, `repl/`, `security/`, `tools/`, `tui/`). They are **sibling
 projects** that have diverged in scope:
 

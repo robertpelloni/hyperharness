@@ -129,7 +129,7 @@
 - `agent/agent.go`
   - top-level agent now advertises the native exact-name tools preferentially
   - OpenAI tool registration now uses per-tool schemas instead of one fake generic schema
-  - system prompt now incorporates HyperCode/Borg and provider adapter context
+  - system prompt now incorporates HyperCode/HyperCode and provider adapter context
 
 - `agent/pipe.go`
   - pipe processing now uses provider execution-preparation hints before invoking the agent
@@ -153,7 +153,7 @@
   - daemon/autodrive bridge now converts foundation plans into execution objectives for sandboxed runs
 
 - `foundation/adapters/hypercode.go`
-  - first HyperCode/Borg adapter seam for the Go foundation
+  - first HyperCode/HyperCode adapter seam for the Go foundation
   - exposes assimilation status, memory context, provider status, MCP config visibility, and adjacent HyperCode repo discovery
 
 - `foundation/adapters/providers.go`
@@ -259,7 +259,7 @@ These issues were observed and documented, not silently ignored or misrepresente
 - daemon/autodrive orchestration bridge tests
 - top-level tool registry tests confirming native exact-name tool exposure
 - top-level agent tool-schema registration tests
-- HyperCode/Borg adapter seam tests
+- HyperCode/HyperCode adapter seam tests
 - provider adapter seam tests
 - provider-route selection tests
 - provider execution-preparation tests
@@ -274,6 +274,6 @@ These issues were observed and documented, not silently ignored or misrepresente
 ## Recommended next implementation sequence
 1. continue routing remaining top-level placeholder orchestration surfaces to `foundation/pi` runtime packages,
 2. deepen repo-map ranking toward richer Aider-style graph semantics and add edit strategies,
-3. expand `foundation/adapters` from visibility and route-selection seams into richer HyperCode/Borg provider routing and richer MCP execution adapters,
+3. expand `foundation/adapters` from visibility and route-selection seams into richer HyperCode/HyperCode provider routing and richer MCP execution adapters,
 4. expand snapshot/result-shape coverage plus HTTP/CLI smoke coverage,
 5. layer in delegation, verification, detached/background runs, and JSON/RPC transport.

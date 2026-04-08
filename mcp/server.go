@@ -16,7 +16,7 @@ type MCPHost struct {
 // NewMCPHost creates a native Go MCP server matching the TS implementation
 func NewMCPHost() *MCPHost {
 	mcpServer := server.NewMCPServer(
-		"Hypercode Borg Core",
+		"Hypercode HyperCode Core",
 		"0.2.0",
 	)
 
@@ -28,7 +28,7 @@ func NewMCPHost() *MCPHost {
 // RegisterNativeTools hooks our purely native Go implementations
 // directly into the MCP Server so they bypass IPC routing overhead.
 func (h *MCPHost) RegisterNativeTools() {
-	// Example stub of native Go tool registration (equivalent to @borg/tools)
+	// Example stub of native Go tool registration (equivalent to @hypercode/tools)
 
 	systemStatusTool := mcp.NewTool("system_status",
 		mcp.WithDescription("Get the health and status of the Hypercode native core."),

@@ -136,7 +136,7 @@ func handleHelp(m *model) (tea.Model, tea.Cmd) {
   /plan      - Build a foundation-backed orchestration plan
   /repomap   - Generate a foundation-backed repo map
   /providers - Show provider visibility and defaults
-  /adapters  - Show HyperCode/Borg + MCP adapter status
+  /adapters  - Show HyperCode/HyperCode + MCP adapter status
   /mcp       - Show adapter-backed MCP tool hints
   /fsession  - Show or create the active foundation session
   /tree      - Show the active foundation session tree

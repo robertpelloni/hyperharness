@@ -112,11 +112,11 @@ func TestFoundationAdaptersPayloadAndRepomap(t *testing.T) {
 		t.Fatalf("unexpected adapter payload: %#v", payload)
 	}
 	setMCPEnv(t, cwd)
-	borgDir := filepath.Join(cwd, ".borg")
-	if err := os.MkdirAll(borgDir, 0o755); err != nil {
+	hypercodeDir := filepath.Join(cwd, ".hypercode")
+	if err := os.MkdirAll(hypercodeDir, 0o755); err != nil {
 		t.Fatal(err)
 	}
-	if err := os.WriteFile(filepath.Join(borgDir, "mcp.json"), []byte(`{"mcpServers":{"demo":{"command":"cmd","args":["/c","echo demo"]}}}`), 0o644); err != nil {
+	if err := os.WriteFile(filepath.Join(hypercodeDir, "mcp.json"), []byte(`{"mcpServers":{"demo":{"command":"cmd","args":["/c","echo demo"]}}}`), 0o644); err != nil {
 		t.Fatal(err)
 	}
 	mcpTools, err := listFoundationMCPTools(cwd)

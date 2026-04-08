@@ -33,7 +33,7 @@ func NewDirector(provider ILLMProvider) *Director {
 		History: []Message{
 			{
 				Role:    RoleSystem,
-				Content: strings.Join([]string{"You are the Borg TechLead Director. Your role is absolute architectural supervision. Plan, delegate, and review.", hyperAdapter.BuildSystemContext()}, "\n\n"),
+				Content: strings.Join([]string{"You are the HyperCode TechLead Director. Your role is absolute architectural supervision. Plan, delegate, and review.", hyperAdapter.BuildSystemContext()}, "\n\n"),
 			},
 		},
 	}
