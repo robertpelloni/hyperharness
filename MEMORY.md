@@ -58,4 +58,14 @@
 **Observation**: There are 57 package.json files across the monorepo that all need version syncing. The inline Node.js script pattern (`node -e "const fs=..."`) is reliable for this.
 **Implication**: Every version bump should sync all 57 files. The script excludes node_modules, .git, archive, and submodules directories.
 
+### 13. Multi-Model Pair Programming Pattern (Added 2026-04-08)
+**Observation**: For complex tasks, a single model often hallucinates or misses edge cases. A multi-model squad with rotating roles (Planner, Implementer, Tester) provides much higher reliability.
+**Resolution**: Implemented `PairOrchestrator` which coordinates Claude, GPT, and Gemini in a shared chat history. It rotates roles every turn to ensure diverse perspective on the implementation.
+**Implication**: Use `run_pair_session` for high-complexity structural changes.
+
+### 14. Preemptive Tool Advertisement (Added 2026-04-08)
+**Observation**: Models waste tokens and latency searching for tools. If we know they are likely to need a tool based on the topic, we should "advertise" it in the initial turn.
+**Resolution**: Implemented `ToolPredictor` which uses a fast LLM turn to predict needed capabilities and preloads them into the working set before the main agent turn.
+**Implication**: Preloading makes tools visible in `list_tools` without explicit model search.
+
 *Update this file whenever a major systemic pattern, recurring bug, or deep architectural quirk is discovered.*

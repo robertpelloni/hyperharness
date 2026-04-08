@@ -2285,10 +2285,11 @@ ${env.tools.filter((tool) => tool.installed).map((tool) => `- **${tool.name}**: 
                     WebSearchTool
                 ].find(t => t.name === name);
                 if (standardTool && this.isToolWithHandler(standardTool)) {
-                    result = await standardTool.handler(args);
+                    result = (await standardTool.handler(args)) as CallToolResult;
 
                     // Phase 93: P2P Artifact Federation Interception
-                    if (name === 'read_file' && this.meshService && result?.content?.[0]?.text?.includes('ENOENT')) {
+                    const firstContent = result?.content?.[0];
+                    if (name === 'read_file' && this.meshService && firstContent?.type === 'text' && (firstContent as any).text?.includes('ENOENT')) {
                         console.log(`[Mesh Artifact] Local read missed for ${args.path}. Querying Swarm...`);
 
                         const timeoutMs = 2000;

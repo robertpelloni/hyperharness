@@ -40,6 +40,7 @@ import (
 	"github.com/hypercodehq/hypercode-go/internal/mcp"
 	"github.com/hypercodehq/hypercode-go/internal/orchestration"
 	"github.com/hypercodehq/hypercode-go/internal/supervisor"
+	"github.com/hypercodehq/hypercode-go/internal/tools"
 	"github.com/hypercodehq/hypercode-go/internal/workflow"
 	"github.com/google/uuid"
 	_ "modernc.org/sqlite"
@@ -73,6 +74,9 @@ type Server struct {
 	supervisorManager *supervisor.Manager
 	sessionState      *localSessionStateManager
 	workflowEngine    *workflow.Engine
+	toolsRegistry     *tools.Registry
+	mcpAggregator     *mcp.Aggregator
+	mcpPredictor      *mcp.ToolPredictor
 }
 
 type providerFallbackEvent struct {
@@ -383,7 +387,10 @@ func New(cfg config.Config, detector controlplane.ToolProvider) *Server {
 		supervisorManager: supervisor.NewManager(supervisor.ManagerOptions{WorktreeRoot: cfg.WorkspaceRoot, PersistencePath: filepath.Join(cfg.ConfigDir, "session-supervisor.json")}),
 		sessionState:      newLocalSessionStateManager(filepath.Join(cfg.WorkspaceRoot, ".hypercode-session.json")),
 		workflowEngine:    workflow.NewEngine(),
+		toolsRegistry:     tools.NewRegistry(),
+		mcpAggregator:     mcp.NewAggregator(),
 	}
+	server.mcpPredictor = mcp.NewToolPredictor(server.mcpAggregator)
 	server.squad.load()
 	server.swarm.load()
 	server.registerRoutes()
@@ -507,6 +514,7 @@ func (s *Server) registerRoutes() {
 	s.mux.HandleFunc("/api/mcp/servers/sync-client-config", s.handleMCPSyncClientConfig)
 	s.mux.HandleFunc("/api/mcp/tools", s.handleMCPTools)
 	s.mux.HandleFunc("/api/mcp/tools/search", s.handleMCPSearchTools)
+	s.mux.HandleFunc("/api/mcp/tools/predict", s.handleMCPPredictTools)
 	s.mux.HandleFunc("/api/mcp/tools/call", s.handleMCPCallTool)
 	s.mux.HandleFunc("/api/mcp/tools/auto-call", s.handleMCPAutoCallTool)
 	s.mux.HandleFunc("/api/mcp/tool-ads", s.handleMCPToolAdvertisements)
@@ -777,6 +785,7 @@ func (s *Server) registerRoutes() {
 	s.mux.HandleFunc("/api/skills/read", s.handleSkillsRead)
 	s.mux.HandleFunc("/api/skills/create", s.handleSkillsCreate)
 	s.mux.HandleFunc("/api/skills/save", s.handleSkillsSave)
+	s.mux.HandleFunc("/api/skills/search", s.handleSkillsSearch)
 	s.mux.HandleFunc("/api/skills/assimilate", s.handleSkillsAssimilate)
 	s.mux.HandleFunc("/api/workflows", s.handleWorkflowList)
 	s.mux.HandleFunc("/api/workflows/graph", s.handleWorkflowGraph)
@@ -969,8 +978,6 @@ func (s *Server) registerRoutes() {
 
 	// --- New Go-native handlers (alpha.11+) ---
 	s.registerSavedScriptRoutes()
-	s.registerServerHealthRoutes()
-	s.registerUnifiedDirectoryRoutes()
 }
 
 func (s *Server) handleHealth(w http.ResponseWriter, _ *http.Request) {
@@ -6087,7 +6094,64 @@ func (s *Server) handleShellSystemHistory(w http.ResponseWriter, r *http.Request
 }
 
 func (s *Server) handleAgentRunTool(w http.ResponseWriter, r *http.Request) {
-	s.handleTRPCBridgeBodyCall(w, r, "agent.runTool")
+	if r.Method != http.MethodPost {
+		writeJSON(w, http.StatusMethodNotAllowed, map[string]any{"success": false, "error": "method not allowed"})
+		return
+	}
+
+	var payload struct {
+		Name      string                 `json:"name"`
+		Arguments map[string]interface{} `json:"arguments"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
+		writeJSON(w, http.StatusBadRequest, map[string]any{"success": false, "error": "invalid JSON body"})
+		return
+	}
+
+	// 1. Try native Go tool handlers first (Total Autonomy)
+	if s.toolsRegistry != nil && s.toolsRegistry.HasTool(payload.Name) {
+		result, err := s.toolsRegistry.Execute(r.Context(), payload.Name, payload.Arguments)
+		if err == nil {
+			writeJSON(w, http.StatusOK, map[string]any{
+				"success": true,
+				"data":    result,
+				"bridge": map[string]any{
+					"source": "go-native-tool",
+					"tool":   payload.Name,
+				},
+			})
+			return
+		}
+		// If native tool fails, return the error
+		writeJSON(w, http.StatusInternalServerError, map[string]any{
+			"success": false,
+			"error":   err.Error(),
+			"source":  "go-native-tool",
+		})
+		return
+	}
+
+	// 2. Try upstream Node server (Bridge)
+	var result any
+	upstreamBase, err := s.callUpstreamJSON(r.Context(), "agent.runTool", payload, &result)
+	if err == nil {
+		writeJSON(w, http.StatusOK, map[string]any{
+			"success": true,
+			"data":    result,
+			"bridge": map[string]any{
+				"upstreamBase": upstreamBase,
+				"procedure":    "agent.runTool",
+			},
+		})
+		return
+	}
+
+	// 3. Fallback: Descriptive error
+	writeJSON(w, http.StatusServiceUnavailable, map[string]any{
+		"success": false,
+		"error":   "Tool not found or upstream unavailable",
+		"detail":  fmt.Sprintf("Tool '%s' not implemented in Go and Node server is unreachable.", payload.Name),
+	})
 }
 
 
@@ -6268,6 +6332,30 @@ func (s *Server) handleSkillsSave(w http.ResponseWriter, r *http.Request) {
 	s.handleSkillMutation(w, r, "skills.save", func(payload map[string]any) (any, error) {
 		return s.localSaveSkill(payload)
 	})
+}
+
+func (s *Server) handleSkillsSearch(w http.ResponseWriter, r *http.Request) {
+	query := r.URL.Query().Get("query")
+	if query == "" {
+		writeJSON(w, http.StatusBadRequest, map[string]any{"success": false, "error": "query parameter required"})
+		return
+	}
+
+	var result any
+	upstreamBase, err := s.callUpstreamJSON(r.Context(), "skills.search", map[string]any{"query": query}, &result)
+	if err == nil {
+		writeJSON(w, http.StatusOK, map[string]any{
+			"success": true,
+			"data":    result,
+			"bridge": map[string]any{
+				"upstreamBase": upstreamBase,
+				"procedure":    "skills.search",
+			},
+		})
+		return
+	}
+
+	writeJSON(w, http.StatusServiceUnavailable, map[string]any{"success": false, "error": "upstream unavailable"})
 }
 
 func (s *Server) handleSkillsAssimilate(w http.ResponseWriter, r *http.Request) {

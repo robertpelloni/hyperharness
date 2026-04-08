@@ -627,7 +627,7 @@ class ConversationMonitor {
             // @ts-ignore
             const activeGoal = this.director.activeGoal;
 
-            await this.predictor.predictAndPreload(chatHistory, activeGoal);
+            await this.predictor.predictAndPreload(chatHistory, activeGoal || undefined);
         } catch (e: any) {
             console.error(`[ConversationMonitor] Tool Prediction Error: ${e.message}`);
         }

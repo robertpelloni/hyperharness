@@ -4,6 +4,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.0-alpha.14] - 2026-04-08
+
+### Fixed
+- **Build Stabilization**: Fixed `tsc` errors in `MCPServer.ts` and `Director.ts` caused by missing type casts and null/undefined mismatches.
+- **Package Integrity**: Successfully built `@hypercode/tools` and `@hypercode/agents` packages, ensuring new exports are available workspace-wide.
+
+### Changed
+- **Go Parity expansion**: Added native Go tool handlers for the core parity tools (Claude Code, Codex, OpenCode/Pi). The Go sidecar now executes these tools natively when the Node control plane is unreachable.
+- **Go Routing**: Implemented `handleAgentRunTool` in the Go sidecar with a "Native First, Bridge Second" strategy.
+- **Skill Search (Go)**: Added `/api/skills/search` endpoint to the Go sidecar to support progressive skill disclosure.
+
 ## [1.0.0-alpha.13] - 2026-04-08
 
 ### Added

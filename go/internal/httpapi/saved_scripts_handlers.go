@@ -11,12 +11,6 @@ package httpapi
  * The Go sidecar needs native handlers so the dashboard works even when TS is unavailable.
  *
  * PORTING STATUS: Full parity with TS savedScriptsRouter.ts.
- * - list scripts from config store
- * - get single script by UUID
- * - create new script
- * - update existing script
- * - delete script
- * - execute script via shell
  */
 
 import (
@@ -29,6 +23,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/hypercodehq/hypercode-go/internal/config"
 	"github.com/google/uuid"
 )
 
@@ -44,19 +39,19 @@ type SavedScript struct {
 
 // ScriptExecutionResult captures the result of running a saved script.
 type ScriptExecutionResult struct {
-	Success bool                 `json:"success"`
-	Result  *string              `json:"result,omitempty"`
-	Error   *string              `json:"error,omitempty"`
-	Execution *ScriptExecMeta    `json:"execution,omitempty"`
+	Success   bool            `json:"success"`
+	Result    *string         `json:"result,omitempty"`
+	Error     *string         `json:"error,omitempty"`
+	Execution *ScriptExecMeta `json:"execution,omitempty"`
 }
 
 // ScriptExecMeta holds timing metadata for a script execution.
 type ScriptExecMeta struct {
-	ScriptUUID  string `json:"scriptUuid"`
-	ScriptName  string `json:"scriptName"`
-	StartedAt   string `json:"startedAt"`
-	FinishedAt  string `json:"finishedAt"`
-	DurationMs  int64  `json:"durationMs"`
+	ScriptUUID string `json:"scriptUuid"`
+	ScriptName string `json:"scriptName"`
+	StartedAt  string `json:"startedAt"`
+	FinishedAt string `json:"finishedAt"`
+	DurationMs int64  `json:"durationMs"`
 }
 
 // scriptStore manages saved scripts on disk.
@@ -159,6 +154,15 @@ func (s *Server) handleScriptsList(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// First try upstream TS server
+	var upstreamData any
+	_, err := s.callUpstreamJSON(r.Context(), "scripts.list", map[string]any{}, &upstreamData)
+	if err == nil {
+		writeJSON(w, http.StatusOK, upstreamData)
+		return
+	}
+
+	// Fallback to local store
 	store := s.scriptStore()
 	scripts, err := store.list()
 	if err != nil {
@@ -166,14 +170,6 @@ func (s *Server) handleScriptsList(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// First try upstream TS server
-	upstreamResult, err := s.callUpstreamJSON(r.Context(), "scripts.list", map[string]any{}, &[]any{})
-	if err == nil && upstreamResult != nil {
-		writeJSON(w, http.StatusOK, upstreamResult)
-		return
-	}
-
-	// Fallback to local store
 	if scripts == nil {
 		scripts = []SavedScript{}
 	}
@@ -190,9 +186,10 @@ func (s *Server) handleScriptsGet(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Try upstream first
-	upstreamResult, err := s.callUpstreamJSON(r.Context(), "scripts.get", map[string]any{"uuid": input.UUID}, &map[string]any{})
-	if err == nil && upstreamResult != nil {
-		writeJSON(w, http.StatusOK, upstreamResult)
+	var upstreamData any
+	_, err := s.callUpstreamJSON(r.Context(), "scripts.get", map[string]any{"uuid": input.UUID}, &upstreamData)
+	if err == nil {
+		writeJSON(w, http.StatusOK, upstreamData)
 		return
 	}
 
@@ -227,11 +224,12 @@ func (s *Server) handleScriptsCreate(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Try upstream first
-	upstreamResult, err := s.callUpstreamJSON(r.Context(), "scripts.create", map[string]any{
+	var upstreamData any
+	_, err := s.callUpstreamJSON(r.Context(), "scripts.create", map[string]any{
 		"name": input.Name, "description": input.Description, "code": input.Code,
-	}, &map[string]any{})
-	if err == nil && upstreamResult != nil {
-		writeJSON(w, http.StatusOK, upstreamResult)
+	}, &upstreamData)
+	if err == nil {
+		writeJSON(w, http.StatusOK, upstreamData)
 		return
 	}
 
@@ -261,9 +259,10 @@ func (s *Server) handleScriptsUpdate(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Try upstream first
-	upstreamResult, err := s.callUpstreamJSON(r.Context(), "scripts.update", input, &map[string]any{})
-	if err == nil && upstreamResult != nil {
-		writeJSON(w, http.StatusOK, upstreamResult)
+	var upstreamData any
+	_, err := s.callUpstreamJSON(r.Context(), "scripts.update", input, &upstreamData)
+	if err == nil {
+		writeJSON(w, http.StatusOK, upstreamData)
 		return
 	}
 
@@ -302,9 +301,10 @@ func (s *Server) handleScriptsDelete(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Try upstream first
-	upstreamResult, err := s.callUpstreamJSON(r.Context(), "scripts.delete", map[string]any{"uuid": input.UUID}, &map[string]any{})
-	if err == nil && upstreamResult != nil {
-		writeJSON(w, http.StatusOK, upstreamResult)
+	var upstreamData any
+	_, err := s.callUpstreamJSON(r.Context(), "scripts.delete", map[string]any{"uuid": input.UUID}, &upstreamData)
+	if err == nil {
+		writeJSON(w, http.StatusOK, upstreamData)
 		return
 	}
 
@@ -326,9 +326,10 @@ func (s *Server) handleScriptsExecute(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Try upstream first
-	upstreamResult, err := s.callUpstreamJSON(r.Context(), "scripts.execute", map[string]any{"uuid": input.UUID}, &map[string]any{})
-	if err == nil && upstreamResult != nil {
-		writeJSON(w, http.StatusOK, upstreamResult)
+	var upstreamData any
+	_, err := s.callUpstreamJSON(r.Context(), "scripts.execute", map[string]any{"uuid": input.UUID}, &upstreamData)
+	if err == nil {
+		writeJSON(w, http.StatusOK, upstreamData)
 		return
 	}
 
@@ -342,7 +343,7 @@ func (s *Server) handleScriptsExecute(w http.ResponseWriter, r *http.Request) {
 
 	startedAt := time.Now()
 	cmd := exec.CommandContext(r.Context(), "sh", "-c", script.Code)
-	cmd.Dir = s.cfg.WorkspaceDir()
+	cmd.Dir = s.cfg.WorkspaceRoot
 
 	output, execErr := cmd.CombinedOutput()
 	finishedAt := time.Now()
@@ -350,11 +351,11 @@ func (s *Server) handleScriptsExecute(w http.ResponseWriter, r *http.Request) {
 
 	result := ScriptExecutionResult{
 		Execution: &ScriptExecMeta{
-			ScriptUUID:  script.UUID,
-			ScriptName:  script.Name,
-			StartedAt:   startedAt.Format(time.RFC3339),
-			FinishedAt:  finishedAt.Format(time.RFC3339),
-			DurationMs:  durationMs,
+			ScriptUUID: script.UUID,
+			ScriptName: script.Name,
+			StartedAt:  startedAt.Format(time.RFC3339),
+			FinishedAt: finishedAt.Format(time.RFC3339),
+			DurationMs: durationMs,
 		},
 	}
 
@@ -380,12 +381,9 @@ func (s *Server) handleScriptsExecute(w http.ResponseWriter, r *http.Request) {
 }
 
 // readRequestBody is a helper that reads and decodes JSON from the request body.
-// Returns false if the request could not be parsed (in which case it writes an error response).
 func readRequestBody(w http.ResponseWriter, r *http.Request, v any) bool {
 	if r.Method != http.MethodPost && r.Method != http.MethodGet {
-		// For GET requests, try query params
 		if r.Method == http.MethodGet {
-			// Try to populate from query params for simple cases
 			return true
 		}
 		writeJSON(w, http.StatusMethodNotAllowed, map[string]string{"error": "method not allowed"})
@@ -397,7 +395,6 @@ func readRequestBody(w http.ResponseWriter, r *http.Request, v any) bool {
 	}
 
 	if err := json.NewDecoder(r.Body).Decode(v); err != nil {
-		// Empty body is OK for some endpoints
 		if err.Error() != "EOF" {
 			writeJSON(w, http.StatusBadRequest, map[string]string{"error": "invalid JSON: " + err.Error()})
 			return false
