@@ -2,6 +2,8 @@
 import { LLMService, IAgent } from "@hypercode/ai";
 import { PromptRegistry } from "../prompts/PromptRegistry.js";
 import { EventEmitter } from 'events';
+import { A2AMessage, A2AMessageType, IA2AClient, A2ATask } from "@hypercode/adk";
+import { a2aBroker } from "@hypercode/agents";
 
 interface AgentState {
     history: { role: 'user' | 'model', parts: any[] }[];
@@ -9,11 +11,12 @@ interface AgentState {
     lastError?: string;
 }
 
-export class GeminiAgent extends EventEmitter implements IAgent {
+export class GeminiAgent extends EventEmitter implements IAgent, IA2AClient {
     private llmService: LLMService;
     private promptRegistry: PromptRegistry;
     private state: AgentState;
     private model: string = 'gemini-2.5-pro';
+    private onMessageCallback?: (message: A2AMessage) => void;
 
     constructor(llmService: LLMService, promptRegistry: PromptRegistry) {
         super();
@@ -23,6 +26,44 @@ export class GeminiAgent extends EventEmitter implements IAgent {
             history: [],
             status: 'idle'
         };
+
+        // Register with A2A Broker
+        a2aBroker.registerAgent('gemini', this);
+    }
+
+    // A2A Implementation
+    async sendMessage(message: A2AMessage): Promise<void> {
+        console.log(`[GeminiAgent] Received A2A message of type: ${message.type}`);
+        // Handle message (e.g. process task request)
+        if (message.type === A2AMessageType.TASK_REQUEST) {
+            const response = await this.send(message.payload.task, message.payload.metadata);
+            await a2aBroker.routeMessage({
+                id: `a2a-${Date.now()}`,
+                timestamp: Date.now(),
+                sender: 'gemini',
+                recipient: message.sender,
+                type: A2AMessageType.TASK_RESPONSE,
+                payload: { result: response },
+                replyTo: message.id
+            });
+        }
+    }
+
+    onMessage(callback: (message: A2AMessage) => void): void {
+        this.onMessageCallback = callback;
+    }
+
+    async delegateTask(task: A2ATask, recipient: string): Promise<A2ATask> {
+        await a2aBroker.routeMessage({
+            id: `a2a-task-${task.id}`,
+            timestamp: Date.now(),
+            sender: 'gemini',
+            recipient: recipient,
+            type: A2AMessageType.TASK_REQUEST,
+            payload: { task: task.description, metadata: { taskId: task.id, priority: task.priority } }
+        });
+        task.status = 'in_progress';
+        return task;
     }
 
     async start() {

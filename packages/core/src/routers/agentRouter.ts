@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { t, publicProcedure, getMcpServer } from '../lib/trpc-core.js';
-import { a2aBroker } from '../services/A2ABroker.js';
+import { a2aBroker } from '@hypercode/agents';
 import { TRPCError } from '@trpc/server';
 
 function getErrorMessage(error: unknown): string {

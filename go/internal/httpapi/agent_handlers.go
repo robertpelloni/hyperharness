@@ -75,6 +75,51 @@ func (s *Server) handleAgentChat(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+func (s *Server) handleGoDirectorStart(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		writeJSON(w, http.StatusMethodNotAllowed, map[string]any{"success": false, "error": "method not allowed"})
+		return
+	}
+
+	var payload struct {
+		Goal string `json:"goal"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
+		writeJSON(w, http.StatusBadRequest, map[string]any{"success": false, "error": "invalid JSON body"})
+		return
+	}
+
+	// Try upstream first
+	var result any
+	upstreamBase, err := s.callUpstreamJSON(r.Context(), "agent.directorStart", payload, &result)
+	if err == nil {
+		writeJSON(w, http.StatusOK, map[string]any{
+			"success": true,
+			"data":    result,
+			"bridge": map[string]any{
+				"upstreamBase": upstreamBase,
+				"procedure":    "agent.directorStart",
+			},
+		})
+		return
+	}
+
+	// Fallback: local Go director
+	err = s.goDirector.StartAutonomousTask(r.Context(), payload.Goal)
+	if err != nil {
+		writeJSON(w, http.StatusInternalServerError, map[string]any{"success": false, "error": err.Error()})
+		return
+	}
+
+	writeJSON(w, http.StatusOK, map[string]any{
+		"success": true,
+		"message": "Go autonomous director task started",
+		"bridge": map[string]any{
+			"fallback": "go-local-director",
+		},
+	})
+}
+
 func (s *Server) handleA2AListAgents(w http.ResponseWriter, r *http.Request) {
 	var result any
 	upstreamBase, err := s.callUpstreamJSON(r.Context(), "agent.listA2AAgents", nil, &result)

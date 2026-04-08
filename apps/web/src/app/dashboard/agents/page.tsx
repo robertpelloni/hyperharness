@@ -4,6 +4,7 @@ import { Activity, Brain, Database, Network, Terminal } from 'lucide-react';
 import { PageStatusBanner } from '@/components/PageStatusBanner';
 import { AgentPlayground } from '@/components/agents/AgentPlayground';
 import { A2AMessageCenter } from '@/components/agents/A2AMessageCenter';
+import { A2AMessageComposer } from '@/components/agents/A2AMessageComposer';
 import { trpc } from '@/utils/trpc';
 import { Card, CardHeader, CardTitle, CardContent, Badge, Button } from '@hypercode/ui';
 import Link from 'next/link';
@@ -97,6 +98,9 @@ export default function AgentsDashboard() {
                     </div>
                     <div className="h-96">
                         <A2AMessageCenter />
+                    </div>
+                    <div>
+                        <A2AMessageComposer />
                     </div>
                 </div>
             </div>

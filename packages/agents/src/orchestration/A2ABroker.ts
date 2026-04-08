@@ -1,6 +1,6 @@
 /**
  * @file A2ABroker.ts
- * @module packages/core/src/services/A2ABroker
+ * @module packages/agents/src/orchestration/A2ABroker
  *
  * WHAT: Central message broker for the Agent-to-Agent (A2A) protocol.
  * Manages agent registration and routes messages between them.
@@ -58,15 +58,19 @@ export class A2ABroker extends EventEmitter {
             if (agent) {
                 await agent.sendMessage(message);
             } else {
-                console.warn(`[A2A Broker] Recipient not found: ${message.recipient}`);
+                console.warn(`[A2A Broker] Recipient not found: ${message.recipient}. Bridging to Mesh...`);
+                // Phase 102: Mesh Bridge - If recipient not local, emit for MeshService to handle
+                this.emit('bridge_to_mesh', message);
             }
         } else {
-            // Broadcast to all agents except sender
+            // Broadcast to all local agents except sender
             for (const [id, agent] of this.agents.entries()) {
                 if (id !== message.sender) {
                     await agent.sendMessage(message);
                 }
             }
+            // Also broadcast to Mesh
+            this.emit('bridge_to_mesh', message);
         }
     }
 

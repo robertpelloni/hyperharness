@@ -88,4 +88,14 @@
 **Resolution**: Implemented `A2ABroker` (TS and Go) that routes typed messages (TASK_REQUEST, STATE_UPDATE, etc.) based on agent IDs. The broker includes history tracking for dashboard visibility.
 **Implication**: All new autonomous agents should register with the `A2ABroker` to enable full orchestration and observability.
 
+### 19. Session Archiving Strategy (Added 2026-04-08)
+**Observation**: Long-term retention of raw JSON sessions is noisy and inefficient.
+**Resolution**: Implemented `MemoryArchiver` to convert sessions to clean plaintext, extract key facts via LLM, and store them in a compressed ZIP archive.
+**Implication**: The system now has a clear boundary between "hot" active session state and "cold" historical archive state, while preserving semantic knowledge.
+
+### 20. A2A WebSocket Integration (Added 2026-04-08)
+**Observation**: The `A2ABroker` needs to reach beyond the Node process to dashboard components and remote agents.
+**Resolution**: Implemented a WebSocket listener for `A2A_SIGNAL` types. Sending this type to the main WebSocket server will now bridge it directly into the local agent broker.
+**Implication**: Remote UI components can now directly trigger and observe agent-to-agent coordination.
+
 *Update this file whenever a major systemic pattern, recurring bug, or deep architectural quirk is discovered.*

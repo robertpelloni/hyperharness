@@ -79,6 +79,9 @@ type Server struct {
 	mcpPredictor      *mcp.ToolPredictor
 	a2aBroker         *orchestration.A2ABroker
 	swarmController   *orchestration.SwarmController
+	coderAgent        *orchestration.CoderAgent
+	goDirector        *orchestration.Director
+	memoryArchiver    *memorystore.MemoryArchiver
 }
 
 type providerFallbackEvent struct {
@@ -393,6 +396,10 @@ func New(cfg config.Config, detector controlplane.ToolProvider) *Server {
 		mcpAggregator:     mcp.NewAggregator(),
 		a2aBroker:         orchestration.NewA2ABroker(),
 	}
+	server.coderAgent = orchestration.NewCoderAgent(server.a2aBroker, cfg.WorkspaceRoot)
+	server.coderAgent.Start(context.Background())
+	server.goDirector = orchestration.NewDirector(server.swarmController, server.coderAgent, server.a2aBroker)
+	server.memoryArchiver = memorystore.NewMemoryArchiver(cfg.WorkspaceRoot)
 	server.swarmController = orchestration.NewSwarmController(server.a2aBroker)
 	server.mcpPredictor = mcp.NewToolPredictor(server.mcpAggregator)
 	server.supervisorManager.SetPredictor(server.mcpPredictor)
@@ -787,6 +794,8 @@ func (s *Server) registerRoutes() {
 	s.mux.HandleFunc("/api/agent/a2a/messages", s.handleA2AGetMessages)
 	s.mux.HandleFunc("/api/agent/a2a/broadcast", s.handleA2ABroadcast)
 	s.mux.HandleFunc("/api/agent/swarm/start", s.handleAgentSwarmStart)
+	s.mux.HandleFunc("/api/agent/director/start", s.handleGoDirectorStart)
+	s.mux.HandleFunc("/api/memory/archive-session", s.handleMemoryArchiveSession)
 	s.mux.HandleFunc("/api/commands/execute", s.handleCommandsExecute)
 	s.mux.HandleFunc("/api/commands", s.handleCommandsList)
 	s.mux.HandleFunc("/api/skills", s.handleSkillsList)

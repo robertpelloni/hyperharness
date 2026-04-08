@@ -1,0 +1,158 @@
+package orchestration
+
+/**
+ * @file coder_agent.go
+ * @module go/internal/orchestration
+ *
+ * WHAT: Go-native implementation of a Coder Agent.
+ * Handles coding tasks via A2A protocol and local file system access.
+ */
+
+import (
+	"context"
+	"encoding/json"
+	"fmt"
+	"os"
+	"path/filepath"
+	"strings"
+
+	"github.com/hypercodehq/hypercode-go/internal/ai"
+)
+
+type CoderAgent struct {
+	ID         string
+	Broker     *A2ABroker
+	Workspace  string
+	InMessages chan A2AMessage
+}
+
+func NewCoderAgent(broker *A2ABroker, workspace string) *CoderAgent {
+	id := "go-coder"
+	return &CoderAgent{
+		ID:         id,
+		Broker:     broker,
+		Workspace:  workspace,
+		InMessages: broker.RegisterAgent(id),
+	}
+}
+
+func (a *CoderAgent) Start(ctx context.Context) {
+	fmt.Printf("[Go Coder] 🤖 Agent started (Workspace: %s)\n", a.Workspace)
+	go a.loop(ctx)
+}
+
+func (a *CoderAgent) loop(ctx context.Context) {
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case msg, ok := <-a.InMessages:
+			if !ok {
+				return
+			}
+			if msg.Type == TaskRequest {
+				a.handleTaskRequest(ctx, msg)
+			}
+		}
+	}
+}
+
+func (a *CoderAgent) handleTaskRequest(ctx context.Context, msg A2AMessage) {
+	payload, ok := msg.Payload.(map[string]interface{})
+	if !ok {
+		return
+	}
+
+	task, _ := payload["task"].(string)
+	if task == "" {
+		return
+	}
+
+	fmt.Printf("[Go Coder] 🧠 Processing task: %s\n", task)
+
+	// 1. Plan and Generate Code
+	prompt := fmt.Sprintf(`
+		You are a Go-native Coder Agent.
+		Task: %s
+
+		Return JSON with:
+		{
+		  "filename": "string",
+		  "content": "string",
+		  "reasoning": "string"
+		}
+	`, task)
+
+	resp, err := ai.AutoRoute(ctx, []ai.Message{
+		{Role: "system", Content: "You are an expert software engineer."},
+		{Role: "user", Content: prompt},
+	})
+
+	if err != nil {
+		a.sendError(msg, err.Error())
+		return
+	}
+
+	// 2. Parse and Write
+	var plan struct {
+		Filename  string `json:"filename"`
+		Content   string `json:"content"`
+		Reasoning string `json:"reasoning"`
+	}
+
+	// Extract JSON
+	jsonStr := resp.Content
+	if start := strings.Index(jsonStr, "{"); start != -1 {
+		if end := strings.LastIndex(jsonStr, "}"); end != -1 {
+			jsonStr = jsonStr[start : end+1]
+		}
+	}
+
+	if err := json.Unmarshal([]byte(jsonStr), &plan); err != nil {
+		a.sendError(msg, "Failed to parse LLM plan: "+err.Error())
+		return
+	}
+
+	targetPath := filepath.Join(a.Workspace, plan.Filename)
+	if err := os.MkdirAll(filepath.Dir(targetPath), 0755); err != nil {
+		a.sendError(msg, "FS Error: "+err.Error())
+		return
+	}
+
+	if err := os.WriteFile(targetPath, []byte(plan.Content), 0644); err != nil {
+		a.sendError(msg, "FS Error: "+err.Error())
+		return
+	}
+
+	fmt.Printf("[Go Coder] 💾 Wrote to %s\n", targetPath)
+
+	// 3. Respond
+	a.Broker.RouteMessage(A2AMessage{
+		ID:        fmt.Sprintf("a2a-%d", nowMillis()),
+		Timestamp: nowMillis(),
+		Sender:    a.ID,
+		Recipient: msg.Sender,
+		Type:      TaskResponse,
+		ReplyTo:   msg.ID,
+		Payload: map[string]interface{}{
+			"status":       "completed",
+			"filesChanged": []string{plan.Filename},
+			"reasoning":    plan.Reasoning,
+		},
+	})
+}
+
+func (a *CoderAgent) sendError(orig A2AMessage, errMsg string) {
+	a.Broker.RouteMessage(A2AMessage{
+		ID:        fmt.Sprintf("a2a-%d", nowMillis()),
+		Timestamp: nowMillis(),
+		Sender:    a.ID,
+		Recipient: orig.Sender,
+		Type:      TaskResponse,
+		ReplyTo:   orig.ID,
+		Payload: map[string]interface{}{
+			"status": "failed",
+			"error":  errMsg,
+		},
+	})
+}

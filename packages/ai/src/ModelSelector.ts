@@ -38,7 +38,9 @@ export const DEFAULT_OPENROUTER_FREE_MODEL = 'openrouter/free';
 const DEFAULT_CHAINS: Record<'worker' | 'supervisor', ChainCandidate[]> = {
     worker: [
         { provider: 'lmstudio', modelId: 'C:/Users/hyper/.lmstudio/models/HauhauCS/Gemma-4-E2B-Uncensored-HauhauCS-Aggressive/Gemma-4-E2B-Uncensored-HauhauCS-Aggressive-Q2_K_P.gguf gemma-4-e2b-uncensored-hauhaucs-aggressive' },
-        { provider: 'openrouter', modelId: DEFAULT_OPENROUTER_FREE_MODEL },
+        { provider: 'openrouter', modelId: 'openrouter/free' },
+        { provider: 'openrouter', modelId: 'google/gemini-2.0-flash-exp:free' },
+        { provider: 'openrouter', modelId: 'meta-llama/llama-3.3-70b-instruct:free' },
         { provider: 'google', modelId: 'gemini-2.5-flash' },
         { provider: 'deepseek', modelId: 'deepseek-chat' },
         { provider: 'openai', modelId: 'gpt-4o-mini' },

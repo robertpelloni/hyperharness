@@ -4,6 +4,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.0-alpha.18] - 2026-04-08
+
+### Added
+- **Go Autonomous Director**: Implemented a native Go version of the `Director` loop, allowing the sidecar to orchestrate multi-model swarm planning and task delegation independently.
+- **Native Go Coder Agent**: Created a Go implementation of the `CoderAgent` that handles file system operations and code generation via the A2A broker.
+- **A2A Message Composer**: Added a new UI component to the Agent dashboard for manually composing and dispatching A2A signals to specific agents or the entire pool.
+
+### Changed
+- **Provider Fallback Expansion**: Added `google/gemini-2.0-flash-exp:free` and `meta-llama/llama-3.3-70b-instruct:free` (via OpenRouter) to the default worker fallback chain to improve reliability during quota exhaustion.
+- **Go Routing**: Wired the native Go `Director` into the `/api/agent/director/start` endpoint.
+
 ## [1.0.0-alpha.17] - 2026-04-08
 
 ### Added

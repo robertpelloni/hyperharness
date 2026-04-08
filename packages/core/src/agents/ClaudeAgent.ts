@@ -2,6 +2,8 @@
 import { LLMService, IAgent } from "@hypercode/ai";
 import { PromptRegistry } from "../prompts/PromptRegistry.js";
 import { EventEmitter } from 'events';
+import { A2AMessage, A2AMessageType, IA2AClient, A2ATask } from "@hypercode/adk";
+import { a2aBroker } from "@hypercode/agents";
 
 interface AgentState {
     history: { role: 'user' | 'model', parts: any[] }[];
@@ -9,12 +11,13 @@ interface AgentState {
     lastError?: string;
 }
 
-export class ClaudeAgent extends EventEmitter implements IAgent {
+export class ClaudeAgent extends EventEmitter implements IAgent, IA2AClient {
     private llmService: LLMService;
     private promptRegistry: PromptRegistry;
     private state: AgentState;
     // Anthropic provider — using the latest Claude 3.5 Sonnet model
     private model: string = 'claude-3-5-sonnet-20241022';
+    private onMessageCallback?: (message: A2AMessage) => void;
 
     constructor(llmService: LLMService, promptRegistry: PromptRegistry) {
         super();
@@ -24,6 +27,43 @@ export class ClaudeAgent extends EventEmitter implements IAgent {
             history: [],
             status: 'idle'
         };
+
+        // Register with A2A Broker
+        a2aBroker.registerAgent('claude', this);
+    }
+
+    // A2A Implementation
+    async sendMessage(message: A2AMessage): Promise<void> {
+        console.log(`[ClaudeAgent] Received A2A message of type: ${message.type}`);
+        if (message.type === A2AMessageType.TASK_REQUEST) {
+            const response = await this.send(message.payload.task, message.payload.metadata);
+            await a2aBroker.routeMessage({
+                id: `a2a-${Date.now()}`,
+                timestamp: Date.now(),
+                sender: 'claude',
+                recipient: message.sender,
+                type: A2AMessageType.TASK_RESPONSE,
+                payload: { result: response },
+                replyTo: message.id
+            });
+        }
+    }
+
+    onMessage(callback: (message: A2AMessage) => void): void {
+        this.onMessageCallback = callback;
+    }
+
+    async delegateTask(task: A2ATask, recipient: string): Promise<A2ATask> {
+        await a2aBroker.routeMessage({
+            id: `a2a-task-${task.id}`,
+            timestamp: Date.now(),
+            sender: 'claude',
+            recipient: recipient,
+            type: A2AMessageType.TASK_REQUEST,
+            payload: { task: task.description, metadata: { taskId: task.id, priority: task.priority } }
+        });
+        task.status = 'in_progress';
+        return task;
     }
 
     async start() {

@@ -33,7 +33,7 @@ import http from 'http';
 mcpServerDebugLog('[MCPServer] ✓ ws/http');
 
 import { McpmInstaller } from "./skills/McpmInstaller.js";
-import { Director, ToolPredictor, PairOrchestrator, SwarmController, SwarmRole } from "@hypercode/agents";
+import { Director, ToolPredictor, PairOrchestrator, SwarmController, SwarmRole, a2aBroker } from "@hypercode/agents";
 import { Council, CouncilRole } from "@hypercode/agents";
 import { GeminiAgent } from "./agents/GeminiAgent.js";
 import { ClaudeAgent } from "./agents/ClaudeAgent.js";
@@ -74,7 +74,6 @@ import { MemoryManager } from "./services/MemoryManager.js"; // Use legacy Memor
 import { BobbyBookmarksSyncWorker } from "./daemons/hyperingest/BobbyBookmarksSyncWorker.js";
 import { LinkCrawlerWorker } from "./daemons/hyperingest/LinkCrawlerWorker.js";
 import { MemoryArchiver } from "./services/MemoryArchiver.js";
-import { a2aBroker } from "./services/A2ABroker.js";
 import { workspaceTracker } from "./services/WorkspaceTracker.js";
 mcpServerDebugLog('[MCPServer] ✓ Phase 51/53 Infrastructure');
 import { SkillAssimilationService } from "./services/SkillAssimilationService.js";
@@ -518,6 +517,10 @@ export class MCPServer {
         }
         this.projectTracker = new ProjectTracker(process.cwd()); // Phase 59: Autonomous Loop
         this.missionService = new MissionService(process.cwd()); // Phase 80: Swarm Persistence
+
+        this.memoryManager = new MemoryManager(process.cwd());
+        this.agentMemoryService = new AgentMemoryService({ persistDir: path.join(process.cwd(), '.hypercode', 'agent_memory') }, this.memoryManager);
+
         this.director = new Director(this);
         this.council = new Council(this.modelSelector);
         this.permissionManager = new PermissionManager('high'); // Default to HIGH AUTONOMY as requested
@@ -609,8 +612,6 @@ export class MCPServer {
         ]);
         // SearchService is needed for DeepResearchService types
         const searchService = new SearchService();
-        this.memoryManager = new MemoryManager(process.cwd());
-        this.agentMemoryService = new AgentMemoryService({ persistDir: path.join(process.cwd(), '.hypercode', 'agent_memory') }, this.memoryManager);
         this.deepResearchService = new DeepResearchService(this, this.llmService, searchService, this.memoryManager); // Initialize FIRST
         this.skillAssimilationService = new SkillAssimilationService(
             this.skillRegistry,
@@ -655,6 +656,20 @@ export class MCPServer {
                     type: 'NEURAL_PULSE',
                     payload: event
                 });
+            }
+        });
+
+        // A2A to Mesh Bridge
+        a2aBroker.on('bridge_to_mesh', (message) => {
+            if (this.meshService) {
+                this.meshService.broadcast('A2A_BRIDGE_SIGNAL', message);
+            }
+        });
+
+        // Mesh to A2A Bridge
+        this.meshService?.on('message', (msg) => {
+            if (msg.type === 'A2A_BRIDGE_SIGNAL') {
+                a2aBroker.routeMessage(msg.payload);
             }
         });
 

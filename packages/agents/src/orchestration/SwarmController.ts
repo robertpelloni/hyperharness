@@ -17,7 +17,8 @@
 
 import { LLMService, SelectedModel } from "@hypercode/ai";
 import type { IMCPServer } from "@hypercode/adk";
-import { A2AMessageType, a2aBroker } from "../../../core/src/services/A2ABroker.js";
+import { A2AMessageType } from "@hypercode/adk";
+import { a2aBroker } from "./A2ABroker.js";
 
 export enum SwarmRole {
     SUPERVISOR = 'supervisor',
