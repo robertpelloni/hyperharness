@@ -23,6 +23,7 @@ import path from 'path';
 import AdmZip from 'adm-zip';
 import { LLMService } from "@hypercode/ai";
 import { AgentMemoryService } from "./AgentMemoryService.js";
+import { A2ALogger } from "@hypercode/agents";
 
 export interface ArchivedSessionMetadata {
     originalId: string;
@@ -38,7 +39,8 @@ export class MemoryArchiver {
     constructor(
         private workspaceRoot: string,
         private llmService: LLMService,
-        private agentMemory: AgentMemoryService
+        private agentMemory: AgentMemoryService,
+        private a2aLogger?: A2ALogger
     ) {
         this.archivePath = path.join(this.workspaceRoot, 'data', 'archives', 'sessions.zip');
     }
@@ -59,6 +61,16 @@ export class MemoryArchiver {
         const zip = new AdmZip(await this.ensureArchiveExists());
         const entryName = `${sessionId}.txt`;
         zip.addFile(entryName, Buffer.from(transcript, 'utf-8'), `Source: ${sessionData.sourceTool}`);
+
+        // 3. Add A2A Logs if available
+        if (this.a2aLogger) {
+            const logs = await this.a2aLogger.getRecentLogs(200);
+            if (logs.length > 0) {
+                const logsContent = logs.map(l => JSON.stringify(l)).join('\n');
+                zip.addFile(`${sessionId}.a2a.jsonl`, Buffer.from(logsContent, 'utf-8'));
+            }
+        }
+
         zip.writeZip(this.archivePath);
 
         const entry = zip.getEntry(entryName);

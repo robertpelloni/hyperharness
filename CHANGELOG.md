@@ -4,6 +4,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.0-alpha.20] - 2026-04-08
+
+### Added
+- **A2A Request-Response Pattern**: Implemented a `query` mechanism in the `A2ABroker` (TS/Go) that supports asynchronous request-response correlation with timeouts. Agents can now ask questions of each other and await answers.
+- **Go A2A Logger**: Ported the `A2ALogger` to Go, enabling native persistent auditing of agent-to-agent signal traffic.
+- **Integrated Audit Archives**: Enhanced the `MemoryArchiver` to include A2A traffic logs in compressed session archives, providing a complete audit trail for multi-agent workflows.
+
+### Changed
+- **Researcher Agent Integration**: Updated `ResearcherAgent` to natively participate in the A2A broker and send periodic heartbeats.
+- **Pulse Status**: Added `a2aActive` flag to system status reports.
+
 ## [1.0.0-alpha.19] - 2026-04-08
 
 ### Added

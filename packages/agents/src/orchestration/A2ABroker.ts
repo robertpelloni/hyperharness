@@ -16,12 +16,33 @@ export class A2ABroker extends EventEmitter {
     private agents: Map<string, IA2AClient> = new Map();
     private heartbeats: Map<string, number> = new Map();
     private history: A2AMessage[] = [];
+    private pendingResponses: Map<string, (msg: A2AMessage) => void> = new Map();
     private readonly MAX_HISTORY = 1000;
     private readonly HEARTBEAT_TIMEOUT = 30000; // 30 seconds
 
     constructor() {
         super();
         this.startHeartbeatMonitor();
+    }
+
+    /**
+     * Sends a message and waits for a response (Request-Response pattern)
+     */
+    public async query(message: A2AMessage, timeoutMs: number = 10000): Promise<A2AMessage> {
+        return new Promise((resolve, reject) => {
+            const timeout = setTimeout(() => {
+                this.pendingResponses.delete(message.id);
+                reject(new Error(`A2A Query timed out after ${timeoutMs}ms (ID: ${message.id})`));
+            }, timeoutMs);
+
+            this.pendingResponses.set(message.id, (response) => {
+                clearTimeout(timeout);
+                this.pendingResponses.delete(message.id);
+                resolve(response);
+            });
+
+            void this.routeMessage(message);
+        });
     }
 
     private startHeartbeatMonitor() {
@@ -78,6 +99,14 @@ export class A2ABroker extends EventEmitter {
         }
 
         this.emit('message_routed', message);
+
+        // Check for pending responses (Reply-To correlation)
+        if (message.replyTo && this.pendingResponses.has(message.replyTo)) {
+            const callback = this.pendingResponses.get(message.replyTo);
+            if (callback) {
+                callback(message);
+            }
+        }
 
         if (message.recipient) {
             const agent = this.agents.get(message.recipient);

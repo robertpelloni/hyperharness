@@ -11,6 +11,7 @@ package orchestration
  */
 
 import (
+	"context"
 	"fmt"
 	"sync"
 	"time"
@@ -40,20 +41,46 @@ type A2AMessage struct {
 }
 
 type A2ABroker struct {
-	mu         sync.RWMutex
-	agents     map[string]chan A2AMessage
-	heartbeats map[string]int64
-	history    []A2AMessage
+	mu               sync.RWMutex
+	agents           map[string]chan A2AMessage
+	heartbeats       map[string]int64
+	history          []A2AMessage
+	pendingResponses map[string]chan A2AMessage
+	logger           *A2ALogger
 }
 
-func NewA2ABroker() *A2ABroker {
+func NewA2ABroker(logger *A2ALogger) *A2ABroker {
 	b := &A2ABroker{
-		agents:     make(map[string]chan A2AMessage),
-		heartbeats: make(map[string]int64),
-		history:    make([]A2AMessage, 0),
+		agents:           make(map[string]chan A2AMessage),
+		heartbeats:       make(map[string]int64),
+		history:          make([]A2AMessage, 0),
+		pendingResponses: make(map[string]chan A2AMessage),
+		logger:           logger,
 	}
 	go b.startHeartbeatMonitor()
 	return b
+}
+
+func (b *A2ABroker) Query(ctx context.Context, msg A2AMessage) (A2AMessage, error) {
+	b.mu.Lock()
+	ch := make(chan A2AMessage, 1)
+	b.pendingResponses[msg.ID] = ch
+	b.mu.Unlock()
+
+	defer func() {
+		b.mu.Lock()
+		delete(b.pendingResponses, msg.ID)
+		b.mu.Unlock()
+	}()
+
+	b.RouteMessage(msg)
+
+	select {
+	case <-ctx.Done():
+		return A2AMessage{}, ctx.Err()
+	case resp := <-ch:
+		return resp, nil
+	}
 }
 
 func (b *A2ABroker) startHeartbeatMonitor() {
@@ -100,6 +127,10 @@ func (b *A2ABroker) UnregisterAgent(id string) {
 }
 
 func (b *A2ABroker) RouteMessage(msg A2AMessage) {
+	if b.logger != nil {
+		b.logger.LogMessage(msg)
+	}
+
 	b.mu.Lock()
 	if msg.Sender != "MCP_TOOL" && msg.Sender != "DASHBOARD" {
 		b.heartbeats[msg.Sender] = nowMillis()
@@ -108,6 +139,16 @@ func (b *A2ABroker) RouteMessage(msg A2AMessage) {
 	if msg.Type == Heartbeat {
 		b.mu.Unlock()
 		return
+	}
+
+	// Check for pending responses
+	if msg.ReplyTo != "" {
+		if ch, ok := b.pendingResponses[msg.ReplyTo]; ok {
+			select {
+			case ch <- msg:
+			default:
+			}
+		}
 	}
 
 	b.history = append(b.history, msg)

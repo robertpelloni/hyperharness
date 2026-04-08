@@ -77,6 +77,7 @@ type Server struct {
 	toolsRegistry     *tools.Registry
 	mcpAggregator     *mcp.Aggregator
 	mcpPredictor      *mcp.ToolPredictor
+	a2aLogger         *orchestration.A2ALogger
 	a2aBroker         *orchestration.A2ABroker
 	swarmController   *orchestration.SwarmController
 	coderAgent        *orchestration.CoderAgent
@@ -394,8 +395,9 @@ func New(cfg config.Config, detector controlplane.ToolProvider) *Server {
 		workflowEngine:    workflow.NewEngine(),
 		toolsRegistry:     tools.NewRegistry(),
 		mcpAggregator:     mcp.NewAggregator(),
-		a2aBroker:         orchestration.NewA2ABroker(),
+		a2aLogger:         orchestration.NewA2ALogger(cfg.WorkspaceRoot),
 	}
+	server.a2aBroker = orchestration.NewA2ABroker(server.a2aLogger)
 	server.coderAgent = orchestration.NewCoderAgent(server.a2aBroker, cfg.WorkspaceRoot)
 	server.coderAgent.Start(context.Background())
 	server.goDirector = orchestration.NewDirector(server.swarmController, server.coderAgent, server.a2aBroker)

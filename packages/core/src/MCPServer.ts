@@ -541,7 +541,7 @@ export class MCPServer {
         this.pairOrchestrator.setupFrontierSquad();
         this.swarmController = new SwarmController(this, this.llmService);
         this.a2aLogger = new A2ALogger(process.cwd());
-        this.memoryArchiver = new MemoryArchiver(process.cwd(), this.llmService, this.agentMemoryService);
+        this.memoryArchiver = new MemoryArchiver(process.cwd(), this.llmService, this.agentMemoryService, this.a2aLogger);
         this.metricsService = new MetricsService(); // Phase 31
         this.metricsService.startMonitoring();
         this.policyService = new PolicyService(process.cwd()); // Phase 32

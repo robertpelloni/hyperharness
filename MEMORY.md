@@ -98,4 +98,14 @@
 **Resolution**: Implemented a WebSocket listener for `A2A_SIGNAL` types. Sending this type to the main WebSocket server will now bridge it directly into the local agent broker.
 **Implication**: Remote UI components can now directly trigger and observe agent-to-agent coordination.
 
+### 21. A2A Liveness and Pruning (Added 2026-04-08)
+**Observation**: Decentralized agents can crash or become unreachable, leaving stale entries in the broker pool.
+**Resolution**: Implemented a heartbeat mechanism in `A2ABroker`. Agents now signal liveness every 15s, and the broker prunes any agent silent for more than 30s.
+**Implication**: The dashboard and swarm controller now have a truthful view of currently available coordination capacity.
+
+### 22. Deep Link Insight (Added 2026-04-08)
+**Observation**: Basic webpage crawling is insufficient for automated control-plane growth. We need to know if a site *contains* tools we can use.
+**Resolution**: Enhanced the Go Link Crawler with an LLM turn that explicitly looks for MCP servers, skills, and APIs.
+**Implication**: Discovered links are now semantically enriched with their technical "capabilities," paving the way for auto-installing discovered MCP servers.
+
 *Update this file whenever a major systemic pattern, recurring bug, or deep architectural quirk is discovered.*
