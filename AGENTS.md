@@ -151,7 +151,7 @@ hypercode/
 ## 6. Key Design Decisions
 
 ### "Borg → HyperCode" Rename
-The project was originally called "Borg" and is being renamed to "HyperCode". Some internal references may still say "borg" (e.g., `borg-upstream` remote, `borg.config.json`). These are being migrated incrementally.
+The project was originally called "Borg" and is being renamed to "HyperCode". Some internal references may still say "borg" (e.g., `borg-upstream` remote, `hypercode.config.json`). These are being migrated incrementally.
 
 ### Go Bridge Strategy
 The Go server (`go/`) is a **bridge/fallback** — it provides native handlers for routes when the TS server is unavailable, but the TypeScript server is still the primary runtime. Do NOT split into separate binaries yet (per `UNIVERSAL_LLM_INSTRUCTIONS.md` modular-monolith-first rule).

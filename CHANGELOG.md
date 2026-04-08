@@ -4,6 +4,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.0-alpha.15] - 2026-04-08
+
+### Changed
+- **Consolidated Renaming**: Renamed remaining `borg` references to `HyperCode` across `AGENTS.md`, `DEPLOY.md`, and other root documentation. Renamed `borg.config.json` to `hypercode.config.json`.
+- **Submodule Cleanup**: Renamed `borg` adapter to `hypercode` adapter in `submodules/hyperharness` and removed redundant `borg` folder. Updated system prompts to refer to `HyperCode`.
+- **Go Sidecar Monitoring**: Implemented a native `ConversationMonitor` loop in the Go sidecar that runs the `ToolPredictor` autonomously for active sessions.
+- **BobbyBookmarks Expansion**: Updated `BobbyBookmarksSyncWorker` to ingest bookmarks from `data/bobbybookmarks/bookmarks.txt` in addition to the SQLite DB, with automatic deduplication.
+
+### Added
+- **Agent-to-Agent (A2A) Protocol**: Defined the A2A communication protocol in `@hypercode/adk` and implemented the `A2ABroker` in both TypeScript and Go.
+- **A2A Dashboard Integration**: Added an A2A Message Broker view to the Agent Command Center dashboard, showing live message traffic between agents.
+- **A2A Tooling**: Added `a2a_broadcast` and `a2a_list_agents` MCP tools.
+
 ## [1.0.0-alpha.14] - 2026-04-08
 
 ### Fixed

@@ -63,7 +63,7 @@ Copy `.env.example` to `.env` and configure:
 - `mcp.jsonc` — MCP server definitions (34K+ lines, comprehensive)
 - `llm_config.json` — LLM provider configuration
 - `packages/core/config/council.json` — Council member definitions
-- `borg.config.json` — Core service configuration
+- `hypercode.config.json` — Core service configuration
 
 ## Troubleshooting
 

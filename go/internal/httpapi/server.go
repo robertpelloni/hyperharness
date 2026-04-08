@@ -77,6 +77,7 @@ type Server struct {
 	toolsRegistry     *tools.Registry
 	mcpAggregator     *mcp.Aggregator
 	mcpPredictor      *mcp.ToolPredictor
+	a2aBroker         *orchestration.A2ABroker
 }
 
 type providerFallbackEvent struct {
@@ -389,8 +390,10 @@ func New(cfg config.Config, detector controlplane.ToolProvider) *Server {
 		workflowEngine:    workflow.NewEngine(),
 		toolsRegistry:     tools.NewRegistry(),
 		mcpAggregator:     mcp.NewAggregator(),
+		a2aBroker:         orchestration.NewA2ABroker(),
 	}
 	server.mcpPredictor = mcp.NewToolPredictor(server.mcpAggregator)
+	server.supervisorManager.SetPredictor(server.mcpPredictor)
 	server.squad.load()
 	server.swarm.load()
 	server.registerRoutes()
@@ -778,6 +781,9 @@ func (s *Server) registerRoutes() {
 	s.mux.HandleFunc("/api/shell/history/system", s.handleShellSystemHistory)
 	s.mux.HandleFunc("/api/agent/tool", s.handleAgentRunTool)
 	s.mux.HandleFunc("/api/agent/chat", s.handleAgentChat)
+	s.mux.HandleFunc("/api/agent/a2a/agents", s.handleA2AListAgents)
+	s.mux.HandleFunc("/api/agent/a2a/messages", s.handleA2AGetMessages)
+	s.mux.HandleFunc("/api/agent/a2a/broadcast", s.handleA2ABroadcast)
 	s.mux.HandleFunc("/api/commands/execute", s.handleCommandsExecute)
 	s.mux.HandleFunc("/api/commands", s.handleCommandsList)
 	s.mux.HandleFunc("/api/skills", s.handleSkillsList)

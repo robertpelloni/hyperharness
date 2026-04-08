@@ -73,6 +73,7 @@ import { SessionImportService } from "./services/SessionImportService.js";
 import { MemoryManager } from "./services/MemoryManager.js"; // Use legacy MemoryManager
 import { BobbyBookmarksSyncWorker } from "./daemons/hyperingest/BobbyBookmarksSyncWorker.js";
 import { LinkCrawlerWorker } from "./daemons/hyperingest/LinkCrawlerWorker.js";
+import { a2aBroker } from "./services/A2ABroker.js";
 import { workspaceTracker } from "./services/WorkspaceTracker.js";
 mcpServerDebugLog('[MCPServer] ✓ Phase 51/53 Infrastructure');
 import { SkillAssimilationService } from "./services/SkillAssimilationService.js";
@@ -1303,6 +1304,22 @@ export class MCPServer {
                     ],
                     isError: !pairResult.success
                 };
+            }
+            else if (name === "a2a_broadcast") {
+                const type = (args?.type as any) || 'STATE_UPDATE';
+                const payload = (args?.payload as any) || {};
+                await a2aBroker.routeMessage({
+                    id: `a2a-${Date.now()}`,
+                    timestamp: Date.now(),
+                    sender: 'MCP_TOOL',
+                    type: type,
+                    payload: payload
+                });
+                result = { content: [{ type: "text", text: `A2A Message '${type}' broadcasted.` }] };
+            }
+            else if (name === "a2a_list_agents") {
+                const agents = a2aBroker.listAgents();
+                result = { content: [{ type: "text", text: JSON.stringify({ agents }, null, 2) }] };
             }
             // --- DEEP RESEARCH (Phase 31) ---
             else if (name === "research_topic") {
@@ -2557,6 +2574,23 @@ ${env.tools.filter((tool) => tool.installed).map((tool) => `- **${tool.name}**: 
                     },
                     required: ["task"]
                 }
+            },
+            {
+                name: "a2a_broadcast",
+                description: "Broadcast an A2A message to all registered HyperCode autonomous agents.",
+                inputSchema: {
+                    type: "object",
+                    properties: {
+                        type: { type: "string", description: "Message Type (TASK_REQUEST, STATE_UPDATE, etc.)" },
+                        payload: { type: "object", description: "Message payload" }
+                    },
+                    required: ["type", "payload"]
+                }
+            },
+            {
+                name: "a2a_list_agents",
+                description: "List all currently active and registered A2A-capable agents.",
+                inputSchema: { type: "object", properties: {} }
             },
             {
                 name: "browser_get_history",
