@@ -59,6 +59,17 @@ export class GeminiAgent extends EventEmitter implements IAgent, IA2AClient {
                 payload: { result: response },
                 replyTo: message.id
             });
+        } else if (message.type === A2AMessageType.STATE_UPDATE && message.payload.action === 'REPORT_CAPABILITIES') {
+            await a2aBroker.routeMessage({
+                id: `a2a-cap-${Date.now()}`,
+                timestamp: Date.now(),
+                sender: 'gemini',
+                type: A2AMessageType.STATE_UPDATE,
+                payload: { 
+                    capabilities: ['reasoning', 'coding', 'long_context', 'vision'],
+                    role: 'Frontier Assistant'
+                }
+            });
         }
     }
 

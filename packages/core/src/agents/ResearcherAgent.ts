@@ -62,6 +62,17 @@ export class ResearcherAgent extends SpecializedAgent implements IA2AClient {
                 payload: result,
                 replyTo: message.id
             });
+        } else if (message.type === A2AMessageType.STATE_UPDATE && message.payload.action === 'REPORT_CAPABILITIES') {
+            await a2aBroker.routeMessage({
+                id: `a2a-cap-${Date.now()}`,
+                timestamp: Date.now(),
+                sender: 'researcher',
+                type: A2AMessageType.STATE_UPDATE,
+                payload: { 
+                    capabilities: ['research', 'search', 'summarization', 'web-browsing'],
+                    role: 'Web Researcher'
+                }
+            });
         }
     }
 

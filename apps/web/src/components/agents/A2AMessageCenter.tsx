@@ -44,7 +44,7 @@ export function A2AMessageCenter() {
                     <div className="space-y-4">
                         {messages && messages.length > 0 ? (
                             messages.map((msg: any) => (
-                                <div key={msg.id} className="flex flex-col gap-1 border-l-2 border-indigo-500 pl-3 py-1">
+                                <div key={msg.id} className="flex flex-col gap-1 border-l-2 border-indigo-500 pl-3 py-1 bg-white/5 rounded-r-md">
                                     <div className="flex items-center justify-between">
                                         <span className="text-[10px] font-bold text-indigo-400 uppercase">{msg.sender} → {msg.recipient || 'BROADCAST'}</span>
                                         <span className="text-[10px] text-zinc-600">{new Date(msg.timestamp).toLocaleTimeString()}</span>
@@ -52,7 +52,9 @@ export function A2AMessageCenter() {
                                     <div className="flex items-center gap-2">
                                         <Badge variant="secondary" className="text-[9px] px-1 py-0 h-4 bg-zinc-800">{msg.type}</Badge>
                                         <span className="text-sm text-zinc-300 line-clamp-2">
-                                            {typeof msg.payload === 'string' ? msg.payload : JSON.stringify(msg.payload)}
+                                            {msg.type === 'STATE_UPDATE' && msg.payload?.capabilities 
+                                                ? `CAPABILITIES: ${msg.payload.capabilities.join(', ')}`
+                                                : typeof msg.payload === 'string' ? msg.payload : JSON.stringify(msg.payload)}
                                         </span>
                                     </div>
                                 </div>

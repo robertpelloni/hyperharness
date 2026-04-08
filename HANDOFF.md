@@ -1,16 +1,16 @@
 # Handoff — Session 2026-04-08 (Extended)
 
-**Version:** `1.0.0-alpha.19`
+**Version:** `1.0.0-alpha.20`
 **Branch:** `main`
-**Commits this session:** 30 (alpha.8 → alpha.19)
+**Commits this session:** 32 (alpha.8 → alpha.20)
 
 ## Session Summary
 
-### Phase 13: A2A Heartbeat & Mesh Bridging (commits 29-30)
-- **A2A Heartbeat**: Implemented periodic heartbeats and an automatic pruning monitor in `A2ABroker` (TS/Go). Agents like `GeminiAgent` and `ClaudeAgent` now natively send heartbeats every 15s.
-- **Mesh signal Bridge**: Implemented a bidirectional bridge between process-local A2A messages and the global P2P Mesh. Signals now automatically propagate to remote nodes.
-- **Enhanced Link Analysis (Go)**: Upgraded the Go Link Crawler with a technical feature extractor. It now identifies MCP servers, skills, and APIs from crawled pages and saves them in the `raw_payload` database field.
-- **Dashboard Message Composer**: Added a manual A2A signal drafting UI and tRPC mutations for operator-driven agent coordination.
+### Phase 14: A2A Multi-turn & Native Auditing (commits 31-32)
+- **A2A Request-Response**: Implemented a `query` pattern in `A2ABroker` (TS/Go). Agents can now perform asynchronous request-response correlation with timeouts and `replyTo` IDs.
+- **Go A2A Logger**: Ported the `A2ALogger` to Go, providing native JSONL auditing of signal traffic for the Go sidecar.
+- **Researcher Agent Integration**: Updated `ResearcherAgent` to natively support the A2A broker and heartbeat protocol.
+- **Integrated Audit Archives**: Enhanced the `MemoryArchiver` (TS) to bundle A2A traffic logs inside the compressed ZIP session archives.
 
 ## Current state of the project
 
@@ -18,10 +18,10 @@
 - ✅ Server builds and runs (Express/tRPC on :4000, Next.js dashboard on :3000, MCP WebSocket on :3001)
 - ✅ SQLite functional after better-sqlite3 rebuild for Node 24
 - ✅ Multi-Model Swarm: `SwarmController` (TS/Go) handles coordination between model teams.
-- ✅ Go Director: Native Go sidecar manages autonomous development loops.
-- ✅ A2A Communication: Central broker (TS/Go) with Heartbeat, WebSocket, and Mesh bridges.
+- ✅ A2A Communication: Central broker (TS/Go) with Heartbeat, Request-Response (Query), and Mesh bridges.
+- ✅ Go Sidecar Auditing: Native Go `A2ALogger` for persistent signal tracing.
 - ✅ Link Crawler: Technical feature extraction and semantic analysis in Go.
-- ✅ Session Archiver: ZIP-based history compression with LLM fact extraction.
+- ✅ Session Archiver: ZIP-based history compression with LLM fact extraction and A2A log bundling.
 
 ### What's broken or incomplete
 - glama.ai returns HTML (adapter has fallback URLs but may still fail)
@@ -31,15 +31,15 @@
 ### Architecture overview
 ```
 hypercode/
-├── VERSION                    # Single source of truth (1.0.0-alpha.19)
+├── VERSION                    # Single source of truth (1.0.0-alpha.20)
 ├── packages/agents/           
-│   ├── src/orchestration/A2ABroker.ts (HEARTBEAT MONITOR)
-│   └── src/orchestration/A2ALogger.ts (NEW)
+│   ├── src/orchestration/A2ABroker.ts (QUERY PATTERN)
+│   └── src/orchestration/A2ALogger.ts (INTEGRATED WITH ARCHIVER)
 ├── go/                        
-│   ├── internal/orchestration/a2a_broker.go (HEARTBEAT MONITOR)
-│   └── internal/hsync/linkcrawler.go (FEATURE EXTRACTION)
+│   ├── internal/orchestration/a2a_broker.go (QUERY PATTERN)
+│   └── internal/orchestration/a2a_logger.go (NEW)
 ├── apps/web/                  
-│   └── src/components/agents/A2AMessageComposer.tsx (Wired to tRPC)
+│   └── src/components/agents/A2AMessageComposer.tsx
 └── bin/hypercode.exe          # Compiled Go binary
 ```
 
@@ -49,14 +49,14 @@ hypercode/
 ## Recommendations for next agent
 
 ### Immediate (P0)
-1. Start the server and verify agent heartbeats in the broker log.
-2. Test A2A ↔ Mesh bridging by sending a signal from the dashboard and observing it on a mesh peer.
+1. Start the server and test A2A `query` pattern by making one agent ask another for status.
+2. Verify A2A logs are present in the `.hypercode/logs/a2a_traffic.jsonl` file.
 
 ### High priority (P1)
 1. **Tool Integration** — Automatically convert "Detected Features" from Link Crawler (like MCP servers) into active MCP configurations.
-2. **Dashboard Polish** — Ensure the 69 pages show live state from the Go sidecar when TS is unavailable.
-3. **A2A Multi-turn** — Implement a request-response pattern for agents to negotiate task details over A2A.
+2. **A2A Capability Exchange** — Implement a "Handshake" where agents describe their tools to each other via A2A.
+3. **Dashboard Polish** — Ensure the 69 pages show live state from the Go sidecar when TS is unavailable.
 
 ### Medium priority (P2)
-1. Port the `A2ALogger` to Go.
-2. Implement an A2A "Capability Exchange" where agents advertise their specialized tools to each other.
+1. Port the `PairOrchestrator` to Go.
+2. Implement an A2A "Task Queue" where agents can pull work when idle.

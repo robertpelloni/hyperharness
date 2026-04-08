@@ -163,8 +163,8 @@ export class ImportedSessionStore {
     }
 
     private writeTranscriptArchive(sessionId: string, input: ImportedSessionRecordInput): TranscriptArchiveInfo {
-        const subdir = path.join(input.transcriptHash.slice(0, 2), input.transcriptHash.slice(2, 4));
-        const archiveDir = path.join(this.archiveRoot, subdir);
+        // Flattened structure to avoid thousands of subdirectories
+        const archiveDir = path.join(this.archiveRoot, 'sessions');
         ensureDir(archiveDir);
 
         const transcriptFile = path.join(archiveDir, `${input.transcriptHash}.txt.gz`);

@@ -4,6 +4,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.0-alpha.21] - 2026-04-08
+
+### Changed
+- **Default Tool Visibility**: Standard library tools (bash, read, write, edit, grep, etc.) and Tool Parity Aliases are now `alwaysOn` by default. This ensures models like `pi` can see and use them immediately without a manual "load" turn.
+- **Flatter Session Archives**: Updated `ImportedSessionStore` to use a flatter directory structure for `.gz` files, preventing the creation of thousands of subdirectories in the `.hypercode` folder.
+- **Go A2A Parity**: Ported the `A2ALogger` to native Go, providing persistent auditing for signals routed through the sidecar.
+- **Capability Exchange**: Implemented an automated "Capability Exchange" pattern in the `A2ABroker`. Agents now broadcast their roles and capabilities (e.g., 'Frontier Architect', 'Web Researcher') when they join the pool.
+
+### Added
+- **High-Value Link Ingestor**: Implemented the `HighValueIngestor` service to perform deep semantic analysis and technical artifact extraction (MCP recipes, skills) for popular or curated external resources.
+
 ## [1.0.0-alpha.20] - 2026-04-08
 
 ### Added

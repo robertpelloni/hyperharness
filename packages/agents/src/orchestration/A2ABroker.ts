@@ -68,6 +68,16 @@ export class A2ABroker extends EventEmitter {
         client.onMessage((msg) => this.routeMessage(msg));
         
         this.emit('agent_registered', { id });
+
+        // Phase 105: Capability Exchange - request capabilities from new agent
+        void this.routeMessage({
+            id: `cap-req-${id}-${Date.now()}`,
+            timestamp: Date.now(),
+            sender: 'BROKER',
+            recipient: id,
+            type: A2AMessageType.STATE_UPDATE,
+            payload: { action: 'REPORT_CAPABILITIES' }
+        });
     }
 
     /**

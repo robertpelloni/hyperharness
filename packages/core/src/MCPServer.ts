@@ -3574,11 +3574,14 @@ ${env.tools.filter((tool) => tool.installed).map((tool) => `- **${tool.name}**: 
         // baseTools (standard lib) are now LATENT by default to keep context clean.
         // They must be explicitly enabled via "Always On" in the dashboard or discovered via search.
         const alwaysOnDownstreamTools = cachedAdvertisedDownstreamTools.filter(t => t.alwaysOn);
-        const alwaysOnBaseTools = baseTools.filter(t => (t as any).alwaysOn);
+        
+        // MODIFICATION: Standard Tools and Parity Aliases are now ALWAYS ON by default 
+        // to ensure immediate usefulness for tools like pi, claude code, etc.
+        const alwaysOnBaseTools = baseTools; 
 
         const allVisibleTools = [
             ...this.nativeSessionMetaTools.listToolDefinitions(),
-            ...getDirectModeCompatibilityTools().filter(t => (t as any).alwaysOn), // Filter compatibility tools too
+            ...getDirectModeCompatibilityTools(), // Compatibility tools are now always on too
             ...alwaysOnBaseTools,
             ...alwaysOnDownstreamTools,
             ...savedScriptTools.filter(t => (t as any).alwaysOn),

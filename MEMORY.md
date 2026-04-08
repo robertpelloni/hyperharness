@@ -108,4 +108,14 @@
 **Resolution**: Enhanced the Go Link Crawler with an LLM turn that explicitly looks for MCP servers, skills, and APIs.
 **Implication**: Discovered links are now semantically enriched with their technical "capabilities," paving the way for auto-installing discovered MCP servers.
 
+### 23. A2A Request-Response Pattern (Added 2026-04-08)
+**Observation**: Simple broadcast signals are insufficient for negotiation or state lookups between agents.
+**Resolution**: Implemented the `query` pattern in `A2ABroker`. By using `replyTo` matching and local promise maps, agents can now perform asynchronous "RPC-over-A2A" calls with built-in timeouts.
+**Implication**: Agents can now ask other agents to perform sub-tasks or report their status without manual correlation logic in every agent class.
+
+### 24. A2A Auditability (Added 2026-04-08)
+**Observation**: Decentralized signaling makes it hard to understand why a swarm decision was made.
+**Resolution**: Implemented `A2ALogger` in TS and Go. Every message routed through the broker is now appended to a persistent JSONL log. These logs are also bundled into session archives by `MemoryArchiver`.
+**Implication**: Operators can now perform post-mortem analysis on agent coordination by inspecting the signal traffic logs.
+
 *Update this file whenever a major systemic pattern, recurring bug, or deep architectural quirk is discovered.*
