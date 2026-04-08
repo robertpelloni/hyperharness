@@ -1,6 +1,6 @@
 {
     "name": "hypercode-monorepo",
-    "version": "1.0.0-alpha.6",
+    "version": "1.0.0-alpha.8",
     "private": true,
     "packageManager": "pnpm@10.28.0",
     "scripts": {
