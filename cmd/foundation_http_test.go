@@ -112,7 +112,7 @@ func TestFoundationAdaptersPayloadAndRepomap(t *testing.T) {
 		t.Fatalf("unexpected adapter payload: %#v", payload)
 	}
 	setMCPEnv(t, cwd)
-	hypercodeDir := filepath.Join(cwd, ".hypercode")
+	hypercodeDir = filepath.Join(cwd, ".hypercode")
 	if err := os.MkdirAll(hypercodeDir, 0o755); err != nil {
 		t.Fatal(err)
 	}

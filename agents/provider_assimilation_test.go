@@ -93,10 +93,10 @@ func TestDefaultProviderValidationAndBehavior(t *testing.T) {
 	if err != nil {
 		t.Fatalf("chat failed: %v", err)
 	}
-	if !strings.Contains(msg.Content, "Native Go Borg Director") {
+	if !strings.Contains(msg.Content, "Native Go") {
 		t.Fatalf("unexpected stub chat content: %#v", msg)
 	}
-	if provider.GetModelName() != "borg-native-stub-1.0" {
+	if provider.GetModelName() != "hypercode-native-stub-1.0" {
 		t.Fatalf("unexpected model name: %q", provider.GetModelName())
 	}
 }

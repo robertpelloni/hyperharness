@@ -3,6 +3,7 @@ package pi
 import (
 	"context"
 	"encoding/json"
+	"io"
 	"os"
 	"path/filepath"
 	"testing"
@@ -140,13 +141,16 @@ func TestResolveOrDefaultPath(t *testing.T) {
 	}{
 		{"/home/user", ".", "/home/user"},
 		{"/home/user", "subdir", "/home/user/subdir"},
-		{"/home/user", "/abs/path", "/abs/path"},
 		{"/home/user", "../parent", "/home/parent"},
 	}
 
+	if filepath.IsAbs("/abs/path") {
+		tests = append(tests, struct{ cwd, path, expected string }{"/home/user", "/abs/path", "/abs/path"})
+	}
+
 	for _, tc := range tests {
-		result := resolveOrDefaultPath(tc.cwd, tc.path)
-		expected := filepath.Clean(tc.expected)
+		result := filepath.ToSlash(resolveOrDefaultPath(tc.cwd, tc.path))
+		expected := filepath.ToSlash(filepath.Clean(tc.expected))
 		if result != expected {
 			t.Errorf("resolveOrDefaultPath(%q, %q) = %q, want %q", tc.cwd, tc.path, result, expected)
 		}
@@ -281,15 +285,22 @@ func TestLsWithNativeEmptyDir(t *testing.T) {
 }
 
 // Helper type for string-based io.Reader
-type stringReaderImpl string
-
-func (s stringReaderImpl) Read(p []byte) (n int, err error) {
-	copy(p, s)
-	return len(s), nil
+type stringReaderImpl struct {
+	data []byte
+	pos  int
 }
 
-func stringReader(s string) stringReaderImpl {
-	return stringReaderImpl(s)
+func (s *stringReaderImpl) Read(p []byte) (n int, err error) {
+	if s.pos >= len(s.data) {
+		return 0, io.EOF
+	}
+	n = copy(p, s.data[s.pos:])
+	s.pos += n
+	return n, nil
+}
+
+func stringReader(str string) *stringReaderImpl {
+	return &stringReaderImpl{data: []byte(str)}
 }
 
 func containsAll(s string, substrs ...string) bool {
