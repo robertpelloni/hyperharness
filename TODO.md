@@ -1,0 +1,91 @@
+# HyperHarness TODO
+
+## Immediate (Next Session)
+
+### Deep Tool Wiring
+- [ ] Wire `TodoWrite` tool to session-level state persistence
+- [ ] Wire `Agent` tool to actual `internal/subagents` Manager
+- [ ] Wire `LSP` tool to gopls/other language servers via stdio
+- [ ] Wire `WebSearch` to Exa or Brave Search API
+- [ ] Wire `WebFetch` to actual HTTP client
+- [ ] Wire `PowerShell` to actual PowerShell execution on Windows
+- [ ] Wire `Config` tool to actual `internal/config` Manager
+- [ ] Wire `Skill` tool to actual `internal/skills` Manager
+- [ ] Wire `platform__manage_schedule` to actual cron system
+
+### MCP Deep Integration
+- [ ] Implement actual stdio transport for MCP server connections
+- [ ] Add SSE transport support
+- [ ] Tool discovery from connected MCP servers
+- [ ] Bidirectional routing (expose internal tools via MCP server)
+- [ ] Smithery registry API integration
+
+### Memory System Enhancement
+- [ ] SQLite backend with FTS5 for knowledge base
+- [ ] Vector embeddings for semantic search
+- [ ] Memory decay weighting (older = less relevant)
+- [ ] Project-scoped memory isolation
+- [ ] Memory export/import
+
+### Tests
+- [ ] Integration test: full agent loop with mock provider
+- [ ] Integration test: tool execution through Harness.ExecuteTool()
+- [ ] Integration test: MCP server connection lifecycle
+- [ ] Benchmark: tool dispatch latency
+- [ ] Benchmark: memory search performance
+- [ ] Fuzz test: tool parameter parsing
+
+## Short Term
+
+### Bug Fixes & Robustness
+- [ ] Fix `foundation/pi` TestLineScanner potential timeout
+- [ ] Fix `rpc` TestServerMultipleClients race condition
+- [ ] Handle Windows path separators consistently across all tools
+- [ ] Add error recovery for crashed MCP server processes
+- [ ] Add graceful context cancellation in agent loop
+
+### Code Quality
+- [ ] Add inline documentation to all tool Execute functions
+- [ ] Add godoc comments to all exported types
+- [ ] Refactor duplicate helper functions across parity files
+- [ ] Consolidate truncateString, getStr, getInt into shared package
+- [ ] Add input validation to all tool parameters
+
+### Feature Parity Gaps
+- [ ] OpenCode `plan_enter`/`plan_exit` — wire to actual planning mode
+- [ ] Crush `batch` — wire to actual parallel tool execution
+- [ ] Crush `delegate` — wire to actual subagent delegation
+- [ ] Crush `job_*` — wire to actual background process management
+- [ ] Smithery `smithery_install` — wire to actual registry API
+- [ ] Hypercode `context_manager` — wire to actual context compaction
+
+## Medium Term
+
+### Architecture
+- [ ] Plugin system for custom tool providers
+- [ ] Event bus for inter-subsystem communication
+- [ ] Middleware chain for tool execution (pre/post hooks)
+- [ ] Rate limiting per provider
+- [ ] Circuit breaker for failing providers
+- [ ] Retry with exponential backoff
+
+### UI
+- [ ] Full TUI with bubbletea
+- [ ] Syntax-highlighted tool output
+- [ ] Session tree visualization
+- [ ] Model selector UI
+- [ ] Token/cost tracking footer
+- [ ] Real-time streaming display
+
+### Performance
+- [ ] Memory-mapped JSONL reading for large sessions
+- [ ] Concurrent tool execution for independent calls
+- [ ] Context window pre-compaction
+- [ ] Tool result caching
+- [ ] Connection pooling for LLM providers
+
+## Ongoing
+- [ ] Keep tool parity up to date with upstream harnesses
+- [ ] Monitor new harness releases for new tool surfaces
+- [ ] Maintain test coverage above 80%
+- [ ] Keep documentation synchronized with code
