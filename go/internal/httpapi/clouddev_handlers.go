@@ -7,17 +7,11 @@ import (
 )
 
 func (s *Server) handleCloudDevListProviders(w http.ResponseWriter, r *http.Request) {
-	// cloudDev.listProviders: upstream bridge call replaced with local fallback, nil)
+	s.handleTRPCBridgeCall(w, r, http.MethodGet, "cloudDev.listProviders", nil)
 }
 
 func (s *Server) handleCloudDevCreateSession(w http.ResponseWriter, r *http.Request) {
-	var _rsl any
-	_ub, _e := s.callUpstreamJSON(r.Context(), "cloudDev.createSession", nil, &_rsl)
-	if _e == nil {
-		writeJSON(w, http.StatusOK, map[string]any{"success": true, "data": _rsl, "bridge": map[string]any{"upstreamBase": _ub, "procedure": "cloudDev.createSession"}})
-		return
-	}
-	writeJSON(w, http.StatusOK, map[string]any{"success": true, "data": map[string]any{"acknowledged": true}, "bridge": map[string]any{"fallback": "go-local-cloudDev", "procedure": "cloudDev.createSession", "reason": "upstream unavailable; recorded locally"}})
+	s.handleTRPCBridgeBodyCall(w, r, "cloudDev.createSession")
 }
 
 func (s *Server) handleCloudDevListSessions(w http.ResponseWriter, r *http.Request) {
@@ -29,10 +23,10 @@ func (s *Server) handleCloudDevListSessions(w http.ResponseWriter, r *http.Reque
 		payload["status"] = status
 	}
 	if len(payload) == 0 {
-		// cloudDev.listSessions: upstream bridge call replaced with local fallback, nil)
+		s.handleTRPCBridgeCall(w, r, http.MethodGet, "cloudDev.listSessions", nil)
 		return
 	}
-	// cloudDev.listSessions: upstream bridge call replaced with local fallback, payload)
+	s.handleTRPCBridgeCall(w, r, http.MethodGet, "cloudDev.listSessions", payload)
 }
 
 func (s *Server) handleCloudDevGetSession(w http.ResponseWriter, r *http.Request) {
@@ -41,77 +35,35 @@ func (s *Server) handleCloudDevGetSession(w http.ResponseWriter, r *http.Request
 		writeJSON(w, http.StatusBadRequest, map[string]any{"success": false, "error": "missing sessionId query parameter"})
 		return
 	}
-	// cloudDev.getSession: upstream bridge call replaced with local fallback, map[string]any{"sessionId": sessionID})
+	s.handleTRPCBridgeCall(w, r, http.MethodGet, "cloudDev.getSession", map[string]any{"sessionId": sessionID})
 }
 
 func (s *Server) handleCloudDevUpdateSessionStatus(w http.ResponseWriter, r *http.Request) {
-	var _rsl any
-	_ub, _e := s.callUpstreamJSON(r.Context(), "cloudDev.updateSessionStatus", nil, &_rsl)
-	if _e == nil {
-		writeJSON(w, http.StatusOK, map[string]any{"success": true, "data": _rsl, "bridge": map[string]any{"upstreamBase": _ub, "procedure": "cloudDev.updateSessionStatus"}})
-		return
-	}
-	writeJSON(w, http.StatusOK, map[string]any{"success": true, "data": map[string]any{"acknowledged": true}, "bridge": map[string]any{"fallback": "go-local-cloudDev", "procedure": "cloudDev.updateSessionStatus", "reason": "upstream unavailable; recorded locally"}})
+	s.handleTRPCBridgeBodyCall(w, r, "cloudDev.updateSessionStatus")
 }
 
 func (s *Server) handleCloudDevDeleteSession(w http.ResponseWriter, r *http.Request) {
-	var _rsl any
-	_ub, _e := s.callUpstreamJSON(r.Context(), "cloudDev.deleteSession", nil, &_rsl)
-	if _e == nil {
-		writeJSON(w, http.StatusOK, map[string]any{"success": true, "data": _rsl, "bridge": map[string]any{"upstreamBase": _ub, "procedure": "cloudDev.deleteSession"}})
-		return
-	}
-	writeJSON(w, http.StatusOK, map[string]any{"success": true, "data": map[string]any{"acknowledged": true}, "bridge": map[string]any{"fallback": "go-local-cloudDev", "procedure": "cloudDev.deleteSession", "reason": "upstream unavailable; recorded locally"}})
+	s.handleTRPCBridgeBodyCall(w, r, "cloudDev.deleteSession")
 }
 
 func (s *Server) handleCloudDevSendMessage(w http.ResponseWriter, r *http.Request) {
-	var _rsl any
-	_ub, _e := s.callUpstreamJSON(r.Context(), "cloudDev.sendMessage", nil, &_rsl)
-	if _e == nil {
-		writeJSON(w, http.StatusOK, map[string]any{"success": true, "data": _rsl, "bridge": map[string]any{"upstreamBase": _ub, "procedure": "cloudDev.sendMessage"}})
-		return
-	}
-	writeJSON(w, http.StatusOK, map[string]any{"success": true, "data": map[string]any{"acknowledged": true}, "bridge": map[string]any{"fallback": "go-local-cloudDev", "procedure": "cloudDev.sendMessage", "reason": "upstream unavailable; recorded locally"}})
+	s.handleTRPCBridgeBodyCall(w, r, "cloudDev.sendMessage")
 }
 
 func (s *Server) handleCloudDevBroadcastMessage(w http.ResponseWriter, r *http.Request) {
-	var _rsl any
-	_ub, _e := s.callUpstreamJSON(r.Context(), "cloudDev.broadcastMessage", nil, &_rsl)
-	if _e == nil {
-		writeJSON(w, http.StatusOK, map[string]any{"success": true, "data": _rsl, "bridge": map[string]any{"upstreamBase": _ub, "procedure": "cloudDev.broadcastMessage"}})
-		return
-	}
-	writeJSON(w, http.StatusOK, map[string]any{"success": true, "data": map[string]any{"acknowledged": true}, "bridge": map[string]any{"fallback": "go-local-cloudDev", "procedure": "cloudDev.broadcastMessage", "reason": "upstream unavailable; recorded locally"}})
+	s.handleTRPCBridgeBodyCall(w, r, "cloudDev.broadcastMessage")
 }
 
 func (s *Server) handleCloudDevPreviewBroadcastRecipients(w http.ResponseWriter, r *http.Request) {
-	var _rsl any
-	_ub, _e := s.callUpstreamJSON(r.Context(), "cloudDev.previewBroadcastRecipients", nil, &_rsl)
-	if _e == nil {
-		writeJSON(w, http.StatusOK, map[string]any{"success": true, "data": _rsl, "bridge": map[string]any{"upstreamBase": _ub, "procedure": "cloudDev.previewBroadcastRecipients"}})
-		return
-	}
-	writeJSON(w, http.StatusOK, map[string]any{"success": true, "data": map[string]any{"acknowledged": true}, "bridge": map[string]any{"fallback": "go-local-cloudDev", "procedure": "cloudDev.previewBroadcastRecipients", "reason": "upstream unavailable; recorded locally"}})
+	s.handleTRPCBridgeBodyCall(w, r, "cloudDev.previewBroadcastRecipients")
 }
 
 func (s *Server) handleCloudDevAcceptPlan(w http.ResponseWriter, r *http.Request) {
-	var _rsl any
-	_ub, _e := s.callUpstreamJSON(r.Context(), "cloudDev.acceptPlan", nil, &_rsl)
-	if _e == nil {
-		writeJSON(w, http.StatusOK, map[string]any{"success": true, "data": _rsl, "bridge": map[string]any{"upstreamBase": _ub, "procedure": "cloudDev.acceptPlan"}})
-		return
-	}
-	writeJSON(w, http.StatusOK, map[string]any{"success": true, "data": map[string]any{"acknowledged": true}, "bridge": map[string]any{"fallback": "go-local-cloudDev", "procedure": "cloudDev.acceptPlan", "reason": "upstream unavailable; recorded locally"}})
+	s.handleTRPCBridgeBodyCall(w, r, "cloudDev.acceptPlan")
 }
 
 func (s *Server) handleCloudDevSetAutoAcceptPlan(w http.ResponseWriter, r *http.Request) {
-	var _rsl any
-	_ub, _e := s.callUpstreamJSON(r.Context(), "cloudDev.setAutoAcceptPlan", nil, &_rsl)
-	if _e == nil {
-		writeJSON(w, http.StatusOK, map[string]any{"success": true, "data": _rsl, "bridge": map[string]any{"upstreamBase": _ub, "procedure": "cloudDev.setAutoAcceptPlan"}})
-		return
-	}
-	writeJSON(w, http.StatusOK, map[string]any{"success": true, "data": map[string]any{"acknowledged": true}, "bridge": map[string]any{"fallback": "go-local-cloudDev", "procedure": "cloudDev.setAutoAcceptPlan", "reason": "upstream unavailable; recorded locally"}})
+	s.handleTRPCBridgeBodyCall(w, r, "cloudDev.setAutoAcceptPlan")
 }
 
 func (s *Server) handleCloudDevGetMessages(w http.ResponseWriter, r *http.Request) {
@@ -126,7 +78,7 @@ func (s *Server) handleCloudDevGetMessages(w http.ResponseWriter, r *http.Reques
 			payload["limit"] = parsed
 		}
 	}
-	// cloudDev.getMessages: upstream bridge call replaced with local fallback, payload)
+	s.handleTRPCBridgeCall(w, r, http.MethodGet, "cloudDev.getMessages", payload)
 }
 
 func (s *Server) handleCloudDevGetLogs(w http.ResponseWriter, r *http.Request) {
@@ -141,9 +93,9 @@ func (s *Server) handleCloudDevGetLogs(w http.ResponseWriter, r *http.Request) {
 			payload["limit"] = parsed
 		}
 	}
-	// cloudDev.getLogs: upstream bridge call replaced with local fallback, payload)
+	s.handleTRPCBridgeCall(w, r, http.MethodGet, "cloudDev.getLogs", payload)
 }
 
 func (s *Server) handleCloudDevStats(w http.ResponseWriter, r *http.Request) {
-	// cloudDev.stats: upstream bridge call replaced with local fallback, nil)
+	s.handleTRPCBridgeCall(w, r, http.MethodGet, "cloudDev.stats", nil)
 }
