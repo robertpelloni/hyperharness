@@ -37,4 +37,25 @@
 **Observation**: The project uses git worktrees with the submodule structure at `.git/modules/hypercode`. The actual working directory (`hypercode-push`) can become detached from `main`.
 **Resolution**: Manually update the worktree HEAD file to point to `refs/heads/main`. Don't try to use `git checkout main` across worktrees.
 
+### 9. Go Sidecar Version Injection (Added 2026-04-08)
+**Observation**: The Go binary had a hardcoded version `0.0.1-experimental` that was completely out of sync with the VERSION file.
+**Resolution**: `go/internal/buildinfo/buildinfo.go` now uses `var Version` (not `const`) injected at build time via `-ldflags "-X internal/buildinfo.Version=$VER"`. The build script `scripts/build-go.sh` reads from the VERSION file automatically.
+**Implication**: Always use `scripts/build-go.sh` or the ldflags pattern to build the Go binary. Never manually edit buildinfo.go.
+
+### 10. Submodule Stash Pop Conflicts (Added 2026-04-08)
+**Observation**: When updating submodules with `git merge origin/main` followed by `git stash pop`, merge conflicts appear in stash-applied files. Using `git checkout --ours` resolves to the merged main version, which is typically correct for our local changes.
+**Implication**: When submodules have both upstream updates and local stashed changes, merge upstream first, then pop stash, then resolve conflicts keeping HEAD (the merged result).
+
+### 11. Meta-Tool Decision System is Already Implemented (Added 2026-04-08)
+**Observation**: The MCP meta-tool decision system was listed as TODO but is actually fully implemented in `packages/core/src/mcp/`. It includes:
+- `NativeSessionMetaTools.ts` — 6 permanent meta-tools (search_tools, load_tool, get_tool_schema, list_loaded_tools, unload_tool, list_all_tools) plus auto_call_tool, search_published_catalog, install_published_server
+- `toolSearchRanking.ts` — Multi-signal scoring (exact name, prefix, token, semantic group, tags, description, server name) with profile boosting
+- `SessionToolWorkingSet.ts` — LRU + idle-first eviction with configurable caps (default 16 loaded, 8 hydrated)
+- Full tRPC endpoints: getWorkingSet, getWorkingSetEvictionHistory, getToolSelectionTelemetry, searchTools
+**Implication**: Do NOT re-implement. Focus on improving ranking quality, adding more profiles, and verifying the dashboard inspector shows all this data.
+
+### 12. Package.json Sync Script Pattern (Added 2026-04-08)
+**Observation**: There are 57 package.json files across the monorepo that all need version syncing. The inline Node.js script pattern (`node -e "const fs=..."`) is reliable for this.
+**Implication**: Every version bump should sync all 57 files. The script excludes node_modules, .git, archive, and submodules directories.
+
 *Update this file whenever a major systemic pattern, recurring bug, or deep architectural quirk is discovered.*

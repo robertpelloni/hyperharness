@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.0-alpha.10] - 2026-04-08
+
+### Changed
+- **Go Sidecar Version Sync**: `go/internal/buildinfo/buildinfo.go` now injects version from VERSION file at build time via `-ldflags`. Created `scripts/build-go.sh` for consistent builds.
+- **Submodule Pushes**: Pushed cloud-orchestrator, hyperharness, and claude-mem to their remotes. Merged hyperharness stash (borg→hypercode renames, foundation adapters).
+- **Documentation**: Updated HANDOFF.md, MEMORY.md (4 new observations), TODO.md. Verified meta-tool decision system is fully implemented (not just scaffolded).
+- **Build Verification**: Go binary compiles cleanly (18MB, 543 routes). TypeScript compiles cleanly. Doctor 11/11 checks pass.
+
 ## [1.0.0-alpha.9] - 2026-04-08
 
 ### Changed
