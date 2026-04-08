@@ -15,7 +15,30 @@ func (s *Server) handleCouncilUpdateMembers(w http.ResponseWriter, r *http.Reque
 }
 
 func (s *Server) handleCouncilSessionsList(w http.ResponseWriter, r *http.Request) {
-	s.handleTRPCBridgeCall(w, r, http.MethodGet, "council.sessions.list", nil)
+	var result any
+	upstreamBase, err := s.callUpstreamJSON(r.Context(), "council.sessions.list", nil, &result)
+	if err == nil {
+		writeJSON(w, http.StatusOK, map[string]any{
+			"success": true,
+			"data":    result,
+			"bridge": map[string]any{
+				"upstreamBase": upstreamBase,
+				"procedure":    "council.sessions.list",
+			},
+		})
+		return
+	}
+
+	sessions := s.supervisorManager.ListSessions()
+	writeJSON(w, http.StatusOK, map[string]any{
+		"success": true,
+		"data":    sessions,
+		"bridge": map[string]any{
+			"fallback":  "go-local-council",
+			"procedure": "council.sessions.list",
+			"reason":    "upstream unavailable; using native Go session supervisor manager",
+		},
+	})
 }
 
 func (s *Server) handleCouncilSessionsActive(w http.ResponseWriter, r *http.Request) {
@@ -23,7 +46,39 @@ func (s *Server) handleCouncilSessionsActive(w http.ResponseWriter, r *http.Requ
 }
 
 func (s *Server) handleCouncilSessionsStats(w http.ResponseWriter, r *http.Request) {
-	s.handleTRPCBridgeCall(w, r, http.MethodGet, "council.sessions.stats", nil)
+	var result any
+	upstreamBase, err := s.callUpstreamJSON(r.Context(), "council.sessions.stats", nil, &result)
+	if err == nil {
+		writeJSON(w, http.StatusOK, map[string]any{
+			"success": true,
+			"data":    result,
+			"bridge": map[string]any{
+				"upstreamBase": upstreamBase,
+				"procedure":    "council.sessions.stats",
+			},
+		})
+		return
+	}
+
+	sessions := s.supervisorManager.ListSessions()
+	activeCount := 0
+	for _, sess := range sessions {
+		if sess.State == "running" || sess.State == "starting" || sess.State == "restarting" {
+			activeCount++
+		}
+	}
+	writeJSON(w, http.StatusOK, map[string]any{
+		"success": true,
+		"data": map[string]any{
+			"total":  len(sessions),
+			"active": activeCount,
+		},
+		"bridge": map[string]any{
+			"fallback":  "go-local-council",
+			"procedure": "council.sessions.stats",
+			"reason":    "upstream unavailable; using native Go session supervisor manager stats",
+		},
+	})
 }
 
 func (s *Server) handleCouncilSessionsGet(w http.ResponseWriter, r *http.Request) {

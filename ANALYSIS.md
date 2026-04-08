@@ -493,3 +493,11 @@ pnpm -C apps/web run build
 3. Continue Go-native parity with the next operator-critical degraded-mode cluster after saved scripts.
    - likely next candidates: prompt-library parity, remaining dashboard mutation surfaces, or additional supervisor ownership gaps.
 4. Stage and commit only the validated slice; do not absorb unrelated dirty submodules or local runtime artifacts.
+
+### Deepened Go-Native Orchestration & Healer Fallbacks
+- Successfully ported the `healer` services (Diagnose, AutoHeal) to Go (`go/internal/hsync/healer.go`), backed by `ai.AutoRoute`.
+- Plumbed `healer.diagnose` and `healer.heal` through the Native Go HTTP APIs (`go/internal/httpapi/healer_handlers.go`), attempting the TS upstream bridge first and gracefully executing the Go native implementation when in degraded mode.
+- Deepened `council` fallback logic: `council.sessions.list` and `council.sessions.stats` now query the Go native `supervisorManager` directly if the TS bridge fails, avoiding hard crash walls in the UI.
+- Deepened `director.chat` fallback logic: if TS is dead, it drops down to `ai.AutoRoute` natively.
+- Resolved all Next.js dashboard route compatibility test failures related to startup provenance parsing by restoring the `normalizeStartupProvenance` logic inside `apps/web/src/lib/hypercode-runtime.ts` that was accidentally lost during a git reset.
+- Test suite passing beautifully (`34 passed` for the TRPC router compat layer). Go binary successfully compiling (`go build` success).
