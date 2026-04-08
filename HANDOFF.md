@@ -1,8 +1,8 @@
 # Handoff — Session 2026-04-08 (Extended)
 
-**Version:** `1.0.0-alpha.10`
+**Version:** `1.0.0-alpha.11`
 **Branch:** `main`
-**Commits this session:** 13 (alpha.8 → alpha.10)
+**Commits this session:** 16 (alpha.8 → alpha.11)
 
 ## Session Summary
 
@@ -27,10 +27,22 @@
 - Updated TODO.md to reflect completed items
 - Updated HANDOFF.md
 
-### Phase 4: Go Sidecar Version Sync (commit 8)
-- `go/internal/buildinfo/buildinfo.go` — version now injected via `-ldflags`
-- Created `scripts/build-go.sh` for consistent builds
-- `bin/hypercode.exe version` → `1.0.0-alpha.9`
+### Phase 5: Tool Parity Implementation (commits 9-11)
+- Created `packages/tools/src/ToolParityAliases.ts` — 30KB, 40+ tool aliases
+- Claude Code: Read, Write, Edit, MultiEdit, Bash, Glob, Grep, LS, WebFetch
+- Codex CLI: shell, apply_diff, create_file, view_file, list_directory, search_files
+- Gemini CLI: read_file, write_file, edit_file, list_directory, search
+- OpenCode/Pi: read, write, edit, bash, glob, grep, ls, web_fetch
+- Shared handlers with error handling, truncation, edge cases
+- `getParityToolsForHarness()` for per-harness tool selection
+- TypeScript compiles cleanly
+
+### Phase 6: Documentation Overhaul (commits 12-16)
+- Comprehensive ROADMAP.md update with 8 feature areas (A-H)
+- TODO.md updated with new priority items
+- MEMORY.md updated with 4 new observations (#9-#12)
+- HANDOFF.md updated with complete session history
+- CHANGELOG.md updated for alpha.10 and alpha.11
 
 ## Current state of the project
 
@@ -66,10 +78,12 @@
 - glama.ai returns HTML (adapter has fallback URLs but may still fail)
 - mcp.run adapter returns 404 (their API changed)
 - Dashboard has 69 pages — not all verified to show real data
+- Tool parity aliases not yet wired into MCP server tool surface
 - Browser extension scaffolded but not functional
 - Multi-model chatroom not implemented
 - A2A protocol not implemented
-- Tool parity with CLI harnesses (Claude Code, Codex, Gemini CLI) not yet complete
+- Supervisor tool prediction not implemented
+- Progressive skill disclosure not implemented
 
 ### Architecture overview
 ```
@@ -133,10 +147,12 @@ hypercode/
 3. Test MCP meta-tool search from the inspector page
 
 ### High priority (P1)
-1. **Tool parity implementation** — Study Claude Code, Codex, Gemini CLI tool signatures and implement clean-room equivalents
-2. **Session auto-detection** — Detect and import sessions from all AI harnesses
-3. **Browser extension** — Chrome/Firefox for MCP injection into web chats
-4. **Multi-model chatroom** — Shared context between rotating models
+1. **Wire tool parity into MCP surface** — Register ToolParityAliases as available MCP tools so models can call them
+2. **Supervisor tool prediction** — Watch conversation, preemptively inject tool ads
+3. **Session auto-detection** — Detect and import sessions from all AI harnesses
+4. **Browser extension** — Chrome/Firefox for MCP injection into web chats
+5. **Multi-model chatroom** — Shared context between rotating models
+6. **Progressive skill disclosure** — Apply same architecture as tool disclosure to skills
 
 ### Medium priority (P2)
 1. Dashboard polish — verify all 69 pages show real data
