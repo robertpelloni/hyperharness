@@ -4,6 +4,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.0-alpha.11] - 2026-04-08
+
+### Added
+- **Tool Parity Aliases**: Comprehensive clean-room implementations of tool signatures from Claude Code, Codex CLI, Gemini CLI, OpenCode, Pi, Cursor, and Windsurf. 40+ tool aliases across 4 harness-specific sets:
+  - Claude Code: Read, Write, Edit, MultiEdit, Bash, Glob, Grep, LS, WebFetch
+  - Codex CLI: shell, apply_diff, create_file, view_file, list_directory, search_files
+  - Gemini CLI: read_file, write_file, edit_file, list_directory, search
+  - OpenCode/Pi: read, write, edit, bash, glob, grep, ls, web_fetch
+  - Shared handlers for all tools with proper error handling, truncation, and edge cases
+  - Deduplication system that prefers first occurrence of each tool name
+
 ## [1.0.0-alpha.10] - 2026-04-08
 
 ### Changed
