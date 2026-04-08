@@ -169,7 +169,7 @@ func BackgroundWorker() {
 		for _, s := range autoSessions {
 			log.Printf("[AutoDrive] Spawning True Autonomy Engine native routine for Session: %s", s.ID)
 
-			provider := agents.NewGeminiHyperCodeProvider()
+			provider := agents.NewGeminiBorgProvider()
 			director := agents.NewDirector(provider)
 			engine := agents.NewAutoDrive(director)
 

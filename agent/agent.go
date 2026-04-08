@@ -7,7 +7,6 @@ import (
 	"os"
 	"strings"
 
-	"github.com/robertpelloni/hyperharness/borg"
 	"github.com/robertpelloni/hyperharness/foundation/adapters"
 	"github.com/robertpelloni/hyperharness/tools"
 	"github.com/sashabaranov/go-openai"
@@ -17,7 +16,6 @@ type Agent struct {
 	client       *openai.Client
 	messages     []openai.ChatCompletionMessage
 	tools        *tools.Registry
-	BorgAdapter  *borg.Adapter
 	HyperAdapter *adapters.HyperCodeAdapter
 }
 
@@ -28,7 +26,6 @@ func NewAgent() *Agent {
 	}
 
 	registry := tools.NewRegistry()
-	borgAdapter := borg.NewAdapter()
 	cwd, _ := os.Getwd()
 	hyperAdapter := adapters.NewHyperCodeAdapter(cwd)
 	systemPrompt := buildAgentSystemPrompt(hyperAdapter.BuildSystemContext())
@@ -42,7 +39,6 @@ func NewAgent() *Agent {
 			},
 		},
 		tools:        registry,
-		BorgAdapter:  borgAdapter,
 		HyperAdapter: hyperAdapter,
 	}
 }
