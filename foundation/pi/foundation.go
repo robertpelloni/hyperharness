@@ -3,7 +3,7 @@ package pi
 import (
 	"encoding/json"
 
-	"github.com/robertpelloni/hypercode/foundation/compat"
+	"github.com/robertpelloni/hyperharness/foundation/compat"
 )
 
 type ThinkingLevel string

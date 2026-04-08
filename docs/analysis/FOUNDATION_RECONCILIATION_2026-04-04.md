@@ -29,7 +29,7 @@ This is the right move because the existing foundation packages are already:
 
 ### Module path and dependency state
 - Restored the module path to the repo’s real import graph:
-  - `module github.com/robertpelloni/hypercode`
+  - `module github.com/robertpelloni/hyperharness`
 - Ran dependency reconciliation successfully.
 - Verified that the foundation packages build and test successfully.
 

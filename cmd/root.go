@@ -2,7 +2,7 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/robertpelloni/hypercode/tui"
+	"github.com/robertpelloni/hyperharness/tui"
 	"github.com/spf13/cobra"
 	"os"
 )

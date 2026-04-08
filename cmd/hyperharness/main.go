@@ -182,7 +182,6 @@ Usage examples:
 			}
 
 			// Create memory knowledge base
-			memCfg := cfg.Memory
 			kb, err := memory.NewKnowledgeBase("")
 			if err != nil {
 				return fmt.Errorf("memory error: %w", err)
@@ -192,7 +191,7 @@ Usage examples:
 			mcpReg := mcp.NewRegistry()
 
 			// Load MCP servers from config
-			mcpCfgPath := filepath.Join(cfg.ConfigDir(), "mcp.json")
+			mcpCfgPath := filepath.Join(config.ConfigDir(), "mcp.json")
 			if _, err := os.Stat(mcpCfgPath); err == nil {
 				if err := mcpReg.LoadFromFile(mcpCfgPath); err != nil {
 					fmt.Fprintf(os.Stderr, "Warning: failed to load MCP config: %v\n", err)
@@ -206,7 +205,7 @@ Usage examples:
 			builtinTools := tools.BuiltInTools
 			for name, creator := range builtinTools {
 				if cfg.IsEnabled(name) {
-					runtime.RegisterTool(creator(cwd))
+					runtime.RegisterTool(&toolWrapper{creator(cwd)})
 				}
 			}
 
@@ -225,12 +224,14 @@ Usage examples:
 
 			// Load AGENTS.md files
 			agentsFiles := config.FindAgentFiles()
+			var agencies []string
 			for _, f := range agentsFiles {
 				data, err := os.ReadFile(f)
 				if err == nil {
-					promptBuilder.WithAGENTS(append(promptBuilder.agencies, string(data)))
+					agencies = append(agencies, string(data))
 				}
 			}
+			promptBuilder.WithAGENTS(agencies)
 
 			// Add memory context
 			memoryCtx := kb.BuildContextForAgent(cwd, nil)
@@ -617,4 +618,28 @@ func getProviderAPIKey(t providers.ProviderType) string {
 func printVersion() {
 	fmt.Printf("hyperharness %s (commit: %s, built: %s, %s)\n",
 		Version, Commit, BuildDate, GoVersion)
+}
+
+type toolWrapper struct {
+	executor tools.ToolExecutor
+}
+
+func (w *toolWrapper) Name() string { return w.executor.Name() }
+func (w *toolWrapper) Description() string { return w.executor.Description() }
+func (w *toolWrapper) Parameters() map[string]interface{} { return w.executor.Parameters() }
+func (w *toolWrapper) Execute(ctx context.Context, args map[string]interface{}, signal context.Context) (agent.ToolResult, error) {
+	res, err := w.executor.Execute(ctx, args, signal)
+	if err != nil {
+		return agent.ToolResult{}, err
+	}
+	var content []providers.ContentBlock
+	for _, b := range res.Content {
+		content = append(content, providers.ContentBlock{
+			Type: b.Type,
+			Text: b.Text,
+		})
+	}
+	return agent.ToolResult{
+		Content: content,
+	}, nil
 }

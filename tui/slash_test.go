@@ -8,8 +8,8 @@ import (
 	"testing"
 
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/robertpelloni/hypercode/agents"
-	foundationpi "github.com/robertpelloni/hypercode/foundation/pi"
+	"github.com/robertpelloni/hyperharness/agents"
+	foundationpi "github.com/robertpelloni/hyperharness/foundation/pi"
 )
 
 func TestProcessSlashCommandPlanAndRepomap(t *testing.T) {

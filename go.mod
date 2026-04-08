@@ -1,4 +1,4 @@
-module github.com/robertpelloni/hypercode
+module github.com/robertpelloni/hyperharness
 
 go 1.24.2
 

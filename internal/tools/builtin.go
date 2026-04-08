@@ -23,9 +23,11 @@
 package tools
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 	"time"
@@ -287,20 +289,68 @@ func (t *BashTool) Execute(ctx context.Context, args map[string]interface{}, sig
 }
 
 func (t *BashTool) executeCommand(ctx context.Context, command string, timeout int) (ToolResult, error) {
+	commandCtx := ctx
 	if timeout > 0 {
 		var cancel context.CancelFunc
-		_, cancel = context.WithTimeout(ctx, time.Duration(timeout)*time.Second)
+		commandCtx, cancel = context.WithTimeout(ctx, time.Duration(timeout)*time.Second)
 		defer cancel()
 	}
 
-	// Use exec with bash -c
-	// This is handled through the os/exec package
-	// Implementation would use the full bash executor like Pi's createLocalBashOperations
+	var cmd *exec.Cmd
+	if isWindows() {
+		cmd = exec.CommandContext(commandCtx, "cmd", "/C", command)
+	} else {
+		cmd = exec.CommandContext(commandCtx, "bash", "-c", command)
+	}
+	cmd.Dir = t.cwd
 
-	// For now, we use a simple approach
-	return ToolResult{
-		ErrorOutput: "bash execution not yet fully implemented (requires child process spawning)",
-	}, fmt.Errorf("bash execution requires child process spawning implementation")
+	var stdout, stderr bytes.Buffer
+	cmd.Stdout = &stdout
+	cmd.Stderr = &stderr
+
+	err := cmd.Run()
+
+	combined := stdout.String() + stderr.String()
+	exitCode := 0
+	if err != nil {
+		if exitErr, ok := err.(*exec.ExitError); ok {
+			exitCode = exitErr.ExitCode()
+		} else if commandCtx.Err() == context.DeadlineExceeded {
+			combined += "\n\n[Command timed out]"
+			exitCode = 124
+		} else {
+			return ToolResult{ErrorOutput: err.Error()}, err
+		}
+	}
+
+	// Truncate output
+	output := combined
+	lines := strings.Split(output, "\n")
+	if len(lines) > t.maxLines {
+		output = strings.Join(lines[len(lines)-t.maxLines:], "\n")
+		output = fmt.Sprintf("... [truncated %d lines]\n%s", len(lines)-t.maxLines, output)
+	}
+	if int64(len(output)) > t.maxBytes {
+		output = output[int64(len(output))-t.maxBytes:]
+		output = "... [truncated by size]\n" + output
+	}
+
+	if output == "" {
+		output = "(no output)"
+	}
+
+	res := ToolResult{
+		Content: []Block{{Type: "text", Text: output}},
+	}
+	if exitCode != 0 {
+		res.ErrorOutput = fmt.Sprintf("Command exited with code %d", exitCode)
+	}
+
+	return res, nil
+}
+
+func isWindows() bool {
+	return os.PathSeparator == '\\'
 }
 
 // EditTool edits files with exact text replacement. Pi-exact parity.

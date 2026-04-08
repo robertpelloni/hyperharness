@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/robertpelloni/hypercode/agents"
-	"github.com/robertpelloni/hypercode/foundation/adapters"
-	foundationorchestration "github.com/robertpelloni/hypercode/foundation/orchestration"
-	foundationpi "github.com/robertpelloni/hypercode/foundation/pi"
+	"github.com/robertpelloni/hyperharness/agents"
+	"github.com/robertpelloni/hyperharness/foundation/adapters"
+	foundationorchestration "github.com/robertpelloni/hyperharness/foundation/orchestration"
+	foundationpi "github.com/robertpelloni/hyperharness/foundation/pi"
 )
 
 type PromptDisplayMsg struct {

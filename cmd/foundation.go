@@ -7,11 +7,11 @@ import (
 	"os"
 	"text/tabwriter"
 
-	"github.com/robertpelloni/hypercode/foundation/adapters"
-	"github.com/robertpelloni/hypercode/foundation/assimilation"
-	"github.com/robertpelloni/hypercode/foundation/compat"
-	foundationpi "github.com/robertpelloni/hypercode/foundation/pi"
-	"github.com/robertpelloni/hypercode/foundation/repomap"
+	"github.com/robertpelloni/hyperharness/foundation/adapters"
+	"github.com/robertpelloni/hyperharness/foundation/assimilation"
+	"github.com/robertpelloni/hyperharness/foundation/compat"
+	foundationpi "github.com/robertpelloni/hyperharness/foundation/pi"
+	"github.com/robertpelloni/hyperharness/foundation/repomap"
 	"github.com/spf13/cobra"
 )
 

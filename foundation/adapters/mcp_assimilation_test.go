@@ -74,7 +74,7 @@ func TestStartMCPServerUsesWorkingDir(t *testing.T) {
 	}
 	defer func() {
 		_ = cmd.Process.Kill()
-		_, _ = cmd.Process.Wait()
+		_ = cmd.Wait() // Use Wait to reap the process properly and close pipes
 	}()
 	if cmd.Dir == "" {
 		t.Fatal("expected working dir to be set")

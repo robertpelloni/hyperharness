@@ -61,6 +61,10 @@ func NewRegistry() *Registry {
 	r.registerCloudOrchestratorTools()
 	r.registerSystemTools()
 	r.registerLlamafileTools()
+	r.registerClaudeCodeTools()
+	r.registerComputerUseTools()
+	r.registerAiderTools()
+	registerAllParityTools(r)
 	return r
 }
 

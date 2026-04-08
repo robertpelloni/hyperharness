@@ -4,7 +4,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/robertpelloni/hypercode/agents"
+	"github.com/robertpelloni/hyperharness/agents"
 )
 
 func TestBuildPromptResponseIncludesFoundationRoute(t *testing.T) {

@@ -6,8 +6,8 @@ import (
 	"path/filepath"
 	"testing"
 
-	foundationpi "github.com/robertpelloni/hypercode/foundation/pi"
-	foundationrepomap "github.com/robertpelloni/hypercode/foundation/repomap"
+	foundationpi "github.com/robertpelloni/hyperharness/foundation/pi"
+	foundationrepomap "github.com/robertpelloni/hyperharness/foundation/repomap"
 )
 
 func TestExecuteFoundationToolAndSessions(t *testing.T) {

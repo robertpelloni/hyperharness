@@ -1,78 +1,22 @@
 package tools
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
-	"os"
 	"strings"
+
+	foundationpi "github.com/robertpelloni/hyperharness/foundation/pi"
 )
 
-// RefactorTool bridges Opencode parity with strict AST REPLACE blocks.
-type RefactorTool struct{}
+// registerAiderTools exposes exact parity with Aider's native tools.
+func (r *Registry) registerAiderTools() {
+	cwd := "."
 
-// ApplySearchReplace strictly enforces LLM blocks in the format:
-// <<<<<<< SEARCH
-// existing
-// =======
-// new
-// >>>>>>> REPLACE
-func (r *RefactorTool) ApplySearchReplace(filePath, searchBlock, replaceBlock string) error {
-	content, err := os.ReadFile(filePath)
-	if err != nil {
-		return fmt.Errorf("failed to read target: %w", err)
-	}
-
-	strContent := string(content)
-
-	if !strings.Contains(strContent, searchBlock) {
-		return fmt.Errorf("search block not found natively in file. LLM hallucinated context buffer.")
-	}
-
-	// Native atomic replacement
-	newContent := strings.Replace(strContent, searchBlock, replaceBlock, 1)
-
-	// Write back with strict permissions
-	err = os.WriteFile(filePath, []byte(newContent), 0644)
-	if err != nil {
-		return fmt.Errorf("failed atomic write application: %w", err)
-	}
-
-	fmt.Printf("[Opencode Parity] Block successfully mutated %s natively.\n", filePath)
-	return nil
-}
-
-// registerRefactoringTools binds the isolated Aider functionality to the core Native Engine.
-func (reg *Registry) registerRefactoringTools() {
-	reg.Tools = append(reg.Tools, Tool{
-		Name:        "apply_search_replace",
-		Description: "Opencode Parity: strict block-replacement AST refactoring.",
-		Parameters: json.RawMessage(`{
-			"type": "object",
-			"required": ["file_path", "search_block", "replace_block"],
-			"properties": {
-				"file_path": { "type": "string" },
-				"search_block": { "type": "string" },
-				"replace_block": { "type": "string" }
-			},
-			"additionalProperties": false
-		}`),
-		Execute: func(args map[string]interface{}) (string, error) {
-			path, _ := args["file_path"].(string)
-			search, _ := args["search_block"].(string)
-			replace, _ := args["replace_block"].(string)
-
-			rf := &RefactorTool{}
-			err := rf.ApplySearchReplace(path, search, replace)
-			if err != nil {
-				return "", err
-			}
-			return "File safely mutated natively.", nil
-		},
-	})
-
-	reg.Tools = append(reg.Tools, Tool{
+	// replace_lines (from editblock_func_coder.py)
+	r.Tools = append(r.Tools, Tool{
 		Name:        "replace_lines",
-		Description: "create or update one or more files (Aider exact parity)",
+		Description: "create or update one or more files",
 		Parameters: json.RawMessage(`{
 			"type": "object",
 			"required": ["explanation", "edits"],
@@ -116,6 +60,8 @@ func (reg *Registry) registerRefactoringTools() {
 			successCount := 0
 			var failures []string
 
+			runtime := foundationpi.NewRuntime(cwd, nil)
+
 			for i, eRaw := range editsRaw {
 				e, ok := eRaw.(map[string]interface{})
 				if !ok {
@@ -124,7 +70,7 @@ func (reg *Registry) registerRefactoringTools() {
 				}
 
 				path, _ := e["path"].(string)
-				
+
 				var originalLines []string
 				if origRaw, ok := e["original_lines"].([]interface{}); ok {
 					for _, o := range origRaw {
@@ -146,11 +92,24 @@ func (reg *Registry) registerRefactoringTools() {
 				originalBlock := strings.Join(originalLines, "\n")
 				updatedBlock := strings.Join(updatedLines, "\n")
 
-				rf := &RefactorTool{}
-				if err := rf.ApplySearchReplace(path, originalBlock, updatedBlock); err != nil {
+				piArgs := map[string]interface{}{
+					"path": path,
+					"edits": []map[string]interface{}{
+						{"oldText": originalBlock, "newText": updatedBlock},
+					},
+				}
+				raw, _ := json.Marshal(piArgs)
+				result, err := runtime.ExecuteTool(context.Background(), "", "edit", raw, nil)
+
+				if err != nil {
 					failures = append(failures, fmt.Errorf("edit %d on %s failed: %v", i, path, err).Error())
 				} else {
-					successCount++
+					// Check if result has ErrorOutput
+					if result.IsError {
+						failures = append(failures, fmt.Errorf("edit %d on %s failed: %v", i, path, formatFoundationToolResult(result)).Error())
+					} else {
+						successCount++
+					}
 				}
 			}
 
@@ -159,6 +118,47 @@ func (reg *Registry) registerRefactoringTools() {
 			}
 
 			return fmt.Sprintf("Successfully applied %d edits.", successCount), nil
+		},
+	})
+
+	// write_file (from single_wholefile_func_coder.py)
+	r.Tools = append(r.Tools, Tool{
+		Name:        "write_file",
+		Description: "write new content into the file",
+		Parameters: json.RawMessage(`{
+			"type": "object",
+			"properties": {
+				"explanation": {
+					"type": "string",
+					"description": "Step by step plan for the changes to be made to the code (future tense, markdown format)"
+				},
+				"content": {
+					"type": "string",
+					"description": "Content to write to the file"
+				},
+				"path": {
+					"type": "string",
+					"description": "Path to write to (added by hyperharness for multi-file support)"
+				}
+			},
+			"required": ["explanation", "content", "path"],
+			"additionalProperties": false
+		}`),
+		Execute: func(args map[string]interface{}) (string, error) {
+			path, ok := args["path"].(string)
+			if !ok {
+				return "", fmt.Errorf("path is required")
+			}
+			content, _ := args["content"].(string)
+
+			piArgs := map[string]interface{}{"path": path, "content": content}
+			raw, _ := json.Marshal(piArgs)
+			runtime := foundationpi.NewRuntime(cwd, nil)
+			result, err := runtime.ExecuteTool(context.Background(), "", "write", raw, nil)
+			if err != nil {
+				return "", err
+			}
+			return formatFoundationToolResult(result), nil
 		},
 	})
 }
