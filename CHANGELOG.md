@@ -79,3 +79,27 @@ Version numbers follow [Semantic Versioning](https://semver.org/).
 - **MCP Protocol**: Client/server implementation
 - **Security**: Permission manager with autonomy levels
 - **TUI**: Interactive REPL with slash commands
+
+## [0.3.0] - 2026-04-09
+
+### Added
+- LLM multi-provider routing (8 providers: OpenAI, Anthropic, Gemini, DeepSeek, OpenRouter, Groq, LMStudio, Ollama)
+- Provider catalog with status checking, health monitoring, and model selection
+- Swarm and subagent system prompts for multi-model orchestration
+- A2A message broker for inter-agent communication
+- Council multi-model deliberation with voting and consensus
+- PriorityQueue with LRU eviction, retry, cancellation, worker pool
+- TTL+LRU in-memory cache with singleton registry and events
+- EventBus with exact match, wildcard patterns, global listeners
+- Healer service with LLM-powered error diagnosis and auto-fix
+- Context harvester with semantic chunking, time decay, token budgets
+- Git service: full CLI wrapper (log, status, diff, blame, stash, branch, remote, init, clone)
+- Submodule management with concurrent update and structured reports
+- Tool detector: detects 30+ installed CLI harnesses with versions
+- Buildinfo: single source of truth for version (reads VERSION file)
+
+### Metrics
+- 509 tests across 33 packages
+- 8 LLM providers with auto-routing
+- 30+ CLI tool definitions for detection
+- 136+ unique tool surfaces across 15+ harnesses

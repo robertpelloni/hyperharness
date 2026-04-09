@@ -1,45 +1,23 @@
-# HyperHarness Memory - Session Observations
+# HyperHarness Memory System
 
-## Codebase Design Patterns
+## Architecture
+- **internal/memory/knowledge.go**: In-memory KnowledgeBase with CRUD, tagging, scoping
+- **internal/memory/sqlite_store.go**: SQLite FTS5 full-text search over memories
+- **tools/pi_exact_parity.go**: `memory_store`/`memory_search` tools wired to KnowledgeBase
+- **internal/ctxharvester/harvester.go**: Semantic chunking with time decay and token budgets
 
-### Tool Registration Pattern
-All tools use `(r *Registry) registerXxxTools()` methods with `r.Tools = append(r.Tools, Tool{...})`. 
-The dispatcher `registerAllParityTools(r)` in `tools/pi_exact_parity.go` calls all registration functions.
-New tool files must: 1) define a registration function, 2) add it to the dispatcher.
+## Key Insights
+- `sync.Once` for singleton KnowledgeBase (thread-safe lazy init)
+- FTS5 requires `glebarez/sqlite` (not `modernc`) due to orchestrator/database.go conflict
+- Build tag `!nosqlite` on sqlite_store.go and test for future flexibility
 
-### Type Naming Conflicts
-Multiple parity files define similar helper types. Solution: use harness-specific prefixes 
-(e.g., `ClaudeTodoItem` instead of `TodoItem` which exists in crush_parity.go).
+## Provider Routing
+- Priority: Anthropic > Gemini > OpenAI > DeepSeek > OpenRouter > Groq > LMStudio > Ollama
+- `llm.AutoRoute()` selects first with valid API key
+- `llm.AutoRouteWithModel()` allows model override
+- `providers.GetProvider("name")` for explicit provider selection
 
-### Platform Considerations
-- Windows: `filepath.IsAbs("/path")` returns false. Use `filepath.ToSlash()` for comparison in tests.
-- DiffPrettyText: Produces ANSI escape codes. Strip with regex `\x1b\[[0-9;]*m` for test comparison.
-- Go binary path: On this system, `PATH` must include `/c/Program Files/Go/bin` explicitly.
-
-### Test Infrastructure
-- 315 tests across 25 packages
-- Tests run with `go test -buildvcs=false ./... -count=1 -timeout 180s`
-- The `-buildvcs=false` flag is needed due to git submodule status issues
-
-### Go Module Dependencies
-- `github.com/sashabaranov/go-openai` — OpenAI client
-- `github.com/google/uuid` — UUID generation  
-- `github.com/spf13/cobra` — CLI framework
-- `github.com/sergi/go-diff/diffmatchpatch` — Diff algorithm
-- `github.com/mattn/go-sqlite3` — SQLite driver (for memory/knowledge)
-
-## Submodule Analysis
-
-### Has Unique Tool Surfaces (Ported)
-crush, gemini-cli, opencode, goose, kimi-cli, cursor, windsurf, copilot-cli, mistral-vibe, grok-cli, claude-code, smithery-cli, aider, pi-cli
-
-### No Unique Tool Surfaces (Skip)
-adrenaline, auggie, azure-ai-cli, bito-cli, byterover-cli, factory-cli, kilocode, qwen-code-cli, open-interpreter, rowboat, claude-code-templates
-
-### Infrastructure (Not Tools)
-dolt (database), ollama (model server), litellm (proxy), llamafile (runtime), llm-cli (CLI wrapper)
-
-## Build Observations
-- Total: ~28K lines Go production code, ~8K lines tests
-- Build time: ~10s for full project
-- Test time: ~80s (dominated by tools package at 60s)
+## Tool Surface Coverage
+- 136+ tools across: Claude Code (23), Crush (18), Pi (7+7), Gemini (7), OpenCode (14), Grok (6),
+  Goose (4), Kimi (14), Cursor (5), Windsurf (2), Mistral (2), Smithery (2), Advanced (14)
+- Foundation tools delegate to `foundation/pi/tools_native.go` for actual execution

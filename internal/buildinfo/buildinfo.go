@@ -13,7 +13,13 @@ import (
 
 // Version is set at build time via -ldflags.
 // Falls back to reading the VERSION file or "dev".
-var Version = readVersion()
+var Version = func() string {
+	v := readVersion()
+	if v == "dev" {
+		return v
+	}
+	return v
+}()
 
 // ProductName is the display name.
 const ProductName = "HyperHarness"
