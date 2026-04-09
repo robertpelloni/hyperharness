@@ -35,6 +35,9 @@ export class Handshake {
         const negotiationId = `neg-${Date.now()}`;
         const responses: CapabilityReport[] = [];
 
+        // Track in broker for UI visibility
+        a2aBroker.recordNegotiation(negotiationId, sender, task);
+
         // 1. Broadcast Negotiation Request
         await a2aBroker.routeMessage({
             id: negotiationId,
@@ -53,7 +56,9 @@ export class Handshake {
 
             const handleResponse = (msg: A2AMessage) => {
                 if (msg.replyTo === negotiationId && msg.type === A2AMessageType.CAPABILITY_REPORT) {
-                    responses.push(msg.payload as CapabilityReport);
+                    const bid = msg.payload as CapabilityReport;
+                    responses.push(bid);
+                    a2aBroker.recordBid(negotiationId, bid);
                 }
             };
 

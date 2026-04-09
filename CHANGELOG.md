@@ -4,6 +4,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://sumver.org/spec/v2.0.0.html).
 
+## [1.0.0-alpha.30] - 2026-04-08
+
+### Added
+- **A2A Handshake Manager**: Implemented a new dashboard page at `/dashboard/agents/negotiation` to monitor real-time agent bidding and task coordination cycles.
+- **Negotiation Tracking**: Updated the `A2ABroker` to persist active negotiation state and individual capability reports (bids) for observability.
+
+### Changed
+- **Truthful Expert Status (Go)**: Updated the Go sidecar to report actual native agent availability (e.g. `CoderAgent` status) instead of hardcoded "offline" placeholders.
+- **Swarm UI Polish**: Integrated specialized role highlights into the neural transcript and added navigation links for A2A logs and negotiations.
+
 ## [1.0.0-alpha.29] - 2026-04-08
 
 ### Added

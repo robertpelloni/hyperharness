@@ -188,4 +188,14 @@
 **Resolution**: Implemented the native Go Handshake logic, matching the TS protocol. The `CoderAgent` in Go now correctly responds to `TASK_NEGOTIATION` with a `CAPABILITY_REPORT`.
 **Implication**: The swarm controller can now transparently pick the best agent regardless of whether they are implemented in TypeScript or Go.
 
+### 39. Go Namespace Conflict Management (Added 2026-04-08)
+**Observation**: Go's package-based shadowing rules can cause built-in packages (like `encoding/json`) to become "undefined" if a local folder or variable with the same name is in scope.
+**Resolution**: Added an explicit import alias (`mcp_pkg`) when importing the internal MCP package in files that also use the `json` library.
+**Implication**: Prefer descriptive, aliased imports for internal Go packages to avoid collision with standard library names.
+
+### 40. Unified Knowledge Base Persistence (Added 2026-04-08)
+**Observation**: The system previously had a "split brain" knowledge base where only the Node server could persist discovered skills.
+**Resolution**: Fully integrated the Go native `SkillStore` with the `HighValueIngestor`. Discovered technical skills are now written directly to disk by the sidecar.
+**Implication**: Operational runbooks are now truly cross-runtime and persistent across control-plane restarts.
+
 *Update this file whenever a major systemic pattern, recurring bug, or deep architectural quirk is discovered.*

@@ -105,6 +105,13 @@ export const agentRouter = t.router({
     }),
 
     /**
+     * Get active A2A task negotiations.
+     */
+    getNegotiations: publicProcedure.query(() => {
+        return a2aBroker.getNegotiations();
+    }),
+
+    /**
      * Get recent A2A traffic logs from disk.
      */
     getA2ALogs: publicProcedure

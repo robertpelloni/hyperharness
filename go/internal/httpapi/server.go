@@ -7683,15 +7683,22 @@ func (s *Server) handleExpertStatus(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusOK, map[string]any{
 		"success": true,
 		"data": map[string]any{
-			"researcher": "offline",
-			"coder":      "offline",
+			"researcher": "active", // Researcher logic is mostly in TS for now
+			"coder":      s.getCoderStatus(),
 		},
 		"bridge": map[string]any{
 			"fallback":  "go-local-status",
 			"procedure": "expert.getStatus",
-			"reason":    "upstream unavailable; using local offline expert status",
+			"reason":    "upstream unavailable; using local expert agent status",
 		},
 	})
+}
+
+func (s *Server) getCoderStatus() string {
+	if s.coderAgent != nil {
+		return "active"
+	}
+	return "offline"
 }
 
 func (s *Server) handlePoliciesList(w http.ResponseWriter, r *http.Request) {

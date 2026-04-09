@@ -1,6 +1,6 @@
 {
   "name": "@hypercode/mcp-registry",
-  "version": "1.0.0-alpha.29",
+  "version": "1.0.0-alpha.30",
   "private": true,
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
