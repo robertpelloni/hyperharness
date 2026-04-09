@@ -1,16 +1,16 @@
 # Handoff — Session 2026-04-08 (Extended)
 
-**Version:** `1.0.0-alpha.22`
+**Version:** `1.0.0-alpha.23`
 **Branch:** `main`
-**Commits this session:** 36 (alpha.8 → alpha.22)
+**Commits this session:** 38 (alpha.8 → alpha.23)
 
 ## Session Summary
 
-### Phase 16: Go Auditing & A2A Multi-turn (commits 35-36)
-- **A2A Multi-turn Pattern**: Ported the `Query` pattern to the Go `A2ABroker`. Agents in Go can now perform request-response coordination with timeouts and correlation IDs.
-- **Go A2A Logger**: Ported the `A2ALogger` to Go, providing native persistent signal auditing in the sidecar.
-- **Agent Integration**: Updated `GeminiAgent`, `ClaudeAgent`, and `ResearcherAgent` to natively support the A2A heartbeat and register with the broker.
-- **Dashboard Message Center**: Added `A2AMessageComposer` to the dashboard for manual agent coordination.
+### Phase 17: Go A2A Parity & Build Stabilization (commits 37-38)
+- **Go Skill Store**: Implemented a Go-native `SkillStore` in `go/internal/harnesses/` to manage `.md` runbooks independently of the TypeScript registry.
+- **Go High-Value Ingestor**: Ported the `HighValueIngestor` to Go, enabling native technical analysis and artifact extraction for technical links.
+- **Build Resolution**: Fixed multiple system-wide `tsc` failures caused by missing type definitions, out-of-order package builds, and enum mismatches.
+- **A2A Correlation**: Wired the native Go `A2ALogger` to the sidecar broker and ported the request-response `Query` pattern to Go.
 
 ## Current state of the project
 
@@ -21,7 +21,7 @@
 - ✅ A2A Communication: Central broker (TS/Go) with Heartbeat, Multi-turn Querying, and Auditing.
 - ✅ Tool Visibility: Standard library tools and parity aliases are visible by default.
 - ✅ Session Archiver: ZIP-based history compression with LLM fact extraction and signal logging.
-- ✅ Go Sidecar: Native implementations for most core management features (Archiving, Swarm, A2A).
+- ✅ Go Sidecar: Native implementations for most core features including Skill Store and High-Value Ingestor.
 
 ### What's broken or incomplete
 - glama.ai returns HTML (adapter has fallback URLs but may still fail)
@@ -31,18 +31,16 @@
 ### Architecture overview
 ```
 hypercode/
-├── VERSION                    # Single source of truth (1.0.0-alpha.22)
-├── packages/core/             
-│   ├── src/services/A2ABroker.ts (MOVED TO AGENTS)
-├── packages/agents/           
-│   ├── src/orchestration/A2ABroker.ts (QUERY PATTERN)
-│   └── src/orchestration/A2ALogger.ts (WIRED)
-├── go/                        
+├── VERSION                    # Single source of truth (1.0.0-alpha.23)
+├── packages/agents/           # Agent orchestration & A2A logic
+│   ├── src/orchestration/A2ABroker.ts
+│   └── src/orchestration/A2ALogger.ts
+├── go/                        # Go-native server bridge
+│   ├── internal/harnesses/skill_store.go (NEW)
+│   ├── internal/hsync/high_value.go (UPDATED)
 │   ├── internal/orchestration/a2a_broker.go (QUERY PATTERN)
-│   ├── internal/orchestration/a2a_logger.go (NEW)
-│   └── internal/hsync/high_value.go (NATIVE PARITY)
-├── apps/web/                  
-│   └── src/components/agents/A2AMessageComposer.tsx (Wired)
+│   └── internal/orchestration/a2a_logger.go
+├── apps/web/                  # Next.js dashboard
 └── bin/hypercode.exe          # Compiled Go binary
 ```
 
@@ -52,14 +50,14 @@ hypercode/
 ## Recommendations for next agent
 
 ### Immediate (P0)
-1. Start the server and verify that A2A messages appear in the `.hypercode/logs/a2a_traffic.jsonl` file.
-2. Test the A2A `query` pattern by making one agent ask another for their role.
+1. Start the server and verify that Go-native skills can be listed via `/api/skills`.
+2. Test the High-Value Ingestor by triggering a deep dive from the dashboard.
 
 ### High priority (P1)
-1. **Model Specialization** — Refine the system prompts for the specific swarm roles (Planner, Implementer, Tester, Critic).
-2. **Dashboard Polish** — Go through the 69 pages and ensure real data is flowing to each from both TS and Go.
+1. **Model Specialization** — Refine the system prompts for the specific swarm roles.
+2. **Dashboard Polish** — Go through the 69 pages and ensure real data is flowing.
 3. **Provider Expansion** — Add more specific free-tier models to the fallback chain.
 
 ### Medium priority (P2)
-1. Port the `HighValueIngestor` to Go (started but needs refinement).
-2. Implement an A2A "Handshake" where agents negotiate resource access before starting a task.
+1. Implement an A2A "Handshake" where agents negotiate resource access.
+2. Port more TS reactors to Go.

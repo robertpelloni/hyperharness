@@ -4,6 +4,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://sumver.org/spec/v2.0.0.html).
 
+## [1.0.0-alpha.25] - 2026-04-08
+
+### Added
+- **Swarm Neural Transcript**: Added a live visualization tab to the Swarm dashboard, showing the collaborative transcript of model team interactions in real-time.
+- **Go MCP Config Manager**: Implemented a native Go `ConfigManager` for reading, writing, and synchronizing `mcp.jsonc` server definitions.
+- **Go A2A Negotiation**: Integrated the A2A `Query` pattern into the native Go `Director`, allowing the sidecar to negotiate task handoffs between local agents before starting work.
+
+### Changed
+- **Go Directory Parity**: Wired the native Go `ConfigManager` into the `/api/mcp/servers/configured` endpoint.
+- **A2A Dashboard Integration**: Added the `getSwarmTranscript` tRPC endpoint.
+
 ## [1.0.0-alpha.23] - 2026-04-08
 
 ### Fixed

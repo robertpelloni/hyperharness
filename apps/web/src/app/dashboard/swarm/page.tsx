@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { PageHeader } from '@/components/PageHeader';
 import { PageStatusBanner } from '@/components/PageStatusBanner';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, Button, Input, Textarea } from '@hypercode/ui';
+import { SwarmTranscript } from '@/components/swarm/SwarmTranscript';
 import { trpc } from '@/utils/trpc';
 import {
     Users as UsersIcon,
@@ -476,6 +477,13 @@ export default function SwarmDashboard() {
                 >
                     <RadioIcon className={`w-4 h-4 mr-2 ${streamStatus === 'online' ? 'animate-pulse text-cyan-400' : ''}`} /> Telemetry
                 </Button>
+                <Button
+                    variant={activeTab === 'transcript' ? 'default' : 'ghost'}
+                    className={activeTab === 'transcript' ? 'bg-cyan-600' : 'text-slate-400'}
+                    onClick={() => setActiveTab('transcript')}
+                >
+                    <ActivityIcon className="w-4 h-4 mr-2" /> Neural Transcript
+                </Button>
             </div>
 
             <div className="flex-1 min-h-0">
@@ -773,6 +781,19 @@ export default function SwarmDashboard() {
                                     </div>
                                 </CardContent>
                             </Card>
+                        </motion.div>
+                    )}
+
+                    {/* TRANSCRIPT PANEL */}
+                    {activeTab === 'transcript' && (
+                        <motion.div
+                            key="transcript"
+                            initial={{ opacity: 0, scale: 0.98 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 0.98 }}
+                            className="h-full"
+                        >
+                            <SwarmTranscript />
                         </motion.div>
                     )}
 

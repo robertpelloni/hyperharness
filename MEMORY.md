@@ -138,4 +138,14 @@
 **Resolution**: Ported `A2ALogger` to Go. It now captures every signal routed through the native broker in a JSONL format.
 **Implication**: Full observability of agent coordination is now maintained even when the TypeScript control plane is inactive.
 
+### 29. Go Native Skill Management (Added 2026-04-08)
+**Observation**: The Go sidecar previously relied on the Node server to list and save skills, creating a dependency for "Total Autonomy".
+**Resolution**: Implemented `SkillStore` in Go. It natively reads and writes `.md` runbooks with frontmatter metadata in the `.hypercode/skills` directory.
+**Implication**: The Go sidecar can now independently manage the system's operational knowledge base.
+
+### 30. Monorepo Build Sequencing (Added 2026-04-08)
+**Observation**: Changes to foundational packages (like `adk` or `agents`) often fail to propagate to consumers (like `core`) due to missing builds or type definition staleness.
+**Resolution**: Ensure a full topological build (ADK -> Agents -> Core -> CLI) when introducing new protocol members or cross-package exports.
+**Implication**: Developers should use a workspace-wide build command or script to maintain environment sanity after structural changes.
+
 *Update this file whenever a major systemic pattern, recurring bug, or deep architectural quirk is discovered.*

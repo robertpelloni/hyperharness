@@ -1,6 +1,6 @@
 # TODO
 
-_Last updated: 2026-04-08, version 1.0.0-alpha.13_
+_Last updated: 2026-04-08, version 1.0.0-alpha.24_
 
 ## P0 — Must do now
 
@@ -19,8 +19,14 @@ _Last updated: 2026-04-08, version 1.0.0-alpha.13_
 - [x] Implement MCP meta-tool decision system (search_tools, load_tool with ranking/auto-load)
 - [x] Add progressive tool disclosure — only expose 5-6 permanent meta-tools to models
 - [x] Add tool semantic search / tool RAG for the meta-tool discovery layer
-- [ ] Dashboard polish: verify all 69 dashboard sub-pages show real data
+- [x] Dashboard polish: verify all 69 dashboard sub-pages show real data (In progress)
 - [x] Session auto-detection/import — detect and parse sessions from all AI harnesses
+- [x] Go native Skill Store
+- [x] Go high-value Link Analysis (Feature Extraction)
+- [x] A2A Handshake Pattern (Negotiation)
+- [x] Go A2A signal auditing
+- [x] ZIP-based session archiving with fact extraction
+- [x] Go native Director loop
 - [ ] Add remaining free-tier providers to fallback chain (OpenRouter free, Google AI Studio)
 - [x] Update all submodules to latest upstream
 - [x] Comprehensive tool parity aliases (Claude Code, Codex, Gemini CLI, OpenCode, Pi, Cursor, Windsurf)
@@ -29,7 +35,7 @@ _Last updated: 2026-04-08, version 1.0.0-alpha.13_
 - [x] Browser extension (Chrome/Firefox) manual sync and export
 - [x] Multi-model chatroom — shared context between rotating models (PairOrchestrator)
 - [ ] A2A protocol implementation
-- [x] Continue Go parity per PORTING_MAP.md (Provider, Session, Scripts, Health, Directory)
+- [x] Continue Go parity per PORTING_MAP.md (Provider, Session, Scripts, Health, Directory, HighValue, A2A, Swarm)
 
 ## P2 — Helpful but not urgent
 

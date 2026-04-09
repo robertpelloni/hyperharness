@@ -20,14 +20,16 @@ import (
 type A2AMessageType string
 
 const (
-	TaskRequest     A2AMessageType = "TASK_REQUEST"
-	TaskResponse    A2AMessageType = "TASK_RESPONSE"
-	ConsensusVote   A2AMessageType = "CONSENSUS_VOTE"
-	StateUpdate     A2AMessageType = "STATE_UPDATE"
-	Handoff         A2AMessageType = "HANDOFF"
-	DebateProposal  A2AMessageType = "DEBATE_PROPOSAL"
-	Critique        A2AMessageType = "CRITIQUE"
-	Heartbeat       A2AMessageType = "HEARTBEAT"
+	TaskRequest      A2AMessageType = "TASK_REQUEST"
+	TaskResponse     A2AMessageType = "TASK_RESPONSE"
+	TaskNegotiation  A2AMessageType = "TASK_NEGOTIATION"
+	CapabilityReport A2AMessageType = "CAPABILITY_REPORT"
+	ConsensusVote    A2AMessageType = "CONSENSUS_VOTE"
+	StateUpdate      A2AMessageType = "STATE_UPDATE"
+	Handoff          A2AMessageType = "HANDOFF"
+	DebateProposal   A2AMessageType = "DEBATE_PROPOSAL"
+	Critique         A2AMessageType = "CRITIQUE"
+	Heartbeat        A2AMessageType = "HEARTBEAT"
 )
 
 type A2AMessage struct {
