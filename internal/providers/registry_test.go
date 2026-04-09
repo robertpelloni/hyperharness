@@ -2,6 +2,7 @@ package providers
 
 import (
 	"encoding/json"
+	"os"
 	"testing"
 )
 
@@ -194,5 +195,104 @@ func TestContentBlock(t *testing.T) {
 	}
 	if decoded.Text != "Hello world" {
 		t.Errorf("text: %s", decoded.Text)
+	}
+}
+
+func TestCatalogEntries(t *testing.T) {
+	if len(Catalog) == 0 {
+		t.Error("catalog should have entries")
+	}
+	for _, entry := range Catalog {
+		if entry.Provider == "" {
+			t.Error("provider should have a name")
+		}
+		if entry.DefaultModel == "" {
+			t.Errorf("%s should have a default model", entry.Provider)
+		}
+	}
+}
+
+func TestFindProviderForModel(t *testing.T) {
+	p := FindProviderForModel("gpt-4o")
+	if p == nil {
+		t.Error("should find provider for gpt-4o")
+	}
+	if p.Provider != "openai" {
+		t.Errorf("expected openai, got %s", p.Provider)
+	}
+
+	p = FindProviderForModel("nonexistent-model")
+	if p != nil {
+		t.Error("should not find nonexistent model")
+	}
+}
+
+func TestFindCatalogModelInfo(t *testing.T) {
+	info := FindCatalogModelInfo("gpt-4o")
+	if info == nil {
+		t.Error("should find model info for gpt-4o")
+	}
+	if info.Speed != "medium" {
+		t.Errorf("gpt-4o speed should be medium, got %s", info.Speed)
+	}
+
+	info = FindCatalogModelInfo("claude-sonnet-4-20250514")
+	if info == nil {
+		t.Error("should find Claude Sonnet 4")
+	}
+}
+
+func TestStatusChecker(t *testing.T) {
+	sc := NewStatusChecker()
+	statuses := sc.CheckAll()
+	if len(statuses) == 0 {
+		t.Error("should have statuses")
+	}
+
+	for _, s := range statuses {
+		if s.Provider == "" {
+			t.Error("status should have provider name")
+		}
+	}
+}
+
+func TestStatusCheckerLocalProviders(t *testing.T) {
+	sc := NewStatusChecker()
+	statuses := sc.CheckAll()
+
+	for _, s := range statuses {
+		if s.Provider == "ollama" || s.Provider == "lmstudio" {
+			if !s.Configured {
+				t.Errorf("%s should be configured (local)", s.Provider)
+			}
+			if !s.Authenticated {
+				t.Errorf("%s should be authenticated (local)", s.Provider)
+			}
+		}
+	}
+}
+
+func TestSelectModelForTask(t *testing.T) {
+	// Clear env vars for deterministic test
+	for _, key := range []string{"ANTHROPIC_API_KEY", "GOOGLE_API_KEY", "OPENAI_API_KEY"} {
+		os.Unsetenv(key)
+	}
+
+	// With no keys, should find local providers
+	entry := SelectModelForTask("local-inference")
+	if entry == nil {
+		t.Error("should find local provider for local-inference")
+	}
+}
+
+func TestFormatCatalogSummary(t *testing.T) {
+	sc := NewStatusChecker()
+	statuses := sc.CheckAll()
+	summary := FormatCatalogSummary(statuses)
+	if summary == "" {
+		t.Error("summary should not be empty")
+	}
+	if len(summary) < 50 {
+		t.Error("summary should be substantial")
 	}
 }
