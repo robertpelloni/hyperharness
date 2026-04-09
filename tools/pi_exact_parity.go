@@ -534,4 +534,5 @@ func registerAllParityTools(r *Registry) {
 	r.registerMistralVibeTools()
 	r.registerSmitheryTools()
 	registerClaudeCodeTools(r)
+	registerAdvancedParityTools(r)
 }
