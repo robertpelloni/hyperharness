@@ -170,6 +170,38 @@ func (s *Server) handleA2AGetMessages(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+func (s *Server) handleA2AGetLogs(w http.ResponseWriter, r *http.Request) {
+	limit := intParam(r, "limit", 100)
+
+	var result any
+	upstreamBase, err := s.callUpstreamJSON(r.Context(), "agent.getA2ALogs", map[string]any{"limit": limit}, &result)
+	if err == nil {
+		writeJSON(w, http.StatusOK, map[string]any{
+			"success": true,
+			"data":    result,
+			"bridge": map[string]any{
+				"upstreamBase": upstreamBase,
+				"procedure":    "agent.getA2ALogs",
+			},
+		})
+		return
+	}
+
+	logs, err := s.a2aLogger.GetRecentLogs(limit)
+	if err != nil {
+		writeJSON(w, http.StatusInternalServerError, map[string]any{"success": false, "error": err.Error()})
+		return
+	}
+
+	writeJSON(w, http.StatusOK, map[string]any{
+		"success": true,
+		"data":    logs,
+		"bridge": map[string]any{
+			"fallback": "go-local-a2a-logs",
+		},
+	})
+}
+
 func (s *Server) handleA2ABroadcast(w http.ResponseWriter, r *http.Request) {
 	var payload orchestration.A2AMessage
 	if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {

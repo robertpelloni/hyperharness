@@ -51,6 +51,26 @@ export class ResearcherAgent extends SpecializedAgent implements IA2AClient {
 
     // A2A Implementation
     async sendMessage(message: A2AMessage): Promise<void> {
+        if (message.type === A2AMessageType.TASK_NEGOTIATION) {
+            // Respond with capability report (Phase 106: Negotiation)
+            await a2aBroker.routeMessage({
+                id: `a2a-bid-${Date.now()}`,
+                timestamp: Date.now(),
+                sender: 'researcher',
+                recipient: message.sender,
+                type: A2AMessageType.CAPABILITY_REPORT,
+                payload: {
+                    agentId: 'researcher',
+                    capabilities: ['research', 'search', 'summarization'],
+                    canHandle: true,
+                    estimatedLatencyMs: 15000, // Research takes time
+                    reasoning: 'Ready to perform recursive deep search.'
+                },
+                replyTo: message.id
+            });
+            return;
+        }
+
         if (message.type === A2AMessageType.TASK_REQUEST) {
             const result = await this.handleTask({ task: message.payload.task });
             await a2aBroker.routeMessage({

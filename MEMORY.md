@@ -158,4 +158,14 @@
 **Resolution**: Implemented `ConfigManager` in Go. It natively handles reading and writing the `mcpServers` object in `mcp.jsonc`.
 **Implication**: The Go sidecar can now independently manage the MCP ecosystem, completing another key requirement for "Total Autonomy".
 
+### 33. Specialized Swarm Personas (Added 2026-04-08)
+**Observation**: Generic system prompts for swarm participants lead to role confusion and overlapping suggestions.
+**Resolution**: Implemented specialized system prompts for `Planner`, `Implementer`, `Tester`, and `Critic` roles in `packages/ai/src/prompts/SystemPrompts.ts`.
+**Implication**: Model collaboration is now much more structured, with each participant focusing on their specific domain (architecture, execution, verification, or evaluation).
+
+### 34. Free-Tier Fallback Resilience (Added 2026-04-08)
+**Observation**: Frequent quota exhaustion on frontier models makes the system unreliable for background tasks.
+**Resolution**: Expanded the fallback chain to include multiple new free-tier options, including `google/gemini-2.0-flash-lite` and `openrouter/free`.
+**Implication**: Utility calls now have a nearly guaranteed path to execution even when multiple paid API quotas are hit simultaneously.
+
 *Update this file whenever a major systemic pattern, recurring bug, or deep architectural quirk is discovered.*

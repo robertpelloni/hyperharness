@@ -13,9 +13,11 @@ export class MemoryCaptureService {
   private isEnabled = true;
   private lastCapturedUrl = '';
   private captureTimeout: NodeJS.Timeout | null = null;
+  private observer: MutationObserver | null = null;
 
   private constructor() {
     this.setupEventListeners();
+    this.setupAutoSyncObserver();
   }
 
   public static getInstance(): MemoryCaptureService {
@@ -25,14 +27,62 @@ export class MemoryCaptureService {
     return MemoryCaptureService.instance;
   }
 
+  private setupAutoSyncObserver(): void {
+    if (typeof MutationObserver === 'undefined') return;
+
+    // Observer to detect new messages in AI chat interfaces
+    this.observer = new MutationObserver((mutations) => {
+      let hasNewMessage = false;
+      for (const mutation of mutations) {
+        if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
+          // Check if added nodes look like chat messages
+          const addedArr = Array.from(mutation.addedNodes);
+          if (addedArr.some(node => {
+            if (!(node instanceof HTMLElement)) return false;
+            return node.matches('.prose, .markdown-body, [data-message-author-role], .message, .chat-line');
+          })) {
+            hasNewMessage = true;
+            break;
+          }
+        }
+      }
+
+      if (hasNewMessage) {
+        logger.debug('New chat message detected, scheduling auto-sync');
+        this.scheduleCapture();
+      }
+    });
+
+    // Start observing immediately, and re-connect on site changes
+    this.startObserving();
+  }
+
+  private startObserving(): void {
+    if (!this.observer) return;
+    this.observer.disconnect();
+
+    // Observe the main chat area if possible, otherwise the whole body
+    const target = document.querySelector('main, #chat-container, .chat-scroll-area') || document.body;
+    this.observer.observe(target, {
+      childList: true,
+      subtree: true
+    });
+  }
+
   private setupEventListeners(): void {
     // Listen for page load/navigation
     if (typeof window !== 'undefined') {
-      window.addEventListener('load', () => this.scheduleCapture());
+      window.addEventListener('load', () => {
+        this.scheduleCapture();
+        this.startObserving();
+      });
     }
 
     // Listen for URL changes
-    eventBus.on('app:site-changed', () => this.scheduleCapture());
+    eventBus.on('app:site-changed', () => {
+      this.scheduleCapture();
+      this.startObserving();
+    });
   }
 
   private scheduleCapture(): void {

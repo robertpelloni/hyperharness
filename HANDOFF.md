@@ -1,26 +1,26 @@
 # Handoff — Session 2026-04-08 (Extended)
 
-**Version:** `1.0.0-alpha.25`
+**Version:** `1.0.0-alpha.26`
 **Branch:** `main`
-**Commits this session:** 40 (alpha.8 → alpha.25)
+**Commits this session:** 42 (alpha.8 → alpha.26)
 
 ## Session Summary
 
-### Phase 18: Go Configuration & Swarm Observability (commits 39-40)
-- **Go MCP Config Manager**: Implemented a native Go `ConfigManager` in `go/internal/mcp/` to manage `mcp.jsonc` definitions independently.
-- **Swarm Neural Transcript**: Added a live visualization tab to the Swarm dashboard to show real-time model team interactions.
-- **Go A2A Handshake**: Ported the task negotiation protocol to the Go sidecar, enabling autonomous role-bidding in Go sessions.
-- **Wired Native Fallbacks**: The Go sidecar now natively fulfills `/api/mcp/servers/configured` requests when the TypeScript server is offline.
+### Phase 19: Model Specialization & Provider Portfolio (commits 41-42)
+- **Swarm Role Specialization**: Implemented specialized system prompts for `Planner`, `Implementer`, `Tester`, and `Critic` roles in both TypeScript and Go. These prompts guide models to focus on their specific responsibilities during collaboration.
+- **Provider Expansion**: Added `google/gemini-2.0-flash-lite` and the `openrouter/best-available-coding` meta-model to the fallback chains.
+- **Cross-Runtime Synchronization**: Updated the Go sidecar's `ai` package and provider catalog to match the TypeScript core's routing logic and role definitions.
+- **Build Verification**: Confirmed that all 57 packages and the Go sidecar build cleanly after these structural updates.
 
 ## Current state of the project
 
 ### What works
 - ✅ Server builds and runs (Express/tRPC on :4000, Next.js dashboard on :3000, MCP WebSocket on :3001)
 - ✅ SQLite functional after better-sqlite3 rebuild for Node 24
-- ✅ Multi-Model Swarm: Live neural transcript visualization in the dashboard.
+- ✅ Multi-Model Swarm: Live neural transcript visualization with specialized model roles.
 - ✅ A2A Communication: Central broker (TS/Go) with Heartbeat, Multi-turn Querying, and Handshake negotiation.
 - ✅ Go Sidecar: Native implementations for MCP configuration, Skill Store, High-Value Ingestor, and Swarm management.
-- ✅ Build Stability: System-wide clean builds for TS and Go.
+- ✅ Free Tier Fallback: Advanced chain including local LM Studio, OpenRouter free, and Gemini 2.0 Flash Lite.
 
 ### What's broken or incomplete
 - glama.ai returns HTML (adapter has fallback URLs but may still fail)
@@ -30,16 +30,14 @@
 ### Architecture overview
 ```
 hypercode/
-├── VERSION                    # Single source of truth (1.0.0-alpha.25)
-├── packages/agents/           
-│   ├── src/orchestration/Handshake.ts (NEW)
-│   └── src/orchestration/SwarmController.ts (Wired to Dashboard)
+├── VERSION                    # Single source of truth (1.0.0-alpha.26)
+├── packages/ai/               # Prompt Registry & Model Selector (UPDATED)
+├── packages/agents/           # Swarm Controller with Role Specialization
 ├── go/                        
-│   ├── internal/mcp/config_manager.go (NEW)
-│   ├── internal/orchestration/handshake.go (NEW)
-│   └── internal/hsync/high_value.go (REFINED)
-├── apps/web/                  
-│   └── src/components/swarm/SwarmTranscript.tsx (NEW)
+│   ├── internal/ai/prompts.go (NEW)
+│   ├── internal/orchestration/swarm_controller.go (UPDATED)
+│   └── internal/providers/catalog.go (UPDATED)
+├── apps/web/                  # Swarm Dashboard with Role Highlighting
 └── bin/hypercode.exe          # Compiled Go binary
 ```
 
@@ -49,14 +47,14 @@ hypercode/
 ## Recommendations for next agent
 
 ### Immediate (P0)
-1. Start the server and verify that the "Neural Transcript" tab in the Swarm dashboard updates in real-time during a session.
-2. Test the Go-native `ConfigManager` by manually editing `mcp.jsonc` and checking the sidecar API.
+1. Start the server and initiate a Swarm session. Verify that each model receives its specialized system prompt.
+2. Check the "Neural Transcript" tab to see how the role specialization improves the implementation quality.
 
 ### High priority (P1)
-1. **Model Specialization** — Refine system prompts for Swarm roles to improve collaboration quality.
-2. **Provider Expansion** — Add more free-tier models to the fallback chain.
-3. **A2A Logic Integration** — Convert `ResearcherAgent` to use the Handshake pattern for task acceptance.
+1. **A2A Logic Integration** — Convert `ResearcherAgent` to use the Handshake pattern for task acceptance.
+2. **Dashboard Polish** — Ensure the 69 pages show live state from the Go sidecar when TS is unavailable.
+3. **Provider Expansion** — Add official DeepSeek models to the fallback chain when available.
 
 ### Medium priority (P2)
-1. Port the `A2A Traffic Logger` dashboard view to use the Go-native log files.
+1. Port the `A2ALogger` dashboard view to use the Go-native log files.
 2. Implement automated "Auto-Sync" for the browser extension when a chat reaches a certain length.

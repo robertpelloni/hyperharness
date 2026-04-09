@@ -105,6 +105,18 @@ export const agentRouter = t.router({
     }),
 
     /**
+     * Get recent A2A traffic logs from disk.
+     */
+    getA2ALogs: publicProcedure
+        .input(z.object({ limit: z.number().default(100) }))
+        .query(async ({ input }) => {
+            if (global.mcpServerInstance?.a2aLogger) {
+                return await global.mcpServerInstance.a2aLogger.getRecentLogs(input.limit);
+            }
+            return [];
+        }),
+
+    /**
      * Broadcast an A2A message from the dashboard.
      */
     a2aBroadcast: publicProcedure

@@ -47,6 +47,26 @@ export class GeminiAgent extends EventEmitter implements IAgent, IA2AClient {
     // A2A Implementation
     async sendMessage(message: A2AMessage): Promise<void> {
         console.log(`[GeminiAgent] Received A2A message of type: ${message.type}`);
+
+        if (message.type === A2AMessageType.TASK_NEGOTIATION) {
+            await a2aBroker.routeMessage({
+                id: `a2a-bid-${Date.now()}`,
+                timestamp: Date.now(),
+                sender: 'gemini',
+                recipient: message.sender,
+                type: A2AMessageType.CAPABILITY_REPORT,
+                payload: {
+                    agentId: 'gemini',
+                    capabilities: ['reasoning', 'coding', 'long_context'],
+                    canHandle: true,
+                    estimatedLatencyMs: 2000,
+                    reasoning: 'Ready to assist with general reasoning and long context.'
+                },
+                replyTo: message.id
+            });
+            return;
+        }
+
         // Handle message (e.g. process task request)
         if (message.type === A2AMessageType.TASK_REQUEST) {
             const response = await this.send(message.payload.task, message.payload.metadata);

@@ -48,6 +48,26 @@ export class ClaudeAgent extends EventEmitter implements IAgent, IA2AClient {
     // A2A Implementation
     async sendMessage(message: A2AMessage): Promise<void> {
         console.log(`[ClaudeAgent] Received A2A message of type: ${message.type}`);
+
+        if (message.type === A2AMessageType.TASK_NEGOTIATION) {
+            await a2aBroker.routeMessage({
+                id: `a2a-bid-${Date.now()}`,
+                timestamp: Date.now(),
+                sender: 'claude',
+                recipient: message.sender,
+                type: A2AMessageType.CAPABILITY_REPORT,
+                payload: {
+                    agentId: 'claude',
+                    capabilities: ['reasoning', 'coding', 'architecture'],
+                    canHandle: true,
+                    estimatedLatencyMs: 3000,
+                    reasoning: 'Ready to assist with architecture and complex coding.'
+                },
+                replyTo: message.id
+            });
+            return;
+        }
+
         if (message.type === A2AMessageType.TASK_REQUEST) {
             const response = await this.send(message.payload.task, message.payload.metadata);
             await a2aBroker.routeMessage({

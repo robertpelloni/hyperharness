@@ -4,6 +4,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://sumver.org/spec/v2.0.0.html).
 
+## [1.0.0-alpha.27] - 2026-04-08
+
+### Added
+- **A2A Signal Log Viewer**: Added a new dashboard page at `/dashboard/agents/logs` to view persistent A2A traffic logs from disk.
+- **Automated Browser Sync**: Upgraded the `MemoryCaptureService` in the browser extension to use a `MutationObserver`, automatically triggering memory sync whenever a new message is detected in ChatGPT or Claude web interfaces.
+
+### Changed
+- **Swarm Persona Specialization**: Each model in the swarm now receives a highly specialized system prompt (Planner, Implementer, Tester, Critic) ensuring clear division of labor during collaboration.
+- **Agent Negotiation**: Updated `ResearcherAgent`, `GeminiAgent`, and `ClaudeAgent` to support the A2A Handshake pattern for task bidding.
+
 ## [1.0.0-alpha.26] - 2026-04-08
 
 ### Added

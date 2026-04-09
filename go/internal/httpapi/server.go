@@ -800,6 +800,7 @@ func (s *Server) registerRoutes() {
 	s.mux.HandleFunc("/api/agent/chat", s.handleAgentChat)
 	s.mux.HandleFunc("/api/agent/a2a/agents", s.handleA2AListAgents)
 	s.mux.HandleFunc("/api/agent/a2a/messages", s.handleA2AGetMessages)
+	s.mux.HandleFunc("/api/agent/a2a/logs", s.handleA2AGetLogs)
 	s.mux.HandleFunc("/api/agent/a2a/broadcast", s.handleA2ABroadcast)
 	s.mux.HandleFunc("/api/agent/swarm/start", s.handleAgentSwarmStart)
 	s.mux.HandleFunc("/api/agent/director/start", s.handleGoDirectorStart)
