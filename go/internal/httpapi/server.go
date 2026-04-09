@@ -88,6 +88,7 @@ type Server struct {
 	toolsRegistry     *tools.Registry
 	mcpAggregator     *mcp.Aggregator
 	mcpPredictor      *mcp.ToolPredictor
+	mcpDecision       *mcp.DecisionSystem
 	a2aLogger         *orchestration.A2ALogger
 	a2aBroker         *orchestration.A2ABroker
 	taskQueue         *orchestration.TaskQueue
@@ -103,7 +104,7 @@ type Server struct {
 	// --- New Go-native services (alpha.32+) ---
 	eventBus          *eventbus.EventBus
 	metricsService    *metrics.MetricsService
-	sessionManager    *session.Manager
+	sessionManager    *session.SessionManager
 	toolRegistry      *toolregistry.ToolRegistry
 	gitService        *gitservice.GitService
 	contextHarvester  *ctxharvester.ContextHarvester
@@ -438,6 +439,18 @@ func New(cfg config.Config, detector controlplane.ToolProvider) *Server {
 	server.mcpPredictor = mcp.NewToolPredictor(server.mcpAggregator)
 	server.supervisorManager.SetPredictor(server.mcpPredictor)
 
+	// --- Initialize MCP Decision System ---
+	decisionCfg := mcp.DefaultDecisionConfig()
+	decisionCfg.CatalogDBPath = filepath.Join(cfg.ConfigDir, "mcp-catalog.json")
+	server.mcpDecision = mcp.NewDecisionSystem(decisionCfg, server.mcpAggregator)
+	server.mcpDecision.AddCatalogEntries(mcp.BuiltinTools())
+	// Load persisted catalog if available
+	_ = server.mcpDecision.LoadCatalog(decisionCfg.CatalogDBPath)
+	// Refresh from live inventory
+	if inv, err := mcp.LoadInventory(cfg.WorkspaceRoot, cfg.MainConfigDir); err == nil {
+		server.mcpDecision.RefreshFromInventory(inv)
+	}
+
 	// --- Initialize new Go-native services ---
 	server.eventBus = eventbus.New(1000)
 	server.metricsService = metrics.NewMetricsService()
@@ -580,6 +593,48 @@ func (s *Server) registerRoutes() {
 	s.mux.HandleFunc("/api/mcp/tools/call", s.handleMCPCallTool)
 	s.mux.HandleFunc("/api/mcp/tools/auto-call", s.handleMCPAutoCallTool)
 	s.mux.HandleFunc("/api/mcp/tool-ads", s.handleMCPToolAdvertisements)
+
+	// --- MCP Decision System (unified search/call/load) ---
+	s.mux.HandleFunc("/api/mcp/decision/search", s.handleDecisionSearch)
+	s.mux.HandleFunc("/api/mcp/decision/search-and-call", s.handleDecisionSearchAndCall)
+	s.mux.HandleFunc("/api/mcp/decision/load", s.handleDecisionLoad)
+	s.mux.HandleFunc("/api/mcp/decision/call", s.handleDecisionCall)
+	s.mux.HandleFunc("/api/mcp/decision/list-loaded", s.handleDecisionListLoaded)
+	s.mux.HandleFunc("/api/mcp/decision/unload", s.handleDecisionUnload)
+	s.mux.HandleFunc("/api/mcp/decision/list-all", s.handleDecisionListAll)
+	s.mux.HandleFunc("/api/mcp/decision/events", s.handleDecisionEvents)
+	s.mux.HandleFunc("/api/mcp/decision/catalog/refresh", s.handleDecisionCatalogRefresh)
+	s.mux.HandleFunc("/api/mcp/decision/catalog/save", s.handleDecisionCatalogSave)
+
+	// --- Go-native service endpoints ---
+	s.mux.HandleFunc("/api/native/eventbus/publish", s.handleEventBusPublish)
+	s.mux.HandleFunc("/api/native/eventbus/history", s.handleEventBusHistory)
+	s.mux.HandleFunc("/api/native/cache/get", s.handleCacheGet)
+	s.mux.HandleFunc("/api/native/cache/set", s.handleCacheSet)
+	s.mux.HandleFunc("/api/native/cache/invalidate", s.handleCacheInvalidate)
+	s.mux.HandleFunc("/api/native/cache/stats", s.handleCacheStats)
+	s.mux.HandleFunc("/api/native/git/log", s.handleNativeGitLog)
+	s.mux.HandleFunc("/api/native/git/status", s.handleNativeGitStatus)
+	s.mux.HandleFunc("/api/native/git/diff", s.handleNativeGitDiff)
+	s.mux.HandleFunc("/api/native/git/branches", s.handleNativeGitBranches)
+	s.mux.HandleFunc("/api/native/session/list", s.handleSessionList)
+	s.mux.HandleFunc("/api/native/session/create", s.handleSessionCreate)
+	s.mux.HandleFunc("/api/native/session/get", s.handleSessionGet)
+	s.mux.HandleFunc("/api/native/workspaces/list", s.handleWorkspacesList)
+	s.mux.HandleFunc("/api/native/workspaces/register", s.handleWorkspacesRegister)
+	s.mux.HandleFunc("/api/native/metrics/prometheus", s.handleMetricsPrometheus)
+	s.mux.HandleFunc("/api/native/metrics/counters", s.handleMetricsCounters)
+	s.mux.HandleFunc("/api/native/tools/search", s.handleNativeToolSearch)
+	s.mux.HandleFunc("/api/native/tools/list", s.handleNativeToolList)
+	s.mux.HandleFunc("/api/native/tools/register", s.handleNativeToolRegister)
+	s.mux.HandleFunc("/api/native/healer/diagnose", s.handleNativeHealerDiagnose)
+	s.mux.HandleFunc("/api/native/healer/history", s.handleNativeHealerHistory)
+	s.mux.HandleFunc("/api/native/harvester/add", s.handleHarvesterAdd)
+	s.mux.HandleFunc("/api/native/harvester/search", s.handleHarvesterSearch)
+	s.mux.HandleFunc("/api/native/harvester/report", s.handleHarvesterReport)
+	s.mux.HandleFunc("/api/native/process/spawn", s.handleProcessSpawn)
+	s.mux.HandleFunc("/api/native/process/list", s.handleProcessList)
+	s.mux.HandleFunc("/api/native/process/kill", s.handleProcessKill)
 	s.mux.HandleFunc("/api/mcp/tools/schema", s.handleMCPToolSchema)
 	s.mux.HandleFunc("/api/mcp/preferences", s.handleMCPToolPreferences)
 	s.mux.HandleFunc("/api/mcp/traffic", s.handleMCPTraffic)
