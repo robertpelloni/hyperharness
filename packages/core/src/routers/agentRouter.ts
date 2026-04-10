@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { t, publicProcedure, getMcpServer } from '../lib/trpc-core.js';
+import { a2aBroker, taskQueue } from '@hypercode/agents';
 import { TRPCError } from '@trpc/server';
 
 function getErrorMessage(error: unknown): string {
@@ -87,5 +88,64 @@ export const agentRouter = t.router({
                     degraded: true,
                 };
             }
+        }),
+
+    /**
+     * List all currently active A2A-capable agents.
+     */
+    listA2AAgents: publicProcedure.query(() => {
+        return a2aBroker.listAgents();
+    }),
+
+    /**
+     * Get recent A2A message history for the broker.
+     */
+    getA2AMessages: publicProcedure.query(() => {
+        return a2aBroker.getHistory();
+    }),
+
+    /**
+     * Get active A2A task negotiations.
+     */
+    getNegotiations: publicProcedure.query(() => {
+        return a2aBroker.getNegotiations();
+    }),
+
+    /**
+     * Get active A2A tasks from the collective queue.
+     */
+    getQueuedTasks: publicProcedure.query(() => {
+        return taskQueue.listTasks();
+    }),
+
+    /**
+     * Get recent A2A traffic logs from disk.
+     */
+    getA2ALogs: publicProcedure
+        .input(z.object({ limit: z.number().default(100) }))
+        .query(async ({ input }) => {
+            if (global.mcpServerInstance?.a2aLogger) {
+                return await global.mcpServerInstance.a2aLogger.getRecentLogs(input.limit);
+            }
+            return [];
+        }),
+
+    /**
+     * Broadcast an A2A message from the dashboard.
+     */
+    a2aBroadcast: publicProcedure
+        .input(z.object({
+            type: z.string(),
+            payload: z.any().optional(),
+        }))
+        .mutation(async ({ input }) => {
+            await a2aBroker.routeMessage({
+                id: `a2a-dash-${Date.now()}`,
+                timestamp: Date.now(),
+                sender: 'DASHBOARD',
+                type: input.type as any,
+                payload: input.payload || {},
+            });
+            return { success: true };
         }),
 });

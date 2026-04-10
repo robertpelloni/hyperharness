@@ -2,7 +2,271 @@
 
 All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
-and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+and this project adheres to [Semantic Versioning](https://sumver.org/spec/v2.0.0.html).
+
+## [1.0.0-alpha.32] - 2026-04-09
+
+### Added
+- **Go EventBus**: Native Go `EventBus` with exact-match, wildcard pattern, and global listeners. Thread-safe with bounded history.
+- **Go CacheService**: Generic TTL+LRU in-memory cache with periodic cleanup goroutine, event callbacks, singleton registry, and transparent `Cached()` helper.
+- **Go ContextHarvester**: Full port of semantic chunking, relevance scoring, time decay, keyword boosting, access frequency, pruning, and compacting from TS.
+- **Go GitService**: Comprehensive native git operations (log, status, revert, reset, diff, blame, stash, branch, add, commit, fetch, pull, push, show).
+- **Go WorkspaceTracker**: Workspace registration, discovery, validation, and persistence to `~/.hypercode/workspaces.json`.
+- **Go MetricsService**: Counters, gauges, histograms, Prometheus export, downsampled time series, system monitoring goroutine.
+- **Go ProcessManager**: Child process lifecycle management with stdin/stdout/stderr streaming.
+- **Go HealerService**: LLM-powered error diagnosis, fix generation, and auto-heal with heal history.
+- **Go SessionManager**: Session lifecycle state machine (created/starting/running/stopped/failed/paused).
+- **Go ToolRegistry**: Tool registration, fuzzy search, always-on tracking, and aggregate statistics.
+- **Go TaskQueue**: Decentralized A2A task queue with priority, claiming, and broadcast signals.
+- **Server Integration**: All 10 new Go-native services wired into the Go sidecar Server struct.
+
+### Fixed
+- **A2A_BRIDGE_SIGNAL Zod Validation**: Added missing `A2A_BRIDGE_SIGNAL` to the mesh protocol `SwarmMessageTypeSchema` Zod enum, fixing a startup crash.
+- **Duplicate Route Registration**: Fixed `/api/scripts/*` routes being registered twice, causing a panic in the Go sidecar.
+- **Build Fix**: Rebuilt `@hypercode/agents` package to resolve missing `taskQueue` export in `agentRouter.ts`.
+
+## [1.0.0-alpha.31] - 2026-04-08
+
+### Added
+- **Automated Tool Registration**: Completed the logic in the `HighValueIngestor` (TS/Go) to automatically register discovered MCP servers and skills into the active control plane configuration.
+- **Go Memory Reactor**: Implemented a native Go `MemoryReactor` for workspace context harvesting, semantic chunking, and incremental indexing.
+
+### Fixed
+- **Build Resolution**: Fixed a `getNegotiations` type error in `agentRouter.ts` by performing a clean build of the `@hypercode/agents` package.
+- **Go Registry Sync**: Wired the native Go `ConfigManager` to correctly support autonomous tool registration without the Node control plane.
+
+## [1.0.0-alpha.30] - 2026-04-08
+
+### Added
+- **A2A Handshake Manager**: Implemented a new dashboard page at `/dashboard/agents/negotiation` to monitor real-time agent bidding and task coordination cycles.
+- **Negotiation Tracking**: Updated the `A2ABroker` to persist active negotiation state and individual capability reports (bids) for observability.
+
+### Changed
+- **Truthful Expert Status (Go)**: Updated the Go sidecar to report actual native agent availability (e.g. `CoderAgent` status) instead of hardcoded "offline" placeholders.
+- **Swarm UI Polish**: Integrated specialized role highlights into the neural transcript and added navigation links for A2A logs and negotiations.
+
+## [1.0.0-alpha.29] - 2026-04-08
+
+### Added
+- **A2A Handshake Parity (Go)**: Completed the port of the multi-turn task negotiation pattern to Go, enabling native agents to bid on goals independently.
+- **Go Skill Store Persistence**: The native Go sidecar can now independently manage `.md` runbooks in the `.hypercode/skills` directory.
+
+### Fixed
+- **Go Build Conflict**: Resolved an import ambiguity in the Go high-value link analysis logic by adding an explicit package alias, fixing a `undefined: json` build failure.
+- **Topological Monorepo Sync**: Performed a workspace-wide dependency and artifact synchronization to ensure all 57 packages are perfectly aligned.
+
+## [1.0.0-alpha.28] - 2026-04-08
+
+### Fixed
+- **Runtime Startup Fix**: Added missing `adm-zip` runtime dependency to `@hypercode/core`, resolving a crash during server initialization.
+
+### Added
+- **Go A2A Handshake**: Implemented the Task Negotiation pattern in the Go sidecar, matching the TypeScript implementation for autonomous agent task bidding.
+- **A2A Dashboard Mutation**: Implemented `a2aBroadcast` tRPC mutation for manual signal injection.
+
+## [1.0.0-alpha.27] - 2026-04-08
+
+### Added
+- **A2A Signal Log Viewer**: Added a new dashboard page at `/dashboard/agents/logs` to view persistent A2A traffic logs from disk.
+- **Automated Browser Sync**: Upgraded the `MemoryCaptureService` in the browser extension to use a `MutationObserver`, automatically triggering memory sync whenever a new message is detected in ChatGPT or Claude web interfaces.
+
+### Changed
+- **Swarm Persona Specialization**: Each model in the swarm now receives a highly specialized system prompt (Planner, Implementer, Tester, Critic) ensuring clear division of labor during collaboration.
+- **Agent Negotiation**: Updated `ResearcherAgent`, `GeminiAgent`, and `ClaudeAgent` to support the A2A Handshake pattern for task bidding.
+
+## [1.0.0-alpha.26] - 2026-04-08
+
+### Added
+- **Swarm Role Specialization**: Implemented specialized system prompts for `Planner`, `Implementer`, `Tester`, and `Critic` roles in the `SwarmController` (TS/Go).
+- **Expanded Model Chains**: Added `google/gemini-2.0-flash-lite` and `openrouter/best-available-coding` to the default model fallback chains.
+
+### Changed
+- **Provider Registry Update**: Refined model metadata in the `ProviderRegistry` for more accurate quality scores and task recommendations.
+- **Go Parity**: Synchronized the Go sidecar's provider catalog and swarm role definitions with the TypeScript core.
+
+## [1.0.0-alpha.25] - 2026-04-08
+
+### Added
+- **Swarm Neural Transcript**: Added a live visualization tab to the Swarm dashboard, showing the collaborative transcript of model team interactions in real-time.
+- **Go MCP Config Manager**: Implemented a native Go `ConfigManager` for reading, writing, and synchronizing `mcp.jsonc` server definitions.
+- **Go A2A Negotiation**: Integrated the A2A `Query` pattern into the native Go `Director`, allowing the sidecar to negotiate task handoffs between local agents before starting work.
+
+### Changed
+- **Go Directory Parity**: Wired the native Go `ConfigManager` into the `/api/mcp/servers/configured` endpoint.
+- **A2A Dashboard Integration**: Added the `getSwarmTranscript` tRPC endpoint.
+
+## [1.0.0-alpha.23] - 2026-04-08
+
+### Fixed
+- **TSC Error Resolution**: Fixed multiple build failures across `ClaudeAgent`, `GeminiAgent`, `ResearcherAgent`, `MCPServer`, and `MemoryArchiver` caused by missing type definitions and out-of-order package builds.
+- **Mesh/A2A Typing**: Corrected `A2A_BRIDGE_SIGNAL` implementation to use the proper `SwarmMessageType` enum member.
+
+### Added
+- **Go A2A Logger**: Ported the `A2ALogger` to Go, enabling native signal auditing in the sidecar.
+- **Go Skill Store**: Implemented a Go-native `SkillStore` for managing `.md` runbooks, achieving total autonomy from the Node skill registry.
+- **Go High-Value Ingestor**: Ported the `HighValueIngestor` to Go to perform native technical analysis on technical links.
+
+## [1.0.0-alpha.22] - 2026-04-08
+
+### Added
+- **A2A Multi-turn Implementation**: Ported the `Query` pattern to the Go `A2ABroker`, enabling structured request-response correlation between Go-native agents.
+- **Go A2A Auditing**: Ported the `A2ALogger` to Go, providing native JSONL logging for agent signals in the sidecar.
+- **Agent Dashboard UI**: Added `A2AMessageComposer` to the Agent dashboard for manual signal drafting and integrated `a2a_broadcast` tRPC mutations.
+
+### Changed
+- **Tool Visibility**: Standard tools and parity aliases are now visible to models by default, fixing the "no tools reported" issue.
+- **Session Archive Optimization**: Flattened the session archive structure in `ImportedSessionStore` to avoid directory clutter.
+- **Researcher Agent Integration**: Updated `ResearcherAgent` to natively participate in the A2A broker and send periodic heartbeats.
+
+## [1.0.0-alpha.21] - 2026-04-08
+
+### Changed
+- **Default Tool Visibility**: Standard library tools (bash, read, write, edit, grep, etc.) and Tool Parity Aliases are now `alwaysOn` by default. This ensures models like `pi` can see and use them immediately without a manual "load" turn.
+- **Flatter Session Archives**: Updated `ImportedSessionStore` to use a flatter directory structure for `.gz` files, preventing the creation of thousands of subdirectories in the `.hypercode` folder.
+- **Go A2A Parity**: Ported the `A2ALogger` to native Go, providing persistent auditing for signals routed through the sidecar.
+- **Capability Exchange**: Implemented an automated "Capability Exchange" pattern in the `A2ABroker`. Agents now broadcast their roles and capabilities (e.g., 'Frontier Architect', 'Web Researcher') when they join the pool.
+
+### Added
+- **High-Value Link Ingestor**: Implemented the `HighValueIngestor` service to perform deep semantic analysis and technical artifact extraction (MCP recipes, skills) for popular or curated external resources.
+
+## [1.0.0-alpha.20] - 2026-04-08
+
+### Added
+- **A2A Request-Response Pattern**: Implemented a `query` mechanism in the `A2ABroker` (TS/Go) that supports asynchronous request-response correlation with timeouts. Agents can now ask questions of each other and await answers.
+- **Go A2A Logger**: Ported the `A2ALogger` to Go, enabling native persistent auditing of agent-to-agent signal traffic.
+- **Integrated Audit Archives**: Enhanced the `MemoryArchiver` to include A2A traffic logs in compressed session archives, providing a complete audit trail for multi-agent workflows.
+
+### Changed
+- **Researcher Agent Integration**: Updated `ResearcherAgent` to natively participate in the A2A broker and send periodic heartbeats.
+- **Pulse Status**: Added `a2aActive` flag to system status reports.
+
+## [1.0.0-alpha.19] - 2026-04-08
+
+### Added
+- **A2A Heartbeat & Pruning**: Implemented a heartbeat mechanism in the `A2ABroker` (TS/Go) to detect and automatically prune inactive agents from the active pool after 30 seconds of silence.
+- **A2A ↔ Mesh Bridging**: Enabled bidirectional signal propagation between the process-local A2A broker and the global P2P Mesh. Remote nodes can now participate in local agent coordination.
+- **Enhanced Link Analysis (Go)**: Upgraded the Go Link Crawler with an LLM-based technical feature extractor that identifies MCP servers, skills, and APIs from crawled webpages.
+
+### Changed
+- **Agent Integration**: Updated `GeminiAgent` and `ClaudeAgent` to natively send periodic heartbeats and register with the A2A broker.
+- **Dashboard Enhancements**: Added `A2AMessageComposer` to the Agent dashboard for manual signal drafting and dispatch.
+
+## [1.0.0-alpha.18] - 2026-04-08
+
+### Added
+- **Go Autonomous Director**: Implemented a native Go version of the `Director` loop, allowing the sidecar to orchestrate multi-model swarm planning and task delegation independently.
+- **Native Go Coder Agent**: Created a Go implementation of the `CoderAgent` that handles file system operations and code generation via the A2A broker.
+- **A2A Message Composer**: Added a new UI component to the Agent dashboard for manually composing and dispatching A2A signals to specific agents or the entire pool.
+
+### Changed
+- **Provider Fallback Expansion**: Added `google/gemini-2.0-flash-exp:free` and `meta-llama/llama-3.3-70b-instruct:free` (via OpenRouter) to the default worker fallback chain to improve reliability during quota exhaustion.
+- **Go Routing**: Wired the native Go `Director` into the `/api/agent/director/start` endpoint.
+
+## [1.0.0-alpha.17] - 2026-04-08
+
+### Added
+- **Memory Archiving System**: Implemented `MemoryArchiver` to convert verbose JSON sessions into compressed plaintext archives (ZIP), reducing storage and noise.
+- **Semantic Memory Extraction**: The archiver now uses an LLM turn to extract key technical facts and decisions from sessions before archiving, storing them in the persistent memory bank.
+- **Go Swarm Parity**: Ported the `SwarmController` to the Go sidecar, providing native multi-model orchestration independently of the TypeScript core.
+- **WebSocket A2A Bridge**: Added an A2A signal listener to the central WebSocket server, allowing remote agents and dashboard components to participate in the A2A message broker.
+- **A2A Dashboard Mutation**: Added `a2a_broadcast` tRPC endpoint to trigger agent communication directly from the web UI.
+
+### Changed
+- **Archive Tool**: Added `archive_session` MCP tool.
+- **Go Routing**: Wired the native Go `SwarmController` into the `/api/agent/swarm/start` endpoint.
+
+## [1.0.0-alpha.16] - 2026-04-08
+
+### Added
+- **Multi-Model Swarm Orchestration**: Implemented `SwarmController` to manage a team of models (Claude, GPT, Gemini, Qwen) with specific roles and a shared neural transcript.
+- **Swarm Completion Evaluation**: Added a "Critic" role to the swarm to evaluate task completion and provide feedback for iterative cycles.
+- **Swarm Tools**: Added `swarm_start_session` tool for one-shot autonomous task execution by a model team.
+
+### Changed
+- **Renaming Cleanup**: Renamed `borg.config.json` to `hypercode.config.json`.
+- **Submodule Renaming**: Completed the rename of `borg` adapter to `hypercode` adapter in the `hyperharness` submodule and cleaned up redundant files.
+
+## [1.0.0-alpha.15] - 2026-04-08
+
+### Changed
+- **Consolidated Renaming**: Renamed remaining `borg` references to `HyperCode` across `AGENTS.md`, `DEPLOY.md`, and other root documentation. Renamed `borg.config.json` to `hypercode.config.json`.
+- **Submodule Cleanup**: Renamed `borg` adapter to `hypercode` adapter in `submodules/hyperharness` and removed redundant `borg` folder. Updated system prompts to refer to `HyperCode`.
+- **Go Sidecar Monitoring**: Implemented a native `ConversationMonitor` loop in the Go sidecar that runs the `ToolPredictor` autonomously for active sessions.
+- **BobbyBookmarks Expansion**: Updated `BobbyBookmarksSyncWorker` to ingest bookmarks from `data/bobbybookmarks/bookmarks.txt` in addition to the SQLite DB, with automatic deduplication.
+
+### Added
+- **Agent-to-Agent (A2A) Protocol**: Defined the A2A communication protocol in `@hypercode/adk` and implemented the `A2ABroker` in both TypeScript and Go.
+- **A2A Dashboard Integration**: Added an A2A Message Broker view to the Agent Command Center dashboard, showing live message traffic between agents.
+- **A2A Tooling**: Added `a2a_broadcast` and `a2a_list_agents` MCP tools.
+
+## [1.0.0-alpha.14] - 2026-04-08
+
+### Fixed
+- **Build Stabilization**: Fixed `tsc` errors in `MCPServer.ts` and `Director.ts` caused by missing type casts and null/undefined mismatches.
+- **Package Integrity**: Successfully built `@hypercode/tools` and `@hypercode/agents` packages, ensuring new exports are available workspace-wide.
+
+### Changed
+- **Go Parity expansion**: Added native Go tool handlers for the core parity tools (Claude Code, Codex, OpenCode/Pi). The Go sidecar now executes these tools natively when the Node control plane is unreachable.
+- **Go Routing**: Implemented `handleAgentRunTool` in the Go sidecar with a "Native First, Bridge Second" strategy.
+- **Skill Search (Go)**: Added `/api/skills/search` endpoint to the Go sidecar to support progressive skill disclosure.
+
+## [1.0.0-alpha.13] - 2026-04-08
+
+### Added
+- **Multi-Model Pair Programming**: Implemented `PairOrchestrator` to coordinate Claude, GPT, and Gemini in a shared context with rotating roles (Planner, Implementer, Tester). Added `run_pair_session` MCP tool.
+- **Autonomous Tool Prediction**: Created `ToolPredictor` service that analyzes conversation history and preemptively preloads/hydrates relevant tools. Integrated into `Director` loop.
+- **Skill Discovery**: Added `search_skills` tool and improved `list_skills` for progressive skill disclosure.
+- **Browser Extension Improvements**: Added manual "Sync to Memory" and "Export Session" buttons to the extension dashboard for on-demand context capture.
+
+### Changed
+- **Go Parity Expansion**: Updated Go sidecar with comprehensive session discovery rules (Cursor, Windsurf, OpenCode, Gemini, etc.), native provider routing defaults, and registration for new native handlers.
+- **Version Sync**: Upgraded all 57 package.json files to v1.0.0-alpha.13.
+
+## [1.0.0-alpha.12] - 2026-04-08
+
+### Changed
+- **Local LLM Prioritization**: Reconfigured utility calls (worker tasks) to prioritize local LM Studio (`http://localhost:1234/v1`) using a specific aggressive Gemma-4 model.
+- **Provider Fallback Chain**: Updated `DEFAULT_CHAINS` and `CoreModelSelector` to use `openrouter/free` as the immediate fallback for local utility calls.
+- **Provider Registry**: Updated `openrouter` and `lmstudio` quality scores and recommendations to support the new routing strategy.
+- **Council Updates**: Switched "Local Assistant" in `council.json` to use LM Studio.
+- **Version Bump**: Synced all 57 package.json files to v1.0.0-alpha.12.
+
+## [1.0.0-alpha.11] - 2026-04-08
+
+### Added
+- **Tool Parity Aliases**: Comprehensive clean-room implementations of tool signatures from Claude Code, Codex CLI, Gemini CLI, OpenCode, Pi, Cursor, and Windsurf. 40+ tool aliases across 4 harness-specific sets:
+  - Claude Code: Read, Write, Edit, MultiEdit, Bash, Glob, Grep, LS, WebFetch
+  - Codex CLI: shell, apply_diff, create_file, view_file, list_directory, search_files
+  - Gemini CLI: read_file, write_file, edit_file, list_directory, search
+  - OpenCode/Pi: read, write, edit, bash, glob, grep, ls, web_fetch
+  - Shared handlers for all tools with proper error handling, truncation, and edge cases
+  - Deduplication system that prefers first occurrence of each tool name
+
+## [1.0.0-alpha.10] - 2026-04-08
+
+### Changed
+- **Go Sidecar Version Sync**: `go/internal/buildinfo/buildinfo.go` now injects version from VERSION file at build time via `-ldflags`. Created `scripts/build-go.sh` for consistent builds.
+- **Submodule Pushes**: Pushed cloud-orchestrator, hyperharness, and claude-mem to their remotes. Merged hyperharness stash (borg→hypercode renames, foundation adapters).
+- **Documentation**: Updated HANDOFF.md, MEMORY.md (4 new observations), TODO.md. Verified meta-tool decision system is fully implemented (not just scaffolded).
+- **Build Verification**: Go binary compiles cleanly (18MB, 543 routes). TypeScript compiles cleanly. Doctor 11/11 checks pass.
+
+## [1.0.0-alpha.9] - 2026-04-08
+
+### Changed
+- **Submodule Sync**: Updated all submodules to latest upstream (cloud-orchestrator, hyperharness, prism-mcp, litellm, OmniRoute, maestro, mcpproxy, claude-mem). Resolved merge conflicts in cloud-orchestrator and hyperharness.
+- **Version Sync**: All 57 package.json files now synchronized to VERSION file.
+
+## [1.0.0-alpha.8] - 2026-04-07
+
+### Changed
+- **Gemini Model Update**: Updated default model from deprecated `gemini-2.0-flash` to `gemini-2.5-flash` (free tier, 1M context) in ProviderRegistry, CoreModelSelector tests, and council.json.
+- **REST Bridge**: Added 6 REST endpoints (`/api/scripts`, `/api/scripts/get`, `/create`, `/update`, `/delete`, `/execute`) in orchestrator.ts for dashboard-script integration.
+- **Build Hardening**: Added better-sqlite3 native binding auto-check to build_startup.mjs.
+- **Catalog Ingestor**: Updated glama.ai adapter to try multiple candidate URLs.
+- **Doctor Script**: Created `scripts/doctor.mjs` with 11 diagnostic checks (Node, Go, SQLite, ports, env, config, build artifacts).
+- **Documentation Overhaul**: Rewrote AGENTS.md, CLAUDE.md, GEMINI.md, GPT.md, copilot-instructions.md.
+- **New Docs**: Created IDEAS.md with 28 improvement ideas; rewrote HANDOFF.md, MEMORY.md, TODO.md, DEPLOY.md.
+- **Version Bump**: Synced all package.json files from stale `1.0.0-alpha.1` to VERSION file.
 
 ## [1.0.0-alpha.1] - 2026-04-02
 

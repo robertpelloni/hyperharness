@@ -1,12 +1,58 @@
 package httpapi
 
 import (
+	"encoding/json"
 	"net/http"
 	"strconv"
 	"strings"
 
 	"github.com/hypercodehq/hypercode-go/internal/memorystore"
 )
+
+func (s *Server) handleMemoryArchiveSession(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		writeJSON(w, http.StatusMethodNotAllowed, map[string]any{"success": false, "error": "method not allowed"})
+		return
+	}
+
+	var payload struct {
+		SessionData map[string]interface{} `json:"sessionData"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
+		writeJSON(w, http.StatusBadRequest, map[string]any{"success": false, "error": "invalid JSON body"})
+		return
+	}
+
+	// Try upstream first
+	var result any
+	upstreamBase, err := s.callUpstreamJSON(r.Context(), "memory.archiveSession", payload, &result)
+	if err == nil {
+		writeJSON(w, http.StatusOK, map[string]any{
+			"success": true,
+			"data":    result,
+			"bridge": map[string]any{
+				"upstreamBase": upstreamBase,
+				"procedure":    "memory.archiveSession",
+			},
+		})
+		return
+	}
+
+	// Fallback: local Go memory archiver
+	archiveResult, err := s.memoryArchiver.ArchiveAndExtract(r.Context(), payload.SessionData)
+	if err != nil {
+		writeJSON(w, http.StatusInternalServerError, map[string]any{"success": false, "error": err.Error()})
+		return
+	}
+
+	writeJSON(w, http.StatusOK, map[string]any{
+		"success": true,
+		"data":    archiveResult,
+		"bridge": map[string]any{
+			"fallback": "go-local-archiver",
+		},
+	})
+}
 
 func (s *Server) handleMemorySearch(w http.ResponseWriter, r *http.Request) {
 	query := strings.TrimSpace(r.URL.Query().Get("query"))

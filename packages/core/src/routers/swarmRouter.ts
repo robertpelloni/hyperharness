@@ -707,4 +707,11 @@ export const swarmRouter = t.router({
             mesh.sendDirect(input.targetNodeId, SwarmMessageType.DIRECT_MESSAGE, input.payload);
             return { success: true };
         }),
+
+    /**
+     * Get the live transcript for the active SwarmController session.
+     */
+    getSwarmTranscript: publicProcedure.query(() => {
+        return global.mcpServerInstance?.swarmController?.getTranscript() || [];
+    }),
 });

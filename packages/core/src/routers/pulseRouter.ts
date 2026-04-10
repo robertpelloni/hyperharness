@@ -29,7 +29,8 @@ export const pulseRouter = t.router({
         status: 'online',
         uptime: process.uptime(),
         agents: Array.from(mcp.activeAgentsMap?.keys() || []),
-        memoryInitialized: mcp.isMemoryInitialized
+        memoryInitialized: mcp.isMemoryInitialized,
+        a2aActive: true
         };
         }),
 

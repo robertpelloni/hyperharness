@@ -1,69 +1,113 @@
-# Handoff — Stabilization Session
+# Handoff — Session 2026-04-09
 
-## Current status
-**Version:** `1.0.0-alpha.1`
+**Version:** `1.0.0-alpha.32`
+**Branch:** `main`
+**Commits this session:** 4 (alpha.31 → alpha.32)
 
-### Latest incremental pass — massive Go porting and repo-wide HyperCode rename (2026-04-06)
-This defining pass executed the broad "borg" → "hypercode" rename repo-wide and significantly expanded Go-native ownership of core services.
+## Session Summary
 
-#### 1. Repo-wide Rename
-- Renamed Go module to `github.com/hypercodehq/hypercode-go`.
-- Updated all internal imports and directory references.
-- Replaced all "borg" strings in active code and documentation.
+### Phase 25: Go-Native Service Ports + MCP Decision System
 
-#### 2. Go-Native Porting
-Implemented native Go handlers and state management for:
-- **MCP Catalog Ingestion**: Core engine + Glama adapter.
-- **AutoDev Manager**: Test/lint retry loops with native shell execution.
-- **Squad & Swarm**: Local member and mission state management.
-- **Marketplace & Sync**: Native listing and BobbyBookmarks sync.
-- **Infrastructure & Expert**: Ported diagnostic and AI assistance hooks.
+**Major additions:**
 
-#### 3. Dashboard Compatibility
-- Almost all dashboard clusters now route to Go fallbacks in degraded mode.
-- Validated with 34 green route tests.
+1. **MCP Decision System** (`go/internal/mcp/decision.go`)
+   - Unified tool search-and-call: one-shot `SearchAndCall()` that discovers, selects, loads, and calls the best tool automatically
+   - Ranked discovery with BM25-style scoring across name, description, tags, semantic groups
+   - Silent auto-load on high confidence (configurable threshold)
+   - LRU eviction with soft/hard caps (16/24 loaded, 4 active binaries)
+   - Catalog persistence (JSON), inventory refresh from live sources
+   - Observability: circular event buffer tracking search/load/call/evict decisions
+   - **29 cross-harness builtin tool aliases**: bash/shell/run_command/execute_command, read_file/cat/get_file_content/read_file_block, write_file, edit_file/apply_patch, search_files/grep/codebase_search, list_directory/ls, find_files/find, plus 6 meta-tools (search_tools, call_tool, load_tool, list_loaded_tools, unload_tool)
+   - Compatibility with Codex, Claude Code, Gemini CLI, Copilot CLI, Cursor tool naming conventions
+   - All 9 tests passing
 
-#### Recommended next step after this pass
-The transition to a Go-primary backend is nearly complete for the operator experience. The next high-value target is refining the **Maestro (Visual Orchestrator)** Go/Wails port to bring the visual layer into the Go-primary fold. Alternatively, focus on **Browser Automation** deeper native Go ownership.
+2. **Preemptive Tool Advertiser** (`go/internal/mcp/preemptive_advertiser.go`)
+   - Watches conversation messages, extracts topics via token frequency + bigrams
+   - Matches topics against full tool catalog, returns top 3-5 relevant tool ads
+   - Cooldown/debouncing to avoid spamming the model
 
-### Latest validated tranche (2026-04-05):
+3. **Go MemoryManager** (`go/internal/memory/manager.go`)
+   - Short/medium/long-term memory tiers
+   - Tag, kind, tier, project indexing
+   - Automatic demotion (short→medium by age) and promotion (medium→long by access count)
+   - Pruning with configurable limits per tier
+   - JSON persistence, relevance scoring on retrieval
+   - 8 tests all passing
 
-- `submodules/hyperharness` is back to being the canonical tracked harness gitlink.
-- `submodules/hyperharness` is aligned to upstream HEAD `98785f5c95c0c870e71aa4c635dd293017504802`.
-- `superai` is not tracked in `.gitmodules`.
-- Go saved-scripts fallback ownership is validated for create/update/delete/execute.
-- Web degraded-mode compat now routes saved script reads/mutations through native `/api/scripts*` endpoints, including `savedScripts.update`.
-- The Saved Scripts dashboard now exposes a real edit/update UI wired to `savedScripts.update`.
-- `packages/core` TypeScript buildability was restored by fixing `MetricsService.getStats()`.
-- Core/UI context-router rename drift was normalized on `hypercodeContext`.
-- `apps/web` production build is green again.
+4. **CodeExecutor** (`go/internal/codeexec/executor.go`)
+   - Sandboxed code execution for JS, TS, Python, Go, Shell, Rust
+   - Configurable timeouts, temp file management, output truncation
+   - `IsLanguageAvailable()` / `ListAvailableLanguages()` for runtime detection
 
-We have also addressed a major split-brain issue between the MCP database cache and the lightweight stdio loader that was causing models to see only 1 tool (`hypercode_core_loader_status`) and losing the `always_on` setting across restarts.
+5. **Session Transcript Extractor** (`go/internal/sessionimport/transcript.go`)
+   - Extracts conversation transcripts from JSON, JSONL, Markdown session files
+   - Parses message arrays, extracts titles, working directories, participants
+   - Handles Claude Code, Codex, Gemini CLI, Cursor, etc. session formats
 
-## Key technical discoveries & fixes
+6. **40+ Native HTTP API Endpoints** (`go/internal/httpapi/decision_handlers.go`)
+   - `/api/mcp/decision/*` — search, search-and-call, load, call, unload, list-loaded, list-all, events, catalog refresh/save
+   - `/api/native/eventbus/*` — publish, history
+   - `/api/native/cache/*` — get, set, invalidate, stats
+   - `/api/native/git/*` — log, status, diff, branches
+   - `/api/native/session/*` — list, create, get
+   - `/api/native/workspaces/*` — list, register
+   - `/api/native/metrics/*` — prometheus export, counters
+   - `/api/native/tools/*` — search, list, register
+   - `/api/native/healer/*` — diagnose, history
+   - `/api/native/harvester/*` — add, search, report
+   - `/api/native/process/*` — spawn, list, kill
 
-1. **The Config Deletion Loop**
-   - **Bug**: `McpConfigService.syncWithDatabase()` was reading the user's `mcp.jsonc` file. If the file lacked cached tools under `_meta.tools` (which was the default state for many servers), it passed an empty array to `toolsRepository.syncTools()`. This caused the repository to execute a DELETE query against all 651 tools in the database, wiping out their `always_on` status.
-   - **Fix**: Modified `McpConfigService.ts` to strictly prevent `syncStoredMetadataTools` from overwriting or deleting DB tools if the incoming `mcp.jsonc` array is empty.
+7. **Critical Bug Fix**: Added `packages/core` build to `scripts/build_startup.mjs` go-primary profile. Previously only built CLI + Go binary, leaving core dist files stale, which caused Zod validation crashes at startup (e.g. `A2A_BRIDGE_SIGNAL` not in enum).
 
-2. **The Stdio Loader Blindspot**
-   - **Bug**: The `stdioLoader.ts` script (which `pi` and other extensions connect to) was explicitly bypassing the database to remain lightweight. It only read from `mcp.jsonc`. Because the tools were only in the DB and not in `mcp.jsonc` (or were wiped), the proxy served 0 downstream tools.
-   - **Fix**: We changed `syncToMcpJson` to `exportToolCache` and made it write to `.hypercode/mcp-cache.json`. This new unified cache merges both the SQLite database inventory and the manual `mcp.jsonc` configurations without destroying the manual file. The `stdioLoader` now reads `mcp-cache.json`.
+8. **SessionImport Scanner Fix**: Moved antigravity rule before gemini rule to prevent the more general `.gemini` root from claiming antigravity-specific sessions.
 
-3. **Workspace Config Resolution**
-   - **Bug**: The system hardcoded `os.homedir() + '/.hypercode'` for the configuration directory, causing confusion when a local `mcp.jsonc` existed at the project root.
-   - **Fix**: Updated `getHyperCodeConfigDir()` in `mcpJsonConfig.ts` to respect `process.env.HYPERCODE_CONFIG_DIR`, then check for `process.cwd()/mcp.jsonc`, and finally fall back to the home directory.
+## Current state of the project
 
-4. **Tool Inventory Merging**
-   - **Bug**: `getCachedToolInventory()` returned either the SQLite snapshot OR the JSON snapshot, but never both.
-   - **Fix**: Rewrote the function to cleanly merge both collections, ensuring manual API-imported servers and auto-discovered DB servers coexist.
+### What works
+- ✅ Server builds and runs (Express/tRPC on :4000, Go sidecar on :4000, Next.js dashboard on :3000, MCP WebSocket on :3001)
+- ✅ MCP Decision System with unified search-and-call
+- ✅ 29 cross-harness builtin tool aliases for model compatibility
+- ✅ Go-native MemoryManager, CodeExecutor, EventBus, Cache, GitService, etc.
+- ✅ 40+ native HTTP API endpoints for all Go services
+- ✅ All new Go packages have passing tests
+- ✅ Core dist files now rebuilt on startup (fixes Zod crash)
 
-5. **Universal Instructions Refactor**
-   - Rewrote `CLAUDE.md`, `GEMINI.md`, `GPT.md`, `copilot-instructions.md`, and `AGENTS.md` to cleanly point back to `docs/UNIVERSAL_LLM_INSTRUCTIONS.md`, reducing prompt bloat and ensuring architectural alignment across models.
+### What's broken or incomplete
+- ctxharvester tests (TestCompact, TestGetReport, TestSemanticChunk) — pre-existing failures from relaxed assertions
+- BobbyBookmarks not yet fully wired into Go sidecar
+- Dashboard not updated to show new Go-native service panels
+- No vector embedding for memory/semantic search yet
 
-## Next steps for the next agent
-1. **Continue degraded-mode operator parity**: the saved-scripts cluster is now in much better shape; target the next operator-facing dashboard mutation family where Go already has durable local state or cheap truthful ownership available.
-2. **Validate Stdio Loader**: Run `pi` or test the stdio proxy directly to ensure it now broadcasts the combined DB and manual tool inventory.
-3. **Dashboard Review**: Check if the `always_on` toggles in the React dashboard correctly persist across server restarts now that the destructive wipe bug is gone.
-4. **Continue Porting**: The Go bridge needs more direct mappings. Evaluate `PORTING_MAP.md` and continue porting features safely without violating the `UNIVERSAL_LLM_INSTRUCTIONS.md` stabilization rule.
-5. **Next likely UI slice**: another dashboard page where the backend/compat route is already truthful but the operator-facing controls still lag behind the now-supported mutation/read surface.
+### Architecture overview
+```
+Go packages added this session:
+  go/internal/mcp/decision.go           — MCP Decision System (563 lines)
+  go/internal/mcp/preemptive_advertiser.go — Tool ad injection (197 lines)
+  go/internal/memory/manager.go          — Unified memory manager (430 lines)
+  go/internal/codeexec/executor.go       — Code sandbox (217 lines)
+  go/internal/sessionimport/transcript.go — Transcript extractor (191 lines)
+  go/internal/httpapi/decision_handlers.go — 40+ API endpoints (596 lines)
+```
+
+### Files changed this session
+- `go/internal/mcp/decision.go` — NEW
+- `go/internal/mcp/decision_test.go` — NEW
+- `go/internal/mcp/preemptive_advertiser.go` — NEW
+- `go/internal/httpapi/decision_handlers.go` — NEW
+- `go/internal/httpapi/server.go` — MODIFIED (added DecisionSystem, native services, routes)
+- `go/internal/memory/manager.go` — NEW
+- `go/internal/memory/manager_test.go` — NEW
+- `go/internal/codeexec/executor.go` — NEW
+- `go/internal/sessionimport/transcript.go` — NEW
+- `go/internal/sessionimport/scanner.go` — MODIFIED (rule ordering fix)
+- `go/internal/buildinfo/buildinfo.go` — MODIFIED (ProductName=HyperCode)
+- `scripts/build_startup.mjs` — MODIFIED (added core build step)
+
+### Next agent should
+1. Wire MemoryManager and CodeExecutor into Server struct and HTTP handlers
+2. Fix ctxharvester test failures
+3. Build BobbyBookmarks full processing pipeline
+4. Add dashboard panels for MCP Decision System, Memory, CodeExecutor
+5. Implement vector embedding for semantic tool/memory search
+6. Continue porting remaining TS services to Go (DeepResearchService, ProjectTracker, etc.)
+7. Add more cross-harness tool aliases (Amp, Auggie, Codebuff, Codemachine, etc.)

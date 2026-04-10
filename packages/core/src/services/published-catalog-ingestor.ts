@@ -377,7 +377,12 @@ type GlamaServer = {
 
 export class GlamaAiAdapter implements CatalogSourceAdapter {
     readonly name = "glama.ai";
-    private readonly baseUrl = "https://glama.ai/api/mcp/servers";
+    // The original /api/mcp/servers endpoint now returns HTML.
+    // Try multiple candidate endpoints in order; first success wins.
+    private readonly candidateUrls = [
+        "https://glama.ai/api/mcp/servers?limit=200",
+        "https://glama.ai/api/mcp/servers",
+    ];
 
     async ingest(): Promise<IngestResult> {
         const result: IngestResult = {
@@ -388,13 +393,24 @@ export class GlamaAiAdapter implements CatalogSourceAdapter {
         };
 
         try {
-            // Glama returns a paginated or flat list — attempt to fetch first page
-            const payload = await safeFetch(`${this.baseUrl}?limit=200`) as any;
-            const servers: GlamaServer[] = Array.isArray(payload?.servers)
-                ? payload.servers
-                : Array.isArray(payload)
-                ? payload
-                : [];
+            // Glama returns a paginated or flat list — try each candidate URL
+            let servers: GlamaServer[] = [];
+            for (const url of this.candidateUrls) {
+                try {
+                    const payload = await safeFetch(url) as any;
+                    const candidates = Array.isArray(payload?.servers)
+                        ? payload.servers
+                        : Array.isArray(payload)
+                        ? payload
+                        : [];
+                    if (candidates.length > 0) {
+                        servers = candidates;
+                        break;
+                    }
+                } catch {
+                    // Try next URL
+                }
+            }
 
             result.fetched = servers.length;
 
@@ -418,7 +434,7 @@ export class GlamaAiAdapter implements CatalogSourceAdapter {
                     await publishedCatalogRepository.upsertSource({
                         server_uuid: server.uuid,
                         source_name: this.name,
-                        source_url: `${this.baseUrl}/${s.slug ?? s.id ?? ""}`,
+                        source_url: `https://glama.ai/api/mcp/servers/${s.slug ?? s.id ?? ""}`,
                         raw_payload: s as Record<string, unknown>,
                     });
 

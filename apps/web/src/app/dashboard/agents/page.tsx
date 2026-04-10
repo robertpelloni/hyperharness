@@ -1,8 +1,10 @@
 "use client";
 
-import { Activity, Brain, Database, Network, Terminal } from 'lucide-react';
+import { Activity, Brain, Database, Network, Terminal, FileText, Handshake, ListTodo } from 'lucide-react';
 import { PageStatusBanner } from '@/components/PageStatusBanner';
 import { AgentPlayground } from '@/components/agents/AgentPlayground';
+import { A2AMessageCenter } from '@/components/agents/A2AMessageCenter';
+import { A2AMessageComposer } from '@/components/agents/A2AMessageComposer';
 import { trpc } from '@/utils/trpc';
 import { Card, CardHeader, CardTitle, CardContent, Badge, Button } from '@hypercode/ui';
 import Link from 'next/link';
@@ -27,6 +29,24 @@ export default function AgentsDashboard() {
                     </p>
                 </div>
                 <div className="flex gap-4">
+                    <Link href="/dashboard/agents/tasks">
+                        <Button variant="outline" className="border-indigo-500/20 text-indigo-400 hover:bg-indigo-500/10">
+                            <ListTodo className="h-4 w-4 mr-2" />
+                            Task Queue
+                        </Button>
+                    </Link>
+                    <Link href="/dashboard/agents/negotiation">
+                        <Button variant="outline" className="border-indigo-500/20 text-indigo-400 hover:bg-indigo-500/10">
+                            <Handshake className="h-4 w-4 mr-2" />
+                            Negotiations
+                        </Button>
+                    </Link>
+                    <Link href="/dashboard/agents/logs">
+                        <Button variant="outline" className="border-indigo-500/20 text-indigo-400 hover:bg-indigo-500/10">
+                            <FileText className="h-4 w-4 mr-2" />
+                            Signal Logs
+                        </Button>
+                    </Link>
                     <Link href="/dashboard/memory">
                         <Button variant="outline" className="border-indigo-500/20 text-indigo-400 hover:bg-indigo-500/10">
                             <Database className="h-4 w-4 mr-2" />
@@ -90,8 +110,16 @@ export default function AgentsDashboard() {
                     </Card>
                 </div>
 
-                <div className="lg:col-span-2 flex flex-col">
-                    <AgentPlayground />
+                <div className="lg:col-span-2 flex flex-col gap-6">
+                    <div className="flex-1">
+                        <AgentPlayground />
+                    </div>
+                    <div className="h-96">
+                        <A2AMessageCenter />
+                    </div>
+                    <div>
+                        <A2AMessageComposer />
+                    </div>
                 </div>
             </div>
         </div>

@@ -40,7 +40,19 @@ import (
 	"github.com/hypercodehq/hypercode-go/internal/mcp"
 	"github.com/hypercodehq/hypercode-go/internal/orchestration"
 	"github.com/hypercodehq/hypercode-go/internal/supervisor"
+	"github.com/hypercodehq/hypercode-go/internal/tools"
 	"github.com/hypercodehq/hypercode-go/internal/workflow"
+
+	"github.com/hypercodehq/hypercode-go/internal/cache"
+	"github.com/hypercodehq/hypercode-go/internal/ctxharvester"
+	"github.com/hypercodehq/hypercode-go/internal/eventbus"
+	"github.com/hypercodehq/hypercode-go/internal/gitservice"
+	"github.com/hypercodehq/hypercode-go/internal/healer"
+	"github.com/hypercodehq/hypercode-go/internal/metrics"
+	processmanager "github.com/hypercodehq/hypercode-go/internal/process"
+	"github.com/hypercodehq/hypercode-go/internal/session"
+	"github.com/hypercodehq/hypercode-go/internal/toolregistry"
+	"github.com/hypercodehq/hypercode-go/internal/workspaces"
 	"github.com/google/uuid"
 	_ "modernc.org/sqlite"
 )
@@ -73,6 +85,33 @@ type Server struct {
 	supervisorManager *supervisor.Manager
 	sessionState      *localSessionStateManager
 	workflowEngine    *workflow.Engine
+	toolsRegistry     *tools.Registry
+	mcpAggregator     *mcp.Aggregator
+	mcpPredictor      *mcp.ToolPredictor
+	mcpDecision       *mcp.DecisionSystem
+	a2aLogger         *orchestration.A2ALogger
+	a2aBroker         *orchestration.A2ABroker
+	taskQueue         *orchestration.TaskQueue
+	swarmController   *orchestration.SwarmController
+	coderAgent        *orchestration.CoderAgent
+	goDirector        *orchestration.Director
+	highValueIngestor *hsync.HighValueIngestor
+	memoryReactor     *memorystore.MemoryReactor
+	mcpConfig         *mcp.ConfigManager
+	skillStore        *harnesses.SkillStore
+	memoryArchiver    *memorystore.MemoryArchiver
+
+	// --- New Go-native services (alpha.32+) ---
+	eventBus          *eventbus.EventBus
+	metricsService    *metrics.MetricsService
+	sessionManager    *session.SessionManager
+	toolRegistry      *toolregistry.ToolRegistry
+	gitService        *gitservice.GitService
+	contextHarvester  *ctxharvester.ContextHarvester
+	workspaceTracker  *workspaces.WorkspaceTracker
+	processManager    *processmanager.ProcessManager
+	healerService     *healer.HealerService
+	cacheService      *cache.Cache
 }
 
 type providerFallbackEvent struct {
@@ -383,7 +422,50 @@ func New(cfg config.Config, detector controlplane.ToolProvider) *Server {
 		supervisorManager: supervisor.NewManager(supervisor.ManagerOptions{WorktreeRoot: cfg.WorkspaceRoot, PersistencePath: filepath.Join(cfg.ConfigDir, "session-supervisor.json")}),
 		sessionState:      newLocalSessionStateManager(filepath.Join(cfg.WorkspaceRoot, ".hypercode-session.json")),
 		workflowEngine:    workflow.NewEngine(),
+		toolsRegistry:     tools.NewRegistry(),
+		mcpAggregator:     mcp.NewAggregator(),
+		a2aLogger:         orchestration.NewA2ALogger(cfg.WorkspaceRoot),
 	}
+	server.a2aBroker = orchestration.NewA2ABroker(server.a2aLogger)
+	server.skillStore = harnesses.NewSkillStore(cfg.MainConfigDir)
+	server.coderAgent = orchestration.NewCoderAgent(server.a2aBroker, cfg.WorkspaceRoot)
+	server.coderAgent.Start(context.Background())
+	server.goDirector = orchestration.NewDirector(server.swarmController, server.coderAgent, server.a2aBroker)
+	server.mcpConfig = mcp.NewConfigManager(cfg.MainConfigDir)
+	server.memoryReactor = memorystore.NewMemoryReactor(cfg.WorkspaceRoot)
+	server.highValueIngestor = hsync.NewHighValueIngestor(filepath.Join(cfg.MainConfigDir, "metamcp.db"), server.skillStore, server.mcpConfig)
+	server.memoryArchiver = memorystore.NewMemoryArchiver(cfg.WorkspaceRoot)
+	server.swarmController = orchestration.NewSwarmController(server.a2aBroker)
+	server.mcpPredictor = mcp.NewToolPredictor(server.mcpAggregator)
+	server.supervisorManager.SetPredictor(server.mcpPredictor)
+
+	// --- Initialize MCP Decision System ---
+	decisionCfg := mcp.DefaultDecisionConfig()
+	decisionCfg.CatalogDBPath = filepath.Join(cfg.ConfigDir, "mcp-catalog.json")
+	server.mcpDecision = mcp.NewDecisionSystem(decisionCfg, server.mcpAggregator)
+	server.mcpDecision.AddCatalogEntries(mcp.BuiltinTools())
+	// Load persisted catalog if available
+	_ = server.mcpDecision.LoadCatalog(decisionCfg.CatalogDBPath)
+	// Refresh from live inventory
+	if inv, err := mcp.LoadInventory(cfg.WorkspaceRoot, cfg.MainConfigDir); err == nil {
+		server.mcpDecision.RefreshFromInventory(inv)
+	}
+
+	// --- Initialize new Go-native services ---
+	server.eventBus = eventbus.New(1000)
+	server.metricsService = metrics.NewMetricsService()
+	server.sessionManager = session.NewSessionManager(100)
+	server.toolRegistry = toolregistry.NewToolRegistry()
+	server.gitService = gitservice.NewGitService(cfg.WorkspaceRoot)
+	server.contextHarvester = ctxharvester.NewContextHarvester(nil)
+	server.workspaceTracker = workspaces.NewWorkspaceTracker("")
+	server.processManager = processmanager.NewProcessManager()
+	server.healerService = healer.NewHealerService(nil, "") // LLM provider wired later
+	server.cacheService = cache.New(cache.CacheOptions{MaxSize: 500, DefaultTTL: 60000})
+
+	// Register workspace on startup
+	_ = server.workspaceTracker.RegisterWorkspace(cfg.WorkspaceRoot)
+
 	server.squad.load()
 	server.swarm.load()
 	server.registerRoutes()
@@ -507,9 +589,52 @@ func (s *Server) registerRoutes() {
 	s.mux.HandleFunc("/api/mcp/servers/sync-client-config", s.handleMCPSyncClientConfig)
 	s.mux.HandleFunc("/api/mcp/tools", s.handleMCPTools)
 	s.mux.HandleFunc("/api/mcp/tools/search", s.handleMCPSearchTools)
+	s.mux.HandleFunc("/api/mcp/tools/predict", s.handleMCPPredictTools)
 	s.mux.HandleFunc("/api/mcp/tools/call", s.handleMCPCallTool)
 	s.mux.HandleFunc("/api/mcp/tools/auto-call", s.handleMCPAutoCallTool)
 	s.mux.HandleFunc("/api/mcp/tool-ads", s.handleMCPToolAdvertisements)
+
+	// --- MCP Decision System (unified search/call/load) ---
+	s.mux.HandleFunc("/api/mcp/decision/search", s.handleDecisionSearch)
+	s.mux.HandleFunc("/api/mcp/decision/search-and-call", s.handleDecisionSearchAndCall)
+	s.mux.HandleFunc("/api/mcp/decision/load", s.handleDecisionLoad)
+	s.mux.HandleFunc("/api/mcp/decision/call", s.handleDecisionCall)
+	s.mux.HandleFunc("/api/mcp/decision/list-loaded", s.handleDecisionListLoaded)
+	s.mux.HandleFunc("/api/mcp/decision/unload", s.handleDecisionUnload)
+	s.mux.HandleFunc("/api/mcp/decision/list-all", s.handleDecisionListAll)
+	s.mux.HandleFunc("/api/mcp/decision/events", s.handleDecisionEvents)
+	s.mux.HandleFunc("/api/mcp/decision/catalog/refresh", s.handleDecisionCatalogRefresh)
+	s.mux.HandleFunc("/api/mcp/decision/catalog/save", s.handleDecisionCatalogSave)
+
+	// --- Go-native service endpoints ---
+	s.mux.HandleFunc("/api/native/eventbus/publish", s.handleEventBusPublish)
+	s.mux.HandleFunc("/api/native/eventbus/history", s.handleEventBusHistory)
+	s.mux.HandleFunc("/api/native/cache/get", s.handleCacheGet)
+	s.mux.HandleFunc("/api/native/cache/set", s.handleCacheSet)
+	s.mux.HandleFunc("/api/native/cache/invalidate", s.handleCacheInvalidate)
+	s.mux.HandleFunc("/api/native/cache/stats", s.handleCacheStats)
+	s.mux.HandleFunc("/api/native/git/log", s.handleNativeGitLog)
+	s.mux.HandleFunc("/api/native/git/status", s.handleNativeGitStatus)
+	s.mux.HandleFunc("/api/native/git/diff", s.handleNativeGitDiff)
+	s.mux.HandleFunc("/api/native/git/branches", s.handleNativeGitBranches)
+	s.mux.HandleFunc("/api/native/session/list", s.handleSessionList)
+	s.mux.HandleFunc("/api/native/session/create", s.handleSessionCreate)
+	s.mux.HandleFunc("/api/native/session/get", s.handleSessionGet)
+	s.mux.HandleFunc("/api/native/workspaces/list", s.handleWorkspacesList)
+	s.mux.HandleFunc("/api/native/workspaces/register", s.handleWorkspacesRegister)
+	s.mux.HandleFunc("/api/native/metrics/prometheus", s.handleMetricsPrometheus)
+	s.mux.HandleFunc("/api/native/metrics/counters", s.handleMetricsCounters)
+	s.mux.HandleFunc("/api/native/tools/search", s.handleNativeToolSearch)
+	s.mux.HandleFunc("/api/native/tools/list", s.handleNativeToolList)
+	s.mux.HandleFunc("/api/native/tools/register", s.handleNativeToolRegister)
+	s.mux.HandleFunc("/api/native/healer/diagnose", s.handleNativeHealerDiagnose)
+	s.mux.HandleFunc("/api/native/healer/history", s.handleNativeHealerHistory)
+	s.mux.HandleFunc("/api/native/harvester/add", s.handleHarvesterAdd)
+	s.mux.HandleFunc("/api/native/harvester/search", s.handleHarvesterSearch)
+	s.mux.HandleFunc("/api/native/harvester/report", s.handleHarvesterReport)
+	s.mux.HandleFunc("/api/native/process/spawn", s.handleProcessSpawn)
+	s.mux.HandleFunc("/api/native/process/list", s.handleProcessList)
+	s.mux.HandleFunc("/api/native/process/kill", s.handleProcessKill)
 	s.mux.HandleFunc("/api/mcp/tools/schema", s.handleMCPToolSchema)
 	s.mux.HandleFunc("/api/mcp/preferences", s.handleMCPToolPreferences)
 	s.mux.HandleFunc("/api/mcp/traffic", s.handleMCPTraffic)
@@ -770,6 +895,13 @@ func (s *Server) registerRoutes() {
 	s.mux.HandleFunc("/api/shell/history/system", s.handleShellSystemHistory)
 	s.mux.HandleFunc("/api/agent/tool", s.handleAgentRunTool)
 	s.mux.HandleFunc("/api/agent/chat", s.handleAgentChat)
+	s.mux.HandleFunc("/api/agent/a2a/agents", s.handleA2AListAgents)
+	s.mux.HandleFunc("/api/agent/a2a/messages", s.handleA2AGetMessages)
+	s.mux.HandleFunc("/api/agent/a2a/logs", s.handleA2AGetLogs)
+	s.mux.HandleFunc("/api/agent/a2a/broadcast", s.handleA2ABroadcast)
+	s.mux.HandleFunc("/api/agent/swarm/start", s.handleAgentSwarmStart)
+	s.mux.HandleFunc("/api/agent/director/start", s.handleGoDirectorStart)
+	s.mux.HandleFunc("/api/memory/archive-session", s.handleMemoryArchiveSession)
 	s.mux.HandleFunc("/api/commands/execute", s.handleCommandsExecute)
 	s.mux.HandleFunc("/api/commands", s.handleCommandsList)
 	s.mux.HandleFunc("/api/skills", s.handleSkillsList)
@@ -777,6 +909,7 @@ func (s *Server) registerRoutes() {
 	s.mux.HandleFunc("/api/skills/read", s.handleSkillsRead)
 	s.mux.HandleFunc("/api/skills/create", s.handleSkillsCreate)
 	s.mux.HandleFunc("/api/skills/save", s.handleSkillsSave)
+	s.mux.HandleFunc("/api/skills/search", s.handleSkillsSearch)
 	s.mux.HandleFunc("/api/skills/assimilate", s.handleSkillsAssimilate)
 	s.mux.HandleFunc("/api/workflows", s.handleWorkflowList)
 	s.mux.HandleFunc("/api/workflows/graph", s.handleWorkflowGraph)
@@ -915,6 +1048,7 @@ func (s *Server) registerRoutes() {
 	s.mux.HandleFunc("/api/rag/text", s.handleRAGIngestText)
 	s.mux.HandleFunc("/api/directory", s.handleUnifiedDirectoryList)
 	s.mux.HandleFunc("/api/directory/stats", s.handleUnifiedDirectoryStats)
+	s.mux.HandleFunc("/api/directory/high-value-ingest", s.handleHighValueIngest)
 	s.mux.HandleFunc("/api/tool-chains/aliases", s.handleToolChainAliases)
 	s.mux.HandleFunc("/api/tool-chains/aliases/create", s.handleToolChainCreateAlias)
 	s.mux.HandleFunc("/api/tool-chains/aliases/remove", s.handleToolChainRemoveAlias)
@@ -966,6 +1100,9 @@ func (s *Server) registerRoutes() {
 	s.mux.HandleFunc("/api/mesh/query-capabilities", s.handleMeshQueryCapabilities)
 	s.mux.HandleFunc("/api/mesh/find-peer", s.handleMeshFindPeer)
 	s.mux.HandleFunc("/api/mesh/broadcast", s.handleMeshBroadcast)
+
+	// --- New Go-native handlers (alpha.11+) ---
+	s.registerSavedScriptRoutes()
 }
 
 func (s *Server) handleHealth(w http.ResponseWriter, _ *http.Request) {
@@ -6082,7 +6219,64 @@ func (s *Server) handleShellSystemHistory(w http.ResponseWriter, r *http.Request
 }
 
 func (s *Server) handleAgentRunTool(w http.ResponseWriter, r *http.Request) {
-	s.handleTRPCBridgeBodyCall(w, r, "agent.runTool")
+	if r.Method != http.MethodPost {
+		writeJSON(w, http.StatusMethodNotAllowed, map[string]any{"success": false, "error": "method not allowed"})
+		return
+	}
+
+	var payload struct {
+		Name      string                 `json:"name"`
+		Arguments map[string]interface{} `json:"arguments"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
+		writeJSON(w, http.StatusBadRequest, map[string]any{"success": false, "error": "invalid JSON body"})
+		return
+	}
+
+	// 1. Try native Go tool handlers first (Total Autonomy)
+	if s.toolsRegistry != nil && s.toolsRegistry.HasTool(payload.Name) {
+		result, err := s.toolsRegistry.Execute(r.Context(), payload.Name, payload.Arguments)
+		if err == nil {
+			writeJSON(w, http.StatusOK, map[string]any{
+				"success": true,
+				"data":    result,
+				"bridge": map[string]any{
+					"source": "go-native-tool",
+					"tool":   payload.Name,
+				},
+			})
+			return
+		}
+		// If native tool fails, return the error
+		writeJSON(w, http.StatusInternalServerError, map[string]any{
+			"success": false,
+			"error":   err.Error(),
+			"source":  "go-native-tool",
+		})
+		return
+	}
+
+	// 2. Try upstream Node server (Bridge)
+	var result any
+	upstreamBase, err := s.callUpstreamJSON(r.Context(), "agent.runTool", payload, &result)
+	if err == nil {
+		writeJSON(w, http.StatusOK, map[string]any{
+			"success": true,
+			"data":    result,
+			"bridge": map[string]any{
+				"upstreamBase": upstreamBase,
+				"procedure":    "agent.runTool",
+			},
+		})
+		return
+	}
+
+	// 3. Fallback: Descriptive error
+	writeJSON(w, http.StatusServiceUnavailable, map[string]any{
+		"success": false,
+		"error":   "Tool not found or upstream unavailable",
+		"detail":  fmt.Sprintf("Tool '%s' not implemented in Go and Node server is unreachable.", payload.Name),
+	})
 }
 
 
@@ -6263,6 +6457,30 @@ func (s *Server) handleSkillsSave(w http.ResponseWriter, r *http.Request) {
 	s.handleSkillMutation(w, r, "skills.save", func(payload map[string]any) (any, error) {
 		return s.localSaveSkill(payload)
 	})
+}
+
+func (s *Server) handleSkillsSearch(w http.ResponseWriter, r *http.Request) {
+	query := r.URL.Query().Get("query")
+	if query == "" {
+		writeJSON(w, http.StatusBadRequest, map[string]any{"success": false, "error": "query parameter required"})
+		return
+	}
+
+	var result any
+	upstreamBase, err := s.callUpstreamJSON(r.Context(), "skills.search", map[string]any{"query": query}, &result)
+	if err == nil {
+		writeJSON(w, http.StatusOK, map[string]any{
+			"success": true,
+			"data":    result,
+			"bridge": map[string]any{
+				"upstreamBase": upstreamBase,
+				"procedure":    "skills.search",
+			},
+		})
+		return
+	}
+
+	writeJSON(w, http.StatusServiceUnavailable, map[string]any{"success": false, "error": "upstream unavailable"})
 }
 
 func (s *Server) handleSkillsAssimilate(w http.ResponseWriter, r *http.Request) {
@@ -7562,15 +7780,22 @@ func (s *Server) handleExpertStatus(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusOK, map[string]any{
 		"success": true,
 		"data": map[string]any{
-			"researcher": "offline",
-			"coder":      "offline",
+			"researcher": "active", // Researcher logic is mostly in TS for now
+			"coder":      s.getCoderStatus(),
 		},
 		"bridge": map[string]any{
 			"fallback":  "go-local-status",
 			"procedure": "expert.getStatus",
-			"reason":    "upstream unavailable; using local offline expert status",
+			"reason":    "upstream unavailable; using local expert agent status",
 		},
 	})
+}
+
+func (s *Server) getCoderStatus() string {
+	if s.coderAgent != nil {
+		return "active"
+	}
+	return "offline"
 }
 
 func (s *Server) handlePoliciesList(w http.ResponseWriter, r *http.Request) {
@@ -9109,6 +9334,43 @@ func (s *Server) handleRAGIngestFile(w http.ResponseWriter, r *http.Request) {
 
 func (s *Server) handleRAGIngestText(w http.ResponseWriter, r *http.Request) {
 	s.handleTRPCBridgeBodyCall(w, r, "rag.ingestText")
+}
+
+func (s *Server) handleHighValueIngest(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		writeJSON(w, http.StatusMethodNotAllowed, map[string]any{"success": false, "error": "method not allowed"})
+		return
+	}
+
+	// Try upstream first
+	var result any
+	upstreamBase, err := s.callUpstreamJSON(r.Context(), "unifiedDirectory.highValueIngest", nil, &result)
+	if err == nil {
+		writeJSON(w, http.StatusOK, map[string]any{
+			"success": true,
+			"data":    result,
+			"bridge": map[string]any{
+				"upstreamBase": upstreamBase,
+				"procedure":    "unifiedDirectory.highValueIngest",
+			},
+		})
+		return
+	}
+
+	// Fallback: local Go high-value ingestor
+	err = s.highValueIngestor.ProcessHighValueQueue(r.Context(), 5)
+	if err != nil {
+		writeJSON(w, http.StatusInternalServerError, map[string]any{"success": false, "error": err.Error()})
+		return
+	}
+
+	writeJSON(w, http.StatusOK, map[string]any{
+		"success": true,
+		"message": "Local high-value link processing complete",
+		"bridge": map[string]any{
+			"fallback": "go-local-high-value-ingest",
+		},
+	})
 }
 
 func (s *Server) handleUnifiedDirectoryList(w http.ResponseWriter, r *http.Request) {

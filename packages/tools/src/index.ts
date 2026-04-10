@@ -11,5 +11,6 @@ export * from './SearchTools.js';
 export * from './SystemStatusTool.js';
 export * from './TerminalTools.js';
 export * from './TunnelTools.js';
+export * from './ToolParityAliases.js';
 export * from './WorktreeTools.js';
 export * from './os/ProcessRegistry.js';
