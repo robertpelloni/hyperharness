@@ -28,9 +28,9 @@
 - [ ] Memory export/import
 
 ### Tests
-- [ ] Integration test: full agent loop with mock provider
-- [ ] Integration test: tool execution through Harness.ExecuteTool()
-- [ ] Integration test: MCP server connection lifecycle
+- [x] Integration test: full agent loop with mock provider
+- [x] Integration test: tool execution through Harness.ExecuteTool()
+- [x] Integration test: MCP server connection lifecycle
 - [ ] Benchmark: tool dispatch latency
 - [ ] Benchmark: memory search performance
 - [ ] Fuzz test: tool parameter parsing
