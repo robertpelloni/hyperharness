@@ -13,7 +13,7 @@ Key architectural components include:
 - **Tool Parity Layer (`tools/`)**: Houses exact replicas of tool interfaces from multiple CLI tools (e.g., `claude_code_parity.go`, `goose_opencode_kimi_parity.go`, `crush_parity.go`). These tools execute by mapping their inputs into the internal subsystems.
 - **Borg Core Engine (`internal/borg/`)**: A central orchestrator that provides an adapter pattern to connect various models and agents, managing their lifecycles, hooks, and events.
 - **Context Manager (`internal/context/`)**: Handles token tracking, context compaction, history reduction, and prompt injection to efficiently manage LLM context windows.
-- **Memory System (`internal/memory/`)**: Implements a Knowledge Base for long-term storage and retrieval. It currently aims to utilize SQLite FTS5 (`glebarez/sqlite`) to prevent conflicts with other CGO dependencies.
+- **Memory System (`internal/memory/`)**: Implements a Knowledge Base for long-term storage and retrieval. It currently utilizes SQLite FTS5 (`glebarez/sqlite`) to prevent conflicts with other CGO dependencies.
 - **Session Manager (`internal/sessions/`)**: Manages conversational state, storing session trees as JSONL files. It supports complex behaviors like branching, forking, and compaction.
 - **Subagent Manager (`internal/subagents/`)**: Spawns specialized agents (Code, Research, Test, Plan, etc.) with specific configurations, allowed tools, and token limits.
 - **MCP (Model Context Protocol) (`internal/mcp/`)**: A transport layer that acts both as a client to external MCP servers (via `stdio` and `sse`) and can serve internal tools outwardly.
@@ -28,17 +28,22 @@ Key architectural components include:
 - **Interface & Dependency Decoupling**: Components are designed to interact via well-defined structs and interfaces (e.g., the `Tool` struct, `JSONRPCMessage` for MCP), allowing easy mocking and testing.
 - **CGO-Free Preference**: The project prefers pure Go implementations (like `glebarez/sqlite` over `modernc.org/sqlite`) to simplify cross-platform compilation and deployment.
 
-## Current State & Recent Wiring
-- **Deep Tool Wiring**: Recently, dummy stub implementations in the parity layer were successfully wired to their actual backend Go implementations.
-  - `TodoWrite` now updates a persistent `SessionTodoStore`.
-  - `Agent` connects to the `subagents.Manager` to spawn tasks.
-  - Web tools (`WebSearch`, `WebFetch`) map to real HTTP/Exa clients.
-  - `LSP` maps to actual Language Server Protocol clients.
-  - `Config` and `Skill` map to their respective internal managers.
-- **MCP Transport**: Both `stdio` and `sse` transports have been fully implemented, handling JSON-RPC handshakes (`initialize`, `tools/list`, `tools/call`).
+## Current State & Recent Improvements
+- **Deep Tool Wiring**: Completed connecting stub parity tools into real backend modules:
+  - `TodoWrite` interacts with `SessionTodoStore` tracking session-level to-dos.
+  - `Agent` connects to `subagents.Manager` to create tasks dynamically.
+  - `WebSearch` invokes live web search (like Exa).
+  - `WebFetch` parses remote content correctly via HTTP.
+  - `LSP` coordinates IDE-like capabilities securely.
+  - `Config` dynamically uses runtime configurations (`config.LoadConfig()`).
+- **MCP Transport Advancements**:
+  - Full client support for `stdio` MCP server spawning via `exec.Command` and JSON-RPC lifecycle connections.
+  - Initial `sse` (Server-Sent Events) support over HTTP clients matching the latest protocol definitions.
+- **Memory System Progression**:
+  - Introduced schema capabilities for SQLite stores parsing vector embeddings (`[]float32`) alongside metadata.
+  - Enhanced search indexing with Memory Decay Weighting – computing relevancy via FTS5 `rank` and penalizing entries based on age (`julianday`).
 
 ## Future Roadmap Focus (TODO.md)
 The next primary objectives involve:
-1. **Memory Enhancements**: Wiring up SQLite FTS5 for knowledge bases and vector embeddings for semantic search.
-2. **Deep MCP Integration**: Finalizing the bidirectional routing of internal tools exposed over the MCP server interface.
-3. **Comprehensive Testing**: Adding robust integration tests spanning the entire agent loop, tool execution pipelines, and MCP lifecycle.
+1. **Testing Infrastructure**: Formulating comprehensive integration testing for execution paths spanning agent loops, `Registry` tool discovery, and verifying correct MCP process lifecycles.
+2. **Extensibility Additions**: Maturing Smithery integrations and allowing flexible dynamic tool loading.

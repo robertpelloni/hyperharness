@@ -1,4 +1,42 @@
-[PROJECT_MEMORY]
+import sys
+import re
+
+with open("HANDOFF.md", "r") as f:
+    handoff = f.read()
+
+# Update HANDOFF.md next steps
+handoff_old = """## Next Steps
+1. Wire tool detectors into actual tool dispatch (use detected tools as backends)
+2. MCP deep integration: actual stdio transport, SSE transport
+3. Memory SQLite backend with vector embeddings
+4. Integration tests with actual AI model tool calling
+5. Port remaining submodule agent loop patterns (streaming, context budgets)
+6. Performance benchmarks
+7. Wire all tools to real backends: TodoWrite→SessionTodoStore, Agent→subagents, LSP→lsp_client"""
+
+handoff_new = """## Next Steps
+1. Wire tool detectors into actual tool dispatch (use detected tools as backends)
+2. Memory SQLite backend with vector embeddings
+3. Integration tests with actual AI model tool calling
+4. Port remaining submodule agent loop patterns (streaming, context budgets)
+5. Performance benchmarks
+6. MCP deep integration: Bidirectional routing (expose internal tools via MCP server)"""
+
+handoff = handoff.replace(handoff_old, handoff_new)
+
+# Update state in HANDOFF.md
+handoff_state_old = "## Current State: v0.3.0"
+handoff_state_new = "## Current State: v0.3.0\n- **Deep Tool Wiring Complete**: TodoWrite, Agent, LSP, WebSearch, WebFetch, Config, Skill are now wired to real backends.\n- **MCP Transports Complete**: Both stdio and SSE client transports are fully implemented."
+
+handoff = handoff.replace(handoff_state_old, handoff_state_new)
+
+with open("HANDOFF.md", "w") as f:
+    f.write(handoff)
+
+with open("MEMORY.md", "r") as f:
+    memory = f.read()
+
+memory_new = """[PROJECT_MEMORY]
 
 # HyperHarness Project Architecture & Findings
 
@@ -42,3 +80,8 @@ The next primary objectives involve:
 1. **Memory Enhancements**: Wiring up SQLite FTS5 for knowledge bases and vector embeddings for semantic search.
 2. **Deep MCP Integration**: Finalizing the bidirectional routing of internal tools exposed over the MCP server interface.
 3. **Comprehensive Testing**: Adding robust integration tests spanning the entire agent loop, tool execution pipelines, and MCP lifecycle.
+"""
+
+with open("MEMORY.md", "w") as f:
+    f.write(memory_new)
+print("Updated docs")

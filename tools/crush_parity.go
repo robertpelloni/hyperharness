@@ -753,12 +753,12 @@ func runGoDiagnostics(filePath string) (string, error) {
 
 // TodoItem represents a tracked task.
 type TodoItem struct {
-	ID          string `json:"id"`
-	Content     string `json:"content"`
-	Status      string `json:"status"` // "pending", "in_progress", "completed"
-	Priority    string `json:"priority,omitempty"`
-	File        string `json:"file,omitempty"`
-	Line        int    `json:"line,omitempty"`
+	ID       string `json:"id"`
+	Content  string `json:"content"`
+	Status   string `json:"status"` // "pending", "in_progress", "completed"
+	Priority string `json:"priority,omitempty"`
+	File     string `json:"file,omitempty"`
+	Line     int    `json:"line,omitempty"`
 }
 
 // TodoStore manages todos in memory.
@@ -959,7 +959,7 @@ func (r *Registry) registerReferencesTool() {
 
 			piArgs := map[string]interface{}{
 				"pattern": pattern,
-				"path":   searchPath,
+				"path":    searchPath,
 			}
 			raw, _ := json.Marshal(piArgs)
 			runtime := foundationpi.NewRuntime(".", nil)

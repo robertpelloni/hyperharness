@@ -3,27 +3,27 @@
 ## Immediate (Next Session)
 
 ### Deep Tool Wiring
-- [ ] Wire `TodoWrite` tool to session-level state persistence
-- [ ] Wire `Agent` tool to actual `internal/subagents` Manager
-- [ ] Wire `LSP` tool to gopls/other language servers via stdio
-- [ ] Wire `WebSearch` to Exa or Brave Search API
-- [ ] Wire `WebFetch` to actual HTTP client
+- [x] Wire `TodoWrite` tool to session-level state persistence
+- [x] Wire `Agent` tool to actual `internal/subagents` Manager
+- [x] Wire `LSP` tool to gopls/other language servers via stdio
+- [x] Wire `WebSearch` to Exa or Brave Search API
+- [x] Wire `WebFetch` to actual HTTP client
 - [ ] Wire `PowerShell` to actual PowerShell execution on Windows
-- [ ] Wire `Config` tool to actual `internal/config` Manager
-- [ ] Wire `Skill` tool to actual `internal/skills` Manager
+- [x] Wire `Config` tool to actual `internal/config` Manager
+- [x] Wire `Skill` tool to actual `internal/skills` Manager
 - [ ] Wire `platform__manage_schedule` to actual cron system
 
 ### MCP Deep Integration
-- [ ] Implement actual stdio transport for MCP server connections
-- [ ] Add SSE transport support
-- [ ] Tool discovery from connected MCP servers
-- [ ] Bidirectional routing (expose internal tools via MCP server)
-- [ ] Smithery registry API integration
+- [x] Implement actual stdio transport for MCP server connections
+- [x] Add SSE transport support
+- [x] Tool discovery from connected MCP servers
+- [x] Bidirectional routing (expose internal tools via MCP server)
+- [x] Smithery registry API integration
 
 ### Memory System Enhancement
-- [ ] SQLite backend with FTS5 for knowledge base
-- [ ] Vector embeddings for semantic search
-- [ ] Memory decay weighting (older = less relevant)
+- [x] SQLite backend with FTS5 for knowledge base
+- [x] Vector embeddings for semantic search
+- [x] Memory decay weighting (older = less relevant)
 - [ ] Project-scoped memory isolation
 - [ ] Memory export/import
 

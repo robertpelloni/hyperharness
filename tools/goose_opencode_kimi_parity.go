@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/robertpelloni/hyperharness/internal/extensions"
 	"io/fs"
 	"os"
 	"os/exec"
@@ -1043,7 +1044,8 @@ func (r *Registry) registerKimiCLITools() {
 			if job.Cmd != nil && job.Cmd.Process != nil {
 				job.Cmd.Process.Kill()
 			}
-			job.Done = true; job.ExitCode = -1
+			job.Done = true
+			job.ExitCode = -1
 
 			return fmt.Sprintf("Task %s stopped. Reason: %s", taskID, reason), nil
 		},
@@ -1567,14 +1569,14 @@ func (r *Registry) registerCursorTools() {
 }
 
 // ============================================================================
-// WINDSURF PARITY TOOLS  
+// WINDSURF PARITY TOOLS
 // ============================================================================
 
 // registerWindsurfTools adds Windsurf/Codium compatible tool surfaces.
 func (r *Registry) registerWindsurfTools() {
-	// read_file (Windsurf format - already registered via Gemini parity, 
+	// read_file (Windsurf format - already registered via Gemini parity,
 	// but add windsurf-specific cascade_write)
-	
+
 	// cascade_edit - Windsurf Cascade's edit format
 	r.Tools = append(r.Tools, Tool{
 		Name:        "cascade_edit",
@@ -1732,7 +1734,20 @@ func (r *Registry) registerSmitheryTools() {
 			if serverName == "" {
 				return "", fmt.Errorf("server_name is required")
 			}
-			return fmt.Sprintf("Smithery: Installing MCP server '%s'... (MCP registry integration required)", serverName), nil
+
+			configRaw, _ := args["config"].(map[string]interface{})
+			if configRaw == nil {
+				configRaw = make(map[string]interface{})
+			}
+
+			// Use the extensions manager to install
+			extMgr := extensions.NewManager("")
+
+			if err := extMgr.InstallFromSmithery(serverName, configRaw); err != nil {
+				return "", fmt.Errorf("smithery install failed: %w", err)
+			}
+
+			return fmt.Sprintf("Smithery: Successfully installed MCP server '%s'", serverName), nil
 		},
 	})
 

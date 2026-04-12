@@ -4,11 +4,14 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"os"
+	"path/filepath"
 	"strings"
 	"sync"
+	"time"
 
-	mem "github.com/robertpelloni/hyperharness/internal/memory"
 	foundationpi "github.com/robertpelloni/hyperharness/foundation/pi"
+	mem "github.com/robertpelloni/hyperharness/internal/memory"
 )
 
 // pi_exact_parity.go provides tool surfaces with exact pi tool naming,
@@ -255,8 +258,12 @@ func executePiTool(toolName string, args map[string]interface{}) (string, error)
 
 // Knowledge base singleton for tool integration
 var (
-	globalKB     *mem.KnowledgeBase
-	globalKBMux  sync.Once
+	globalKB    *mem.KnowledgeBase
+	globalKBMux sync.Once
+
+	// SQLite FTS5 backend
+	globalSQLiteKB    *mem.SQLiteMemoryStore
+	globalSQLiteKBMux sync.Once
 )
 
 func getKnowledgeBase() (*mem.KnowledgeBase, error) {
@@ -265,6 +272,16 @@ func getKnowledgeBase() (*mem.KnowledgeBase, error) {
 		globalKB, initErr = mem.NewKnowledgeBase("")
 	})
 	return globalKB, initErr
+}
+
+func getSQLiteMemoryStore() (*mem.SQLiteMemoryStore, error) {
+	var initErr error
+	globalSQLiteKBMux.Do(func() {
+		home, _ := os.UserHomeDir()
+		dbPath := filepath.Join(home, ".hyperharness", "memory_fts.db")
+		globalSQLiteKB, initErr = mem.NewSQLiteMemoryStore(dbPath)
+	})
+	return globalSQLiteKB, initErr
 }
 
 // truncateString truncates a string to maxLen characters.
@@ -374,7 +391,25 @@ func (r *Registry) registerHypercodeTools() {
 				}
 			}
 
-			// Try to use the actual knowledge base
+			// Try to use the SQLite FTS5 knowledge base
+			sqlStore, err := getSQLiteMemoryStore()
+			if err == nil && sqlStore != nil {
+				id := fmt.Sprintf("mem_%d", time.Now().UnixNano())
+				entry := mem.MemoryEntry{
+					ID:      id,
+					Title:   title,
+					Content: content,
+					Tags:    tags,
+					Scope:   scope,
+					Type:    "knowledge",
+				}
+				if err := sqlStore.Store(entry); err != nil {
+					return "", fmt.Errorf("failed to store knowledge in sqlite: %w", err)
+				}
+				return fmt.Sprintf("Stored knowledge in SQLite FTS5: %s (id: %s, scope: %s, tags: %v)", title, entry.ID, scope, tags), nil
+			}
+
+			// Fallback to JSON knowledge base
 			kb, err := getKnowledgeBase()
 			if err == nil && kb != nil {
 				entry := &mem.KnowledgeEntry{

@@ -5,7 +5,7 @@
 //
 // Tools registered here:
 // - apply_patch: OpenCode's patch application tool
-// - multiedit: OpenCode's multi-replacement tool  
+// - multiedit: OpenCode's multi-replacement tool
 // - webfetch: Enhanced web fetch with markdown/text/html conversion
 // - web_search: Exa-powered web search
 // - codesearch: Exa-powered code context search
