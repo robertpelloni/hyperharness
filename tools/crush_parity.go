@@ -328,8 +328,8 @@ func (r *Registry) registerViewTool() {
 				return "", fmt.Errorf("file_path is required")
 			}
 
-			offset := toInt(args["offset"], 1)
-			limit := toInt(args["limit"], 2000)
+			offset := GetIntDef(args["offset"], 1)
+			limit := GetIntDef(args["limit"], 2000)
 
 			if offset < 1 {
 				offset = 1
@@ -490,7 +490,7 @@ func (r *Registry) registerBashTool() {
 			workingDir, _ := args["working_dir"].(string)
 			runInBackground, _ := args["run_in_background"].(bool)
 			description, _ := args["description"].(string)
-			timeoutSeconds := toInt(args["timeout"], 0)
+			timeoutSeconds := GetIntDef(args["timeout"], 0)
 
 			if workingDir == "" {
 				workingDir = "."
@@ -609,7 +609,7 @@ func (r *Registry) registerWebFetchTool() {
 				return "", fmt.Errorf("url is required")
 			}
 
-			maxLength := toInt(args["max_length"], 50000)
+			maxLength := GetIntDef(args["max_length"], 50000)
 
 			client := &http.Client{Timeout: 30 * time.Second}
 			resp, err := client.Get(url)

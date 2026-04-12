@@ -59,7 +59,7 @@ func (r *Registry) registerGooseTools() {
 			}
 			maxDepth := 0 // unlimited
 			if md, ok := args["max_depth"]; ok {
-				maxDepth = toInt(md, 0)
+				maxDepth = GetIntDef(md, 0)
 			}
 			showSizes := true
 			if ss, ok := args["show_sizes"]; ok {
@@ -582,7 +582,7 @@ Status: completed.
 			}
 			timeoutSec := 30
 			if t, ok := args["timeout"]; ok {
-				timeoutSec = toInt(t, 30)
+				timeoutSec = GetIntDef(t, 30)
 				if timeoutSec > 120 {
 					timeoutSec = 120
 				}
@@ -642,8 +642,8 @@ Status: completed.
 		Execute: func(args map[string]interface{}) (string, error) {
 			operation, _ := args["operation"].(string)
 			filePath, _ := args["filePath"].(string)
-			line := toInt(args["line"], 1)
-			character := toInt(args["character"], 1)
+			line := GetIntDef(args["line"], 1)
+			character := GetIntDef(args["character"], 1)
 
 			if filePath == "" {
 				return "", fmt.Errorf("filePath is required")
@@ -906,7 +906,7 @@ func (r *Registry) registerKimiCLITools() {
 			if ao, ok := args["active_only"].(bool); ok {
 				activeOnly = ao
 			}
-			limit := toInt(args["limit"], 20)
+			limit := GetIntDef(args["limit"], 20)
 
 			GlobalJobManager.mu.Lock()
 			defer GlobalJobManager.mu.Unlock()
@@ -972,7 +972,7 @@ func (r *Registry) registerKimiCLITools() {
 			}
 
 			block, _ := args["block"].(bool)
-			timeout := toInt(args["timeout"], 30)
+			timeout := GetIntDef(args["timeout"], 30)
 
 			if block && jobStatus(job) == "running" {
 				// Wait for completion
@@ -1447,8 +1447,8 @@ func (r *Registry) registerCursorTools() {
 				piArgs["offset"] = start
 			}
 			if end, ok := args["end_line"]; ok {
-				startLine := toInt(args["start_line"], 1)
-				endLine := toInt(end, startLine+100)
+				startLine := GetIntDef(args["start_line"], 1)
+				endLine := GetIntDef(end, startLine+100)
 				piArgs["limit"] = endLine - startLine + 1
 			}
 			return executePiTool("read", piArgs)

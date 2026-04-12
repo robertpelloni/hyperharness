@@ -48,13 +48,13 @@
 - [ ] Add inline documentation to all tool Execute functions
 - [ ] Add godoc comments to all exported types
 - [ ] Refactor duplicate helper functions across parity files
-- [ ] Consolidate truncateString, getStr, getInt into shared package
+- [x] Consolidate truncateString, getStr, getInt into shared package
 - [ ] Add input validation to all tool parameters
 
 ### Feature Parity Gaps
-- [ ] OpenCode `plan_enter`/`plan_exit` — wire to actual planning mode
+- [x] OpenCode `plan_enter`/`plan_exit` — wire to actual planning mode
 - [ ] Crush `batch` — wire to actual parallel tool execution
-- [ ] Crush `delegate` — wire to actual subagent delegation
+- [x] Crush `delegate` — wire to actual subagent delegation
 - [ ] Crush `job_*` — wire to actual background process management
 - [ ] Smithery `smithery_install` — wire to actual registry API
 - [ ] Hypercode `context_manager` — wire to actual context compaction

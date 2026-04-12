@@ -27,6 +27,28 @@ func GetStr(m map[string]interface{}, key string) string {
 
 // GetInt extracts an int value from a map[string]interface{}.
 // Supports float64 (JSON default), int, and json.Number.
+// GetIntDef extracts an int from a raw value, using a default if missing or invalid.
+func GetIntDef(val interface{}, def int) int {
+	if val == nil {
+		return def
+	}
+	switch n := val.(type) {
+	case float64:
+		return int(n)
+	case float32:
+		return int(n)
+	case int:
+		return n
+	case int64:
+		return int(n)
+	case json.Number:
+		i, _ := n.Int64()
+		return int(i)
+	default:
+		return def
+	}
+}
+
 func GetInt(m map[string]interface{}, key string) int {
 	v, ok := m[key]
 	if !ok {
