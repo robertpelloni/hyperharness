@@ -488,7 +488,7 @@ func (r *Registry) registerBashTool() {
 			}
 
 			workingDir, _ := args["working_dir"].(string)
-			runInBackground, _ := args["run_in_background"].(bool)
+			runInBackground := GetBool(args, "run_in_background")
 			description, _ := args["description"].(string)
 			timeoutSeconds := GetIntDef(args["timeout"], 0)
 
