@@ -156,5 +156,3 @@ func (ts *SessionTodoStore) save() {
 	os.MkdirAll(filepath.Dir(ts.path), 0o755)
 	os.WriteFile(ts.path, data, 0o644)
 }
-
-

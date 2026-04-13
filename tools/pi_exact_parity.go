@@ -4,11 +4,14 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"os"
+	"path/filepath"
 	"strings"
 	"sync"
+	"time"
 
-	mem "github.com/robertpelloni/hyperharness/internal/memory"
 	foundationpi "github.com/robertpelloni/hyperharness/foundation/pi"
+	mem "github.com/robertpelloni/hyperharness/internal/memory"
 )
 
 // pi_exact_parity.go provides tool surfaces with exact pi tool naming,
@@ -255,8 +258,12 @@ func executePiTool(toolName string, args map[string]interface{}) (string, error)
 
 // Knowledge base singleton for tool integration
 var (
-	globalKB     *mem.KnowledgeBase
-	globalKBMux  sync.Once
+	globalKB    *mem.KnowledgeBase
+	globalKBMux sync.Once
+
+	// SQLite FTS5 backend
+	globalSQLiteKB    *mem.SQLiteMemoryStore
+	globalSQLiteKBMux sync.Once
 )
 
 func getKnowledgeBase() (*mem.KnowledgeBase, error) {
@@ -267,13 +274,17 @@ func getKnowledgeBase() (*mem.KnowledgeBase, error) {
 	return globalKB, initErr
 }
 
-// truncateString truncates a string to maxLen characters.
-func truncateString(s string, maxLen int) string {
-	if len(s) <= maxLen {
-		return s
-	}
-	return s[:maxLen] + "..."
+func getSQLiteMemoryStore() (*mem.SQLiteMemoryStore, error) {
+	var initErr error
+	globalSQLiteKBMux.Do(func() {
+		home, _ := os.UserHomeDir()
+		dbPath := filepath.Join(home, ".hyperharness", "memory_fts.db")
+		globalSQLiteKB, initErr = mem.NewSQLiteMemoryStore(dbPath)
+	})
+	return globalSQLiteKB, initErr
 }
+
+// truncateString truncates a string to maxLen characters.
 
 // registerMCPGatewayTool adds the MCP gateway tool for aggregating MCP servers.
 func (r *Registry) registerMCPGatewayTool() {
@@ -374,7 +385,25 @@ func (r *Registry) registerHypercodeTools() {
 				}
 			}
 
-			// Try to use the actual knowledge base
+			// Try to use the SQLite FTS5 knowledge base
+			sqlStore, err := getSQLiteMemoryStore()
+			if err == nil && sqlStore != nil {
+				id := fmt.Sprintf("mem_%d", time.Now().UnixNano())
+				entry := mem.MemoryEntry{
+					ID:      id,
+					Title:   title,
+					Content: content,
+					Tags:    tags,
+					Scope:   scope,
+					Type:    "knowledge",
+				}
+				if err := sqlStore.Store(entry); err != nil {
+					return "", fmt.Errorf("failed to store knowledge in sqlite: %w", err)
+				}
+				return fmt.Sprintf("Stored knowledge in SQLite FTS5: %s (id: %s, scope: %s, tags: %v)", title, entry.ID, scope, tags), nil
+			}
+
+			// Fallback to JSON knowledge base
 			kb, err := getKnowledgeBase()
 			if err == nil && kb != nil {
 				entry := &mem.KnowledgeEntry{
@@ -436,7 +465,7 @@ func (r *Registry) registerHypercodeTools() {
 				}
 			}
 			scope, _ := args["scope"].(string)
-			limit := toInt(args["limit"], 10)
+			limit := GetIntDef(args["limit"], 10)
 
 			// Try to use the actual knowledge base
 			kb, err := getKnowledgeBase()
@@ -452,7 +481,7 @@ func (r *Registry) registerHypercodeTools() {
 				sb.WriteString(fmt.Sprintf("Found %d results for %q:\n\n", len(results), query))
 				for i, entry := range results {
 					sb.WriteString(fmt.Sprintf("%d. **%s** (scope: %s, tags: %v)\n   %s\n\n",
-						i+1, entry.Title, entry.Scope, entry.Tags, truncateString(entry.Content, 200)))
+						i+1, entry.Title, entry.Scope, entry.Tags, TruncateString(entry.Content, 200)))
 				}
 				return sb.String(), nil
 			}
@@ -488,7 +517,7 @@ func (r *Registry) registerHypercodeTools() {
 			action, _ := args["action"].(string)
 			switch action {
 			case "compact":
-				maxMsgs := toInt(args["max_messages"], 50)
+				maxMsgs := GetIntDef(args["max_messages"], 50)
 				return fmt.Sprintf("Context compacted to max %d messages.", maxMsgs), nil
 			case "inject":
 				content, _ := args["content"].(string)

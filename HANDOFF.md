@@ -1,6 +1,8 @@
 # HANDOFF.md - Cross-Model Session Continuity
 
 ## Current State: v0.3.0
+- **Deep Tool Wiring Complete**: TodoWrite, Agent, LSP, WebSearch, WebFetch, Config, Skill are now wired to real backends.
+- **MCP Transports Complete**: Both stdio and SSE client transports are fully implemented.
 - **509 tests across 33 packages, ALL PASSING**
 - **136+ unique tool surfaces across 15+ harnesses**
 
@@ -57,9 +59,8 @@ go test -buildvcs=false ./... -count=1 -timeout 180s
 
 ## Next Steps
 1. Wire tool detectors into actual tool dispatch (use detected tools as backends)
-2. MCP deep integration: actual stdio transport, SSE transport
-3. Memory SQLite backend with vector embeddings
-4. Integration tests with actual AI model tool calling
-5. Port remaining submodule agent loop patterns (streaming, context budgets)
-6. Performance benchmarks
-7. Wire all tools to real backends: TodoWrite→SessionTodoStore, Agent→subagents, LSP→lsp_client
+2. Memory SQLite backend with vector embeddings
+3. Integration tests with actual AI model tool calling
+4. Port remaining submodule agent loop patterns (streaming, context budgets)
+5. Performance benchmarks
+6. MCP deep integration: Bidirectional routing (expose internal tools via MCP server)

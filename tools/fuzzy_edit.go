@@ -20,10 +20,10 @@ import (
 
 // FuzzyMatchResult contains the result of a fuzzy text search.
 type FuzzyMatchResult struct {
-	Found              bool
-	Index              int
-	MatchLength        int
-	UsedFuzzyMatch     bool
+	Found                 bool
+	Index                 int
+	MatchLength           int
+	UsedFuzzyMatch        bool
 	ContentForReplacement string // normalized content if fuzzy
 }
 
@@ -34,10 +34,10 @@ func FuzzyFindText(content, oldText string) FuzzyMatchResult {
 	idx := strings.Index(content, oldText)
 	if idx != -1 {
 		return FuzzyMatchResult{
-			Found:              true,
-			Index:              idx,
-			MatchLength:        len(oldText),
-			UsedFuzzyMatch:     false,
+			Found:                 true,
+			Index:                 idx,
+			MatchLength:           len(oldText),
+			UsedFuzzyMatch:        false,
 			ContentForReplacement: content,
 		}
 	}
@@ -48,10 +48,10 @@ func FuzzyFindText(content, oldText string) FuzzyMatchResult {
 	idx = strings.Index(strippedContent, strippedOld)
 	if idx != -1 {
 		return FuzzyMatchResult{
-			Found:              true,
-			Index:              idx,
-			MatchLength:        len(strippedOld),
-			UsedFuzzyMatch:     true,
+			Found:                 true,
+			Index:                 idx,
+			MatchLength:           len(strippedOld),
+			UsedFuzzyMatch:        true,
 			ContentForReplacement: strippedContent,
 		}
 	}
@@ -62,10 +62,10 @@ func FuzzyFindText(content, oldText string) FuzzyMatchResult {
 	idx = strings.Index(normalizedContent, normalizedOld)
 	if idx != -1 {
 		return FuzzyMatchResult{
-			Found:              true,
-			Index:              idx,
-			MatchLength:        len(normalizedOld),
-			UsedFuzzyMatch:     true,
+			Found:                 true,
+			Index:                 idx,
+			MatchLength:           len(normalizedOld),
+			UsedFuzzyMatch:        true,
 			ContentForReplacement: normalizedContent,
 		}
 	}

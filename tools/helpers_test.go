@@ -98,9 +98,9 @@ func TestGetStringMap(t *testing.T) {
 
 func TestTruncateString(t *testing.T) {
 	tests := []struct {
-		input   string
-		maxLen  int
-		want    string
+		input  string
+		maxLen int
+		want   string
 	}{
 		{"hello", 10, "hello"},
 		{"hello world", 8, "hello..."},
@@ -120,8 +120,8 @@ func TestTruncateString(t *testing.T) {
 
 func TestFormatFileSize(t *testing.T) {
 	tests := []struct {
-		bytes   int64
-		want    string
+		bytes int64
+		want  string
 	}{
 		{0, "0 B"},
 		{500, "500 B"},

@@ -136,12 +136,12 @@ type ApplyPatchResult struct {
 
 // PatchFileResult describes the result for one file.
 type PatchFileResult struct {
-	Path       string
-	Type       string
-	Additions  int
-	Deletions  int
-	Content    string
-	Err        error
+	Path      string
+	Type      string
+	Additions int
+	Deletions int
+	Content   string
+	Err       error
 }
 
 // ApplyPatch applies parsed hunks to files.
@@ -208,11 +208,11 @@ func applyPatchUpdate(absPath string, hunk PatchHunk) PatchFileResult {
 	}
 
 	return PatchFileResult{
-		Path:       targetPath,
-		Type:       "update",
-		Additions:  additions,
-		Deletions:  deletions,
-		Content:    newContent,
+		Path:      targetPath,
+		Type:      "update",
+		Additions: additions,
+		Deletions: deletions,
+		Content:   newContent,
 	}
 }
 
@@ -316,10 +316,10 @@ func ApplyMultiEdit(params MultiEditParams) (*EditResult, error) {
 	}
 
 	return &EditResult{
-		Path:       params.FilePath,
-		Additions:  totalAdd,
-		Deletions:  totalDel,
-		Content:    content,
+		Path:      params.FilePath,
+		Additions: totalAdd,
+		Deletions: totalDel,
+		Content:   content,
 	}, nil
 }
 

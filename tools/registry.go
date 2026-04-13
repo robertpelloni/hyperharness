@@ -164,7 +164,7 @@ func (r *Registry) registerRepoMapTools() {
 				BaseDir:         baseDir,
 				MentionedFiles:  toStringSlice(args["mention_file"]),
 				MentionedIdents: toStringSlice(args["mention_ident"]),
-				MaxFiles:        toInt(args["max_files"], 40),
+				MaxFiles:        GetIntDef(args["max_files"], 40),
 				IncludeTests:    toBool(args["include_tests"]),
 			})
 			if err != nil {
@@ -226,17 +226,6 @@ func toStringSlice(value interface{}) []string {
 		return out
 	default:
 		return nil
-	}
-}
-
-func toInt(value interface{}, fallback int) int {
-	switch typed := value.(type) {
-	case int:
-		return typed
-	case float64:
-		return int(typed)
-	default:
-		return fallback
 	}
 }
 

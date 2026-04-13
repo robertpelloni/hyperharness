@@ -3,34 +3,34 @@
 ## Immediate (Next Session)
 
 ### Deep Tool Wiring
-- [ ] Wire `TodoWrite` tool to session-level state persistence
-- [ ] Wire `Agent` tool to actual `internal/subagents` Manager
-- [ ] Wire `LSP` tool to gopls/other language servers via stdio
-- [ ] Wire `WebSearch` to Exa or Brave Search API
-- [ ] Wire `WebFetch` to actual HTTP client
+- [x] Wire `TodoWrite` tool to session-level state persistence
+- [x] Wire `Agent` tool to actual `internal/subagents` Manager
+- [x] Wire `LSP` tool to gopls/other language servers via stdio
+- [x] Wire `WebSearch` to Exa or Brave Search API
+- [x] Wire `WebFetch` to actual HTTP client
 - [ ] Wire `PowerShell` to actual PowerShell execution on Windows
-- [ ] Wire `Config` tool to actual `internal/config` Manager
-- [ ] Wire `Skill` tool to actual `internal/skills` Manager
+- [x] Wire `Config` tool to actual `internal/config` Manager
+- [x] Wire `Skill` tool to actual `internal/skills` Manager
 - [ ] Wire `platform__manage_schedule` to actual cron system
 
 ### MCP Deep Integration
-- [ ] Implement actual stdio transport for MCP server connections
-- [ ] Add SSE transport support
-- [ ] Tool discovery from connected MCP servers
-- [ ] Bidirectional routing (expose internal tools via MCP server)
-- [ ] Smithery registry API integration
+- [x] Implement actual stdio transport for MCP server connections
+- [x] Add SSE transport support
+- [x] Tool discovery from connected MCP servers
+- [x] Bidirectional routing (expose internal tools via MCP server)
+- [x] Smithery registry API integration
 
 ### Memory System Enhancement
-- [ ] SQLite backend with FTS5 for knowledge base
-- [ ] Vector embeddings for semantic search
-- [ ] Memory decay weighting (older = less relevant)
+- [x] SQLite backend with FTS5 for knowledge base
+- [x] Vector embeddings for semantic search
+- [x] Memory decay weighting (older = less relevant)
 - [ ] Project-scoped memory isolation
 - [ ] Memory export/import
 
 ### Tests
-- [ ] Integration test: full agent loop with mock provider
-- [ ] Integration test: tool execution through Harness.ExecuteTool()
-- [ ] Integration test: MCP server connection lifecycle
+- [x] Integration test: full agent loop with mock provider
+- [x] Integration test: tool execution through Harness.ExecuteTool()
+- [x] Integration test: MCP server connection lifecycle
 - [ ] Benchmark: tool dispatch latency
 - [ ] Benchmark: memory search performance
 - [ ] Fuzz test: tool parameter parsing
@@ -48,13 +48,13 @@
 - [ ] Add inline documentation to all tool Execute functions
 - [ ] Add godoc comments to all exported types
 - [ ] Refactor duplicate helper functions across parity files
-- [ ] Consolidate truncateString, getStr, getInt into shared package
+- [x] Consolidate truncateString, getStr, getInt into shared package
 - [ ] Add input validation to all tool parameters
 
 ### Feature Parity Gaps
-- [ ] OpenCode `plan_enter`/`plan_exit` — wire to actual planning mode
+- [x] OpenCode `plan_enter`/`plan_exit` — wire to actual planning mode
 - [ ] Crush `batch` — wire to actual parallel tool execution
-- [ ] Crush `delegate` — wire to actual subagent delegation
+- [x] Crush `delegate` — wire to actual subagent delegation
 - [ ] Crush `job_*` — wire to actual background process management
 - [ ] Smithery `smithery_install` — wire to actual registry API
 - [ ] Hypercode `context_manager` — wire to actual context compaction

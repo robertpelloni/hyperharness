@@ -49,7 +49,7 @@ func TestLSPServerConfigs(t *testing.T) {
 
 func TestLSPOperationPlaceholder(t *testing.T) {
 	tests := []struct {
-		operation string
+		operation  string
 		wantSubstr string
 	}{
 		{"goToDefinition", "goToDefinition"},
