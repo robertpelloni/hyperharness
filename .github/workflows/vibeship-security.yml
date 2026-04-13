@@ -37,7 +37,7 @@ jobs:
           
       - name: Install Scanner Dependencies
         run: |
-          pip install semgrep trivy-python gitleaks
+          pip install semgrep
           
       - name: Install Semgrep
         run: |
