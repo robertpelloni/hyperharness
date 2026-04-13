@@ -7,10 +7,10 @@ import (
 
 func TestFileMutationQueueSerializes(t *testing.T) {
 	ClearFileMutationQueues()
-	
+
 	counter := 0
 	var mu sync.Mutex
-	
+
 	var wg sync.WaitGroup
 	for i := 0; i < 10; i++ {
 		wg.Add(1)
@@ -25,7 +25,7 @@ func TestFileMutationQueueSerializes(t *testing.T) {
 		}()
 	}
 	wg.Wait()
-	
+
 	if counter != 10 {
 		t.Errorf("expected 10 mutations, got %d", counter)
 	}
@@ -33,10 +33,10 @@ func TestFileMutationQueueSerializes(t *testing.T) {
 
 func TestFileMutationQueueParallelPaths(t *testing.T) {
 	ClearFileMutationQueues()
-	
+
 	var wg sync.WaitGroup
 	completed := make(chan string, 4)
-	
+
 	// Different paths should run in parallel
 	for _, path := range []string{"a.txt", "b.txt", "c.txt"} {
 		wg.Add(1)
@@ -48,10 +48,10 @@ func TestFileMutationQueueParallelPaths(t *testing.T) {
 			})
 		}(path)
 	}
-	
+
 	wg.Wait()
 	close(completed)
-	
+
 	count := 0
 	for range completed {
 		count++
