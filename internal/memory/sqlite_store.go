@@ -34,13 +34,14 @@ type SQLiteMemoryStore struct {
 type MemoryEntry struct {
 	ID        string    `json:"id"`
 	Content   string    `json:"content"`
-	Type      string    `json:"type"`     // "knowledge", "conversation", "decision", "code_pattern"
+	Type      string    `json:"type"` // "knowledge", "conversation", "decision", "code_pattern"
 	Tags      []string  `json:"tags"`
 	Source    string    `json:"source"`
 	Title     string    `json:"title"`
-	Scope     string    `json:"scope"`    // "global", "project:<name>", "session:<id>"
+	Scope     string    `json:"scope"` // "global", "project:<name>", "session:<id>"
 	CreatedAt time.Time `json:"createdAt"`
 	UpdatedAt time.Time `json:"updatedAt"`
+	Vector    []float32 `json:"vector,omitempty"`
 }
 
 // NewSQLiteMemoryStore creates or opens a SQLite memory store.
@@ -87,7 +88,8 @@ func (s *SQLiteMemoryStore) migrate() error {
 			title TEXT NOT NULL DEFAULT '',
 			scope TEXT NOT NULL DEFAULT 'global',
 			created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-			updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+			updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+			vector BLOB
 		)
 	`)
 	if err != nil {
@@ -165,12 +167,17 @@ func (s *SQLiteMemoryStore) Store(entry MemoryEntry) error {
 
 	tagsJSON, _ := json.Marshal(entry.Tags)
 
+	var vectorJSON []byte
+	if len(entry.Vector) > 0 {
+		vectorJSON, _ = json.Marshal(entry.Vector)
+	}
+
 	_, err := s.db.Exec(`
-		INSERT OR REPLACE INTO memories (id, content, type, tags, source, title, scope, created_at, updated_at)
-		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+		INSERT OR REPLACE INTO memories (id, content, type, tags, source, title, scope, created_at, updated_at, vector)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
 		entry.ID, entry.Content, entry.Type, string(tagsJSON),
 		entry.Source, entry.Title, entry.Scope,
-		entry.CreatedAt, entry.UpdatedAt,
+		entry.CreatedAt, entry.UpdatedAt, vectorJSON,
 	)
 
 	return err
@@ -188,13 +195,15 @@ func (s *SQLiteMemoryStore) Search(query string, limit int) ([]MemoryEntry, erro
 	var rows *sql.Rows
 	var err error
 
-	// Try FTS5 first
+	// Try FTS5 first with time decay (older memories ranked lower)
+	// SQLite FTS5 bm25 ranking returns lower scores for better matches, so we add a penalty
+	// based on the age of the document (in days).
 	rows, err = s.db.Query(`
 		SELECT m.id, m.content, m.type, m.tags, m.source, m.title, m.scope, m.created_at, m.updated_at
 		FROM memories m
 		JOIN memories_fts fts ON m.rowid = fts.rowid
 		WHERE memories_fts MATCH ?
-		ORDER BY rank
+		ORDER BY rank + (julianday('now') - julianday(m.created_at)) * 0.1
 		LIMIT ?`,
 		query, limit,
 	)

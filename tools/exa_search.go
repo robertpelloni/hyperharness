@@ -20,19 +20,19 @@ import (
 )
 
 const (
-	exaBaseURL        = "https://mcp.exa.ai"
-	exaEndpoint       = "/mcp"
-	exaDefaultTimeout = 25 * time.Second
+	exaBaseURL         = "https://mcp.exa.ai"
+	exaEndpoint        = "/mcp"
+	exaDefaultTimeout  = 25 * time.Second
 	exaMaxResponseSize = 5 * 1024 * 1024 // 5MB
 )
 
 // ExaSearchParams defines parameters for web search.
 type ExaSearchParams struct {
-	Query               string `json:"query"`
-	NumResults          int    `json:"numResults,omitempty"`
-	Livecrawl           string `json:"livecrawl,omitempty"`  // "fallback" | "preferred"
-	Type                string `json:"type,omitempty"`       // "auto" | "fast" | "deep"
-	ContextMaxCharacters int   `json:"contextMaxCharacters,omitempty"`
+	Query                string `json:"query"`
+	NumResults           int    `json:"numResults,omitempty"`
+	Livecrawl            string `json:"livecrawl,omitempty"` // "fallback" | "preferred"
+	Type                 string `json:"type,omitempty"`      // "auto" | "fast" | "deep"
+	ContextMaxCharacters int    `json:"contextMaxCharacters,omitempty"`
 }
 
 // ExaCodeSearchParams defines parameters for code search.
@@ -43,10 +43,10 @@ type ExaCodeSearchParams struct {
 
 // exaRequest is a JSON-RPC request to the Exa MCP endpoint.
 type exaRequest struct {
-	JSONRPC string      `json:"jsonrpc"`
-	ID      int         `json:"id"`
-	Method  string      `json:"method"`
-	Params  exaParams   `json:"params"`
+	JSONRPC string    `json:"jsonrpc"`
+	ID      int       `json:"id"`
+	Method  string    `json:"method"`
+	Params  exaParams `json:"params"`
 }
 
 type exaParams struct {

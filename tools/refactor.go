@@ -124,7 +124,7 @@ func (reg *Registry) registerRefactoringTools() {
 				}
 
 				path, _ := e["path"].(string)
-				
+
 				var originalLines []string
 				if origRaw, ok := e["original_lines"].([]interface{}); ok {
 					for _, o := range origRaw {

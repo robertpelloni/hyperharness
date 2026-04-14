@@ -116,8 +116,8 @@ func startLSPServer(ctx context.Context, filePath string) (*LSPClient, error) {
 
 	// Send initialize request
 	initParams := map[string]interface{}{
-		"processId":   nil,
-		"rootUri":     nil,
+		"processId":    nil,
+		"rootUri":      nil,
 		"capabilities": map[string]interface{}{},
 	}
 	_, err = client.call("initialize", initParams)
