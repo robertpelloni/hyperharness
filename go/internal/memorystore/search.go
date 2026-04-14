@@ -27,7 +27,7 @@ func Search(workspaceRoot string, query string, limit int) ([]SearchResult, erro
 		limit = 50
 	}
 
-	dbPath := filepath.Join(workspaceRoot, "packages", "core", "metamcp.db")
+	dbPath := filepath.Join(workspaceRoot, "metamcp.db")
 	if _, err := os.Stat(dbPath); err != nil {
 		if os.IsNotExist(err) {
 			return []SearchResult{}, nil

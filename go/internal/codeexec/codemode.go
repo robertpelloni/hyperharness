@@ -50,6 +50,7 @@ type CodeModeResult struct {
 	Stderr      string          `json:"stderr"`
 	ToolCalls   []ToolCallResult `json:"toolCalls,omitempty"`
 	Duration    string          `json:"duration"`
+	Error       string          `json:"error,omitempty"`
 	IsError     bool            `json:"isError,omitempty"`
 	TimedOut    bool            `json:"timedOut,omitempty"`
 }
@@ -240,7 +241,7 @@ func (cme *CodeModeEngine) parseToolCallResults(stdout string) []ToolCallResult 
 func GenerateToolCallScript(calls []ToolCall, language Language) string {
 	switch language {
 	case JavaScript, TypeScript:
-		return generateJSToolCallScript(calls)
+		return generateJSToolScript(calls)
 	default:
 		return ""
 	}

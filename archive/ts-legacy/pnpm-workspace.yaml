@@ -1,0 +1,12 @@
+packages:
+  - 'apps/*'
+  - '!apps/hypercode-extension'
+  - '!apps/hypercode-extension'
+  - '!apps/vscode'
+  - 'packages/*'
+  - 'external/MetaMCP/packages/*'
+  - 'external/MetaMCP/apps/*'
+  - 'apps/cloud-orchestrator/apps/*'
+  - 'apps/cloud-orchestrator/packages/*'
+  - 'apps/cloud-orchestrator/server'
+  - '!archive/**'
