@@ -1,4 +1,3 @@
-import { ModelCapability } from '../LLMService';
 
 export interface AIProviderConfig {
     apiKey: string;
@@ -23,7 +22,7 @@ export interface AIProviderResponse {
 
 export interface IAIProvider {
     name: string;
-    capabilities: ModelCapability[];
+    capabilities: string[];
 
     initialize(config: AIProviderConfig): void;
 

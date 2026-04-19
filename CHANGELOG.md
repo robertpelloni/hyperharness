@@ -4628,3 +4628,12 @@ and this project adheres to [Semantic Versioning](https://sumver.org/spec/v2.0.0
 - Assimilated BobbyBookmarks workers (`ResearchWorker`, `AutoTagger`) into `@hypercode/core/Memory`.
 - Assimalated Maestro logic (`AgentDiscovery`, `ContextGroomer`, `DirectorNotes`) natively into `@hypercode/core`.
 - Updated `TODO.md` to check off A2A protocol implementation, dashboard verifications, and multi-model chatroom progress.
+
+## [v1.0.0-alpha.32] - 2026-04-17
+### Added
+- **Go Port**: Fully wired `MemoryManager` and `CodeExecutor` services into the Go HTTP Server (`/api/native/memory/*` and `/api/code/exec`).
+- **Go Port**: Implemented the MCP Decision System (`mcp.DecisionSystem`) featuring unified SearchAndCall logic, ranked tool discovery, auto-loading, and LRU eviction. Supported 29 cross-harness tool aliases.
+- **Testing**: Fixed legacy strict assertions in `ctxharvester` and `hsync` Go test suites to align with new memory decay implementations.
+
+### Fixed
+- Resolved `Server` struct cyclic mock issues and invalid import pointers inside `go/internal/httpapi/server.go`.
