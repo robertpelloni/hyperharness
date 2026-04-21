@@ -1,0 +1,24 @@
+{
+    "name": "@hypercode/extension",
+    "version": "2.7.333",
+    "private": true,
+    "scripts": {
+        "build": "tsup",
+        "dev": "tsup --watch",
+        "lint": "eslint --no-eslintrc --parser @typescript-eslint/parser \"src/**/*.{ts,tsx,js,mjs,cjs}\""
+    },
+    "dependencies": {
+        "@mozilla/readability": "^0.6.0",
+        "turndown": "^7.2.2",
+        "zod": "^3.22.4"
+    },
+    "devDependencies": {
+        "@types/chrome": "^0.0.260",
+        "@types/turndown": "^5.0.6",
+        "tsup": "^8.0.2",
+        "typescript": "^5.9.3"
+    },
+    "engines": {
+        "node": ">=18"
+    }
+}

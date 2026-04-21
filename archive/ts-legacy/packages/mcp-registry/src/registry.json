@@ -1,0 +1,61 @@
+{
+    "servers": [
+        {
+            "name": "git",
+            "description": "Git repository management",
+            "package": "@modelcontextprotocol/server-git",
+            "type": "stdio",
+            "env": []
+        },
+        {
+            "name": "memory",
+            "description": "Persistent knowledge graph memory",
+            "package": "@modelcontextprotocol/server-memory",
+            "type": "stdio",
+            "env": []
+        },
+        {
+            "name": "filesystem",
+            "description": "Safe local file access",
+            "package": "@modelcontextprotocol/server-filesystem",
+            "type": "stdio",
+            "env": [
+                "ALLOWED_DIRS"
+            ]
+        },
+        {
+            "name": "time",
+            "description": "Timezone and scheduling utilities",
+            "package": "@modelcontextprotocol/server-time",
+            "type": "stdio",
+            "env": []
+        },
+        {
+            "name": "weather",
+            "description": "Real-time weather data",
+            "package": "@modelcontextprotocol/server-weather",
+            "type": "stdio",
+            "env": [
+                "WEATHER_API_KEY"
+            ]
+        },
+        {
+            "name": "postgres",
+            "description": "PostgreSQL database access",
+            "package": "@modelcontextprotocol/server-postgres",
+            "type": "stdio",
+            "env": [
+                "DATABASE_URL"
+            ]
+        },
+        {
+            "name": "sqlite",
+            "description": "SQLite database access",
+            "package": "@modelcontextprotocol/server-sqlite",
+            "type": "stdio",
+            "env": [
+                "DB_PATH"
+            ]
+        }
+    ]
+}

@@ -1,0 +1,271 @@
+[
+  {
+    "id": "ext_claude-code-tips_reddit-fetch",
+    "name": "reddit-fetch",
+    "description": "Fetch content from Reddit using Gemini CLI when WebFetch is blocked. Use when accessing Reddit URLs, researching topics on Reddit, or when Reddit returns 403/blocked errors. (user)",
+    "provider": "community",
+    "category": "external",
+    "path": "external\\skills\\claude-code-tips\\skills\\reddit-fetch",
+    "metadata": {
+      "name": "reddit-fetch",
+      "description": "Fetch content from Reddit using Gemini CLI when WebFetch is blocked. Use when accessing Reddit URLs, researching topics on Reddit, or when Reddit returns 403/blocked errors. (user)"
+    }
+  },
+  {
+    "id": "ext_gemini-claude-skills_gemini-consultant",
+    "name": "gemini-consultant",
+    "description": "Get a second opinion from Gemini 3 Pro (gemini-3-pro-preview). Accepts text, code, and images as INPUT. Returns TEXT analysis, advice, and feedback. Use for code review, analyzing screenshots, UX feedback, debugging, architecture review, or web search.",
+    "provider": "community",
+    "category": "external",
+    "path": "external\\skills\\gemini-claude-skills\\skills\\gemini-consultant",
+    "metadata": {
+      "name": "gemini-consultant",
+      "description": "Get a second opinion from Gemini 3 Pro (gemini-3-pro-preview). Accepts text, code, and images as INPUT. Returns TEXT analysis, advice, and feedback. Use for code review, analyzing screenshots, UX feedback, debugging, architecture review, or web search.",
+      "allowed-tools": "Bash(uv:*), Read"
+    }
+  },
+  {
+    "id": "ext_gemini-claude-skills_nano-banana-pro",
+    "name": "nano-banana-pro",
+    "description": "Generate images using Google's Nano Banana Pro (gemini-3-pro-image-preview). Accepts text prompts and optionally images (for editing/transformation) as INPUT. Returns generated IMAGES as OUTPUT. Use when user asks to create, generate, edit, or draw images, infographics, visualizations, diagrams, charts, or illustrations. Excellent for data-accurate infographics and text rendering.",
+    "provider": "community",
+    "category": "external",
+    "path": "external\\skills\\gemini-claude-skills\\skills\\nano-banana-pro",
+    "metadata": {
+      "name": "nano-banana-pro",
+      "description": "Generate images using Google's Nano Banana Pro (gemini-3-pro-image-preview). Accepts text prompts and optionally images (for editing/transformation) as INPUT. Returns generated IMAGES as OUTPUT. Use when user asks to create, generate, edit, or draw images, infographics, visualizations, diagrams, charts, or illustrations. Excellent for data-accurate infographics and text rendering.",
+      "allowed-tools": "Bash(uv:*), Write, Read"
+    }
+  },
+  {
+    "id": "ext_skills_algorithmic-art",
+    "name": "algorithmic-art",
+    "description": "Creating algorithmic art using p5.js with seeded randomness and interactive parameter exploration. Use this when users request creating art using code, generative art, algorithmic art, flow fields, or particle systems. Create original algorithmic art rather than copying existing artists' work to avoid copyright violations.",
+    "provider": "community",
+    "category": "external",
+    "path": "external\\skills\\skills\\skills\\algorithmic-art",
+    "metadata": {
+      "name": "algorithmic-art",
+      "description": "Creating algorithmic art using p5.js with seeded randomness and interactive parameter exploration. Use this when users request creating art using code, generative art, algorithmic art, flow fields, or particle systems. Create original algorithmic art rather than copying existing artists' work to avoid copyright violations.",
+      "license": "Complete terms in LICENSE.txt"
+    }
+  },
+  {
+    "id": "ext_skills_brand-guidelines",
+    "name": "brand-guidelines",
+    "description": "Applies Anthropic's official brand colors and typography to any sort of artifact that may benefit from having Anthropic's look-and-feel. Use it when brand colors or style guidelines, visual formatting, or company design standards apply.",
+    "provider": "community",
+    "category": "external",
+    "path": "external\\skills\\skills\\skills\\brand-guidelines",
+    "metadata": {
+      "name": "brand-guidelines",
+      "description": "Applies Anthropic's official brand colors and typography to any sort of artifact that may benefit from having Anthropic's look-and-feel. Use it when brand colors or style guidelines, visual formatting, or company design standards apply.",
+      "license": "Complete terms in LICENSE.txt"
+    }
+  },
+  {
+    "id": "ext_skills_canvas-design",
+    "name": "canvas-design",
+    "description": "Create beautiful visual art in .png and .pdf documents using design philosophy. You should use this skill when the user asks to create a poster, piece of art, design, or other static piece. Create original visual designs, never copying existing artists' work to avoid copyright violations.",
+    "provider": "community",
+    "category": "external",
+    "path": "external\\skills\\skills\\skills\\canvas-design",
+    "metadata": {
+      "name": "canvas-design",
+      "description": "Create beautiful visual art in .png and .pdf documents using design philosophy. You should use this skill when the user asks to create a poster, piece of art, design, or other static piece. Create original visual designs, never copying existing artists' work to avoid copyright violations.",
+      "license": "Complete terms in LICENSE.txt"
+    }
+  },
+  {
+    "id": "ext_skills_doc-coauthoring",
+    "name": "doc-coauthoring",
+    "description": "Guide users through a structured workflow for co-authoring documentation. Use when user wants to write documentation, proposals, technical specs, decision docs, or similar structured content. This workflow helps users efficiently transfer context, refine content through iteration, and verify the doc works for readers. Trigger when user mentions writing docs, creating proposals, drafting specs, or similar documentation tasks.",
+    "provider": "community",
+    "category": "external",
+    "path": "external\\skills\\skills\\skills\\doc-coauthoring",
+    "metadata": {
+      "name": "doc-coauthoring",
+      "description": "Guide users through a structured workflow for co-authoring documentation. Use when user wants to write documentation, proposals, technical specs, decision docs, or similar structured content. This workflow helps users efficiently transfer context, refine content through iteration, and verify the doc works for readers. Trigger when user mentions writing docs, creating proposals, drafting specs, or similar documentation tasks."
+    }
+  },
+  {
+    "id": "ext_skills_docx",
+    "name": "docx",
+    "description": "\"Comprehensive document creation, editing, and analysis with support for tracked changes, comments, formatting preservation, and text extraction. When Claude needs to work with professional documents (.docx files) for: (1) Creating new documents, (2) Modifying or editing content, (3) Working with tracked changes, (4) Adding comments, or any other document tasks\"",
+    "provider": "community",
+    "category": "external",
+    "path": "external\\skills\\skills\\skills\\docx",
+    "metadata": {
+      "name": "docx",
+      "description": "\"Comprehensive document creation, editing, and analysis with support for tracked changes, comments, formatting preservation, and text extraction. When Claude needs to work with professional documents (.docx files) for: (1) Creating new documents, (2) Modifying or editing content, (3) Working with tracked changes, (4) Adding comments, or any other document tasks\"",
+      "license": "Proprietary. LICENSE.txt has complete terms"
+    }
+  },
+  {
+    "id": "ext_skills_frontend-design",
+    "name": "frontend-design",
+    "description": "Create distinctive, production-grade frontend interfaces with high design quality. Use this skill when the user asks to build web components, pages, artifacts, posters, or applications (examples include websites, landing pages, dashboards, React components, HTML/CSS layouts, or when styling/beautifying any web UI). Generates creative, polished code and UI design that avoids generic AI aesthetics.",
+    "provider": "community",
+    "category": "external",
+    "path": "external\\skills\\skills\\skills\\frontend-design",
+    "metadata": {
+      "name": "frontend-design",
+      "description": "Create distinctive, production-grade frontend interfaces with high design quality. Use this skill when the user asks to build web components, pages, artifacts, posters, or applications (examples include websites, landing pages, dashboards, React components, HTML/CSS layouts, or when styling/beautifying any web UI). Generates creative, polished code and UI design that avoids generic AI aesthetics.",
+      "license": "Complete terms in LICENSE.txt"
+    }
+  },
+  {
+    "id": "ext_skills_internal-comms",
+    "name": "internal-comms",
+    "description": "A set of resources to help me write all kinds of internal communications, using the formats that my company likes to use. Claude should use this skill whenever asked to write some sort of internal communications (status reports, leadership updates, 3P updates, company newsletters, FAQs, incident reports, project updates, etc.).",
+    "provider": "community",
+    "category": "external",
+    "path": "external\\skills\\skills\\skills\\internal-comms",
+    "metadata": {
+      "name": "internal-comms",
+      "description": "A set of resources to help me write all kinds of internal communications, using the formats that my company likes to use. Claude should use this skill whenever asked to write some sort of internal communications (status reports, leadership updates, 3P updates, company newsletters, FAQs, incident reports, project updates, etc.).",
+      "license": "Complete terms in LICENSE.txt"
+    }
+  },
+  {
+    "id": "ext_skills_mcp-builder",
+    "name": "mcp-builder",
+    "description": "Guide for creating high-quality MCP (Model Context Protocol) servers that enable LLMs to interact with external services through well-designed tools. Use when building MCP servers to integrate external APIs or services, whether in Python (FastMCP) or Node/TypeScript (MCP SDK).",
+    "provider": "community",
+    "category": "external",
+    "path": "external\\skills\\skills\\skills\\mcp-builder",
+    "metadata": {
+      "name": "mcp-builder",
+      "description": "Guide for creating high-quality MCP (Model Context Protocol) servers that enable LLMs to interact with external services through well-designed tools. Use when building MCP servers to integrate external APIs or services, whether in Python (FastMCP) or Node/TypeScript (MCP SDK).",
+      "license": "Complete terms in LICENSE.txt"
+    }
+  },
+  {
+    "id": "ext_skills_pdf",
+    "name": "pdf",
+    "description": "Comprehensive PDF manipulation toolkit for extracting text and tables, creating new PDFs, merging/splitting documents, and handling forms. When Claude needs to fill in a PDF form or programmatically process, generate, or analyze PDF documents at scale.",
+    "provider": "community",
+    "category": "external",
+    "path": "external\\skills\\skills\\skills\\pdf",
+    "metadata": {
+      "name": "pdf",
+      "description": "Comprehensive PDF manipulation toolkit for extracting text and tables, creating new PDFs, merging/splitting documents, and handling forms. When Claude needs to fill in a PDF form or programmatically process, generate, or analyze PDF documents at scale.",
+      "license": "Proprietary. LICENSE.txt has complete terms"
+    }
+  },
+  {
+    "id": "ext_skills_pptx",
+    "name": "pptx",
+    "description": "\"Presentation creation, editing, and analysis. When Claude needs to work with presentations (.pptx files) for: (1) Creating new presentations, (2) Modifying or editing content, (3) Working with layouts, (4) Adding comments or speaker notes, or any other presentation tasks\"",
+    "provider": "community",
+    "category": "external",
+    "path": "external\\skills\\skills\\skills\\pptx",
+    "metadata": {
+      "name": "pptx",
+      "description": "\"Presentation creation, editing, and analysis. When Claude needs to work with presentations (.pptx files) for: (1) Creating new presentations, (2) Modifying or editing content, (3) Working with layouts, (4) Adding comments or speaker notes, or any other presentation tasks\"",
+      "license": "Proprietary. LICENSE.txt has complete terms"
+    }
+  },
+  {
+    "id": "ext_skills_skill-creator",
+    "name": "skill-creator",
+    "description": "Guide for creating effective skills. This skill should be used when users want to create a new skill (or update an existing skill) that extends Claude's capabilities with specialized knowledge, workflows, or tool integrations.",
+    "provider": "community",
+    "category": "external",
+    "path": "external\\skills\\skills\\skills\\skill-creator",
+    "metadata": {
+      "name": "skill-creator",
+      "description": "Guide for creating effective skills. This skill should be used when users want to create a new skill (or update an existing skill) that extends Claude's capabilities with specialized knowledge, workflows, or tool integrations.",
+      "license": "Complete terms in LICENSE.txt"
+    }
+  },
+  {
+    "id": "ext_skills_slack-gif-creator",
+    "name": "slack-gif-creator",
+    "description": "Knowledge and utilities for creating animated GIFs optimized for Slack. Provides constraints, validation tools, and animation concepts. Use when users request animated GIFs for Slack like \"make me a GIF of X doing Y for Slack.\"",
+    "provider": "community",
+    "category": "external",
+    "path": "external\\skills\\skills\\skills\\slack-gif-creator",
+    "metadata": {
+      "name": "slack-gif-creator",
+      "description": "Knowledge and utilities for creating animated GIFs optimized for Slack. Provides constraints, validation tools, and animation concepts. Use when users request animated GIFs for Slack like \"make me a GIF of X doing Y for Slack.\"",
+      "license": "Complete terms in LICENSE.txt"
+    }
+  },
+  {
+    "id": "ext_skills_theme-factory",
+    "name": "theme-factory",
+    "description": "Toolkit for styling artifacts with a theme. These artifacts can be slides, docs, reportings, HTML landing pages, etc. There are 10 pre-set themes with colors/fonts that you can apply to any artifact that has been creating, or can generate a new theme on-the-fly.",
+    "provider": "community",
+    "category": "external",
+    "path": "external\\skills\\skills\\skills\\theme-factory",
+    "metadata": {
+      "name": "theme-factory",
+      "description": "Toolkit for styling artifacts with a theme. These artifacts can be slides, docs, reportings, HTML landing pages, etc. There are 10 pre-set themes with colors/fonts that you can apply to any artifact that has been creating, or can generate a new theme on-the-fly.",
+      "license": "Complete terms in LICENSE.txt"
+    }
+  },
+  {
+    "id": "ext_skills_web-artifacts-builder",
+    "name": "web-artifacts-builder",
+    "description": "Suite of tools for creating elaborate, multi-component claude.ai HTML artifacts using modern frontend web technologies (React, Tailwind CSS, shadcn/ui). Use for complex artifacts requiring state management, routing, or shadcn/ui components - not for simple single-file HTML/JSX artifacts.",
+    "provider": "community",
+    "category": "external",
+    "path": "external\\skills\\skills\\skills\\web-artifacts-builder",
+    "metadata": {
+      "name": "web-artifacts-builder",
+      "description": "Suite of tools for creating elaborate, multi-component claude.ai HTML artifacts using modern frontend web technologies (React, Tailwind CSS, shadcn/ui). Use for complex artifacts requiring state management, routing, or shadcn/ui components - not for simple single-file HTML/JSX artifacts.",
+      "license": "Complete terms in LICENSE.txt"
+    }
+  },
+  {
+    "id": "ext_skills_webapp-testing",
+    "name": "webapp-testing",
+    "description": "Toolkit for interacting with and testing local web applications using Playwright. Supports verifying frontend functionality, debugging UI behavior, capturing browser screenshots, and viewing browser logs.",
+    "provider": "community",
+    "category": "external",
+    "path": "external\\skills\\skills\\skills\\webapp-testing",
+    "metadata": {
+      "name": "webapp-testing",
+      "description": "Toolkit for interacting with and testing local web applications using Playwright. Supports verifying frontend functionality, debugging UI behavior, capturing browser screenshots, and viewing browser logs.",
+      "license": "Complete terms in LICENSE.txt"
+    }
+  },
+  {
+    "id": "ext_skills_xlsx",
+    "name": "xlsx",
+    "description": "\"Comprehensive spreadsheet creation, editing, and analysis with support for formulas, formatting, data analysis, and visualization. When Claude needs to work with spreadsheets (.xlsx, .xlsm, .csv, .tsv, etc) for: (1) Creating new spreadsheets with formulas and formatting, (2) Reading or analyzing data, (3) Modify existing spreadsheets while preserving formulas, (4) Data analysis and visualization in spreadsheets, or (5) Recalculating formulas\"",
+    "provider": "community",
+    "category": "external",
+    "path": "external\\skills\\skills\\skills\\xlsx",
+    "metadata": {
+      "name": "xlsx",
+      "description": "\"Comprehensive spreadsheet creation, editing, and analysis with support for formulas, formatting, data analysis, and visualization. When Claude needs to work with spreadsheets (.xlsx, .xlsm, .csv, .tsv, etc) for: (1) Creating new spreadsheets with formulas and formatting, (2) Reading or analyzing data, (3) Modify existing spreadsheets while preserving formulas, (4) Data analysis and visualization in spreadsheets, or (5) Recalculating formulas\"",
+      "license": "Proprietary. LICENSE.txt has complete terms"
+    }
+  },
+  {
+    "id": "ext_ykdojo-claude-code-tips_reddit-fetch",
+    "name": "reddit-fetch",
+    "description": "Fetch content from Reddit using Gemini CLI when WebFetch is blocked. Use when accessing Reddit URLs, researching topics on Reddit, or when Reddit returns 403/blocked errors. (user)",
+    "provider": "community",
+    "category": "external",
+    "path": "external\\skills\\ykdojo-claude-code-tips\\skills\\reddit-fetch",
+    "metadata": {
+      "name": "reddit-fetch",
+      "description": "Fetch content from Reddit using Gemini CLI when WebFetch is blocked. Use when accessing Reddit URLs, researching topics on Reddit, or when Reddit returns 403/blocked errors. (user)"
+    }
+  },
+  {
+    "id": "ext_ykdojo-claude-code-tips_review-claudemd",
+    "name": "review-claudemd",
+    "description": "Review recent conversations to find improvements for CLAUDE.md files. (user)",
+    "provider": "community",
+    "category": "external",
+    "path": "external\\skills\\ykdojo-claude-code-tips\\skills\\review-claudemd",
+    "metadata": {
+      "name": "review-claudemd",
+      "description": "Review recent conversations to find improvements for CLAUDE.md files. (user)"
+    }
+  }
+]

@@ -1,0 +1,10 @@
+{
+    "name": "@hypercode/tsconfig",
+    "version": "1.0.0-alpha.32",
+    "private": true,
+    "files": [
+        "base.json",
+        "nextjs.json",
+        "react-library.json"
+    ]
+}

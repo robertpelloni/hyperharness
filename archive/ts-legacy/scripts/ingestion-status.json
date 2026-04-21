@@ -1,0 +1,20 @@
+{
+  "processed": [],
+  "pending": [],
+  "failed": [
+    {
+      "url": "https://github.com/toolsdk-ai/toolsdk-mcp-registry/blob/main/docs/ALL-MCP-SERVERS.md",
+      "error": "Failed to extract meaningful content during recursive fetch pass.",
+      "attempts": 1,
+      "last_attempt_at": "2026-02-15T00:00:00.000Z",
+      "source": "fetch_webpage"
+    },
+    {
+      "url": "https://example.com/test",
+      "error": "Timeout",
+      "attempts": 1,
+      "last_attempt_at": "2026-03-05T20:32:20.761Z",
+      "source": "manual"
+    }
+  ]
+}
