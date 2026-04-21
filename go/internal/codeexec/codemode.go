@@ -113,7 +113,7 @@ func (cme *CodeModeEngine) Execute(ctx context.Context, code string, language La
 	if err != nil {
 		return &CodeModeResult{
 			IsError:  true,
-			Error:    err.Error(),
+
 			Duration: time.Since(start).String(),
 		}, nil
 	}
