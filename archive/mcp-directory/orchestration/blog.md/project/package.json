@@ -28,6 +28,10 @@
     "tailwindcss": "^3.4.1",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.3.0",
+<<<<<<< HEAD
     "vite": "^8.0.5"
+=======
+    "vite": "^8.0.7"
+>>>>>>> origin/dependabot/npm_and_yarn/apps/borg-extension/npm_and_yarn-8e1218ce9b
   }
 }

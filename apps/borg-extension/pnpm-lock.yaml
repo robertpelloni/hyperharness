@@ -2955,8 +2955,13 @@ packages:
   electron-to-chromium@1.5.128:
     resolution: {integrity: sha512-bo1A4HH/NS522Ws0QNFIzyPcyUUNV/yyy70Ho1xqfGYzPUme2F/xr4tlEOuM6/A538U1vDA7a4XfCd1CKRegKQ==}
 
+<<<<<<< HEAD
   electron-to-chromium@1.5.331:
     resolution: {integrity: sha512-IbxXrsTlD3hRodkLnbxAPP4OuJYdWCeM3IOdT+CpcMoIwIoDfCmRpEtSPfwBXxVkg9xmBeY7Lz2Eo2TDn/HC3Q==}
+=======
+  electron-to-chromium@1.5.332:
+    resolution: {integrity: sha512-7OOtytmh/rINMLwaFTbcMVvYXO3AUm029X0LcyfYk0B557RlPkdpTpnH9+htMlfu5dKwOmT0+Zs2Aw+lnn6TeQ==}
+>>>>>>> origin/dependabot/npm_and_yarn/apps/borg-extension/npm_and_yarn-8e1218ce9b
 
   elliptic@6.6.1:
     resolution: {integrity: sha512-RaddvvMatK2LJHqFJ+YA4WysVN5Ita9E35botqIYspQ4TkRAlCicdzKOjlyv/1Za5RyTNn7di//eEV0uTAfe3g==}
@@ -3298,11 +3303,16 @@ packages:
   fast-uri@3.1.0:
     resolution: {integrity: sha512-iPeeDKJSWf4IEOasVVrknXpaBV0IApz/gp7S2bb7Z4Lljbl2MGJRqInZiUrQwV16cpzw/D3S5j5Julj/gT52AA==}
 
+<<<<<<< HEAD
   fast-xml-builder@1.1.4:
     resolution: {integrity: sha512-f2jhpN4Eccy0/Uz9csxh3Nu6q4ErKxf0XIsasomfOihuSUa3/xw6w8dnOtCDgEItQFJG8KyXPzQXzcODDrrbOg==}
 
   fast-xml-parser@5.5.7:
     resolution: {integrity: sha512-LteOsISQ2GEiDHZch6L9hB0+MLoYVLToR7xotrzU0opCICBkxOPgHAy1HxAvtxfJNXDJpgAsQN30mkrfpO2Prg==}
+=======
+  fast-xml-parser@5.0.9:
+    resolution: {integrity: sha512-2mBwCiuW3ycKQQ6SOesSB8WeF+fIGb6I/GG5vU5/XEptwFFhp9PE8b9O7fbs2dpq9fXn4ULR3UsfydNUCntf5A==}
+>>>>>>> origin/dependabot/npm_and_yarn/apps/borg-extension/npm_and_yarn-8e1218ce9b
     hasBin: true
 
   fastq@1.19.1:
@@ -4943,6 +4953,10 @@ packages:
 
   tinyglobby@0.2.15:
     resolution: {integrity: sha512-j2Zq4NyQYG5XMST4cbs02Ak8iJUdxRM0XI5QyxXuZOzKOINmWurp3smXu3y5wDcJrptwpSjgXHzIQxR0omXljQ==}
+    engines: {node: '>=12.0.0'}
+
+  tinyglobby@0.2.16:
+    resolution: {integrity: sha512-pn99VhoACYR8nFHhxqix+uvsbXineAasWm5ojXoN8xEwK5Kd3/TrhNn1wByuD52UxWRLy8pu+kRMniEi6Eq9Zg==}
     engines: {node: '>=12.0.0'}
 
   tinyrainbow@3.0.3:
@@ -7498,7 +7512,11 @@ snapshots:
     dependencies:
       baseline-browser-mapping: 2.10.16
       caniuse-lite: 1.0.30001786
+<<<<<<< HEAD
       electron-to-chromium: 1.5.331
+=======
+      electron-to-chromium: 1.5.332
+>>>>>>> origin/dependabot/npm_and_yarn/apps/borg-extension/npm_and_yarn-8e1218ce9b
       node-releases: 2.0.37
       update-browserslist-db: 1.2.3(browserslist@4.28.2)
 
@@ -7911,7 +7929,11 @@ snapshots:
 
   electron-to-chromium@1.5.128: {}
 
+<<<<<<< HEAD
   electron-to-chromium@1.5.331: {}
+=======
+  electron-to-chromium@1.5.332: {}
+>>>>>>> origin/dependabot/npm_and_yarn/apps/borg-extension/npm_and_yarn-8e1218ce9b
 
   elliptic@6.6.1:
     dependencies:
@@ -8474,7 +8496,11 @@ snapshots:
 
   fast-uri@3.1.0: {}
 
+<<<<<<< HEAD
   fast-xml-builder@1.1.4:
+=======
+  fast-xml-parser@5.0.9:
+>>>>>>> origin/dependabot/npm_and_yarn/apps/borg-extension/npm_and_yarn-8e1218ce9b
     dependencies:
       path-expression-matcher: 1.2.1
 
@@ -10294,6 +10320,14 @@ snapshots:
     dependencies:
       fdir: 6.5.0(picomatch@4.0.4)
       picomatch: 4.0.4
+<<<<<<< HEAD
+=======
+
+  tinyglobby@0.2.16:
+    dependencies:
+      fdir: 6.5.0(picomatch@4.0.4)
+      picomatch: 4.0.4
+>>>>>>> origin/dependabot/npm_and_yarn/apps/borg-extension/npm_and_yarn-8e1218ce9b
 
   tinyrainbow@3.0.3: {}
 
@@ -10599,7 +10633,11 @@ snapshots:
       picomatch: 4.0.4
       postcss: 8.5.3
       rollup: 4.60.1
+<<<<<<< HEAD
       tinyglobby: 0.2.15
+=======
+      tinyglobby: 0.2.16
+>>>>>>> origin/dependabot/npm_and_yarn/apps/borg-extension/npm_and_yarn-8e1218ce9b
     optionalDependencies:
       '@types/node': 22.13.14
       fsevents: 2.3.3
@@ -10615,7 +10653,11 @@ snapshots:
       picomatch: 4.0.4
       postcss: 8.5.3
       rollup: 4.60.1
+<<<<<<< HEAD
       tinyglobby: 0.2.15
+=======
+      tinyglobby: 0.2.16
+>>>>>>> origin/dependabot/npm_and_yarn/apps/borg-extension/npm_and_yarn-8e1218ce9b
     optionalDependencies:
       '@types/node': 22.19.17
       fsevents: 2.3.3
