@@ -28,7 +28,11 @@ import { trpc } from "@/utils/trpc";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import type { inferRouterOutputs } from "@trpc/server";
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/registry/page.tsx
 import type { AppRouter } from "@hypercode/core";
+=======
+import type { AppRouter } from "@borg/core";
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/registry/page.tsx
 import {
     Search,
     RefreshCw,
@@ -108,6 +112,7 @@ function InstallBadge({ method }: { method: string }) {
 
 const PAGE_SIZE = 50;
 
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/registry/page.tsx
 type RegistryActionResult = {
     title: string;
     tone: 'success' | 'warning' | 'error';
@@ -115,6 +120,8 @@ type RegistryActionResult = {
     details?: string[];
 };
 
+=======
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/registry/page.tsx
 export default function RegistryPage() {
     const router = useRouter();
     const [search, setSearch] = useState("");
@@ -125,7 +132,10 @@ export default function RegistryPage() {
     const [installName, setInstallName] = useState("");
     const [installEnv, setInstallEnv] = useState<Record<string, string>>({});
     const [showSecrets, setShowSecrets] = useState(false);
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/registry/page.tsx
     const [lastRegistryAction, setLastRegistryAction] = useState<RegistryActionResult | null>(null);
+=======
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/registry/page.tsx
 
     const utils = trpc.useContext();
 
@@ -161,6 +171,7 @@ export default function RegistryPage() {
     // Ingestion trigger
     const ingestMutation = trpc.catalog.triggerIngestion.useMutation({
         onSuccess: (report) => {
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/registry/page.tsx
             setLastRegistryAction({
                 title: 'Registry Sync Complete',
                 tone: 'success',
@@ -173,6 +184,8 @@ export default function RegistryPage() {
                     return `${sourceName}: upserted=${upserted}, skipped=${skipped}${error}`;
                 }),
             });
+=======
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/registry/page.tsx
             toast.success(
                 `Ingestion complete: ${report.total_upserted} servers synced from ${report.results.length} sources.`
             );
@@ -217,11 +230,14 @@ export default function RegistryPage() {
     // Batch validate — runs validation on all normalized/probeable servers
     const batchValidateMutation = trpc.catalog.triggerBatchValidation.useMutation({
         onSuccess: (result) => {
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/registry/page.tsx
             setLastRegistryAction({
                 title: 'Batch Validation Result',
                 tone: (result.failed ?? 0) > 0 ? 'warning' : 'success',
                 summary: `${result.passed ?? 0} passed, ${result.failed ?? 0} failed, ${result.skipped ?? 0} skipped (${result.queued} queued)`,
             });
+=======
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/registry/page.tsx
             toast.success(
                 `Batch validation: ${result.passed ?? 0} passed, ${result.failed ?? 0} failed, ${result.skipped ?? 0} skipped (${result.queued} queued)`
             );
@@ -293,6 +309,7 @@ export default function RegistryPage() {
                 </div>
             </div>
 
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/registry/page.tsx
             {lastRegistryAction ? (
                 <div className={`rounded-lg border px-4 py-3 text-sm ${lastRegistryAction.tone === 'success' ? 'border-emerald-900/40 bg-emerald-950/10 text-emerald-100' : lastRegistryAction.tone === 'warning' ? 'border-amber-900/40 bg-amber-950/10 text-amber-100' : 'border-red-900/40 bg-red-950/10 text-red-100'}`}>
                     <div className="font-medium">{lastRegistryAction.title}</div>
@@ -307,6 +324,8 @@ export default function RegistryPage() {
                 </div>
             ) : null}
 
+=======
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/registry/page.tsx
             {registryListUnavailable ? (
                 <div className="rounded-lg border border-red-900/40 bg-red-950/20 px-4 py-3 text-sm text-red-300">
                     {listQuery.error?.message ?? "Registry catalog is unavailable."}

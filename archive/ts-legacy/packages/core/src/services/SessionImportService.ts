@@ -6,7 +6,11 @@ import path from 'path';
 import Database from 'better-sqlite3';
 import fg from 'fast-glob';
 
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/services/SessionImportService.ts
 import { DEFAULT_OPENROUTER_FREE_MODEL, LLMService } from '@hypercode/ai';
+=======
+import { LLMService } from '@borg/ai';
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/services/SessionImportService.ts
 import { formatOptionalSqliteFailure, isSqliteUnavailableError } from '../db/sqliteAvailability.js';
 
 import AgentMemoryService from './AgentMemoryService.js';
@@ -744,12 +748,20 @@ export class SessionImportService {
         this.memoryService = memoryService;
         this.workspaceRoot = workspaceRoot;
         this.store = options.store ?? new ImportedSessionStore(
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/services/SessionImportService.ts
             path.join(this.workspaceRoot, '.hypercode', 'imported_sessions', 'archive'),
+=======
+            path.join(this.workspaceRoot, '.borg', 'imported_sessions', 'archive'),
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/services/SessionImportService.ts
         );
         this.includeHomeDirectories = options.includeHomeDirectories ?? true;
         this.importIntervalMs = options.importIntervalMs ?? DEFAULT_SCAN_INTERVAL_MS;
         this.maxFilesPerRoot = options.maxFilesPerRoot ?? DEFAULT_MAX_FILES_PER_ROOT;
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/services/SessionImportService.ts
         this.docsDir = path.join(this.workspaceRoot, '.hypercode', 'imported_sessions', 'docs');
+=======
+        this.docsDir = path.join(this.workspaceRoot, '.borg', 'imported_sessions', 'docs');
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/services/SessionImportService.ts
 
         if (typeof (this.store as ImportedSessionStore & { compactInlineTranscripts?: unknown }).compactInlineTranscripts === 'function') {
             try {
@@ -821,6 +833,7 @@ export class SessionImportService {
             return;
         }
 
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/services/SessionImportService.ts
         void this.runAutoImportIteration();
         this.scanTimer = setInterval(() => {
             void this.runAutoImportIteration();
@@ -838,6 +851,14 @@ export class SessionImportService {
         }
     }
 
+=======
+        void this.scanAndImport();
+        this.scanTimer = setInterval(() => {
+            void this.scanAndImport();
+        }, this.importIntervalMs);
+    }
+
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/services/SessionImportService.ts
     public async scanAndImport(options: { force?: boolean } = {}): Promise<SessionImportSummary> {
         const candidates = await this.discoverCandidates();
         let importedCount = 0;
@@ -991,8 +1012,13 @@ export class SessionImportService {
                 fileNameHints: ['openai', 'chatgpt', 'conversation', 'history', 'export', 'session', 'messages'],
             },
             {
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/services/SessionImportService.ts
                 sourceTool: 'hypercode',
                 roots: [path.join(this.workspaceRoot, '.hypercode')],
+=======
+                sourceTool: 'borg',
+                roots: [path.join(this.workspaceRoot, '.borg')],
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/services/SessionImportService.ts
                 filePatterns: ['**/*.{md,txt,log,json,jsonl}'],
                 fileNameHints: ['session', 'memory', 'handoff', 'history'],
             },
@@ -1110,8 +1136,13 @@ export class SessionImportService {
                 importAllFiles: true,
             },
             {
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/services/SessionImportService.ts
                 sourceTool: 'hypercode',
                 roots: [path.join(homeDir, '.hypercode')],
+=======
+                sourceTool: 'borg',
+                roots: [path.join(homeDir, '.borg')],
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/services/SessionImportService.ts
                 filePatterns: ['**/*.{md,txt,log,json,jsonl}'],
                 fileNameHints: ['session', 'memory', 'handoff', 'history'],
             },
@@ -1427,10 +1458,14 @@ export class SessionImportService {
 
                 prismDb.close();
             } catch (error) {
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/services/SessionImportService.ts
                 console.warn(formatOptionalSqliteFailure(
                     `[SessionImport] Failed to inspect Prism database at ${dbPath}`,
                     error,
                 ));
+=======
+                console.warn(`[SessionImport] Failed to inspect Prism database at ${dbPath}: ${error instanceof Error ? error.message : String(error)}`);
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/services/SessionImportService.ts
             }
         }
 
@@ -1617,10 +1652,14 @@ export class SessionImportService {
                     llmDb.close();
                 }
             } catch (error) {
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/services/SessionImportService.ts
                 console.warn(formatOptionalSqliteFailure(
                     `[SessionImport] Failed to inspect llm logs database at ${dbPath}`,
                     error,
                 ));
+=======
+                console.warn(`[SessionImport] Failed to inspect llm logs database at ${dbPath}: ${error instanceof Error ? error.message : String(error)}`);
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/services/SessionImportService.ts
             }
         }
 
@@ -1630,8 +1669,13 @@ export class SessionImportService {
     private isGeneratedImportPath(filePath: string): boolean {
         const normalizedPath = path.resolve(filePath).toLowerCase();
         const ignoredRoots = [
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/services/SessionImportService.ts
             path.join(this.workspaceRoot, '.hypercode', 'imported_sessions'),
             path.join(os.homedir(), '.hypercode', 'imported_sessions'),
+=======
+            path.join(this.workspaceRoot, '.borg', 'imported_sessions'),
+            path.join(os.homedir(), '.borg', 'imported_sessions'),
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/services/SessionImportService.ts
         ]
             .map((root) => path.resolve(root).toLowerCase());
 
@@ -1821,7 +1865,11 @@ export class SessionImportService {
         }
 
         const prompt = `
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/services/SessionImportService.ts
 You are HyperCode's session-import memory extractor and archive-retention analyst.
+=======
+You are borg's session-import memory extractor and archive-retention analyst.
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/services/SessionImportService.ts
 Given an imported transcript from ${session.sourceTool}, extract up to 6 durable technical memories or operator instructions and summarize what should remain archive-only.
 Project context:
 - working directory: ${session.workingDirectory}
@@ -1832,7 +1880,11 @@ Return JSON only as an object:
 {
   "memories": [
     {
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/services/SessionImportService.ts
       "fact": "Use port 4000 for the HyperCode control plane.",
+=======
+      "fact": "Use port 4000 for the borg control plane.",
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/services/SessionImportService.ts
       "tags": ["networking", "runtime"],
       "kind": "instruction"
     }
@@ -1856,7 +1908,11 @@ ${transcriptTail}
         `.trim();
 
         try {
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/services/SessionImportService.ts
             const response = await this.llmService.generateText('openrouter', DEFAULT_OPENROUTER_FREE_MODEL, 'Extract durable memories and instructions.', prompt);
+=======
+            const response = await this.llmService.generateText('openai', 'gpt-4o-mini', 'Extract durable memories and instructions.', prompt);
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/services/SessionImportService.ts
             const jsonText = typeof response.content === 'string' ? response.content : '';
             const start = jsonText.indexOf('{');
             const end = jsonText.lastIndexOf('}');
@@ -1924,6 +1980,7 @@ ${transcriptTail}
     }
 
     private async writeInstructionDocs(): Promise<string | null> {
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/services/SessionImportService.ts
         let instructions;
         try {
             instructions = this.store.listInstructionMemories(250);
@@ -1939,6 +1996,9 @@ ${transcriptTail}
             throw error;
         }
 
+=======
+        const instructions = this.store.listInstructionMemories(250);
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/services/SessionImportService.ts
         if (instructions.length === 0) {
             return null;
         }

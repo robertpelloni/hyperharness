@@ -1,5 +1,10 @@
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/mcpServerDebug.ts
 const MCP_SERVER_DEBUG_ENV = 'HYPERCODE_MCP_SERVER_DEBUG';
 const MCP_SERVER_DEBUG_NAMESPACE = 'hypercode:mcp-server';
+=======
+const MCP_SERVER_DEBUG_ENV = 'BORG_MCP_SERVER_DEBUG';
+const MCP_SERVER_DEBUG_NAMESPACE = 'borg:mcp-server';
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/mcpServerDebug.ts
 
 export function isMcpServerDebugEnabled(env: NodeJS.ProcessEnv = process.env): boolean {
     const rawFlag = env[MCP_SERVER_DEBUG_ENV]?.trim().toLowerCase();

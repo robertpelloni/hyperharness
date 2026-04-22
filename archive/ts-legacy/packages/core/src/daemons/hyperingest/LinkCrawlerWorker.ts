@@ -2,8 +2,12 @@ import { JSDOM } from 'jsdom';
 import { db } from '../../db/index.js';
 import { linksBacklogTable } from '../../db/metamcp-schema.js';
 import { eq, asc } from 'drizzle-orm';
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/daemons/hyperingest/LinkCrawlerWorker.ts
 import { DEFAULT_OPENROUTER_FREE_MODEL, LLMService } from '@hypercode/ai';
 import { formatOptionalSqliteFailure, isSqliteUnavailableError } from '../../db/sqliteAvailability.js';
+=======
+import { LLMService } from '@borg/ai';
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/daemons/hyperingest/LinkCrawlerWorker.ts
 
 export class LinkCrawlerWorker {
     private isRunning = false;
@@ -19,7 +23,7 @@ export class LinkCrawlerWorker {
     public start(intervalMs: number = 60 * 1000): void {
         if (this.isRunning) return;
         this.isRunning = true;
-        console.log('[HyperIngest] Starting Link Crawler Worker...');
+        console.log('[borgingest] Starting Link Crawler Worker...');
         
         // Run immediately
         void this.processNextBatch();
@@ -35,7 +39,7 @@ export class LinkCrawlerWorker {
             clearInterval(this.interval);
             this.interval = null;
         }
-        console.log('[HyperIngest] Stopped Link Crawler Worker.');
+        console.log('[borgingest] Stopped Link Crawler Worker.');
     }
 
     private async processNextBatch(): Promise<void> {
@@ -59,7 +63,7 @@ export class LinkCrawlerWorker {
             for (const link of pendingLinks) {
                 if (!this.isRunning) break;
 
-                console.log(`[HyperIngest] Crawling ${link.url}...`);
+                console.log(`[borgingest] Crawling ${link.url}...`);
                 
                 // Mark as running
                 await db.update(linksBacklogTable)
@@ -113,7 +117,7 @@ export class LinkCrawlerWorker {
                                 tags = (llmResult as any).tags.map(String);
                             }
                         } catch (e: any) {
-                            console.warn(`[HyperIngest] LLM tag extraction failed for ${link.url}: ${e.message}`);
+                            console.warn(`[borgingest] LLM tag extraction failed for ${link.url}: ${e.message}`);
                         }
                     }
 
@@ -130,9 +134,9 @@ export class LinkCrawlerWorker {
                         })
                         .where(eq(linksBacklogTable.uuid, link.uuid));
 
-                    console.log(`[HyperIngest] Successfully crawled and categorized ${link.url}`);
+                    console.log(`[borgingest] Successfully crawled and categorized ${link.url}`);
                 } catch (error: any) {
-                    console.error(`[HyperIngest] Failed to crawl ${link.url}:`, error.message);
+                    console.error(`[borgingest] Failed to crawl ${link.url}:`, error.message);
                     await db.update(linksBacklogTable)
                         .set({
                             research_status: 'failed',
@@ -143,6 +147,7 @@ export class LinkCrawlerWorker {
                 }
             }
         } catch (error) {
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/daemons/hyperingest/LinkCrawlerWorker.ts
             if (isSqliteUnavailableError(error)) {
                 if (!this.sqliteUnavailableLogged) {
                     console.warn(formatOptionalSqliteFailure(
@@ -154,6 +159,9 @@ export class LinkCrawlerWorker {
             } else {
                 console.error('[HyperIngest] Error in LinkCrawlerWorker:', error);
             }
+=======
+            console.error('[borgingest] Error in LinkCrawlerWorker:', error);
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/daemons/hyperingest/LinkCrawlerWorker.ts
         } finally {
             this.isProcessing = false;
         }

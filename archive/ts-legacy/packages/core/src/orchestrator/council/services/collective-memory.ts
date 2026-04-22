@@ -77,7 +77,11 @@ class CollectiveMemoryService {
         level: 'info', 
         message: `[CollectiveMemory] New Fact Learned: ${fact.key} = ${fact.value.slice(0, 30)}...`,
         timestamp,
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/orchestrator/council/services/collective-memory.ts
         source: 'hypercode-memory'
+=======
+        source: 'borg-memory'
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/orchestrator/council/services/collective-memory.ts
       },
       timestamp
     });

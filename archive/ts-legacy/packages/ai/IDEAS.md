@@ -1,6 +1,12 @@
+<<<<<<< HEAD:archive/ts-legacy/packages/ai/IDEAS.md
 # Ideas for Improvement: @hypercode/ai
 
 Creative and far-reaching ideas to evolve the model routing and intelligence layer of HyperCode.
+=======
+# Ideas for Improvement: @borg/ai
+
+Creative and far-reaching ideas to evolve the model routing and intelligence layer of borg.
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/ai/IDEAS.md
 
 ## 1. Architectural Enhancements
 - **Rust-based Inference Gateway:** Rewrite the `ModelSelector` and token counting logic in Rust for ultra-low latency routing and zero-overhead quota tracking.
@@ -14,7 +20,11 @@ Creative and far-reaching ideas to evolve the model routing and intelligence lay
 
 ## 3. Operations & Economy
 - **Dynamic Cost Optimization:** Real-time integration with provider pricing APIs to automatically route queries to the cheapest high-intelligence model available at that exact moment.
+<<<<<<< HEAD:archive/ts-legacy/packages/ai/IDEAS.md
 - **Quota "Rollover" and Trading:** A conceptual P2P system where HyperCode nodes can "trade" unused quota allocations via a decentralized ledger (Bobcoin integration).
+=======
+- **Quota "Rollover" and Trading:** A conceptual P2P system where borg nodes can "trade" unused quota allocations via a decentralized ledger (Bobcoin integration).
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/ai/IDEAS.md
 - **Automated Fine-Tuning Loops:** Automatically capture high-quality agent traces and queue them for local fine-tuning of small models (Gemma/Mistral) to eventually replace expensive API calls for repetitive tasks.
 
 ## 4. Developer Experience (DX)

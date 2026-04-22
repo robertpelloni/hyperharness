@@ -1,7 +1,11 @@
 /**
  * Main Application Initializer (Session 10)
  *
+<<<<<<<< HEAD:archive/ts-legacy/apps/hypercode-extension/pages/content/src/core/main-initializer.ts
  * This module orchestrates the complete initialization sequence for the HyperCode Extension
+========
+ * This module orchestrates the complete initialization sequence for the borg Extension
+>>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/borg-extension/pages/content/src/core/main-initializer.ts
  * application, ensuring all components are initialized in the correct order with proper
  * dependency management and error handling.
  */

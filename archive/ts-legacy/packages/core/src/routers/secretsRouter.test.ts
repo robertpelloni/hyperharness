@@ -36,7 +36,11 @@ describe('secretsRouter degraded SQLite handling', () => {
 
     it('surfaces a clear error for list when SQLite is unavailable', async () => {
         selectFromMock.mockRejectedValue(
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/routers/secretsRouter.test.ts
             new Error('SQLite runtime is unavailable for HyperCode DB-backed features (Could not locate the bindings file. Tried: better-sqlite3.node)'),
+=======
+            new Error('SQLite runtime is unavailable for borg DB-backed features (Could not locate the bindings file. Tried: better-sqlite3.node)'),
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/routers/secretsRouter.test.ts
         );
 
         const caller = createCaller();
@@ -48,7 +52,11 @@ describe('secretsRouter degraded SQLite handling', () => {
 
     it('surfaces a clear error for set when SQLite is unavailable', async () => {
         insertOnConflictDoUpdateMock.mockRejectedValue(
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/routers/secretsRouter.test.ts
             new Error('SQLite runtime is unavailable for HyperCode DB-backed features (Could not locate the bindings file. Tried: better-sqlite3.node)'),
+=======
+            new Error('SQLite runtime is unavailable for borg DB-backed features (Could not locate the bindings file. Tried: better-sqlite3.node)'),
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/routers/secretsRouter.test.ts
         );
 
         const caller = createCaller();

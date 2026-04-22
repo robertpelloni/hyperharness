@@ -1,7 +1,11 @@
 "use client";
 
 import type { ComponentType } from 'react';
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/mcp/observability/page.tsx
 import { Card, CardHeader, CardTitle, CardContent } from "@hypercode/ui";
+=======
+import { Card, CardHeader, CardTitle, CardContent } from "@borg/ui";
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/mcp/observability/page.tsx
 import { trpc } from '@/utils/trpc';
 import { Loader2, Activity, Clock, AlertTriangle, CheckCircle2 } from "lucide-react";
 

@@ -51,11 +51,19 @@ const Help: React.FC = () => {
         <div className="space-y-4">
           <Card>
             <CardHeader>
+<<<<<<<< HEAD:archive/ts-legacy/apps/hypercode-extension/pages/content/src/components/sidebar/Help/Help.tsx
               <CardTitle>What is HyperCode Extension?</CardTitle>
             </CardHeader>
             <CardContent className="space-y-2">
               <Typography variant="body" className="text-sm">
                 HyperCode Extension is a Chrome extension that bridges the Model Context Protocol (MCP) with web-based AI
+========
+              <CardTitle>What is borg Extension?</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              <Typography variant="body" className="text-sm">
+                borg Extension is a Chrome extension that bridges the Model Context Protocol (MCP) with web-based AI
+>>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/borg-extension/pages/content/src/components/sidebar/Help/Help.tsx
                 platforms like ChatGPT, Claude, Perplexity, and others.
               </Typography>
               <Typography variant="body" className="text-sm">
@@ -92,11 +100,19 @@ const Help: React.FC = () => {
             </CardHeader>
             <CardContent className="space-y-2">
               <Typography variant="body" className="text-sm">
+<<<<<<<< HEAD:archive/ts-legacy/apps/hypercode-extension/pages/content/src/components/sidebar/Help/Help.tsx
                 To connect to local MCP servers, you need to run the HyperCode Extension Proxy. This proxy bridges the
                 browser (extension) to your local MCP servers.
               </Typography>
               <div className="bg-slate-100 dark:bg-slate-900 p-2 rounded-md text-xs font-mono overflow-x-auto border border-slate-200 dark:border-slate-700">
                 npx -y @srbhptl39/hypercode-extension-proxy@latest --config ./config.json
+========
+                To connect to local MCP servers, you need to run the borg Extension Proxy. This proxy bridges the
+                browser (extension) to your local MCP servers.
+              </Typography>
+              <div className="bg-slate-100 dark:bg-slate-900 p-2 rounded-md text-xs font-mono overflow-x-auto border border-slate-200 dark:border-slate-700">
+                npx -y @srbhptl39/borg-extension-proxy@latest --config ./config.json
+>>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/borg-extension/pages/content/src/components/sidebar/Help/Help.tsx
               </div>
               <Typography variant="caption" className="block mt-2">
                 Create a <code>config.json</code> file defining your MCP servers (e.g., filesystem, postgres) and point
@@ -512,7 +528,11 @@ const Help: React.FC = () => {
               </Typography>
               <div className="flex flex-col gap-3 mt-4">
                 <a
+<<<<<<<< HEAD:archive/ts-legacy/apps/hypercode-extension/pages/content/src/components/sidebar/Help/Help.tsx
                   href="https://github.com/srbhptl39/HyperCode-Extension/issues"
+========
+                  href="https://github.com/srbhptl39/borg-Extension/issues"
+>>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/borg-extension/pages/content/src/components/sidebar/Help/Help.tsx
                   target="_blank"
                   rel="noopener noreferrer"
                   className="no-underline">
@@ -525,7 +545,11 @@ const Help: React.FC = () => {
                   </Button>
                 </a>
                 <a
+<<<<<<<< HEAD:archive/ts-legacy/apps/hypercode-extension/pages/content/src/components/sidebar/Help/Help.tsx
                   href="https://github.com/srbhptl39/HyperCode-Extension"
+========
+                  href="https://github.com/srbhptl39/borg-Extension"
+>>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/borg-extension/pages/content/src/components/sidebar/Help/Help.tsx
                   target="_blank"
                   rel="noopener noreferrer"
                   className="no-underline">

@@ -5,7 +5,11 @@ import { Supervisor } from '../../agents/src/Supervisor';
 const mockGenerateText = vi.fn();
 const mockSelectModel = vi.fn();
 
+<<<<<<< HEAD:archive/ts-legacy/packages/core/test/Phase24_Supervisor.test.ts
 vi.mock('@hypercode/ai', () => ({
+=======
+vi.mock('@borg/ai', () => ({
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/test/Phase24_Supervisor.test.ts
     LLMService: class {
         generateText = mockGenerateText;
     }

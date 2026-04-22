@@ -1,13 +1,13 @@
 # Go Sidecar API Reference
 
-> **Context**: The `go/` workspace is an experimental sidecar and coexistence lane designed for operator visibility and read-parity. It currently runs alongside the primary Node.js control plane (`hypercoded`).
+> **Context**: The `go/` workspace is an experimental sidecar and coexistence lane designed for operator visibility and read-parity. It currently runs alongside the primary Node.js control plane (`borgd`).
 
 This document maps the HTTP API endpoints exposed by the experimental Go orchestrator port, explicitly classifying which routes are **Truthful Local Fallbacks** (reading local SQLite/Config files natively) versus **Bridge-Only Passthroughs** (forwarding requests to the Node.js control plane). 
 
 ## 1. Native Truthful Surfaces
 These endpoints read actual configuration, database rows, or lock files natively using Go standard libraries or `database/sql`. They do not depend on the Node control plane being active.
 
-* **`/api/runtime/locks`**: Scans the `.hypercode` directory for active `hypercode-go` and Node.js lock files.
+* **`/api/runtime/locks`**: Scans the `.borg` directory for active `borg-go` and Node.js lock files.
 * **`/api/config/status`**: Natively reads and parses `mcp.jsonc` and reports parsing success or failure.
 * **`/api/runtime/status`**: Aggregates native SQLite counts (`mcp_servers`, `tools`, `bookmarks`) and merges them with config health.
 * **`/api/mesh/peers`**: Queries the local peer table (if implemented) or broadcasts standard UDP discovery packets.
@@ -42,4 +42,4 @@ These endpoints exist to maintain API parity for clients connecting to the Go si
 ## 3. Implementation Rules for New Go Routes
 If you are extending the Go sidecar, you must adhere to the **Stabilization-First** architectural rule:
 1. **Reads**: Try to implement natively (Truthful Local Fallback) if the data is safely readable via SQLite or static files without complex serialization logic.
-2. **Writes/Execution**: ALWAYS implement as a Bridge-Only Passthrough to the Node control plane unless specifically migrating ownership of a daemon layer (e.g., `hyperingest`). Do not duplicate execution logic in Go while the Node daemon still owns it.
+2. **Writes/Execution**: ALWAYS implement as a Bridge-Only Passthrough to the Node control plane unless specifically migrating ownership of a daemon layer (e.g., `borgingest`). Do not duplicate execution logic in Go while the Node daemon still owns it.

@@ -75,7 +75,11 @@ export function NodeManager() {
             Distributed Council Nodes
           </CardTitle>
           <CardDescription className="text-slate-400">
+<<<<<<< HEAD:archive/ts-legacy/packages/ui/src/components/enterprise/NodeManager.tsx
             Register and manage remote HyperCode instances to form a distributed supervisor network.
+=======
+            Register and manage remote borg instances to form a distributed supervisor network.
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/ui/src/components/enterprise/NodeManager.tsx
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -161,7 +165,11 @@ export function NodeManager() {
             <div>
               <h3 className="text-slate-50 font-bold">Auto-Discovery</h3>
               <p className="text-sm text-slate-500 max-w-xs">
+<<<<<<< HEAD:archive/ts-legacy/packages/ui/src/components/enterprise/NodeManager.tsx
                 Automatically find and join existing HyperCode supervisor mesh networks on your local subnet.
+=======
+                Automatically find and join existing borg supervisor mesh networks on your local subnet.
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/ui/src/components/enterprise/NodeManager.tsx
               </p>
             </div>
             <Button variant="outline" className="border-slate-800 text-slate-400" disabled>

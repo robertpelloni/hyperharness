@@ -2,9 +2,15 @@
 
 import { useEffect, useRef } from 'react';
 import mermaid from 'mermaid';
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/components/council/VisualArchitecture.tsx
 import { Card, CardContent, CardHeader, CardTitle } from "@hypercode/ui";
 import { Badge } from "@hypercode/ui";
 import { Button } from "@hypercode/ui";
+=======
+import { Card, CardContent, CardHeader, CardTitle } from "@borg/ui";
+import { Badge } from "@borg/ui";
+import { Button } from "@borg/ui";
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/components/council/VisualArchitecture.tsx
 import { Maximize2, Download, RefreshCw, Eye } from "lucide-react";
 
 interface VisualArchitectureProps {

@@ -133,7 +133,11 @@ export const FileSystemTools = [
         },
         handler: strReplaceEditorHandler
     },
+<<<<<<< HEAD:archive/ts-legacy/packages/tools/src/FileSystemTools.ts
     // Aliases for HyperCode-native compatibility
+=======
+    // Aliases for borg-native compatibility
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/tools/src/FileSystemTools.ts
     {
         name: "replace_in_file",
         description: "(Alias for str_replace_editor) Replace a string in a file.",

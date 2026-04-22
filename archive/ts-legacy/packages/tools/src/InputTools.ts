@@ -61,7 +61,11 @@ Set WshShell = WScript.CreateObject("WScript.Shell")
 WshShell.AppActivate "Code - Insiders"
 WshShell.AppActivate "Visual Studio Code"
 WshShell.AppActivate "Code"
+<<<<<<< HEAD:archive/ts-legacy/packages/tools/src/InputTools.ts
 WshShell.AppActivate "hypercode"
+=======
+WshShell.AppActivate "borg"
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/tools/src/InputTools.ts
 WshShell.AppActivate "Terminal"
 On Error GoTo 0
 `;
@@ -80,7 +84,11 @@ End If
 On Error GoTo 0
 `;
 
+<<<<<<< HEAD:archive/ts-legacy/packages/tools/src/InputTools.ts
         const tempFile = path.join(os.tmpdir(), `hypercode_input_${Date.now()}.vbs`);
+=======
+        const tempFile = path.join(os.tmpdir(), `borg_input_${Date.now()}.vbs`);
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/tools/src/InputTools.ts
         fs.writeFileSync(tempFile, vbsContent);
 
         return new Promise((resolve, reject) => {

@@ -1,9 +1,17 @@
+<<<<<<< HEAD:archive/ts-legacy/packages/agents/src/Director.ts
 import type { IMCPServer, IAgentMemoryService } from "@hypercode/adk";
 import { LLMService } from "@hypercode/ai";
 import { Council } from "./Council.js";
 import { DIRECTOR_SYSTEM_PROMPT } from "@hypercode/ai";
 import { WorktreeManager } from "./orchestration/WorktreeManager.js";
 import { ToolPredictor } from "./orchestration/ToolPredictor.js";
+=======
+import type { IMCPServer, IAgentMemoryService } from "@borg/adk";
+import { LLMService } from "@borg/ai";
+import { Council } from "./Council.js";
+import { DIRECTOR_SYSTEM_PROMPT } from "@borg/ai";
+import { WorktreeManager } from "./orchestration/WorktreeManager.js";
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/agents/src/Director.ts
 
 interface AgentContext {
     goal: string;
@@ -301,7 +309,11 @@ export class Director {
         console.log(`[Director] 🕸️ Delegating task to Swarm: "${task}"`);
 
         // Broadcast TASK_OFFER
+<<<<<<< HEAD:archive/ts-legacy/packages/agents/src/Director.ts
         // Using string type to avoid cyclic dependency on @hypercode/core definitions
+=======
+        // Using string type to avoid cyclic dependency on @borg/core definitions
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/agents/src/Director.ts
         mesh.broadcast('TASK_OFFER', {
             task,
             requester: 'Director', // Identity
@@ -531,10 +543,15 @@ class ConversationMonitor {
     private server: IMCPServer;
     private llmService: LLMService;
     private director: Director;
+<<<<<<< HEAD:archive/ts-legacy/packages/agents/src/Director.ts
     private predictor: ToolPredictor;
     private interval: NodeJS.Timeout | null = null;
     private summaryInterval: NodeJS.Timeout | null = null; // 2-min summary timer
     private predictionInterval: NodeJS.Timeout | null = null; // 5-min prediction timer
+=======
+    private interval: NodeJS.Timeout | null = null;
+    private summaryInterval: NodeJS.Timeout | null = null; // 2-min summary timer
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/agents/src/Director.ts
     private lastActivityTime: number = Date.now();
     private isRunningTask: boolean = false;
 
@@ -542,13 +559,19 @@ class ConversationMonitor {
         this.server = server;
         this.llmService = llmService;
         this.director = director;
+<<<<<<< HEAD:archive/ts-legacy/packages/agents/src/Director.ts
         this.predictor = new ToolPredictor(server, llmService);
+=======
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/agents/src/Director.ts
     }
 
     start() {
         if (this.interval) clearTimeout(this.interval); // Cleanup old standard
         if (this.summaryInterval) clearTimeout(this.summaryInterval);
+<<<<<<< HEAD:archive/ts-legacy/packages/agents/src/Director.ts
         if (this.predictionInterval) clearTimeout(this.predictionInterval);
+=======
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/agents/src/Director.ts
 
         this.isRunningTask = false;
 
@@ -578,6 +601,7 @@ class ConversationMonitor {
             this.summaryInterval = setTimeout(runSummary, delay);
         };
 
+<<<<<<< HEAD:archive/ts-legacy/packages/agents/src/Director.ts
         // Start Prediction Loop
         const runPrediction = async () => {
             if (!this.director.getIsActive()) return;
@@ -589,13 +613,18 @@ class ConversationMonitor {
             this.predictionInterval = setTimeout(runPrediction, delay);
         };
 
+=======
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/agents/src/Director.ts
         // Kickoff
         // @ts-ignore
         this.interval = setTimeout(runHeartbeat, 1000);
         // @ts-ignore
         this.summaryInterval = setTimeout(runSummary, 60000);
+<<<<<<< HEAD:archive/ts-legacy/packages/agents/src/Director.ts
         // @ts-ignore
         this.predictionInterval = setTimeout(runPrediction, 30000);
+=======
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/agents/src/Director.ts
 
         console.log(`[ConversationMonitor] Started dynamic loops.`);
     }
@@ -603,15 +632,21 @@ class ConversationMonitor {
     stop() {
         if (this.interval) clearTimeout(this.interval);
         if (this.summaryInterval) clearTimeout(this.summaryInterval);
+<<<<<<< HEAD:archive/ts-legacy/packages/agents/src/Director.ts
         if (this.predictionInterval) clearTimeout(this.predictionInterval);
         this.interval = null;
         this.summaryInterval = null;
         this.predictionInterval = null;
+=======
+        this.interval = null;
+        this.summaryInterval = null;
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/agents/src/Director.ts
     }
 
     private lastSummary: string = "";
 
     /**
+<<<<<<< HEAD:archive/ts-legacy/packages/agents/src/Director.ts
      * Periodically predicts tools based on conversation history.
      */
     private async runToolPrediction() {
@@ -634,6 +669,8 @@ class ConversationMonitor {
     }
 
     /**
+=======
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/agents/src/Director.ts
      * Posts a periodic summary to the chat to keep the development loop alive.
      * Reads context files (README, ROADMAP, DIRECTOR_LIVE) and generates summary.
      */

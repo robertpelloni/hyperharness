@@ -8,12 +8,21 @@ import os from 'node:os';
 
 const execAsync = promisify(exec);
 const LEGACY_INFRA_BINARY = ['mcp', 'enetes'].join('');
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/routers/infrastructureRouter.ts
 const INFRA_BINARY = process.env.HYPERCODE_INFRA_BINARY?.trim() || LEGACY_INFRA_BINARY;
 const INFRA_SUBMODULE_DIR = process.env.HYPERCODE_INFRA_SUBMODULE?.trim() || LEGACY_INFRA_BINARY;
 
 export const infrastructureRouter = t.router({
     /**
      * Get the current status of the HyperCode infrastructure daemon / binary.
+=======
+const INFRA_BINARY = process.env.BORG_INFRA_BINARY?.trim() || LEGACY_INFRA_BINARY;
+const INFRA_SUBMODULE_DIR = process.env.BORG_INFRA_SUBMODULE?.trim() || LEGACY_INFRA_BINARY;
+
+export const infrastructureRouter = t.router({
+    /**
+     * Get the current status of the borg infrastructure daemon / binary.
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/routers/infrastructureRouter.ts
      */
     getInfrastructureStatus: publicProcedure.query(async () => {
         try {

@@ -1,6 +1,10 @@
 # Deployment Instructions
 
+<<<<<<<< HEAD:archive/ts-legacy/apps/hypercode-extension/docs/DEPLOY.md
 > How to build and deploy HyperCode Extension for Chrome, Edge, and Firefox.
+========
+> How to build and deploy borg Extension for Chrome, Edge, and Firefox.
+>>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/borg-extension/docs/DEPLOY.md
 
 ## Prerequisites
 

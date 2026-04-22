@@ -7,10 +7,17 @@
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
     "paths": {
+<<<<<<< HEAD:archive/ts-legacy/packages/cli/tsconfig.json
       "@hypercode/core": [
         "../core/src/index.ts"
       ],
       "@hypercode/core/*": [
+=======
+      "@borg/core": [
+        "../core/src/index.ts"
+      ],
+      "@borg/core/*": [
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/cli/tsconfig.json
         "../core/src/*"
       ]
     }

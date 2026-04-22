@@ -27,7 +27,11 @@ export const Submodules = () => {
             <div className="flex justify-between items-center mb-8">
                 <div>
                     <h1 className="text-3xl font-bold text-blue-400">Ecosystem Submodules</h1>
+<<<<<<< HEAD:archive/ts-legacy/packages/ui/src.unused/pages/Submodules.tsx
                     <p className="text-gray-400 mt-2">Integrated repositories and references powering the HyperCode.</p>
+=======
+                    <p className="text-gray-400 mt-2">Integrated repositories and references powering the borg.</p>
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/ui/src.unused/pages/Submodules.tsx
                 </div>
                 <button onClick={fetchSubmodules} className="text-gray-400 hover:text-white transition">
                     <RefreshCw size={20} />

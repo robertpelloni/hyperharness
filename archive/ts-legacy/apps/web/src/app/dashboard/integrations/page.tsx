@@ -3,7 +3,11 @@
 import { useState } from 'react';
 import type { ComponentType } from 'react';
 import Link from 'next/link';
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/integrations/page.tsx
 import { Button, Card, CardContent, CardHeader, CardTitle } from '@hypercode/ui';
+=======
+import { Button, Card, CardContent, CardHeader, CardTitle } from '@borg/ui';
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/integrations/page.tsx
 import { Bot, Cable, Check, Copy, Download, ExternalLink, FileJson, FolderCode, Globe, Loader2, Puzzle, RefreshCcw, Settings2, Sparkles, TerminalSquare } from 'lucide-react';
 import { toast } from 'sonner';
 import { PageStatusBanner } from '@/components/PageStatusBanner';
@@ -16,7 +20,10 @@ import {
     getBridgeClientStatDetail,
     getIntegrationOverview,
     getInstallSurfaceRows,
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/integrations/page.tsx
     getStartupModeSummaryRows,
+=======
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/integrations/page.tsx
     getStatusBadgeClasses,
     type StartupStatusSummary,
 } from './integration-catalog';
@@ -127,8 +134,11 @@ export default function IntegrationsDashboard() {
         safeSyncTargets,
         safeCliDetections,
     );
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/integrations/page.tsx
     const startupModeRows = getStartupModeSummaryRows(safeStartupStatus);
     const startupModeUpdatedAt = safeStartupStatus?.startupMode?.updatedAt ? Date.parse(safeStartupStatus.startupMode.updatedAt) : Number.NaN;
+=======
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/integrations/page.tsx
     const clientRows = getExternalClientRows(safeSyncTargets);
     const connectedBridgeClients = getConnectedBridgeClientRows(safeStartupStatus);
     const installSurfaceRows = getInstallSurfaceRows(safeInstallArtifacts);
@@ -172,7 +182,11 @@ export default function IntegrationsDashboard() {
                 <div>
                     <h1 className="text-3xl font-bold tracking-tight text-white">Integration Hub</h1>
                     <p className="mt-2 max-w-3xl text-zinc-500">
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/integrations/page.tsx
                         Install HyperCode into the environments you actually use: browser bridges, VS Code, and MCP-aware clients.
+=======
+                        Install borg into the environments you actually use: browser bridges, VS Code, and MCP-aware clients.
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/integrations/page.tsx
                         This page centralizes extension package locations, supported MCP client sync targets, and live bridge readiness so setup is less treasure hunt, more control plane.
                     </p>
                 </div>
@@ -221,7 +235,11 @@ export default function IntegrationsDashboard() {
                 <StatCard
                     title="Synced MCP clients"
                     value={syncTargetsUnavailable ? '—' : String(overview.syncedClientCount)}
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/integrations/page.tsx
                     detail={syncTargetsUnavailable ? (syncTargetsQuery.error?.message ?? 'MCP sync target detection unavailable.') : 'Detected config targets with existing HyperCode-ready files'}
+=======
+                    detail={syncTargetsUnavailable ? (syncTargetsQuery.error?.message ?? 'MCP sync target detection unavailable.') : 'Detected config targets with existing borg-ready files'}
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/integrations/page.tsx
                     icon={Settings2}
                     tone="text-violet-400"
                 />
@@ -241,6 +259,7 @@ export default function IntegrationsDashboard() {
                 />
             </div>
 
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/integrations/page.tsx
             {startupModeRows.length > 0 ? (
                 <Card className="bg-zinc-900 border-zinc-800">
                     <CardHeader>
@@ -274,6 +293,12 @@ export default function IntegrationsDashboard() {
                 <Card className="bg-zinc-900 border-zinc-800">
                     <CardHeader>
                         <CardTitle className="text-white">Installable HyperCode surfaces</CardTitle>
+=======
+            <div className="grid grid-cols-1 xl:grid-cols-[1.2fr_0.8fr] gap-4">
+                <Card className="bg-zinc-900 border-zinc-800">
+                    <CardHeader>
+                        <CardTitle className="text-white">Installable borg surfaces</CardTitle>
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/integrations/page.tsx
                     </CardHeader>
                     <CardContent className="space-y-4">
                         {installArtifactsUnavailable ? (
@@ -390,7 +415,11 @@ export default function IntegrationsDashboard() {
                             <Settings2 className="mt-0.5 h-4 w-4 text-violet-400" />
                             <div>
                                 <div className="font-medium text-white">Client config sync</div>
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/integrations/page.tsx
                                 <div className="mt-1 text-xs text-zinc-400">Preview and write HyperCode-managed MCP configs for Claude Desktop, Cursor, and VS Code.</div>
+=======
+                                <div className="mt-1 text-xs text-zinc-400">Preview and write borg-managed MCP configs for Claude Desktop, Cursor, and VS Code.</div>
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/integrations/page.tsx
                             </div>
                         </Link>
 
@@ -508,7 +537,11 @@ export default function IntegrationsDashboard() {
                                                         onClick={() => setSelectedSyncClient(row.id as SupportedClient)}
                                                     >
                                                         <FileJson className="h-3.5 w-3.5" />
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/integrations/page.tsx
                                                         Preview HyperCode config
+=======
+                                                        Preview borg config
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/integrations/page.tsx
                                                     </button>
                                                     <button
                                                         type="button"
@@ -517,7 +550,11 @@ export default function IntegrationsDashboard() {
                                                         disabled={isSyncing}
                                                     >
                                                         {isSyncing && selectedSyncClient === row.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Download className="h-3.5 w-3.5" />}
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/integrations/page.tsx
                                                         Add HyperCode as MCP server
+=======
+                                                        Add borg as MCP server
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/integrations/page.tsx
                                                     </button>
                                                     <button
                                                         type="button"
@@ -532,7 +569,11 @@ export default function IntegrationsDashboard() {
                                         </div>
                                         <div className="flex items-center gap-2 text-xs text-zinc-400">
                                             <FolderCode className="h-4 w-4" />
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/integrations/page.tsx
                                             {row.detected ? 'Detected on this machine' : 'Not detected from HyperCode yet'}
+=======
+                                            {row.detected ? 'Detected on this machine' : 'Not detected from borg yet'}
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/integrations/page.tsx
                                         </div>
                                     </div>
                                 </div>
@@ -551,7 +592,11 @@ export default function IntegrationsDashboard() {
                         <div>
                             <div className="text-sm font-medium text-white">{CLIENT_LABELS[selectedSyncClient]}</div>
                             <div className="mt-1 text-xs text-zinc-500">
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/integrations/page.tsx
                                 Preview or write HyperCode-managed MCP config directly from the Integration Hub without leaving this setup flow.
+=======
+                                Preview or write borg-managed MCP config directly from the Integration Hub without leaving this setup flow.
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/integrations/page.tsx
                             </div>
                         </div>
 
@@ -565,7 +610,11 @@ export default function IntegrationsDashboard() {
                             <div>
                                 <div className="text-zinc-500">Current status</div>
                                 <div className="text-zinc-300">
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/integrations/page.tsx
                                     {selectedClientRow?.detected ? 'Existing config detected' : 'Ready to create HyperCode-managed config'}
+=======
+                                    {selectedClientRow?.detected ? 'Existing config detected' : 'Ready to create borg-managed config'}
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/integrations/page.tsx
                                 </div>
                             </div>
                             <div>
@@ -590,7 +639,11 @@ export default function IntegrationsDashboard() {
                                 disabled={isPreviewLoading || isSyncing || syncTargetsUnavailable || previewUnavailable}
                             >
                                 {isSyncing ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Download className="mr-2 h-4 w-4" />}
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/integrations/page.tsx
                                 Add HyperCode as MCP server
+=======
+                                Add borg as MCP server
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/integrations/page.tsx
                             </Button>
                         </div>
                     </div>
@@ -600,7 +653,11 @@ export default function IntegrationsDashboard() {
                             <div>
                                 <div className="text-sm font-medium text-white">Generated preview</div>
                                 <div className="text-xs text-zinc-500">
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/integrations/page.tsx
                                     This is the exact JSON HyperCode will merge into {CLIENT_LABELS[selectedSyncClient]}.
+=======
+                                    This is the exact JSON borg will merge into {CLIENT_LABELS[selectedSyncClient]}.
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/integrations/page.tsx
                                 </div>
                             </div>
                             {previewUnavailable ? (

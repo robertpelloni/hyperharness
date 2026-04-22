@@ -4,7 +4,11 @@ import { t, publicProcedure, adminProcedure } from '../lib/trpc-core.js';
 import { configRepo } from '../db/repositories/index.js';
 import { configService } from '../services/config.service.js';
 import { jsonConfigProvider } from '../services/config/JsonConfigProvider.js';
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/routers/configRouter.ts
 import { getHyperCodeConfigDir, writeHyperCodeMcpConfig } from '../mcp/mcpJsonConfig.js';
+=======
+import { getBorgConfigDir, writeBorgMcpConfig } from '../mcp/mcpJsonConfig.js';
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/routers/configRouter.ts
 import { rethrowSqliteUnavailableAsTrpc } from './sqliteTrpc.js';
 
 const ConfigValueSchema = z.object({
@@ -93,10 +97,17 @@ export const configRouter = t.router({
         .mutation(async ({ input }) => {
             try {
                 const configDir = input.scope === 'global'
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/routers/configRouter.ts
                     ? getHyperCodeConfigDir()
                     : path.join(process.cwd(), '.hypercode');
 
                 await writeHyperCodeMcpConfig({ mcpServers: {} }, configDir);
+=======
+                    ? getBorgConfigDir()
+                    : path.join(process.cwd(), '.borg');
+
+                await writeBorgMcpConfig({ mcpServers: {} }, configDir);
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/routers/configRouter.ts
 
                 return {
                     success: true,

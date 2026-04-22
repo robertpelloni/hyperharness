@@ -12,7 +12,11 @@ export function LoginPage() {
 
                 <div className="relative z-20 flex items-center text-lg font-medium">
                     <Brain className="mr-2 h-6 w-6" />
+<<<<<<< HEAD:archive/ts-legacy/packages/ui/src/components/LoginPage.tsx
                     HYPERCODE SYSTEM
+=======
+                    borg SYSTEM
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/ui/src/components/LoginPage.tsx
                 </div>
                 <div className="relative z-20 mt-auto">
                     <blockquote className="space-y-2">

@@ -68,6 +68,10 @@ import { browserExtensionRouter } from './routers/browserExtensionRouter.js';
 import { sessionExportRouter } from './routers/sessionExportRouter.js';
 import { toolChainingRouter } from './routers/toolChainingRouter.js';
 import { browserControlsRouter } from './routers/browserControlsRouter.js';
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/trpc.ts
+=======
+import { promptsRouter } from './routers/promptsRouter.js';
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/trpc.ts
 
 // import { type AnyTRPCRouter } from '@trpc/server';
 
@@ -76,7 +80,11 @@ export const appRouter = t.router({
     graph: graphRouter,
     workflow: workflowRouter,
     tests: testsRouter,
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/trpc.ts
     hypercodeContext: contextRouter,
+=======
+    borgContext: contextRouter,
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/trpc.ts
     commands: commandsRouter,
     symbols: symbolsRouter,
     autoDev: autoDevRouter,
@@ -138,6 +146,10 @@ export const appRouter = t.router({
     sessionExport: sessionExportRouter,
     toolChaining: toolChainingRouter,
     browserControls: browserControlsRouter,
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/trpc.ts
+=======
+    prompts: promptsRouter,
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/trpc.ts
 });
 
 export type AppRouter = typeof appRouter;

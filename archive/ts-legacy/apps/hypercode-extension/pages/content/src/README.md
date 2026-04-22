@@ -1,6 +1,10 @@
 # Content Script Source (`src`)
 
+<<<<<<<< HEAD:archive/ts-legacy/apps/hypercode-extension/pages/content/src/README.md
 This directory is the root for all source code of the HyperCode-Extension content script, built on a modern plugin architecture with Zustand state management and React hooks integration.
+========
+This directory is the root for all source code of the borg-Extension content script, built on a modern plugin architecture with Zustand state management and React hooks integration.
+>>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/borg-extension/pages/content/src/README.md
 
 ## Overview
 
@@ -129,4 +133,8 @@ eventBus.on('tool:executed', (data) => { /* handle */ });
 5. **React Integration**: Modern hooks patterns for component development
 6. **State Management**: Predictable state updates via Zustand stores
 
+<<<<<<<< HEAD:archive/ts-legacy/apps/hypercode-extension/pages/content/src/README.md
 This architecture ensures maintainability, scalability, and extensibility while providing a robust foundation for the HyperCode Extension functionality.
+========
+This architecture ensures maintainability, scalability, and extensibility while providing a robust foundation for the borg Extension functionality.
+>>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/borg-extension/pages/content/src/README.md

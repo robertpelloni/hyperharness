@@ -2,7 +2,11 @@ export interface Policy { }
 
 export const policyService = {
     getPolicy: async (_policyId: string): Promise<Policy | null> => {
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/services/stubs/policy.service.stub.ts
         // Compatibility placeholder: HyperCode currently persists policy definitions through the repository/router
+=======
+        // Compatibility placeholder: borg currently persists policy definitions through the repository/router
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/services/stubs/policy.service.stub.ts
         // layer, but this legacy compatibility service does not yet resolve an enforcement-ready compiled
         // policy object for middleware execution. Returning null keeps older middleware hooks operational
         // without implying that a real evaluator/storage backend exists here.

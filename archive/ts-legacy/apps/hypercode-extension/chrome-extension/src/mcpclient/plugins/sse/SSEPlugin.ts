@@ -15,7 +15,11 @@ export class SSEPlugin implements ITransportPlugin {
     version: '1.0.0',
     transportType: 'sse',
     description: 'Server-Sent Events transport for MCP protocol',
+<<<<<<<< HEAD:archive/ts-legacy/apps/hypercode-extension/chrome-extension/src/mcpclient/plugins/sse/SSEPlugin.ts
     author: 'HyperCode Extension',
+========
+    author: 'borg Extension',
+>>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/borg-extension/chrome-extension/src/mcpclient/plugins/sse/SSEPlugin.ts
   };
 
   private config: SSEPluginConfig = {};

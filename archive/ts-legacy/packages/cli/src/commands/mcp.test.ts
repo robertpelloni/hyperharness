@@ -416,7 +416,11 @@ describe('registerMcpCommand', () => {
 
   it('exports MCP JSONC config through the live editor route', async () => {
     queryTrpcMock.mockResolvedValue({
+<<<<<<< HEAD:archive/ts-legacy/packages/cli/src/commands/mcp.test.ts
       path: 'C:\\Users\\hyper\\.hypercode\\mcp.jsonc',
+=======
+      path: 'C:\\Users\\hyper\\.borg\\mcp.jsonc',
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/cli/src/commands/mcp.test.ts
       content: '{\n  "mcpServers": {}\n}\n',
     });
 
@@ -427,7 +431,11 @@ describe('registerMcpCommand', () => {
     expect(writeFileSync).toHaveBeenCalledWith('out.json', '{\n  "mcpServers": {}\n}\n', 'utf8');
     expect(logSpy).toHaveBeenCalledWith(JSON.stringify({
       output: 'out.json',
+<<<<<<< HEAD:archive/ts-legacy/packages/cli/src/commands/mcp.test.ts
       sourcePath: 'C:\\Users\\hyper\\.hypercode\\mcp.jsonc',
+=======
+      sourcePath: 'C:\\Users\\hyper\\.borg\\mcp.jsonc',
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/cli/src/commands/mcp.test.ts
       bytes: Buffer.byteLength('{\n  "mcpServers": {}\n}\n', 'utf8'),
     }, null, 2));
   });

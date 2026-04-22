@@ -83,7 +83,11 @@ describe('submodules page normalizers', () => {
             path: ' apps/web ',
             kind: 'app',
             summary: ' Dashboard ',
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/submodules-page-normalizers.test.ts
             packageName: ' @hypercode/web ',
+=======
+            packageName: ' @borg/web ',
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/submodules-page-normalizers.test.ts
             version: ' 0.10.0 ',
           },
           {
@@ -108,7 +112,11 @@ describe('submodules page normalizers', () => {
             path: 'apps/web',
             kind: 'app',
             summary: 'Dashboard',
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/submodules-page-normalizers.test.ts
             packageName: '@hypercode/web',
+=======
+            packageName: '@borg/web',
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/submodules-page-normalizers.test.ts
             version: '0.10.0',
           },
           {

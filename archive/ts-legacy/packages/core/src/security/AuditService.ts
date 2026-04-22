@@ -14,7 +14,11 @@ export class AuditService {
     private buffer: AuditLogEntry[] = [];
     private flushInterval: NodeJS.Timeout;
 
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/security/AuditService.ts
     constructor(logDir: string = '.hypercode/audit') {
+=======
+    constructor(logDir: string = '.borg/audit') {
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/security/AuditService.ts
         const absoluteLogDir = path.isAbsolute(logDir) ? logDir : path.join(process.cwd(), logDir);
         if (!fs.existsSync(absoluteLogDir)) {
             fs.mkdirSync(absoluteLogDir, { recursive: true });

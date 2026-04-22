@@ -3,7 +3,11 @@
  *
  * claude-mem stores per-project context as structured markdown sections inside
  * a single `.claude/CLAUDE.md` file.  This adapter translates that format into
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/services/memory/ClaudeMemAdapter.ts
  * HyperCode's Memory/IMemoryProvider interface so it can participate in the
+=======
+ * borg's Memory/IMemoryProvider interface so it can participate in the
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/services/memory/ClaudeMemAdapter.ts
  * redundant memory pipeline alongside JsonMemoryProvider (and future vector
  * stores).
  *
@@ -59,8 +63,13 @@ export class ClaudeMemAdapter implements IMemoryProvider {
     private initialized = false;
 
     constructor(workspaceRoot: string) {
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/services/memory/ClaudeMemAdapter.ts
         // Store in .hypercode/claude_mem.json alongside other HyperCode data
         this.storePath = path.join(workspaceRoot, '.hypercode', 'claude_mem.json');
+=======
+        // Store in .borg/claude_mem.json alongside other borg data
+        this.storePath = path.join(workspaceRoot, '.borg', 'claude_mem.json');
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/services/memory/ClaudeMemAdapter.ts
     }
 
     async init(): Promise<void> {

@@ -1,7 +1,11 @@
 "use client";
 
 import { useEffect, useState, useRef } from 'react';
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/components/MirrorView.tsx
 import { createReconnectPolicy, getReconnectDelayMs, resolveCoreWsUrl, shouldRetryReconnect } from '@hypercode/ui';
+=======
+import { createReconnectPolicy, getReconnectDelayMs, resolveCoreWsUrl, shouldRetryReconnect } from '@borg/ui';
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/components/MirrorView.tsx
 import { motion, AnimatePresence } from 'framer-motion';
 
 export function MirrorView() {

@@ -89,7 +89,11 @@ export function selectSessionExecutionPolicy(
                 preferred,
                 preferred
                     ? `A PowerShell shell was requested, but none verified; falling back to ${preferred.name}.`
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/services/session-execution-policy.ts
                     : 'A PowerShell shell was requested, but HyperCode could not verify any shell on this host.',
+=======
+                    : 'A PowerShell shell was requested, but borg could not verify any shell on this host.',
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/services/session-execution-policy.ts
             );
         }
 
@@ -111,7 +115,11 @@ export function selectSessionExecutionPolicy(
                 preferred,
                 preferred
                     ? `A POSIX shell was requested, but none verified; falling back to ${preferred.name}.`
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/services/session-execution-policy.ts
                     : 'A POSIX shell was requested, but HyperCode could not verify any shell on this host.',
+=======
+                    : 'A POSIX shell was requested, but borg could not verify any shell on this host.',
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/services/session-execution-policy.ts
             );
         }
 
@@ -123,7 +131,11 @@ export function selectSessionExecutionPolicy(
                 compatibilityShell,
                 compatibilityShell
                     ? `${compatibilityShell.name} selected for the most conservative compatibility posture on this host.`
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/services/session-execution-policy.ts
                     : 'Compatibility mode was requested, but HyperCode could not verify any shell on this host.',
+=======
+                    : 'Compatibility mode was requested, but borg could not verify any shell on this host.',
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/services/session-execution-policy.ts
             );
         }
 
@@ -135,7 +147,11 @@ export function selectSessionExecutionPolicy(
                     requestedProfile,
                     'powershell',
                     powerShell,
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/services/session-execution-policy.ts
                     `${powerShell.name} selected automatically as HyperCode's preferred Windows execution shell for general harness supervision.`,
+=======
+                    `${powerShell.name} selected automatically as borg's preferred Windows execution shell for general harness supervision.`,
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/services/session-execution-policy.ts
                 );
             }
 
@@ -155,7 +171,11 @@ export function selectSessionExecutionPolicy(
                 'fallback',
                 preferred,
                 preferred
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/services/session-execution-policy.ts
                     ? `${preferred.name} selected automatically as the only verified shell HyperCode can trust on this host.`
+=======
+                    ? `${preferred.name} selected automatically as the only verified shell borg can trust on this host.`
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/services/session-execution-policy.ts
                     : 'Auto execution profile could not verify a runnable shell on this host.',
             );
         }
@@ -168,6 +188,7 @@ export function buildExecutionPolicyEnv(policy: SessionExecutionPolicy | null): 
     }
 
     const env: Record<string, string> = {
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/services/session-execution-policy.ts
         HYPERCODE_EXECUTION_PROFILE_REQUESTED: policy.requestedProfile,
         HYPERCODE_EXECUTION_PROFILE_EFFECTIVE: policy.effectiveProfile,
         HYPERCODE_EXECUTION_SHELL_ID: policy.shellId ?? '',
@@ -177,6 +198,17 @@ export function buildExecutionPolicyEnv(policy: SessionExecutionPolicy | null): 
         HYPERCODE_EXECUTION_POLICY_REASON: policy.reason,
         HYPERCODE_SUPPORTS_POWERSHELL: policy.supportsPowerShell ? '1' : '0',
         HYPERCODE_SUPPORTS_POSIX_SHELL: policy.supportsPosixShell ? '1' : '0',
+=======
+        BORG_EXECUTION_PROFILE_REQUESTED: policy.requestedProfile,
+        BORG_EXECUTION_PROFILE_EFFECTIVE: policy.effectiveProfile,
+        BORG_EXECUTION_SHELL_ID: policy.shellId ?? '',
+        BORG_EXECUTION_SHELL_LABEL: policy.shellLabel ?? '',
+        BORG_EXECUTION_SHELL_FAMILY: policy.shellFamily ?? '',
+        BORG_EXECUTION_SHELL_PATH: policy.shellPath ?? '',
+        BORG_EXECUTION_POLICY_REASON: policy.reason,
+        BORG_SUPPORTS_POWERSHELL: policy.supportsPowerShell ? '1' : '0',
+        BORG_SUPPORTS_POSIX_SHELL: policy.supportsPosixShell ? '1' : '0',
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/services/session-execution-policy.ts
     };
 
     if (policy.shellPath) {

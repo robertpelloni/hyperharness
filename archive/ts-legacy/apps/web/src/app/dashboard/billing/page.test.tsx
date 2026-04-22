@@ -54,7 +54,11 @@ describe('billing dashboard provider portals', () => {
     });
   });
 
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/billing/page.test.tsx
   it('keeps reference links available even when HyperCode has no local auth state', () => {
+=======
+  it('keeps reference links available even when borg has no local auth state', () => {
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/billing/page.test.tsx
     const cards = getProviderPortalCards(undefined);
     const providerIds = new Set(cards.map((card) => card.id));
 

@@ -9,7 +9,11 @@ interface ToolLoadingDefinitionOverrides {
 const baseDefinitions: Record<ToolLoadingName, Tool> = {
     search_tools: {
         name: 'search_tools',
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/mcp/toolLoadingDefinitions.ts
         description: 'Search HyperCode-managed downstream MCP tools and return compact ranked matches with why each result matched, whether it is already loaded, and whether full schema hydration is still needed.',
+=======
+        description: 'Search borg-managed downstream MCP tools and return compact ranked matches with why each result matched, whether it is already loaded, and whether full schema hydration is still needed.',
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/mcp/toolLoadingDefinitions.ts
         inputSchema: {
             type: 'object',
             properties: {
@@ -44,7 +48,11 @@ const baseDefinitions: Record<ToolLoadingName, Tool> = {
     },
     load_tool: {
         name: 'load_tool',
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/mcp/toolLoadingDefinitions.ts
         description: 'Load a downstream MCP tool into the current HyperCode session working set so it becomes visible for use without hydrating every schema up front.',
+=======
+        description: 'Load a downstream MCP tool into the current borg session working set so it becomes visible for use without hydrating every schema up front.',
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/mcp/toolLoadingDefinitions.ts
         inputSchema: {
             type: 'object',
             properties: {
@@ -96,7 +104,11 @@ const baseDefinitions: Record<ToolLoadingName, Tool> = {
     },
     unload_tool: {
         name: 'unload_tool',
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/mcp/toolLoadingDefinitions.ts
         description: 'Remove a downstream tool from the current HyperCode session working set.',
+=======
+        description: 'Remove a downstream tool from the current borg session working set.',
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/mcp/toolLoadingDefinitions.ts
         inputSchema: {
             type: 'object',
             properties: {
@@ -107,7 +119,11 @@ const baseDefinitions: Record<ToolLoadingName, Tool> = {
     },
     list_loaded_tools: {
         name: 'list_loaded_tools',
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/mcp/toolLoadingDefinitions.ts
         description: 'List downstream tools currently loaded into the HyperCode session working set.',
+=======
+        description: 'List downstream tools currently loaded into the borg session working set.',
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/mcp/toolLoadingDefinitions.ts
         inputSchema: {
             type: 'object',
             properties: {},
@@ -115,7 +131,11 @@ const baseDefinitions: Record<ToolLoadingName, Tool> = {
     },
     list_all_tools: {
         name: 'list_all_tools',
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/mcp/toolLoadingDefinitions.ts
         description: 'List all tools HyperCode can currently advertise to the model, including always-visible meta tools, compatibility helpers, native built-ins, saved scripts, and HyperCode-managed downstream MCP tools.',
+=======
+        description: 'List all tools borg can currently advertise to the model, including always-visible meta tools, compatibility helpers, native built-ins, saved scripts, and borg-managed downstream MCP tools.',
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/mcp/toolLoadingDefinitions.ts
         inputSchema: {
             type: 'object',
             properties: {

@@ -16,7 +16,11 @@ export class SessionManager {
     private saveInterval: NodeJS.Timeout | null = null;
 
     constructor(baseDir: string = process.cwd()) {
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/services/SessionManager.ts
         this.persistencePath = path.join(baseDir, '.hypercode-session.json');
+=======
+        this.persistencePath = path.join(baseDir, '.borg-session.json');
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/services/SessionManager.ts
         this.state = {
             isAutoDriveActive: false,
             activeGoal: null,

@@ -1,6 +1,10 @@
 /**
  * @file metamcp-schema.ts
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/db/metamcp-schema.ts
  * @description SQLite schema definition for MetaMCP integration into HyperCode.
+=======
+ * @description SQLite schema definition for MetaMCP integration into borg.
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/db/metamcp-schema.ts
  * @module packages/core/src/db/metamcp-schema
  *
  * WHAT:
@@ -9,7 +13,11 @@
  * but uses SQLite-compatible column types.
  *
  * WHY:
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/db/metamcp-schema.ts
  * HyperCode runs primarily as a local application where SQLite (`better-sqlite3`) is the standard embedded database.
+=======
+ * borg runs primarily as a local application where SQLite (`better-sqlite3`) is the standard embedded database.
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/db/metamcp-schema.ts
  * The original MetaMCP uses PostgreSQL (`pg`). To support full feature parity locally without requiring a running
  * Postgres instance, we verify and adapt the schema to SQLite.
  *
@@ -44,7 +52,11 @@ export const DockerSessionStatusEnum = ["PENDING", "RUNNING", "STOPPED", "ERROR"
 
 /**
  * Table: mcp_servers
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/db/metamcp-schema.ts
  * Stores configuration for upstream MCP servers (the ones HyperCode connects TO).
+=======
+ * Stores configuration for upstream MCP servers (the ones borg connects TO).
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/db/metamcp-schema.ts
  */
 export const mcpServersTable = sqliteTable(
     "mcp_servers",
@@ -1020,7 +1032,11 @@ export const publishedMcpValidationRunsTable = sqliteTable(
 
 /**
  * Table: links_backlog
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/db/metamcp-schema.ts
  * Canonical HyperCode link backlog, initially fed by BobbyBookmarks and designed to
+=======
+ * Canonical borg link backlog, initially fed by BobbyBookmarks and designed to
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/db/metamcp-schema.ts
  * become one of the data sources for the universal integrated MCP directory.
  */
 export const linksBacklogTable = sqliteTable(

@@ -75,7 +75,11 @@ export interface SessionSupervisorLogEntry {
  *   2. **Local Terminal Attach** (via `buildAttachCommand`): Operators can manually attach using
  *      a terminal command that connects directly to the process PID
  * - Full stdio streaming/interactivity is intentionally deferred; operators requiring deep
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/supervisor/types.ts
  *   interactivity can use terminal attach while HyperCode remains a supervision & recovery layer.
+=======
+ *   interactivity can use terminal attach while borg remains a supervision & recovery layer.
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/supervisor/types.ts
  */
 export interface SessionAttachInfo {
     id: string;

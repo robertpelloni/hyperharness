@@ -92,7 +92,11 @@ export const MEMORY_SEARCH_MODES: Array<{ value: MemorySearchMode; label: string
 export const MEMORY_MODEL_PILLARS = [
     {
         title: 'Facts live in tiers',
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/memory/memory-dashboard-utils.ts
         description: 'Session, working, and long-term records remain HyperCode’s storage backbone for manual and inferred facts.',
+=======
+        description: 'Session, working, and long-term records remain borg’s storage backbone for manual and inferred facts.',
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/memory/memory-dashboard-utils.ts
     },
     {
         title: 'Observations are structured',
@@ -103,8 +107,13 @@ export const MEMORY_MODEL_PILLARS = [
         description: 'Captured user prompts and session summaries keep goals, objectives, and provenance visible.',
     },
     {
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/memory/memory-dashboard-utils.ts
         title: 'hypercode-memory is an adapter',
         description: 'The adapter remains useful for interchange, but HyperCode-native records are now the source of truth.',
+=======
+        title: 'borg-memory is an adapter',
+        description: 'The adapter remains useful for interchange, but borg-native records are now the source of truth.',
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/memory/memory-dashboard-utils.ts
     },
 ] as const;
 
@@ -704,7 +713,11 @@ export function getMemoryDetailSections(memory: MemoryRecord): MemoryDetailSecti
 
 export function getMemoryModeHint(mode: MemorySearchMode, tier: 'session' | 'working' | 'long_term'): string {
     if (mode === 'all') {
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/memory/memory-dashboard-utils.ts
         return `Showing every record HyperCode can surface for the ${tier} tier.`;
+=======
+        return `Showing every record borg can surface for the ${tier} tier.`;
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/memory/memory-dashboard-utils.ts
     }
 
     if (mode === 'facts') {
@@ -712,7 +725,11 @@ export function getMemoryModeHint(mode: MemorySearchMode, tier: 'session' | 'wor
     }
 
     if (mode === 'observations') {
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/memory/memory-dashboard-utils.ts
         return 'Showing structured runtime observations from HyperCode-native tool and workflow capture.';
+=======
+        return 'Showing structured runtime observations from borg-native tool and workflow capture.';
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/memory/memory-dashboard-utils.ts
     }
 
     if (mode === 'prompts') {

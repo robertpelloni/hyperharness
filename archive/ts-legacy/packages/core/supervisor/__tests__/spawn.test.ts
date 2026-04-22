@@ -9,7 +9,11 @@ import { createFakeDetectEnvironment, createSpawnStub, FakeProcess } from './tes
 const tempDirs: string[] = [];
 
 function createTempDir() {
+<<<<<<< HEAD:archive/ts-legacy/packages/core/supervisor/__tests__/spawn.test.ts
     const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'hypercode-session-supervisor-'));
+=======
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'borg-session-supervisor-'));
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/supervisor/__tests__/spawn.test.ts
     tempDirs.push(dir);
     return dir;
 }
@@ -38,7 +42,11 @@ describe('session supervisor spawn', () => {
             workingDirectory: rootDir,
             command: 'aider',
             args: ['--model', 'gpt-4.1'],
+<<<<<<< HEAD:archive/ts-legacy/packages/core/supervisor/__tests__/spawn.test.ts
             env: { HYPERCODE_TEST_ENV: 'present' },
+=======
+            env: { BORG_TEST_ENV: 'present' },
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/supervisor/__tests__/spawn.test.ts
         });
 
         const running = await supervisor.startSession(session.id);
@@ -55,7 +63,11 @@ describe('session supervisor spawn', () => {
             args: ['--model', 'gpt-4.1'],
             cwd: rootDir,
         });
+<<<<<<< HEAD:archive/ts-legacy/packages/core/supervisor/__tests__/spawn.test.ts
         expect(invocations[0].env.HYPERCODE_TEST_ENV).toBe('present');
+=======
+        expect(invocations[0].env.BORG_TEST_ENV).toBe('present');
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/supervisor/__tests__/spawn.test.ts
         expect(attachInfo).toEqual(expect.objectContaining({
             id: session.id,
             pid: 4242,

@@ -1,8 +1,14 @@
 'use client';
 
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/director/page.tsx
 import { Card, CardHeader, CardTitle, CardContent } from "@hypercode/ui";
 import { Badge } from "@hypercode/ui";
 import { ScrollArea } from "@hypercode/ui";
+=======
+import { Card, CardHeader, CardTitle, CardContent } from "@borg/ui";
+import { Badge } from "@borg/ui";
+import { ScrollArea } from "@borg/ui";
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/director/page.tsx
 import { useState, useEffect } from "react";
 import { BrainCircuit, GitBranch, Shield, Zap } from "lucide-react";
 import { trpc } from '@/utils/trpc';

@@ -108,7 +108,11 @@ describe('registerConfigCommand', () => {
     queryTrpcMock.mockResolvedValue({
       success: true,
       scope: 'global',
+<<<<<<< HEAD:archive/ts-legacy/packages/cli/src/commands/config.test.ts
       path: 'C:\\Users\\hyper\\.hypercode',
+=======
+      path: 'C:\\Users\\hyper\\.borg',
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/cli/src/commands/config.test.ts
     });
 
     const program = createProgram();
@@ -120,7 +124,11 @@ describe('registerConfigCommand', () => {
     expect(logSpy).toHaveBeenCalledWith(JSON.stringify({
       success: true,
       scope: 'global',
+<<<<<<< HEAD:archive/ts-legacy/packages/cli/src/commands/config.test.ts
       path: 'C:\\Users\\hyper\\.hypercode',
+=======
+      path: 'C:\\Users\\hyper\\.borg',
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/cli/src/commands/config.test.ts
     }, null, 2));
   });
 

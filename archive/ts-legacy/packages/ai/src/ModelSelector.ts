@@ -30,6 +30,7 @@ interface ChainCandidate {
     systemPrompt?: string;
 }
 
+<<<<<<< HEAD:archive/ts-legacy/packages/ai/src/ModelSelector.ts
 export const DEFAULT_OPENROUTER_FREE_MODEL = 'openrouter/free';
 
 // Default Fallback - Robust Chain
@@ -53,6 +54,24 @@ const DEFAULT_CHAINS: Record<'worker' | 'supervisor', ChainCandidate[]> = {
         { provider: 'openai', modelId: 'gpt-4o' },
         { provider: 'google', modelId: 'gemini-1.5-pro' },
         { provider: 'deepseek', modelId: 'deepseek-reasoner' },
+=======
+// Default Fallback - Robust Chain
+// Defines the priority order for model selection based on task type.
+// The selector iterates through this list, checking for API keys and depletion status.
+const DEFAULT_CHAINS: Record<'worker' | 'supervisor', ChainCandidate[]> = {
+    worker: [
+        { provider: 'google', modelId: 'gemini-3.0-pro' },
+        { provider: 'openai', modelId: 'codex-5.3' },
+        { provider: 'anthropic', modelId: 'claude-opus-4.6' },
+        { provider: 'deepseek', modelId: 'deepseek-chat' },
+        { provider: 'lmstudio', modelId: 'local' },
+        { provider: 'ollama', modelId: 'gemma:2b' }
+    ],
+    supervisor: [
+        { provider: 'google', modelId: 'gemini-3.0-pro' },
+        { provider: 'anthropic', modelId: 'claude-opus-4.6' },
+        { provider: 'openai', modelId: 'codex-5.3' },
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/ai/src/ModelSelector.ts
         { provider: 'lmstudio', modelId: 'local' }
     ]
 };
@@ -225,7 +244,10 @@ export class ModelSelector {
         if (provider === 'openai') return !!process.env.OPENAI_API_KEY;
         if (provider === 'anthropic') return !!process.env.ANTHROPIC_API_KEY;
         if (provider === 'deepseek') return !!process.env.DEEPSEEK_API_KEY;
+<<<<<<< HEAD:archive/ts-legacy/packages/ai/src/ModelSelector.ts
         if (provider === 'openrouter') return !!process.env.OPENROUTER_API_KEY;
+=======
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/ai/src/ModelSelector.ts
         return true; // Local/No-Auth
     }
 
@@ -236,7 +258,11 @@ export class ModelSelector {
             console.warn("[ModelSelector] Budget exceeded! Forcing FREE local models.");
             return {
                 provider: 'lmstudio',
+<<<<<<< HEAD:archive/ts-legacy/packages/ai/src/ModelSelector.ts
                 modelId: 'C:/Users/hyper/.lmstudio/models/HauhauCS/Gemma-4-E2B-Uncensored-HauhauCS-Aggressive/Gemma-4-E2B-Uncensored-HauhauCS-Aggressive-Q2_K_P.gguf gemma-4-e2b-uncensored-hauhaucs-aggressive',
+=======
+                modelId: 'local',
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/ai/src/ModelSelector.ts
                 reason: 'BUDGET_EXCEEDED_FORCED_LOCAL'
             };
         }
@@ -274,7 +300,11 @@ export class ModelSelector {
         console.error("[ModelSelector] ALL MODELS DEPLETED! Returning default fallback.");
         return {
             provider: 'lmstudio',
+<<<<<<< HEAD:archive/ts-legacy/packages/ai/src/ModelSelector.ts
             modelId: 'C:/Users/hyper/.lmstudio/models/HauhauCS/Gemma-4-E2B-Uncensored-HauhauCS-Aggressive/Gemma-4-E2B-Uncensored-HauhauCS-Aggressive-Q2_K_P.gguf gemma-4-e2b-uncensored-hauhaucs-aggressive',
+=======
+            modelId: 'local',
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/ai/src/ModelSelector.ts
             reason: 'EMERGENCY_FALLBACK'
         };
     }

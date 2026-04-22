@@ -1,5 +1,10 @@
+<<<<<<< HEAD:archive/ts-legacy/packages/cli/mcp.jsonc
 // HyperCode MCP configuration
 // This file is HyperCode-owned and may include cached server metadata under mcpServers.<name>._meta.
+=======
+// borg MCP configuration
+// This file is borg-owned and may include cached server metadata under mcpServers.<name>._meta.
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/cli/mcp.jsonc
 {
   "mcpServers": {
     "test_stdio_import": {

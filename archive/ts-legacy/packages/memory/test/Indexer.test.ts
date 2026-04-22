@@ -11,7 +11,11 @@ const rmDir = (dir: string) => {
 };
 
 describe('Phase 23: Deep Data Search (Indexer)', () => {
+<<<<<<< HEAD:archive/ts-legacy/packages/memory/test/Indexer.test.ts
     const TEST_DIR = path.join(process.cwd(), '.hypercode', 'test_indexer_' + Date.now());
+=======
+    const TEST_DIR = path.join(process.cwd(), '.borg', 'test_indexer_' + Date.now());
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/memory/test/Indexer.test.ts
     const DATA_DIR = path.join(TEST_DIR, 'mock_codebase');
     let store: LanceDBStore;
     let indexer: Indexer;

@@ -141,7 +141,11 @@ function normalizeImportedServerName(rawName: string, usedNames: Set<string>): s
         .replace(/^[-_]+|[-_]+$/g, '');
 
     if (!baseName || !MCP_SERVER_NAME_PATTERN.test(baseName)) {
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/lib/mcp-import.ts
         throw new Error(`Imported MCP server name '${rawName}' cannot be normalized into a HyperCode-safe server name`);
+=======
+        throw new Error(`Imported MCP server name '${rawName}' cannot be normalized into a borg-safe server name`);
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/lib/mcp-import.ts
     }
 
     let candidate = baseName;

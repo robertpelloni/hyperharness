@@ -1,6 +1,12 @@
+<<<<<<< HEAD:archive/ts-legacy/packages/ui/README.md
 # hypercode - Dashboard UI
 
 Next.js-based dashboard for the hypercode.
+=======
+# borg - Dashboard UI
+
+Next.js-based dashboard for the borg.
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/ui/README.md
 
 ## Development
 

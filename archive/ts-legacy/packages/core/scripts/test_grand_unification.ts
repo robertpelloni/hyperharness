@@ -3,7 +3,11 @@ import { MCPServer } from '../src/MCPServer.js';
 import * as path from 'path';
 
 async function runGrandUnificationTest() {
+<<<<<<< HEAD:archive/ts-legacy/packages/core/scripts/test_grand_unification.ts
     console.log("🚀 Starting Grand Unification Test: 'The HyperCode Awakening'");
+=======
+    console.log("🚀 Starting Grand Unification Test: 'The borg Awakening'");
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/scripts/test_grand_unification.ts
 
     // 1. Initialize Server (Core)
     const server = new MCPServer({ skipWebsocket: true, skipAutoDrive: true });
@@ -27,7 +31,11 @@ async function runGrandUnificationTest() {
         console.log("\n[3/4] 🧠 Cognee: Storing Graph Knowledge...");
         // Simulate storing a fact derived from "research"
         const fact = {
+<<<<<<< HEAD:archive/ts-legacy/packages/core/scripts/test_grand_unification.ts
             subject: "HyperCode Protocol",
+=======
+            subject: "borg Protocol",
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/scripts/test_grand_unification.ts
             predicate: "has_status",
             object: "Operational"
         };

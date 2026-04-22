@@ -5,12 +5,20 @@ import path from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
 
 import { JsonConfigProvider } from '../src/services/config/JsonConfigProvider.ts';
+<<<<<<< HEAD:archive/ts-legacy/packages/core/test/mcpJsonConfig.test.ts
 import { loadHyperCodeMcpConfig, stripJsonComments, writeHyperCodeMcpConfig } from '../src/mcp/mcpJsonConfig.ts';
+=======
+import { loadBorgMcpConfig, stripJsonComments, writeBorgMcpConfig } from '../src/mcp/mcpJsonConfig.ts';
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/test/mcpJsonConfig.test.ts
 
 const tempDirs: string[] = [];
 
 async function makeTempDir(): Promise<string> {
+<<<<<<< HEAD:archive/ts-legacy/packages/core/test/mcpJsonConfig.test.ts
     const dir = await fs.mkdtemp(path.join(os.tmpdir(), 'hypercode-mcp-jsonc-'));
+=======
+    const dir = await fs.mkdtemp(path.join(os.tmpdir(), 'borg-mcp-jsonc-'));
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/test/mcpJsonConfig.test.ts
     tempDirs.push(dir);
     return dir;
 }
@@ -38,7 +46,11 @@ describe('mcp jsonc persistence', () => {
                 await fs.writeFile(path.join(workspaceRoot, 'mcp.jsonc'), rawJsonc, 'utf-8');
 
                 const stripped = stripJsonComments(rawJsonc);
+<<<<<<< HEAD:archive/ts-legacy/packages/core/test/mcpJsonConfig.test.ts
                 const parsed = await loadHyperCodeMcpConfig(workspaceRoot);
+=======
+                const parsed = await loadBorgMcpConfig(workspaceRoot);
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/test/mcpJsonConfig.test.ts
 
                 expect(stripped).toContain('"url": "http://localhost:47334/mcp/sse"');
                 expect(stripped).not.toContain('top-level comment');
@@ -50,7 +62,11 @@ describe('mcp jsonc persistence', () => {
     it('writes metadata to mcp.jsonc while keeping mcp.json compatibility clean', async () => {
         const workspaceRoot = await makeTempDir();
 
+<<<<<<< HEAD:archive/ts-legacy/packages/core/test/mcpJsonConfig.test.ts
         await writeHyperCodeMcpConfig({
+=======
+        await writeBorgMcpConfig({
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/test/mcpJsonConfig.test.ts
             mcpServers: {
                 demo: {
                     command: 'npx',
@@ -81,7 +97,11 @@ describe('mcp jsonc persistence', () => {
         const jsoncRaw = await fs.readFile(path.join(workspaceRoot, 'mcp.jsonc'), 'utf-8');
         const jsonRaw = await fs.readFile(path.join(workspaceRoot, 'mcp.json'), 'utf-8');
         const compatibilityConfig = JSON.parse(jsonRaw) as { mcpServers: Record<string, Record<string, unknown>> };
+<<<<<<< HEAD:archive/ts-legacy/packages/core/test/mcpJsonConfig.test.ts
         const loadedConfig = await loadHyperCodeMcpConfig(workspaceRoot);
+=======
+        const loadedConfig = await loadBorgMcpConfig(workspaceRoot);
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/test/mcpJsonConfig.test.ts
 
         expect(jsoncRaw).toContain('_meta');
         expect(jsonRaw).not.toContain('_meta');
@@ -94,7 +114,11 @@ describe('mcp jsonc persistence', () => {
     it('preserves cached metadata when JsonConfigProvider saves server config updates', async () => {
         const workspaceRoot = await makeTempDir();
 
+<<<<<<< HEAD:archive/ts-legacy/packages/core/test/mcpJsonConfig.test.ts
         await writeHyperCodeMcpConfig({
+=======
+        await writeBorgMcpConfig({
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/test/mcpJsonConfig.test.ts
             mcpServers: {
                 demo: {
                     command: 'npx',
@@ -119,7 +143,11 @@ describe('mcp jsonc persistence', () => {
             },
         ]);
 
+<<<<<<< HEAD:archive/ts-legacy/packages/core/test/mcpJsonConfig.test.ts
         const loadedConfig = await loadHyperCodeMcpConfig(workspaceRoot);
+=======
+        const loadedConfig = await loadBorgMcpConfig(workspaceRoot);
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/test/mcpJsonConfig.test.ts
         const loadedServers = await provider.loadMcpServers();
 
         expect(loadedConfig.mcpServers.demo.command).toBe('pnpm');

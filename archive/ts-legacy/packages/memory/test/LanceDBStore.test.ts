@@ -4,7 +4,11 @@ import { LanceDBStore } from '../src/LanceDBStore.js';
 
 describe('LanceDBStore', () => {
     it('retries openTable after a concurrent memories table creation wins the race', async () => {
+<<<<<<< HEAD:archive/ts-legacy/packages/memory/test/LanceDBStore.test.ts
         const store = new LanceDBStore('C:\\temp\\hypercode-memory-test');
+=======
+        const store = new LanceDBStore('C:\\temp\\borg-memory-test');
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/memory/test/LanceDBStore.test.ts
         const addedRows: Array<Record<string, unknown>>[] = [];
 
         const existingTable = {
@@ -44,7 +48,11 @@ describe('LanceDBStore', () => {
     });
 
     it('drops unknown metadata fields when appending to an older memories schema', async () => {
+<<<<<<< HEAD:archive/ts-legacy/packages/memory/test/LanceDBStore.test.ts
         const store = new LanceDBStore('C:\\temp\\hypercode-memory-test');
+=======
+        const store = new LanceDBStore('C:\\temp\\borg-memory-test');
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/memory/test/LanceDBStore.test.ts
         const addCalls: Array<Array<Record<string, unknown>>> = [];
 
         const existingTable = {

@@ -33,14 +33,22 @@ describe('legacyProxyMode', () => {
         expect(isToolNotFoundError(new Error('socket hang up'))).toBe(false);
     });
 
+<<<<<<< HEAD:archive/ts-legacy/packages/core/mcp/__tests__/legacy-proxy-mode.test.ts
     it('prefers HyperCode aggregator execution for namespaced downstream tools', () => {
+=======
+    it('prefers borg aggregator execution for namespaced downstream tools', () => {
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/mcp/__tests__/legacy-proxy-mode.test.ts
         expect(shouldPreferAggregatorExecution('github__create_issue')).toBe(true);
         expect(shouldPreferAggregatorExecution('memory__store_fact')).toBe(true);
         expect(shouldPreferAggregatorExecution('search_tools')).toBe(false);
         expect(shouldPreferAggregatorExecution('run_code')).toBe(false);
     });
 
+<<<<<<< HEAD:archive/ts-legacy/packages/core/mcp/__tests__/legacy-proxy-mode.test.ts
     it('prefers HyperCode aggregator execution for plain tool names already present in the aggregated inventory', () => {
+=======
+    it('prefers borg aggregator execution for plain tool names already present in the aggregated inventory', () => {
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/mcp/__tests__/legacy-proxy-mode.test.ts
         expect(shouldPreferAggregatorExecution('create_issue', [
             { name: 'github__create_issue', _originalName: 'create_issue' },
         ])).toBe(true);
@@ -55,7 +63,11 @@ describe('legacyProxyMode', () => {
         expect(shouldUseDirectMCPHandlers({ legacyProxyEnabled: true, legacyProxyInitFailed: false })).toBe(false);
     });
 
+<<<<<<< HEAD:archive/ts-legacy/packages/core/mcp/__tests__/legacy-proxy-mode.test.ts
     it('attempts legacy proxy execution only when HyperCode is not already handling the tool natively', () => {
+=======
+    it('attempts legacy proxy execution only when borg is not already handling the tool natively', () => {
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/mcp/__tests__/legacy-proxy-mode.test.ts
         expect(shouldAttemptLegacyProxyExecution({ legacyProxyEnabled: true, prefersAggregatorExecution: false })).toBe(true);
         expect(shouldAttemptLegacyProxyExecution({ legacyProxyEnabled: true, prefersAggregatorExecution: true })).toBe(false);
         expect(shouldAttemptLegacyProxyExecution({ legacyProxyEnabled: false, prefersAggregatorExecution: false })).toBe(false);

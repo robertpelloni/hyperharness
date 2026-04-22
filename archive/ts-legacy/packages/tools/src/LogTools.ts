@@ -3,7 +3,11 @@ import fs from 'fs/promises';
 import path from 'path';
 import os from 'os';
 
+<<<<<<< HEAD:archive/ts-legacy/packages/tools/src/LogTools.ts
 const LOG_FILE_PATH = path.join(os.homedir(), '.hypercode', 'logs', 'supervisor.log');
+=======
+const LOG_FILE_PATH = path.join(os.homedir(), '.borg', 'logs', 'supervisor.log');
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/tools/src/LogTools.ts
 
 export const LogTools = [
     {

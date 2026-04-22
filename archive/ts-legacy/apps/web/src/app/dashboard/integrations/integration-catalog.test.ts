@@ -216,7 +216,11 @@ describe('integration catalog helpers', () => {
                         {
                             clientId: 'client-1',
                             clientType: 'vscode-extension',
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/integrations/integration-catalog.test.ts
                             clientName: 'HyperCode VS Code Bridge',
+=======
+                            clientName: 'borg VS Code Bridge',
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/integrations/integration-catalog.test.ts
                             platform: 'VS Code 1.99',
                             capabilities: ['chat.inject', 'editor.selection.read'],
                             hookPhases: ['chat.submit', 'editor.selection'],
@@ -230,7 +234,11 @@ describe('integration catalog helpers', () => {
 
         expect(rows).toHaveLength(1);
         expect(rows[0]).toMatchObject({
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/integrations/integration-catalog.test.ts
             clientName: 'HyperCode VS Code Bridge',
+=======
+            clientName: 'borg VS Code Bridge',
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/integrations/integration-catalog.test.ts
             clientType: 'vscode-extension',
             capabilities: ['chat.inject', 'editor.selection.read'],
             hookPhases: ['chat.submit', 'editor.selection'],
@@ -244,7 +252,11 @@ describe('integration catalog helpers', () => {
             {
                 id: 'browser-extension-chromium',
                 status: 'ready',
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/integrations/integration-catalog.test.ts
                 artifactPath: 'apps/hypercode-extension/dist-chromium',
+=======
+                artifactPath: 'apps/borg-extension/dist-chromium',
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/integrations/integration-catalog.test.ts
                 artifactKind: 'Chromium unpacked bundle',
                 detail: 'Unpacked Chromium-compatible browser extension output is available.',
                 declaredVersion: '0.7.3',
@@ -262,13 +274,22 @@ describe('integration catalog helpers', () => {
         ], now);
 
         expect(rows.find((row) => row.id === 'browser-extension-chromium')).toMatchObject({
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/integrations/integration-catalog.test.ts
             repoPath: 'apps/hypercode-extension',
             buildHint: 'pnpm -C apps/hypercode-extension build',
+=======
+            repoPath: 'apps/borg-extension',
+            buildHint: 'pnpm -C apps/borg-extension build',
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/integrations/integration-catalog.test.ts
             statusLabel: 'artifact ready',
             statusTone: 'success',
             nextStepLabel: 'Load in Chrome / Edge',
             operatorActionLabel: 'Load unpacked directory',
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/integrations/integration-catalog.test.ts
             operatorActionValue: 'apps/hypercode-extension/dist-chromium',
+=======
+            operatorActionValue: 'apps/borg-extension/dist-chromium',
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/integrations/integration-catalog.test.ts
             operatorActionCopyLabel: 'Copy path',
             artifactVersionLabel: 'v0.7.3',
             artifactKindLabel: 'Chromium unpacked bundle',
@@ -277,7 +298,11 @@ describe('integration catalog helpers', () => {
             artifactTimestampLabel: 'Detected 2026-03-11T10:00:00Z',
             artifactStatus: {
                 status: 'ready',
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/integrations/integration-catalog.test.ts
                 artifactPath: 'apps/hypercode-extension/dist-chromium',
+=======
+                artifactPath: 'apps/borg-extension/dist-chromium',
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/integrations/integration-catalog.test.ts
                 artifactKind: 'Chromium unpacked bundle',
                 declaredVersion: '0.7.3',
                 lastModifiedAt: '2026-03-11T10:00:00.000Z',
@@ -306,12 +331,21 @@ describe('integration catalog helpers', () => {
         });
 
         expect(rows.find((row) => row.id === 'browser-extension-firefox')).toMatchObject({
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/integrations/integration-catalog.test.ts
             repoPath: 'apps/hypercode-extension',
             buildHint: 'pnpm -C apps/hypercode-extension build:firefox',
             statusLabel: 'build needed',
             nextStepLabel: 'Build Firefox bundle',
             operatorActionLabel: 'Build command',
             operatorActionValue: 'pnpm -C apps/hypercode-extension build:firefox',
+=======
+            repoPath: 'apps/borg-extension',
+            buildHint: 'pnpm -C apps/borg-extension build:firefox',
+            statusLabel: 'build needed',
+            nextStepLabel: 'Build Firefox bundle',
+            operatorActionLabel: 'Build command',
+            operatorActionValue: 'pnpm -C apps/borg-extension build:firefox',
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/integrations/integration-catalog.test.ts
             operatorActionCopyLabel: 'Copy command',
             artifactVersionLabel: 'Not versioned',
             artifactKindLabel: 'Unknown artifact kind',
@@ -322,7 +356,11 @@ describe('integration catalog helpers', () => {
         expect(rows.find((row) => row.id === 'mcp-client-sync')).toMatchObject({
             statusLabel: 'build needed',
             statusTone: 'muted',
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/integrations/integration-catalog.test.ts
             nextStepLabel: 'Start HyperCode Core',
+=======
+            nextStepLabel: 'Start borg Core',
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/integrations/integration-catalog.test.ts
             operatorActionLabel: 'Bring core online',
             operatorActionValue: 'pnpm run dev',
             operatorActionCopyLabel: 'Copy action',
@@ -345,7 +383,11 @@ describe('integration catalog helpers', () => {
             {
                 id: 'browser-extension-firefox',
                 status: 'ready',
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/integrations/integration-catalog.test.ts
                 artifactPath: 'apps/hypercode-extension/dist-firefox',
+=======
+                artifactPath: 'apps/borg-extension/dist-firefox',
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/integrations/integration-catalog.test.ts
                 artifactKind: 'Firefox unpacked bundle',
                 detail: 'Firefox-specific browser extension output is available.',
                 declaredVersion: '0.7.3',
@@ -368,7 +410,11 @@ describe('integration catalog helpers', () => {
             {
                 id: 'browser-extension-firefox',
                 status: 'ready',
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/integrations/integration-catalog.test.ts
                 artifactPath: 'apps/hypercode-extension/dist-firefox',
+=======
+                artifactPath: 'apps/borg-extension/dist-firefox',
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/integrations/integration-catalog.test.ts
                 artifactKind: 'Firefox unpacked bundle',
                 detail: 'Firefox-specific browser extension output is available.',
                 declaredVersion: '0.7.3',
@@ -377,7 +423,11 @@ describe('integration catalog helpers', () => {
             {
                 id: 'vscode-extension',
                 status: 'ready',
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/integrations/integration-catalog.test.ts
                 artifactPath: 'packages/vscode/hypercode-vscode-extension-0.2.0.vsix',
+=======
+                artifactPath: 'packages/vscode/borg-vscode-extension-0.2.0.vsix',
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/integrations/integration-catalog.test.ts
                 artifactKind: 'VSIX package',
                 detail: 'Packaged VS Code extension artifact is ready to install.',
                 declaredVersion: '0.2.0',
@@ -388,7 +438,11 @@ describe('integration catalog helpers', () => {
                 status: 'ready',
                 artifactPath: 'mcp.jsonc',
                 artifactKind: 'JSONC config source',
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/integrations/integration-catalog.test.ts
                 detail: 'HyperCode-managed MCP config source is present for dashboard sync and preview flows.',
+=======
+                detail: 'borg-managed MCP config source is present for dashboard sync and preview flows.',
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/integrations/integration-catalog.test.ts
                 declaredVersion: null,
                 lastModifiedAt: '2026-03-11T08:00:00.000Z',
             },
@@ -396,13 +450,21 @@ describe('integration catalog helpers', () => {
 
         expect(rows.find((row) => row.id === 'browser-extension-firefox')).toMatchObject({
             operatorActionLabel: 'Manifest to load',
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/integrations/integration-catalog.test.ts
             operatorActionValue: 'apps/hypercode-extension/dist-firefox/manifest.json',
+=======
+            operatorActionValue: 'apps/borg-extension/dist-firefox/manifest.json',
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/integrations/integration-catalog.test.ts
             operatorActionCopyLabel: 'Copy path',
         });
 
         expect(rows.find((row) => row.id === 'vscode-extension')).toMatchObject({
             operatorActionLabel: 'Install command',
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/integrations/integration-catalog.test.ts
             operatorActionValue: 'code --install-extension packages/vscode/hypercode-vscode-extension-0.2.0.vsix',
+=======
+            operatorActionValue: 'code --install-extension packages/vscode/borg-vscode-extension-0.2.0.vsix',
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/integrations/integration-catalog.test.ts
             operatorActionCopyLabel: 'Copy command',
         });
 

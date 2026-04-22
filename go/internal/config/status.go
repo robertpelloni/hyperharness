@@ -24,7 +24,7 @@ type Status struct {
 	ImportedInstructions PathStatus `json:"importedInstructions"`
 	SectionedMemoryStore PathStatus `json:"sectionedMemoryStore"`
 	LegacyMemoryStore    PathStatus `json:"legacyMemoryStore"`
-	HypercodeSubmodule   PathStatus `json:"hypercodeSubmodule"`
+	borgSubmodule   PathStatus `json:"borgSubmodule"`
 }
 
 func Snapshot(cfg Config) Status {
@@ -36,13 +36,14 @@ func Snapshot(cfg Config) Status {
 		ConfigDir:            buildPathStatus(cfg.ConfigDir),
 		MainConfigDir:        buildPathStatus(cfg.MainConfigDir),
 		HyperCodeConfigFile:       buildPathStatus(filepath.Join(cfg.WorkspaceRoot, "hypercode.config.json")),
+		BorgConfigFile:       buildPathStatus(filepath.Join(cfg.WorkspaceRoot, "borg.config.json")),
 		MCPConfigFile:        buildPathStatus(filepath.Join(cfg.WorkspaceRoot, "mcp.jsonc")),
 		GoLockPath:           buildPathStatus(cfg.LockPath()),
 		MainLockPath:         buildPathStatus(cfg.MainLockPath()),
 		ImportedInstructions: buildPathStatus(cfg.ImportedInstructionsPath()),
-		SectionedMemoryStore: buildPathStatus(filepath.Join(cfg.WorkspaceRoot, ".hypercode", "sectioned_memory.json")),
-		LegacyMemoryStore:    buildPathStatus(filepath.Join(cfg.WorkspaceRoot, ".hypercode", "claude_mem.json")),
-		HypercodeSubmodule:   buildPathStatus(filepath.Join(cfg.WorkspaceRoot, "submodules", "hypercode")),
+		SectionedMemoryStore: buildPathStatus(filepath.Join(cfg.WorkspaceRoot, ".borg", "sectioned_memory.json")),
+		LegacyMemoryStore:    buildPathStatus(filepath.Join(cfg.WorkspaceRoot, ".borg", "claude_mem.json")),
+		borgSubmodule:   buildPathStatus(filepath.Join(cfg.WorkspaceRoot, "submodules", "borg")),
 	}
 }
 

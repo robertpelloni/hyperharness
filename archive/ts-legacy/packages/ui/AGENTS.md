@@ -3,7 +3,11 @@
 **Context:** Next.js (App Router) | React | Tailwind CSS | Custom Server
 
 ## OVERVIEW
+<<<<<<< HEAD:archive/ts-legacy/packages/ui/AGENTS.md
 The frontend dashboard for the HyperCode. It provides a visual interface for monitoring agents, managing skills, and viewing system status. It uses a custom `server.js` to integrate closely with the Core backend.
+=======
+The frontend dashboard for the borg. It provides a visual interface for monitoring agents, managing skills, and viewing system status. It uses a custom `server.js` to integrate closely with the Core backend.
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/ui/AGENTS.md
 
 ## STRUCTURE
 ```

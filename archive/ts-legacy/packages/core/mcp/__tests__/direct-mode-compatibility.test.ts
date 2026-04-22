@@ -33,7 +33,11 @@ function createToolSetStore(overrides: Partial<{
 }
 
 describe('directModeCompatibility', () => {
+<<<<<<< HEAD:archive/ts-legacy/packages/core/mcp/__tests__/direct-mode-compatibility.test.ts
     it('advertises MetaMCP-compatible direct-mode aliases in HyperCode', () => {
+=======
+    it('advertises MetaMCP-compatible direct-mode aliases in borg', () => {
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/mcp/__tests__/direct-mode-compatibility.test.ts
         expect(getDirectModeCompatibilityTools()).toEqual(expect.arrayContaining([
             expect.objectContaining({ name: 'run_code' }),
             expect.objectContaining({ name: 'run_python' }),
@@ -76,7 +80,11 @@ describe('directModeCompatibility', () => {
 
         const result = await tryHandleDirectModeCompatibilityTool('run_code', {
             code: 'return 1;',
+<<<<<<< HEAD:archive/ts-legacy/packages/core/mcp/__tests__/direct-mode-compatibility.test.ts
             context: { repo: 'hypercode' },
+=======
+            context: { repo: 'borg' },
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/mcp/__tests__/direct-mode-compatibility.test.ts
         }, {
             enable,
             disable,
@@ -92,7 +100,11 @@ describe('directModeCompatibility', () => {
         }, createToolSetStore(), createNativeSessionStub(), undefined, undefined, undefined);
 
         expect(enable).toHaveBeenCalledTimes(1);
+<<<<<<< HEAD:archive/ts-legacy/packages/core/mcp/__tests__/direct-mode-compatibility.test.ts
         expect(executeCode).toHaveBeenCalledWith('return 1;', { repo: 'hypercode' });
+=======
+        expect(executeCode).toHaveBeenCalledWith('return 1;', { repo: 'borg' });
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/mcp/__tests__/direct-mode-compatibility.test.ts
         expect(disable).toHaveBeenCalledTimes(1);
         expect(result?.isError).toBe(false);
         expect(JSON.parse(result!.content[0].text)).toEqual(expect.objectContaining({
@@ -119,7 +131,11 @@ describe('directModeCompatibility', () => {
         expect(result).toBeNull();
     });
 
+<<<<<<< HEAD:archive/ts-legacy/packages/core/mcp/__tests__/direct-mode-compatibility.test.ts
     it('runs run_agent through the HyperCode-native autonomous agent compatibility path', async () => {
+=======
+    it('runs run_agent through the borg-native autonomous agent compatibility path', async () => {
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/mcp/__tests__/direct-mode-compatibility.test.ts
         const runAgent = vi.fn(async (_task, toolCallback: (toolName: string, toolArgs: unknown, meta?: Record<string, unknown>) => Promise<unknown>) => ({
             analysis: 'Inspect the loaded tools first.',
             toolResult: await toolCallback('toolset_list', {}, { policyId: 'policy-123' }),
@@ -191,7 +207,11 @@ describe('directModeCompatibility', () => {
         expect(result?.content[0].text).toContain('Recursive agent calls restricted.');
     });
 
+<<<<<<< HEAD:archive/ts-legacy/packages/core/mcp/__tests__/direct-mode-compatibility.test.ts
     it('builds a native direct-mode agent runner from HyperCode llm service', async () => {
+=======
+    it('builds a native direct-mode agent runner from borg llm service', async () => {
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/mcp/__tests__/direct-mode-compatibility.test.ts
         const runner = createDirectModeAgentRunner({
             modelSelector: {
                 selectModel: vi.fn().mockResolvedValue({ provider: 'openai', modelId: 'gpt-test' }),
@@ -229,7 +249,11 @@ describe('directModeCompatibility', () => {
         })).toBeNull();
     });
 
+<<<<<<< HEAD:archive/ts-legacy/packages/core/mcp/__tests__/direct-mode-compatibility.test.ts
     it('routes run_python through the HyperCode sandbox compatibility path', async () => {
+=======
+    it('routes run_python through the borg sandbox compatibility path', async () => {
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/mcp/__tests__/direct-mode-compatibility.test.ts
         const execute = vi.fn().mockResolvedValue({ output: 'hello from python' });
 
         const result = await tryHandleDirectModeCompatibilityTool('run_python', {
@@ -255,7 +279,11 @@ describe('directModeCompatibility', () => {
         });
     });
 
+<<<<<<< HEAD:archive/ts-legacy/packages/core/mcp/__tests__/direct-mode-compatibility.test.ts
     it('imports MCP config through the HyperCode native config import service', async () => {
+=======
+    it('imports MCP config through the borg native config import service', async () => {
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/mcp/__tests__/direct-mode-compatibility.test.ts
         const importClaudeConfig = vi.fn().mockResolvedValue({ imported: 2, skipped: ['bad-server'] });
 
         const result = await tryHandleDirectModeCompatibilityTool('import_mcp_config', {
@@ -281,7 +309,11 @@ describe('directModeCompatibility', () => {
         });
     });
 
+<<<<<<< HEAD:archive/ts-legacy/packages/core/mcp/__tests__/direct-mode-compatibility.test.ts
     it('routes save_memory through HyperCode native agent memory storage', async () => {
+=======
+    it('routes save_memory through borg native agent memory storage', async () => {
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/mcp/__tests__/direct-mode-compatibility.test.ts
         const add = vi.fn().mockResolvedValue({ id: 'mem-1' });
 
         const result = await tryHandleDirectModeCompatibilityTool('save_memory', {
@@ -309,7 +341,11 @@ describe('directModeCompatibility', () => {
         });
     });
 
+<<<<<<< HEAD:archive/ts-legacy/packages/core/mcp/__tests__/direct-mode-compatibility.test.ts
     it('routes search_memory through HyperCode native agent memory search', async () => {
+=======
+    it('routes search_memory through borg native agent memory search', async () => {
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/mcp/__tests__/direct-mode-compatibility.test.ts
         const search = vi.fn().mockResolvedValue([{ id: 'mem-1', content: 'remember this' }]);
 
         const result = await tryHandleDirectModeCompatibilityTool('search_memory', {
@@ -340,7 +376,11 @@ describe('directModeCompatibility', () => {
         });
     });
 
+<<<<<<< HEAD:archive/ts-legacy/packages/core/mcp/__tests__/direct-mode-compatibility.test.ts
     it('saves scripts through HyperCode managed config storage', async () => {
+=======
+    it('saves scripts through borg managed config storage', async () => {
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/mcp/__tests__/direct-mode-compatibility.test.ts
         const saveScript = vi.fn().mockResolvedValue(undefined);
 
         const result = await tryHandleDirectModeCompatibilityTool('save_script', {
@@ -372,7 +412,11 @@ describe('directModeCompatibility', () => {
         });
     });
 
+<<<<<<< HEAD:archive/ts-legacy/packages/core/mcp/__tests__/direct-mode-compatibility.test.ts
     it('saves tool sets from the current HyperCode session working set', async () => {
+=======
+    it('saves tool sets from the current borg session working set', async () => {
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/mcp/__tests__/direct-mode-compatibility.test.ts
         const saveToolSet = vi.fn().mockResolvedValue(undefined);
         const toolSetStore = createToolSetStore({ saveToolSet });
 
@@ -406,7 +450,11 @@ describe('directModeCompatibility', () => {
         });
     });
 
+<<<<<<< HEAD:archive/ts-legacy/packages/core/mcp/__tests__/direct-mode-compatibility.test.ts
     it('loads saved tool sets into the current HyperCode session working set', async () => {
+=======
+    it('loads saved tool sets into the current borg session working set', async () => {
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/mcp/__tests__/direct-mode-compatibility.test.ts
         const loadToolIntoSession = vi.fn(() => ({ loaded: true, evicted: [] }));
         const toolSetStore = createToolSetStore({
             loadToolSets: vi.fn().mockResolvedValue([
@@ -448,7 +496,11 @@ describe('directModeCompatibility', () => {
         });
     });
 
+<<<<<<< HEAD:archive/ts-legacy/packages/core/mcp/__tests__/direct-mode-compatibility.test.ts
     it('lists saved HyperCode-managed tool sets', async () => {
+=======
+    it('lists saved borg-managed tool sets', async () => {
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/mcp/__tests__/direct-mode-compatibility.test.ts
         const toolSetStore = createToolSetStore({
             loadToolSets: vi.fn().mockResolvedValue([
                 {
@@ -489,7 +541,11 @@ describe('directModeCompatibility', () => {
         });
     });
 
+<<<<<<< HEAD:archive/ts-legacy/packages/core/mcp/__tests__/direct-mode-compatibility.test.ts
     it('executes saved script tools through the HyperCode sandbox path', async () => {
+=======
+    it('executes saved script tools through the borg sandbox path', async () => {
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/mcp/__tests__/direct-mode-compatibility.test.ts
         executeCodeMock.mockResolvedValueOnce('script output');
 
         const result = await tryHandleDirectModeCompatibilityTool('script__cleanup', {}, {

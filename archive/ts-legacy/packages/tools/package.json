@@ -1,6 +1,11 @@
 {
+<<<<<<< HEAD:archive/ts-legacy/packages/tools/package.json
     "name": "@hypercode/tools",
     "version": "1.0.0-alpha.32",
+=======
+    "name": "@borg/tools",
+    "version": "1.0.0-alpha.1",
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/tools/package.json
     "type": "module",
     "main": "dist/index.js",
     "types": "dist/index.d.ts",
@@ -16,7 +21,7 @@
         "lint": "eslint --no-eslintrc --parser @typescript-eslint/parser \"src/**/*.{ts,tsx,js,mjs,cjs}\""
     },
     "dependencies": {
-        "@hypercode/adk": "workspace:*",
+        "@borg/adk": "workspace:*",
         "@modelcontextprotocol/sdk": "^1.0.0",
         "active-win": "^8.2.0",
         "jsdom": "^27.4.0",

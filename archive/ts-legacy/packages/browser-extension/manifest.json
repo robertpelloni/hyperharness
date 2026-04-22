@@ -1,8 +1,14 @@
 {
     "manifest_version": 3,
+<<<<<<< HEAD:archive/ts-legacy/packages/browser-extension/manifest.json
     "name": "HyperCode Director Link",
     "version": "1.0",
     "description": "Connects your browser to the HyperCode Director for autonomous research and interaction.",
+=======
+    "name": "borg Director Link",
+    "version": "1.0",
+    "description": "Connects your browser to the borg Director for autonomous research and interaction.",
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/browser-extension/manifest.json
     "permissions": [
         "activeTab",
         "scripting",

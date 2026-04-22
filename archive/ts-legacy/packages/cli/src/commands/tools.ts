@@ -1,7 +1,13 @@
 /**
+<<<<<<< HEAD:archive/ts-legacy/packages/cli/src/commands/tools.ts
  * `hypercode tools` - Tool management
  *
  * Browse and search tools exposed through the HyperCode control plane.
+=======
+ * `borg tools` - Tool management
+ *
+ * Browse and search tools exposed through the borg control plane.
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/cli/src/commands/tools.ts
  * Uses the live MCP inventory/search surfaces instead of placeholder output.
  */
 
@@ -155,7 +161,11 @@ async function withToolsErrorHandling(
       const location = resolveControlPlaneLocation();
       console.error(chalk.red(`  ✗ ${message}`));
       console.error(chalk.dim(`  Control plane: ${location.baseUrl} (${location.source})`));
+<<<<<<< HEAD:archive/ts-legacy/packages/cli/src/commands/tools.ts
       console.error(chalk.dim('  Start HyperCode with `hypercode start` or point HYPERCODE_TRPC_UPSTREAM at a live /trpc endpoint.'));
+=======
+      console.error(chalk.dim('  Start borg with `borg start` or point BORG_TRPC_UPSTREAM at a live /trpc endpoint.'));
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/cli/src/commands/tools.ts
     }
     process.exitCode = 1;
   }
@@ -227,9 +237,15 @@ export function registerToolsCommand(program: Command): void {
     .option('--json', 'Output as JSON')
     .addHelpText('after', `
 Examples:
+<<<<<<< HEAD:archive/ts-legacy/packages/cli/src/commands/tools.ts
   $ hypercode tools search "read and write files"
   $ hypercode tools search "run shell commands"
   $ hypercode tools search "search code semantically"
+=======
+  $ borg tools search "read and write files"
+  $ borg tools search "run shell commands"
+  $ borg tools search "search code semantically"
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/cli/src/commands/tools.ts
     `)
     .action(async (query, opts) => {
       await withToolsErrorHandling(async () => {

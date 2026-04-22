@@ -93,6 +93,7 @@ describe('buildStartupStatusSnapshot', () => {
             archivedTranscriptCount: 0,
             missingRetentionSummaryCount: 0,
         });
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/routers/startupStatus.test.ts
         expect(snapshot.startupMode).toBeNull();
     });
 
@@ -186,6 +187,8 @@ describe('buildStartupStatusSnapshot', () => {
             installDecision: 'skipped',
             buildDecision: 'skipped',
         });
+=======
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/routers/startupStatus.test.ts
     });
 
     it('keeps startup pending when the bridge listener is offline', async () => {
@@ -363,7 +366,11 @@ describe('buildStartupStatusSnapshot', () => {
                     clients: [
                         {
                             clientId: 'client-1',
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/routers/startupStatus.test.ts
                             clientName: 'HyperCode VS Code Bridge',
+=======
+                            clientName: 'borg VS Code Bridge',
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/routers/startupStatus.test.ts
                             clientType: 'vscode-extension',
                             version: '1.2.3',
                             platform: 'VS Code 1.99',
@@ -946,7 +953,11 @@ describe('buildStartupStatusSnapshot', () => {
             },
             sectionedMemory: {
                 enabled: true,
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/routers/startupStatus.test.ts
                 storePath: '.hypercode/sectioned_memory.json',
+=======
+                storePath: '.borg/sectioned_memory.json',
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/routers/startupStatus.test.ts
                 storeExists: false,
                 totalEntries: 0,
                 sectionCount: 0,

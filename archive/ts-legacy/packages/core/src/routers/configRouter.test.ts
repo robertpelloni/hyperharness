@@ -39,14 +39,23 @@ vi.mock('../services/config/JsonConfigProvider.js', () => ({
 }));
 
 vi.mock('../mcp/mcpJsonConfig.js', () => ({
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/routers/configRouter.test.ts
     getHyperCodeConfigDir: vi.fn(() => 'C:\\Users\\hyper\\.hypercode'),
     writeHyperCodeMcpConfig: vi.fn(),
+=======
+    getBorgConfigDir: vi.fn(() => 'C:\\Users\\hyper\\.borg'),
+    writeBorgMcpConfig: vi.fn(),
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/routers/configRouter.test.ts
 }));
 
 const { configRouter } = await import('./configRouter.js');
 const { configRepo } = await import('../db/repositories/index.js');
 const { configService } = await import('../services/config.service.js');
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/routers/configRouter.test.ts
 const { writeHyperCodeMcpConfig } = await import('../mcp/mcpJsonConfig.js');
+=======
+const { writeBorgMcpConfig } = await import('../mcp/mcpJsonConfig.js');
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/routers/configRouter.test.ts
 
 function createCaller() {
     return configRouter.createCaller({} as never);
@@ -55,7 +64,11 @@ function createCaller() {
 describe('configRouter degraded SQLite handling', () => {
     const repoMocks = vi.mocked(configRepo);
     const serviceMocks = vi.mocked(configService);
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/routers/configRouter.test.ts
     const writeConfigMock = vi.mocked(writeHyperCodeMcpConfig);
+=======
+    const writeConfigMock = vi.mocked(writeBorgMcpConfig);
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/routers/configRouter.test.ts
 
     beforeEach(() => {
         vi.clearAllMocks();
@@ -63,7 +76,11 @@ describe('configRouter degraded SQLite handling', () => {
 
     it('surfaces a clear error for list when SQLite is unavailable', async () => {
         repoMocks.findAll.mockRejectedValue(
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/routers/configRouter.test.ts
             new Error('SQLite runtime is unavailable for HyperCode DB-backed features (Could not locate the bindings file. Tried: better-sqlite3.node)'),
+=======
+            new Error('SQLite runtime is unavailable for borg DB-backed features (Could not locate the bindings file. Tried: better-sqlite3.node)'),
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/routers/configRouter.test.ts
         );
 
         const caller = createCaller();
@@ -75,7 +92,11 @@ describe('configRouter degraded SQLite handling', () => {
 
     it('surfaces a clear error for getMcpTimeout when SQLite is unavailable', async () => {
         serviceMocks.getMcpTimeout.mockRejectedValue(
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/routers/configRouter.test.ts
             new Error('SQLite runtime is unavailable for HyperCode DB-backed features (Could not locate the bindings file. Tried: better-sqlite3.node)'),
+=======
+            new Error('SQLite runtime is unavailable for borg DB-backed features (Could not locate the bindings file. Tried: better-sqlite3.node)'),
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/routers/configRouter.test.ts
         );
 
         const caller = createCaller();
@@ -110,11 +131,19 @@ describe('configRouter degraded SQLite handling', () => {
         const caller = createCaller();
         const result = await caller.init({ scope: 'local' });
 
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/routers/configRouter.test.ts
         expect(writeConfigMock).toHaveBeenCalledWith({ mcpServers: {} }, expect.stringMatching(/\.hypercode$/));
         expect(result).toEqual({
             success: true,
             scope: 'local',
             path: expect.stringMatching(/\.hypercode$/),
+=======
+        expect(writeConfigMock).toHaveBeenCalledWith({ mcpServers: {} }, expect.stringMatching(/\.borg$/));
+        expect(result).toEqual({
+            success: true,
+            scope: 'local',
+            path: expect.stringMatching(/\.borg$/),
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/routers/configRouter.test.ts
         });
     });
 });

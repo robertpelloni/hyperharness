@@ -4,28 +4,49 @@ import { execFile, spawn } from 'node:child_process';
 
 import {
   detectBrowserExtensionArtifacts,
+<<<<<<< HEAD:archive/ts-legacy/scripts/dev_tabby_ready.mjs
   getHypercodeStartLockPath,
+=======
+  getBorgStartLockPath,
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:scripts/dev_tabby_ready.mjs
   getPreferredWebPorts,
   getWaitingReasons,
   chooseStaleCoreRefreshTarget,
   isCompatibleStartupStatusContract,
+<<<<<<< HEAD:archive/ts-legacy/scripts/dev_tabby_ready.mjs
   isLikelyHypercodeCoreCommand,
+=======
+  isLikelyBorgCoreCommand,
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:scripts/dev_tabby_ready.mjs
   isHttpProbeResponsive,
   isDirectExecution,
   parseListeningPidFromLsof,
   parseListeningPidFromNetstat,
+<<<<<<< HEAD:archive/ts-legacy/scripts/dev_tabby_ready.mjs
   readHypercodeStartLockRecord,
+=======
+  readBorgStartLockRecord,
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:scripts/dev_tabby_ready.mjs
   summarizeBrowserExtensionArtifacts,
   waitForCoreBridgeShutdown,
 } from './dev_tabby_ready_helpers.mjs';
 
 const WEB_PORT_CANDIDATES = [3000, 3010, 3020, 3030, 3040];
+<<<<<<< HEAD:archive/ts-legacy/scripts/dev_tabby_ready.mjs
 const POLL_INTERVAL_MS = Number(process.env.HYPERCODE_DEV_READY_POLL_MS || 2000);
 const READY_TIMEOUT_MS = Number(process.env.HYPERCODE_DEV_READY_TIMEOUT_MS || 600000);
 const WEB_DETECT_TIMEOUT_MS = Number(process.env.HYPERCODE_DEV_READY_WEB_TIMEOUT_MS || 15000);
 const TRPC_QUERY_TIMEOUT_MS = Number(process.env.HYPERCODE_DEV_READY_TRPC_TIMEOUT_MS || 12000);
 const AUTO_OPEN_DASHBOARD = process.env.HYPERCODE_DEV_READY_OPEN_BROWSER !== '0';
 const AUTO_REFRESH_STALE_CORE = process.env.HYPERCODE_DEV_READY_RESTART_STALE_CORE !== '0';
+=======
+const POLL_INTERVAL_MS = Number(process.env.BORG_DEV_READY_POLL_MS || 2000);
+const READY_TIMEOUT_MS = Number(process.env.BORG_DEV_READY_TIMEOUT_MS || 600000);
+const WEB_DETECT_TIMEOUT_MS = Number(process.env.BORG_DEV_READY_WEB_TIMEOUT_MS || 15000);
+const TRPC_QUERY_TIMEOUT_MS = Number(process.env.BORG_DEV_READY_TRPC_TIMEOUT_MS || 12000);
+const AUTO_OPEN_DASHBOARD = process.env.BORG_DEV_READY_OPEN_BROWSER !== '0';
+const AUTO_REFRESH_STALE_CORE = process.env.BORG_DEV_READY_RESTART_STALE_CORE !== '0';
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:scripts/dev_tabby_ready.mjs
 const REPO_ROOT = process.cwd();
 const DEFAULT_CORE_BRIDGE_PORT = resolveBridgePort();
 const FALLBACK_BRIDGE_PORT_CANDIDATES = [DEFAULT_CORE_BRIDGE_PORT, 3011, 3021, 3031, 3041];
@@ -50,8 +71,13 @@ function normalizePort(value) {
 }
 
 function resolveBridgePort(env = process.env) {
+<<<<<<< HEAD:archive/ts-legacy/scripts/dev_tabby_ready.mjs
   return normalizePort(env.HYPERCODE_BRIDGE_PORT)
     ?? normalizePort(env.HYPERCODE_CORE_BRIDGE_PORT)
+=======
+  return normalizePort(env.BORG_BRIDGE_PORT)
+    ?? normalizePort(env.BORG_CORE_BRIDGE_PORT)
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:scripts/dev_tabby_ready.mjs
     ?? 3001;
 }
 
@@ -302,6 +328,7 @@ function runPnpmCommand(commandArgs, cwd = REPO_ROOT) {
 }
 
 async function ensureOfficialBrowserExtensionArtifacts() {
+<<<<<<< HEAD:archive/ts-legacy/scripts/dev_tabby_ready.mjs
   const extensionRoot = `${REPO_ROOT}${process.platform === 'win32' ? '\\' : '/'}apps${process.platform === 'win32' ? '\\' : '/'}hypercode-extension`;
 
   console.log('[Hypercode Dev Ready] official browser-extension artifacts missing; building Chromium + Firefox bundles...');
@@ -310,6 +337,16 @@ async function ensureOfficialBrowserExtensionArtifacts() {
   await runPnpmCommand(['-C', 'apps/hypercode-extension', 'run', 'build:firefox'], REPO_ROOT);
 
   console.log(`[Hypercode Dev Ready] browser-extension artifacts refreshed from ${extensionRoot}`);
+=======
+  const extensionRoot = `${REPO_ROOT}${process.platform === 'win32' ? '\\' : '/'}apps${process.platform === 'win32' ? '\\' : '/'}borg-extension`;
+
+  console.log('[Borg Dev Ready] official browser-extension artifacts missing; building Chromium + Firefox bundles...');
+
+  await runPnpmCommand(['-C', 'apps/borg-extension', 'run', 'build'], REPO_ROOT);
+  await runPnpmCommand(['-C', 'apps/borg-extension', 'run', 'build:firefox'], REPO_ROOT);
+
+  console.log(`[Borg Dev Ready] browser-extension artifacts refreshed from ${extensionRoot}`);
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:scripts/dev_tabby_ready.mjs
 }
 
 async function warmMcpAndMemory(webPort) {
@@ -421,6 +458,7 @@ function printReadySummary(state) {
   const webPort = state.web?.port;
   const dashboardUrl = webPort ? `http://127.0.0.1:${webPort}` : 'unavailable';
 
+<<<<<<< HEAD:archive/ts-legacy/scripts/dev_tabby_ready.mjs
   console.log('\n[Hypercode Dev Ready] ✅ stack is ready');
   console.log(`[Hypercode Dev Ready] Dashboard: ${dashboardUrl}`);
   console.log(`[Hypercode Dev Ready] Orchestrator: http://127.0.0.1:3847 (Health: /health)`);
@@ -433,19 +471,41 @@ function printReadySummary(state) {
   console.log(`[Hypercode Dev Ready] Extension artifacts: ${state.extension.summary ?? 'unavailable'}`);
   for (const artifact of state.extensions) {
     console.log(`[Hypercode Dev Ready] ${artifact.label}: ${artifact.artifactPath ?? 'unavailable'}`);
+=======
+  console.log('\n[Borg Dev Ready] ✅ stack is ready');
+  console.log(`[Borg Dev Ready] Dashboard: ${dashboardUrl}`);
+  console.log(`[Borg Dev Ready] Orchestrator: http://127.0.0.1:3847 (Health: /health)`);
+  console.log(`[Borg Dev Ready] Core bridge: ws://127.0.0.1:${activeBridgePort} (HTTP probe: /api/mesh/stream or /health)`);
+  console.log(`[Borg Dev Ready] Startup telemetry API: ${state.startupStatus.url ?? 'unavailable'}`);
+  console.log(`[Borg Dev Ready] MCP telemetry API: ${state.mcpStatus.url ?? 'unavailable'}`);
+  console.log(`[Borg Dev Ready] Memory telemetry API: ${state.memoryStatus.url ?? 'unavailable'}`);
+  console.log(`[Borg Dev Ready] Browser telemetry API: ${state.browserStatus.url ?? 'unavailable'}`);
+  console.log(`[Borg Dev Ready] Session telemetry API: ${state.sessionStatus.url ?? 'unavailable'}`);
+  console.log(`[Borg Dev Ready] Extension artifacts: ${state.extension.summary ?? 'unavailable'}`);
+  for (const artifact of state.extensions) {
+    console.log(`[Borg Dev Ready] ${artifact.label}: ${artifact.artifactPath ?? 'unavailable'}`);
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:scripts/dev_tabby_ready.mjs
   }
 }
 
 function printWaitingSummary(state, elapsedMs) {
   const missing = getWaitingReasons(state);
 
+<<<<<<< HEAD:archive/ts-legacy/scripts/dev_tabby_ready.mjs
   console.log(`[Hypercode Dev Ready] connecting ${Math.floor(elapsedMs / 1000)}s: ${missing.join(' | ')}`);
+=======
+  console.log(`[Borg Dev Ready] connecting ${Math.floor(elapsedMs / 1000)}s: ${missing.join(' | ')}`);
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:scripts/dev_tabby_ready.mjs
 }
 
 function spawnTurboDev() {
   const env = {
     ...process.env,
+<<<<<<< HEAD:archive/ts-legacy/scripts/dev_tabby_ready.mjs
     HYPERCODE_BRIDGE_PORT: String(activeBridgePort),
+=======
+    BORG_BRIDGE_PORT: String(activeBridgePort),
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:scripts/dev_tabby_ready.mjs
     CI: 'true',
     TURBO_DAEMON: 'false',
   };
@@ -457,7 +517,11 @@ function spawnTurboDev() {
     'dev',
     '--concurrency',
     '22',
+<<<<<<< HEAD:archive/ts-legacy/scripts/dev_tabby_ready.mjs
     '--filter=!@hypercode/cli',
+=======
+    '--filter=!@borg/cli',
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:scripts/dev_tabby_ready.mjs
     '--filter=!@repo/*',
   ];
   const args = process.platform === 'win32'
@@ -474,7 +538,11 @@ function spawnTurboDev() {
 function spawnCliDev() {
   const env = {
     ...process.env,
+<<<<<<< HEAD:archive/ts-legacy/scripts/dev_tabby_ready.mjs
     HYPERCODE_BRIDGE_PORT: String(activeBridgePort),
+=======
+    BORG_BRIDGE_PORT: String(activeBridgePort),
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:scripts/dev_tabby_ready.mjs
     CI: 'true',
   };
 
@@ -499,8 +567,13 @@ function spawnCliDev() {
 function spawnOrchestratorDev() {
   const env = {
     ...process.env,
+<<<<<<< HEAD:archive/ts-legacy/scripts/dev_tabby_ready.mjs
     HYPERCODE_BRIDGE_PORT: String(activeBridgePort),
     HYPERCODE_ORCHESTRATOR_PORT: '3847',
+=======
+    BORG_BRIDGE_PORT: String(activeBridgePort),
+    BORG_ORCHESTRATOR_PORT: '3847',
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:scripts/dev_tabby_ready.mjs
   };
 
   const { command, args, cwd } = getPnpmSpawnSpec([
@@ -560,7 +633,11 @@ async function detectCoreBridgeOwner(port = activeBridgePort) {
   return {
     pid,
     commandLine,
+<<<<<<< HEAD:archive/ts-legacy/scripts/dev_tabby_ready.mjs
     trusted: isLikelyHypercodeCoreCommand(commandLine),
+=======
+    trusted: isLikelyBorgCoreCommand(commandLine),
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:scripts/dev_tabby_ready.mjs
   };
 }
 
@@ -572,7 +649,11 @@ async function stopExistingCoreBridge(pid, sourceLabel) {
   try {
     process.kill(pid, 'SIGTERM');
   } catch (error) {
+<<<<<<< HEAD:archive/ts-legacy/scripts/dev_tabby_ready.mjs
     console.warn(`[Hypercode Dev Ready] could not terminate stale Hypercode core PID ${pid} from ${sourceLabel}: ${error instanceof Error ? error.message : String(error)}`);
+=======
+    console.warn(`[Borg Dev Ready] could not terminate stale Borg core PID ${pid} from ${sourceLabel}: ${error instanceof Error ? error.message : String(error)}`);
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:scripts/dev_tabby_ready.mjs
     return false;
   }
 
@@ -589,15 +670,24 @@ async function stopExistingCoreBridge(pid, sourceLabel) {
   );
 
   if (!stopped) {
+<<<<<<< HEAD:archive/ts-legacy/scripts/dev_tabby_ready.mjs
     console.warn(`[Hypercode Dev Ready] stale Hypercode core PID ${pid} from ${sourceLabel} did not release the bridge within ${Math.floor(TRPC_QUERY_TIMEOUT_MS / 1000)}s.`);
+=======
+    console.warn(`[Borg Dev Ready] stale Borg core PID ${pid} from ${sourceLabel} did not release the bridge within ${Math.floor(TRPC_QUERY_TIMEOUT_MS / 1000)}s.`);
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:scripts/dev_tabby_ready.mjs
   }
 
   return stopped;
 }
 
 async function selectActiveBridgePort() {
+<<<<<<< HEAD:archive/ts-legacy/scripts/dev_tabby_ready.mjs
   const explicitPort = normalizePort(process.env.HYPERCODE_BRIDGE_PORT)
     ?? normalizePort(process.env.HYPERCODE_CORE_BRIDGE_PORT);
+=======
+  const explicitPort = normalizePort(process.env.BORG_BRIDGE_PORT)
+    ?? normalizePort(process.env.BORG_CORE_BRIDGE_PORT);
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:scripts/dev_tabby_ready.mjs
   if (explicitPort) {
     return explicitPort;
   }
@@ -642,7 +732,11 @@ function waitForChildExit(label, child) {
 async function main() {
   activeBridgePort = await selectActiveBridgePort();
   if (activeBridgePort !== DEFAULT_CORE_BRIDGE_PORT) {
+<<<<<<< HEAD:archive/ts-legacy/scripts/dev_tabby_ready.mjs
     console.log(`[Hypercode Dev Ready] bridge port ${DEFAULT_CORE_BRIDGE_PORT} is occupied by a non-Hypercode process; using fallback port ${activeBridgePort}.`);
+=======
+    console.log(`[Borg Dev Ready] bridge port ${DEFAULT_CORE_BRIDGE_PORT} is occupied by a non-Borg process; using fallback port ${activeBridgePort}.`);
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:scripts/dev_tabby_ready.mjs
   }
 
   const child = spawnTurboDev();
@@ -655,7 +749,11 @@ async function main() {
   let attemptedStaleCoreRefresh = false;
 
   if (reuseExistingCoreBridge) {
+<<<<<<< HEAD:archive/ts-legacy/scripts/dev_tabby_ready.mjs
     console.log(`[Hypercode Dev Ready] reusing existing core bridge on port ${activeBridgePort}; skipping duplicate CLI launch.`);
+=======
+    console.log(`[Borg Dev Ready] reusing existing core bridge on port ${activeBridgePort}; skipping duplicate CLI launch.`);
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:scripts/dev_tabby_ready.mjs
   }
 
   const attachCliChild = (nextCliChild) => {
@@ -667,7 +765,11 @@ async function main() {
     }
 
     nextCliChild.on('error', (error) => {
+<<<<<<< HEAD:archive/ts-legacy/scripts/dev_tabby_ready.mjs
       console.error(`[Hypercode Dev Ready] failed to start CLI server: ${error instanceof Error ? error.message : String(error)}`);
+=======
+      console.error(`[Borg Dev Ready] failed to start CLI server: ${error instanceof Error ? error.message : String(error)}`);
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:scripts/dev_tabby_ready.mjs
       process.exit(1);
     });
 
@@ -694,7 +796,11 @@ async function main() {
   process.on('SIGTERM', () => terminateChild('SIGTERM'));
 
   child.on('error', (error) => {
+<<<<<<< HEAD:archive/ts-legacy/scripts/dev_tabby_ready.mjs
     console.error(`[Hypercode Dev Ready] failed to start dev stack: ${error instanceof Error ? error.message : String(error)}`);
+=======
+    console.error(`[Borg Dev Ready] failed to start dev stack: ${error instanceof Error ? error.message : String(error)}`);
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:scripts/dev_tabby_ready.mjs
     process.exit(1);
   });
 
@@ -703,7 +809,11 @@ async function main() {
   });
 
   orchestratorChild.on('error', (error) => {
+<<<<<<< HEAD:archive/ts-legacy/scripts/dev_tabby_ready.mjs
     console.error(`[Hypercode Dev Ready] failed to start orchestrator: ${error instanceof Error ? error.message : String(error)}`);
+=======
+    console.error(`[Borg Dev Ready] failed to start orchestrator: ${error instanceof Error ? error.message : String(error)}`);
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:scripts/dev_tabby_ready.mjs
     // Non-fatal if everything else works, but we should log it
   });
 
@@ -746,7 +856,11 @@ async function main() {
 
     if (!state.extension.ready && !extensionBuildPromise) {
       extensionBuildPromise = ensureOfficialBrowserExtensionArtifacts().catch((error) => {
+<<<<<<< HEAD:archive/ts-legacy/scripts/dev_tabby_ready.mjs
         console.warn(`[Hypercode Dev Ready] browser-extension build failed: ${error instanceof Error ? error.message : String(error)}`);
+=======
+        console.warn(`[Borg Dev Ready] browser-extension build failed: ${error instanceof Error ? error.message : String(error)}`);
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:scripts/dev_tabby_ready.mjs
       });
     }
 
@@ -772,8 +886,13 @@ async function main() {
     ) {
       if (!attemptedStaleCoreRefresh && AUTO_REFRESH_STALE_CORE) {
         attemptedStaleCoreRefresh = true;
+<<<<<<< HEAD:archive/ts-legacy/scripts/dev_tabby_ready.mjs
         const lockPath = getHypercodeStartLockPath();
         const lockRecord = readHypercodeStartLockRecord(lockPath);
+=======
+        const lockPath = getBorgStartLockPath();
+        const lockRecord = readBorgStartLockRecord(lockPath);
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:scripts/dev_tabby_ready.mjs
         const owner = lockRecord ? null : await detectCoreBridgeOwner();
         const refreshTarget = chooseStaleCoreRefreshTarget({
           lockRecord,
@@ -782,7 +901,11 @@ async function main() {
         });
 
         if (refreshTarget.kind === 'lock' && lockRecord) {
+<<<<<<< HEAD:archive/ts-legacy/scripts/dev_tabby_ready.mjs
           console.warn(`[Hypercode Dev Ready] existing core bridge is healthy but serving an older startup contract; stopping Hypercode core PID ${lockRecord.pid} from ${lockPath} and starting a fresh CLI instance.`);
+=======
+          console.warn(`[Borg Dev Ready] existing core bridge is healthy but serving an older startup contract; stopping Borg core PID ${lockRecord.pid} from ${lockPath} and starting a fresh CLI instance.`);
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:scripts/dev_tabby_ready.mjs
           const stopped = await stopExistingCoreBridge(refreshTarget.pid, lockPath);
 
           if (stopped) {
@@ -792,9 +915,15 @@ async function main() {
             continue;
           }
 
+<<<<<<< HEAD:archive/ts-legacy/scripts/dev_tabby_ready.mjs
           console.warn('[Hypercode Dev Ready] existing core bridge is healthy but serving an older startup contract; the locked Hypercode core could not be stopped automatically.');
         } else if (refreshTarget.kind === 'owner') {
           console.warn(`[Hypercode Dev Ready] existing core bridge is healthy but serving an older startup contract; stopping Hypercode-owned bridge PID ${refreshTarget.pid} discovered from port ${activeBridgePort} and starting a fresh CLI instance.`);
+=======
+          console.warn('[Borg Dev Ready] existing core bridge is healthy but serving an older startup contract; the locked Borg core could not be stopped automatically.');
+        } else if (refreshTarget.kind === 'owner') {
+          console.warn(`[Borg Dev Ready] existing core bridge is healthy but serving an older startup contract; stopping Borg-owned bridge PID ${refreshTarget.pid} discovered from port ${activeBridgePort} and starting a fresh CLI instance.`);
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:scripts/dev_tabby_ready.mjs
           const stopped = await stopExistingCoreBridge(refreshTarget.pid, refreshTarget.sourceLabel);
 
           if (stopped) {
@@ -804,6 +933,7 @@ async function main() {
             continue;
           }
 
+<<<<<<< HEAD:archive/ts-legacy/scripts/dev_tabby_ready.mjs
           console.warn('[Hypercode Dev Ready] existing core bridge is healthy but serving an older startup contract; the Hypercode-owned port listener could not be stopped automatically.');
         } else if (refreshTarget.kind === 'skip-untrusted-owner') {
           console.warn(`[Hypercode Dev Ready] existing core bridge is healthy but serving an older startup contract; port ${activeBridgePort} is owned by PID ${refreshTarget.pid}, but its command line did not look Hypercode-owned, so automatic refresh was skipped.`);
@@ -813,6 +943,17 @@ async function main() {
       }
 
       console.warn('[Hypercode Dev Ready] existing core bridge is healthy but serving an older startup contract; restart the Hypercode CLI/core bridge so `pnpm run dev` can validate the current readiness payload.');
+=======
+          console.warn('[Borg Dev Ready] existing core bridge is healthy but serving an older startup contract; the Borg-owned port listener could not be stopped automatically.');
+        } else if (refreshTarget.kind === 'skip-untrusted-owner') {
+          console.warn(`[Borg Dev Ready] existing core bridge is healthy but serving an older startup contract; port ${activeBridgePort} is owned by PID ${refreshTarget.pid}, but its command line did not look Borg-owned, so automatic refresh was skipped.`);
+        } else {
+          console.warn('[Borg Dev Ready] existing core bridge is healthy but serving an older startup contract; no Borg startup lock or port owner PID was found, so automatic refresh was skipped.');
+        }
+      }
+
+      console.warn('[Borg Dev Ready] existing core bridge is healthy but serving an older startup contract; restart the Borg CLI/core bridge so `pnpm run dev` can validate the current readiness payload.');
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:scripts/dev_tabby_ready.mjs
     }
 
     printWaitingSummary(state, Date.now() - startedAt);
@@ -820,7 +961,11 @@ async function main() {
   }
 
   if (!warmed) {
+<<<<<<< HEAD:archive/ts-legacy/scripts/dev_tabby_ready.mjs
     console.warn(`\n[Hypercode Dev Ready] ⚠ readiness timeout (${Math.floor(READY_TIMEOUT_MS / 1000)}s). Keeping dev stack running for manual inspection.`);
+=======
+    console.warn(`\n[Borg Dev Ready] ⚠ readiness timeout (${Math.floor(READY_TIMEOUT_MS / 1000)}s). Keeping dev stack running for manual inspection.`);
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:scripts/dev_tabby_ready.mjs
   }
 
   await Promise.all([
@@ -832,7 +977,11 @@ async function main() {
 
 if (isDirectExecution(import.meta.url, process.argv[1])) {
   main().catch((error) => {
+<<<<<<< HEAD:archive/ts-legacy/scripts/dev_tabby_ready.mjs
     console.error(`[Hypercode Dev Ready] unexpected error: ${error instanceof Error ? error.message : String(error)}`);
+=======
+    console.error(`[Borg Dev Ready] unexpected error: ${error instanceof Error ? error.message : String(error)}`);
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:scripts/dev_tabby_ready.mjs
     process.exit(1);
   });
 }

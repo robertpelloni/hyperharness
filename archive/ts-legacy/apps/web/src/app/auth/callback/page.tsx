@@ -2,7 +2,11 @@
 
 import { Suspense, useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/auth/callback/page.tsx
 import { Card, CardHeader, CardTitle, CardContent } from "@hypercode/ui";
+=======
+import { Card, CardHeader, CardTitle, CardContent } from "@borg/ui";
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/auth/callback/page.tsx
 import { Loader2, CheckCircle, XCircle } from "lucide-react";
 import { trpc } from '@/utils/trpc';
 import { toast } from 'sonner';

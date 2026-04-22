@@ -9,11 +9,16 @@ const resolveControlPlaneLocationMock = vi.fn(() => ({
   port: 4000,
 }));
 
+<<<<<<< HEAD:archive/ts-legacy/packages/cli/src/commands/status.test.ts
 const readLocalStartupProvenanceMock = vi.fn<() => Record<string, unknown> | null>(() => null);
 
 vi.mock('../control-plane.js', () => ({
   queryTrpc: (...args: unknown[]) => queryTrpcMock(...args),
   readLocalStartupProvenance: () => readLocalStartupProvenanceMock(),
+=======
+vi.mock('../control-plane.js', () => ({
+  queryTrpc: (...args: unknown[]) => queryTrpcMock(...args),
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/cli/src/commands/status.test.ts
   resolveControlPlaneLocation: () => resolveControlPlaneLocationMock(),
 }));
 
@@ -28,8 +33,11 @@ const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
 afterEach(() => {
   queryTrpcMock.mockReset();
+<<<<<<< HEAD:archive/ts-legacy/packages/cli/src/commands/status.test.ts
   readLocalStartupProvenanceMock.mockReset();
   readLocalStartupProvenanceMock.mockReturnValue(null);
+=======
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/cli/src/commands/status.test.ts
   resolveControlPlaneLocationMock.mockClear();
   logSpy.mockClear();
   errorSpy.mockClear();
@@ -44,6 +52,7 @@ function createProgram(): Command {
 
 describe('registerStatusCommand', () => {
   it('shows live system status as JSON', async () => {
+<<<<<<< HEAD:archive/ts-legacy/packages/cli/src/commands/status.test.ts
     readLocalStartupProvenanceMock.mockReturnValue({
       requestedRuntime: 'auto',
       activeRuntime: 'go',
@@ -57,6 +66,8 @@ describe('registerStatusCommand', () => {
       buildDecision: 'skipped',
     });
 
+=======
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/cli/src/commands/status.test.ts
     queryTrpcMock
       .mockResolvedValueOnce({
         status: 'running',
@@ -94,6 +105,7 @@ describe('registerStatusCommand', () => {
     expect(queryTrpcMock).toHaveBeenNthCalledWith(3, 'session.list');
     expect(queryTrpcMock).toHaveBeenNthCalledWith(4, 'billing.getProviderQuotas');
     expect(logSpy).toHaveBeenCalledWith(JSON.stringify({
+<<<<<<< HEAD:archive/ts-legacy/packages/cli/src/commands/status.test.ts
       startupMode: {
         requestedRuntime: 'auto',
         activeRuntime: 'go',
@@ -106,6 +118,8 @@ describe('registerStatusCommand', () => {
         installDecision: 'skipped',
         buildDecision: 'skipped',
       },
+=======
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/cli/src/commands/status.test.ts
       version: '1.0.15',
       server: {
         status: 'running',

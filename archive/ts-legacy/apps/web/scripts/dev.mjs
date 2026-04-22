@@ -6,7 +6,11 @@ import { fileURLToPath } from "node:url";
 
 const FALLBACK_PORTS = [3000, 3010, 3020, 3030, 3040];
 const SPECIFIC_NEXT_DEV_TYPES_PATTERN = /^\.next-dev-\d+\/(types|dev\/types)\/\*\*\/\*\.ts$/;
+<<<<<<< HEAD:archive/ts-legacy/apps/web/scripts/dev.mjs
 const WEB_DEV_PORT_MARKER = ".hypercode-dev-port.json";
+=======
+const WEB_DEV_PORT_MARKER = ".borg-dev-port.json";
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/scripts/dev.mjs
 
 function buildNextDevTypeIncludes(distDir) {
   return [

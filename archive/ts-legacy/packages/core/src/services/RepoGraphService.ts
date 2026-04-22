@@ -20,7 +20,11 @@ export class RepoGraphService {
     private consumers: Map<string, Set<string>> = new Map();
     private dependencies: Map<string, Set<string>> = new Map();
     private isInitialized: boolean = false;
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/services/RepoGraphService.ts
     private packageMap: Map<string, string> = new Map(); // @hypercode/core -> packages/core
+=======
+    private packageMap: Map<string, string> = new Map(); // @borg/core -> packages/core
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/services/RepoGraphService.ts
 
     constructor(rootDir: string) {
         this.rootDir = rootDir;
@@ -115,7 +119,11 @@ export class RepoGraphService {
 
     private resolveModule(importer: string, moduleSpecifier: string): string | null {
         // 1. Monorepo Alias Resolution
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/services/RepoGraphService.ts
         if (moduleSpecifier.startsWith('@hypercode/')) {
+=======
+        if (moduleSpecifier.startsWith('@borg/')) {
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/services/RepoGraphService.ts
             const pkgPath = this.packageMap.get(moduleSpecifier);
             if (pkgPath) {
                 // Try explicit entry points first when resolving internal packages

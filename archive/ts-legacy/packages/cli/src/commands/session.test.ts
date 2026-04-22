@@ -43,7 +43,11 @@ describe('registerSessionCommand', () => {
         {
           id: 'sess_local_1',
           name: 'repo-fix',
+<<<<<<< HEAD:archive/ts-legacy/packages/cli/src/commands/session.test.ts
           cliType: 'hypercode',
+=======
+          cliType: 'borg',
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/cli/src/commands/session.test.ts
           workingDirectory: 'C:\\repo',
           status: 'running',
           lastActivityAt: 200,
@@ -83,7 +87,11 @@ describe('registerSessionCommand', () => {
           id: 'sess_local_1',
           name: 'repo-fix',
           location: 'C:\\repo',
+<<<<<<< HEAD:archive/ts-legacy/packages/cli/src/commands/session.test.ts
           harness: 'hypercode',
+=======
+          harness: 'borg',
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/cli/src/commands/session.test.ts
           model: 'gpt-5.4',
           status: 'running',
           lastActivity: 200,
@@ -130,7 +138,11 @@ describe('registerSessionCommand', () => {
       .mockResolvedValueOnce({
         id: 'sess_live_1',
         name: 'repo-fix',
+<<<<<<< HEAD:archive/ts-legacy/packages/cli/src/commands/session.test.ts
         cliType: 'hypercode',
+=======
+        cliType: 'borg',
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/cli/src/commands/session.test.ts
         workingDirectory: 'C:\\repo',
         status: 'created',
         metadata: {
@@ -143,7 +155,11 @@ describe('registerSessionCommand', () => {
       .mockResolvedValueOnce({
         id: 'sess_live_1',
         name: 'repo-fix',
+<<<<<<< HEAD:archive/ts-legacy/packages/cli/src/commands/session.test.ts
         cliType: 'hypercode',
+=======
+        cliType: 'borg',
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/cli/src/commands/session.test.ts
         workingDirectory: 'C:\\repo',
         status: 'running',
         metadata: {
@@ -170,7 +186,11 @@ describe('registerSessionCommand', () => {
 
     expect(queryTrpcMock).toHaveBeenNthCalledWith(1, 'session.create', {
       name: 'repo-fix',
+<<<<<<< HEAD:archive/ts-legacy/packages/cli/src/commands/session.test.ts
       cliType: 'hypercode',
+=======
+      cliType: 'borg',
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/cli/src/commands/session.test.ts
       workingDirectory: 'C:\\repo',
       autoRestart: true,
       metadata: {
@@ -185,7 +205,11 @@ describe('registerSessionCommand', () => {
       session: {
         id: 'sess_live_1',
         name: 'repo-fix',
+<<<<<<< HEAD:archive/ts-legacy/packages/cli/src/commands/session.test.ts
         cliType: 'hypercode',
+=======
+        cliType: 'borg',
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/cli/src/commands/session.test.ts
         workingDirectory: 'C:\\repo',
         status: 'running',
         metadata: {
@@ -195,7 +219,11 @@ describe('registerSessionCommand', () => {
           harnessRole: 'primary',
         },
       },
+<<<<<<< HEAD:archive/ts-legacy/packages/cli/src/commands/session.test.ts
       harness: 'hypercode',
+=======
+      harness: 'borg',
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/cli/src/commands/session.test.ts
       maturity: 'Experimental',
       launchCommand: 'go run .',
       toolInventorySource: null,
@@ -217,7 +245,11 @@ describe('registerSessionCommand', () => {
     queryTrpcMock.mockResolvedValue({
       id: 'sess_live_1',
       name: 'repo-fix',
+<<<<<<< HEAD:archive/ts-legacy/packages/cli/src/commands/session.test.ts
       cliType: 'hypercode',
+=======
+      cliType: 'borg',
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/cli/src/commands/session.test.ts
       workingDirectory: 'C:\\repo',
       status: 'stopping',
     });
@@ -233,7 +265,11 @@ describe('registerSessionCommand', () => {
       session: {
         id: 'sess_live_1',
         name: 'repo-fix',
+<<<<<<< HEAD:archive/ts-legacy/packages/cli/src/commands/session.test.ts
         cliType: 'hypercode',
+=======
+        cliType: 'borg',
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/cli/src/commands/session.test.ts
         workingDirectory: 'C:\\repo',
         status: 'stopping',
       },
@@ -244,7 +280,11 @@ describe('registerSessionCommand', () => {
     queryTrpcMock.mockResolvedValue({
       id: 'sess_live_1',
       name: 'repo-fix',
+<<<<<<< HEAD:archive/ts-legacy/packages/cli/src/commands/session.test.ts
       cliType: 'hypercode',
+=======
+      cliType: 'borg',
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/cli/src/commands/session.test.ts
       workingDirectory: 'C:\\repo',
       status: 'restarting',
     });
@@ -259,7 +299,11 @@ describe('registerSessionCommand', () => {
       session: {
         id: 'sess_live_1',
         name: 'repo-fix',
+<<<<<<< HEAD:archive/ts-legacy/packages/cli/src/commands/session.test.ts
         cliType: 'hypercode',
+=======
+        cliType: 'borg',
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/cli/src/commands/session.test.ts
         workingDirectory: 'C:\\repo',
         status: 'restarting',
       },
@@ -314,7 +358,11 @@ describe('registerSessionCommand', () => {
       },
     });
 
+<<<<<<< HEAD:archive/ts-legacy/packages/cli/src/commands/session.test.ts
     const output = join(tmpdir(), `hypercode-session-export-${Date.now()}.json`);
+=======
+    const output = join(tmpdir(), `borg-session-export-${Date.now()}.json`);
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/cli/src/commands/session.test.ts
 
     try {
       const program = createProgram();
@@ -331,7 +379,11 @@ describe('registerSessionCommand', () => {
   });
 
   it('imports a session export as JSON through the live control plane', async () => {
+<<<<<<< HEAD:archive/ts-legacy/packages/cli/src/commands/session.test.ts
     const input = join(tmpdir(), `hypercode-session-import-${Date.now()}.json`);
+=======
+    const input = join(tmpdir(), `borg-session-import-${Date.now()}.json`);
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/cli/src/commands/session.test.ts
     queryTrpcMock.mockResolvedValue({
       imported: 1,
       skipped: 0,
@@ -385,7 +437,11 @@ describe('registerSessionCommand', () => {
   });
 
   it('passes replace mode to live session import', async () => {
+<<<<<<< HEAD:archive/ts-legacy/packages/cli/src/commands/session.test.ts
     const input = join(tmpdir(), `hypercode-session-import-replace-${Date.now()}.json`);
+=======
+    const input = join(tmpdir(), `borg-session-import-replace-${Date.now()}.json`);
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/cli/src/commands/session.test.ts
     queryTrpcMock.mockResolvedValue({
       imported: 1,
       skipped: 0,

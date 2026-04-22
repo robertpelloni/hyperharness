@@ -41,7 +41,11 @@ import { ShellHistoryWidget } from "../components/ShellHistoryWidget";
 import SuggestionsPanel from "../components/SuggestionsPanel";
 import { HealerWidget } from "../components/HealerWidget";
 import IngestionStatus from "../components/IngestionStatus";
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/components/DraggableDashboard.tsx
 import { ActivityPulse, SystemHealth, LatencyMonitor, SecurityWidget } from "@hypercode/ui";
+=======
+import { ActivityPulse, SystemHealth, LatencyMonitor, SecurityWidget } from "@borg/ui";
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/components/DraggableDashboard.tsx
 import { trpc } from "@/utils/trpc"; // Need tRPC to fetch stats
 import { HelpWidget } from "../components/HelpWidget";
 import { MirrorView } from "../components/MirrorView";
@@ -194,7 +198,11 @@ export default function DraggableDashboard() {
 
     // Load from LocalStorage
     useEffect(() => {
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/components/DraggableDashboard.tsx
         const saved = safeStorageGet('hypercode_dashboard_layout');
+=======
+        const saved = safeStorageGet('borg_dashboard_layout');
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/components/DraggableDashboard.tsx
         if (saved) {
             try {
                 const parsed = JSON.parse(saved);
@@ -230,7 +238,11 @@ export default function DraggableDashboard() {
                 const newIndex = items.indexOf(over.id as string);
 
                 const newOrder = arrayMove(items, oldIndex, newIndex);
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/components/DraggableDashboard.tsx
                 safeStorageSet('hypercode_dashboard_layout', JSON.stringify(newOrder));
+=======
+                safeStorageSet('borg_dashboard_layout', JSON.stringify(newOrder));
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/components/DraggableDashboard.tsx
                 return newOrder;
             });
         }

@@ -228,7 +228,11 @@ const renderSystemMessageBox = (block: HTMLElement, content: string): void => {
     const config: ExpandableConfig = {
       blockId,
       className: 'system-message-container',
+<<<<<<<< HEAD:archive/ts-legacy/apps/hypercode-extension/pages/content/src/render_prescript/src/renderer/functionResult.ts
       headerText: 'HyperCode Extension',
+========
+      headerText: 'borg Extension',
+>>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/borg-extension/pages/content/src/render_prescript/src/renderer/functionResult.ts
       expandTitle: 'Expand system message',
       collapseTitle: 'Collapse system message',
     };
@@ -384,7 +388,11 @@ export const renderFunctionResult = (block: HTMLElement, isProcessingRef: { curr
     // let content = block.textContent || '';
     const content = block.textContent || '';
 
+<<<<<<<< HEAD:archive/ts-legacy/apps/hypercode-extension/pages/content/src/render_prescript/src/renderer/functionResult.ts
     // Check if it contains HyperCode Extension system message tags
+========
+    // Check if it contains borg Extension system message tags
+>>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/borg-extension/pages/content/src/render_prescript/src/renderer/functionResult.ts
     if (
       content.includes('<SYSTEM>') ||
       content.includes('</SYSTEM>') ||

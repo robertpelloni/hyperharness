@@ -1,6 +1,10 @@
 # UI Package (`@extension/ui`)
 
+<<<<<<<< HEAD:archive/ts-legacy/apps/hypercode-extension/packages/ui/README.md
 This package provides React components and styling utilities that make up the HyperCode Extension user interface, integrated with the modern plugin architecture and state management system.
+========
+This package provides React components and styling utilities that make up the borg Extension user interface, integrated with the modern plugin architecture and state management system.
+>>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/borg-extension/packages/ui/README.md
 
 ## Overview
 

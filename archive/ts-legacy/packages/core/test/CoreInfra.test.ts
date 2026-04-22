@@ -3,12 +3,20 @@ import { MCPServer } from '../src/MCPServer.js';
 import path from 'path';
 
 // Mock external packages to prevent deep imports from failing
+<<<<<<< HEAD:archive/ts-legacy/packages/core/test/CoreInfra.test.ts
 vi.mock('@hypercode/ai', () => ({
+=======
+vi.mock('@borg/ai', () => ({
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/test/CoreInfra.test.ts
     ModelSelector: class { constructor() { } },
     LLMService: class { constructor() { } }
 }));
 
+<<<<<<< HEAD:archive/ts-legacy/packages/core/test/CoreInfra.test.ts
 vi.mock('@hypercode/agents', () => ({
+=======
+vi.mock('@borg/agents', () => ({
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/test/CoreInfra.test.ts
     Director: class {
         constructor() {
             // @ts-ignore
@@ -22,7 +30,11 @@ vi.mock('../src/services/MetricsService.js', () => ({
     MetricsService: class { constructor() { } startMonitoring() { } }
 }));
 
+<<<<<<< HEAD:archive/ts-legacy/packages/core/test/CoreInfra.test.ts
 vi.mock('@hypercode/tools', () => ({
+=======
+vi.mock('@borg/tools', () => ({
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/test/CoreInfra.test.ts
     TerminalService: class { constructor() { this.getTools = () => []; } }, // Must return array
     PermissionManager: class { constructor() { } checkPermission() { return true; } },
     AuditService: class { constructor() { } log() { } },

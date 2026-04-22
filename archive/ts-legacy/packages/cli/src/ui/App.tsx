@@ -11,7 +11,11 @@ import { readCanonicalVersion } from '../version.js';
 
 // We'll import these dynamically in useEffect to ensure they run in the same process context if needed,
 // but for the TUI, we are the host.
+<<<<<<< HEAD:archive/ts-legacy/packages/cli/src/ui/App.tsx
 import { startOrchestrator } from '@hypercode/core/orchestrator';
+=======
+import { startOrchestrator } from '@borg/core/orchestrator';
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/cli/src/ui/App.tsx
 
 const moduleDir = dirname(fileURLToPath(import.meta.url));
 

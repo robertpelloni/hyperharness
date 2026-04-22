@@ -1,6 +1,12 @@
+<<<<<<< HEAD:archive/ts-legacy/packages/agents/IDEAS.md
 # Ideas for Improvement: @hypercode/agents
 
 Creative architectural shifts to evolve the "Brain" of the HyperCode swarm.
+=======
+# Ideas for Improvement: @borg/agents
+
+Creative architectural shifts to evolve the "Brain" of the borg swarm.
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/agents/IDEAS.md
 
 ## 1. Intelligence & Self-Optimization
 - **Autonomous Local Fine-Tuning:** A background process that captures high-quality reasoning traces and automatically fine-tunes local small models (Gemma 3, Llama 4) to eventually replace expensive cloud API calls.

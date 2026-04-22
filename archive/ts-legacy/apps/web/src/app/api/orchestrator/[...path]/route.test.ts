@@ -7,12 +7,20 @@ import { GET } from './route';
 
 describe('orchestrator proxy route', () => {
   const originalFetch = global.fetch;
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/api/orchestrator/[...path]/route.test.ts
   const originalConfigDir = process.env.HYPERCODE_CONFIG_DIR;
+=======
+  const originalConfigDir = process.env.BORG_CONFIG_DIR;
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/api/orchestrator/[...path]/route.test.ts
   let tempConfigDir = '';
 
   beforeEach(async () => {
     tempConfigDir = await fs.mkdtemp(path.join(os.tmpdir(), 'cli-orchestrator-route-'));
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/api/orchestrator/[...path]/route.test.ts
     process.env.HYPERCODE_CONFIG_DIR = tempConfigDir;
+=======
+    process.env.BORG_CONFIG_DIR = tempConfigDir;
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/api/orchestrator/[...path]/route.test.ts
     await fs.writeFile(
       path.join(tempConfigDir, 'lock'),
       JSON.stringify({ host: '0.0.0.0', port: 4000 }),
@@ -24,9 +32,15 @@ describe('orchestrator proxy route', () => {
     global.fetch = originalFetch;
 
     if (originalConfigDir === undefined) {
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/api/orchestrator/[...path]/route.test.ts
       delete process.env.HYPERCODE_CONFIG_DIR;
     } else {
       process.env.HYPERCODE_CONFIG_DIR = originalConfigDir;
+=======
+      delete process.env.BORG_CONFIG_DIR;
+    } else {
+      process.env.BORG_CONFIG_DIR = originalConfigDir;
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/api/orchestrator/[...path]/route.test.ts
     }
 
     if (tempConfigDir) {
@@ -36,7 +50,11 @@ describe('orchestrator proxy route', () => {
   });
 
   it('buffers standard JSON responses before returning them', async () => {
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/api/orchestrator/[...path]/route.test.ts
     global.fetch = vi.fn(async () => new Response(JSON.stringify({ ok: true, tools: ['hypercode'] }), {
+=======
+    global.fetch = vi.fn(async () => new Response(JSON.stringify({ ok: true, tools: ['borg'] }), {
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/api/orchestrator/[...path]/route.test.ts
       status: 200,
       headers: { 'content-type': 'application/json' },
     })) as typeof fetch;
@@ -47,7 +65,11 @@ describe('orchestrator proxy route', () => {
     );
 
     expect(response.status).toBe(200);
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/api/orchestrator/[...path]/route.test.ts
     expect(await response.json()).toEqual({ ok: true, tools: ['hypercode'] });
+=======
+    expect(await response.json()).toEqual({ ok: true, tools: ['borg'] });
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/api/orchestrator/[...path]/route.test.ts
     expect(global.fetch).toHaveBeenCalledWith(
       new URL('http://127.0.0.1:4000/api/cli/tools'),
       expect.objectContaining({

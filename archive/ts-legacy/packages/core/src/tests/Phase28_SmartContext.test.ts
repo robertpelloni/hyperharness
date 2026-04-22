@@ -2,7 +2,11 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { KnowledgeService } from '../services/KnowledgeService.js';
 import { MemoryManager } from '../services/MemoryManager.js';
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/tests/Phase28_SmartContext.test.ts
 import { GraphMemory } from '@hypercode/memory';
+=======
+import { GraphMemory } from '@borg/memory';
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/tests/Phase28_SmartContext.test.ts
 
 // Mock MemoryManager
 class MockMemoryManager {
@@ -15,7 +19,11 @@ class MockMemoryManager {
 describe('Phase 28: Smart Context Retrieval', () => {
     let graph: GraphMemory;
     let service: KnowledgeService;
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/tests/Phase28_SmartContext.test.ts
     const testPath = '.hypercode_test_smart_context';
+=======
+    const testPath = '.borg_test_smart_context';
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/tests/Phase28_SmartContext.test.ts
 
     beforeEach(async () => {
         // Cleanup handled by GraphMemory logic usually, but here we use in-memory or temp path

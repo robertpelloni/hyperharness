@@ -1,13 +1,23 @@
 /**
+<<<<<<< HEAD:archive/ts-legacy/packages/cli/src/commands/agent.ts
  * `hypercode agent` - Agent management commands
+=======
+ * `borg agent` - Agent management commands
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/cli/src/commands/agent.ts
  *
  * Manage AI agents: list available definitions, spawn instances,
  * monitor running agents, and interact via chat.
  *
  * @example
+<<<<<<< HEAD:archive/ts-legacy/packages/cli/src/commands/agent.ts
  *   hypercode agent list              # List available agent definitions
  *   hypercode agent spawn architect   # Spawn an architect agent
  *   hypercode agent chat agent_123    # Chat with a running agent
+=======
+ *   borg agent list              # List available agent definitions
+ *   borg agent spawn architect   # Spawn an architect agent
+ *   borg agent chat agent_123    # Chat with a running agent
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/cli/src/commands/agent.ts
  */
 
 import type { Command } from 'commander';
@@ -46,7 +56,11 @@ async function withAgentErrorHandling(
       const location = resolveControlPlaneLocation();
       console.error(chalk.red(`  ✗ ${message}`));
       console.error(chalk.dim(`  Control plane: ${location.baseUrl} (${location.source})`));
+<<<<<<< HEAD:archive/ts-legacy/packages/cli/src/commands/agent.ts
       console.error(chalk.dim('  Start HyperCode with `hypercode start` or point HYPERCODE_TRPC_UPSTREAM at a live /trpc endpoint.'));
+=======
+      console.error(chalk.dim('  Start borg with `borg start` or point BORG_TRPC_UPSTREAM at a live /trpc endpoint.'));
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/cli/src/commands/agent.ts
     }
     process.exitCode = 1;
   }
@@ -85,9 +99,15 @@ export function registerAgentCommand(program: Command): void {
     .option('--json', 'Output as JSON')
     .addHelpText('after', `
 Examples:
+<<<<<<< HEAD:archive/ts-legacy/packages/cli/src/commands/agent.ts
   $ hypercode agent spawn architect
   $ hypercode agent spawn builder --model gpt-5.2 --workdir ./my-project
   $ hypercode agent spawn researcher --provider google
+=======
+  $ borg agent spawn architect
+  $ borg agent spawn builder --model gpt-5.2 --workdir ./my-project
+  $ borg agent spawn researcher --provider google
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/cli/src/commands/agent.ts
     `)
     .action(async (name, opts) => {
       await withAgentErrorHandling(

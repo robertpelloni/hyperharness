@@ -4,8 +4,13 @@ import { extractBookmarksFromPayload, normalizeBookmarkUrl } from "./bobby-bookm
 describe("BobbyBookmarksBacklogAdapter helpers", () => {
     it("normalizes bookmark URLs by stripping tracking params and hashes", () => {
         expect(
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/services/bobby-bookmarks-adapter.test.ts
             normalizeBookmarkUrl("https://example.com/page?utm_source=test&q=hypercode&fbclid=abc#section")
         ).toBe("https://example.com/page?q=hypercode");
+=======
+            normalizeBookmarkUrl("https://example.com/page?utm_source=test&q=borg&fbclid=abc#section")
+        ).toBe("https://example.com/page?q=borg");
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/services/bobby-bookmarks-adapter.test.ts
     });
 
     it("matches the shared BobbyBookmarks canonicalization rules for host, path, ports, and tracking params", () => {

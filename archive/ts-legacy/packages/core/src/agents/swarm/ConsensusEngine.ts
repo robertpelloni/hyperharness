@@ -101,7 +101,11 @@ export class ConsensusEngine extends EventEmitter {
     private async queryModel(model: string, prompt: string, councilUrl: string | null): Promise<string> {
         try {
             if (!councilUrl) {
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/agents/swarm/ConsensusEngine.ts
                 throw new Error('No HyperCode Orchestrator base configured.');
+=======
+                throw new Error('No borg Orchestrator base configured.');
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/agents/swarm/ConsensusEngine.ts
             }
             const supervisor = this.modelToSupervisor(model);
             const res = await fetch(`${councilUrl}/api/supervisors/${supervisor}/chat`, {
@@ -143,7 +147,11 @@ export class ConsensusEngine extends EventEmitter {
 
         try {
             if (!councilUrl) {
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/agents/swarm/ConsensusEngine.ts
                 throw new Error('No HyperCode Orchestrator base configured.');
+=======
+                throw new Error('No borg Orchestrator base configured.');
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/agents/swarm/ConsensusEngine.ts
             }
             const res = await fetch(`${councilUrl}/api/supervisors/GPT-4o/chat`, {
                 method: 'POST',

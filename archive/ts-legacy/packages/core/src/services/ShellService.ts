@@ -90,7 +90,11 @@ export class ShellService {
             ? path.join(os.homedir(), 'AppData', 'Roaming', 'Microsoft', 'Windows', 'PowerShell', 'PSReadLine', 'ConsoleHost_history.txt')
             : path.join(os.homedir(), '.bash_history'); // Simple fallback
 
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/services/ShellService.ts
         this.enrichedHistoryPath = path.join(process.cwd(), '.hypercode', 'shell_history.json');
+=======
+        this.enrichedHistoryPath = path.join(process.cwd(), '.borg', 'shell_history.json');
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/services/ShellService.ts
         this.loadEnrichedHistory();
     }
 

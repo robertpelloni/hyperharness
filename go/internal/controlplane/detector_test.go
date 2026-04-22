@@ -15,7 +15,7 @@ func TestNewDetectorIncludesExpandedCLIInventory(t *testing.T) {
 	}
 
 	for _, expected := range []string{
-		"hypercode",
+		"borg",
 		"antigravity",
 		"claude",
 		"continue",

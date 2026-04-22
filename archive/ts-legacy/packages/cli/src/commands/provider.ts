@@ -1,5 +1,9 @@
 /**
+<<<<<<< HEAD:archive/ts-legacy/packages/cli/src/commands/provider.ts
  * `hypercode provider` - AI provider management
+=======
+ * `borg provider` - AI provider management
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/cli/src/commands/provider.ts
  *
  * Configure and manage AI model providers, API keys, OAuth logins,
  * quota tracking, and automatic model fallback chains.
@@ -101,7 +105,11 @@ async function withProviderErrorHandling(
       const location = resolveControlPlaneLocation();
       console.error(chalk.red(`  ✗ ${message}`));
       console.error(chalk.dim(`  Control plane: ${location.baseUrl} (${location.source})`));
+<<<<<<< HEAD:archive/ts-legacy/packages/cli/src/commands/provider.ts
       console.error(chalk.dim('  Start HyperCode with `hypercode start` or point HYPERCODE_TRPC_UPSTREAM at a live /trpc endpoint.'));
+=======
+      console.error(chalk.dim('  Start borg with `borg start` or point BORG_TRPC_UPSTREAM at a live /trpc endpoint.'));
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/cli/src/commands/provider.ts
     }
     process.exitCode = 1;
   }
@@ -202,10 +210,17 @@ Supported providers:
   local        Local models (Ollama, LM Studio, etc.)
 
 OAuth-capable subscription services:
+<<<<<<< HEAD:archive/ts-legacy/packages/cli/src/commands/provider.ts
   $ hypercode provider add anthropic --oauth    # Claude Max/Pro subscription
   $ hypercode provider add google --oauth       # Google AI Plus subscription
   $ hypercode provider add copilot --oauth      # Copilot Premium Plus
   $ hypercode provider add openai --oauth       # ChatGPT Plus subscription
+=======
+  $ borg provider add anthropic --oauth    # Claude Max/Pro subscription
+  $ borg provider add google --oauth       # Google AI Plus subscription
+  $ borg provider add copilot --oauth      # Copilot Premium Plus
+  $ borg provider add openai --oauth       # ChatGPT Plus subscription
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/cli/src/commands/provider.ts
     `)
     .action(async (name, opts) => {
       await withProviderErrorHandling(async () => {
@@ -393,9 +408,15 @@ The fallback chain determines which model to use when the primary model's
 quota is exhausted. Models are tried in order.
 
 Examples:
+<<<<<<< HEAD:archive/ts-legacy/packages/cli/src/commands/provider.ts
   $ hypercode provider fallback --show
   $ hypercode provider fallback --set claude-opus-4 gpt-5.2 gemini-3-pro grok-4
   $ hypercode provider fallback --strategy cheapest
+=======
+  $ borg provider fallback --show
+  $ borg provider fallback --set claude-opus-4 gpt-5.2 gemini-3-pro grok-4
+  $ borg provider fallback --strategy cheapest
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/cli/src/commands/provider.ts
     `)
     .action(async (opts) => {
       await withProviderErrorHandling(async () => {

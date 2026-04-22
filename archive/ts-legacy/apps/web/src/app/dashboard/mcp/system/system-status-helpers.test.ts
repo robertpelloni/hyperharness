@@ -491,7 +491,11 @@ describe('system status startup helpers', () => {
 
         expect(buildSystemStartupNotice(startupStatus)).toEqual({
             title: 'Compat fallback active',
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/mcp/system/system-status-helpers.test.ts
             detail: 'Live startup telemetry is unavailable, so HyperCode is showing config-backed compatibility state instead of the full core startup contract.',
+=======
+            detail: 'Live startup telemetry is unavailable, so borg is showing config-backed compatibility state instead of the full core startup contract.',
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/mcp/system/system-status-helpers.test.ts
             tone: 'warning',
         });
 
@@ -646,7 +650,11 @@ describe('system status startup helpers', () => {
             name: 'Core API',
             status: 'Pending',
             latency: 'connecting',
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/mcp/system/system-status-helpers.test.ts
             detail: 'Connecting to live startup telemetry from HyperCode Core.',
+=======
+            detail: 'Connecting to live startup telemetry from borg Core.',
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/mcp/system/system-status-helpers.test.ts
         });
     });
 });

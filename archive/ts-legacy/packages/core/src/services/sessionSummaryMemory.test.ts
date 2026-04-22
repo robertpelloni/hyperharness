@@ -11,7 +11,11 @@ describe('sessionSummaryMemory helpers', () => {
     it('builds stable structured summaries and readable content', () => {
         const summary = buildStructuredSessionSummary({
             sessionId: 'session-123',
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/services/sessionSummaryMemory.test.ts
             name: 'HyperCode Dev Session',
+=======
+            name: 'borg Dev Session',
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/services/sessionSummaryMemory.test.ts
             cliType: 'tabby',
             workingDirectory: 'C:/repo',
             status: 'stopped',
@@ -24,7 +28,11 @@ describe('sessionSummaryMemory helpers', () => {
         const { contentHash: _contentHash, ...summaryWithoutHash } = summary;
 
         expect(summary.contentHash).toBe(createSessionSummaryContentHash(summaryWithoutHash));
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/services/sessionSummaryMemory.test.ts
         expect(buildSessionSummaryContent(summary)).toContain('HyperCode Dev Session (tabby) ended with status stopped.');
+=======
+        expect(buildSessionSummaryContent(summary)).toContain('borg Dev Session (tabby) ended with status stopped.');
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/services/sessionSummaryMemory.test.ts
         expect(buildSessionSummaryContent(summary)).toContain('Goal: Ship native memory summaries');
     });
 

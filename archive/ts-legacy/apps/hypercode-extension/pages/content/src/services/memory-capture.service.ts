@@ -13,11 +13,17 @@ export class MemoryCaptureService {
   private isEnabled = true;
   private lastCapturedUrl = '';
   private captureTimeout: NodeJS.Timeout | null = null;
+<<<<<<<< HEAD:archive/ts-legacy/apps/hypercode-extension/pages/content/src/services/memory-capture.service.ts
   private observer: MutationObserver | null = null;
 
   private constructor() {
     this.setupEventListeners();
     this.setupAutoSyncObserver();
+========
+
+  private constructor() {
+    this.setupEventListeners();
+>>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/borg-extension/pages/content/src/services/memory-capture.service.ts
   }
 
   public static getInstance(): MemoryCaptureService {
@@ -27,6 +33,7 @@ export class MemoryCaptureService {
     return MemoryCaptureService.instance;
   }
 
+<<<<<<<< HEAD:archive/ts-legacy/apps/hypercode-extension/pages/content/src/services/memory-capture.service.ts
   private setupAutoSyncObserver(): void {
     if (typeof MutationObserver === 'undefined') return;
 
@@ -83,6 +90,16 @@ export class MemoryCaptureService {
       this.scheduleCapture();
       this.startObserving();
     });
+========
+  private setupEventListeners(): void {
+    // Listen for page load/navigation
+    if (typeof window !== 'undefined') {
+      window.addEventListener('load', () => this.scheduleCapture());
+    }
+
+    // Listen for URL changes
+    eventBus.on('app:site-changed', () => this.scheduleCapture());
+>>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/borg-extension/pages/content/src/services/memory-capture.service.ts
   }
 
   private scheduleCapture(): void {
@@ -118,7 +135,11 @@ export class MemoryCaptureService {
         sourceTitle: title,
       });
 
+<<<<<<<< HEAD:archive/ts-legacy/apps/hypercode-extension/pages/content/src/services/memory-capture.service.ts
       // 2. Send to background to save to HyperCode Core memory
+========
+      // 2. Send to background to save to borg Core memory
+>>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/borg-extension/pages/content/src/services/memory-capture.service.ts
       try {
         await sendMessage('mcp:save-context', {
           content,

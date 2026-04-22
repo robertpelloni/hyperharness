@@ -2,6 +2,7 @@
 
 import { trpc } from '@/utils/trpc';
 import { useState } from 'react';
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/plans/page.tsx
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@hypercode/ui';
 import { Button } from '@hypercode/ui';
 import { Badge } from '@hypercode/ui';
@@ -9,6 +10,15 @@ import { ScrollArea } from '@hypercode/ui';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@hypercode/ui";
 import { GitBranch, GitCommit, Play, Rewind, CheckCircle, XCircle, AlertCircle, FileCode } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from "@hypercode/ui";
+=======
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@borg/ui';
+import { Button } from '@borg/ui';
+import { Badge } from '@borg/ui';
+import { ScrollArea } from '@borg/ui';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@borg/ui";
+import { GitBranch, GitCommit, Play, Rewind, CheckCircle, XCircle, AlertCircle, FileCode } from 'lucide-react';
+import { Alert, AlertDescription, AlertTitle } from "@borg/ui";
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/plans/page.tsx
 import { normalizePlanCheckpoints, normalizePlanDiffs } from './plans-page-normalizers';
 
 export default function PlansDashboard() {

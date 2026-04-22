@@ -1,12 +1,20 @@
 import { NextResponse } from 'next/server';
 
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/api/orchestrator/[...path]/route.ts
 import { resolveLockedHyperCodeBase } from '../../../../lib/hypercode-runtime';
+=======
+import { resolveLockedBorgBase } from '../../../../lib/borg-runtime';
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/api/orchestrator/[...path]/route.ts
 import { resolveConfiguredOrchestratorBase } from '../../../../lib/orchestrator-config';
 
 export const runtime = 'nodejs';
 
 function resolveOrchestratorBase(): string | null {
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/api/orchestrator/[...path]/route.ts
   return resolveLockedHyperCodeBase() ?? resolveConfiguredOrchestratorBase(process.env);
+=======
+  return resolveLockedBorgBase() ?? resolveConfiguredOrchestratorBase(process.env);
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/api/orchestrator/[...path]/route.ts
 }
 
 function buildProxyUrl(req: Request, orchestratorBase: string, pathSegments: string[]): URL {

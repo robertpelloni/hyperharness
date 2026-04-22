@@ -1,7 +1,11 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/council/rotation-rooms-panel.tsx
 import { Badge, Button, Card, CardContent, CardHeader, CardTitle, Input, Textarea } from '@hypercode/ui';
+=======
+import { Badge, Button, Card, CardContent, CardHeader, CardTitle, Input, Textarea } from '@borg/ui';
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/council/rotation-rooms-panel.tsx
 import { Bot, CheckCircle2, Loader2, Play, Plus, Radio, RotateCw, Users } from 'lucide-react';
 import { trpc } from '@/utils/trpc';
 

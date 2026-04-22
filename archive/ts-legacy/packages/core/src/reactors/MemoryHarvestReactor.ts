@@ -1,5 +1,9 @@
 import { EventBus, SystemEvent } from '../services/EventBus.js';
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/reactors/MemoryHarvestReactor.ts
 import { DEFAULT_OPENROUTER_FREE_MODEL, LLMService } from '@hypercode/ai';
+=======
+import { LLMService } from '@borg/ai';
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/reactors/MemoryHarvestReactor.ts
 import AgentMemoryService from '../services/AgentMemoryService.js';
 import { contextHarvester } from '../services/ContextHarvester.js';
 import fs from 'fs/promises';
@@ -10,7 +14,11 @@ import path from 'path';
  * 
  * Automatically "harvests" context from file system changes.
  * When a file is created or modified, it semantically analyzes the new content
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/reactors/MemoryHarvestReactor.ts
  * and updates HyperCode's long-term memory graph.
+=======
+ * and updates borg's long-term memory graph.
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/reactors/MemoryHarvestReactor.ts
  */
 export class MemoryHarvestReactor {
     private eventBus: EventBus;
@@ -71,7 +79,11 @@ export class MemoryHarvestReactor {
             });
 
             const prompt = `
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/reactors/MemoryHarvestReactor.ts
             You are a HyperCode Knowledge Harvester.
+=======
+            You are a borg Knowledge Harvester.
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/reactors/MemoryHarvestReactor.ts
             A file in the repository has been updated: ${relativePath}
             
             Analyze the content and extract the most important architectural rules, 
@@ -87,8 +99,13 @@ export class MemoryHarvestReactor {
 
             // Use the 'cheapest' strategy for background harvesting
             const response = await this.llmService.generateText(
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/reactors/MemoryHarvestReactor.ts
                 'openrouter', 
                 DEFAULT_OPENROUTER_FREE_MODEL, 
+=======
+                'openai', 
+                'gpt-4o-mini', 
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/reactors/MemoryHarvestReactor.ts
                 'You extract technical knowledge.', 
                 prompt,
                 { routingStrategy: 'cheapest' }

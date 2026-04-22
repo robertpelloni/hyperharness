@@ -40,7 +40,11 @@ function createService(options?: {
 
     const service = new ClientConfigSyncService({
         platform: options?.platform ?? 'win32',
+<<<<<<< HEAD:archive/ts-legacy/packages/core/mcp/__tests__/config-sync.test.ts
         cwd: options?.cwd ?? 'C:\\workspace\\hypercode',
+=======
+        cwd: options?.cwd ?? 'C:\\workspace\\borg',
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/mcp/__tests__/config-sync.test.ts
         homedir: () => 'C:\\Users\\hyper',
         env: {
             APPDATA: options?.appData ?? 'C:\\Users\\hyper\\AppData\\Roaming',

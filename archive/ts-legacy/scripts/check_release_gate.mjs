@@ -1,7 +1,11 @@
 #!/usr/bin/env node
 
 /**
+<<<<<<< HEAD:archive/ts-legacy/scripts/check_release_gate.mjs
  * Runs deterministic release gate checks for Hypercode workspace.
+=======
+ * Runs deterministic release gate checks for Borg workspace.
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:scripts/check_release_gate.mjs
  *
  * Why this exists:
  * - Readiness checks are now machine-readable JSON and should gate releases.

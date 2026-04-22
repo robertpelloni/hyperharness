@@ -10,7 +10,11 @@
 
 | Package | Version | Location |
 |---------|---------|----------|
+<<<<<<<< HEAD:archive/ts-legacy/apps/hypercode-extension/docs/DASHBOARD.md
 | `hypercode-extension` (root) | 0.7.3 | `package.json` |
+========
+| `borg-extension` (root) | 0.7.3 | `package.json` |
+>>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/borg-extension/docs/DASHBOARD.md
 | `chrome-extension` | 0.7.3 | `chrome-extension/package.json` |
 | `@extension/content` | 0.7.3 | `pages/content/package.json` |
 

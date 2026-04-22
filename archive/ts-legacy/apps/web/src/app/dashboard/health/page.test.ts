@@ -69,13 +69,21 @@ describe('health page helpers', () => {
         expect(getMcpRouterMetric({ ready: false, status: 'degraded', summary: { bad: true } } as any, false)).toEqual({
             status: 'Degraded',
             color: 'text-amber-500',
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/health/page.test.ts
             detail: 'Live startup telemetry is unavailable while HyperCode serves a compat-fallback router snapshot.',
+=======
+            detail: 'Live startup telemetry is unavailable while borg serves a compat-fallback router snapshot.',
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/health/page.test.ts
         });
 
         expect(getEventBusMetric({ ready: false, status: 'degraded', summary: ['bad'] } as any)).toEqual({
             status: 'Degraded',
             color: 'text-amber-500',
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/health/page.test.ts
             detail: 'Live startup telemetry is unavailable while HyperCode serves a compat-fallback snapshot.',
+=======
+            detail: 'Live startup telemetry is unavailable while borg serves a compat-fallback snapshot.',
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/health/page.test.ts
         });
     });
 });

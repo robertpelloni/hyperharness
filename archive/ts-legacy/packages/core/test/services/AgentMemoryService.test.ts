@@ -54,7 +54,11 @@ describe('AgentMemoryService', () => {
     let tempDir: string;
 
     beforeEach(() => {
+<<<<<<< HEAD:archive/ts-legacy/packages/core/test/services/AgentMemoryService.test.ts
         tempDir = path.join(os.tmpdir(), `hypercode-test-${Date.now()}`);
+=======
+        tempDir = path.join(os.tmpdir(), `borg-test-${Date.now()}`);
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/test/services/AgentMemoryService.test.ts
         if (!fs.existsSync(tempDir)) fs.mkdirSync(tempDir, { recursive: true });
 
         mockMemoryManager = new MockMemoryManager();
@@ -187,7 +191,11 @@ describe('AgentMemoryService', () => {
 
         await memoryService.recordObservation({
             toolName: 'apply_patch',
+<<<<<<< HEAD:archive/ts-legacy/packages/core/test/services/AgentMemoryService.test.ts
             narrative: 'Implemented structured observation recording for HyperCode memory ingestion.',
+=======
+            narrative: 'Implemented structured observation recording for borg memory ingestion.',
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/test/services/AgentMemoryService.test.ts
             concepts: ['observation-pipeline', 'implementation'],
             filesModified: ['packages/core/src/services/AgentMemoryService.ts'],
         });

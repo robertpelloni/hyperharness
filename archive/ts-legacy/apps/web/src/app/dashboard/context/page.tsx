@@ -1,7 +1,11 @@
 "use client";
 
 import { useState } from 'react';
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/context/page.tsx
 import { Card, CardContent, CardHeader, CardTitle, Button, Badge, ScrollArea } from "@hypercode/ui";
+=======
+import { Card, CardContent, CardHeader, CardTitle, Button, Badge, ScrollArea } from "@borg/ui";
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/context/page.tsx
 import { Layers, Plus, Trash2, Loader2, RefreshCw, FileText, Code2, Copy, Check } from "lucide-react";
 import { trpc } from '@/utils/trpc';
 import { toast } from 'sonner';
@@ -32,6 +36,7 @@ export default function ContextDashboard() {
     const [copied, setCopied] = useState(false);
 
     const utils = trpc.useUtils();
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/context/page.tsx
     const filesQuery = trpc.hypercodeContext.list.useQuery();
     const promptQuery = trpc.hypercodeContext.getPrompt.useQuery();
     const harvestQuery = trpc.hypercodeContext.getHarvestedContext.useQuery(undefined, { refetchInterval: 5000 });
@@ -59,24 +64,69 @@ export default function ContextDashboard() {
             setNewFile('');
             await utils.hypercodeContext.list.invalidate();
             await utils.hypercodeContext.getPrompt.invalidate();
+=======
+    const filesQuery = trpc.borgContext.list.useQuery();
+    const promptQuery = trpc.borgContext.getPrompt.useQuery();
+    const harvestQuery = trpc.borgContext.getHarvestedContext.useQuery(undefined, { refetchInterval: 5000 });
+    const statsQuery = trpc.borgContext.getHarvestStats.useQuery(undefined, { refetchInterval: 5000 });
+
+    const pruneMutation = trpc.borgContext.prune.useMutation({
+        onSuccess: async () => {
+            toast.success('Pruned inactive context chunks');
+            await utils.borgContext.getHarvestedContext.invalidate();
+            await utils.borgContext.getHarvestStats.invalidate();
+        }
+    });
+
+    const compactMutation = trpc.borgContext.compact.useMutation({
+        onSuccess: async () => {
+            toast.success('Compacted older context chunks');
+            await utils.borgContext.getHarvestedContext.invalidate();
+            await utils.borgContext.getHarvestStats.invalidate();
+        }
+    });
+
+    const addMutation = trpc.borgContext.add.useMutation({
+        onSuccess: async () => {
+            toast.success('File added to context');
+            setNewFile('');
+            await utils.borgContext.list.invalidate();
+            await utils.borgContext.getPrompt.invalidate();
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/context/page.tsx
         },
         onError: err => toast.error(`Failed to add: ${err.message}`),
     });
 
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/context/page.tsx
     const removeMutation = trpc.hypercodeContext.remove.useMutation({
         onSuccess: async () => {
             toast.success('File removed from context');
             await utils.hypercodeContext.list.invalidate();
             await utils.hypercodeContext.getPrompt.invalidate();
+=======
+    const removeMutation = trpc.borgContext.remove.useMutation({
+        onSuccess: async () => {
+            toast.success('File removed from context');
+            await utils.borgContext.list.invalidate();
+            await utils.borgContext.getPrompt.invalidate();
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/context/page.tsx
         },
         onError: err => toast.error(`Failed to remove: ${err.message}`),
     });
 
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/context/page.tsx
     const clearMutation = trpc.hypercodeContext.clear.useMutation({
         onSuccess: async () => {
             toast.success('Context cleared');
             await utils.hypercodeContext.list.invalidate();
             await utils.hypercodeContext.getPrompt.invalidate();
+=======
+    const clearMutation = trpc.borgContext.clear.useMutation({
+        onSuccess: async () => {
+            toast.success('Context cleared');
+            await utils.borgContext.list.invalidate();
+            await utils.borgContext.getPrompt.invalidate();
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/context/page.tsx
         },
         onError: err => toast.error(`Failed to clear: ${err.message}`),
     });
@@ -110,7 +160,11 @@ export default function ContextDashboard() {
                         Context Manager
                     </h1>
                     <p className="text-zinc-500 mt-2">
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/context/page.tsx
                         Manage the set of files that are injected into the HyperCode context prompt for active AI sessions.
+=======
+                        Manage the set of files that are injected into the borg context prompt for active AI sessions.
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/context/page.tsx
                     </p>
                 </div>
                 <Button

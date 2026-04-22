@@ -1,7 +1,11 @@
 import { Readability } from '@mozilla/readability';
 import TurndownService from 'turndown';
 
+<<<<<<< HEAD:archive/ts-legacy/packages/browser-extension/src/content.ts
 console.log("HyperCode Browser Extension Content Script Loaded 🚀");
+=======
+console.log("borg Browser Extension Content Script Loaded 🚀");
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/browser-extension/src/content.ts
 
 // 0. Console Hook Injection
 // Intercept console.log/warn/error and forward to window
@@ -26,27 +30,48 @@ consoleScript.textContent = `
     }
 
     console.log = function(...args) {
+<<<<<<< HEAD:archive/ts-legacy/packages/browser-extension/src/content.ts
         window.postMessage({ type: 'HYPERCODE_CONSOLE_LOG', level: 'info', content: formatArgs(args) }, '*');
+=======
+        window.postMessage({ type: 'BORG_CONSOLE_LOG', level: 'info', content: formatArgs(args) }, '*');
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/browser-extension/src/content.ts
         originalLog.apply(console, args);
     };
 
     console.warn = function(...args) {
+<<<<<<< HEAD:archive/ts-legacy/packages/browser-extension/src/content.ts
         window.postMessage({ type: 'HYPERCODE_CONSOLE_LOG', level: 'warn', content: formatArgs(args) }, '*');
+=======
+        window.postMessage({ type: 'BORG_CONSOLE_LOG', level: 'warn', content: formatArgs(args) }, '*');
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/browser-extension/src/content.ts
         originalWarn.apply(console, args);
     };
 
     console.error = function(...args) {
+<<<<<<< HEAD:archive/ts-legacy/packages/browser-extension/src/content.ts
         window.postMessage({ type: 'HYPERCODE_CONSOLE_LOG', level: 'error', content: formatArgs(args) }, '*');
         originalError.apply(console, args);
     };
     
     // Also inject hypercode globals if needed
     window.hypercode = {
+=======
+        window.postMessage({ type: 'BORG_CONSOLE_LOG', level: 'error', content: formatArgs(args) }, '*');
+        originalError.apply(console, args);
+    };
+    
+    // Also inject borg globals if needed
+    window.borg = {
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/browser-extension/src/content.ts
         callTool: function(name, args) {
              return new Promise((resolve, reject) => {
                 const id = Math.random().toString(36).substring(7);
                 const handler = (event) => {
+<<<<<<< HEAD:archive/ts-legacy/packages/browser-extension/src/content.ts
                     if (event.source !== window || !event.data || event.data.type !== 'HYPERCODE_MCP_RESPONSE') return;
+=======
+                    if (event.source !== window || !event.data || event.data.type !== 'BORG_MCP_RESPONSE') return;
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/browser-extension/src/content.ts
                     if (event.data.payload.id !== id) return;
                     window.removeEventListener('message', handler);
                     if (event.data.payload.error) reject(event.data.payload.error);
@@ -54,13 +79,21 @@ consoleScript.textContent = `
                 };
                 window.addEventListener('message', handler);
                 window.postMessage({
+<<<<<<< HEAD:archive/ts-legacy/packages/browser-extension/src/content.ts
                     type: 'HYPERCODE_MCP_CALL',
+=======
+                    type: 'BORG_MCP_CALL',
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/browser-extension/src/content.ts
                     payload: { jsonrpc: '2.0', method: 'tools/call', params: { name, arguments: args }, id }
                 }, '*');
             });
         }
     };
+<<<<<<< HEAD:archive/ts-legacy/packages/browser-extension/src/content.ts
     console.log("✅ window.hypercode injected");
+=======
+    console.log("✅ window.borg injected");
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/browser-extension/src/content.ts
     
 })();
 `;
@@ -72,6 +105,7 @@ consoleScript.remove();
 window.addEventListener('message', (event) => {
     if (event.source !== window || !event.data) return;
 
+<<<<<<< HEAD:archive/ts-legacy/packages/browser-extension/src/content.ts
     if (event.data.type === 'HYPERCODE_MCP_CALL') {
         const payload = event.data.payload;
         chrome.runtime.sendMessage({ type: "MCP_REQUEST", payload }, (response) => {
@@ -80,6 +114,16 @@ window.addEventListener('message', (event) => {
     }
 
     if (event.data.type === 'HYPERCODE_CONSOLE_LOG') {
+=======
+    if (event.data.type === 'BORG_MCP_CALL') {
+        const payload = event.data.payload;
+        chrome.runtime.sendMessage({ type: "MCP_REQUEST", payload }, (response) => {
+            window.postMessage({ type: 'BORG_MCP_RESPONSE', payload: response }, '*');
+        });
+    }
+
+    if (event.data.type === 'BORG_CONSOLE_LOG') {
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/browser-extension/src/content.ts
         // Forward to background (fire and forget)
         chrome.runtime.sendMessage({
             type: "CONSOLE_LOG",

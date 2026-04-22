@@ -70,7 +70,11 @@ describe('TelemetryService', () => {
 
     it('should include service name attribute', () => {
       const span = telemetry.startSpan('test');
+<<<<<<< HEAD:archive/ts-legacy/packages/core/test/services/TelemetryService.test.ts
       expect(span.attributes['service.name']).toBe('hypercode-core');
+=======
+      expect(span.attributes['service.name']).toBe('borg-core');
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/test/services/TelemetryService.test.ts
       telemetry.endSpan(span.spanId);
     });
   });

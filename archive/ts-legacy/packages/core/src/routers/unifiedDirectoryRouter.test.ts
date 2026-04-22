@@ -235,7 +235,11 @@ describe('unifiedDirectoryRouter', () => {
 
     it('surfaces a clear error for list when SQLite is unavailable', async () => {
         vi.spyOn(publishedCatalogRepository, 'listServers').mockRejectedValue(
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/routers/unifiedDirectoryRouter.test.ts
             new Error('SQLite runtime is unavailable for HyperCode DB-backed features (Could not locate the bindings file. Tried: better-sqlite3.node)'),
+=======
+            new Error('SQLite runtime is unavailable for borg DB-backed features (Could not locate the bindings file. Tried: better-sqlite3.node)'),
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/routers/unifiedDirectoryRouter.test.ts
         );
 
         const caller = createCaller();
@@ -247,7 +251,11 @@ describe('unifiedDirectoryRouter', () => {
 
     it('surfaces a clear error for stats when SQLite is unavailable', async () => {
         vi.spyOn(publishedCatalogRepository, 'countServers').mockRejectedValue(
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/routers/unifiedDirectoryRouter.test.ts
             new Error('SQLite runtime is unavailable for HyperCode DB-backed features (Could not locate the bindings file. Tried: better-sqlite3.node)'),
+=======
+            new Error('SQLite runtime is unavailable for borg DB-backed features (Could not locate the bindings file. Tried: better-sqlite3.node)'),
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/routers/unifiedDirectoryRouter.test.ts
         );
 
         const caller = createCaller();

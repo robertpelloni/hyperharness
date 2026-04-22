@@ -360,7 +360,11 @@ export const billingRouter = t.router({
      * available at all).  Returns entries in reverse-chronological order.
      *
      * The billing dashboard "Recent Fallback Decisions" card consumes this to let
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/routers/billingRouter.ts
      * operators understand why HyperCode substituted a different provider/model than
+=======
+     * operators understand why borg substituted a different provider/model than
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/routers/billingRouter.ts
      * configured.
      */
     getFallbackHistory: publicProcedure

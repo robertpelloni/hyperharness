@@ -5,13 +5,13 @@ Large Language Models (LLMs) like Claude 3.7 Sonnet, GPT-4o, and others are heav
 
 When an LLM sees a familiar tool signature (e.g., `str_replace_editor`, `glob`, `bash`), its performance, reasoning, and accuracy increase dramatically because it falls into well-worn cognitive grooves established during RLHF and instruction tuning. 
 
-**HyperCode's mandate is Absolute 1:1 Parity.** We do not rename, restructure, or "improve" these core tool signatures. If a model expects Claude Code's `Bash` tool, HyperCode provides a tool that is byte-for-byte identical in schema and behavior.
+**borg's mandate is Absolute 1:1 Parity.** We do not rename, restructure, or "improve" these core tool signatures. If a model expects Claude Code's `Bash` tool, borg provides a tool that is byte-for-byte identical in schema and behavior.
 
 ---
 
 ## 1. Claude Code Parity (Primary Target)
 
-Claude 3.7 Sonnet is explicitly trained to use the following internal tools. HyperCode implements these exactly as expected:
+Claude 3.7 Sonnet is explicitly trained to use the following internal tools. borg implements these exactly as expected:
 
 ### `bash`
 - **Description**: Executes a bash command and returns the output.
@@ -21,7 +21,7 @@ Claude 3.7 Sonnet is explicitly trained to use the following internal tools. Hyp
     "command": "string (required)"
   }
   ```
-- **HyperCode Implementation**: Mapped directly to our isolated process execution engine, preserving standard output, standard error, and exit codes identically to Claude Code.
+- **borg Implementation**: Mapped directly to our isolated process execution engine, preserving standard output, standard error, and exit codes identically to Claude Code.
 
 ### `glob`
 - **Description**: Searches for files matching a glob pattern.
@@ -31,7 +31,7 @@ Claude 3.7 Sonnet is explicitly trained to use the following internal tools. Hyp
     "pattern": "string (required)"
   }
   ```
-- **HyperCode Implementation**: Fast Rust-backed `ignore` crawler, returning absolute paths exactly formatted as the model expects.
+- **borg Implementation**: Fast Rust-backed `ignore` crawler, returning absolute paths exactly formatted as the model expects.
 
 ### `grep_search`
 - **Description**: Searches for a regular expression pattern within file contents.
@@ -43,7 +43,7 @@ Claude 3.7 Sonnet is explicitly trained to use the following internal tools. Hyp
     "include_pattern": "string (optional)"
   }
   ```
-- **HyperCode Implementation**: Backed by `ripgrep`, ensuring exact argument parsing and line-number formatting.
+- **borg Implementation**: Backed by `ripgrep`, ensuring exact argument parsing and line-number formatting.
 
 ### `file_read` / `read_file`
 - **Description**: Reads file contents with line limits.
@@ -73,20 +73,20 @@ Claude 3.7 Sonnet is explicitly trained to use the following internal tools. Hyp
 
 Aider relies heavily on specific diff formats (Unified Diff, Search/Replace blocks).
 - **`ask_aider`**: (Supported) - allows the model to spin up a sub-agent.
-- **`run_tests`**: (Supported) - maps to HyperCode's `AutoTestReactor`.
+- **`run_tests`**: (Supported) - maps to borg's `AutoTestReactor`.
 
 ---
 
 ## 3. Cursor & Windsurf Parity
 
 These editors provide specific contextual tools.
-- **`get_cursor_context`**: Maps to HyperCode's `get_project_context`.
-- **`list_workspace_symbols`**: Maps to HyperCode's `lspTools` for fast symbol extraction.
+- **`get_cursor_context`**: Maps to borg's `get_project_context`.
+- **`list_workspace_symbols`**: Maps to borg's `lspTools` for fast symbol extraction.
 
 ---
 
 ## Implementation Strategy
 
-HyperCode intercepts tool requests at the router level. When an LLM sends a payload for `bash` (expecting Claude Code's implementation), the HyperCode router recognizes the 1:1 alias and routes it to our secure `executionEnvironment`, returning the exact JSON structure the model was fine-tuned to receive.
+borg intercepts tool requests at the router level. When an LLM sends a payload for `bash` (expecting Claude Code's implementation), the borg router recognizes the 1:1 alias and routes it to our secure `executionEnvironment`, returning the exact JSON structure the model was fine-tuned to receive.
 
-There is no "translation layer" for the LLM to learn. To the model, HyperCode *is* Claude Code, it *is* Cursor, it *is* Aider.
+There is no "translation layer" for the LLM to learn. To the model, borg *is* Claude Code, it *is* Cursor, it *is* Aider.

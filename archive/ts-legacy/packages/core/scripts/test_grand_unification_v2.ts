@@ -12,7 +12,11 @@ async function runGrandUnificationV2() {
 
     try {
         console.log("\n[1/5] 💾 Session Persistence Test...");
+<<<<<<< HEAD:archive/ts-legacy/packages/core/scripts/test_grand_unification_v2.ts
         const sessionFile = path.join(process.cwd(), '.hypercode-session.json');
+=======
+        const sessionFile = path.join(process.cwd(), '.borg-session.json');
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/scripts/test_grand_unification_v2.ts
 
         // Clean start
         if (fs.existsSync(sessionFile)) fs.unlinkSync(sessionFile);

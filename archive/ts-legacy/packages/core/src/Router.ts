@@ -16,7 +16,11 @@ export interface RouterConfig {
  * Router (MCP Aggregator)
  *
  * The central hub that manages connections to multiple MCP servers and provides
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/Router.ts
  * a unified tool interface. This is HyperCode's "Meta-MCP" layer.
+=======
+ * a unified tool interface. This is borg's "Meta-MCP" layer.
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/Router.ts
  *
  * Architecture:
  * - Maintains a Map of named MCP `Client` connections (e.g., "filesystem", "browser", "search").
@@ -85,7 +89,11 @@ export class Router {
 
         const client = new Client(
             {
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/Router.ts
                 name: "hypercode-router",
+=======
+                name: "borg-router",
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/Router.ts
                 version: "0.99.1",
             },
             {

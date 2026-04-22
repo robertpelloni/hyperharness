@@ -1,6 +1,11 @@
 
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/_llm_fail_test.ts
 import { LLMService } from "@hypercode/ai";
 import { ModelSelector } from "@hypercode/ai";
+=======
+import { LLMService } from "@borg/ai";
+import { ModelSelector } from "@borg/ai";
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/_llm_fail_test.ts
 
 /**
  * Manual test script to verify LLM Swapping.

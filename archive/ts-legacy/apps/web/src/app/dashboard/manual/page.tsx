@@ -1,10 +1,17 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/manual/page.tsx
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@hypercode/ui';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@hypercode/ui";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@hypercode/ui";
 import { Badge } from '@hypercode/ui';
+=======
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@borg/ui';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@borg/ui";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@borg/ui";
+import { Badge } from '@borg/ui';
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/manual/page.tsx
 import { trpc } from '@/utils/trpc';
 import { Book, Cpu, Shield, Activity, GraduationCap, GitBranch, Terminal } from 'lucide-react';
 
@@ -43,7 +50,11 @@ export default function ManualPage() {
             <div className="flex flex-col gap-2">
                 <h1 className="text-4xl font-bold tracking-tight text-white flex items-center gap-3">
                     <Book className="w-8 h-8 text-blue-400" />
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/manual/page.tsx
                     HyperCode User Manual
+=======
+                    borg User Manual
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/manual/page.tsx
                 </h1>
                 <p className="text-xl text-muted-foreground">
                     Comprehensive guide to the Neural Operating System {versionLabel}.
@@ -101,7 +112,11 @@ export default function ManualPage() {
                             <CardDescription>System overview and basic navigation.</CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-4">
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/manual/page.tsx
                             <p>The HyperCode is an autonomous agentic system designed for self-evolving software development.</p>
+=======
+                            <p>The borg is an autonomous agentic system designed for self-evolving software development.</p>
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/manual/page.tsx
                             <div className="grid grid-cols-2 gap-4 mt-4">
                                 <div className="p-4 bg-zinc-900 rounded-lg border border-zinc-800">
                                     <h3 className="font-bold flex items-center gap-2 mb-2"><Activity className="w-4 h-4 text-green-400" /> The Pulse</h3>
@@ -188,7 +203,11 @@ export default function ManualPage() {
                             </CardHeader>
                             <CardContent>
                                 <p className="text-sm text-zinc-400">
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/manual/page.tsx
                                     The HyperCode can learn new capabilities by ingesting documentation.
+=======
+                                    The borg can learn new capabilities by ingesting documentation.
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/manual/page.tsx
                                     Use the <strong>Skills Dashboard</strong> to point the system at a documentation URL.
                                     It will generate a new MCP tool in <code>packages/core/src/skills/</code> automatically.
                                 </p>

@@ -17,7 +17,11 @@ export const Dashboard = () => {
 
     return (
         <div className="p-6">
+<<<<<<< HEAD:archive/ts-legacy/packages/ui/src.unused/pages/Dashboard.tsx
             <h1 className="text-2xl font-bold mb-4">HyperCode Dashboard</h1>
+=======
+            <h1 className="text-2xl font-bold mb-4">borg Dashboard</h1>
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/ui/src.unused/pages/Dashboard.tsx
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="bg-white p-4 rounded shadow">

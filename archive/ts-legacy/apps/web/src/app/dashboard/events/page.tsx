@@ -2,8 +2,13 @@
 
 import React from 'react';
 import { trpc } from '@/utils/trpc';
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/events/page.tsx
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@hypercode/ui';
 import { Badge } from "@hypercode/ui";
+=======
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@borg/ui';
+import { Badge } from "@borg/ui";
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/events/page.tsx
 import { Activity, File, Terminal, Zap, Cpu, Clock } from 'lucide-react';
 import { normalizeDashboardEvents, normalizeDashboardSystemStatus } from './events-page-normalizers';
 
@@ -109,7 +114,11 @@ export default function EventsPage() {
                         <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2">
                                 <Cpu className="w-5 h-5 text-green-400" />
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/events/page.tsx
                                 <span>HyperCode Core</span>
+=======
+                                <span>borg Core</span>
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/events/page.tsx
                             </div>
                             <Badge className={systemStatusUnavailable ? "bg-red-700" : normalizedSystemStatus.status === 'online' ? "bg-green-600" : "bg-red-600"}>
                                 {systemStatusUnavailable ? 'Unavailable' : normalizedSystemStatus.status === 'online' ? 'Online' : 'Offline'}

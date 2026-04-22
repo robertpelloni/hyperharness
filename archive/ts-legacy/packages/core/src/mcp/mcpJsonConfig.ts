@@ -3,7 +3,11 @@ import path from 'node:path';
 
 import type { SavedScriptConfig, SavedToolSetConfig } from '../interfaces/IConfigProvider.js';
 
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/mcp/mcpJsonConfig.ts
 export type HyperCodeMcpToolMetadata = {
+=======
+export type BorgMcpToolMetadata = {
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/mcp/mcpJsonConfig.ts
     name: string;
     title?: string | null;
     description?: string | null;
@@ -21,7 +25,11 @@ export type HyperCodeMcpToolMetadata = {
     raw?: Record<string, unknown> | null;
 };
 
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/mcp/mcpJsonConfig.ts
 export type HyperCodeMcpServerDiscoveryMetadata = {
+=======
+export type BorgMcpServerDiscoveryMetadata = {
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/mcp/mcpJsonConfig.ts
     status: 'ready' | 'failed' | 'unsupported' | 'pending';
     metadataVersion?: number;
     metadataSource?: 'binary' | 'cache' | 'derived';
@@ -43,11 +51,19 @@ export type HyperCodeMcpServerDiscoveryMetadata = {
     headerKeys?: string[];
     reloadableFromCache?: boolean;
     toolCount: number;
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/mcp/mcpJsonConfig.ts
     tools: HyperCodeMcpToolMetadata[];
     error?: string;
 };
 
 export type HyperCodeMcpServerEntry = {
+=======
+    tools: BorgMcpToolMetadata[];
+    error?: string;
+};
+
+export type BorgMcpServerEntry = {
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/mcp/mcpJsonConfig.ts
     command?: string;
     args?: string[];
     env?: Record<string, string>;
@@ -55,11 +71,19 @@ export type HyperCodeMcpServerEntry = {
     disabled?: boolean;
     description?: string | null;
     type?: 'STDIO' | 'SSE' | 'STREAMABLE_HTTP';
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/mcp/mcpJsonConfig.ts
     _meta?: HyperCodeMcpServerDiscoveryMetadata;
 };
 
 export type HyperCodeMcpJsonConfig = {
     mcpServers: Record<string, HyperCodeMcpServerEntry>;
+=======
+    _meta?: BorgMcpServerDiscoveryMetadata;
+};
+
+export type BorgMcpJsonConfig = {
+    mcpServers: Record<string, BorgMcpServerEntry>;
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/mcp/mcpJsonConfig.ts
     alwaysVisibleTools?: string[];
     scripts?: SavedScriptConfig[];
     toolSets?: SavedToolSetConfig[];
@@ -69,6 +93,7 @@ export type HyperCodeMcpJsonConfig = {
 
 import os from 'node:os';
 
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/mcp/mcpJsonConfig.ts
 const JSONC_HEADER = `// HyperCode MCP configuration\n// This file is HyperCode-owned and may include cached server metadata under mcpServers.<name>._meta.\n`;
 
 export function getHyperCodeConfigDir(): string {
@@ -76,6 +101,15 @@ export function getHyperCodeConfigDir(): string {
     // This allows project-level config to be the source of truth if intended.
     if (process.env.HYPERCODE_CONFIG_DIR) {
         return process.env.HYPERCODE_CONFIG_DIR;
+=======
+const JSONC_HEADER = `// borg MCP configuration\n// This file is borg-owned and may include cached server metadata under mcpServers.<name>._meta.\n`;
+
+export function getBorgConfigDir(): string {
+    // If there is an mcp.jsonc in the current working directory, use it
+    // This allows project-level config to be the source of truth if intended.
+    if (process.env.BORG_CONFIG_DIR) {
+        return process.env.BORG_CONFIG_DIR;
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/mcp/mcpJsonConfig.ts
     }
     const cwdPath = process.cwd();
     try {
@@ -86,6 +120,7 @@ export function getHyperCodeConfigDir(): string {
     } catch {
         // Fall back
     }
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/mcp/mcpJsonConfig.ts
     return path.join(os.homedir(), '.hypercode');
 }
 
@@ -98,6 +133,20 @@ export function getHyperCodeMcpJsonPath(configDir: string = getHyperCodeConfigDi
 }
 
 export function getHyperCodeToolCachePath(configDir: string = getHyperCodeConfigDir()): string {
+=======
+    return path.join(os.homedir(), '.borg');
+}
+
+export function getBorgMcpJsoncPath(configDir: string = getBorgConfigDir()): string {
+    return path.join(configDir, 'mcp.jsonc');
+}
+
+export function getBorgMcpJsonPath(configDir: string = getBorgConfigDir()): string {
+    return path.join(configDir, 'mcp.json');
+}
+
+export function getBorgToolCachePath(configDir: string = getBorgConfigDir()): string {
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/mcp/mcpJsonConfig.ts
     return path.join(configDir, 'mcp-cache.json');
 }
 
@@ -179,12 +228,20 @@ export function stripJsonComments(content: string): string {
     return result;
 }
 
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/mcp/mcpJsonConfig.ts
 function normalizeConfigShape(config: unknown): HyperCodeMcpJsonConfig {
+=======
+function normalizeConfigShape(config: unknown): BorgMcpJsonConfig {
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/mcp/mcpJsonConfig.ts
     if (!config || typeof config !== 'object') {
         return { mcpServers: {} };
     }
 
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/mcp/mcpJsonConfig.ts
     const candidate = config as HyperCodeMcpJsonConfig;
+=======
+    const candidate = config as BorgMcpJsonConfig;
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/mcp/mcpJsonConfig.ts
     return {
         ...candidate,
         mcpServers: candidate.mcpServers && typeof candidate.mcpServers === 'object'
@@ -205,7 +262,11 @@ function normalizeConfigShape(config: unknown): HyperCodeMcpJsonConfig {
     };
 }
 
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/mcp/mcpJsonConfig.ts
 function toCompatibilityConfig(config: HyperCodeMcpJsonConfig): Record<string, unknown> {
+=======
+function toCompatibilityConfig(config: BorgMcpJsonConfig): Record<string, unknown> {
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/mcp/mcpJsonConfig.ts
     const compatibilityServers = Object.fromEntries(
         Object.entries(config.mcpServers || {}).map(([name, server]) => {
             const { _meta: _ignoredMeta, ...serverWithoutMeta } = server;
@@ -223,8 +284,13 @@ function toCompatibilityConfig(config: HyperCodeMcpJsonConfig): Record<string, u
     return compatibilityConfig;
 }
 
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/mcp/mcpJsonConfig.ts
 export async function loadHyperCodeMcpConfig(configDir?: string): Promise<HyperCodeMcpJsonConfig> {
     const jsoncPath = getHyperCodeMcpJsoncPath(configDir);
+=======
+export async function loadBorgMcpConfig(configDir?: string): Promise<BorgMcpJsonConfig> {
+    const jsoncPath = getBorgMcpJsoncPath(configDir);
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/mcp/mcpJsonConfig.ts
 
     try {
         const raw = await fs.readFile(jsoncPath, 'utf-8');
@@ -239,10 +305,17 @@ export async function loadHyperCodeMcpConfig(configDir?: string): Promise<HyperC
     return { mcpServers: {} };
 }
 
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/mcp/mcpJsonConfig.ts
 export async function writeHyperCodeMcpConfig(config: HyperCodeMcpJsonConfig, configDir?: string): Promise<void> {
     const normalized = normalizeConfigShape(config);
     const jsoncPath = getHyperCodeMcpJsoncPath(configDir);
     const jsonPath = getHyperCodeMcpJsonPath(configDir);
+=======
+export async function writeBorgMcpConfig(config: BorgMcpJsonConfig, configDir?: string): Promise<void> {
+    const normalized = normalizeConfigShape(config);
+    const jsoncPath = getBorgMcpJsoncPath(configDir);
+    const jsonPath = getBorgMcpJsonPath(configDir);
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/mcp/mcpJsonConfig.ts
 
     await fs.mkdir(path.dirname(jsoncPath), { recursive: true });
 
@@ -252,15 +325,26 @@ export async function writeHyperCodeMcpConfig(config: HyperCodeMcpJsonConfig, co
     await fs.writeFile(jsonPath, jsonBody, 'utf-8');
 }
 
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/mcp/mcpJsonConfig.ts
 export async function writeToolCache(config: HyperCodeMcpJsonConfig, configDir?: string): Promise<void> {
     const cachePath = getHyperCodeToolCachePath(configDir);
+=======
+export async function writeToolCache(config: BorgMcpJsonConfig, configDir?: string): Promise<void> {
+    const cachePath = getBorgToolCachePath(configDir);
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/mcp/mcpJsonConfig.ts
     await fs.mkdir(path.dirname(cachePath), { recursive: true });
     await fs.writeFile(cachePath, JSON.stringify(config, null, 2), 'utf-8');
 }
 
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/mcp/mcpJsonConfig.ts
 export async function loadToolCache(configDir?: string): Promise<HyperCodeMcpJsonConfig | null> {
     try {
         const raw = await fs.readFile(getHyperCodeToolCachePath(configDir), 'utf-8');
+=======
+export async function loadToolCache(configDir?: string): Promise<BorgMcpJsonConfig | null> {
+    try {
+        const raw = await fs.readFile(getBorgToolCachePath(configDir), 'utf-8');
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/mcp/mcpJsonConfig.ts
         return normalizeConfigShape(JSON.parse(raw));
     } catch {
         return null;

@@ -8,11 +8,19 @@ import {
     McpServerCreateInputSchema,
     McpServerUpdateInputSchema
 } from '../types/mcp-admin/index.js';
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/routers/mcpServersRouter.ts
 import { loadHyperCodeMcpConfig } from '../mcp/mcpJsonConfig.js';
 import { clientConfigSyncService, SUPPORTED_MCP_CLIENTS } from '../mcp/clientConfigSync.js';
 import { rethrowSqliteUnavailableAsTrpc } from './sqliteTrpc.js';
 
 const MASTER_INDEX_PATH = path.join(process.cwd(), 'HYPERCODE_MASTER_INDEX.jsonc');
+=======
+import { loadBorgMcpConfig } from '../mcp/mcpJsonConfig.js';
+import { clientConfigSyncService, SUPPORTED_MCP_CLIENTS } from '../mcp/clientConfigSync.js';
+import { rethrowSqliteUnavailableAsTrpc } from './sqliteTrpc.js';
+
+const MASTER_INDEX_PATH = path.join(process.cwd(), 'BORG_MASTER_INDEX.jsonc');
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/routers/mcpServersRouter.ts
 
 const stripJsonComments = (content: string) =>
     content.replace(/\\"|"(?:\\"|[^"])*"|(\/\/.*|\/\*[\s\S]*?\*\/)/g, (m, g) => g ? '' : m);
@@ -44,7 +52,11 @@ export const mcpServersRouter = t.router({
             const userId = getContextUserId(ctx);
             const [servers, config] = await Promise.all([
                 mcpServersRepository.findAll(userId),
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/routers/mcpServersRouter.ts
                 loadHyperCodeMcpConfig(),
+=======
+                loadBorgMcpConfig(),
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/routers/mcpServersRouter.ts
             ]);
 
             return servers.map((server) => ({
@@ -62,7 +74,11 @@ export const mcpServersRouter = t.router({
             try {
                 const [server, config] = await Promise.all([
                     mcpServersRepository.findByUuid(input.uuid),
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/routers/mcpServersRouter.ts
                     loadHyperCodeMcpConfig(),
+=======
+                    loadBorgMcpConfig(),
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/routers/mcpServersRouter.ts
                 ]);
 
                 if (!server) {
@@ -234,7 +250,11 @@ export const mcpServersRouter = t.router({
             }
 
             const detail = error instanceof SyntaxError
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/routers/mcpServersRouter.ts
                 ? 'HYPERCODE_MASTER_INDEX.jsonc contains invalid JSON.'
+=======
+                ? 'BORG_MASTER_INDEX.jsonc contains invalid JSON.'
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/routers/mcpServersRouter.ts
                 : error instanceof Error
                     ? error.message
                     : String(error);

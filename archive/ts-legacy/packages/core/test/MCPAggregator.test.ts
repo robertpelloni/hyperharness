@@ -29,7 +29,11 @@ describe('MCPAggregator', () => {
 
     beforeEach(() => {
         vi.clearAllMocks();
+<<<<<<< HEAD:archive/ts-legacy/packages/core/test/MCPAggregator.test.ts
         const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'hypercode-mcp-aggregator-'));
+=======
+        const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'borg-mcp-aggregator-'));
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/test/MCPAggregator.test.ts
         configPath = path.join(tempDir, 'mcp_servers.json');
         fs.writeFileSync(configPath, JSON.stringify({
             'test-server': {

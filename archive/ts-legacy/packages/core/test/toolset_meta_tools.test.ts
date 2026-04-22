@@ -36,8 +36,13 @@ describe('toolset meta tools', () => {
     process.env.MCP_PROGRESSIVE_MODE = 'true';
     process.env.MCP_DISABLE_METAMCP = 'true';
 
+<<<<<<< HEAD:archive/ts-legacy/packages/core/test/toolset_meta_tools.test.ts
     const dir = mkdtempSync(path.join(os.tmpdir(), 'hypercode-toolset-test-'));
     process.env.HYPERCODE_DATA_DIR = dir;
+=======
+    const dir = mkdtempSync(path.join(os.tmpdir(), 'borg-toolset-test-'));
+    process.env.BORG_DATA_DIR = dir;
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/test/toolset_meta_tools.test.ts
 
     const policyService: PolicyServiceLike = { evaluate: () => ({ allowed: true }) };
     const savedScriptService: SavedScriptServiceLike = { getAllScripts: () => [] };

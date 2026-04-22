@@ -35,7 +35,11 @@ interface CacheServiceOptions {
  * - Singleton pattern via `CacheService.getInstance(namespace)` for shared caches
  * - `cached()` helper for wrapping async functions with transparent caching
  *
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/services/CacheService.ts
  * Used by the HyperCode control plane for metadata caching, tool inventory caching,
+=======
+ * Used by the borg control plane for metadata caching, tool inventory caching,
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/services/CacheService.ts
  * and provider response caching to reduce redundant IO and computation.
  */
 export class CacheService<T> extends EventEmitter {

@@ -2,7 +2,11 @@
 
 import Link from 'next/link';
 import type { ComponentType } from 'react';
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/mcp/testing/page.tsx
 import { Card, CardContent, CardHeader, CardTitle } from '@hypercode/ui';
+=======
+import { Card, CardContent, CardHeader, CardTitle } from '@borg/ui';
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/mcp/testing/page.tsx
 import {
     Bot,
     ExternalLink,
@@ -61,7 +65,11 @@ export default function MCPTestingPage() {
                 />
                 <TestingCard
                     title="Server Probes"
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/mcp/testing/page.tsx
                     description="Interactive client-style probes for every downstream server and for the HyperCode router itself, with request/response transcripts."
+=======
+                    description="Interactive client-style probes for every downstream server and for the borg router itself, with request/response transcripts."
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/mcp/testing/page.tsx
                     href="/dashboard/mcp/testing/servers"
                     icon={Wrench}
                     accentClass="text-cyan-400"
@@ -95,7 +103,11 @@ export default function MCPTestingPage() {
                 </CardHeader>
                 <CardContent className="space-y-3 text-sm text-zinc-500">
                     <p>
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/mcp/testing/page.tsx
                         The main MCP page should explain HyperCode as the <span className="text-zinc-200 font-medium">ultimate MCP aggregator/router</span>: aggregation, semantic search and grouping, lifecycle supervision, observability, and client config sync.
+=======
+                        The main MCP page should explain borg as the <span className="text-zinc-200 font-medium">ultimate MCP aggregator/router</span>: aggregation, semantic search and grouping, lifecycle supervision, observability, and client config sync.
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/mcp/testing/page.tsx
                     </p>
                     <p>
                         Inspector, search, and playground surfaces are still valuable, but they belong in a testing lab so the primary dashboard does not read like a bag of random demos.

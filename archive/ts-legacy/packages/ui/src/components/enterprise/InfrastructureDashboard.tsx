@@ -153,7 +153,11 @@ export function InfrastructureDashboard() {
             <CardContent>
               <div className="p-4 rounded bg-slate-900 border border-slate-800 font-mono text-[11px] text-emerald-400 h-64 overflow-y-auto">
                 <pre>
+<<<<<<< HEAD:archive/ts-legacy/packages/ui/src/components/enterprise/InfrastructureDashboard.tsx
 {`package hypercode.agent.authz
+=======
+{`package borg.agent.authz
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/ui/src/components/enterprise/InfrastructureDashboard.tsx
 
 import rego.v1
 
@@ -167,7 +171,11 @@ deny contains decision if {
     input.tool_name == tool
 
     decision := {
+<<<<<<< HEAD:archive/ts-legacy/packages/ui/src/components/enterprise/InfrastructureDashboard.tsx
         "rule_id": "HYPERCODE-SECURITY-001",
+=======
+        "rule_id": "borg-SECURITY-001",
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/ui/src/components/enterprise/InfrastructureDashboard.tsx
         "reason": "Restricted tool access",
         "severity": "CRITICAL"
     }

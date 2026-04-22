@@ -5,7 +5,11 @@ import { MemoryExportImportService } from './MemoryExportImportService.js';
 describe('MemoryExportImportService interchange', () => {
     const service = new MemoryExportImportService({});
 
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/services/memory/MemoryExportImportService.test.ts
     it('converts sectioned store snapshots into HyperCode JSON provider snapshots', async () => {
+=======
+    it('converts sectioned store snapshots into borg JSON provider snapshots', async () => {
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/services/memory/MemoryExportImportService.test.ts
         const source = JSON.stringify({
             version: '1.0.0',
             sections: [

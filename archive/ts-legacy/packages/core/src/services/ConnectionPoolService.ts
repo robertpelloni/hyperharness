@@ -46,7 +46,11 @@ interface AcquireWaiter<T> {
  * - Graceful drain with waiter rejection
  * - EventEmitter: `connectionCreated`, `connectionAcquired`, `connectionReleased`
  *
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/services/ConnectionPoolService.ts
  * Used by the HyperCode control plane for managing reusable connections to
+=======
+ * Used by the borg control plane for managing reusable connections to
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/services/ConnectionPoolService.ts
  * databases, MCP server stdio transports, and external services.
  */
 export class ConnectionPool<T> extends EventEmitter {
@@ -220,7 +224,11 @@ export class ConnectionPool<T> extends EventEmitter {
 /**
  * Static registry of named connection pools.
  *
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/services/ConnectionPoolService.ts
  * Allows services across the HyperCode control plane to register, retrieve,
+=======
+ * Allows services across the borg control plane to register, retrieve,
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/services/ConnectionPoolService.ts
  * and manage pools by name without passing pool instances directly.
  */
 export class ConnectionPoolManager {

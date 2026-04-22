@@ -41,7 +41,11 @@ describe('buildToolContextPayload', () => {
             observations: [],
             summaries: [
                 {
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/services/toolContextMemory.test.ts
                     content: 'HyperCode Dev Session ended after wiring session-start bootstrap metadata into supervised sessions.',
+=======
+                    content: 'borg Dev Session ended after wiring session-start bootstrap metadata into supervised sessions.',
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/services/toolContextMemory.test.ts
                     cliType: 'tabby',
                     status: 'stopped',
                     recordedAt: 100,

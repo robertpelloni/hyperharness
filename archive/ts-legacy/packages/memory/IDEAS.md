@@ -1,9 +1,17 @@
+<<<<<<< HEAD:archive/ts-legacy/packages/memory/IDEAS.md
 # Ideas for Improvement: @hypercode/memory
+=======
+# Ideas for Improvement: @borg/memory
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/memory/IDEAS.md
 
 Ambitious features to evolve the "Long-Term Memory" and context persistence layer.
 
 ## 1. Decentralized & Swarm Memory
+<<<<<<< HEAD:archive/ts-legacy/packages/memory/IDEAS.md
 - **P2P Memory Swarm:** Allow multiple HyperCode nodes to securely share and "gossip" learned facts, code symbols, and architectural patterns via the P2P mesh.
+=======
+- **P2P Memory Swarm:** Allow multiple borg nodes to securely share and "gossip" learned facts, code symbols, and architectural patterns via the P2P mesh.
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/memory/IDEAS.md
 - **Collective Intelligence Ledger:** A conceptual system where successful agent strategies are recorded on a global, verifiable ledger (Bobcoin integration) for all swarm members to benefit from.
 - **Recursive Knowledge Harvesting:** Agents that can autonomously "read" and summarize entire libraries or documentation sites and store the resulting knowledge in the shared swarm memory.
 

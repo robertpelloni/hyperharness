@@ -1,7 +1,14 @@
+<<<<<<< HEAD:archive/ts-legacy/packages/agents/src/Council.ts
 import { ModelSelector } from "@hypercode/ai";
 import { IAgent } from "@hypercode/ai";
 import { IMCPServer, ICouncilService, IAgentMemoryService } from "@hypercode/adk";
 import { COUNCIL_PROMPTS } from "@hypercode/ai";
+=======
+import { ModelSelector } from "@borg/ai";
+import { IAgent } from "@borg/ai";
+import { IMCPServer, ICouncilService, IAgentMemoryService } from "@borg/adk";
+import { COUNCIL_PROMPTS } from "@borg/ai";
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/agents/src/Council.ts
 
 export enum CouncilRole {
     ARCHITECT = 'Architect',

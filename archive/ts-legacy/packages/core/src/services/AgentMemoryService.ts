@@ -711,7 +711,11 @@ export class AgentMemoryService {
     /**
      * Record a structured observation inspired by the claude-mem observation pipeline.
      * This is intentionally heuristic for now: it normalizes raw tool output into a typed,
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/services/AgentMemoryService.ts
      * deduplicated working-memory record that HyperCode can search immediately.
+=======
+     * deduplicated working-memory record that borg can search immediately.
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/services/AgentMemoryService.ts
      */
     async recordObservation(input: ObservationInput): Promise<Memory> {
         const namespace = input.namespace ?? 'project';

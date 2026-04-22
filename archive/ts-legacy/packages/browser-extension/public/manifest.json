@@ -1,8 +1,14 @@
 {
   "manifest_version": 3,
+<<<<<<< HEAD:archive/ts-legacy/packages/browser-extension/public/manifest.json
   "name": "HyperCode Director Link",
   "version": "0.1.0",
   "description": "Connects web chats (ChatGPT, Claude) to HyperCode Director via Local MCP.",
+=======
+  "name": "borg Director Link",
+  "version": "0.1.0",
+  "description": "Connects web chats (ChatGPT, Claude) to borg Director via Local MCP.",
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/browser-extension/public/manifest.json
   "permissions": [
     "activeTab",
     "scripting",

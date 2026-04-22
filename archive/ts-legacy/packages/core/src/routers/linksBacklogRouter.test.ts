@@ -40,7 +40,11 @@ describe('linksBacklogRouter degraded SQLite handling', () => {
 
     it('surfaces a clear error for list when SQLite is unavailable', async () => {
         repositoryMocks.listLinks.mockRejectedValue(
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/routers/linksBacklogRouter.test.ts
             new Error('SQLite runtime is unavailable for HyperCode DB-backed features (Could not locate the bindings file. Tried: better-sqlite3.node)'),
+=======
+            new Error('SQLite runtime is unavailable for borg DB-backed features (Could not locate the bindings file. Tried: better-sqlite3.node)'),
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/routers/linksBacklogRouter.test.ts
         );
 
         const caller = createCaller();
@@ -52,7 +56,11 @@ describe('linksBacklogRouter degraded SQLite handling', () => {
 
     it('surfaces a clear error for stats when SQLite is unavailable', async () => {
         repositoryMocks.getStats.mockRejectedValue(
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/routers/linksBacklogRouter.test.ts
             new Error('SQLite runtime is unavailable for HyperCode DB-backed features (Could not locate the bindings file. Tried: better-sqlite3.node)'),
+=======
+            new Error('SQLite runtime is unavailable for borg DB-backed features (Could not locate the bindings file. Tried: better-sqlite3.node)'),
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/routers/linksBacklogRouter.test.ts
         );
 
         const caller = createCaller();

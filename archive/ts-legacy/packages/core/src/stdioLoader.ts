@@ -14,7 +14,11 @@ import {
     type BackgroundCoreBootstrapResult,
 } from './backgroundCoreBootstrap.js';
 import { getBridgeHealthUrl, getBridgeToolExecuteUrl } from './bridge/bridgePort.js';
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/stdioLoader.ts
 import { type HyperCodeMcpJsonConfig, loadHyperCodeMcpConfig, loadToolCache, type HyperCodeMcpToolMetadata } from './mcp/mcpJsonConfig.js';
+=======
+import { type BorgMcpJsonConfig, loadBorgMcpConfig, loadToolCache, type BorgMcpToolMetadata } from './mcp/mcpJsonConfig.js';
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/stdioLoader.ts
 import { namespaceToolName } from './mcp/namespaces.js';
 
 const CORE_HEALTH_URL = getBridgeHealthUrl();
@@ -22,7 +26,11 @@ const CORE_TOOL_EXECUTE_URL = getBridgeToolExecuteUrl();
 const DEFAULT_TOOL_CALL_READY_TIMEOUT_MS = 1_500;
 const DEFAULT_TOOL_CALL_POLL_INTERVAL_MS = 250;
 
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/stdioLoader.ts
 export const HYPERCODE_CORE_LOADER_STATUS_TOOL = 'hypercode_core_loader_status';
+=======
+export const BORG_CORE_LOADER_STATUS_TOOL = 'borg_core_loader_status';
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/stdioLoader.ts
 
 export type LoaderBootstrapState = {
     lastBootstrapStatus: BackgroundCoreBootstrapResult['status'] | 'idle';
@@ -97,7 +105,11 @@ function normalizeInputSchema(inputSchema: unknown): LoaderToolInputSchema {
     return { type: 'object', properties: {} };
 }
 
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/stdioLoader.ts
 function toToolDefinition(serverName: string, tool: HyperCodeMcpToolMetadata): Tool {
+=======
+function toToolDefinition(serverName: string, tool: BorgMcpToolMetadata): Tool {
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/stdioLoader.ts
     return {
         name: namespaceToolName(serverName, tool.name),
         description: tool.description ?? `Cached tool discovered for downstream server '${serverName}'.`,
@@ -107,8 +119,13 @@ function toToolDefinition(serverName: string, tool: HyperCodeMcpToolMetadata): T
 
 export function buildLoaderStatusToolDefinition(): Tool {
     return {
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/stdioLoader.ts
         name: HYPERCODE_CORE_LOADER_STATUS_TOOL,
         description: 'Report whether the lightweight stdio loader is serving cached tools or proxying to a live HyperCode Core control plane.',
+=======
+        name: BORG_CORE_LOADER_STATUS_TOOL,
+        description: 'Report whether the lightweight stdio loader is serving cached tools or proxying to a live borg Core control plane.',
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/stdioLoader.ts
         inputSchema: { type: 'object', properties: {} },
     } as Tool;
 }
@@ -131,7 +148,11 @@ export function createEmptyLoaderRuntimeState(): LoaderRuntimeState {
     };
 }
 
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/stdioLoader.ts
 export function buildCachedLoaderCatalog(config: HyperCodeMcpJsonConfig): CachedLoaderCatalog {
+=======
+export function buildCachedLoaderCatalog(config: BorgMcpJsonConfig): CachedLoaderCatalog {
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/stdioLoader.ts
     const toolMap = new Map<string, Tool>();
     let snapshotUpdatedAt: string | null = null;
     let enabledServerCount = 0;
@@ -179,13 +200,21 @@ export function buildCachedLoaderCatalog(config: HyperCodeMcpJsonConfig): Cached
 }
 
 export async function loadCachedLoaderCatalog(
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/stdioLoader.ts
     loadConfigImpl: typeof loadHyperCodeMcpConfig = loadHyperCodeMcpConfig,
+=======
+    loadConfigImpl: typeof loadBorgMcpConfig = loadBorgMcpConfig,
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/stdioLoader.ts
 ): Promise<CachedLoaderCatalog> {
     const cache = await loadToolCache();
     if (cache) {
         return buildCachedLoaderCatalog(cache);
     }
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/stdioLoader.ts
     const config = await loadConfigImpl().catch(() => ({ mcpServers: {} } satisfies HyperCodeMcpJsonConfig));
+=======
+    const config = await loadConfigImpl().catch(() => ({ mcpServers: {} } satisfies BorgMcpJsonConfig));
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/stdioLoader.ts
     return buildCachedLoaderCatalog(config);
 }
 
@@ -220,7 +249,11 @@ async function proxyToolCallToCore(name: string, args: Record<string, unknown>):
     if (!response.ok) {
         const body = await response.text().catch(() => '');
         return asTextResult(
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/stdioLoader.ts
             `HyperCode Core returned HTTP ${response.status} while executing '${name}'.${body ? `\n${body}` : ''}`,
+=======
+            `borg Core returned HTTP ${response.status} while executing '${name}'.${body ? `\n${body}` : ''}`,
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/stdioLoader.ts
             true,
         );
     }
@@ -238,7 +271,11 @@ async function proxyToolCallToCore(name: string, args: Record<string, unknown>):
 
 function buildLoaderStatusResult(state: LoaderRuntimeState, coreHealthy: boolean): CallToolResult {
     return asTextResult(JSON.stringify({
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/stdioLoader.ts
         loader: 'hypercode-core-stdio-loader',
+=======
+        loader: 'borg-core-stdio-loader',
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/stdioLoader.ts
         coreHealthy,
         bootstrap: state.bootstrap,
         cache: {
@@ -290,7 +327,11 @@ export async function callLoaderTool(
     const proxyToolCallImpl = deps.proxyToolCall ?? proxyToolCallToCore;
 
     const coreHealthy = await isCoreHealthyImpl(CORE_HEALTH_URL);
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/stdioLoader.ts
     if (name === HYPERCODE_CORE_LOADER_STATUS_TOOL) {
+=======
+    if (name === BORG_CORE_LOADER_STATUS_TOOL) {
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/stdioLoader.ts
         return buildLoaderStatusResult(state, coreHealthy);
     }
 
@@ -307,7 +348,11 @@ export async function callLoaderTool(
 
     if (!readyAfterBootstrap) {
         return asTextResult(
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/stdioLoader.ts
             `HyperCode Core is still warming in the background, so '${name}' is not ready yet. Cached tools are available immediately, and the control plane has been ${bootstrap.status === 'already-running' ? 'detected' : 'requested'}${bootstrap.pid ? ` (PID ${bootstrap.pid})` : ''}. Retry this tool call in a moment.`,
+=======
+            `borg Core is still warming in the background, so '${name}' is not ready yet. Cached tools are available immediately, and the control plane has been ${bootstrap.status === 'already-running' ? 'detected' : 'requested'}${bootstrap.pid ? ` (PID ${bootstrap.pid})` : ''}. Retry this tool call in a moment.`,
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/stdioLoader.ts
             true,
         );
     }
@@ -317,7 +362,11 @@ export async function callLoaderTool(
 
 export async function startStdioLoader(): Promise<void> {
     const server = new Server(
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/stdioLoader.ts
         { name: 'hypercode-core-loader', version: '0.99.1' },
+=======
+        { name: 'borg-core-loader', version: '0.99.1' },
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/stdioLoader.ts
         {
             capabilities: {
                 tools: {},
@@ -330,7 +379,11 @@ export async function startStdioLoader(): Promise<void> {
     server.setRequestHandler(ListToolsRequestSchema, async () => {
         runtimeState.cache = await loadCachedLoaderCatalog();
         void ensureLoaderBootstrap(runtimeState).catch((error) => {
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/stdioLoader.ts
             console.error('[HyperCode Core] Background control-plane bootstrap failed:', error);
+=======
+            console.error('[borg Core] Background control-plane bootstrap failed:', error);
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/stdioLoader.ts
         });
 
         return {
@@ -351,6 +404,10 @@ export async function startStdioLoader(): Promise<void> {
     await server.connect(transport);
 
     void ensureLoaderBootstrap(runtimeState).catch((error) => {
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/stdioLoader.ts
         console.error('[HyperCode Core] Background control-plane bootstrap failed:', error);
+=======
+        console.error('[borg Core] Background control-plane bootstrap failed:', error);
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/stdioLoader.ts
     });
 }

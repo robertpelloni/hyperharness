@@ -40,7 +40,11 @@ describe('ensureBackgroundCoreRunning', () => {
 
         await expect(ensureBackgroundCoreRunning(
             {
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/backgroundCoreBootstrap.test.ts
                 cliEntryPath: 'C:/hypercode/packages/cli/dist/index.js',
+=======
+                cliEntryPath: 'C:/borg/packages/cli/dist/index.js',
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/backgroundCoreBootstrap.test.ts
             },
             {
                 fetchImpl: vi.fn().mockResolvedValue({ ok: true }) as any,
@@ -51,13 +55,21 @@ describe('ensureBackgroundCoreRunning', () => {
         expect(spawnImpl).not.toHaveBeenCalled();
     });
 
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/backgroundCoreBootstrap.test.ts
     it('spawns HyperCode CLI start in detached mode when the bridge is offline', async () => {
+=======
+    it('spawns borg CLI start in detached mode when the bridge is offline', async () => {
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/backgroundCoreBootstrap.test.ts
         const unref = vi.fn();
         const spawnImpl = vi.fn().mockReturnValue({ pid: 4321, unref });
 
         await expect(ensureBackgroundCoreRunning(
             {
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/backgroundCoreBootstrap.test.ts
                 cliEntryPath: 'C:/hypercode/packages/cli/dist/index.js',
+=======
+                cliEntryPath: 'C:/borg/packages/cli/dist/index.js',
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/backgroundCoreBootstrap.test.ts
                 waitForReady: false,
                 host: '127.0.0.1',
             },
@@ -68,11 +80,19 @@ describe('ensureBackgroundCoreRunning', () => {
         )).resolves.toEqual({
             status: 'spawned',
             pid: 4321,
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/backgroundCoreBootstrap.test.ts
             cliEntryPath: 'C:/hypercode/packages/cli/dist/index.js',
         });
 
         expect(spawnImpl).toHaveBeenCalledWith(process.execPath, [
             'C:/hypercode/packages/cli/dist/index.js',
+=======
+            cliEntryPath: 'C:/borg/packages/cli/dist/index.js',
+        });
+
+        expect(spawnImpl).toHaveBeenCalledWith(process.execPath, [
+            'C:/borg/packages/cli/dist/index.js',
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/backgroundCoreBootstrap.test.ts
             'start',
             '--host',
             '127.0.0.1',
@@ -106,7 +126,11 @@ describe('ensureBackgroundCoreRunning', () => {
 
         await expect(ensureBackgroundCoreRunning(
             {
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/backgroundCoreBootstrap.test.ts
                 cliEntryPath: 'C:/hypercode/packages/cli/dist/index.js',
+=======
+                cliEntryPath: 'C:/borg/packages/cli/dist/index.js',
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/backgroundCoreBootstrap.test.ts
                 startupTimeoutMs: 5,
                 pollIntervalMs: 1,
             },
@@ -118,7 +142,11 @@ describe('ensureBackgroundCoreRunning', () => {
         )).resolves.toEqual({
             status: 'warming',
             pid: 999,
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/backgroundCoreBootstrap.test.ts
             cliEntryPath: 'C:/hypercode/packages/cli/dist/index.js',
+=======
+            cliEntryPath: 'C:/borg/packages/cli/dist/index.js',
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/backgroundCoreBootstrap.test.ts
         });
     });
 });

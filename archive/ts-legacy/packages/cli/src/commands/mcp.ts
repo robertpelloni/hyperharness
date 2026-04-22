@@ -1,5 +1,9 @@
 /**
+<<<<<<< HEAD:archive/ts-legacy/packages/cli/src/commands/mcp.ts
  * `hypercode mcp` - MCP Router management commands
+=======
+ * `borg mcp` - MCP Router management commands
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/cli/src/commands/mcp.ts
  *
  * Comprehensive MCP server lifecycle management, tool browsing,
  * traffic inspection, config sync, and directory access.
@@ -164,7 +168,11 @@ async function withMcpErrorHandling(
       const location = resolveControlPlaneLocation();
       console.error(chalk.red(`  ✗ ${message}`));
       console.error(chalk.dim(`  Control plane: ${location.baseUrl} (${location.source})`));
+<<<<<<< HEAD:archive/ts-legacy/packages/cli/src/commands/mcp.ts
       console.error(chalk.dim('  Start HyperCode with `hypercode start` or point HYPERCODE_TRPC_UPSTREAM at a live /trpc endpoint.'));
+=======
+      console.error(chalk.dim('  Start borg with `borg start` or point BORG_TRPC_UPSTREAM at a live /trpc endpoint.'));
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/cli/src/commands/mcp.ts
     }
     process.exitCode = 1;
   }
@@ -416,6 +424,7 @@ export function registerMcpCommand(program: Command): void {
     .option('-n, --namespace <ns>', 'Server namespace', 'default')
     .option('--args <args...>', 'Command arguments')
     .option('--env <vars...>', 'Environment variables (KEY=VALUE)')
+<<<<<<< HEAD:archive/ts-legacy/packages/cli/src/commands/mcp.ts
     .option('--auto-start', 'Auto-start on HyperCode launch', true)
     .option('--no-auto-start', 'Do not auto-start on HyperCode launch')
     .addHelpText('after', `
@@ -423,6 +432,15 @@ Examples:
   $ hypercode mcp add filesystem npx -- -y @modelcontextprotocol/server-filesystem /home
   $ hypercode mcp add github npx -- -y @modelcontextprotocol/server-github --env GITHUB_TOKEN=xxx
   $ hypercode mcp add remote-api http://localhost:8080/mcp -t streamable-http
+=======
+    .option('--auto-start', 'Auto-start on borg launch', true)
+    .option('--no-auto-start', 'Do not auto-start on borg launch')
+    .addHelpText('after', `
+Examples:
+  $ borg mcp add filesystem npx -- -y @modelcontextprotocol/server-filesystem /home
+  $ borg mcp add github npx -- -y @modelcontextprotocol/server-github --env GITHUB_TOKEN=xxx
+  $ borg mcp add remote-api http://localhost:8080/mcp -t streamable-http
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/cli/src/commands/mcp.ts
     `)
     .option('--json', 'Output as JSON')
     .action(async (name, command, opts) => {
@@ -713,9 +731,15 @@ Examples:
     .option('--json', 'Output as JSON')
     .addHelpText('after', `
 Examples:
+<<<<<<< HEAD:archive/ts-legacy/packages/cli/src/commands/mcp.ts
   $ hypercode mcp install @modelcontextprotocol/server-filesystem
   $ hypercode mcp install --pip mcp-server-sqlite
   $ hypercode mcp install --github anthropics/mcp-servers
+=======
+  $ borg mcp install @modelcontextprotocol/server-filesystem
+  $ borg mcp install --pip mcp-server-sqlite
+  $ borg mcp install --github anthropics/mcp-servers
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/cli/src/commands/mcp.ts
     `)
     .action(async (pkg, opts) => {
       await withMcpErrorHandling(
@@ -774,7 +798,11 @@ Examples:
   mcp
     .command('export')
     .description('Export MCP configuration to JSON file')
+<<<<<<< HEAD:archive/ts-legacy/packages/cli/src/commands/mcp.ts
     .option('-o, --output <file>', 'Output file path', 'hypercode-mcp-export.json')
+=======
+    .option('-o, --output <file>', 'Output file path', 'borg-mcp-export.json')
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/cli/src/commands/mcp.ts
     .option('--json', 'Output as JSON')
     .action(async (opts) => {
       await withMcpErrorHandling(async () => {

@@ -1,7 +1,13 @@
 /**
+<<<<<<< HEAD:archive/ts-legacy/packages/cli/src/commands/config.ts
  * `hypercode config` - Configuration management
  *
  * View, set, and manage HyperCode configuration including
+=======
+ * `borg config` - Configuration management
+ *
+ * View, set, and manage borg configuration including
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/cli/src/commands/config.ts
  * subsystem settings, secrets, and environment variables.
  */
 
@@ -163,7 +169,11 @@ async function withConfigErrorHandling(
       const location = resolveControlPlaneLocation();
       console.error(chalk.red(`  ✗ ${message}`));
       console.error(chalk.dim(`  Control plane: ${location.baseUrl} (${location.source})`));
+<<<<<<< HEAD:archive/ts-legacy/packages/cli/src/commands/config.ts
       console.error(chalk.dim('  Start HyperCode with `hypercode start` or point HYPERCODE_TRPC_UPSTREAM at a live /trpc endpoint.'));
+=======
+      console.error(chalk.dim('  Start borg with `borg start` or point BORG_TRPC_UPSTREAM at a live /trpc endpoint.'));
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/cli/src/commands/config.ts
     }
     process.exitCode = 1;
   }
@@ -176,11 +186,19 @@ export function registerConfigCommand(program: Command): void {
   const config = program
     .command('config')
     .alias('cfg')
+<<<<<<< HEAD:archive/ts-legacy/packages/cli/src/commands/config.ts
     .description('Config — view and manage HyperCode configuration, secrets, and environment variables');
 
   config
     .command('show')
     .description('Display the current HyperCode configuration')
+=======
+    .description('Config — view and manage borg configuration, secrets, and environment variables');
+
+  config
+    .command('show')
+    .description('Display the current borg configuration')
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/cli/src/commands/config.ts
     .option('--json', 'Output as raw JSON')
     .option('--section <section>', 'Show specific section: server, mcp, memory, providers, sessions, director')
     .action(async (opts) => {
@@ -202,7 +220,11 @@ export function registerConfigCommand(program: Command): void {
         }
 
         const chalk = (await import('chalk')).default;
+<<<<<<< HEAD:archive/ts-legacy/packages/cli/src/commands/config.ts
         console.log(chalk.bold.cyan('\n  HyperCode Configuration\n'));
+=======
+        console.log(chalk.bold.cyan('\n  borg Configuration\n'));
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/cli/src/commands/config.ts
 
         if (selected && typeof selected === 'object' && !Array.isArray(selected)) {
           printConfigObject(selected as Record<string, unknown>, chalk);
@@ -220,11 +242,19 @@ export function registerConfigCommand(program: Command): void {
     .option('--json', 'Output as JSON')
     .addHelpText('after', `
 Examples:
+<<<<<<< HEAD:archive/ts-legacy/packages/cli/src/commands/config.ts
   $ hypercode config set server.port 8080
   $ hypercode config set mcp.toonFormat true
   $ hypercode config set memory.primaryBackend sqlite
   $ hypercode config set director.enabled true
   $ hypercode config set logLevel debug
+=======
+  $ borg config set server.port 8080
+  $ borg config set mcp.toonFormat true
+  $ borg config set memory.primaryBackend sqlite
+  $ borg config set director.enabled true
+  $ borg config set logLevel debug
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/cli/src/commands/config.ts
     `)
     .action(async (key, value, opts) => {
       await withConfigErrorHandling(async () => {
@@ -296,6 +326,7 @@ Examples:
     .option('--delete <key>', 'Delete a secret')
     .option('--env', 'Show environment variable sources')
     .addHelpText('after', `
+<<<<<<< HEAD:archive/ts-legacy/packages/cli/src/commands/config.ts
 Secrets are stored encrypted in ~/.hypercode/secrets.enc
 
 Examples:
@@ -303,6 +334,15 @@ Examples:
   $ hypercode config secrets --set OPENAI_API_KEY
   $ hypercode config secrets --delete GITHUB_TOKEN
   $ hypercode config secrets --env
+=======
+Secrets are stored encrypted in ~/.borg/secrets.enc
+
+Examples:
+  $ borg config secrets --list
+  $ borg config secrets --set OPENAI_API_KEY
+  $ borg config secrets --delete GITHUB_TOKEN
+  $ borg config secrets --env
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/cli/src/commands/config.ts
     `)
     .action(async (opts) => {
       await withConfigErrorHandling(async () => {
@@ -378,9 +418,15 @@ Examples:
 
   config
     .command('init')
+<<<<<<< HEAD:archive/ts-legacy/packages/cli/src/commands/config.ts
     .description('Initialize HyperCode configuration in current directory or globally')
     .option('--global', 'Initialize global config at ~/.hypercode/')
     .option('--local', 'Initialize local .hypercode/ config in current directory')
+=======
+    .description('Initialize borg configuration in current directory or globally')
+    .option('--global', 'Initialize global config at ~/.borg/')
+    .option('--local', 'Initialize local .borg/ config in current directory')
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/cli/src/commands/config.ts
     .option('--json', 'Output as JSON')
     .action(async (opts) => {
       await withConfigErrorHandling(async () => {

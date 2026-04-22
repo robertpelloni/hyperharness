@@ -8,7 +8,11 @@ import './globals.css';
 import { Toaster } from 'sonner';
 
 export const metadata: Metadata = {
+<<<<<<< HEAD:archive/ts-legacy/packages/ui/src/app/layout.tsx
   title: 'HyperCode',
+=======
+  title: 'borg',
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/ui/src/app/layout.tsx
   description: 'The Ultimate Meta-Orchestrator for the Model Context Protocol',
 };
 

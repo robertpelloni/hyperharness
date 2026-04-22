@@ -6,14 +6,22 @@ import path from 'path';
 // Resolve the monorepo root safely without overly broad path traversals
 // that trigger Turbopack's file pattern analysis
 function getMonorepoRoot(): string {
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/api/monitoring/events/route.ts
     return process.env.HYPERCODE_ROOT || path.resolve(process.cwd(), '..', '..');
+=======
+    return process.env.BORG_ROOT || path.resolve(process.cwd(), '..', '..');
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/api/monitoring/events/route.ts
 }
 
 export async function GET() {
     try {
         const rootDir = getMonorepoRoot();
 
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/api/monitoring/events/route.ts
         const logFile = path.join(rootDir, '.hypercode', 'data', 'healer_events.jsonl');
+=======
+        const logFile = path.join(rootDir, '.borg', 'data', 'healer_events.jsonl');
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/api/monitoring/events/route.ts
 
         try {
             await fs.access(logFile);

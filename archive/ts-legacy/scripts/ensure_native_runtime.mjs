@@ -60,7 +60,11 @@ function ensureBetterSqlite3() {
     const reason = error instanceof Error ? error.message : String(error);
     if (isKnownBetterSqliteNode24Failure(reason)) {
       warn(`better-sqlite3 is not usable for Node ${process.versions.node} in this workspace (${reason}).`);
+<<<<<<< HEAD:archive/ts-legacy/scripts/ensure_native_runtime.mjs
       warn('Skipping automatic better-sqlite3 rebuild because this Node 24 Windows failure is a known non-blocking startup issue for the HyperCode Hub; Maestro/native SQLite features may remain unavailable until rebuilt in a compatible environment.');
+=======
+      warn('Skipping automatic better-sqlite3 rebuild because this Node 24 Windows failure is a known non-blocking startup issue for the borg Hub; Maestro/native SQLite features may remain unavailable until rebuilt in a compatible environment.');
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:scripts/ensure_native_runtime.mjs
       return true;
     }
     warn(`better-sqlite3 is missing or not usable for Node ${process.versions.node}; rebuilding... (${reason})`);
@@ -104,7 +108,11 @@ function ensureElectronRuntime() {
   warn('Electron runtime is missing for Maestro; running the Electron package installer...');
 
   if (!run(process.execPath, ['install.js'], electronDir)) {
+<<<<<<< HEAD:archive/ts-legacy/scripts/ensure_native_runtime.mjs
     warn('Electron package installer failed. HyperCode Hub can still start, but Maestro may not launch.');
+=======
+    warn('Electron package installer failed. borg Hub can still start, but Maestro may not launch.');
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:scripts/ensure_native_runtime.mjs
     return true;
   }
 
@@ -113,7 +121,11 @@ function ensureElectronRuntime() {
     return true;
   }
 
+<<<<<<< HEAD:archive/ts-legacy/scripts/ensure_native_runtime.mjs
   warn('Electron package installer completed, but the runtime binary is still missing. HyperCode Hub can still start, but Maestro may not launch.');
+=======
+  warn('Electron package installer completed, but the runtime binary is still missing. borg Hub can still start, but Maestro may not launch.');
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:scripts/ensure_native_runtime.mjs
   return true;
 }
 

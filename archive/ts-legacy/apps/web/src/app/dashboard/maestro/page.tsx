@@ -4,7 +4,11 @@
  * electron-orchestrator Dashboard Page
  *
  * Shows status and controls for the electron-orchestrator desktop shell.
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/maestro/page.tsx
  * electron-orchestrator is the native desktop companion for HyperCode — providing system tray
+=======
+ * electron-orchestrator is the native desktop companion for borg — providing system tray
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/maestro/page.tsx
  * controls, OS-level integration, and native orchestration capabilities.
  *
  * This page checks whether electron-orchestrator is running by probing its IPC or HTTP
@@ -110,7 +114,11 @@ export default function MaestroDashboardPage() {
                         electron-orchestrator
                     </h1>
                     <p className="text-zinc-400 text-sm">
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/maestro/page.tsx
                         Native desktop shell for HyperCode — system tray, OS integration, and local orchestration
+=======
+                        Native desktop shell for borg — system tray, OS integration, and local orchestration
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/maestro/page.tsx
                     </p>
                 </div>
                 <div className="flex items-center gap-2 flex-wrap">
@@ -150,7 +158,11 @@ export default function MaestroDashboardPage() {
                 <PageStatusBanner
                     status="experimental"
                     message="electron-orchestrator desktop integration"
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/maestro/page.tsx
                     note="The electron-orchestrator desktop shell is an experimental companion app. It shares the HyperCode backend on port 3847 and provides native OS capabilities."
+=======
+                    note="The electron-orchestrator desktop shell is an experimental companion app. It shares the borg backend on port 3847 and provides native OS capabilities."
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/maestro/page.tsx
                 />
             </div>
 
@@ -175,7 +187,11 @@ export default function MaestroDashboardPage() {
                             <p className="text-amber-200 font-medium text-sm">electron-orchestrator is not running</p>
                             <p className="text-amber-300/70 text-xs mt-1">
                                 Start electron-orchestrator from the <code className="bg-amber-950/50 px-1 rounded">apps/maestro</code> directory,
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/maestro/page.tsx
                                 or launch it from the system tray. electron-orchestrator connects to the HyperCode backend at{" "}
+=======
+                                or launch it from the system tray. electron-orchestrator connects to the borg backend at{" "}
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/maestro/page.tsx
                                 <code className="bg-amber-950/50 px-1 rounded">{MAESTRO_URL}</code>.
                             </p>
                             <div className="flex flex-wrap gap-2 mt-3">
@@ -216,7 +232,11 @@ export default function MaestroDashboardPage() {
                             <div>
                                 <p className="text-emerald-200 font-medium text-sm">electron-orchestrator is running</p>
                                 <p className="text-emerald-300/70 text-xs mt-1">
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/maestro/page.tsx
                                     Connected to HyperCode backend at {MAESTRO_URL}
+=======
+                                    Connected to borg backend at {MAESTRO_URL}
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/maestro/page.tsx
                                 </p>
                             </div>
                         </div>

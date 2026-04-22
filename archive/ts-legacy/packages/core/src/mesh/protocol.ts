@@ -16,7 +16,10 @@ export const SwarmMessageTypeSchema = z.enum([
     'TASK_ASSIGN',
     'ARTIFACT_READ_REQUEST',
     'ARTIFACT_READ_RESPONSE',
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/mesh/protocol.ts
     'A2A_BRIDGE_SIGNAL',
+=======
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/mesh/protocol.ts
 ]);
 
 export const SwarmMessageMetadataSchema = z.object({

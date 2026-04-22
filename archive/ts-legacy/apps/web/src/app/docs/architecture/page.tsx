@@ -23,7 +23,11 @@ export default function ArchitectureDocsPage() {
                 <section className="mb-16">
                     <h2>System Overview</h2>
                     <p>
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/docs/architecture/page.tsx
                         HyperCode is architected as a modular monorepo using Turborepo. It separates concerns between the
+=======
+                        borg is architected as a modular monorepo using Turborepo. It separates concerns between the
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/docs/architecture/page.tsx
                         Core MCP Server (Backend), the Next.js Dashboard (Frontend), and the Browser Extension (Bridge).
                     </p>
 
@@ -96,7 +100,11 @@ graph TD
                             <li><strong>CLI (Entry)</strong>: Launches Core server and orchestrates processes.</li>
                             <li><strong>Core (Port 3001)</strong>: MCP Server handling agents, tools, and DBs.</li>
                             <li><strong>Web (Port 3000)</strong>: Next.js app for visualization and control.</li>
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/docs/architecture/page.tsx
                             <li><strong>Runtime Data</strong>: Stored in <code>.hypercode/</code> (indexes, logs, config).</li>
+=======
+                            <li><strong>Runtime Data</strong>: Stored in <code>.borg/</code> (indexes, logs, config).</li>
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/docs/architecture/page.tsx
                             <li><strong>Sandboxes</strong>: Docker containers for safe code execution.</li>
                         </ul>
                     </div>

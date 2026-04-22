@@ -1,5 +1,9 @@
 /**
+<<<<<<< HEAD:archive/ts-legacy/packages/ui/src/app/mcp-router/page.tsx
  * HyperCode MCP Router - CLI Integration
+=======
+ * borg MCP Router - CLI Integration
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/ui/src/app/mcp-router/page.tsx
  *
  * Fixing webui imports to use correct relative paths to core services
  */
@@ -251,7 +255,11 @@ export default function MCPRouterPage() {
         }
     };
 
+<<<<<<< HEAD:archive/ts-legacy/packages/ui/src/app/mcp-router/page.tsx
     const handleExportConfigs = async (format: 'hypercode' | 'claude' | 'openai' | 'google') => {
+=======
+    const handleExportConfigs = async (format: 'borg' | 'claude' | 'openai' | 'google') => {
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/ui/src/app/mcp-router/page.tsx
         try {
             setLoading(true);
             const res = await fetch('/api/mcp-router/export-configs', {
@@ -643,11 +651,19 @@ export default function MCPRouterPage() {
                                 </p>
                                 <div className="grid grid-cols-2 gap-4 mt-4">
                                     <button
+<<<<<<< HEAD:archive/ts-legacy/packages/ui/src/app/mcp-router/page.tsx
                                         onClick={() => console.log('Export: HyperCode format')}
                                         disabled={loading}
                                         className="bg-green-600 hover:bg-green-700 text-white px-4 py-3 rounded-lg font-medium transition-colors"
                                     >
                                         {loading ? 'Exporting...' : 'HyperCode'}
+=======
+                                        onClick={() => console.log('Export: borg format')}
+                                        disabled={loading}
+                                        className="bg-green-600 hover:bg-green-700 text-white px-4 py-3 rounded-lg font-medium transition-colors"
+                                    >
+                                        {loading ? 'Exporting...' : 'borg'}
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/ui/src/app/mcp-router/page.tsx
                                     </button>
                                     <button
                                         onClick={() => console.log('Export: Claude format')}

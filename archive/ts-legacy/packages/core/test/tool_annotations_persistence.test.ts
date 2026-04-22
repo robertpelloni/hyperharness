@@ -9,7 +9,11 @@ type ToolAnnotationDatabaseArg = Parameters<ToolAnnotationManager['setDatabase']
 
 describe('ToolAnnotationManager persistence', () => {
   test('writes and reads from DB when available', () => {
+<<<<<<< HEAD:archive/ts-legacy/packages/core/test/tool_annotations_persistence.test.ts
     const dir = mkdtempSync(path.join(os.tmpdir(), 'hypercode-ann-db-'));
+=======
+    const dir = mkdtempSync(path.join(os.tmpdir(), 'borg-ann-db-'));
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/test/tool_annotations_persistence.test.ts
 
     let db: DatabaseManager;
     try {

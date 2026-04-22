@@ -1,8 +1,13 @@
 "use client";
 
 import { useState, useRef, useEffect } from 'react';
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/mcp/agent/page.tsx
 import { Card, CardContent } from "@hypercode/ui";
 import { Button } from "@hypercode/ui";
+=======
+import { Card, CardContent } from "@borg/ui";
+import { Button } from "@borg/ui";
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/mcp/agent/page.tsx
 import { Loader2, Send, Bot, User, Terminal } from "lucide-react";
 import { trpc } from '@/utils/trpc';
 import { toast } from 'sonner';
@@ -10,7 +15,11 @@ import { PageStatusBanner } from '@/components/PageStatusBanner';
 
 export default function AgentPlayground(): React.JSX.Element {
     const [messages, setMessages] = useState<Array<{ role: 'user' | 'assistant', content: string, tools?: any[] }>>([
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/mcp/agent/page.tsx
         { role: 'assistant', content: "Hello! I'm your HyperCode MCP agent. I can work with the tools currently exposed through your router and session working set. What would you like to do?" }
+=======
+        { role: 'assistant', content: "Hello! I'm your borg MCP agent. I can work with the tools currently exposed through your router and session working set. What would you like to do?" }
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/mcp/agent/page.tsx
     ]);
     const [input, setInput] = useState('');
     const scrollRef = useRef<HTMLDivElement>(null);
@@ -51,13 +60,21 @@ export default function AgentPlayground(): React.JSX.Element {
             <PageStatusBanner
                 status="experimental"
                 message="Agent Playground"
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/mcp/agent/page.tsx
                 note="Live agent chat is wired through HyperCode tools, but orchestration controls, safety rails, and richer session context handling are still evolving."
+=======
+                note="Live agent chat is wired through borg tools, but orchestration controls, safety rails, and richer session context handling are still evolving."
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/mcp/agent/page.tsx
             />
             <div className="flex justify-between items-center shrink-0">
                 <div>
                     <h1 className="text-3xl font-bold tracking-tight text-white">Agent Playground</h1>
                     <p className="text-zinc-500">
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/mcp/agent/page.tsx
                         Chat with an agent that can use the tools currently exposed through your HyperCode MCP router session
+=======
+                        Chat with an agent that can use the tools currently exposed through your borg MCP router session
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/mcp/agent/page.tsx
                     </p>
                 </div>
             </div>

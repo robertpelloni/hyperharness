@@ -1,6 +1,10 @@
 # Utility Modules (`utils`)
 
+<<<<<<<< HEAD:archive/ts-legacy/apps/hypercode-extension/pages/content/src/utils/README.md
 This directory contains various utility modules and helper functions that provide common, reusable functionality across the HyperCode-Extension content script. These utilities help to keep the codebase DRY (Don't Repeat Yourself) and make common tasks easier to perform.
+========
+This directory contains various utility modules and helper functions that provide common, reusable functionality across the borg-Extension content script. These utilities help to keep the codebase DRY (Don't Repeat Yourself) and make common tasks easier to perform.
+>>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/borg-extension/pages/content/src/utils/README.md
 
 ## Overview
 

@@ -16,6 +16,7 @@ interface CLIDefinition {
 
 export const CLI_DEFINITIONS: CLIDefinition[] = [
   {
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/orchestrator/council/services/cli-registry.ts
     type: 'hypercode',
     name: 'HyperCode CLI',
     command: 'hypercode',
@@ -23,6 +24,15 @@ export const CLI_DEFINITIONS: CLIDefinition[] = [
     versionArgs: ['version'],
     detectCommands: ['hypercode'],
     capabilities: ['chat', 'edit', 'repl', 'hypercode-adapter'],
+=======
+    type: 'borg',
+    name: 'borg CLI',
+    command: 'borg',
+    serveArgs: [],
+    versionArgs: ['version'],
+    detectCommands: ['borg'],
+    capabilities: ['chat', 'edit', 'repl', 'borg-adapter'],
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/orchestrator/council/services/cli-registry.ts
     interactive: true,
     promptRegex: '(?i)(?:>)\\s*$',
   },

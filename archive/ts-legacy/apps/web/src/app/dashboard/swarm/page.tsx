@@ -3,8 +3,12 @@
 import React, { useState, useEffect } from 'react';
 import { PageHeader } from '@/components/PageHeader';
 import { PageStatusBanner } from '@/components/PageStatusBanner';
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/swarm/page.tsx
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, Button, Input, Textarea } from '@hypercode/ui';
 import { SwarmTranscript } from '@/components/swarm/SwarmTranscript';
+=======
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, Button, Input, Textarea } from '@borg/ui';
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/swarm/page.tsx
 import { trpc } from '@/utils/trpc';
 import {
     Users as UsersIcon,
@@ -477,6 +481,7 @@ export default function SwarmDashboard() {
                 >
                     <RadioIcon className={`w-4 h-4 mr-2 ${streamStatus === 'online' ? 'animate-pulse text-cyan-400' : ''}`} /> Telemetry
                 </Button>
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/swarm/page.tsx
                 <Button
                     variant={activeTab === 'transcript' ? 'default' : 'ghost'}
                     className={activeTab === 'transcript' ? 'bg-cyan-600' : 'text-slate-400'}
@@ -484,6 +489,8 @@ export default function SwarmDashboard() {
                 >
                     <ActivityIcon className="w-4 h-4 mr-2" /> Neural Transcript
                 </Button>
+=======
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/swarm/page.tsx
             </div>
 
             <div className="flex-1 min-h-0">
@@ -784,6 +791,7 @@ export default function SwarmDashboard() {
                         </motion.div>
                     )}
 
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/swarm/page.tsx
                     {/* TRANSCRIPT PANEL */}
                     {activeTab === 'transcript' && (
                         <motion.div
@@ -797,6 +805,8 @@ export default function SwarmDashboard() {
                         </motion.div>
                     )}
 
+=======
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/swarm/page.tsx
                     {/* MISSIONS PANEL (PHASE 80 NEW) */}
                     {activeTab === 'missions' && (
                         <motion.div
@@ -1649,7 +1659,11 @@ export default function SwarmDashboard() {
                                     {messages.length === 0 ? (
                                         <div className="flex h-full items-center justify-center flex-col opacity-20">
                                             <RadioIcon className="w-12 h-12 mb-4 animate-ping" />
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/swarm/page.tsx
                                             <span className="text-xs uppercase tracking-[0.3em]">Listening for HyperCode Swarm Signals...</span>
+=======
+                                            <span className="text-xs uppercase tracking-[0.3em]">Listening for borg Swarm Signals...</span>
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/swarm/page.tsx
                                         </div>
                                     ) : (
                                         messages.map((msg, i) => (

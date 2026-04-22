@@ -1,5 +1,9 @@
 
+<<<<<<< HEAD:archive/ts-legacy/packages/core/scripts/test_reader.ts
 import { ReaderTools } from '@hypercode/tools';
+=======
+import { ReaderTools } from '@borg/tools';
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/scripts/test_reader.ts
 import fs from 'fs';
 
 async function main() {

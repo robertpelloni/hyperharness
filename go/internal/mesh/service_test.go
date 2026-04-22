@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/hypercodehq/hypercode-go/internal/config"
+	"github.com/borghq/borg-go/internal/config"
 )
 
 func TestCapabilitiesIncludesLocalAndUpstreamNodes(t *testing.T) {

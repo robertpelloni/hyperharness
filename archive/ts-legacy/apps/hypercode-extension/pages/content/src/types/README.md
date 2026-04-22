@@ -1,6 +1,10 @@
 # Types Directory
 
+<<<<<<<< HEAD:archive/ts-legacy/apps/hypercode-extension/pages/content/src/types/README.md
 This directory contains comprehensive TypeScript type definitions and interfaces used throughout the HyperCode Extension extension, organized by functional domain to ensure type safety and consistency.
+========
+This directory contains comprehensive TypeScript type definitions and interfaces used throughout the borg Extension extension, organized by functional domain to ensure type safety and consistency.
+>>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/borg-extension/pages/content/src/types/README.md
 
 ## Architecture Integration
 

@@ -39,7 +39,11 @@ const CONFIG: Record<
         icon: FlaskConical,
         label: 'Experimental',
         defaultMessage:
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/components/PageStatusBanner.tsx
             'This page is a work-in-progress. Functionality may be incomplete, change without notice, or not yet wired to the HyperCode backend.',
+=======
+            'This page is a work-in-progress. Functionality may be incomplete, change without notice, or not yet wired to the borg backend.',
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/components/PageStatusBanner.tsx
         bannerClass: 'bg-amber-950/60 border border-amber-700/40 text-amber-200',
         iconClass: 'text-amber-400',
         labelClass: 'text-amber-300 font-semibold',
@@ -57,7 +61,11 @@ const CONFIG: Record<
         icon: ExternalLink,
         label: 'External Embed',
         defaultMessage:
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/components/PageStatusBanner.tsx
             'This page embeds an external service. The embedded UI runs outside of HyperCode and requires the service to be running at the configured URL.',
+=======
+            'This page embeds an external service. The embedded UI runs outside of borg and requires the service to be running at the configured URL.',
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/components/PageStatusBanner.tsx
         bannerClass: 'bg-zinc-900/80 border border-zinc-700/40 text-zinc-300',
         iconClass: 'text-zinc-400',
         labelClass: 'text-zinc-300 font-semibold',

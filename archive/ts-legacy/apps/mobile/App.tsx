@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { StyleSheet, Text, View, ScrollView } from 'react-native';
 
 export default function App() {
+<<<<<<< HEAD:archive/ts-legacy/apps/mobile/App.tsx
   const [logs, setLogs] = useState<string[]>(['Initializing HyperCode connection...']);
   const [status, setStatus] = useState<string>('Disconnected');
 
@@ -12,6 +13,17 @@ export default function App() {
 
     ws.onopen = () => {
       setStatus('Connected to HyperCode Core');
+=======
+  const [logs, setLogs] = useState<string[]>(['Initializing borg connection...']);
+  const [status, setStatus] = useState<string>('Disconnected');
+
+  useEffect(() => {
+    // Attempt connection to borg Core's MCP/Telemetry WebSocket bridge
+    const ws = new WebSocket('ws://localhost:3847');
+
+    ws.onopen = () => {
+      setStatus('Connected to borg Core');
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/mobile/App.tsx
       setLogs((prev) => [...prev, '[System] Connected to ws://localhost:3847']);
     };
 
@@ -37,8 +49,13 @@ export default function App() {
 
   return (
     <View style={styles.container}>
+<<<<<<< HEAD:archive/ts-legacy/apps/mobile/App.tsx
       <Text style={styles.header}>HyperCode Mobile Control</Text>
       <Text style={[styles.status, status === 'Connected to HyperCode Core' ? styles.connected : styles.error]}>
+=======
+      <Text style={styles.header}>borg Mobile Control</Text>
+      <Text style={[styles.status, status === 'Connected to borg Core' ? styles.connected : styles.error]}>
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/mobile/App.tsx
         Status: {status}
       </Text>
       

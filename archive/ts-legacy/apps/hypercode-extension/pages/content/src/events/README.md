@@ -1,6 +1,10 @@
 # Events Module
 
+<<<<<<<< HEAD:archive/ts-legacy/apps/hypercode-extension/pages/content/src/events/README.md
 This directory contains the core event management system for the HyperCode-Extension content script.
+========
+This directory contains the core event management system for the borg-Extension content script.
+>>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/borg-extension/pages/content/src/events/README.md
 
 ## Overview
 

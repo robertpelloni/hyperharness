@@ -35,7 +35,11 @@ export default function RemoteAccessCard() {
         try {
             await executeTool.mutateAsync({
                 name: isActive ? 'stop_remote_access' : 'start_remote_access',
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/components/RemoteAccessCard.tsx
                 args: isActive ? {} : { port: 3000, label: 'hypercode-dashboard' },
+=======
+                args: isActive ? {} : { port: 3000, label: 'borg-dashboard' },
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/components/RemoteAccessCard.tsx
             });
             await refreshStatus();
         } catch (e: any) {
@@ -53,7 +57,11 @@ export default function RemoteAccessCard() {
             </div>
 
             <p className="text-sm text-zinc-400 mb-4">
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/components/RemoteAccessCard.tsx
                 Expose your HyperCode Dashboard securely via Cloudflare Tunnel to access it from your mobile device.
+=======
+                Expose your borg Dashboard securely via Cloudflare Tunnel to access it from your mobile device.
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/components/RemoteAccessCard.tsx
             </p>
 
             {error && (

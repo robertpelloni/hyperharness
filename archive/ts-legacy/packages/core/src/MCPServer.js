@@ -75,7 +75,11 @@ var WebSocketServerTransport_js_1 = require("./transports/WebSocketServerTranspo
     console.error("[MCPServer] ✓ path/url/fs");
 console.log("[MCPServer] ✓ ws/http");
     console.error("[MCPServer] ✓ Router");
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/MCPServer.js
 var agents_1 = require("@hypercode/agents");
+=======
+var agents_1 = require("@borg/agents");
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/MCPServer.js
     console.error("[MCPServer] ✓ ModelSelector");
 var GeminiAgent_js_1 = require("./agents/GeminiAgent.js");
     console.error("[MCPServer] ✓ ws/http");
@@ -104,7 +108,11 @@ var SkillRegistry_js_1 = require("./skills/SkillRegistry.js");
                 console.error("[MCPServer] Browser Timed Out. Falling back to Native Reader...");
             console.error("[MCPServer] Delegating tool handling to MetaMCPController...");
             console.error("[MCPServer] Loading Skills...");
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/MCPServer.js
             console.error("[MCPServer] 🚀 HyperCode Core ready.");
+=======
+            console.error("[MCPServer] 🚀 borg Core ready.");
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/MCPServer.js
             console.error("[MCPServer] Connecting Stdio...");
                 console.error("[MCPServer] Starting WebSocket Server...");
                 console.error("[MCPServer] Skipping WebSocket (No wsServer instance).");
@@ -128,7 +136,11 @@ var MissionService_js_1 = require("./services/MissionService.js");
 console.log("[MCPServer] ✓ SkillRegistry");
 var SpawnerService_js_1 = require("./agents/SpawnerService.js");
 console.log("[MCPServer] ✓ SpawnerService");
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/MCPServer.js
 var tools_1 = require("@hypercode/tools");
+=======
+var tools_1 = require("@borg/tools");
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/MCPServer.js
 console.log("[MCPServer] ✓ All Tools & ChainExecutor");
 console.log("[MCPServer] ✓ All Tools & ChainExecutor");
 // Council and Director already imported above
@@ -147,8 +159,13 @@ var EventBus_js_1 = require("./services/EventBus.js");
 var DeepResearchService_js_1 = require("./services/DeepResearchService.js");
 var McpConfigService_js_1 = require("./services/McpConfigService.js");
 var PermissionManager_js_1 = require("./security/PermissionManager.js");
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/MCPServer.js
 var tools_2 = require("@hypercode/tools");
 var search_1 = require("@hypercode/search");
+=======
+var tools_2 = require("@borg/tools");
+var search_1 = require("@borg/search");
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/MCPServer.js
 var CouncilService_js_1 = require("./services/CouncilService.js");
 var BrowserService_js_1 = require("./services/BrowserService.js");
 console.log("[MCPServer] ✓ PermissionManager");
@@ -210,7 +227,11 @@ var MCPServer = /** @class */ (function () {
         this.systemStatusTool = options.systemStatusTool || new tools_1.SystemStatusTool();
         this.processRegistry = options.processRegistry || new tools_1.ProcessRegistry();
         this.terminalService = new tools_1.TerminalService(this.processRegistry);
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/MCPServer.js
         this.mcpmInstaller = new McpmInstaller_js_1.McpmInstaller(path_1.default.join(process.cwd(), '.hypercode', 'skills'));
+=======
+        this.mcpmInstaller = new McpmInstaller_js_1.McpmInstaller(path_1.default.join(process.cwd(), '.borg', 'skills'));
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/MCPServer.js
         this.spawnerService = SpawnerService_js_1.SpawnerService.getInstance();
         this.configManager = new ConfigManager_js_1.ConfigManager();
         this.mcpConfigService = new McpConfigService_js_1.McpConfigService();
@@ -222,7 +243,11 @@ var MCPServer = /** @class */ (function () {
         this.promptRegistry = new PromptRegistry_js_1.PromptRegistry();
         this.skillRegistry = new SkillRegistry_js_1.SkillRegistry([
             path_1.default.join(process.cwd(), 'packages', 'core', 'src', 'skills'),
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/MCPServer.js
             path_1.default.join(process.cwd(), '.hypercode', 'skills')
+=======
+            path_1.default.join(process.cwd(), '.borg', 'skills')
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/MCPServer.js
         ]);
         // SearchService is needed for DeepResearchService types
         var searchService = new search_1.SearchService();
@@ -251,10 +276,17 @@ var MCPServer = /** @class */ (function () {
         this.lspService = new LSPService_js_1.LSPService(process.cwd());
         this.planService = new PlanService_js_1.PlanService({ rootPath: process.cwd() });
         this.codeModeService = new CodeModeService_js_1.CodeModeService({ timeout: 30000, allowAsync: true });
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/MCPServer.js
         this.workflowEngine = new WorkflowEngine_js_1.WorkflowEngine({ persistDir: path_1.default.join(process.cwd(), '.hypercode', 'workflows') });
         this.lspTools = new LSPTools_js_1.LSPTools(process.cwd());
         // MemoryManager initialized early
         this.agentMemoryService = new AgentMemoryService_js_1.AgentMemoryService({ persistDir: path_1.default.join(process.cwd(), '.hypercode', 'agent_memory') }, this.memoryManager);
+=======
+        this.workflowEngine = new WorkflowEngine_js_1.WorkflowEngine({ persistDir: path_1.default.join(process.cwd(), '.borg', 'workflows') });
+        this.lspTools = new LSPTools_js_1.LSPTools(process.cwd());
+        // MemoryManager initialized early
+        this.agentMemoryService = new AgentMemoryService_js_1.AgentMemoryService({ persistDir: path_1.default.join(process.cwd(), '.borg', 'agent_memory') }, this.memoryManager);
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/MCPServer.js
         // Phase 5 & 6 Init
         this.browserTool = new tools_2.BrowserTool();
         this.searchService = new search_1.SearchService();
@@ -343,7 +375,11 @@ var MCPServer = /** @class */ (function () {
             this.meshResearcherAgent = new MeshResearcherAgent_js_1.MeshResearcherAgent(this);
         }
         // Phase 65: Marketplace (Depends on Mesh)
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/MCPServer.js
         this.marketplaceService = new MarketplaceService_js_1.MarketplaceService(path_1.default.join(process.cwd(), '.hypercode', 'skills'), undefined // this.meshService
+=======
+        this.marketplaceService = new MarketplaceService_js_1.MarketplaceService(path_1.default.join(process.cwd(), '.borg', 'skills'), undefined // this.meshService
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/MCPServer.js
         );
         global.mcpServerInstance = this;
         // Standard Server (Stdio)
@@ -486,7 +522,11 @@ var MCPServer = /** @class */ (function () {
         });
     };
     MCPServer.prototype.createServerInstance = function () {
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/MCPServer.js
         var s = new index_js_1.Server({ name: "hypercode-core", version: "0.1.0" }, { capabilities: { tools: {} } });
+=======
+        var s = new index_js_1.Server({ name: "borg-core", version: "0.1.0" }, { capabilities: { tools: {} } });
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/MCPServer.js
         var ready = this.setupHandlers(s);
         return { server: s, ready: ready };
     };
@@ -593,7 +633,11 @@ var MCPServer = /** @class */ (function () {
                             throw new Error("Permission Denied for tool '".concat(name, "' (Risk Level High). Autonomy Level is '").concat(this.permissionManager.autonomyLevel, "'."));
                         }
                         if (!(permission === 'NEEDS_CONSULTATION')) return [3 /*break*/, 3];
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/MCPServer.js
                         console.log("[HyperCode Core] Consulting Council for: ".concat(name));
+=======
+                        console.log("[borg Core] Consulting Council for: ".concat(name));
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/MCPServer.js
                         this.auditService.log('TOOL_CONSULTATION', { tool: name, args: args }, 'WARN');
                         return [4 /*yield*/, this.council.runConsensusSession("Execute tool '".concat(name, "' with args: ").concat(JSON.stringify(args)))];
                     case 2:
@@ -601,12 +645,20 @@ var MCPServer = /** @class */ (function () {
                         if (!debate.approved) {
                             throw new Error("Council Denied Execution: ".concat(debate.summary));
                         }
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/MCPServer.js
                         console.log("[HyperCode Core] Council Approved: ".concat(debate.summary));
+=======
+                        console.log("[borg Core] Council Approved: ".concat(debate.summary));
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/MCPServer.js
                         _2.label = 3;
                     case 3:
                         if (!(name === "router_status")) return [3 /*break*/, 4];
                         result_1 = {
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/MCPServer.js
                             content: [{ type: "text", text: "HyperCode Router is active." }],
+=======
+                            content: [{ type: "text", text: "borg Router is active." }],
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/MCPServer.js
                         };
                         return [3 /*break*/, 40];
                     case 4:
@@ -621,7 +673,11 @@ var MCPServer = /** @class */ (function () {
                         if (!(name === "chat_reply")) return [3 /*break*/, 6];
                         text_1 = args === null || args === void 0 ? void 0 : args.text;
                         submit_1 = (_s = args === null || args === void 0 ? void 0 : args.submit) !== null && _s !== void 0 ? _s : false;
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/MCPServer.js
                         console.log("[HyperCode Core] Chat Reply Requested: ".concat(text_1, " (submit: ").concat(submit_1, ")"));
+=======
+                        console.log("[borg Core] Chat Reply Requested: ".concat(text_1, " (submit: ").concat(submit_1, ")"));
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/MCPServer.js
                         if (this.wssInstance) {
                             this.wssInstance.clients.forEach(function (client) {
                                 if (client.readyState === 1) { // OPEN
@@ -1547,7 +1603,11 @@ var MCPServer = /** @class */ (function () {
                         _2.label = 154;
                     case 154:
                         _2.trys.push([154, 157, , 158]);
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/MCPServer.js
                         console.log("[HyperCode Core] \uD83D\uDC41\uFE0F Analyzing screenshot with prompt: \"".concat(prompt_3, "\"..."));
+=======
+                        console.log("[borg Core] \uD83D\uDC41\uFE0F Analyzing screenshot with prompt: \"".concat(prompt_3, "\"..."));
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/MCPServer.js
                         return [4 /*yield*/, this.captureScreenshotFromBrowser()];
                     case 155:
                         data = _2.sent();
@@ -1733,7 +1793,11 @@ var MCPServer = /** @class */ (function () {
                     case 188:
                         if (!(name === "index_codebase")) return [3 /*break*/, 190];
                         dir = (args === null || args === void 0 ? void 0 : args.path) || process.cwd();
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/MCPServer.js
                         console.log("[HyperCode Core] Indexing codebase at ".concat(dir, "..."));
+=======
+                        console.log("[borg Core] Indexing codebase at ".concat(dir, "..."));
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/MCPServer.js
                         return [4 /*yield*/, this.memoryManager.indexCodebase(dir)];
                     case 189:
                         count = _2.sent();
@@ -1744,7 +1808,11 @@ var MCPServer = /** @class */ (function () {
                     case 190:
                         if (!(name === "search_codebase")) return [3 /*break*/, 192];
                         query = args === null || args === void 0 ? void 0 : args.query;
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/MCPServer.js
                         console.log("[HyperCode Core] Semantic Searching for: ".concat(query));
+=======
+                        console.log("[borg Core] Semantic Searching for: ".concat(query));
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/MCPServer.js
                         return [4 /*yield*/, this.memoryManager.search(query)];
                     case 191:
                         matches = _2.sent();
@@ -2259,7 +2327,11 @@ var MCPServer = /** @class */ (function () {
                         internalTools = [
                             {
                                 name: "router_status",
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/MCPServer.js
                                 description: "Check the status of the HyperCode Router",
+=======
+                                description: "Check the status of the borg Router",
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/MCPServer.js
                                 inputSchema: { type: "object", properties: {} },
                             },
                             {
@@ -2311,7 +2383,11 @@ var MCPServer = /** @class */ (function () {
                             },
                             {
                                 name: "assimilate_skill",
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/MCPServer.js
                                 description: "Convert a research item into a functional HyperCode Skill (runbook)",
+=======
+                                description: "Convert a research item into a functional borg Skill (runbook)",
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/MCPServer.js
                                 inputSchema: {
                                     type: "object",
                                     properties: {
@@ -2965,7 +3041,11 @@ var MCPServer = /** @class */ (function () {
                             // Phase 60: The Mesh tools
                             {
                                 name: "swarm_broadcast",
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/MCPServer.js
                                 description: "Broadcast a message to the HyperCode P2P Swarm",
+=======
+                                description: "Broadcast a message to the borg P2P Swarm",
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/MCPServer.js
                                 inputSchema: {
                                     type: "object",
                                     properties: {
@@ -3029,14 +3109,22 @@ var MCPServer = /** @class */ (function () {
         this.mcpAggregator.initialize().catch(function (e) { return console.error("[MCPServer] Aggregator Init Failed:", e); });
         this.autoTestService.repoGraph.buildGraph().catch(function (e) { return console.error("Graph build failed", e); });
 
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/MCPServer.js
         console.error("[MCPServer] 🚀 HyperCode Core ready.");
+=======
+        console.error("[MCPServer] 🚀 borg Core ready.");
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/MCPServer.js
         console.error("[MCPServer] Preparing request handlers...");
         await this.serverSetupPromise;
 
         console.error("[MCPServer] Connecting Stdio...");
         var stdioTransport = new stdio_js_1.StdioServerTransport();
         await this.server.connect(stdioTransport);
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/MCPServer.js
         console.error("HyperCode Core: Stdio Transport Active");
+=======
+        console.error("borg Core: Stdio Transport Active");
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/MCPServer.js
 
         if (this.wsServer && !this.wssInstance) {
             console.error("[MCPServer] Starting WebSocket Server...");
@@ -3109,11 +3197,19 @@ var MCPServer = /** @class */ (function () {
             this.wssInstance = wss_1;
 
             httpServer.on('error', function (err) {
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/MCPServer.js
                 console.error("[HyperCode Core] ❌ WebSocket Server Error (Port ".concat(PORT_2, "):"), err.message);
             });
 
             httpServer.listen(PORT_2, function () {
                 console.error("HyperCode Core: WebSocket Transport Active on ws://localhost:".concat(PORT_2));
+=======
+                console.error("[borg Core] ❌ WebSocket Server Error (Port ".concat(PORT_2, "):"), err.message);
+            });
+
+            httpServer.listen(PORT_2, function () {
+                console.error("borg Core: WebSocket Transport Active on ws://localhost:".concat(PORT_2));
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/MCPServer.js
             });
 
             wss_1.on('connection', function (ws) {
@@ -3143,16 +3239,27 @@ var MCPServer = /** @class */ (function () {
             var rootDir = this.findMonorepoRoot(__dirname);
             console.error("[MCPServer] DEBUG rootDir: ".concat(rootDir));
             if (rootDir) {
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/MCPServer.js
                 var supervisorPath = path_1.default.join(rootDir, 'packages', 'hypercode-supervisor', 'dist', 'index.js');
                 console.error("[MCPServer] Supervisor Path Resolved: ".concat(supervisorPath));
                 await this.router.connectToServer('hypercode-supervisor', 'node', [supervisorPath]);
                 console.error("HyperCode Core: Connected to Supervisor at ".concat(supervisorPath));
+=======
+                var supervisorPath = path_1.default.join(rootDir, 'packages', 'borg-supervisor', 'dist', 'index.js');
+                console.error("[MCPServer] Supervisor Path Resolved: ".concat(supervisorPath));
+                await this.router.connectToServer('borg-supervisor', 'node', [supervisorPath]);
+                console.error("borg Core: Connected to Supervisor at ".concat(supervisorPath));
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/MCPServer.js
 
                 var workspacePath = path_1.default.join(rootDir, 'external', 'mcp-servers', 'workspace', 'workspace-server', 'dist', 'index.js');
                 console.error("[MCPServer] Google Workspace Server Path: ".concat(workspacePath));
                 if (fs_1.default.existsSync(workspacePath)) {
                     await this.router.connectToServer('google-workspace', 'node', [workspacePath]);
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/MCPServer.js
                     console.error("HyperCode Core: Connected to Google Workspace Server (GMail/Calendar)");
+=======
+                    console.error("borg Core: Connected to Google Workspace Server (GMail/Calendar)");
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/MCPServer.js
                 }
             }
             else {
@@ -3160,7 +3267,11 @@ var MCPServer = /** @class */ (function () {
             }
         }
         catch (e) {
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/MCPServer.js
             console.error("HyperCode Core: Failed to connect to Supervisor. Native automation disabled.", e.message);
+=======
+            console.error("borg Core: Failed to connect to Supervisor. Native automation disabled.", e.message);
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/MCPServer.js
         }
 
         if (this.wsServer && this.wssInstance) {

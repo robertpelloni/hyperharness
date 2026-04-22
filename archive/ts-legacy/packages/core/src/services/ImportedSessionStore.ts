@@ -119,7 +119,11 @@ function toRelativeArchivePath(root: string, filePath: string): string {
 export class ImportedSessionStore {
     private archiveRoot: string;
 
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/services/ImportedSessionStore.ts
     constructor(archiveRoot: string = path.join(process.cwd(), '.hypercode', 'imported_sessions', 'archive')) {
+=======
+    constructor(archiveRoot: string = path.join(process.cwd(), '.borg', 'imported_sessions', 'archive')) {
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/services/ImportedSessionStore.ts
         this.archiveRoot = archiveRoot;
         ensureDir(this.archiveRoot);
     }
@@ -163,8 +167,13 @@ export class ImportedSessionStore {
     }
 
     private writeTranscriptArchive(sessionId: string, input: ImportedSessionRecordInput): TranscriptArchiveInfo {
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/services/ImportedSessionStore.ts
         // Flattened structure to avoid thousands of subdirectories
         const archiveDir = path.join(this.archiveRoot, 'sessions');
+=======
+        const subdir = path.join(input.transcriptHash.slice(0, 2), input.transcriptHash.slice(2, 4));
+        const archiveDir = path.join(this.archiveRoot, subdir);
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/services/ImportedSessionStore.ts
         ensureDir(archiveDir);
 
         const transcriptFile = path.join(archiveDir, `${input.transcriptHash}.txt.gz`);

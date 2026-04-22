@@ -83,7 +83,11 @@ export function Marketplace() {
         <div>
           <h2 className="text-2xl font-bold text-slate-50 flex items-center gap-2">
             <ShoppingBag className="h-6 w-6 text-emerald-400" />
+<<<<<<< HEAD:archive/ts-legacy/packages/ui/src/components/enterprise/Marketplace.tsx
             HyperCode Marketplace
+=======
+            borg Marketplace
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/ui/src/components/enterprise/Marketplace.tsx
           </h2>
           <p className="text-slate-400 text-sm">Discover and install autonomous agents, skills, and enterprise workflows.</p>
         </div>

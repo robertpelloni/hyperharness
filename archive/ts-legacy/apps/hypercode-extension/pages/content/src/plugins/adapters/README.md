@@ -1,6 +1,10 @@
 # Adapter Plugins
 
+<<<<<<<< HEAD:archive/ts-legacy/apps/hypercode-extension/pages/content/src/plugins/adapters/README.md
 This directory contains concrete implementations of Adapter Plugins for the HyperCode-Extension. Adapters are specialized plugins designed to tailor the assistant's behavior and capabilities to specific websites or types of websites.
+========
+This directory contains concrete implementations of Adapter Plugins for the borg-Extension. Adapters are specialized plugins designed to tailor the assistant's behavior and capabilities to specific websites or types of websites.
+>>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/borg-extension/pages/content/src/plugins/adapters/README.md
 
 ## Overview
 

@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/hypercodehq/hypercode-go/internal/lockfile"
+	"github.com/borghq/borg-go/internal/lockfile"
 )
 
 type ControlPlaneStatus struct {
@@ -21,8 +22,8 @@ type ControlPlaneStatus struct {
 
 func DiscoverControlPlanes(mainLockPath, goLockPath string) []ControlPlaneStatus {
 	return []ControlPlaneStatus{
-		readStatus("hypercode-node", mainLockPath),
-		readStatus("hypercode-go", goLockPath),
+		readStatus("borg-node", mainLockPath),
+		readStatus("borg-go", goLockPath),
 	}
 }
 

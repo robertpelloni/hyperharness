@@ -39,7 +39,11 @@ describe('NativeSessionMetaTools', () => {
         expect(visible[0].description).toContain('[Deferred]');
     });
 
+<<<<<<< HEAD:archive/ts-legacy/packages/core/mcp/__tests__/native-session-meta-tools.test.ts
     it('hydrates and unloads tools in the HyperCode session working set', async () => {
+=======
+    it('hydrates and unloads tools in the borg session working set', async () => {
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/mcp/__tests__/native-session-meta-tools.test.ts
         const manager = new NativeSessionMetaTools();
         manager.refreshCatalog([
             {

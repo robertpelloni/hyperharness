@@ -1,13 +1,21 @@
 # Project Structure & Dependencies
 
+<<<<<<<< HEAD:archive/ts-legacy/apps/hypercode-extension/docs/PROJECT_STRUCTURE.md
 This document provides a detailed overview of the `hypercode-extension` monorepo structure, its submodules (packages), and their relationships.
+========
+This document provides a detailed overview of the `borg-extension` monorepo structure, its submodules (packages), and their relationships.
+>>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/borg-extension/docs/PROJECT_STRUCTURE.md
 
 ## Directory Layout
 
 The project is structured as a monorepo managed by `turbo` and `pnpm`.
 
 ```
+<<<<<<<< HEAD:archive/ts-legacy/apps/hypercode-extension/docs/PROJECT_STRUCTURE.md
 hypercode-extension/
+========
+borg-extension/
+>>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/borg-extension/docs/PROJECT_STRUCTURE.md
 ├── chrome-extension/       # The core Chrome Extension logic (manifest, background, build config)
 │   ├── src/
 │   │   ├── background/     # Service worker logic (connection management, context menus, analytics)

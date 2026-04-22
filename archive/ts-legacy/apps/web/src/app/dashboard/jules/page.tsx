@@ -184,13 +184,21 @@ export default function JulesDashboardPage() {
         <PageStatusBanner
           status="experimental"
           message="Jules integration"
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/jules/page.tsx
           note="Embedded access, local API-key handling, and sync-log visibility are present. Full HyperCode-native orchestration, logs, and session recovery parity are still a later slice."
+=======
+          note="Embedded access, local API-key handling, and sync-log visibility are present. Full borg-native orchestration, logs, and session recovery parity are still a later slice."
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/jules/page.tsx
         />
       </div>
       <div className="p-4 border-b border-zinc-800 flex flex-wrap items-center justify-between gap-3 bg-zinc-900">
         <div>
           <h1 className="text-xl font-bold">Jules Orchestrator</h1>
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/jules/page.tsx
           <p className="text-zinc-400 text-sm">Run and supervise Jules sessions directly from HyperCode.</p>
+=======
+          <p className="text-zinc-400 text-sm">Run and supervise Jules sessions directly from borg.</p>
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/jules/page.tsx
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <a

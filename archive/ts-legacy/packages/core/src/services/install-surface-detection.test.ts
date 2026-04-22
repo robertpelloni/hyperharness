@@ -9,7 +9,11 @@ import { detectInstallSurfaceArtifacts } from './install-surface-detection.js';
 const tempDirs: string[] = [];
 
 async function createWorkspace(): Promise<string> {
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/services/install-surface-detection.test.ts
     const workspaceRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'hypercode-install-surfaces-'));
+=======
+    const workspaceRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'borg-install-surfaces-'));
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/services/install-surface-detection.test.ts
     tempDirs.push(workspaceRoot);
     await fs.writeFile(path.join(workspaceRoot, 'pnpm-workspace.yaml'), 'packages:\n  - packages/*\n', 'utf-8');
     return workspaceRoot;
@@ -23,6 +27,7 @@ describe('detectInstallSurfaceArtifacts', () => {
     it('reports ready artifacts when installable outputs already exist', async () => {
         const workspaceRoot = await createWorkspace();
 
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/services/install-surface-detection.test.ts
         await fs.mkdir(path.join(workspaceRoot, 'apps', 'hypercode-extension'), { recursive: true });
         await fs.mkdir(path.join(workspaceRoot, 'apps', 'hypercode-extension', 'dist-chromium'), { recursive: true });
         await fs.mkdir(path.join(workspaceRoot, 'apps', 'hypercode-extension', 'dist-firefox'), { recursive: true });
@@ -30,6 +35,15 @@ describe('detectInstallSurfaceArtifacts', () => {
         await fs.mkdir(path.join(workspaceRoot, 'packages', 'vscode', 'dist'), { recursive: true });
         await fs.writeFile(path.join(workspaceRoot, 'packages', 'vscode', 'package.json'), JSON.stringify({ version: '0.2.0' }), 'utf-8');
         await fs.writeFile(path.join(workspaceRoot, 'packages', 'vscode', 'hypercode-vscode-extension-0.2.0.vsix'), '', 'utf-8');
+=======
+        await fs.mkdir(path.join(workspaceRoot, 'apps', 'borg-extension'), { recursive: true });
+        await fs.mkdir(path.join(workspaceRoot, 'apps', 'borg-extension', 'dist-chromium'), { recursive: true });
+        await fs.mkdir(path.join(workspaceRoot, 'apps', 'borg-extension', 'dist-firefox'), { recursive: true });
+        await fs.writeFile(path.join(workspaceRoot, 'apps', 'borg-extension', 'package.json'), JSON.stringify({ version: '0.7.3' }), 'utf-8');
+        await fs.mkdir(path.join(workspaceRoot, 'packages', 'vscode', 'dist'), { recursive: true });
+        await fs.writeFile(path.join(workspaceRoot, 'packages', 'vscode', 'package.json'), JSON.stringify({ version: '0.2.0' }), 'utf-8');
+        await fs.writeFile(path.join(workspaceRoot, 'packages', 'vscode', 'borg-vscode-extension-0.2.0.vsix'), '', 'utf-8');
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/services/install-surface-detection.test.ts
         await fs.writeFile(path.join(workspaceRoot, 'mcp.jsonc'), '{"mcpServers":{}}', 'utf-8');
 
         const statuses = await detectInstallSurfaceArtifacts(workspaceRoot);
@@ -38,7 +52,11 @@ describe('detectInstallSurfaceArtifacts', () => {
             expect.objectContaining({
                 id: 'browser-extension-chromium',
                 status: 'ready',
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/services/install-surface-detection.test.ts
                 artifactPath: path.join('apps', 'hypercode-extension', 'dist-chromium'),
+=======
+                artifactPath: path.join('apps', 'borg-extension', 'dist-chromium'),
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/services/install-surface-detection.test.ts
                 artifactKind: 'Chromium unpacked bundle',
                 declaredVersion: '0.7.3',
                 lastModifiedAt: expect.any(String),
@@ -46,7 +64,11 @@ describe('detectInstallSurfaceArtifacts', () => {
             expect.objectContaining({
                 id: 'browser-extension-firefox',
                 status: 'ready',
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/services/install-surface-detection.test.ts
                 artifactPath: path.join('apps', 'hypercode-extension', 'dist-firefox'),
+=======
+                artifactPath: path.join('apps', 'borg-extension', 'dist-firefox'),
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/services/install-surface-detection.test.ts
                 artifactKind: 'Firefox unpacked bundle',
                 declaredVersion: '0.7.3',
                 lastModifiedAt: expect.any(String),
@@ -54,7 +76,11 @@ describe('detectInstallSurfaceArtifacts', () => {
             expect.objectContaining({
                 id: 'vscode-extension',
                 status: 'ready',
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/services/install-surface-detection.test.ts
                 artifactPath: path.join('packages', 'vscode', 'hypercode-vscode-extension-0.2.0.vsix'),
+=======
+                artifactPath: path.join('packages', 'vscode', 'borg-vscode-extension-0.2.0.vsix'),
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/services/install-surface-detection.test.ts
                 artifactKind: 'VSIX package',
                 declaredVersion: '0.2.0',
                 lastModifiedAt: expect.any(String),
@@ -74,8 +100,13 @@ describe('detectInstallSurfaceArtifacts', () => {
         const workspaceRoot = await createWorkspace();
 
         await fs.mkdir(path.join(workspaceRoot, 'apps', 'extension'), { recursive: true });
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/services/install-surface-detection.test.ts
         await fs.mkdir(path.join(workspaceRoot, 'apps', 'hypercode-extension'), { recursive: true });
         await fs.writeFile(path.join(workspaceRoot, 'apps', 'hypercode-extension', 'package.json'), JSON.stringify({ version: '0.7.3' }), 'utf-8');
+=======
+        await fs.mkdir(path.join(workspaceRoot, 'apps', 'borg-extension'), { recursive: true });
+        await fs.writeFile(path.join(workspaceRoot, 'apps', 'borg-extension', 'package.json'), JSON.stringify({ version: '0.7.3' }), 'utf-8');
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/services/install-surface-detection.test.ts
         await fs.writeFile(path.join(workspaceRoot, 'apps', 'extension', 'manifest.firefox.json'), '{}', 'utf-8');
         await fs.mkdir(path.join(workspaceRoot, 'packages', 'vscode', 'dist'), { recursive: true });
         await fs.writeFile(path.join(workspaceRoot, 'packages', 'vscode', 'package.json'), JSON.stringify({ version: '0.2.0' }), 'utf-8');

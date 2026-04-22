@@ -2,7 +2,11 @@
 
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/mcp/ai-tools/page.tsx
 import { Button, Card, CardContent, CardHeader, CardTitle } from '@hypercode/ui';
+=======
+import { Button, Card, CardContent, CardHeader, CardTitle } from '@borg/ui';
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/mcp/ai-tools/page.tsx
 import { Bot, CheckCircle2, Database, ExternalLink, KeyRound, Loader2, RefreshCw, Rocket, Search, Server, TerminalSquare, Wrench, XCircle } from 'lucide-react';
 import { trpc } from '@/utils/trpc';
 import { toast } from 'sonner';
@@ -215,7 +219,11 @@ export default function AIToolsDashboard() {
             <PageStatusBanner
                 status="experimental"
                 message="AI Tools Directory"
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/mcp/ai-tools/page.tsx
                 note="This operator view already surfaces real harness, provider, and MCP inventory data, but it is still a broad directory surface rather than a fully consolidated HyperCode control plane."
+=======
+                note="This operator view already surfaces real harness, provider, and MCP inventory data, but it is still a broad directory surface rather than a fully consolidated borg control plane."
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/mcp/ai-tools/page.tsx
             />
             <div className="flex items-center justify-between">
                 <div>
@@ -248,7 +256,11 @@ export default function AIToolsDashboard() {
                 </CardHeader>
                 <CardContent className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3 text-sm">
                     <Link href="/dashboard/cloud-dev" className="rounded border border-zinc-800 bg-zinc-950/50 px-3 py-2 text-zinc-200 hover:border-zinc-700 hover:bg-zinc-900">
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/mcp/ai-tools/page.tsx
                         HyperCode cloud session dashboard
+=======
+                        borg cloud session dashboard
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/mcp/ai-tools/page.tsx
                     </Link>
                     <Link href="/dashboard/session" className="rounded border border-zinc-800 bg-zinc-950/50 px-3 py-2 text-zinc-200 hover:border-zinc-700 hover:bg-zinc-900">
                         Local session supervisor

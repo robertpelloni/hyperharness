@@ -34,7 +34,11 @@ export class AuditService extends EventEmitter {
     private retentionDays: number;
     private static readonly AUTO_FLUSH_SIZE = 100;
 
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/services/AuditService.ts
     constructor(logDir: string = '.hypercode/audit', retentionDays: number = 30) {
+=======
+    constructor(logDir: string = '.borg/audit', retentionDays: number = 30) {
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/services/AuditService.ts
         super();
         this.logDir = path.isAbsolute(logDir) ? logDir : path.join(process.cwd(), logDir);
         this.retentionDays = retentionDays;

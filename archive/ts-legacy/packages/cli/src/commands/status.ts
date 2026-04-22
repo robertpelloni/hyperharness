@@ -1,7 +1,13 @@
 /**
+<<<<<<< HEAD:archive/ts-legacy/packages/cli/src/commands/status.ts
  * `hypercode status` - Show system status overview
  *
  * Displays the current state of the HyperCode system including server status,
+=======
+ * `borg status` - Show system status overview
+ *
+ * Displays the current state of the borg system including server status,
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/cli/src/commands/status.ts
  * MCP servers, active sessions, and provider quotas.
  */
 
@@ -71,7 +77,11 @@ async function withStatusErrorHandling(
       const location = resolveControlPlaneLocation();
       console.error(chalk.red(`  ✗ ${message}`));
       console.error(chalk.dim(`  Control plane: ${location.baseUrl} (${location.source})`));
+<<<<<<< HEAD:archive/ts-legacy/packages/cli/src/commands/status.ts
       console.error(chalk.dim('  Start HyperCode with `hypercode start` or point HYPERCODE_TRPC_UPSTREAM at a live /trpc endpoint.'));
+=======
+      console.error(chalk.dim('  Start borg with `borg start` or point BORG_TRPC_UPSTREAM at a live /trpc endpoint.'));
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/cli/src/commands/status.ts
     }
     process.exitCode = 1;
   }
@@ -83,12 +93,21 @@ export function registerStatusCommand(program: Command): void {
 
   program
     .command('status')
+<<<<<<< HEAD:archive/ts-legacy/packages/cli/src/commands/status.ts
     .description('Show HyperCode system status (server, MCP, sessions, memory, providers)')
     .option('--json', 'Output as JSON')
     .addHelpText('after', `
 Examples:
   $ hypercode status          Show full system overview
   $ hypercode status --json   Machine-readable JSON output
+=======
+    .description('Show borg system status (server, MCP, sessions, memory, providers)')
+    .option('--json', 'Output as JSON')
+    .addHelpText('after', `
+Examples:
+  $ borg status          Show full system overview
+  $ borg status --json   Machine-readable JSON output
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/cli/src/commands/status.ts
     `)
     .action(async (opts) => {
       await withStatusErrorHandling(async () => {
@@ -142,7 +161,11 @@ Examples:
         const chalk = (await import('chalk')).default;
         const Table = (await import('cli-table3')).default;
 
+<<<<<<< HEAD:archive/ts-legacy/packages/cli/src/commands/status.ts
         console.log(chalk.bold.cyan('\n  ⬡ HyperCode Status\n'));
+=======
+        console.log(chalk.bold.cyan('\n  ⬡ borg Status\n'));
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/cli/src/commands/status.ts
 
         const table = new Table({
           chars: { mid: '', 'left-mid': '', 'mid-mid': '', 'right-mid': '' },

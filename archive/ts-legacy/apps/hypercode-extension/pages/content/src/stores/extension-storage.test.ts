@@ -48,6 +48,7 @@ describe('extension-storage fallback', () => {
   });
 
   it('does not fall back to page localStorage when extension storage access is denied', async () => {
+<<<<<<<< HEAD:archive/ts-legacy/apps/hypercode-extension/pages/content/src/stores/extension-storage.test.ts
     localStorage.setItem('hypercode-key', 'legacy-value');
 
     await expect(getExtensionStorageValue('hypercode-key')).resolves.toBeNull();
@@ -57,12 +58,24 @@ describe('extension-storage fallback', () => {
 
     await removeExtensionStorageValue('hypercode-key');
     expect(localStorage.getItem('hypercode-key')).toBe('legacy-value');
+========
+    localStorage.setItem('borg-key', 'legacy-value');
+
+    await expect(getExtensionStorageValue('borg-key')).resolves.toBeNull();
+
+    await setExtensionStorageValue('borg-key', 'next-value');
+    expect(localStorage.getItem('borg-key')).toBe('legacy-value');
+
+    await removeExtensionStorageValue('borg-key');
+    expect(localStorage.getItem('borg-key')).toBe('legacy-value');
+>>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/borg-extension/pages/content/src/stores/extension-storage.test.ts
 
     expect(console.warn).toHaveBeenCalledTimes(1);
   });
 
   it('falls back to localStorage when extension storage is unavailable entirely', async () => {
     delete (globalThis as typeof globalThis & { chrome?: unknown }).chrome;
+<<<<<<<< HEAD:archive/ts-legacy/apps/hypercode-extension/pages/content/src/stores/extension-storage.test.ts
     localStorage.setItem('hypercode-key', 'legacy-value');
 
     await expect(getExtensionStorageValue('hypercode-key')).resolves.toBe('legacy-value');
@@ -72,6 +85,17 @@ describe('extension-storage fallback', () => {
 
     await removeExtensionStorageValue('hypercode-key');
     expect(localStorage.getItem('hypercode-key')).toBeNull();
+========
+    localStorage.setItem('borg-key', 'legacy-value');
+
+    await expect(getExtensionStorageValue('borg-key')).resolves.toBe('legacy-value');
+
+    await setExtensionStorageValue('borg-key', 'next-value');
+    expect(localStorage.getItem('borg-key')).toBe('next-value');
+
+    await removeExtensionStorageValue('borg-key');
+    expect(localStorage.getItem('borg-key')).toBeNull();
+>>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/borg-extension/pages/content/src/stores/extension-storage.test.ts
 
     expect(console.warn).not.toHaveBeenCalled();
   });

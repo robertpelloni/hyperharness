@@ -406,7 +406,11 @@ export class PlanService {
     constructor(options: PlanServiceOptions) {
         this.options = {
             rootPath: options.rootPath,
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/services/PlanService.ts
             sandboxDir: options.sandboxDir || path.join(options.rootPath, '.hypercode', 'sandbox'),
+=======
+            sandboxDir: options.sandboxDir || path.join(options.rootPath, '.borg', 'sandbox'),
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/services/PlanService.ts
             autoCheckpoint: options.autoCheckpoint ?? true,
             maxCheckpoints: options.maxCheckpoints ?? 20,
         };

@@ -160,28 +160,22 @@
     );
 
     // Check for XML patterns (opening tags that indicate function calls)
-<<<<<<< HEAD
     const hasXMLPattern =
       cleanedContent.includes('<function_calls>') ||
-=======
     const hasXMLPattern = cleanedContent.includes('<function_calls>') ||
->>>>>>> upstream/main
       cleanedContent.includes('<invoke ') ||
       cleanedContent.match(/<[a-zA-Z_][a-zA-Z0-9_-]*\s*[^>]*>/);
 
     // Check for JSON patterns (line-by-line JSON function calls)
-<<<<<<< HEAD
     const hasJSONPattern =
       (cleanedContent.includes('"type"') &&
         (cleanedContent.includes('function_call_start') ||
           cleanedContent.includes('function_call') ||
           cleanedContent.includes('parameter'))) ||
-=======
     const hasJSONPattern = (cleanedContent.includes('"type"') &&
       (cleanedContent.includes('function_call_start') ||
         cleanedContent.includes('function_call') ||
         cleanedContent.includes('parameter'))) ||
->>>>>>> upstream/main
       cleanedContent.match(/\{\s*"type"\s*:\s*"function_call/i);
 
     return hasXMLPattern || hasJSONPattern;
@@ -444,11 +438,8 @@
   function setupMutationObserver() {
     if (observer) return;
 
-<<<<<<< HEAD
     observer = new MutationObserver(mutations => {
-=======
     observer = new MutationObserver((mutations) => {
->>>>>>> upstream/main
       let shouldScan = false;
 
       for (const mutation of mutations) {
@@ -456,16 +447,13 @@
         if (mutation.type === 'childList') {
           for (const node of mutation.addedNodes) {
             if (node.nodeType === Node.ELEMENT_NODE) {
-<<<<<<< HEAD
               if (node.classList?.contains('cm-editor') || node.querySelector?.('.cm-editor')) {
-=======
               if (node.classList?.contains('cm-editor') ||
                 node.querySelector?.('.cm-editor') ||
                 node.classList?.contains('qwen-markdown-code') ||
                 node.querySelector?.('.qwen-markdown-code') ||
                 node.classList?.contains('monaco-editor') ||
                 node.querySelector?.('.monaco-editor')) {
->>>>>>> upstream/main
                 shouldScan = true;
                 break;
               }
@@ -577,12 +565,10 @@
       return document.getElementById(`cm-hidden-pre-${uniqueId}`);
     },
     getHiddenEditors: function () {
-<<<<<<< HEAD
       return Array.from(document.querySelectorAll('.cm-editor[data-cm-hidden-function-call]'));
     },
     getFunctionCallEditors: function () {
       return Array.from(document.querySelectorAll('.cm-editor[data-cm-has-function-call]'));
-=======
       return Array.from(document.querySelectorAll('.cm-editor[data-cm-hidden-function-call], pre[data-monaco-hidden-function-call]'));
     },
     getFunctionCallEditors: function () {
@@ -590,7 +576,6 @@
     },
     getMonacoPreElements: function () {
       return Array.from(document.querySelectorAll('pre.qwen-monaco-extracted'));
->>>>>>> upstream/main
     },
     hideEditor: hideEditor,
     showEditor: showEditor,
@@ -609,9 +594,6 @@
     stop: stopMonitoring,
     start: startMonitoring,
   };
-<<<<<<< HEAD
 })();
-=======
 
 })();
->>>>>>> upstream/main

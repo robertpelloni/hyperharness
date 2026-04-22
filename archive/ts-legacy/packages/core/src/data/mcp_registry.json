@@ -60,13 +60,21 @@
       "name": "git_expert",
       "description": "Expert Git capabilities including submodule management and complex rebases.",
       "source": "local-import",
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/data/mcp_registry.json
       "path": "C:\\Users\\hyper\\workspace\\hypercode\\packages\\core\\data\\raw_skills\\git_expert.json"
+=======
+      "path": "C:\\Users\\hyper\\workspace\\borg\\packages\\core\\data\\raw_skills\\git_expert.json"
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/data/mcp_registry.json
     },
     {
       "name": "react_architect",
       "description": "High-level React architecture advice.",
       "source": "local-import",
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/data/mcp_registry.json
       "path": "C:\\Users\\hyper\\workspace\\hypercode\\packages\\core\\data\\raw_skills\\react_architect.json"
+=======
+      "path": "C:\\Users\\hyper\\workspace\\borg\\packages\\core\\data\\raw_skills\\react_architect.json"
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/data/mcp_registry.json
     }
   ],
   "orchestration": [

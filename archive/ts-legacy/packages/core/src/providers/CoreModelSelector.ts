@@ -1,4 +1,8 @@
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/providers/CoreModelSelector.ts
 import { ModelSelector, type ModelSelectionRequest, type SelectedModel } from '@hypercode/ai';
+=======
+import { ModelSelector, type ModelSelectionRequest, type SelectedModel } from '@borg/ai';
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/providers/CoreModelSelector.ts
 
 import { ProviderBalanceService } from './ProviderBalanceService.js';
 import { ProviderRegistry } from './ProviderRegistry.js';
@@ -16,7 +20,11 @@ const DEFAULT_TASK_STRATEGIES: Record<ProviderTaskType, ProviderRoutingStrategy>
     planning: 'best',
     research: 'best',
     general: 'round-robin',
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/providers/CoreModelSelector.ts
     worker: 'best',
+=======
+    worker: 'cheapest',
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/providers/CoreModelSelector.ts
     supervisor: 'best',
 };
 
@@ -177,10 +185,16 @@ export class CoreModelSelector extends ModelSelector {
         const selected = candidates[0];
 
         if (!selected) {
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/providers/CoreModelSelector.ts
             const fallbackModelId = this.registry.getProvider('lmstudio')?.defaultModel || 'local';
             const result: SelectedModel = {
                 provider: 'lmstudio',
                 modelId: fallbackModelId,
+=======
+            const result: SelectedModel = {
+                provider: 'lmstudio',
+                modelId: 'local',
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/providers/CoreModelSelector.ts
                 reason: 'EMERGENCY_FALLBACK',
             };
             this.recordFallbackEvent(result, taskType, strategy, request.provider, 'emergency_fallback');

@@ -2,7 +2,11 @@
 
 import React, { useMemo } from 'react';
 import { trpc } from '@/utils/trpc';
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/components/GraphWidget.tsx
 import { KnowledgeGraph } from '@hypercode/ui';
+=======
+import { KnowledgeGraph } from '@borg/ui';
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/components/GraphWidget.tsx
 import { motion } from 'framer-motion';
 
 export function GraphWidget() {

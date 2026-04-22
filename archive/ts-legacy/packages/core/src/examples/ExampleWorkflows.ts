@@ -338,7 +338,11 @@ export function createFileProcessingWorkflow(engine: WorkflowEngine): WorkflowDe
  * import { WorkflowEngine } from './orchestrator/WorkflowEngine';
  * import { createCodeReviewWorkflow } from './examples/ExampleWorkflows';
  * 
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/examples/ExampleWorkflows.ts
  * const engine = new WorkflowEngine({ persistDir: '.hypercode/workflows' });
+=======
+ * const engine = new WorkflowEngine({ persistDir: '.borg/workflows' });
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/examples/ExampleWorkflows.ts
  * const workflow = createCodeReviewWorkflow(engine);
  * 
  * const result = await engine.start(workflow.id, {

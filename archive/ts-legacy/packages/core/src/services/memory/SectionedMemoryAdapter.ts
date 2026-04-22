@@ -1,7 +1,13 @@
 /**
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/services/memory/SectionedMemoryAdapter.ts
  * SectionedMemoryAdapter – IMemoryProvider backed by a HyperCode-managed sectioned store.
  *
  * This provider persists structured project context in a single HyperCode-owned JSON
+=======
+ * SectionedMemoryAdapter – IMemoryProvider backed by a borg-managed sectioned store.
+ *
+ * This provider persists structured project context in a single borg-owned JSON
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/services/memory/SectionedMemoryAdapter.ts
  * snapshot so it can participate in the redundant memory pipeline alongside the
  * JSON provider and future vector/database stores.
  */
@@ -48,8 +54,13 @@ export class SectionedMemoryAdapter implements IMemoryProvider {
     private initialized = false;
 
     constructor(workspaceRoot: string) {
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/services/memory/SectionedMemoryAdapter.ts
         this.storePath = path.join(workspaceRoot, '.hypercode', 'sectioned_memory.json');
         this.legacyStorePath = path.join(workspaceRoot, '.hypercode', LEGACY_STORE_FILE);
+=======
+        this.storePath = path.join(workspaceRoot, '.borg', 'sectioned_memory.json');
+        this.legacyStorePath = path.join(workspaceRoot, '.borg', LEGACY_STORE_FILE);
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/services/memory/SectionedMemoryAdapter.ts
     }
 
     async init(): Promise<void> {

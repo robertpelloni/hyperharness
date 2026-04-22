@@ -41,7 +41,11 @@ class AutonomousMaintenanceService {
    */
   private async cleanupOrphanedSidecars(): Promise<void> {
     // This is OS specific. For now, we rely on sessionManager.cleanup() on exit,
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/orchestrator/council/services/system-maintenance.ts
     // but a robust HyperCode system would scan the process tree.
+=======
+    // but a robust borg system would scan the process tree.
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/orchestrator/council/services/system-maintenance.ts
     // implementation planned for next sub-phase.
   }
 

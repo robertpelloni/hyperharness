@@ -229,7 +229,11 @@ export default function DocsPage() {
 
                 {/* Footer */}
                 <footer className="mt-12 pt-8 border-t border-zinc-200 dark:border-zinc-800 text-center text-sm text-zinc-500">
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/docs/page.tsx
                     <p>HyperCode Mission Control • All features documented</p>
+=======
+                    <p>borg Mission Control • All features documented</p>
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/docs/page.tsx
                     <p className="mt-2">
                         <Link href="/" className="text-blue-500 hover:text-blue-400">Return to Dashboard</Link>
                     </p>

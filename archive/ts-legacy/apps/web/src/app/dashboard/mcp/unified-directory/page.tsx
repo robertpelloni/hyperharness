@@ -2,7 +2,11 @@
 
 import { Suspense, useEffect, useMemo, useState } from "react";
 import type { inferRouterOutputs } from "@trpc/server";
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/mcp/unified-directory/page.tsx
 import type { AppRouter } from "@hypercode/core";
+=======
+import type { AppRouter } from "@borg/core";
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/mcp/unified-directory/page.tsx
 import { trpc } from "@/utils/trpc";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";

@@ -6,7 +6,11 @@ import { summarizeClaudeMemRuntimePipeline, summarizeClaudeMemStore } from './me
 describe('summarizeClaudeMemStore', () => {
     it('summarizes section counts and latest update timestamps', () => {
         const result = summarizeClaudeMemStore(
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/routers/memoryRouter.claude-mem.test.ts
             path.join('C:', 'hypercode', '.hypercode', 'claude_mem.json'),
+=======
+            path.join('C:', 'borg', '.borg', 'claude_mem.json'),
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/routers/memoryRouter.claude-mem.test.ts
             {
                 sections: [
                     {
@@ -26,7 +30,11 @@ describe('summarizeClaudeMemStore', () => {
 
         expect(result).toEqual({
             exists: true,
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/routers/memoryRouter.claude-mem.test.ts
             storePath: path.join('C:', 'hypercode', '.hypercode', 'claude_mem.json'),
+=======
+            storePath: path.join('C:', 'borg', '.borg', 'claude_mem.json'),
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/routers/memoryRouter.claude-mem.test.ts
             totalEntries: 3,
             sectionCount: 2,
             defaultSectionCount: 5,
@@ -48,9 +56,15 @@ describe('summarizeClaudeMemStore', () => {
     });
 
     it('returns an empty status shape when the store is missing', () => {
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/routers/memoryRouter.claude-mem.test.ts
         expect(summarizeClaudeMemStore('C:/hypercode/.hypercode/claude_mem.json', null)).toEqual({
             exists: false,
             storePath: 'C:/hypercode/.hypercode/claude_mem.json',
+=======
+        expect(summarizeClaudeMemStore('C:/borg/.borg/claude_mem.json', null)).toEqual({
+            exists: false,
+            storePath: 'C:/borg/.borg/claude_mem.json',
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/routers/memoryRouter.claude-mem.test.ts
             totalEntries: 0,
             sectionCount: 0,
             defaultSectionCount: 5,

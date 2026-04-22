@@ -1,6 +1,10 @@
 # Zustand State Management Stores
 
+<<<<<<<< HEAD:archive/ts-legacy/apps/hypercode-extension/pages/content/src/stores/README.md
 This directory contains all Zustand state management stores for the HyperCode-Extension content script. The stores provide centralized, reactive, and type-safe state management with optimal performance characteristics.
+========
+This directory contains all Zustand state management stores for the borg-Extension content script. The stores provide centralized, reactive, and type-safe state management with optimal performance characteristics.
+>>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/borg-extension/pages/content/src/stores/README.md
 
 ## Overview
 

@@ -2,7 +2,11 @@
 
 import { trpc } from '@/utils/trpc';
 import { useState } from 'react';
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/settings/secrets/page.tsx
 import { Card, Button, Input } from '@hypercode/ui';
+=======
+import { Card, Button, Input } from '@borg/ui';
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/settings/secrets/page.tsx
 
 function isSecretRecord(value: unknown): value is { key: string; updated_at: string | number | Date } {
     return typeof value === 'object'

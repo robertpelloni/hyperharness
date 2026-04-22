@@ -1,5 +1,9 @@
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/mcp/StdioClient.ts
 import type { MCPServerConfig } from "../config/HyperCodeConfig.js";
+=======
+import type { MCPServerConfig } from "../config/borgConfig.js";
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/mcp/StdioClient.ts
 import { metamcpLogStore } from "../services/log-store.service.js";
 import { ProcessManagedStdioTransport } from "../transports/process-managed.transport.js";
 
@@ -93,7 +97,11 @@ export class StdioClient {
         });
 
         this.client = new Client({
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/mcp/StdioClient.ts
             name: `hypercode-client-${this.name}`,
+=======
+            name: `borg-client-${this.name}`,
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/mcp/StdioClient.ts
             version: "1.0.0",
         }, {
             capabilities: {

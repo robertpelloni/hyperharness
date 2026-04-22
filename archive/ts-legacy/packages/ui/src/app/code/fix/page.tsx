@@ -91,7 +91,11 @@ export default function AutoDevPage() {
                     </Card>
 
                     <div className="text-xs text-neutral-500">
+<<<<<<< HEAD:archive/ts-legacy/packages/ui/src/app/code/fix/page.tsx
                         <p>HyperCode will:</p>
+=======
+                        <p>borg will:</p>
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/ui/src/app/code/fix/page.tsx
                         <ol className="list-decimal list-inside mt-2 space-y-1">
                             <li>Run the command</li>
                             <li>Analyze failure output</li>

@@ -91,8 +91,13 @@ const SHELL_CATALOG: ShellCatalogEntry[] = [
         command: 'pwsh',
         family: 'powershell',
         versionArgs: ['-NoLogo', '-NoProfile', '-Command', '$PSVersionTable.PSVersion.ToString()'],
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/services/execution-environment.ts
         smokeTestArgs: ['-NoLogo', '-NoProfile', '-Command', 'Write-Output hypercode-ready'],
         notes: ['Preferred HyperCode shell on Windows for general command execution and structured scripting.'],
+=======
+        smokeTestArgs: ['-NoLogo', '-NoProfile', '-Command', 'Write-Output borg-ready'],
+        notes: ['Preferred borg shell on Windows for general command execution and structured scripting.'],
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/services/execution-environment.ts
     },
     {
         id: 'powershell',
@@ -100,7 +105,11 @@ const SHELL_CATALOG: ShellCatalogEntry[] = [
         command: 'powershell',
         family: 'powershell',
         versionArgs: ['-NoLogo', '-NoProfile', '-Command', '$PSVersionTable.PSVersion.ToString()'],
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/services/execution-environment.ts
         smokeTestArgs: ['-NoLogo', '-NoProfile', '-Command', 'Write-Output hypercode-ready'],
+=======
+        smokeTestArgs: ['-NoLogo', '-NoProfile', '-Command', 'Write-Output borg-ready'],
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/services/execution-environment.ts
         notes: ['Useful legacy fallback when PowerShell 7 is unavailable.'],
     },
     {
@@ -109,7 +118,11 @@ const SHELL_CATALOG: ShellCatalogEntry[] = [
         command: 'cmd',
         family: 'cmd',
         versionArgs: ['/d', '/c', 'ver'],
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/services/execution-environment.ts
         smokeTestArgs: ['/d', '/c', 'echo hypercode-ready'],
+=======
+        smokeTestArgs: ['/d', '/c', 'echo borg-ready'],
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/services/execution-environment.ts
         notes: ['Lowest-common-denominator Windows shell for compatibility-only flows.'],
     },
     {
@@ -118,7 +131,11 @@ const SHELL_CATALOG: ShellCatalogEntry[] = [
         command: 'bash',
         family: 'posix',
         versionArgs: ['-lc', 'printf "%s" "$(uname -s) $(uname -r)"'],
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/services/execution-environment.ts
         smokeTestArgs: ['-lc', 'printf hypercode-ready'],
+=======
+        smokeTestArgs: ['-lc', 'printf borg-ready'],
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/services/execution-environment.ts
         executableHints: [
             'C:\\cygwin64\\bin\\bash.exe',
             'C:\\cygwin\\bin\\bash.exe',
@@ -132,7 +149,11 @@ const SHELL_CATALOG: ShellCatalogEntry[] = [
         command: 'bash',
         family: 'posix',
         versionArgs: ['-lc', 'printf "%s" "$(uname -s) $(uname -r)"'],
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/services/execution-environment.ts
         smokeTestArgs: ['-lc', 'printf hypercode-ready'],
+=======
+        smokeTestArgs: ['-lc', 'printf borg-ready'],
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/services/execution-environment.ts
         executableHints: [
             'C:\\Program Files\\Git\\bin\\bash.exe',
             'C:\\Program Files\\Git\\usr\\bin\\bash.exe',
@@ -147,7 +168,11 @@ const SHELL_CATALOG: ShellCatalogEntry[] = [
         command: 'wsl',
         family: 'wsl',
         versionArgs: ['--version'],
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/services/execution-environment.ts
         smokeTestArgs: ['-e', 'sh', '-lc', 'printf hypercode-ready'],
+=======
+        smokeTestArgs: ['-e', 'sh', '-lc', 'printf borg-ready'],
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/services/execution-environment.ts
         notes: ['Best fit for Linux-native commands when WSL is installed and configured.'],
     },
 ];
@@ -191,7 +216,11 @@ const TOOL_CATALOG: BinaryCatalogEntry[] = [
         command: 'node',
         versionArgs: ['--version'],
         capabilities: ['javascript runtime', 'tool execution'],
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/services/execution-environment.ts
         notes: ['Required for large parts of the HyperCode stack and many MCP servers.'],
+=======
+        notes: ['Required for large parts of the borg stack and many MCP servers.'],
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/services/execution-environment.ts
     },
     {
         id: 'pnpm',
@@ -199,7 +228,11 @@ const TOOL_CATALOG: BinaryCatalogEntry[] = [
         command: 'pnpm',
         versionArgs: ['--version'],
         capabilities: ['workspace package management', 'build orchestration'],
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/services/execution-environment.ts
         notes: ['Primary package manager for this HyperCode workspace.'],
+=======
+        notes: ['Primary package manager for this borg workspace.'],
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/services/execution-environment.ts
     },
     {
         id: 'docker',
@@ -302,7 +335,11 @@ async function detectShell(entry: ShellCatalogEntry, deps: ExecutionEnvironmentD
 
     const version = formatVersion(await deps.runCommand(resolvedPath, entry.versionArgs));
     const smokeOutput = await deps.runCommand(resolvedPath, entry.smokeTestArgs);
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/services/execution-environment.ts
     const verified = Boolean(smokeOutput?.toLowerCase().includes('hypercode-ready'));
+=======
+    const verified = Boolean(smokeOutput?.toLowerCase().includes('borg-ready'));
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/services/execution-environment.ts
 
     return {
         id: entry.id,
@@ -315,7 +352,11 @@ async function detectShell(entry: ShellCatalogEntry, deps: ExecutionEnvironmentD
         preferred: false,
         notes: verified
             ? [...(entry.notes ?? [])]
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/services/execution-environment.ts
             : [...(entry.notes ?? []), 'Shell was found, but HyperCode could not verify a simple smoke test.'],
+=======
+            : [...(entry.notes ?? []), 'Shell was found, but borg could not verify a simple smoke test.'],
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/services/execution-environment.ts
     };
 }
 
@@ -387,7 +428,11 @@ function buildSummary(
     const notes: string[] = [];
 
     if (preferredShell) {
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/services/execution-environment.ts
         notes.push(`Prefer ${preferredShell.name} for default HyperCode shell execution on this host.`);
+=======
+        notes.push(`Prefer ${preferredShell.name} for default borg shell execution on this host.`);
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/services/execution-environment.ts
     }
 
     if (supportsPosixShell) {

@@ -7,6 +7,7 @@ export function ContextWidget() {
     const [filePath, setFilePath] = useState('');
     const utils = trpc.useContext();
 
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/components/ContextWidget.tsx
     const { data: rawFiles, error, isLoading } = trpc.hypercodeContext.list.useQuery();
     const filesUnavailable = Boolean(error) || (rawFiles !== undefined && !Array.isArray(rawFiles));
     const files = !filesUnavailable ? (rawFiles as string[] | undefined) : undefined;
@@ -21,6 +22,22 @@ export function ContextWidget() {
     });
     const clearMutation = trpc.hypercodeContext.clear.useMutation({
         onSuccess: () => utils.hypercodeContext.list.invalidate()
+=======
+    const { data: rawFiles, error, isLoading } = trpc.borgContext.list.useQuery();
+    const filesUnavailable = Boolean(error) || (rawFiles !== undefined && !Array.isArray(rawFiles));
+    const files = !filesUnavailable ? (rawFiles as string[] | undefined) : undefined;
+    const addMutation = trpc.borgContext.add.useMutation({
+        onSuccess: () => {
+            utils.borgContext.list.invalidate();
+            setFilePath('');
+        }
+    });
+    const removeMutation = trpc.borgContext.remove.useMutation({
+        onSuccess: () => utils.borgContext.list.invalidate()
+    });
+    const clearMutation = trpc.borgContext.clear.useMutation({
+        onSuccess: () => utils.borgContext.list.invalidate()
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/components/ContextWidget.tsx
     });
 
     const handleAdd = () => {

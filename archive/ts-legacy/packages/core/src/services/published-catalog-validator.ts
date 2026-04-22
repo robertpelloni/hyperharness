@@ -255,7 +255,11 @@ async function _mcpToolsList(
             "@modelcontextprotocol/sdk/client/streamableHttp.js"
         );
 
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/services/published-catalog-validator.ts
         const client = new Client({ name: "hypercode-catalog-verifier", version: "0.1.0" });
+=======
+        const client = new Client({ name: "borg-catalog-verifier", version: "0.1.0" });
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/services/published-catalog-validator.ts
 
         let transportImpl: any;
         const normalizedTransport = transport.toLowerCase();

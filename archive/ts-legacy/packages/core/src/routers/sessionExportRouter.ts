@@ -1,13 +1,21 @@
 import { z } from 'zod';
 import { t, publicProcedure, adminProcedure } from '../lib/trpc-core.js';
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/routers/sessionExportRouter.ts
 import { resolveOrchestratorBase } from '../lib/hypercode-orchestrator.js';
+=======
+import { resolveOrchestratorBase } from '../lib/borg-orchestrator.js';
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/routers/sessionExportRouter.ts
 
 /**
  * Session Export/Import Router
  *
  * Provides the ability to:
  * - Export sessions and memories to portable JSON/ZIP formats
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/routers/sessionExportRouter.ts
  * - Import sessions from other HyperCode instances or environments
+=======
+ * - Import sessions from other borg instances or environments
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/routers/sessionExportRouter.ts
  * - Auto-detect session formats from various CLI tools
  * - Cross-environment memory transfer
  */
@@ -54,7 +62,11 @@ export interface ExportedSession {
 export interface ExportPackage {
     version: '1.0';
     exportedAt: number;
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/routers/sessionExportRouter.ts
     hypercodeVersion: string;
+=======
+    borgVersion: string;
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/routers/sessionExportRouter.ts
     environment: string;
     sessionCount: number;
     sessions: ExportedSession[];
@@ -93,7 +105,11 @@ const SESSION_FORMAT_SIGNATURES: Record<string, { paths: string[]; type: string 
     'opencode': { paths: ['.docs/ai-logs'], type: 'opencode' },
     'aider': { paths: ['.aider.chat.history.md', '.aider.tags.cache'], type: 'aider' },
     'windsurf': { paths: ['.windsurf', '.docs/ai-logs'], type: 'windsurf' },
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/routers/sessionExportRouter.ts
     'hypercode': { paths: ['.hypercode', '.hypercode/sessions'], type: 'hypercode' },
+=======
+    'borg': { paths: ['.borg', '.borg/sessions'], type: 'borg' },
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/routers/sessionExportRouter.ts
     'continue': { paths: ['.continue', '.continue/sessions'], type: 'continue' },
     'copilot': { paths: ['.github/copilot'], type: 'copilot' },
 };
@@ -103,8 +119,13 @@ function detectSessionFormat(data: unknown): string {
 
     const record = data as Record<string, unknown>;
 
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/routers/sessionExportRouter.ts
     // Check for HyperCode export format
     if (record.version === '1.0' && Array.isArray(record.sessions)) return 'hypercode-export';
+=======
+    // Check for borg export format
+    if (record.version === '1.0' && Array.isArray(record.sessions)) return 'borg-export';
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/routers/sessionExportRouter.ts
 
     // Check for Claude Code format  
     if (record.type === 'conversation' && record.messages) return 'claude-code';
@@ -128,7 +149,11 @@ function parseImportData(rawData: string): { format: string; sessions: ExportedS
 
     const format = detectSessionFormat(parsed);
 
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/routers/sessionExportRouter.ts
     if (format === 'hypercode-export') {
+=======
+    if (format === 'borg-export') {
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/routers/sessionExportRouter.ts
         const pkg = parsed as ExportPackage;
         return { format, sessions: pkg.sessions };
     }
@@ -187,8 +212,13 @@ export async function loadExportableOrchestratorSessions(
         })
         .map((record) => ({
         id: String(record.id ?? `exported_${Date.now()}`),
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/routers/sessionExportRouter.ts
         name: String(record.currentTask || 'HyperCode Session'),
         cliType: 'hypercode',
+=======
+        name: String(record.currentTask || 'borg Session'),
+        cliType: 'borg',
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/routers/sessionExportRouter.ts
         status: String(record.status || 'unknown'),
         createdAt: typeof record.startTime === 'number' ? record.startTime : Date.now(),
         workingDirectory: process.cwd(),
@@ -204,7 +234,11 @@ export async function restoreSessionViaOrchestrator(
     orchestratorBase: string | null = resolveOrchestratorBase(),
 ): Promise<{ ok: true } | { ok: false; reason: string }> {
     if (!orchestratorBase) {
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/routers/sessionExportRouter.ts
         return { ok: false, reason: 'No HyperCode Orchestrator base configured.' };
+=======
+        return { ok: false, reason: 'No borg Orchestrator base configured.' };
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/routers/sessionExportRouter.ts
     }
 
     try {
@@ -240,7 +274,11 @@ export const sessionExportRouter = t.router({
             const pkg: ExportPackage = {
                 version: '1.0',
                 exportedAt: Date.now(),
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/routers/sessionExportRouter.ts
                 hypercodeVersion: '0.90.5',
+=======
+                borgVersion: '0.90.5',
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/routers/sessionExportRouter.ts
                 environment: process.platform,
                 sessionCount: 0,
                 sessions: [],
@@ -251,7 +289,11 @@ export const sessionExportRouter = t.router({
                 pkg.sessions = await loadExportableOrchestratorSessions(fetch, undefined, input.sessionIds);
                 pkg.sessionCount = pkg.sessions.length;
             } catch (e: any) {
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/routers/sessionExportRouter.ts
                 console.warn(`[SessionExport] HyperCode Orchestrator unavailable (${e.message}). Exporting empty sessions list.`);
+=======
+                console.warn(`[SessionExport] borg Orchestrator unavailable (${e.message}). Exporting empty sessions list.`);
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/routers/sessionExportRouter.ts
             }
 
             const exportId = `export_${Date.now()}`;

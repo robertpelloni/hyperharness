@@ -1,7 +1,11 @@
 "use client";
 
 import { useState } from 'react';
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/chronicle/page.tsx
 import { Card, CardContent, Badge, Button } from "@hypercode/ui";
+=======
+import { Card, CardContent, Badge, Button } from "@borg/ui";
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/chronicle/page.tsx
 import { ScrollText, GitCommit, GitBranch, Loader2, RefreshCw, AlertCircle, GitMerge, Plus, Minus } from "lucide-react";
 import { trpc } from '@/utils/trpc';
 
@@ -119,7 +123,11 @@ export default function ChronicleDashboard() {
                         Chronicle
                     </h1>
                     <p className="text-zinc-500 mt-2">
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/chronicle/page.tsx
                         Git commit log and working-tree status for the active HyperCode workspace.
+=======
+                        Git commit log and working-tree status for the active borg workspace.
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/chronicle/page.tsx
                     </p>
                 </div>
                 <Button

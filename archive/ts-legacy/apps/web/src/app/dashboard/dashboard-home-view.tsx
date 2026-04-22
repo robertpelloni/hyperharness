@@ -5,7 +5,11 @@ import SuggestionsPanel from '../../components/SuggestionsPanel';
 import { SessionHandoffWidget } from '../../components/SessionHandoffWidget';
 import { ContextHealthWidget } from '../../components/ContextHealthWidget';
 import { NeuralPulse } from '../../components/NeuralPulse';
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/dashboard-home-view.tsx
 import { HyperCodeOrchestratorWidget } from '../../components/HyperCodeOrchestratorWidget';
+=======
+import { borgOrchestratorWidget } from '../../components/borgOrchestratorWidget';
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/dashboard-home-view.tsx
 
 export interface DashboardStatusSummary {
     initialized: boolean;
@@ -23,6 +27,7 @@ export interface DashboardStartupStatus {
         code: string;
         detail: string;
     }>;
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/dashboard-home-view.tsx
     startupMode?: {
         requestedRuntime?: string;
         activeRuntime?: string;
@@ -38,6 +43,8 @@ export interface DashboardStartupStatus {
         buildReason?: string;
         updatedAt?: string;
     } | null;
+=======
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/dashboard-home-view.tsx
     runtime?: {
         nodeEnv?: string | null;
         platform?: string | null;
@@ -964,7 +971,11 @@ export function buildDashboardAlerts(
             id: 'startup-compat-fallback',
             severity: 'warning',
             title: 'Startup is using local compat fallback',
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/dashboard-home-view.tsx
             detail: startupSummary || 'Live startup telemetry is unavailable, so HyperCode is showing config-backed compatibility state instead of the full core startup contract.',
+=======
+            detail: startupSummary || 'Live startup telemetry is unavailable, so borg is showing config-backed compatibility state instead of the full core startup contract.',
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/dashboard-home-view.tsx
             href: '/dashboard/mcp/system',
             hrefLabel: 'Review startup status',
         });
@@ -992,7 +1003,11 @@ export function buildDashboardAlerts(
         alerts.push({
             id: 'first-run-setup',
             severity: 'info',
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/dashboard-home-view.tsx
             title: 'Welcome to HyperCode! Let\'s get started. 🚀',
+=======
+            title: 'Welcome to borg! Let\'s get started. 🚀',
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/dashboard-home-view.tsx
             detail: 'Your workspace is fresh. Start by configuring an AI Provider and connecting an MCP Server to give your models tools.',
             href: '/dashboard/providers',
             hrefLabel: 'Configure Providers',
@@ -1160,6 +1175,7 @@ function formatFallbackLabel(entry: DashboardFallbackSummary): string {
     return entry.model ? `${entry.provider} · ${entry.model}` : entry.provider;
 }
 
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/dashboard-home-view.tsx
 function buildStartupModeEntries(startupStatus: DashboardStartupStatus): Array<{
     label: string;
     value: string;
@@ -1203,6 +1219,8 @@ function buildStartupModeEntries(startupStatus: DashboardStartupStatus): Array<{
     ];
 }
 
+=======
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/dashboard-home-view.tsx
 function getAlertTone(severity: DashboardAlert['severity']): string {
     switch (severity) {
         case 'critical':
@@ -1215,7 +1233,11 @@ function getAlertTone(severity: DashboardAlert['severity']): string {
 }
 
 export function DashboardHomeView({
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/dashboard-home-view.tsx
     versionLabel = 'HyperCode',
+=======
+    versionLabel = 'borg',
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/dashboard-home-view.tsx
     generatedAtLabel,
     currentTimestamp,
     isBootstrapping = false,
@@ -1245,8 +1267,11 @@ export function DashboardHomeView({
         providersError,
     });
     const startupChecklist = startupStatusError ? [] : buildStartupChecklist(startupStatus, isBootstrapping, installSurfaceArtifacts);
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/dashboard-home-view.tsx
     const startupModeEntries = startupStatusError ? [] : buildStartupModeEntries(startupStatus);
     const startupModeUpdatedAt = startupStatus.startupMode?.updatedAt ? Date.parse(startupStatus.startupMode.updatedAt) : Number.NaN;
+=======
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/dashboard-home-view.tsx
     const startupBlockingReasons = isBootstrapping || startupStatusError
         ? []
         : getPrioritizedStartupBlockingReasons(getStartupBlockingReasons(startupStatus));
@@ -1342,7 +1367,11 @@ export function DashboardHomeView({
 
                         {isBootstrapping ? (
                             <div className="mt-4 rounded-2xl border border-cyan-500/30 bg-cyan-500/10 p-4 text-sm text-cyan-100">
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/dashboard-home-view.tsx
                                 Connecting to live core telemetry. HyperCode will replace these neutral placeholders as soon as the first startup snapshot arrives.
+=======
+                                Connecting to live core telemetry. borg will replace these neutral placeholders as soon as the first startup snapshot arrives.
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/dashboard-home-view.tsx
                             </div>
                         ) : dashboardAlerts.length === 0 ? (
                             <div className="mt-4 rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-4 text-sm text-emerald-100">
@@ -1455,6 +1484,7 @@ export function DashboardHomeView({
                                 </div>
                             )}
 
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/dashboard-home-view.tsx
                             {startupModeEntries.length > 0 ? (
                                 <div className="mt-4 rounded-2xl border border-slate-800 bg-slate-950/70 p-4">
                                     <div className="flex items-start justify-between gap-4">
@@ -1482,6 +1512,8 @@ export function DashboardHomeView({
                                 </div>
                             ) : null}
 
+=======
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/dashboard-home-view.tsx
                             {startupBlockingReasons.length > 0 ? (
                                 <div className="mt-4 rounded-2xl border border-amber-500/30 bg-amber-500/10 p-4">
                                     <div className="flex items-start justify-between gap-3">
@@ -1597,7 +1629,11 @@ export function DashboardHomeView({
                         <div className="mt-6 rounded-2xl border border-slate-800 bg-slate-950/70 p-4">
                             <div className="flex items-start justify-between gap-4">
                                 <div>
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/dashboard-home-view.tsx
                                     <h3 className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-300">Install &amp; connect HyperCode</h3>
+=======
+                                    <h3 className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-300">Install &amp; connect borg</h3>
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/dashboard-home-view.tsx
                                     <p className="mt-1 text-sm text-slate-500">Fast path for getting browser bridges, editor surfaces, and managed MCP configs into the tools you already use.</p>
                                 </div>
                                 <Link
@@ -1621,7 +1657,11 @@ export function DashboardHomeView({
                                 </div>
                                 <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-3 text-sm text-slate-300">
                                     <div className="font-medium text-white">Client config sync</div>
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/dashboard-home-view.tsx
                                     <p className="mt-2 text-slate-400">Push HyperCode-managed MCP endpoints into Claude Desktop, Cursor, and VS Code without manual JSON surgery.</p>
+=======
+                                    <p className="mt-2 text-slate-400">Push borg-managed MCP endpoints into Claude Desktop, Cursor, and VS Code without manual JSON surgery.</p>
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/dashboard-home-view.tsx
                                 </div>
                             </div>
                         </div>
@@ -1910,12 +1950,20 @@ export function DashboardHomeView({
                         </div>
                     </section>
 
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/dashboard-home-view.tsx
                         <HyperCodeOrchestratorWidget />
+=======
+                        <borgOrchestratorWidget />
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/dashboard-home-view.tsx
 
                     </div>
 
                     <div className="flex flex-col gap-6">
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/dashboard-home-view.tsx
                         <HyperCodeOrchestratorWidget />
+=======
+                        <borgOrchestratorWidget />
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/dashboard-home-view.tsx
                     </div>
                 </div>
             </div>

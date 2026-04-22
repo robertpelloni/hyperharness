@@ -3,7 +3,11 @@ import { homedir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+<<<<<<< HEAD:archive/ts-legacy/scripts/dev_tabby_ready_helpers.mjs
 const WEB_DEV_PORT_MARKER = ['apps', 'web', '.hypercode-dev-port.json'];
+=======
+const WEB_DEV_PORT_MARKER = ['apps', 'web', '.borg-dev-port.json'];
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:scripts/dev_tabby_ready_helpers.mjs
 
 const STARTUP_CHECK_LABELS = {
   configSync: 'MCP config sync',
@@ -13,9 +17,15 @@ const STARTUP_CHECK_LABELS = {
   extensionBridge: 'extension bridge listener',
 };
 
+<<<<<<< HEAD:archive/ts-legacy/scripts/dev_tabby_ready_helpers.mjs
 export function resolveHypercodeDataDir(dataDir = process.env.HYPERCODE_DEV_READY_DATA_DIR ?? process.env.HYPERCODE_DATA_DIR ?? '~/.hypercode') {
   if (typeof dataDir !== 'string' || dataDir.length === 0) {
     return path.join(homedir(), '.hypercode');
+=======
+export function resolveBorgDataDir(dataDir = process.env.BORG_DEV_READY_DATA_DIR ?? process.env.BORG_DATA_DIR ?? '~/.borg') {
+  if (typeof dataDir !== 'string' || dataDir.length === 0) {
+    return path.join(homedir(), '.borg');
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:scripts/dev_tabby_ready_helpers.mjs
   }
 
   if (dataDir === '~') {
@@ -29,11 +39,19 @@ export function resolveHypercodeDataDir(dataDir = process.env.HYPERCODE_DEV_READ
   return path.resolve(dataDir);
 }
 
+<<<<<<< HEAD:archive/ts-legacy/scripts/dev_tabby_ready_helpers.mjs
 export function getHypercodeStartLockPath(dataDir) {
   return path.join(resolveHypercodeDataDir(dataDir), 'lock');
 }
 
 export function readHypercodeStartLockRecord(lockPath = getHypercodeStartLockPath()) {
+=======
+export function getBorgStartLockPath(dataDir) {
+  return path.join(resolveBorgDataDir(dataDir), 'lock');
+}
+
+export function readBorgStartLockRecord(lockPath = getBorgStartLockPath()) {
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:scripts/dev_tabby_ready_helpers.mjs
   try {
     if (!fs.existsSync(lockPath)) {
       return null;
@@ -104,7 +122,11 @@ export function parseListeningPidFromLsof(output) {
   return line ? Number(line) : null;
 }
 
+<<<<<<< HEAD:archive/ts-legacy/scripts/dev_tabby_ready_helpers.mjs
 export function isLikelyHypercodeCoreCommand(commandLine) {
+=======
+export function isLikelyBorgCoreCommand(commandLine) {
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:scripts/dev_tabby_ready_helpers.mjs
   if (typeof commandLine !== 'string') {
     return false;
   }
@@ -114,21 +136,35 @@ export function isLikelyHypercodeCoreCommand(commandLine) {
     return false;
   }
 
+<<<<<<< HEAD:archive/ts-legacy/scripts/dev_tabby_ready_helpers.mjs
   const hypercodeMarkers = [
     '@hypercode/',
+=======
+  const borgMarkers = [
+    '@borg/',
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:scripts/dev_tabby_ready_helpers.mjs
     'packages/core',
     'packages\\core',
     'packages/cli',
     'packages\\cli',
+<<<<<<< HEAD:archive/ts-legacy/scripts/dev_tabby_ready_helpers.mjs
     '/hypercode/',
     '\\hypercode\\',
+=======
+    '/borg/',
+    '\\borg\\',
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:scripts/dev_tabby_ready_helpers.mjs
     'tsx src/index.ts start',
     'tsx src/server-stdio.ts',
     'backgroundcorebootstrap',
     'server-stdio',
   ];
 
+<<<<<<< HEAD:archive/ts-legacy/scripts/dev_tabby_ready_helpers.mjs
   return hypercodeMarkers.some((marker) => normalized.includes(marker));
+=======
+  return borgMarkers.some((marker) => normalized.includes(marker));
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:scripts/dev_tabby_ready_helpers.mjs
 }
 
 export function chooseStaleCoreRefreshTarget({
@@ -242,8 +278,13 @@ const BROWSER_EXTENSION_ARTIFACTS = [
     id: 'browser-extension-chromium',
     label: 'browser extension Chromium bundle',
     candidates: [
+<<<<<<< HEAD:archive/ts-legacy/scripts/dev_tabby_ready_helpers.mjs
       ['apps', 'hypercode-extension', 'dist-chromium'],
       ['apps', 'hypercode-extension', 'dist'],
+=======
+      ['apps', 'borg-extension', 'dist-chromium'],
+      ['apps', 'borg-extension', 'dist'],
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:scripts/dev_tabby_ready_helpers.mjs
     ],
     requiredFiles: ['background.js', 'manifest.json'],
   },
@@ -251,7 +292,11 @@ const BROWSER_EXTENSION_ARTIFACTS = [
     id: 'browser-extension-firefox',
     label: 'browser extension Firefox bundle',
     candidates: [
+<<<<<<< HEAD:archive/ts-legacy/scripts/dev_tabby_ready_helpers.mjs
       ['apps', 'hypercode-extension', 'dist-firefox'],
+=======
+      ['apps', 'borg-extension', 'dist-firefox'],
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:scripts/dev_tabby_ready_helpers.mjs
     ],
     requiredFiles: ['background.js', 'manifest.json'],
   },

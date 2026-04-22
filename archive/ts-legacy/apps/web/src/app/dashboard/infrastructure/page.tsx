@@ -3,6 +3,7 @@
 import React from "react";
 import { Server, Settings, Activity, TerminalSquare, AlertTriangle, CheckCircle2, ChevronRight, Download } from "lucide-react";
 import { trpc } from "@/utils/trpc";
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/infrastructure/page.tsx
 import { Button, Card, CardHeader, CardTitle, CardContent } from "@hypercode/ui";
 import { toast } from "sonner";
 
@@ -11,16 +12,27 @@ type InfrastructureCommandResult = {
     output?: string;
 };
 
+=======
+import { Button, Card, CardHeader, CardTitle, CardContent } from "@borg/ui";
+import { toast } from "sonner";
+
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/infrastructure/page.tsx
 export default function InfrastructureDashboardPage() {
     const infrastructureClient = trpc.infrastructure as any;
     const { data: status, isLoading: isLoadingStatus, error: statusError, refetch } = infrastructureClient.getInfrastructureStatus.useQuery();
     const statusUnavailable = Boolean(statusError) || (status !== undefined && (!status || typeof status !== "object"));
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/infrastructure/page.tsx
     const [lastDoctorResult, setLastDoctorResult] = React.useState<InfrastructureCommandResult | null>(null);
     const [lastApplyResult, setLastApplyResult] = React.useState<InfrastructureCommandResult | null>(null);
 
     const applyMutation = trpc.infrastructure.applyConfigurations.useMutation({
         onSuccess: (data: any) => {
             setLastApplyResult(data);
+=======
+
+    const applyMutation = trpc.infrastructure.applyConfigurations.useMutation({
+        onSuccess: (data: any) => {
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/infrastructure/page.tsx
             if (data.success) {
                 toast.success("Applied infrastructure configuration successfully.");
                 refetch();
@@ -33,9 +45,16 @@ export default function InfrastructureDashboardPage() {
 
     const doctorMutation = trpc.infrastructure.runDoctor.useMutation({
         onSuccess: (data: any) => {
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/infrastructure/page.tsx
             setLastDoctorResult(data);
             if (data.success) {
                 toast.success("Health check completed.");
+=======
+            if (data.success) {
+                toast.success("Health check completed.");
+                console.log(data.output);
+                // In a richer UI, output could be printed to a modal or terminal panel
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/infrastructure/page.tsx
             } else {
                 toast.error(`Health check failed: ${data.output}`);
             }
@@ -51,7 +70,11 @@ export default function InfrastructureDashboardPage() {
                     Daemon Orchestration
                 </h1>
                 <p className="text-zinc-500 mt-2">
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/infrastructure/page.tsx
                     Manage HyperCode infrastructure deployments from the Supervisor namespace.
+=======
+                    Manage borg infrastructure deployments from the Supervisor namespace.
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/infrastructure/page.tsx
                 </p>
             </div>
 
@@ -113,7 +136,11 @@ export default function InfrastructureDashboardPage() {
                     </CardHeader>
                     <CardContent className="space-y-4">
                         <p className="text-sm text-zinc-400 mb-6">
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/infrastructure/page.tsx
                             Apply settings from your HyperCode infrastructure configuration across connected environments instantly.
+=======
+                            Apply settings from your borg infrastructure configuration across connected environments instantly.
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/infrastructure/page.tsx
                         </p>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <Button
@@ -143,6 +170,7 @@ export default function InfrastructureDashboardPage() {
                 </Card>
             </div>
 
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/infrastructure/page.tsx
             {lastApplyResult && (
                 <Card className="bg-zinc-900 border-zinc-800">
                     <CardHeader>
@@ -185,6 +213,8 @@ export default function InfrastructureDashboardPage() {
                 </Card>
             )}
 
+=======
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/infrastructure/page.tsx
             <Card className="bg-zinc-900 border-zinc-800">
                 <CardHeader>
                     <CardTitle className="text-lg flex items-center gap-2">

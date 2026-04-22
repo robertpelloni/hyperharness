@@ -1,6 +1,10 @@
 
 import { DeepResearchService } from '../services/DeepResearchService.js';
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/scripts/verify_research_recursion.ts
 import { LLMService } from '@hypercode/ai';
+=======
+import { LLMService } from '@borg/ai';
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/scripts/verify_research_recursion.ts
 import { MemoryManager } from '../services/MemoryManager.js';
 
 type RecursiveResearchResult = {
@@ -37,7 +41,11 @@ const mockMemory = {
     saveContext: async () => 123
 } as unknown as MemoryManager;
 
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/scripts/verify_research_recursion.ts
 const mockSearch = {} as unknown as import('@hypercode/search').SearchService;
+=======
+const mockSearch = {} as unknown as import('@borg/search').SearchService;
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/scripts/verify_research_recursion.ts
 
 async function verifyRecursion() {
     console.log("🔍 Verifying Recursive Research...");

@@ -36,7 +36,11 @@ function getCouncilConfigPath(): string {
 }
 
 /**
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/routers/council/index.ts
  * Council router — the central tRPC namespace for the HyperCode Council of Agents.
+=======
+ * Council router — the central tRPC namespace for the borg Council of Agents.
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/routers/council/index.ts
  *
  * Top-level procedures:
  *   - `members` — reads agent definitions from config/council.json

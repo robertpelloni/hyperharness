@@ -2,7 +2,11 @@
 
 import React, { useState } from 'react';
 import { trpc } from '@/utils/trpc';
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/billing/page.tsx
 import { Card, CardHeader, CardTitle, CardContent, Button, Badge } from '@hypercode/ui';
+=======
+import { Card, CardHeader, CardTitle, CardContent, Button, Badge } from '@borg/ui';
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/billing/page.tsx
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer } from 'recharts';
 import { Loader2, DollarSign, Activity, Settings, Key, Zap, AlertCircle, Database, Shield, ExternalLink, WalletCards } from 'lucide-react';
 import { toast } from 'sonner';
@@ -18,8 +22,13 @@ import {
     type BillingTaskRoutingRuleSummary,
     type BillingProviderQuotaSummary,
 } from './billing-portal-data';
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/billing/page.tsx
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@hypercode/ui';
 import { Input } from '@hypercode/ui';
+=======
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@borg/ui';
+import { Input } from '@borg/ui';
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/billing/page.tsx
 import { PageStatusBanner } from '@/components/PageStatusBanner';
 import {
     formatFallbackCauseLabel,
@@ -86,6 +95,7 @@ type FallbackHistoryRow = {
     causeCode: (typeof FALLBACK_HISTORY_CAUSE_CODES)[number];
 };
 
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/billing/page.tsx
 type ProviderConnectionTestResult = {
     provider: string;
     success: boolean;
@@ -93,6 +103,8 @@ type ProviderConnectionTestResult = {
     error?: string | null;
 };
 
+=======
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/billing/page.tsx
 export default function ProviderAuthBillingMatrix() {
     const [historyDays, setHistoryDays] = useState(30);
     const [fallbackTaskType, setFallbackTaskType] = useState<BillingTaskRoutingRuleSummary['taskType']>('general');
@@ -103,7 +115,10 @@ export default function ProviderAuthBillingMatrix() {
     const [activePortalId, setActivePortalId] = useState<string | null>(null);
     const [activePortalName, setActivePortalName] = useState<string>('');
     const [newKeyValue, setNewKeyValue] = useState<string>('');
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/billing/page.tsx
     const [lastConnectionTest, setLastConnectionTest] = useState<ProviderConnectionTestResult | null>(null);
+=======
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/billing/page.tsx
 
     // Provider detail sheet state
     const [selectedProvider, setSelectedProvider] = useState<BillingQuotaTableRow | null>(null);
@@ -169,6 +184,7 @@ export default function ProviderAuthBillingMatrix() {
     });
 
     const testConnectionMutation = trpc.settings.testConnection.useMutation({
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/billing/page.tsx
         onSuccess: async (result, variables) => {
             const testedProvider = variables && typeof variables === 'object' && 'provider' in variables && typeof variables.provider === 'string'
                 ? variables.provider
@@ -179,6 +195,9 @@ export default function ProviderAuthBillingMatrix() {
                 latencyMs: result.latencyMs,
                 error: result.error ?? null,
             });
+=======
+        onSuccess: async (result) => {
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/billing/page.tsx
             if (result.success) {
                 toast.success(`Connection test successful! (${result.latencyMs}ms)`);
             } else {
@@ -325,6 +344,7 @@ export default function ProviderAuthBillingMatrix() {
                 </Card>
             ) : null}
 
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/billing/page.tsx
             {lastConnectionTest ? (
                 <Card className="bg-zinc-900 border-zinc-800 shadow-xl">
                     <CardHeader className="pb-2">
@@ -348,6 +368,8 @@ export default function ProviderAuthBillingMatrix() {
                 </Card>
             ) : null}
 
+=======
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/billing/page.tsx
             <Card className="bg-zinc-900 border-zinc-800 shadow-xl">
                 <CardHeader className="pb-2">
                     <CardTitle className="text-sm font-bold text-zinc-400 uppercase tracking-widest flex items-center gap-2">
@@ -709,7 +731,11 @@ export default function ProviderAuthBillingMatrix() {
                                             </div>
                                         </div>
                                         <div className="text-[11px] text-zinc-500">
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/billing/page.tsx
                                             Changes apply to the next model-selection decision immediately, so you can tune cost vs quality without restarting HyperCode.
+=======
+                                            Changes apply to the next model-selection decision immediately, so you can tune cost vs quality without restarting borg.
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/billing/page.tsx
                                         </div>
                                     </div>
                                     {routingRules.map((rule) => (
@@ -941,7 +967,11 @@ export default function ProviderAuthBillingMatrix() {
                                 Provider Portals & Subscriptions
                             </CardTitle>
                             <p className="text-sm text-zinc-500 mt-2">
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/billing/page.tsx
                                 Jump straight to API keys, usage dashboards, billing consoles, and plan-management pages for the providers HyperCode knows about.
+=======
+                                Jump straight to API keys, usage dashboards, billing consoles, and plan-management pages for the providers borg knows about.
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/billing/page.tsx
                             </p>
                         </CardHeader>
                         <CardContent className="p-6">

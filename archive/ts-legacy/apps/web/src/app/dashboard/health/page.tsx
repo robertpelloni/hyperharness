@@ -1,9 +1,16 @@
 "use client";
 
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/health/page.tsx
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@hypercode/ui";
 import { PageStatusBanner } from '@/components/PageStatusBanner';
 import { Badge } from "@hypercode/ui";
 import { Button } from "@hypercode/ui";
+=======
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@borg/ui";
+import { PageStatusBanner } from '@/components/PageStatusBanner';
+import { Badge } from "@borg/ui";
+import { Button } from "@borg/ui";
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/health/page.tsx
 import { Activity, Server, AlertTriangle, RefreshCcw, HardDrive, Cpu, Network, Radio } from "lucide-react";
 import { trpc } from '@/utils/trpc';
 import { toast } from 'sonner';
@@ -14,6 +21,7 @@ import { getEventBusMetric, getMcpRouterMetric } from './health-metrics';
 import { getConnectedServerKeys, normalizeHealthServers } from './health-server-list';
 import { buildHealthStartupViewModel } from './health-startup-view-model';
 
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/health/page.tsx
 function getStartupModeRows(startupStatus?: DashboardStartupStatus): Array<{ label: string; value: string; detail?: string }> {
     const startupMode = startupStatus?.startupMode;
     if (!startupMode) {
@@ -53,6 +61,8 @@ function getStartupModeRows(startupStatus?: DashboardStartupStatus): Array<{ lab
     ];
 }
 
+=======
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/health/page.tsx
 export default function HealthDashboard() {
     const [isRefreshing, setIsRefreshing] = useState(false);
     const utils = trpc.useUtils();
@@ -92,8 +102,11 @@ export default function HealthDashboard() {
         installArtifactsQuery.data,
     );
     const startupChecks = startupViewModel.startupChecks;
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/health/page.tsx
     const startupModeRows = getStartupModeRows(startupSnapshot);
     const startupModeUpdatedAt = startupSnapshot?.startupMode?.updatedAt ? Date.parse(startupSnapshot.startupMode.updatedAt) : Number.NaN;
+=======
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/health/page.tsx
     const environmentRows = buildSystemEnvironmentRows(startupSnapshot);
     const startupNotice = buildSystemStartupNotice(startupSnapshot);
     const statusCards = startupViewModel.statusCards;
@@ -137,7 +150,11 @@ export default function HealthDashboard() {
                         System Health
                     </h1>
                     <p className="text-zinc-500 mt-1">
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/health/page.tsx
                         Monitor HyperCode infrastructure status, component uptime, and server crash rates.
+=======
+                        Monitor borg infrastructure status, component uptime, and server crash rates.
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/health/page.tsx
                     </p>
                 </div>
                 <Button 
@@ -261,6 +278,7 @@ export default function HealthDashboard() {
                         </CardContent>
                     </Card>
 
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/health/page.tsx
                     {startupModeRows.length > 0 ? (
                         <Card className="bg-zinc-900 border-zinc-800">
                             <CardHeader className="pb-4">
@@ -288,6 +306,8 @@ export default function HealthDashboard() {
                         </Card>
                     ) : null}
 
+=======
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/health/page.tsx
                     <Card className="bg-zinc-900 border-zinc-800 bg-amber-950/10 border-amber-900/20">
                         <CardHeader className="pb-4">
                             <CardTitle className="text-lg font-medium text-amber-500 flex items-center gap-2">

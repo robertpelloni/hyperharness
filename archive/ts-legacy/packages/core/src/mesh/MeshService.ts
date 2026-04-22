@@ -16,8 +16,12 @@ export enum SwarmMessageType {
     TASK_BID = 'TASK_BID',
     TASK_ASSIGN = 'TASK_ASSIGN',
     ARTIFACT_READ_REQUEST = 'ARTIFACT_READ_REQUEST',
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/mesh/MeshService.ts
     ARTIFACT_READ_RESPONSE = 'ARTIFACT_READ_RESPONSE',
     A2A_BRIDGE_SIGNAL = 'A2A_BRIDGE_SIGNAL'
+=======
+    ARTIFACT_READ_RESPONSE = 'ARTIFACT_READ_RESPONSE'
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/mesh/MeshService.ts
 }
 
 export interface SwarmMessage {
@@ -55,7 +59,11 @@ globalMeshBus.setMaxListeners(100);
 
 let redisSubscriber: Redis | null = null;
 let redisPublisher: Redis | null = null;
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/mesh/MeshService.ts
 const REDIS_CHANNEL = 'hypercode:swarm:mesh';
+=======
+const REDIS_CHANNEL = 'borg:swarm:mesh';
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/mesh/MeshService.ts
 
 // Initialize Redis if REDIS_URL is provided in the environment
 if (process.env.REDIS_URL) {

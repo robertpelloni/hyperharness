@@ -2,7 +2,11 @@ export * from './orchestrator.js';
 export { MCPServer } from './MCPServer.js';
 export { appRouter } from './trpc.js';
 export type { AppRouter } from './trpc.js';
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/index.ts
 export const name = "@hypercode/core";
+=======
+export const name = "@borg/core";
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/index.ts
 export * from './services/EventBus.js';
 export * from './services/ContextPruner.js';
 export { SquadService } from './orchestrator/SquadService.js';

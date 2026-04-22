@@ -1,5 +1,8 @@
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/providers/ProviderRegistry.ts
 import { DEFAULT_OPENROUTER_FREE_MODEL } from '@hypercode/ai';
 
+=======
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/providers/ProviderRegistry.ts
 import {
     type FallbackCandidateSnapshot,
     type ProviderAuthState,
@@ -16,6 +19,7 @@ export const DEFAULT_PROVIDER_CATALOG: ProviderDefinition[] = [
         authMethod: 'api_key',
         envKeys: ['GOOGLE_API_KEY', 'GEMINI_API_KEY'],
         executable: true,
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/providers/ProviderRegistry.ts
         defaultModel: 'gemini-2.5-flash',
         preferredTasks: ['coding', 'research'],
         models: [
@@ -33,6 +37,12 @@ export const DEFAULT_PROVIDER_CATALOG: ProviderDefinition[] = [
                 qualityScore: 8,
             },
             {
+=======
+        defaultModel: 'gemini-2.0-flash',
+        preferredTasks: ['coding', 'research'],
+        models: [
+            {
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/providers/ProviderRegistry.ts
                 id: 'gemini-2.0-flash',
                 provider: 'google',
                 name: 'Gemini 2.0 Flash',
@@ -43,6 +53,7 @@ export const DEFAULT_PROVIDER_CATALOG: ProviderDefinition[] = [
                 recommendedFor: ['coding', 'worker', 'general'],
                 capabilities: ['coding', 'vision', 'tools', 'long_context'],
                 executable: true,
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/providers/ProviderRegistry.ts
                 qualityScore: 9,
             },
             {
@@ -56,6 +67,8 @@ export const DEFAULT_PROVIDER_CATALOG: ProviderDefinition[] = [
                 recommendedFor: ['worker', 'general'],
                 capabilities: ['coding', 'long_context'],
                 executable: true,
+=======
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/providers/ProviderRegistry.ts
                 qualityScore: 7,
             },
             {
@@ -64,7 +77,11 @@ export const DEFAULT_PROVIDER_CATALOG: ProviderDefinition[] = [
                 name: 'Gemini 1.5 Pro',
                 inputPrice: 0.0035,
                 outputPrice: 0.0105,
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/providers/ProviderRegistry.ts
                 contextWindow: 2_000_000,
+=======
+                contextWindow: 1_000_000,
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/providers/ProviderRegistry.ts
                 tier: 'premium',
                 recommendedFor: ['planning', 'research', 'supervisor'],
                 capabilities: ['reasoning', 'vision', 'long_context', 'tools'],
@@ -79,6 +96,7 @@ export const DEFAULT_PROVIDER_CATALOG: ProviderDefinition[] = [
         authMethod: 'api_key',
         envKeys: ['ANTHROPIC_API_KEY'],
         executable: true,
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/providers/ProviderRegistry.ts
         defaultModel: 'claude-3-7-sonnet-20250219',
         preferredTasks: ['planning', 'research'],
         models: [
@@ -86,15 +104,29 @@ export const DEFAULT_PROVIDER_CATALOG: ProviderDefinition[] = [
                 id: 'claude-3-7-sonnet-20250219',
                 provider: 'anthropic',
                 name: 'Claude 3.7 Sonnet',
+=======
+        defaultModel: 'claude-sonnet-4-20250514',
+        preferredTasks: ['planning', 'research'],
+        models: [
+            {
+                id: 'claude-sonnet-4-20250514',
+                provider: 'anthropic',
+                name: 'Claude Sonnet 4',
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/providers/ProviderRegistry.ts
                 inputPrice: 0.003,
                 outputPrice: 0.015,
                 contextWindow: 200_000,
                 tier: 'premium',
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/providers/ProviderRegistry.ts
                 recommendedFor: ['planning', 'research', 'supervisor', 'coding'],
+=======
+                recommendedFor: ['planning', 'research', 'supervisor'],
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/providers/ProviderRegistry.ts
                 capabilities: ['reasoning', 'coding', 'tools', 'long_context'],
                 executable: true,
                 qualityScore: 10,
             },
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/providers/ProviderRegistry.ts
             {
                 id: 'claude-3-5-haiku-20241022',
                 provider: 'anthropic',
@@ -108,6 +140,8 @@ export const DEFAULT_PROVIDER_CATALOG: ProviderDefinition[] = [
                 executable: true,
                 qualityScore: 7,
             },
+=======
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/providers/ProviderRegistry.ts
         ],
     },
     {
@@ -154,11 +188,16 @@ export const DEFAULT_PROVIDER_CATALOG: ProviderDefinition[] = [
         envKeys: ['DEEPSEEK_API_KEY'],
         executable: true,
         defaultModel: 'deepseek-chat',
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/providers/ProviderRegistry.ts
         preferredTasks: ['coding', 'research'],
+=======
+        preferredTasks: ['coding'],
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/providers/ProviderRegistry.ts
         models: [
             {
                 id: 'deepseek-chat',
                 provider: 'deepseek',
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/providers/ProviderRegistry.ts
                 name: 'DeepSeek V3',
                 inputPrice: 0.00014,
                 outputPrice: 0.00028,
@@ -181,6 +220,17 @@ export const DEFAULT_PROVIDER_CATALOG: ProviderDefinition[] = [
                 capabilities: ['reasoning', 'coding'],
                 executable: true,
                 qualityScore: 10,
+=======
+                name: 'DeepSeek Chat',
+                inputPrice: 0.00027,
+                outputPrice: 0.0011,
+                contextWindow: 64_000,
+                tier: 'standard',
+                recommendedFor: ['coding', 'general'],
+                capabilities: ['coding', 'reasoning'],
+                executable: true,
+                qualityScore: 7,
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/providers/ProviderRegistry.ts
             },
         ],
     },
@@ -189,6 +239,7 @@ export const DEFAULT_PROVIDER_CATALOG: ProviderDefinition[] = [
         name: 'OpenRouter',
         authMethod: 'api_key',
         envKeys: ['OPENROUTER_API_KEY'],
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/providers/ProviderRegistry.ts
         executable: true,
         defaultModel: 'openrouter/free',
         preferredTasks: ['coding', 'research', 'general', 'worker'],
@@ -249,11 +300,21 @@ export const DEFAULT_PROVIDER_CATALOG: ProviderDefinition[] = [
                 id: 'openrouter/auto',
                 provider: 'openrouter',
                 name: 'OpenRouter Auto (Best Overall)',
+=======
+        executable: false,
+        defaultModel: 'openrouter/auto',
+        models: [
+            {
+                id: 'openrouter/auto',
+                provider: 'openrouter',
+                name: 'OpenRouter Auto',
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/providers/ProviderRegistry.ts
                 inputPrice: null,
                 outputPrice: null,
                 contextWindow: null,
                 tier: 'meta',
                 capabilities: ['reasoning', 'coding', 'vision', 'tools'],
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/providers/ProviderRegistry.ts
                 executable: true,
                 qualityScore: 5,
             },
@@ -269,6 +330,10 @@ export const DEFAULT_PROVIDER_CATALOG: ProviderDefinition[] = [
                 executable: true,
                 qualityScore: 10,
             },
+=======
+                qualityScore: 5,
+            },
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/providers/ProviderRegistry.ts
         ],
     },
     {
@@ -318,6 +383,7 @@ export const DEFAULT_PROVIDER_CATALOG: ProviderDefinition[] = [
         name: 'LM Studio',
         authMethod: 'none',
         executable: true,
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/providers/ProviderRegistry.ts
         defaultModel: 'C:/Users/hyper/.lmstudio/models/HauhauCS/Gemma-4-E2B-Uncensored-HauhauCS-Aggressive/Gemma-4-E2B-Uncensored-HauhauCS-Aggressive-Q2_K_P.gguf gemma-4-e2b-uncensored-hauhaucs-aggressive',
         preferredTasks: ['general', 'worker'],
         models: [
@@ -335,6 +401,12 @@ export const DEFAULT_PROVIDER_CATALOG: ProviderDefinition[] = [
                 qualityScore: 10,
             },
             {
+=======
+        defaultModel: 'local',
+        preferredTasks: ['general'],
+        models: [
+            {
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/providers/ProviderRegistry.ts
                 id: 'local',
                 provider: 'lmstudio',
                 name: 'LM Studio Local',

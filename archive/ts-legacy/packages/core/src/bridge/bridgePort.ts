@@ -1,4 +1,8 @@
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/bridge/bridgePort.ts
 const DEFAULT_HYPERCODE_BRIDGE_PORT = 3001;
+=======
+const DEFAULT_BORG_BRIDGE_PORT = 3001;
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/bridge/bridgePort.ts
 
 function normalizePort(value: string | undefined): number | null {
     if (typeof value !== 'string') {
@@ -19,6 +23,7 @@ function normalizePort(value: string | undefined): number | null {
 }
 
 export function getDefaultBridgePort(): number {
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/bridge/bridgePort.ts
     return DEFAULT_HYPERCODE_BRIDGE_PORT;
 }
 
@@ -26,6 +31,15 @@ export function resolveBridgePort(env: NodeJS.ProcessEnv = process.env): number 
     return normalizePort(env.HYPERCODE_BRIDGE_PORT)
         ?? normalizePort(env.HYPERCODE_CORE_BRIDGE_PORT)
         ?? DEFAULT_HYPERCODE_BRIDGE_PORT;
+=======
+    return DEFAULT_BORG_BRIDGE_PORT;
+}
+
+export function resolveBridgePort(env: NodeJS.ProcessEnv = process.env): number {
+    return normalizePort(env.BORG_BRIDGE_PORT)
+        ?? normalizePort(env.BORG_CORE_BRIDGE_PORT)
+        ?? DEFAULT_BORG_BRIDGE_PORT;
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/bridge/bridgePort.ts
 }
 
 export function getBridgeHttpBase(port: number = resolveBridgePort()): string {

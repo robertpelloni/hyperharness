@@ -19,9 +19,15 @@ export class ConfigManager {
 
     constructor() {
         // Use user home or workspace root? 
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/config/ConfigManager.ts
         // MCPServer uses process.cwd()/.hypercode/skills
         // Let's use process.cwd()/.hypercode/config.json
         this.configPath = path.join(process.cwd(), '.hypercode', 'config.json');
+=======
+        // MCPServer uses process.cwd()/.borg/skills
+        // Let's use process.cwd()/.borg/config.json
+        this.configPath = path.join(process.cwd(), '.borg', 'config.json');
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/config/ConfigManager.ts
     }
 
     loadConfig(): ConfigData | null {

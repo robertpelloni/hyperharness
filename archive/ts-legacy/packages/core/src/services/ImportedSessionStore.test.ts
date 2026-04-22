@@ -70,7 +70,11 @@ function createSchema(database: Database.Database): void {
 }
 
 async function createTempRoot(): Promise<string> {
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/services/ImportedSessionStore.test.ts
     const root = await fs.mkdtemp(path.join(os.tmpdir(), 'hypercode-imported-session-store-'));
+=======
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), 'borg-imported-session-store-'));
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/services/ImportedSessionStore.test.ts
     tempRoots.push(root);
     return root;
 }
@@ -137,7 +141,11 @@ describe('ImportedSessionStore', () => {
             get sqliteInstance() {
                 return {
                     prepare() {
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/services/ImportedSessionStore.test.ts
                         throw new Error('SQLite runtime is unavailable for this run.');
+=======
+                        throw new Error('SQLite runtime is unavailable for borg DB-backed features (Could not locate the bindings file. Tried: better-sqlite3.node)');
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/services/ImportedSessionStore.test.ts
                     },
                 };
             },

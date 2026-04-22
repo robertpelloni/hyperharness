@@ -47,7 +47,11 @@ import {
 import { useState } from "react";
 import { toast } from "sonner";
 import type { inferRouterOutputs } from "@trpc/server";
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/registry/[uuid]/page.tsx
 import type { AppRouter } from "@hypercode/core";
+=======
+import type { AppRouter } from "@borg/core";
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/registry/[uuid]/page.tsx
 
 // ---- Types ----
 
@@ -182,6 +186,7 @@ function formatRelativeTime(value: string | Date | null | undefined): string {
 
 // ---- Main page ----
 
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/registry/[uuid]/page.tsx
 type RegistryDetailActionResult = {
     title: string;
     tone: 'success' | 'warning' | 'error';
@@ -189,6 +194,8 @@ type RegistryDetailActionResult = {
     details?: string[];
 };
 
+=======
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/registry/[uuid]/page.tsx
 export default function ServerDetailPage() {
     const params = useParams();
     const router = useRouter();
@@ -198,7 +205,10 @@ export default function ServerDetailPage() {
     const [installEnv, setInstallEnv] = useState<Record<string, string>>({});
     const [showInstallModal, setShowInstallModal] = useState(false);
     const [showSecrets, setShowSecrets] = useState(false);
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/registry/[uuid]/page.tsx
     const [lastActionResult, setLastActionResult] = useState<RegistryDetailActionResult | null>(null);
+=======
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/registry/[uuid]/page.tsx
 
     const utils = trpc.useContext();
 
@@ -224,6 +234,7 @@ export default function ServerDetailPage() {
     const validateMutation = trpc.catalog.triggerValidation.useMutation({
         onSuccess: (result) => {
             const icon = result.outcome === "passed" ? "✅" : result.outcome === "skipped" ? "⏭️" : "❌";
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/registry/[uuid]/page.tsx
             setLastActionResult({
                 title: 'Validation Result',
                 tone: result.outcome === 'passed' ? 'success' : result.outcome === 'skipped' ? 'warning' : 'error',
@@ -233,6 +244,8 @@ export default function ServerDetailPage() {
                     ...(result.failure_class ? [`failure_class=${result.failure_class}`] : []),
                 ],
             });
+=======
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/registry/[uuid]/page.tsx
             toast.success(
                 `${icon} Validation ${result.outcome}${result.tool_count != null ? ` — ${result.tool_count} tools` : ""}`
             );
@@ -247,6 +260,7 @@ export default function ServerDetailPage() {
     // Install mutation
     const installMutation = trpc.catalog.installFromRecipe.useMutation({
         onSuccess: (result) => {
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/registry/[uuid]/page.tsx
             setLastActionResult({
                 title: 'Install Result',
                 tone: 'success',
@@ -256,6 +270,8 @@ export default function ServerDetailPage() {
                     `managed_name=${result.name}`,
                 ],
             });
+=======
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/registry/[uuid]/page.tsx
             toast.success(`Installed as "${result.name}"`);
             utils.catalog.get.invalidate({ uuid });
             utils.mcpServers.list.invalidate();
@@ -342,6 +358,7 @@ export default function ServerDetailPage() {
                 <span className="text-zinc-300 truncate max-w-xs">{server.display_name}</span>
             </div>
 
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/registry/[uuid]/page.tsx
             {lastActionResult ? (
                 <div className={`rounded-lg border px-4 py-3 text-sm ${lastActionResult.tone === 'success' ? 'border-emerald-900/40 bg-emerald-950/10 text-emerald-100' : lastActionResult.tone === 'warning' ? 'border-amber-900/40 bg-amber-950/10 text-amber-100' : 'border-red-900/40 bg-red-950/10 text-red-100'}`}>
                     <div className="font-medium">{lastActionResult.title}</div>
@@ -356,6 +373,8 @@ export default function ServerDetailPage() {
                 </div>
             ) : null}
 
+=======
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/registry/[uuid]/page.tsx
             {/* Header card */}
             <div className="bg-zinc-900/40 border border-zinc-800 rounded-xl p-5">
                 <div className="flex flex-wrap items-start justify-between gap-4">

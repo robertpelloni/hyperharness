@@ -32,7 +32,11 @@ export const ReaderTools = [
                 turndownService.remove('style');
                 turndownService.remove('noscript');
                 turndownService.remove('iframe');
+<<<<<<< HEAD:archive/ts-legacy/packages/tools/src/ReaderTools.js
                 console.log(`[HyperCode Reader] Fetching ${url}...`);
+=======
+                console.log(`[borg Reader] Fetching ${url}...`);
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/tools/src/ReaderTools.js
                 const response = await fetch(url, {
                     headers: {
                         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'

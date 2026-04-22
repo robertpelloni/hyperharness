@@ -13,8 +13,13 @@ function shouldIgnoreInternalDiagnostic(message: string): boolean {
         '[TerminalSensor]',
         '[FileSensor]',
         '[EventBus]',
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/sensors/TerminalSensor.ts
         '[HyperCode Core] Unhandled promise rejection:',
         '[HyperCode Core] Uncaught exception:',
+=======
+        '[borg Core] Unhandled promise rejection:',
+        '[borg Core] Uncaught exception:',
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/sensors/TerminalSensor.ts
     ];
 
     return internalPrefixes.some((prefix) => trimmed.startsWith(prefix));

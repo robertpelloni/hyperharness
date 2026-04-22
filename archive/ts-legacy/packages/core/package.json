@@ -1,6 +1,11 @@
 {
+<<<<<<< HEAD:archive/ts-legacy/packages/core/package.json
     "name": "@hypercode/core",
     "version": "1.0.0-alpha.32",
+=======
+    "name": "@borg/core",
+    "version": "1.0.0-alpha.1",
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/package.json
     "type": "module",
     "main": "dist/index.js",
     "types": "dist/index.d.ts",
@@ -29,6 +34,7 @@
         "test": "vitest run"
     },
     "dependencies": {
+<<<<<<< HEAD:archive/ts-legacy/packages/core/package.json
         "@hono/node-server": "^1.19.11",
         "@hono/zod-validator": "^0.7.2",
         "@hypercode/adk": "workspace:*",
@@ -39,6 +45,18 @@
         "@hypercode/search": "workspace:*",
         "@hypercode/tools": "workspace:*",
         "@hypercode/types": "workspace:*",
+=======
+        "@borg/adk": "workspace:*",
+        "@borg/agents": "workspace:*",
+        "@borg/ai": "workspace:*",
+        "@borg/mcp-registry": "workspace:*",
+        "@borg/memory": "workspace:*",
+        "@borg/search": "workspace:*",
+        "@borg/tools": "workspace:*",
+        "@borg/types": "workspace:*",
+        "@hono/node-server": "^1.19.11",
+        "@hono/zod-validator": "^0.7.2",
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/package.json
         "@hyperswarm/secret-stream": "^6.9.1",
         "@lancedb/lancedb": "^0.23.0",
         "@modelcontextprotocol/sdk": "^1.0.0",

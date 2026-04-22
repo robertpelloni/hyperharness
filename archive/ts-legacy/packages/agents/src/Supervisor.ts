@@ -1,5 +1,10 @@
+<<<<<<< HEAD:archive/ts-legacy/packages/agents/src/Supervisor.ts
 import { LLMService } from "@hypercode/ai";
 import type { IMCPServer } from "@hypercode/adk";
+=======
+import { LLMService } from "@borg/ai";
+import type { IMCPServer } from "@borg/adk";
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/agents/src/Supervisor.ts
 
 interface SubTask {
     id: string;

@@ -9,6 +9,7 @@ import {
     acquireSingleInstanceLock,
     createLockLifecycleHandlers,
     isAddrInUseError,
+<<<<<<< HEAD:archive/ts-legacy/packages/cli/src/commands/start.test.ts
     isHypercodeServer,
     attachDashboardToRunningControlPlane,
     pickAvailableControlPlaneFallbackPort,
@@ -27,6 +28,15 @@ import {
     syncLockHandlePort,
     startCoreRuntime,
     waitForHypercodeServer,
+=======
+    pickAvailableControlPlaneFallbackPort,
+    pickDashboardPort,
+    resolveControlPlaneFallbackPort,
+    resolveDashboardUrl,
+    resolveDataDir,
+    syncLockHandlePort,
+    startCoreRuntime,
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/cli/src/commands/start.test.ts
 } from './start.js';
 
 const tempDirs: string[] = [];
@@ -41,7 +51,11 @@ afterEach(() => {
 });
 
 function createTempDir(): string {
+<<<<<<< HEAD:archive/ts-legacy/packages/cli/src/commands/start.test.ts
     const dir = mkdtempSync(join(tmpdir(), 'hypercode-start-lock-'));
+=======
+    const dir = mkdtempSync(join(tmpdir(), 'borg-start-lock-'));
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/cli/src/commands/start.test.ts
     tempDirs.push(dir);
     return dir;
 }
@@ -148,7 +162,11 @@ describe('acquireSingleInstanceLock', () => {
         const dataDir = createTempDir();
         const stalePort = await getFreePort();
         writeFileSync(join(dataDir, 'lock'), JSON.stringify({
+<<<<<<< HEAD:archive/ts-legacy/packages/cli/src/commands/start.test.ts
             instanceId: 'hypercode-stale',
+=======
+            instanceId: 'borg-stale',
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/cli/src/commands/start.test.ts
             pid: 999999,
             port: stalePort,
             host: '127.0.0.1',
@@ -173,7 +191,11 @@ describe('acquireSingleInstanceLock', () => {
         const dataDir = createTempDir();
         const stalePort = await getFreePort();
         writeFileSync(join(dataDir, 'lock'), JSON.stringify({
+<<<<<<< HEAD:archive/ts-legacy/packages/cli/src/commands/start.test.ts
             instanceId: 'hypercode-stale',
+=======
+            instanceId: 'borg-stale',
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/cli/src/commands/start.test.ts
             pid: 999999,
             port: stalePort,
             host: '127.0.0.1',
@@ -197,7 +219,11 @@ describe('acquireSingleInstanceLock', () => {
     it('blocks startup when the lock belongs to a still-running process', async () => {
         const dataDir = createTempDir();
         writeFileSync(join(dataDir, 'lock'), JSON.stringify({
+<<<<<<< HEAD:archive/ts-legacy/packages/cli/src/commands/start.test.ts
             instanceId: 'hypercode-live',
+=======
+            instanceId: 'borg-live',
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/cli/src/commands/start.test.ts
             pid: process.pid,
             port: 4000,
             host: '127.0.0.1',
@@ -212,7 +238,11 @@ describe('acquireSingleInstanceLock', () => {
         }, {
             isProcessRunning: () => true,
             isPortFree: async () => false,
+<<<<<<< HEAD:archive/ts-legacy/packages/cli/src/commands/start.test.ts
         })).rejects.toThrow('HyperCode is already running');
+=======
+        })).rejects.toThrow('borg is already running');
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/cli/src/commands/start.test.ts
     });
 
     it('fails clearly when the requested port is already occupied by another process', async () => {
@@ -225,6 +255,7 @@ describe('acquireSingleInstanceLock', () => {
             host: '127.0.0.1',
         }, {
             isPortFree: async () => false,
+<<<<<<< HEAD:archive/ts-legacy/packages/cli/src/commands/start.test.ts
             isExistingHypercode: async () => false,
         })).rejects.toThrow('Port 4000 is already in use by another process');
     });
@@ -264,6 +295,11 @@ describe('acquireSingleInstanceLock', () => {
         handle.releaseSync();
     });
 
+=======
+        })).rejects.toThrow('Port 4000 is already in use by another process');
+    });
+
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/cli/src/commands/start.test.ts
     it('updates the lock record port when the active control-plane port changes', async () => {
         const dataDir = createTempDir();
         const handle = await acquireSingleInstanceLock({
@@ -356,6 +392,7 @@ describe('acquireSingleInstanceLock', () => {
 
 describe('resolveDataDir', () => {
     it('expands the home-directory shorthand', () => {
+<<<<<<< HEAD:archive/ts-legacy/packages/cli/src/commands/start.test.ts
         const resolved = resolveDataDir('~/.hypercode', 'C:/tmp/home');
         expect(resolved.replaceAll('\\', '/')).toBe('C:/tmp/home/.hypercode');
     });
@@ -446,6 +483,10 @@ describe('runtime selection helpers', () => {
             'Supervisor startup: disabled for this run.',
             'Auto-Drive startup: disabled for this run.',
         ]);
+=======
+        const resolved = resolveDataDir('~/.borg', 'C:/tmp/home');
+        expect(resolved.replaceAll('\\', '/')).toBe('C:/tmp/home/.borg');
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/cli/src/commands/start.test.ts
     });
 });
 
@@ -455,6 +496,7 @@ describe('dashboard startup helpers', () => {
         expect(resolveDashboardUrl('127.0.0.1', 3010)).toBe('http://127.0.0.1:3010/dashboard');
     });
 
+<<<<<<< HEAD:archive/ts-legacy/packages/cli/src/commands/start.test.ts
     it('waits for a HyperCode server health endpoint to become ready', async () => {
         const fetchImpl = vi
             .fn()
@@ -511,6 +553,8 @@ describe('dashboard startup helpers', () => {
         await expect(isHypercodeServer('127.0.0.1', 4000, fetchImpl as any)).resolves.toBe(false);
     });
 
+=======
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/cli/src/commands/start.test.ts
     it('reuses an already-running dashboard on the requested port', async () => {
         const fetchImpl = vi.fn().mockResolvedValue({ ok: true });
 
@@ -562,6 +606,7 @@ describe('dashboard startup helpers', () => {
             reusedExisting: false,
         });
     });
+<<<<<<< HEAD:archive/ts-legacy/packages/cli/src/commands/start.test.ts
 
     it('reuses an already-running dashboard when reusing an existing control plane', async () => {
         await expect(resolveAlreadyRunningDashboardReuse({
@@ -672,6 +717,8 @@ describe('dashboard startup helpers', () => {
             detail: 'next missing',
         });
     });
+=======
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/cli/src/commands/start.test.ts
 });
 
 describe('control-plane fallback helpers', () => {
@@ -747,18 +794,22 @@ describe('control-plane fallback helpers', () => {
         })).resolves.toBe(4003);
     });
 
+<<<<<<< HEAD:archive/ts-legacy/packages/cli/src/commands/start.test.ts
     it('can fall forward beyond the old narrow control-plane scan window', async () => {
         await expect(pickAvailableControlPlaneFallbackPort(4001, {
             isPortFree: async (port) => port === 4012,
         })).resolves.toBe(4012);
     });
 
+=======
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/cli/src/commands/start.test.ts
     it('returns null when no fallback port is available in the scan window', async () => {
         await expect(pickAvailableControlPlaneFallbackPort(4001, {
             isPortFree: async () => false,
         })).resolves.toBeNull();
     });
 });
+<<<<<<< HEAD:archive/ts-legacy/packages/cli/src/commands/start.test.ts
 
 describe('readMatchingStartupProvenanceFromLock', () => {
     it('returns null if the lock file does not exist', () => {
@@ -803,3 +854,5 @@ describe('readMatchingStartupProvenanceFromLock', () => {
         expect(prov?.portDecision).toBe('derived from lock record');
     });
 });
+=======
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/cli/src/commands/start.test.ts

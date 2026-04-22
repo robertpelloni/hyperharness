@@ -62,14 +62,23 @@ export class SelfEvolutionService {
   }
 
   /**
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/orchestrator/council/services/self-evolution.ts
    * Spawns an internal meta-session to modify the codebase of HyperCode itself.
+=======
+   * Spawns an internal meta-session to modify the codebase of borg itself.
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/orchestrator/council/services/self-evolution.ts
    */
   async evolveSystem(description: string): Promise<string> {
     const taskId = `evolve-${Date.now()}`;
     const task: DevelopmentTask = {
       id: taskId,
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/orchestrator/council/services/self-evolution.ts
       description: `[SELF-EVOLUTION] ${description}\n\nYou are modifying the source code of HyperCode itself. \n\nIMPORTANT INSTRUCTIONS:\n1. Create a new git branch named 'evolve-${taskId}'.\n2. Make the requested changes.\n3. Run 'npm run build' and 'npm run lint' across the monorepo to ensure integrity.\n4. If tests and builds pass, commit the changes and push the branch.`,
       context: 'Modify HyperCode source code to implement the requested evolution autonomously.',
+=======
+      description: `[SELF-EVOLUTION] ${description}\n\nYou are modifying the source code of borg itself. \n\nIMPORTANT INSTRUCTIONS:\n1. Create a new git branch named 'evolve-${taskId}'.\n2. Make the requested changes.\n3. Run 'npm run build' and 'npm run lint' across the monorepo to ensure integrity.\n4. If tests and builds pass, commit the changes and push the branch.`,
+      context: 'Modify borg source code to implement the requested evolution autonomously.',
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/orchestrator/council/services/self-evolution.ts
       files: [],
       cliType: 'claude-code'
     };

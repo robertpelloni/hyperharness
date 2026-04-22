@@ -2,7 +2,11 @@
 
 import { useState } from 'react';
 import { trpc } from '@/utils/trpc';
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/components/config/ModelProvidersList.tsx
 import { Button, Input, Card } from '@hypercode/ui';
+=======
+import { Button, Input, Card } from '@borg/ui';
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/components/config/ModelProvidersList.tsx
 
 type ProviderListItem = {
     id: string;

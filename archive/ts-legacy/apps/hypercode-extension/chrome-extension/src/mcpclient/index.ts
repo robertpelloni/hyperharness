@@ -238,7 +238,11 @@ export async function runWithBackwardsCompatibility(
     const transport = (client as any).transport;
     if (transport && typeof transport.on === 'function') {
       transport.on('message', async (message: any) => {
+<<<<<<<< HEAD:archive/ts-legacy/apps/hypercode-extension/chrome-extension/src/mcpclient/index.ts
         // Detect non-standard JSON-RPC calls from HyperCode Core (e.g. read_page, browser_*)
+========
+        // Detect non-standard JSON-RPC calls from borg Core (e.g. read_page, browser_*)
+>>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/borg-extension/chrome-extension/src/mcpclient/index.ts
         if (message.jsonrpc === '2.0' && message.method && message.id && !message.result && !message.error) {
           const { method, params, id } = message;
           

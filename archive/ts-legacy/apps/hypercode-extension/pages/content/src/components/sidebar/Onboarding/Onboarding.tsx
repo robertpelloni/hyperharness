@@ -14,7 +14,11 @@ interface OnboardingStep {
 
 const steps: OnboardingStep[] = [
   {
+<<<<<<<< HEAD:archive/ts-legacy/apps/hypercode-extension/pages/content/src/components/sidebar/Onboarding/Onboarding.tsx
     title: 'Welcome to HyperCode Extension',
+========
+    title: 'Welcome to borg Extension',
+>>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/borg-extension/pages/content/src/components/sidebar/Onboarding/Onboarding.tsx
     description:
       'Empower your AI with real-world tools. This sidebar is your control center for connecting local data, files, and APIs to ChatGPT, Claude, and more.',
     icon: 'lightning',

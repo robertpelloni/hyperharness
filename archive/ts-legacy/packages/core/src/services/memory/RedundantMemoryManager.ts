@@ -3,7 +3,11 @@
  *
  * This is the "super-memory" module requested by the user.  It guarantees that
  * every memory write is persisted to ALL providers simultaneously (JSON flat
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/services/memory/RedundantMemoryManager.ts
  * file, HyperCode sectioned memory store, and any future vector/DB providers).
+=======
+ * file, borg sectioned memory store, and any future vector/DB providers).
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/services/memory/RedundantMemoryManager.ts
  *
  * Read operations merge results from all providers, de-duplicate by UUID, and
  * return a combined view.

@@ -1,7 +1,12 @@
 "use client";
 
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/mcp/system/page.tsx
 import { Card, CardContent } from "@hypercode/ui";
 import { Button } from "@hypercode/ui";
+=======
+import { Card, CardContent } from "@borg/ui";
+import { Button } from "@borg/ui";
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/mcp/system/page.tsx
 import { Activity, Server, Cpu, HardDrive, Network, Globe, Radio, Puzzle } from "lucide-react";
 import { useEffect, useState } from 'react';
 import { trpc } from '@/utils/trpc';
@@ -22,6 +27,7 @@ function getStatusCardColor(status: string): string {
     return 'text-yellow-500';
 }
 
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/mcp/system/page.tsx
 function getStartupModeRows(startupStatus?: DashboardStartupStatus): Array<{ label: string; value: string; detail?: string }> {
     const startupMode = startupStatus?.startupMode;
     if (!startupMode) {
@@ -61,6 +67,8 @@ function getStartupModeRows(startupStatus?: DashboardStartupStatus): Array<{ lab
     ];
 }
 
+=======
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/mcp/system/page.tsx
 export default function SystemStatusDashboard() {
     const [dashboardPort, setDashboardPort] = useState<number | null>(null);
     const { data: status, error: statusError, refetch } = trpc.mcp.getStatus.useQuery();
@@ -87,8 +95,11 @@ export default function SystemStatusDashboard() {
     };
 
     const startupSnapshot = startupStatus as DashboardStartupStatus | undefined;
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/mcp/system/page.tsx
     const startupModeRows = getStartupModeRows(startupSnapshot);
     const startupModeUpdatedAt = startupSnapshot?.startupMode?.updatedAt ? Date.parse(startupSnapshot.startupMode.updatedAt) : Number.NaN;
+=======
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/mcp/system/page.tsx
     const startupChecks = startupSnapshot ? buildSystemStartupChecks(startupSnapshot, installArtifactsQuery.data) : [];
     const componentHealthRows = buildSystemComponentHealthRows(startupSnapshot, browserStatus ?? undefined, installArtifactsQuery.data);
     const environmentRows = buildSystemEnvironmentRows(startupSnapshot);
@@ -247,7 +258,11 @@ export default function SystemStatusDashboard() {
                         <div className="space-y-4">
                             {startupChecks.length === 0 ? (
                                 <div className="rounded border border-zinc-800 bg-zinc-950 p-4 text-sm text-zinc-500">
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/mcp/system/page.tsx
                                     Connecting to live startup telemetry from HyperCode Core…
+=======
+                                    Connecting to live startup telemetry from borg Core…
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/mcp/system/page.tsx
                                 </div>
                             ) : startupChecks.map((check) => (
                                 <HealthRow key={check.name} name={check.name} status={check.status} latency={check.latency} detail={check.detail} />
@@ -272,6 +287,7 @@ export default function SystemStatusDashboard() {
                         </div>
                     </CardContent>
                 </Card>
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/mcp/system/page.tsx
 
                 {startupModeRows.length > 0 ? (
                     <Card className="bg-zinc-900 border-zinc-800">
@@ -299,6 +315,8 @@ export default function SystemStatusDashboard() {
                         </CardContent>
                     </Card>
                 ) : null}
+=======
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/mcp/system/page.tsx
             </div>
         </div>
     );

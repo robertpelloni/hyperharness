@@ -1,6 +1,9 @@
 import React, { useState, useEffect, useRef, useMemo, useCallback, lazy, Suspense } from 'react';
+<<<<<<< HEAD:archive/ts-legacy/apps/maestro-go/frontend/src/App.tsx
 import { EventsOn } from '../wailsjs/runtime/runtime';
 import * as GoApp from '../wailsjs/go/main/App';
+=======
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/maestro-go/frontend/src/App.tsx
 // SettingsModal is lazy-loaded for performance (large component, only loaded when settings opened)
 const SettingsModal = lazy(() =>
 	import('./components/Settings/SettingsModal').then((m) => ({ default: m.SettingsModal }))
@@ -3282,6 +3285,7 @@ function MaestroConsoleInner() {
  * InlineWizardProvider - inline /wizard command state management
  */
 export default function MaestroConsole() {
+<<<<<<< HEAD:archive/ts-legacy/apps/maestro-go/frontend/src/App.tsx
 	useEffect(() => {
 		if ((window as any).go) {
 			console.log("[WailsBridge] Initializing window.maestro bridge...");
@@ -3297,6 +3301,8 @@ export default function MaestroConsole() {
 			};
 		}
 	}, []);
+=======
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/maestro-go/frontend/src/App.tsx
 	if (!window.maestro) {
 		return (
 			<div

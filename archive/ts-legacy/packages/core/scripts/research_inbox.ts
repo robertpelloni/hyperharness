@@ -80,7 +80,11 @@ Output Format:
 **URL**: [URL]
 **Summary**: Detailed summary of what this tool/article is.
 **Key Features**: Bullet list of features or insights.
+<<<<<<< HEAD:archive/ts-legacy/packages/core/scripts/research_inbox.ts
 **HyperCode Relevance**: How this might be useful for the HyperCode project (Coding, AI, Agents).
+=======
+**borg Relevance**: How this might be useful for the borg project (Coding, AI, Agents).
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/scripts/research_inbox.ts
 `;
             const userPrompt = `Content from ${task.url}:\n\n${content.substring(0, 50000)}`; // Token limit safety
 

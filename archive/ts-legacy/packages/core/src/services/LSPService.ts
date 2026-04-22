@@ -1,5 +1,9 @@
 /**
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/services/LSPService.ts
  * LSP Service - Language Server Protocol Integration for HyperCode
+=======
+ * LSP Service - Language Server Protocol Integration for borg
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/services/LSPService.ts
  * 
  * Provides semantic code understanding via Language Server Protocol integration.
  * Inspired by Serena's architecture but implemented in TypeScript.

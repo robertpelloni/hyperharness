@@ -1,7 +1,11 @@
 "use client";
 
 import React from 'react';
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/components/ContextHealthWidget.tsx
 import { Card, CardHeader, CardTitle, CardContent, Button, Badge } from "@hypercode/ui";
+=======
+import { Card, CardHeader, CardTitle, CardContent, Button, Badge } from "@borg/ui";
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/components/ContextHealthWidget.tsx
 import { Activity, Zap, Cpu, ArrowDownCircle, Loader2 } from "lucide-react";
 import { trpc } from '@/utils/trpc';
 import { toast } from 'sonner';

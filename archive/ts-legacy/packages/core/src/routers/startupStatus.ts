@@ -4,11 +4,19 @@ import path from 'node:path';
 import type { RegisteredBridgeClient } from '../bridge/bridge-manifest.js';
 import type { ExecutionEnvironmentSummary } from '../services/execution-environment.js';
 
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/routers/startupStatus.ts
 let hypercodeVersionPromise: Promise<string> | null = null;
 
 async function getHyperCodeVersion(): Promise<string> {
     if (!hypercodeVersionPromise) {
         hypercodeVersionPromise = (async () => {
+=======
+let borgVersionPromise: Promise<string> | null = null;
+
+async function getBorgVersion(): Promise<string> {
+    if (!borgVersionPromise) {
+        borgVersionPromise = (async () => {
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/routers/startupStatus.ts
             try {
                 const version = await readFile(path.join(process.cwd(), 'VERSION'), 'utf-8');
                 const trimmed = version.trim();
@@ -32,7 +40,11 @@ async function getHyperCodeVersion(): Promise<string> {
         })();
     }
 
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/routers/startupStatus.ts
     return hypercodeVersionPromise;
+=======
+    return borgVersionPromise;
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/routers/startupStatus.ts
 }
 
 type StartupStatusInput = {
@@ -336,7 +348,11 @@ export async function buildStartupStatusSnapshot(input: StartupStatusInput) {
             : `Startup ready with degraded persistence: ${degradedDetails.join(' ')}`
         : `Startup pending: ${blockingReasons.map((reason) => reason.detail).join(' ')}${degradedDetails.length > 0 ? ` Degraded services: ${degradedDetails.join(' ')}` : ''}`;
 
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/routers/startupStatus.ts
     const version = await getHyperCodeVersion();
+=======
+    const version = await getBorgVersion();
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/routers/startupStatus.ts
 
     return {
         status: 'running',

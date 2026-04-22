@@ -30,7 +30,11 @@ export default function ResearchPanel() {
 
             ws.onopen = () => {
                 reconnectAttemptsRef.current = 0;
+<<<<<<< HEAD:archive/ts-legacy/packages/ui/src/components/ResearchPanel.tsx
                 setLogs(prev => [...prev, { type: 'system', message: 'Connected to HyperCode Core' }]);
+=======
+                setLogs(prev => [...prev, { type: 'system', message: 'Connected to borg Core' }]);
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/ui/src/components/ResearchPanel.tsx
             };
 
             ws.onmessage = (event: MessageEvent) => {

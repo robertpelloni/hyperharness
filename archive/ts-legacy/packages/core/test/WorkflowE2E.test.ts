@@ -33,7 +33,11 @@ describe('Workflow E2E (System Workflows)', () => {
             })
         };
 
+<<<<<<< HEAD:archive/ts-legacy/packages/core/test/WorkflowE2E.test.ts
         const testDir = path.join(process.cwd(), '.hypercode', 'workflows_test_' + Date.now());
+=======
+        const testDir = path.join(process.cwd(), '.borg', 'workflows_test_' + Date.now());
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/test/WorkflowE2E.test.ts
         engine = new WorkflowEngine({ persistDir: testDir });
         registerSystemWorkflows(engine, runner);
     });

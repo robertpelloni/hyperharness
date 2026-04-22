@@ -5,7 +5,11 @@ import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { motion } from 'framer-motion';
 
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/reset-password/page.tsx
 import { Button, Input } from '@hypercode/ui';
+=======
+import { Button, Input } from '@borg/ui';
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/reset-password/page.tsx
 
 function ResetPasswordContent() {
     const router = useRouter();

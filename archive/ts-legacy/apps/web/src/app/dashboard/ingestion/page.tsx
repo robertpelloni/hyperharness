@@ -1,6 +1,10 @@
 import React from 'react';
 import { PageHeader } from '@/components/PageHeader';
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/ingestion/page.tsx
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@hypercode/ui';
+=======
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@borg/ui';
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/ingestion/page.tsx
 import { Database, AlertTriangle, CheckCircle, Clock } from 'lucide-react';
 import fs from 'fs/promises';
 import path from 'path';
@@ -15,11 +19,19 @@ function stripJsonComments(content: string) {
 
 async function getMasterIndex() {
     try {
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/ingestion/page.tsx
         const filePath = path.join(process.cwd(), '../..', 'HYPERCODE_MASTER_INDEX.jsonc');
         const content = await fs.readFile(filePath, 'utf-8');
         return JSON.parse(stripJsonComments(content));
     } catch (err) {
         console.error('Failed to load HYPERCODE_MASTER_INDEX:', err);
+=======
+        const filePath = path.join(process.cwd(), '../..', 'BORG_MASTER_INDEX.jsonc');
+        const content = await fs.readFile(filePath, 'utf-8');
+        return JSON.parse(stripJsonComments(content));
+    } catch (err) {
+        console.error('Failed to load BORG_MASTER_INDEX:', err);
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/ingestion/page.tsx
         return null;
     }
 }
@@ -33,7 +45,11 @@ export default async function IngestionDashboard() {
                 <PageHeader title="Ingestion Telemetry" description="External Link Ingestion Queue & Telemetry" />
                 <Card className="border-slate-800 bg-slate-900 shadow-2xl">
                     <CardContent className="pt-6">
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/ingestion/page.tsx
                         <div className="text-rose-400 font-mono">Error: Could not load HYPERCODE_MASTER_INDEX.jsonc. Make sure the sync script has run.</div>
+=======
+                        <div className="text-rose-400 font-mono">Error: Could not load BORG_MASTER_INDEX.jsonc. Make sure the sync script has run.</div>
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/ingestion/page.tsx
                     </CardContent>
                 </Card>
             </div>

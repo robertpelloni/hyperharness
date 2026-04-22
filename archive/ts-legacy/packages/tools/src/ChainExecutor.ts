@@ -1,4 +1,8 @@
+<<<<<<< HEAD:archive/ts-legacy/packages/tools/src/ChainExecutor.ts
 import { IMCPServer } from "@hypercode/adk";
+=======
+import { IMCPServer } from "@borg/adk";
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/tools/src/ChainExecutor.ts
 
 export interface ChainStep {
     toolName: string;

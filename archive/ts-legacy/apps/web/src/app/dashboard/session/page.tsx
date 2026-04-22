@@ -2,7 +2,11 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/session/page.tsx
 import { Card, CardHeader, CardTitle, CardContent, Button, Badge } from "@hypercode/ui";
+=======
+import { Card, CardHeader, CardTitle, CardContent, Button, Badge } from "@borg/ui";
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/session/page.tsx
 import { Loader2, Activity, Play, Square, Target, Crosshair, HelpCircle, ActivitySquare, RotateCcw, Layers } from "lucide-react";
 import { trpc } from '@/utils/trpc';
 import { toast } from 'sonner';
@@ -416,7 +420,11 @@ export default function SessionDashboard() {
                             </div>
                         ) : sessions.length === 0 ? (
                             <div className="rounded-lg border border-dashed border-zinc-800 bg-black/40 p-6 text-sm text-zinc-400">
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/session/page.tsx
                                 No supervised sessions exist yet. Create one to launch Aider, Claude Code, Gemini CLI, Codex, or OpenCode under HyperCode supervision.
+=======
+                                No supervised sessions exist yet. Create one to launch Aider, Claude Code, Gemini CLI, Codex, or OpenCode under borg supervision.
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/session/page.tsx
                             </div>
                         ) : sessions.map((session) => {
                             const latestLog = session.logs.length > 0 ? session.logs[session.logs.length - 1] : null;

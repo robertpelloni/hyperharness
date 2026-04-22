@@ -3,7 +3,11 @@
  *
  * Supports:
  * - Canonical exports: JSON, CSV, JSONL
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/services/memory/MemoryExportImportService.ts
  * - Provider-native snapshots: HyperCode JSON provider, sectioned memory store
+=======
+ * - Provider-native snapshots: borg JSON provider, sectioned memory store
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/services/memory/MemoryExportImportService.ts
  * - Conversion between all supported formats via a canonical intermediate form
  */
 
@@ -30,7 +34,11 @@ export const MEMORY_INTERCHANGE_FORMATS: Array<{
         label: 'Canonical JSON',
         kind: 'canonical',
         extension: 'json',
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/services/memory/MemoryExportImportService.ts
         description: 'Portable HyperCode memory export with metadata preserved.',
+=======
+        description: 'Portable borg memory export with metadata preserved.',
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/services/memory/MemoryExportImportService.ts
     },
     {
         id: 'csv',
@@ -48,17 +56,28 @@ export const MEMORY_INTERCHANGE_FORMATS: Array<{
     },
     {
         id: 'json-provider',
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/services/memory/MemoryExportImportService.ts
         label: 'HyperCode JSON Provider',
         kind: 'provider',
         extension: 'json',
         description: 'Native snapshot of HyperCode\'s flat-file memory provider.',
+=======
+        label: 'borg JSON Provider',
+        kind: 'provider',
+        extension: 'json',
+        description: 'Native snapshot of borg\'s flat-file memory provider.',
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/services/memory/MemoryExportImportService.ts
     },
     {
         id: 'sectioned-memory-store',
         label: 'Sectioned Memory Store',
         kind: 'provider',
         extension: 'json',
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/services/memory/MemoryExportImportService.ts
         description: 'Native HyperCode sectioned memory snapshot.',
+=======
+        description: 'Native borg sectioned memory snapshot.',
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/services/memory/MemoryExportImportService.ts
     },
 ];
 

@@ -1,7 +1,11 @@
 "use client";
 
 import { useState } from 'react';
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/components/agents/AgentPlayground.tsx
 import { Card, CardHeader, CardTitle, CardContent, Button, ScrollArea } from '@hypercode/ui';
+=======
+import { Card, CardHeader, CardTitle, CardContent, Button, ScrollArea } from '@borg/ui';
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/components/agents/AgentPlayground.tsx
 import { trpc } from '@/utils/trpc';
 import { Send, Loader2, Bot, User, Zap } from 'lucide-react';
 import { toast } from 'sonner';

@@ -159,7 +159,11 @@ async function fetchJson(url: string): Promise<unknown> {
     const response = await fetch(url, {
         headers: {
             Accept: "application/json",
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/services/bobby-bookmarks-adapter.ts
             "User-Agent": "HyperCode/BobbyBookmarks-Adapter",
+=======
+            "User-Agent": "borg/BobbyBookmarks-Adapter",
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/services/bobby-bookmarks-adapter.ts
         },
     });
     if (!response.ok) {

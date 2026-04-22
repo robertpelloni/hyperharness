@@ -1,7 +1,11 @@
 "use client";
 
 import { useState } from 'react';
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/memory/vector/VectorMemoryDashboard.tsx
 import { Card, CardHeader, CardTitle, CardContent, Button, Badge, ScrollArea } from "@hypercode/ui";
+=======
+import { Card, CardHeader, CardTitle, CardContent, Button, Badge, ScrollArea } from "@borg/ui";
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/memory/vector/VectorMemoryDashboard.tsx
 import { Loader2, Search, Trash2, Database, Network, Plus, Server, Code } from "lucide-react";
 import { trpc } from '@/utils/trpc';
 import { toast } from 'sonner';
@@ -55,7 +59,11 @@ export default function VectorMemoryDashboard() {
                         Vector Memory Explorer
                     </h1>
                     <p className="text-zinc-500 mt-2">
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/memory/vector/VectorMemoryDashboard.tsx
                         Direct low-level manipulation of the HyperCode long-term vector memory index and persistent context records.
+=======
+                        Direct low-level manipulation of the borg long-term vector memory index and persistent context records.
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/memory/vector/VectorMemoryDashboard.tsx
                     </p>
                 </div>
                 <div className="flex gap-2">

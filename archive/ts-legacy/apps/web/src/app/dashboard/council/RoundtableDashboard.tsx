@@ -18,10 +18,17 @@ import {
   RefreshCw,
   Trash2
 } from 'lucide-react';
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/council/RoundtableDashboard.tsx
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@hypercode/ui";
 import { Badge } from "@hypercode/ui";
 import { Button } from "@hypercode/ui";
 import { Card, CardContent, CardHeader, CardTitle } from "@hypercode/ui";
+=======
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@borg/ui";
+import { Badge } from "@borg/ui";
+import { Button } from "@borg/ui";
+import { Card, CardContent, CardHeader, CardTitle } from "@borg/ui";
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/council/RoundtableDashboard.tsx
 import { trpc } from '@/utils/trpc';
 
 import { SessionGrid } from '@/components/council/SessionGrid';
@@ -203,7 +210,11 @@ export function RoundtableDashboard() {
           <div>
             <div className="flex items-center gap-3">
               <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-purple-400 via-blue-400 to-indigo-400 bg-clip-text text-transparent">
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/council/RoundtableDashboard.tsx
                 HyperCode Roundtable
+=======
+                borg Roundtable
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/council/RoundtableDashboard.tsx
               </h1>
               <Badge variant="outline" className="border-green-500/30 text-green-400 bg-green-500/10 animate-pulse">
                 {councilStatusUnavailable ? 'Unavailable' : councilStatusData?.enabled ? 'Online' : 'Standby'}
@@ -361,7 +372,11 @@ export function RoundtableDashboard() {
                 <div className="h-[200px] bg-black/40 border border-border/40 rounded-xl font-mono text-[10px] p-4 overflow-y-auto backdrop-blur-md">
                   <div className="text-blue-400/80 mb-1 flex gap-2">
                     <span className="opacity-50">[{new Date().toLocaleTimeString()}]</span>
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/council/RoundtableDashboard.tsx
                     <span>[INFO] HyperCode Roundtable initialized successfully</span>
+=======
+                    <span>[INFO] borg Roundtable initialized successfully</span>
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/council/RoundtableDashboard.tsx
                   </div>
                   <div className="text-purple-400/80 mb-1 flex gap-2">
                     <span className="opacity-50">[{new Date().toLocaleTimeString()}]</span>

@@ -1,13 +1,21 @@
 # Vision: The AI Operating System
 
+<<<<<<<< HEAD:archive/ts-legacy/apps/hypercode-extension/docs/VISION.md
 **HyperCode Extension** is building toward a single, unified experience for interacting with *any* AI model, *any* tool, on *any* platform — directly from your browser.
+========
+**borg Extension** is building toward a single, unified experience for interacting with *any* AI model, *any* tool, on *any* platform — directly from your browser.
+>>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/borg-extension/docs/VISION.md
 
 ---
 
 ## Core Philosophy
 
 ### 1. Universal Compatibility
+<<<<<<<< HEAD:archive/ts-legacy/apps/hypercode-extension/docs/VISION.md
 One extension to rule them all. Whether you're using ChatGPT, Gemini, Perplexity, Grok, DeepSeek, OpenRouter, T3 Chat, GitHub Copilot, Mistral, Kimi, Qwen, or Z Chat — HyperCode Extension provides the same powerful sidebar experience. The adapter architecture means adding new platforms is just a plugin — the core stays unchanged.
+========
+One extension to rule them all. Whether you're using ChatGPT, Gemini, Perplexity, Grok, DeepSeek, OpenRouter, T3 Chat, GitHub Copilot, Mistral, Kimi, Qwen, or Z Chat — borg Extension provides the same powerful sidebar experience. The adapter architecture means adding new platforms is just a plugin — the core stays unchanged.
+>>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/borg-extension/docs/VISION.md
 
 ### 2. Cross-Browser
 Chrome, Edge, and Firefox from a single codebase. The Manifest V3 build compiles to Chrome/Edge directly; the Firefox build applies an automatic manifest transform (service_worker → scripts) via the ManifestParser. One codebase, three browsers.

@@ -15,7 +15,11 @@ vi.mock('../db/repositories/index.js', () => ({
 }));
 
 vi.mock('../mcp/mcpJsonConfig.js', () => ({
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/routers/mcpServersRouter.test.ts
     loadHyperCodeMcpConfig: vi.fn(async () => ({ mcpServers: {} })),
+=======
+    loadBorgMcpConfig: vi.fn(async () => ({ mcpServers: {} })),
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/routers/mcpServersRouter.test.ts
 }));
 
 vi.mock('../mcp/clientConfigSync.js', () => ({
@@ -51,7 +55,11 @@ describe('mcpServersRouter degraded SQLite handling', () => {
 
     it('surfaces a clear error for list when SQLite is unavailable', async () => {
         repositoryMocks.findAll.mockRejectedValue(
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/routers/mcpServersRouter.test.ts
             new Error('SQLite runtime is unavailable for HyperCode DB-backed features (Could not locate the bindings file. Tried: better-sqlite3.node)'),
+=======
+            new Error('SQLite runtime is unavailable for borg DB-backed features (Could not locate the bindings file. Tried: better-sqlite3.node)'),
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/routers/mcpServersRouter.test.ts
         );
 
         const caller = createCaller();
@@ -63,7 +71,11 @@ describe('mcpServersRouter degraded SQLite handling', () => {
 
     it('surfaces a clear error for create when SQLite is unavailable', async () => {
         repositoryMocks.create.mockRejectedValue(
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/routers/mcpServersRouter.test.ts
             new Error('SQLite runtime is unavailable for HyperCode DB-backed features (Could not locate the bindings file. Tried: better-sqlite3.node)'),
+=======
+            new Error('SQLite runtime is unavailable for borg DB-backed features (Could not locate the bindings file. Tried: better-sqlite3.node)'),
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/routers/mcpServersRouter.test.ts
         );
 
         const caller = createCaller();
@@ -94,7 +106,11 @@ describe('mcpServersRouter degraded SQLite handling', () => {
         const caller = createCaller();
 
         await expect(caller.registrySnapshot()).rejects.toMatchObject<Partial<TRPCError>>({
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/routers/mcpServersRouter.test.ts
             message: 'Registry snapshot is unavailable: HYPERCODE_MASTER_INDEX.jsonc contains invalid JSON.',
+=======
+            message: 'Registry snapshot is unavailable: BORG_MASTER_INDEX.jsonc contains invalid JSON.',
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/routers/mcpServersRouter.test.ts
         });
     });
 });

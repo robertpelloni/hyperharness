@@ -5,7 +5,11 @@
   },
   "extensionName": {
     "description": "Extension name",
+<<<<<<<< HEAD:archive/ts-legacy/apps/hypercode-extension/packages/i18n/locales/en/messages.json
     "message": "HyperCode Extension"
+========
+    "message": "borg Extension"
+>>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/borg-extension/packages/i18n/locales/en/messages.json
   },
   "navDashboard": {
     "message": "Dashboard"

@@ -1,4 +1,8 @@
+<<<<<<< HEAD:archive/ts-legacy/packages/tools/IDEAS.md
 # Ideas for Improvement: @hypercode/tools
+=======
+# Ideas for Improvement: @borg/tools
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/tools/IDEAS.md
 
 Ambitious features to evolve the tool orchestration and execution layer.
 

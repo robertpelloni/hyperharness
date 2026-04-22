@@ -1,5 +1,9 @@
 /**
+<<<<<<< HEAD:archive/ts-legacy/packages/ui/src/app/mcp-router/status-cards.tsx
  * HyperCode MCP Router - Status Cards Component
+=======
+ * borg MCP Router - Status Cards Component
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/ui/src/app/mcp-router/status-cards.tsx
  *
  * Displays key statistics for registry, sessions, and system health.
  */

@@ -15,7 +15,11 @@ export class WebSocketPlugin implements ITransportPlugin {
     version: '1.0.0',
     transportType: 'websocket',
     description: 'WebSocket transport for MCP protocol with real-time bidirectional communication',
+<<<<<<<< HEAD:archive/ts-legacy/apps/hypercode-extension/chrome-extension/src/mcpclient/plugins/websocket/WebSocketPlugin.ts
     author: 'HyperCode Extension',
+========
+    author: 'borg Extension',
+>>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/borg-extension/chrome-extension/src/mcpclient/plugins/websocket/WebSocketPlugin.ts
   };
 
   private config: WebSocketPluginConfig = {};

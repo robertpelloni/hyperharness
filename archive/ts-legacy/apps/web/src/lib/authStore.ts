@@ -25,7 +25,11 @@ type AuthDb = {
     sessions: AuthSession[];
 };
 
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/lib/authStore.ts
 const STORE_DIR = path.join(process.cwd(), '.hypercode-auth');
+=======
+const STORE_DIR = path.join(process.cwd(), '.borg-auth');
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/lib/authStore.ts
 const STORE_FILE = path.join(STORE_DIR, 'users.json');
 const DEFAULT_DB: AuthDb = { users: [], sessions: [] };
 
@@ -35,7 +39,11 @@ function normalizeEmail(email: string): string {
 
 function hashPassword(password: string): string {
     // Lightweight local hash for dev auth flow wiring.
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/lib/authStore.ts
     return scryptSync(password, 'hypercode-local-salt', 64).toString('hex');
+=======
+    return scryptSync(password, 'borg-local-salt', 64).toString('hex');
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/lib/authStore.ts
 }
 
 function hashResetToken(token: string): string {

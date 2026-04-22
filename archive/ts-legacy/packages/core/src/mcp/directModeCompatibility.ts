@@ -84,6 +84,7 @@ export function createDirectModeAgentRunner(llm: import('./compatibilityToolRunt
 export function getDirectModeCompatibilityTools(): Tool[] {
     return getCompatibilityToolDefinitions({
         descriptions: {
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/mcp/directModeCompatibility.ts
             run_code: 'MetaMCP-compatible alias for one-shot HyperCode code execution without manually enabling Code Mode.',
             run_python: 'MetaMCP-compatible alias for HyperCode sandboxed Python execution.',
             run_agent: 'MetaMCP-compatible autonomous tool-using agent loop backed by HyperCode native LLM and tool execution surfaces.',
@@ -93,6 +94,17 @@ export function getDirectModeCompatibilityTools(): Tool[] {
             save_tool_set: 'MetaMCP-compatible alias for saving the currently loaded HyperCode session tools as a named tool set.',
             load_tool_set: 'MetaMCP-compatible alias for loading a saved HyperCode tool set into the current session working set.',
             toolset_list: 'List HyperCode-managed saved tool sets available to the current direct-mode session.',
+=======
+            run_code: 'MetaMCP-compatible alias for one-shot borg code execution without manually enabling Code Mode.',
+            run_python: 'MetaMCP-compatible alias for borg sandboxed Python execution.',
+            run_agent: 'MetaMCP-compatible autonomous tool-using agent loop backed by borg native LLM and tool execution surfaces.',
+            save_memory: 'MetaMCP-compatible alias for persisting agent memory through borg native memory services.',
+            search_memory: 'MetaMCP-compatible alias for searching borg native memory services.',
+            save_script: 'MetaMCP-compatible alias for persisting reusable scripts in borg managed config.',
+            save_tool_set: 'MetaMCP-compatible alias for saving the currently loaded borg session tools as a named tool set.',
+            load_tool_set: 'MetaMCP-compatible alias for loading a saved borg tool set into the current session working set.',
+            toolset_list: 'List borg-managed saved tool sets available to the current direct-mode session.',
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/mcp/directModeCompatibility.ts
             import_mcp_config: 'MetaMCP-compatible alias for importing MCP servers from Claude-style JSON config content.',
         },
     });
@@ -145,7 +157,11 @@ export async function tryHandleDirectModeCompatibilityTool(
             args,
             agentRunner,
             delegatedToolCaller,
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/mcp/directModeCompatibility.ts
             'Agent runner not available in HyperCode direct mode.',
+=======
+            'Agent runner not available in borg direct mode.',
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/mcp/directModeCompatibility.ts
         );
     }
 
@@ -177,7 +193,11 @@ export async function tryHandleDirectModeCompatibilityTool(
         return await executeCompatibleImportConfig(
             args,
             configImportService,
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/mcp/directModeCompatibility.ts
             'Config import service not available in HyperCode direct mode.',
+=======
+            'Config import service not available in borg direct mode.',
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/mcp/directModeCompatibility.ts
         );
     }
 

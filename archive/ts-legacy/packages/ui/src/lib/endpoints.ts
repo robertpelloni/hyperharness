@@ -58,6 +58,7 @@ export function resolveTrpcHttpUrl(envUrl?: string | null): string {
     return `${window.location.origin}/api/trpc`;
   }
 
+<<<<<<< HEAD:archive/ts-legacy/packages/ui/src/lib/endpoints.ts
   return 'http://localhost:4000/api/trpc';
 }
 
@@ -75,4 +76,23 @@ export function resolveTerminalWsUrl(envUrl?: string | null): string {
 
 export function resolveCliApiBaseUrl(envUrl?: string | null): string {
   return resolveHttpBaseUrl({ envUrl, defaultPort: 4000 });
+=======
+  return 'http://localhost:3847/api/trpc';
+}
+
+export function resolveCoreWsUrl(envUrl?: string | null): string {
+  return resolveWsUrl({ envUrl, defaultPort: 3847 });
+}
+
+export function resolveCouncilWsUrl(envUrl?: string | null): string {
+  return resolveWsUrl({ envUrl, defaultPort: 3000 });
+}
+
+export function resolveTerminalWsUrl(envUrl?: string | null): string {
+  return resolveWsUrl({ envUrl, defaultPort: 8081 });
+}
+
+export function resolveCliApiBaseUrl(envUrl?: string | null): string {
+  return resolveHttpBaseUrl({ envUrl, defaultPort: 3847 });
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/ui/src/lib/endpoints.ts
 }

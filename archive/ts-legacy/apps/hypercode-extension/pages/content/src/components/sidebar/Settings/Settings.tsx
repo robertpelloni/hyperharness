@@ -89,7 +89,11 @@ const Settings: React.FC = () => {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
+<<<<<<<< HEAD:archive/ts-legacy/apps/hypercode-extension/pages/content/src/components/sidebar/Settings/Settings.tsx
     a.download = `hypercode-extension-backup-${new Date().toISOString().slice(0, 10)}.json`;
+========
+    a.download = `borg-extension-backup-${new Date().toISOString().slice(0, 10)}.json`;
+>>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/borg-extension/pages/content/src/components/sidebar/Settings/Settings.tsx
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);

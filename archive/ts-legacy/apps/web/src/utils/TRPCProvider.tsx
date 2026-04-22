@@ -1,7 +1,11 @@
 "use client";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { httpBatchLink, splitLink, unstable_httpSubscriptionLink } from "@trpc/client";
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/utils/TRPCProvider.tsx
 import { resolveTrpcHttpUrl } from "@hypercode/ui";
+=======
+import { resolveTrpcHttpUrl } from "@borg/ui";
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/utils/TRPCProvider.tsx
 import React, { useState } from "react";
 import { trpc } from "./trpc";
 

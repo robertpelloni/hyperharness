@@ -1,7 +1,11 @@
 /**
  * Adapter Plugins Export Module
  *
+<<<<<<<< HEAD:archive/ts-legacy/apps/hypercode-extension/pages/content/src/plugins/adapters/index.ts
  * This file exports all available adapter plugins for the HyperCode-Extension.
+========
+ * This file exports all available adapter plugins for the borg-Extension.
+>>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/borg-extension/pages/content/src/plugins/adapters/index.ts
  */
 
 export { BaseAdapterPlugin } from './base.adapter';

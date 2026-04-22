@@ -7,7 +7,12 @@
   "frontend:dev:watcher": "npm run dev",
   "frontend:dev:serverUrl": "auto",
   "author": {
+<<<<<<< HEAD:archive/ts-legacy/apps/maestro-go/wails.json
     "name": "HyperCode Agent",
     "email": "bot@hypercode.dev"
+=======
+    "name": "borg Agent",
+    "email": "bot@borg.dev"
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/maestro-go/wails.json
   }
 }

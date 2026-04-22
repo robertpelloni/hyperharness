@@ -1,4 +1,8 @@
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/providers/NormalizedQuotaService.ts
 import { QuotaService, type QuotaConfig } from '@hypercode/ai';
+=======
+import { QuotaService, type QuotaConfig } from '@borg/ai';
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/providers/NormalizedQuotaService.ts
 
 import { ProviderBalanceService } from './ProviderBalanceService.js';
 import { ProviderRegistry } from './ProviderRegistry.js';

@@ -103,7 +103,11 @@ export async function ensureBackgroundCoreRunning(
         ? (options.cliEntryPath ?? null)
         : resolveCliEntryPath();
     if (!cliEntryPath) {
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/backgroundCoreBootstrap.ts
         log('[HyperCode Core] Background core bootstrap skipped: CLI entrypoint not found.');
+=======
+        log('[borg Core] Background core bootstrap skipped: CLI entrypoint not found.');
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/backgroundCoreBootstrap.ts
         return { status: 'launch-unavailable' };
     }
 

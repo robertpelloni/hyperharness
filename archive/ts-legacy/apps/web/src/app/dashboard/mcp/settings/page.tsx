@@ -1,8 +1,13 @@
 "use client";
 
 import { useState } from 'react';
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/mcp/settings/page.tsx
 import { Card, CardHeader, CardTitle, CardContent } from "@hypercode/ui";
 import { Button } from "@hypercode/ui";
+=======
+import { Card, CardHeader, CardTitle, CardContent } from "@borg/ui";
+import { Button } from "@borg/ui";
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/mcp/settings/page.tsx
 import { CheckCircle2, Download, FileJson, Loader2, RefreshCcw, Save, RotateCcw } from "lucide-react";
 import { trpc } from '@/utils/trpc';
 import { toast } from 'sonner';
@@ -28,11 +33,14 @@ type ClientConfigSyncResult = ClientConfigPreview & {
     written: boolean;
 };
 
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/mcp/settings/page.tsx
 type ClientConfigSyncSummary = {
     client: SupportedClient;
     targetPath: string;
 };
 
+=======
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/mcp/settings/page.tsx
 const CLIENT_LABELS: Record<SupportedClient, string> = {
     'claude-desktop': 'Claude Desktop',
     'cursor': 'Cursor',
@@ -55,7 +63,10 @@ export default function MCPSettings() {
     const syncTargetsUnavailable = Boolean(syncTargetsError) || (rawSyncTargets != null && !Array.isArray(rawSyncTargets));
     const [editing, setEditing] = useState<Record<string, string>>({});
     const [selectedClient, setSelectedClient] = useState<SupportedClient>('claude-desktop');
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/mcp/settings/page.tsx
     const [lastSyncResult, setLastSyncResult] = useState<ClientConfigSyncSummary | null>(null);
+=======
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/mcp/settings/page.tsx
 
     const previewQuery = mcpServersClient.exportClientConfig.useQuery(
         { client: selectedClient },
@@ -82,7 +93,10 @@ export default function MCPSettings() {
 
     const syncMutation = mcpServersClient.syncClientConfig.useMutation({
         onSuccess: (result: ClientConfigSyncResult) => {
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/mcp/settings/page.tsx
             setLastSyncResult({ client: result.client, targetPath: result.targetPath });
+=======
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/mcp/settings/page.tsx
             toast.success(`Synced ${CLIENT_LABELS[result.client]} config to ${result.targetPath}`);
             void refetchTargets();
             void previewQuery.refetch();
@@ -134,6 +148,7 @@ export default function MCPSettings() {
                 </div>
             </div>
 
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/mcp/settings/page.tsx
             {lastSyncResult ? (
                 <Card className="bg-zinc-900 border-zinc-800">
                     <CardHeader>
@@ -147,6 +162,8 @@ export default function MCPSettings() {
                 </Card>
             ) : null}
 
+=======
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/mcp/settings/page.tsx
             <Card className="bg-zinc-900 border-zinc-800">
                 <CardHeader>
                     <CardTitle className="text-lg font-medium text-zinc-200">Client Config Sync</CardTitle>
@@ -203,7 +220,11 @@ export default function MCPSettings() {
                                 <div>
                                     <div className="text-sm font-medium text-white">{CLIENT_LABELS[selectedClient]}</div>
                                     <div className="mt-1 text-xs text-zinc-500">
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/mcp/settings/page.tsx
                                         HyperCode will merge the current MCP server registry into this client config without discarding unrelated settings.
+=======
+                                        borg will merge the current MCP server registry into this client config without discarding unrelated settings.
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/mcp/settings/page.tsx
                                     </div>
                                 </div>
 
@@ -252,7 +273,11 @@ export default function MCPSettings() {
                                     <div>
                                         <div className="text-sm font-medium text-white">Generated preview</div>
                                         <div className="text-xs text-zinc-500">
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/mcp/settings/page.tsx
                                             This is the exact JSON HyperCode will write for {CLIENT_LABELS[selectedClient]}.
+=======
+                                            This is the exact JSON borg will write for {CLIENT_LABELS[selectedClient]}.
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/mcp/settings/page.tsx
                                         </div>
                                     </div>
                                     {previewDocument?.existed ? (

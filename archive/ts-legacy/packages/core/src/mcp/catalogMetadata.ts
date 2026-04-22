@@ -142,7 +142,11 @@ const GENERIC_TOKENS = new Set([
     'tools',
     'server',
     'mcp',
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/mcp/catalogMetadata.ts
     'hypercode',
+=======
+    'borg',
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/mcp/catalogMetadata.ts
     'meta',
     'data',
     'service',

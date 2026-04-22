@@ -3,7 +3,11 @@
 import DirectorConfig from "@/components/DirectorConfig";
 import { ModelProvidersList } from "@/components/config/ModelProvidersList";
 import { SystemLimitsPanel } from "@/components/config/SystemLimitsPanel";
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/config/page.tsx
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@hypercode/ui";
+=======
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@borg/ui";
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/config/page.tsx
 
 export default function ConfigPage() {
     return (

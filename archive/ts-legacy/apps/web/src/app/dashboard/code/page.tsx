@@ -2,12 +2,21 @@
 
 import { trpc } from '@/utils/trpc';
 import { useState } from 'react';
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/code/page.tsx
 import { Card } from '@hypercode/ui';
 import { Input } from '@hypercode/ui';
 import { Button } from '@hypercode/ui';
 import { ScrollArea } from '@hypercode/ui';
 import { Badge } from '@hypercode/ui';
 import { Textarea } from '@hypercode/ui';
+=======
+import { Card } from '@borg/ui';
+import { Input } from '@borg/ui';
+import { Button } from '@borg/ui';
+import { ScrollArea } from '@borg/ui';
+import { Badge } from '@borg/ui';
+import { Textarea } from '@borg/ui';
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/code/page.tsx
 import { PageStatusBanner } from '@/components/PageStatusBanner';
 
 function isSymbolResult(value: unknown): value is {

@@ -1272,7 +1272,11 @@ describe('dashboard home helpers', () => {
     });
   });
 
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/dashboard-home-view.test.tsx
   it('surfaces hypercode-memory seeding state in memory/context startup details', () => {
+=======
+  it('surfaces borg-memory seeding state in memory/context startup details', () => {
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/dashboard-home-view.test.tsx
     const startupStatus = {
       status: 'running',
       ready: false,
@@ -1807,7 +1811,11 @@ describe('DashboardHomeView', () => {
     expect(html).toContain('Integration Hub');
     expect(html).toContain('Server health and traffic');
     expect(html).toContain('Startup readiness');
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/dashboard-home-view.test.tsx
     expect(html).toContain('Install &amp; connect HyperCode');
+=======
+    expect(html).toContain('Install &amp; connect borg');
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/dashboard-home-view.test.tsx
     expect(html).toContain('Browser extensions');
     expect(html).toContain('Editor surfaces');
     expect(html).toContain('Client config sync');
@@ -1913,6 +1921,7 @@ describe('DashboardHomeView', () => {
     expect(html).toContain('No fallback chain is exposed yet. Configure providers to populate the routing order.');
   });
 
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/dashboard-home-view.test.tsx
   it('renders persisted startup mode provenance when available', () => {
     const html = renderToStaticMarkup(
       <DashboardHomeView
@@ -2000,6 +2009,8 @@ describe('DashboardHomeView', () => {
     expect(html).toContain('Go-primary build artifacts already current');
   });
 
+=======
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/dashboard-home-view.test.tsx
   it('renders active alerts when the router, providers, or sessions degrade', () => {
     const html = renderToStaticMarkup(
       <DashboardHomeView

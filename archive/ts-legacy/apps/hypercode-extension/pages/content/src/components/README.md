@@ -1,6 +1,10 @@
 # Components Directory
 
+<<<<<<<< HEAD:archive/ts-legacy/apps/hypercode-extension/pages/content/src/components/README.md
 This directory contains React components that make up the user interface of the HyperCode Extension content script, integrated with the modern plugin architecture and state management system.
+========
+This directory contains React components that make up the user interface of the borg Extension content script, integrated with the modern plugin architecture and state management system.
+>>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/borg-extension/pages/content/src/components/README.md
 
 ## Overview
 

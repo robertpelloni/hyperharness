@@ -37,7 +37,11 @@ export class MissionService extends EventEmitter {
 
     constructor(rootDir: string) {
         super();
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/services/MissionService.ts
         this.historyPath = path.join(rootDir, '.hypercode', 'mission_history.json');
+=======
+        this.historyPath = path.join(rootDir, '.borg', 'mission_history.json');
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/services/MissionService.ts
         this.loadMissions();
     }
 

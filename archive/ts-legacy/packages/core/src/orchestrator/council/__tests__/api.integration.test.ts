@@ -20,7 +20,11 @@ describeApiIntegration('API Integration Tests', () => {
   beforeAll(async () => {
     const ready = await waitForServer();
     if (!ready) {
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/orchestrator/council/__tests__/api.integration.test.ts
       throw new Error('Server not available. Set RUN_API_INTEGRATION_TESTS=1 and point TEST_API_BASE at a live HyperCode API.');
+=======
+      throw new Error('Server not available. Set RUN_API_INTEGRATION_TESTS=1 and point TEST_API_BASE at a live borg API.');
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/orchestrator/council/__tests__/api.integration.test.ts
     }
   });
 

@@ -18,7 +18,11 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
 
         // Simple mock auth for visual effect
         setTimeout(() => {
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/components/LoginPage.tsx
             if (code === 'admin' || code === 'hypercode' || code === '') { // Allow empty for ease of dev
+=======
+            if (code === 'admin' || code === 'borg' || code === '') { // Allow empty for ease of dev
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/components/LoginPage.tsx
                 onLogin();
             } else {
                 setError(true);
@@ -61,7 +65,11 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
                     </div>
 
                     <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-b from-white to-zinc-400 mb-2">
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/components/LoginPage.tsx
                         HyperCode OS
+=======
+                        borg OS
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/components/LoginPage.tsx
                     </h1>
                     <p className="text-zinc-500 text-sm mb-8 tracking-wide">SYSTEM ACCESS REQUIRED</p>
 

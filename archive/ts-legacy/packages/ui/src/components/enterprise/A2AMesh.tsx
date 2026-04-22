@@ -23,8 +23,13 @@ export function A2AMesh() {
       .then(data => {
         // Mocking registered A2A agents for now since they are in A2AManager memory
         setAgents([
+<<<<<<< HEAD:archive/ts-legacy/packages/ui/src/components/enterprise/A2AMesh.tsx
           { url: 'http://localhost:4000', card: { name: 'HyperCode Meta-Orchestrator', version: '0.3.0', skills: [{ name: 'Task Orchestration' }] }, healthy: true },
           { url: 'https://agent-east.hypercode.dev', card: { name: 'Security-Audit-Bot', version: '1.2.0', skills: [{ name: 'Vulnerability Scan' }] }, healthy: true }
+=======
+          { url: 'http://localhost:3847', card: { name: 'borg Meta-Orchestrator', version: '0.3.0', skills: [{ name: 'Task Orchestration' }] }, healthy: true },
+          { url: 'https://agent-east.borg.dev', card: { name: 'Security-Audit-Bot', version: '1.2.0', skills: [{ name: 'Vulnerability Scan' }] }, healthy: true }
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/ui/src/components/enterprise/A2AMesh.tsx
         ]);
         setLoading(false);
       })

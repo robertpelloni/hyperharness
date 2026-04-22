@@ -7,7 +7,11 @@
  * 3. Generating an answer with inline citations [1], [2], etc.
  * 4. Returning the answer + citation metadata for UI rendering
  *
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/services/CitationService.ts
  * This is the HyperCode equivalent of NotebookLM's "Grounded Answers" feature.
+=======
+ * This is the borg equivalent of NotebookLM's "Grounded Answers" feature.
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/services/CitationService.ts
  */
 
 export interface CitationSource {
@@ -128,9 +132,15 @@ export class CitationService {
     constructor(config?: Partial<CitationServiceConfig>) {
         this.config = { ...DEFAULT_CONFIG, ...config };
         
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/services/CitationService.ts
         // Store vector DB locally in the global user .hypercode directory
         const os = require('os');
         this.lancedbPath = `${os.homedir()}/.hypercode/citations_db`;
+=======
+        // Store vector DB locally in the global user .borg directory
+        const os = require('os');
+        this.lancedbPath = `${os.homedir()}/.borg/citations_db`;
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/services/CitationService.ts
     }
 
     getConfig(): CitationServiceConfig {

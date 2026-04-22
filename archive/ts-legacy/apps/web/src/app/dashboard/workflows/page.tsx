@@ -1,7 +1,11 @@
 'use client';
 
 import { WorkflowCanvas } from '@/components/workflows/WorkflowCanvas';
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/workflows/page.tsx
 import { Card } from '@hypercode/ui';
+=======
+import { Card } from '@borg/ui';
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/workflows/page.tsx
 import { PageStatusBanner } from '@/components/PageStatusBanner';
 
 export default function WorkflowsDashboard() {

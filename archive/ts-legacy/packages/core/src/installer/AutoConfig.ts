@@ -24,7 +24,11 @@ const SseServerSchema = z.object({
 
 const AutoConfigSchema = z.object({
     mcpServers: z.object({
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/installer/AutoConfig.ts
         hypercode: z.union([CommandServerSchema, SseServerSchema]),
+=======
+        borg: z.union([CommandServerSchema, SseServerSchema]),
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/installer/AutoConfig.ts
     }),
     ui: z.object({
         theme: z.string(),
@@ -110,14 +114,22 @@ export class AutoConfig {
             ...(Object.keys(envVars).length > 0 ? { env: envVars } : {}),
         };
 
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/installer/AutoConfig.ts
         const sseUrl = options.sseUrl ?? process.env.HYPERCODE_MCP_SSE_URL ?? 'http://hypercode.default.svc.cluster.local:3000/sse';
+=======
+        const sseUrl = options.sseUrl ?? process.env.BORG_MCP_SSE_URL ?? 'http://borg.default.svc.cluster.local:3000/sse';
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/installer/AutoConfig.ts
         const serverConfig = env === 'k8s'
             ? { url: sseUrl, transport: 'sse' as const }
             : localConfig;
 
         const config: GeneratedAutoConfig = {
             mcpServers: {
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/installer/AutoConfig.ts
                 hypercode: serverConfig,
+=======
+                borg: serverConfig,
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/installer/AutoConfig.ts
             },
             ui: {
                 theme: env === 'k8s' ? 'dark-enterprise' : 'dark-modern',

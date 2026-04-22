@@ -1,6 +1,11 @@
 {
+<<<<<<< HEAD:archive/ts-legacy/package.json
     "name": "hypercode-monorepo",
     "version": "1.0.0-alpha.32",
+=======
+    "name": "borg-monorepo",
+    "version": "1.0.0-alpha.1",
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:package.json
     "private": true,
     "packageManager": "pnpm@10.28.0",
     "scripts": {
@@ -10,10 +15,15 @@
         "build:startup-go": "node scripts/build_startup.mjs --profile=go-primary",
         "build:extensions": "node scripts/build_all.mjs --extensions-only",
         "dev": "node scripts/dev_tabby_ready.mjs",
-        "dev:turbo": "set CI=true&& set TURBO_DAEMON=false&& turbo run dev --concurrency 22 --filter=!@hypercode/cli --filter=!@repo/*",
+        "dev:turbo": "set CI=true&& set TURBO_DAEMON=false&& turbo run dev --concurrency 22 --filter=!@borg/cli --filter=!@repo/*",
         "dev:server": "set TURBO_DAEMON=false&& turbo run dev:server --parallel --filter=!@repo/*",
+<<<<<<< HEAD:archive/ts-legacy/package.json
         "dev:web": "set TURBO_DAEMON=false&& turbo run dev --filter @hypercode/web",
         "dev:orchestrator": "set HYPERCODE_ORCHESTRATOR_PORT=3847&& npx tsx packages/core/src/orchestrator/council/node-index.ts",
+=======
+        "dev:web": "set TURBO_DAEMON=false&& turbo run dev --filter @borg/web",
+        "dev:orchestrator": "set BORG_ORCHESTRATOR_PORT=3847&& npx tsx packages/core/src/orchestrator/council/node-index.ts",
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:package.json
         "lint": "pnpm run check:placeholders",
         "lint:turbo": "set TURBO_DAEMON=false&& turbo run lint --output-logs=errors-only",
         "test": "set TURBO_DAEMON=false&& turbo run test",

@@ -241,7 +241,11 @@ const PROVIDER_QUICK_ACCESS_SECTIONS: ProviderQuickAccessSectionDefinition[] = [
     {
         id: 'api-keys',
         title: 'API keys & tokens',
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/billing/billing-portal-data.ts
         description: 'Fast path to the credentials most likely to block first-run setup in HyperCode.',
+=======
+        description: 'Fast path to the credentials most likely to block first-run setup in borg.',
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/billing/billing-portal-data.ts
         links: [
             { providerId: 'openai', preferredKinds: ['keys'] },
             { providerId: 'anthropic', preferredKinds: ['keys'] },

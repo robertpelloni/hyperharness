@@ -55,7 +55,11 @@ export interface GenerateTextOptions {
     history?: { role: string; content: string }[];
 }
 
+<<<<<<< HEAD:archive/ts-legacy/packages/ai/src/LLMService.ts
 import { DEFAULT_OPENROUTER_FREE_MODEL, ModelSelector, type ModelSelectionRequest, type SelectedModel } from "./ModelSelector.js";
+=======
+import { ModelSelector, type ModelSelectionRequest, type SelectedModel } from "./ModelSelector.js";
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/ai/src/LLMService.ts
 import { ForgeService } from "./ForgeService.js";
 
 type ExtendedModelSelectionRequest = ModelSelectionRequest & {
@@ -72,7 +76,10 @@ export class LLMService {
     private googleClient?: GoogleGenerativeAI;
     private openaiClient?: OpenAI;
     private anthropicClient?: Anthropic;
+<<<<<<< HEAD:archive/ts-legacy/packages/ai/src/LLMService.ts
     private openrouterClient?: OpenAI;
+=======
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/ai/src/LLMService.ts
     private forgeClient?: ForgeService;
     private totalUsage = { inputTokens: 0, outputTokens: 0, estimatedCostUSD: 0 };
     /** Ring buffer of the last ROUTING_HISTORY_LIMIT routing decisions (newest first). */
@@ -96,12 +103,15 @@ export class LLMService {
         if (process.env.ANTHROPIC_API_KEY) {
             this.anthropicClient = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
         }
+<<<<<<< HEAD:archive/ts-legacy/packages/ai/src/LLMService.ts
         if (process.env.OPENROUTER_API_KEY) {
             this.openrouterClient = new OpenAI({
                 apiKey: process.env.OPENROUTER_API_KEY,
                 baseURL: process.env.OPENROUTER_BASE_URL || 'https://openrouter.ai/api/v1'
             });
         }
+=======
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/ai/src/LLMService.ts
         // Initialize Forge (defaults to localhost:8080)
         this.forgeClient = new ForgeService({
             baseUrl: process.env.FORGE_URL || "http://localhost:8080/v1",
@@ -415,6 +425,7 @@ export class LLMService {
                     };
                 }
 
+<<<<<<< HEAD:archive/ts-legacy/packages/ai/src/LLMService.ts
                 else if (provider === 'openrouter') {
                     if (!this.openrouterClient) throw new Error("OpenRouter API Key not configured.");
                     const completion = await this.openrouterClient.chat.completions.create({
@@ -440,6 +451,8 @@ export class LLMService {
                     };
                 }
 
+=======
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/ai/src/LLMService.ts
                 else if (provider === 'ollama') {
                     // Ollama Local Inference
                     const res = await fetch('http://localhost:11434/api/chat', {

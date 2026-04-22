@@ -16,13 +16,21 @@ async function getDashboardVersionLabel(): Promise<string> {
                 continue;
             }
 
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/page.tsx
             return `HyperCode ${version}`;
+=======
+            return `borg ${version}`;
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/page.tsx
         } catch {
             // try next candidate
         }
     }
 
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/page.tsx
     return 'HyperCode';
+=======
+    return 'borg';
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/page.tsx
 }
 
 export default async function DashboardIndexPage() {

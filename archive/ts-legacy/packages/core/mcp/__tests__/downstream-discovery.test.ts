@@ -45,7 +45,11 @@ describe('downstreamDiscovery', () => {
         vi.mocked(getMcpServers).mockResolvedValue({
             self: {
                 uuid: 'self',
+<<<<<<< HEAD:archive/ts-legacy/packages/core/mcp/__tests__/downstream-discovery.test.ts
                 name: 'metamcp-unified-hypercode-core-namespace',
+=======
+                name: 'metamcp-unified-borg-core-namespace',
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/mcp/__tests__/downstream-discovery.test.ts
                 type: 'STDIO',
                 status: 'active',
                 error_status: 'none',
@@ -63,15 +67,24 @@ describe('downstreamDiscovery', () => {
 
         const result = await listDownstreamPrompts({
             context: {
+<<<<<<< HEAD:archive/ts-legacy/packages/core/mcp/__tests__/downstream-discovery.test.ts
                 namespaceUuid: 'hypercode-core-namespace',
                 sessionId: 'hypercode-core-session',
+=======
+                namespaceUuid: 'borg-core-namespace',
+                sessionId: 'borg-core-session',
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/mcp/__tests__/downstream-discovery.test.ts
             },
             promptToClient: {},
         });
 
         expect(result.prompts).toEqual([]);
         expect(mcpServerPool.getSession).not.toHaveBeenCalled();
+<<<<<<< HEAD:archive/ts-legacy/packages/core/mcp/__tests__/downstream-discovery.test.ts
         expect(isSameServerInstance({ name: 'metamcp-unified-hypercode-core-namespace' }, 'hypercode-core-namespace')).toBe(true);
+=======
+        expect(isSameServerInstance({ name: 'metamcp-unified-borg-core-namespace' }, 'borg-core-namespace')).toBe(true);
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/mcp/__tests__/downstream-discovery.test.ts
     });
 
     it('lists prompts and caches prompt ownership by prefixed name', async () => {
@@ -108,8 +121,13 @@ describe('downstreamDiscovery', () => {
 
         const result = await listDownstreamPrompts({
             context: {
+<<<<<<< HEAD:archive/ts-legacy/packages/core/mcp/__tests__/downstream-discovery.test.ts
                 namespaceUuid: 'hypercode-core-namespace',
                 sessionId: 'hypercode-core-session',
+=======
+                namespaceUuid: 'borg-core-namespace',
+                sessionId: 'borg-core-session',
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/mcp/__tests__/downstream-discovery.test.ts
             },
             cursor: 'cursor-1',
             meta: { trace: true },
@@ -123,7 +141,11 @@ describe('downstreamDiscovery', () => {
         expect(promptToClient).toHaveProperty('GitHubCloud__summarize_issue', session);
     });
 
+<<<<<<< HEAD:archive/ts-legacy/packages/core/mcp/__tests__/downstream-discovery.test.ts
     it('fetches a prompt by stripping the HyperCode server prefix', async () => {
+=======
+    it('fetches a prompt by stripping the borg server prefix', async () => {
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/mcp/__tests__/downstream-discovery.test.ts
         const session = createSession({
             serverName: 'GitHub Cloud',
             capabilities: { prompts: {} },
@@ -198,8 +220,13 @@ describe('downstreamDiscovery', () => {
 
         const listResult = await listDownstreamResources({
             context: {
+<<<<<<< HEAD:archive/ts-legacy/packages/core/mcp/__tests__/downstream-discovery.test.ts
                 namespaceUuid: 'hypercode-core-namespace',
                 sessionId: 'hypercode-core-session',
+=======
+                namespaceUuid: 'borg-core-namespace',
+                sessionId: 'borg-core-session',
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/mcp/__tests__/downstream-discovery.test.ts
             },
             resourceToClient: resourceToClient as never,
         });
@@ -251,8 +278,13 @@ describe('downstreamDiscovery', () => {
 
         const result = await listDownstreamResourceTemplates({
             context: {
+<<<<<<< HEAD:archive/ts-legacy/packages/core/mcp/__tests__/downstream-discovery.test.ts
                 namespaceUuid: 'hypercode-core-namespace',
                 sessionId: 'hypercode-core-session',
+=======
+                namespaceUuid: 'borg-core-namespace',
+                sessionId: 'borg-core-session',
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/mcp/__tests__/downstream-discovery.test.ts
             },
         });
 

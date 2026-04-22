@@ -3,14 +3,24 @@ import { MockSupervisor } from './mock.js';
 import { OpenAISupervisor } from './openai.js';
 import { AnthropicSupervisor } from './anthropic.js';
 import { GenericOpenAISupervisor } from './generic-openai.js';
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/orchestrator/council/supervisors/index.ts
 import { HyperCodeSupervisor } from './hypercode.js';
+=======
+import { BorgSupervisor } from './borg.js';
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/orchestrator/council/supervisors/index.ts
 
 export function createSupervisor(config: SupervisorConfig): Supervisor {
   const { provider } = config;
 
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/orchestrator/council/supervisors/index.ts
   // Prefer HyperCode-native supervisor if possible (it uses the shared LlmService)
   if (['openai', 'anthropic', 'google', 'gemini', 'grok', 'xai', 'deepseek', 'qwen', 'moonshot', 'kimi'].includes(provider)) {
     return new HyperCodeSupervisor(config);
+=======
+  // Prefer borg-native supervisor if possible (it uses the shared LlmService)
+  if (['openai', 'anthropic', 'google', 'gemini', 'grok', 'xai', 'deepseek', 'qwen', 'moonshot', 'kimi'].includes(provider)) {
+    return new BorgSupervisor(config);
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/orchestrator/council/supervisors/index.ts
   }
 
   switch (provider) {

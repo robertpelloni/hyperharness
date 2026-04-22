@@ -67,7 +67,11 @@ describe('SessionSupervisor', () => {
             clearTimeout: () => undefined,
         };
 
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/supervisor/SessionSupervisor.test.ts
         const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'hypercode-session-supervisor-'));
+=======
+        const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'borg-session-supervisor-'));
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/supervisor/SessionSupervisor.test.ts
         tempDirs.push(tempDir);
 
         const supervisor = new SessionSupervisor({
@@ -146,7 +150,11 @@ describe('SessionSupervisor', () => {
     });
 
     it('captures execution shell policy and exports it into the supervised environment', async () => {
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/supervisor/SessionSupervisor.test.ts
         const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'hypercode-session-supervisor-'));
+=======
+        const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'borg-session-supervisor-'));
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/supervisor/SessionSupervisor.test.ts
         tempDirs.push(tempDir);
 
         const supervisor = new SessionSupervisor({
@@ -212,15 +220,26 @@ describe('SessionSupervisor', () => {
             shellLabel: 'Cygwin Bash',
         }));
         expect(session.env).toEqual(expect.objectContaining({
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/supervisor/SessionSupervisor.test.ts
             HYPERCODE_EXECUTION_PROFILE_REQUESTED: 'posix',
             HYPERCODE_EXECUTION_SHELL_ID: 'cygwin-bash',
             HYPERCODE_SUPPORTS_POWERSHELL: '1',
             HYPERCODE_SUPPORTS_POSIX_SHELL: '1',
+=======
+            BORG_EXECUTION_PROFILE_REQUESTED: 'posix',
+            BORG_EXECUTION_SHELL_ID: 'cygwin-bash',
+            BORG_SUPPORTS_POWERSHELL: '1',
+            BORG_SUPPORTS_POSIX_SHELL: '1',
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/supervisor/SessionSupervisor.test.ts
         }));
     });
 
     it('persists metadata patches for a running session', async () => {
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/supervisor/SessionSupervisor.test.ts
         const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'hypercode-session-supervisor-'));
+=======
+        const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'borg-session-supervisor-'));
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/supervisor/SessionSupervisor.test.ts
         tempDirs.push(tempDir);
 
         const supervisor = new SessionSupervisor({
@@ -271,7 +290,11 @@ describe('SessionSupervisor', () => {
 
     describe('session recovery', () => {
         it('restores sessions from persistence file on boot', () => {
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/supervisor/SessionSupervisor.test.ts
             const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'hypercode-session-supervisor-'));
+=======
+            const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'borg-session-supervisor-'));
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/supervisor/SessionSupervisor.test.ts
             tempDirs.push(tempDir);
             
             const persistencePath = path.join(tempDir, 'session-supervisor.json');
@@ -279,7 +302,11 @@ describe('SessionSupervisor', () => {
             const mockSession = {
                 id: 'sess_recovery_123',
                 name: 'Recovery Test',
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/supervisor/SessionSupervisor.test.ts
                 cliType: 'hypercode',
+=======
+                cliType: 'borg',
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/supervisor/SessionSupervisor.test.ts
                 workingDirectory: tempDir,
                 status: 'running',
                 restartCount: 0,
@@ -323,7 +350,11 @@ describe('SessionSupervisor', () => {
 
     describe('attach readiness', () => {
         it('reports ready when status is running and a PID is available', async () => {
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/supervisor/SessionSupervisor.test.ts
             const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'hypercode-session-supervisor-'));
+=======
+            const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'borg-session-supervisor-'));
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/supervisor/SessionSupervisor.test.ts
             tempDirs.push(tempDir);
 
             const supervisor = new SessionSupervisor({
@@ -385,7 +416,11 @@ describe('SessionSupervisor', () => {
                 clearTimeout: () => undefined,
             };
 
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/supervisor/SessionSupervisor.test.ts
             const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'hypercode-session-supervisor-'));
+=======
+            const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'borg-session-supervisor-'));
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/supervisor/SessionSupervisor.test.ts
             tempDirs.push(tempDir);
 
             const supervisor = new SessionSupervisor({
@@ -449,7 +484,11 @@ describe('SessionSupervisor', () => {
                 clearTimeout: () => undefined,
             };
 
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/supervisor/SessionSupervisor.test.ts
             const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'hypercode-session-supervisor-'));
+=======
+            const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'borg-session-supervisor-'));
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/supervisor/SessionSupervisor.test.ts
             tempDirs.push(tempDir);
 
             const supervisor = new SessionSupervisor({
@@ -500,7 +539,11 @@ describe('SessionSupervisor', () => {
         });
 
         it('reports unavailable when status is stopped', async () => {
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/supervisor/SessionSupervisor.test.ts
             const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'hypercode-session-supervisor-'));
+=======
+            const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'borg-session-supervisor-'));
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/supervisor/SessionSupervisor.test.ts
             tempDirs.push(tempDir);
 
             const spawnedProcesses: FakeProcess[] = [];
@@ -560,7 +603,11 @@ describe('SessionSupervisor', () => {
         });
 
         it('reports unavailable when status is created (not yet started)', async () => {
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/supervisor/SessionSupervisor.test.ts
             const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'hypercode-session-supervisor-'));
+=======
+            const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'borg-session-supervisor-'));
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/supervisor/SessionSupervisor.test.ts
             tempDirs.push(tempDir);
 
             const supervisor = new SessionSupervisor({
@@ -602,7 +649,11 @@ describe('SessionSupervisor', () => {
         });
 
         it('maintains backward compatibility via the attachable field', async () => {
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/supervisor/SessionSupervisor.test.ts
             const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'hypercode-session-supervisor-'));
+=======
+            const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'borg-session-supervisor-'));
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/supervisor/SessionSupervisor.test.ts
             tempDirs.push(tempDir);
 
             const supervisor = new SessionSupervisor({

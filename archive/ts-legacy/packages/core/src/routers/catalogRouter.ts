@@ -15,7 +15,11 @@
  * - publicProcedure: list, search, get — safe for any authenticated session
  * - adminProcedure: ingest trigger, validate trigger — restricted to admins
  * - Graceful degradation: if ingestion/validation fails, error is returned
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/routers/catalogRouter.ts
  *   without crashing the server (consistent with HyperCode's resilience patterns)
+=======
+ *   without crashing the server (consistent with borg's resilience patterns)
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/routers/catalogRouter.ts
  */
 
 import { z } from "zod";

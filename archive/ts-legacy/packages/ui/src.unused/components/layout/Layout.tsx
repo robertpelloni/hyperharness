@@ -18,7 +18,11 @@ export function Layout() {
             <aside className="w-64 bg-gray-800 border-r border-gray-700 flex flex-col">
                 <div className="p-6">
                     <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-600">
+<<<<<<< HEAD:archive/ts-legacy/packages/ui/src.unused/components/layout/Layout.tsx
                         HyperCode Hub
+=======
+                        borg Hub
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/ui/src.unused/components/layout/Layout.tsx
                     </h1>
                     <div className="text-xs text-gray-500 mt-1">v0.1.0</div>
                 </div>

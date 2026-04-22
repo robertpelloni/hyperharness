@@ -14,7 +14,11 @@
 - Always describe what you're about to do before doing it.
 
 ## Tool Usage
+<<<<<<<< HEAD:archive/ts-legacy/apps/hypercode-extension/docs/GPT.md
 - ChatGPT / GPT models are often used via the HyperCode Extension extension itself.
+========
+- ChatGPT / GPT models are often used via the borg Extension extension itself.
+>>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/borg-extension/docs/GPT.md
 - When writing adapter code for OpenAI/ChatGPT, reference `pages/content/src/plugins/adapters/` for patterns.
 
 ## Commit Style

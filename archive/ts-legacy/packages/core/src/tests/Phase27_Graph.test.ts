@@ -1,11 +1,19 @@
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/tests/Phase27_Graph.test.ts
 import { GraphMemory } from '@hypercode/memory';
+=======
+import { GraphMemory } from '@borg/memory';
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/tests/Phase27_Graph.test.ts
 import fs from 'fs/promises';
 import path from 'path';
 
 describe('Phase 27: Logic Graph (Knowledge Graph)', () => {
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/tests/Phase27_Graph.test.ts
     const testRoot = path.join(process.cwd(), '.hypercode_test_graph');
+=======
+    const testRoot = path.join(process.cwd(), '.borg_test_graph');
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/tests/Phase27_Graph.test.ts
 
     beforeEach(async () => {
         await fs.mkdir(testRoot, { recursive: true });

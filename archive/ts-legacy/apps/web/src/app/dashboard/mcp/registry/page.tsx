@@ -2,8 +2,13 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/mcp/registry/page.tsx
 import { Card, CardHeader, CardTitle, CardContent } from "@hypercode/ui";
 import { Button } from "@hypercode/ui";
+=======
+import { Card, CardHeader, CardTitle, CardContent } from "@borg/ui";
+import { Button } from "@borg/ui";
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/mcp/registry/page.tsx
 import { Loader2, Globe, Download, ExternalLink, Database, ArrowRight, CheckCircle2, AlertCircle } from "lucide-react";
 import { trpc } from '@/utils/trpc';
 import { toast } from 'sonner';

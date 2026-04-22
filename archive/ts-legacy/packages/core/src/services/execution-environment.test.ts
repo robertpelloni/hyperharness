@@ -32,8 +32,13 @@ describe('detectLocalExecutionEnvironment', () => {
             },
             runCommand: async (command, args) => {
                 const joined = `${command} ${args.join(' ')}`;
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/services/execution-environment.test.ts
                 if (joined.includes('hypercode-ready')) {
                     return 'hypercode-ready';
+=======
+                if (joined.includes('borg-ready')) {
+                    return 'borg-ready';
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/services/execution-environment.test.ts
                 }
                 if (joined.includes('PSVersionTable')) {
                     return '7.5.0';

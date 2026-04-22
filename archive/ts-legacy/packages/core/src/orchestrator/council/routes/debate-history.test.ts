@@ -29,7 +29,11 @@ describe('debate history routes', () => {
 
   it('returns 503 when debate history storage is unavailable', async () => {
     mockDebateHistory.getRecordCount.mockRejectedValue(
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/orchestrator/council/routes/debate-history.test.ts
       new Error('SQLite runtime is unavailable for HyperCode DB-backed features (Could not locate the bindings file. Tried: better-sqlite3.node)'),
+=======
+      new Error('SQLite runtime is unavailable for borg DB-backed features (Could not locate the bindings file. Tried: better-sqlite3.node)'),
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/orchestrator/council/routes/debate-history.test.ts
     );
 
     const { debateHistoryRoutes } = await import('./debate-history.js');

@@ -12,7 +12,11 @@ export class StreamableHttpPlugin implements ITransportPlugin {
     version: '1.0.0',
     transportType: 'streamable-http',
     description: 'Streamable HTTP transport for MCP protocol',
+<<<<<<<< HEAD:archive/ts-legacy/apps/hypercode-extension/chrome-extension/src/mcpclient/plugins/streamable-http/StreamableHttpPlugin.ts
     author: 'HyperCode Extension',
+========
+    author: 'borg Extension',
+>>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/borg-extension/chrome-extension/src/mcpclient/plugins/streamable-http/StreamableHttpPlugin.ts
   };
 
   private transport: Transport | null = null;

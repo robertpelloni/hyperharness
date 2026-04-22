@@ -232,7 +232,11 @@ export function ConductorDashboard() {
 
   const [selectedRole, setSelectedRole] = useState<TaskRole>('developer');
   const [frontendPort, setFrontendPort] = useState('3000');
+<<<<<<< HEAD:archive/ts-legacy/packages/ui/src/components/conductor-dashboard.tsx
   const [backendPort, setBackendPort] = useState('4000');
+=======
+  const [backendPort, setBackendPort] = useState('3847');
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/ui/src/components/conductor-dashboard.tsx
   const [isStartingTask, setIsStartingTask] = useState(false);
 
   const handleStartTask = async () => {

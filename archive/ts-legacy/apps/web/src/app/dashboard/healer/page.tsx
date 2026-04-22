@@ -1,7 +1,11 @@
 
 'use client';
 
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/healer/page.tsx
 import { useHealerStream } from '@hypercode/ui';
+=======
+import { useHealerStream } from '@borg/ui';
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/healer/page.tsx
 
 type HealerEvent = {
     success: boolean;

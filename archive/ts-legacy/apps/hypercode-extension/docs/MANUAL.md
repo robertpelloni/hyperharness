@@ -1,15 +1,27 @@
+<<<<<<<< HEAD:archive/ts-legacy/apps/hypercode-extension/docs/MANUAL.md
 # HyperCode Extension User Manual
 
 ## Overview
 
 HyperCode Extension is a Chrome extension that bridges the Model Context Protocol (MCP) with web-based AI platforms like ChatGPT, Claude, Perplexity, and others. It allows you to use your local tools and data directly within these AI interfaces, enhancing their capabilities with file system access, command execution, and more.
+========
+# borg Extension User Manual
+
+## Overview
+
+borg Extension is a Chrome extension that bridges the Model Context Protocol (MCP) with web-based AI platforms like ChatGPT, Claude, Perplexity, and others. It allows you to use your local tools and data directly within these AI interfaces, enhancing their capabilities with file system access, command execution, and more.
+>>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/borg-extension/docs/MANUAL.md
 
 ## Getting Started
 
 ### Installation
 
 1.  **Install the Extension**: Load the extension in Chrome (Developer Mode) or install from the Chrome Web Store.
+<<<<<<<< HEAD:archive/ts-legacy/apps/hypercode-extension/docs/MANUAL.md
 2.  **Install the Proxy**: To connect to local MCP servers, you need to run the HyperCode Extension Proxy.
+========
+2.  **Install the Proxy**: To connect to local MCP servers, you need to run the borg Extension Proxy.
+>>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/borg-extension/docs/MANUAL.md
 
 ### Proxy Setup
 
@@ -34,7 +46,11 @@ The proxy bridges the browser (extension) to your local MCP servers.
 2.  **Run the Proxy**:
 
     ```bash
+<<<<<<<< HEAD:archive/ts-legacy/apps/hypercode-extension/docs/MANUAL.md
     npx -y @srbhptl39/hypercode-extension-proxy@latest --config ./config.json
+========
+    npx -y @srbhptl39/borg-extension-proxy@latest --config ./config.json
+>>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/borg-extension/docs/MANUAL.md
     ```
 
     By default, this starts an SSE server on port 3006. You can change the port using environment variables: `PORT=3007 npx ...`

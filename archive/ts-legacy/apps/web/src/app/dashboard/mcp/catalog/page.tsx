@@ -1,7 +1,11 @@
 "use client";
 
 import { useState } from 'react';
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/mcp/catalog/page.tsx
 import { Card, CardHeader, CardTitle, CardContent, Button, Switch } from "@hypercode/ui";
+=======
+import { Card, CardHeader, CardTitle, CardContent, Button, Switch } from "@borg/ui";
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/mcp/catalog/page.tsx
 import { Loader2, Wrench, Search, ArrowUpRight, TimerReset, FileJson, Zap, ZapOff } from "lucide-react";
 import { trpc } from '@/utils/trpc';
 import { toast } from 'sonner';

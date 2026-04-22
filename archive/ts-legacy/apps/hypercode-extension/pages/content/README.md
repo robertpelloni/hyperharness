@@ -1,6 +1,10 @@
 # Content Scripts
 
+<<<<<<<< HEAD:archive/ts-legacy/apps/hypercode-extension/pages/content/README.md
 This directory contains the content scripts and core functionality for the HyperCode Extension Chrome extension.
+========
+This directory contains the content scripts and core functionality for the borg Extension Chrome extension.
+>>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/borg-extension/pages/content/README.md
 
 ## Overview
 

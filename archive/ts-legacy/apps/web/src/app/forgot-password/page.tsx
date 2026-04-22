@@ -5,7 +5,11 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/forgot-password/page.tsx
 import { Button, Input } from '@hypercode/ui';
+=======
+import { Button, Input } from '@borg/ui';
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/forgot-password/page.tsx
 
 export default function ForgotPasswordPage() {
     const [email, setEmail] = useState('');

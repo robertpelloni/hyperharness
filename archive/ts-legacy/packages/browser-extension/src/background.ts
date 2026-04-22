@@ -1,5 +1,10 @@
+<<<<<<< HEAD:archive/ts-legacy/packages/browser-extension/src/background.ts
 // Background Service Worker for HyperCode Director Link
 console.log("HyperCode Browser Extension Background Service Worker Starting... 🚀");
+=======
+// Background Service Worker for borg Director Link
+console.log("borg Browser Extension Background Service Worker Starting... 🚀");
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/browser-extension/src/background.ts
 
 let socket: WebSocket | null = null;
 let requestIdCounter = 0;
@@ -8,11 +13,19 @@ let reconnectAttempts = 0;
 
 function connect() {
   // Use 127.0.0.1 to avoid dual-stack localhost ambiguity
+<<<<<<< HEAD:archive/ts-legacy/packages/browser-extension/src/background.ts
   console.log("Connecting to HyperCode MCP Server (ws://127.0.0.1:3001)...");
   socket = new WebSocket("ws://127.0.0.1:3001");
 
   socket.onopen = () => {
     console.log("✅ Connected to HyperCode Hub");
+=======
+  console.log("Connecting to borg MCP Server (ws://127.0.0.1:3001)...");
+  socket = new WebSocket("ws://127.0.0.1:3001");
+
+  socket.onopen = () => {
+    console.log("✅ Connected to borg Hub");
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/browser-extension/src/background.ts
     reconnectAttempts = 0;
   };
 
@@ -157,7 +170,11 @@ async function navigate(url: string) {
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.type === "MCP_REQUEST") {
     if (!socket || socket.readyState !== WebSocket.OPEN) {
+<<<<<<< HEAD:archive/ts-legacy/packages/browser-extension/src/background.ts
       sendResponse({ error: "HyperCode Disconnected" });
+=======
+      sendResponse({ error: "borg Disconnected" });
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/browser-extension/src/background.ts
       return true;
     }
 
@@ -175,7 +192,11 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   }
 
   if (request.type === "CONSOLE_LOG") {
+<<<<<<< HEAD:archive/ts-legacy/packages/browser-extension/src/background.ts
     // Forward to HyperCode Core
+=======
+    // Forward to borg Core
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/browser-extension/src/background.ts
     send({
       type: "BROWSER_LOG",
       level: request.level,

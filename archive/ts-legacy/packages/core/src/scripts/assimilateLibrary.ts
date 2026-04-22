@@ -14,6 +14,7 @@ dotenv.config({ path: path.join(root, 'packages/core/.env') });
 import fs from 'fs/promises';
 import { SkillAssimilationService } from '../services/SkillAssimilationService.js';
 import { SkillRegistry } from '../skills/SkillRegistry.js';
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/scripts/assimilateLibrary.ts
 import { LLMService, ModelSelector } from '@hypercode/ai';
 import { DeepResearchService } from '../services/DeepResearchService.js';
 import { MemoryManager } from '../services/MemoryManager.js';
@@ -22,6 +23,16 @@ import { SearchService } from '@hypercode/search';
 async function run() {
     const indexPath = path.join(root, 'HYPERCODE_MASTER_INDEX.jsonc');
     const skillsRoot = path.join(root, '.hypercode', 'skills');
+=======
+import { LLMService, ModelSelector } from '@borg/ai';
+import { DeepResearchService } from '../services/DeepResearchService.js';
+import { MemoryManager } from '../services/MemoryManager.js';
+import { SearchService } from '@borg/search';
+
+async function run() {
+    const indexPath = path.join(root, 'BORG_MASTER_INDEX.jsonc');
+    const skillsRoot = path.join(root, '.borg', 'skills');
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/scripts/assimilateLibrary.ts
 
     console.log(`[Assimilator] Root: ${root}`);
     console.log(`[Assimilator] ANTHROPIC_API_KEY present: ${!!process.env.ANTHROPIC_API_KEY}`);

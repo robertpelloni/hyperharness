@@ -1,7 +1,11 @@
 // Google Workspace connector — stores indexed chunks via the memory subsystem
 
 /**
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/services/GoogleWorkspaceConnector.ts
  * GoogleWorkspaceConnector — Connects the HyperCode memory subsystem to Google Docs,
+=======
+ * GoogleWorkspaceConnector — Connects the borg memory subsystem to Google Docs,
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/services/GoogleWorkspaceConnector.ts
  * Gmail, and Google Drive for seamless RAG (Retrieval-Augmented Generation).
  *
  * Architecture:

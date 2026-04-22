@@ -234,7 +234,11 @@ describe('CLIRegistry', () => {
   describe('definition parity', () => {
     test('covers every supported CLI type except custom', () => {
       const expectedTypes: CLIType[] = [
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/orchestrator/council/services/__tests__/cli-registry.test.ts
         'hypercode',
+=======
+        'borg',
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/orchestrator/council/services/__tests__/cli-registry.test.ts
         'opencode',
         'antigravity',
         'claude',

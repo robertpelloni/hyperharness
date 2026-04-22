@@ -1,4 +1,8 @@
+<<<<<<<< HEAD:archive/ts-legacy/apps/hypercode-extension/docs/HANDOFF.md
 # Handoff: HyperCode Extension v0.7.2
+========
+# Handoff: borg Extension v0.7.2
+>>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/borg-extension/docs/HANDOFF.md
 
 > **Read [AGENTS.md](./AGENTS.md) first.** It contains all universal instructions.
 > This file documents the latest session state for incoming agents.

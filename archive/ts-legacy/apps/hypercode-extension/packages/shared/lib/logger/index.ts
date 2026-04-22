@@ -1,5 +1,9 @@
 /**
+<<<<<<<< HEAD:archive/ts-legacy/apps/hypercode-extension/packages/shared/lib/logger/index.ts
  * Centralized logging system for HyperCode Extension
+========
+ * Centralized logging system for borg Extension
+>>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/borg-extension/packages/shared/lib/logger/index.ts
  *
  * Features:
  * - Granular log level control (DEBUG, INFO, WARN, ERROR, NONE)

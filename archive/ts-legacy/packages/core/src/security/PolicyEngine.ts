@@ -27,7 +27,11 @@ export class PolicyEngine {
     private policyPath: string;
 
     constructor(cwd: string) {
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/security/PolicyEngine.ts
         this.policyPath = path.join(cwd, '.hypercode', 'policy.json');
+=======
+        this.policyPath = path.join(cwd, '.borg', 'policy.json');
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/security/PolicyEngine.ts
         this.policy = this.loadPolicy();
     }
 

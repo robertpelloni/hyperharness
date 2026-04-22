@@ -1,4 +1,8 @@
+<<<<<<< HEAD:archive/ts-legacy/packages/adk/IDEAS.md
 # Ideas for Improvement: @hypercode/adk
+=======
+# Ideas for Improvement: @borg/adk
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/adk/IDEAS.md
 
 Evolving the Agent Development Kit from a set of interfaces into a high-intelligence framework for autonomous swarm members.
 
@@ -20,4 +24,8 @@ Evolving the Agent Development Kit from a set of interfaces into a high-intellig
 ## 4. Developer Experience (DX)
 - **Agent Sandbox Simulator:** A local CLI tool to test agent behaviors and tool interactions in a mock environment with simulated network latency and quota failures.
 - **Type-Safe Tool Chaining:** A TypeScript DSL for defining complex multi-tool workflows that agents can execute as a single, atomic operation with guaranteed type safety.
+<<<<<<< HEAD:archive/ts-legacy/packages/adk/IDEAS.md
 - **Live "State of Mind" Telemetry:** Standardized telemetry hooks that allow the ADK to export the agent's current internal goals and confidence levels to the HyperCode dashboard.
+=======
+- **Live "State of Mind" Telemetry:** Standardized telemetry hooks that allow the ADK to export the agent's current internal goals and confidence levels to the borg dashboard.
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/adk/IDEAS.md

@@ -1,6 +1,10 @@
 
 import { DarwinService } from '../src/services/DarwinService.js';
+<<<<<<< HEAD:archive/ts-legacy/packages/core/scripts/verify_darwin.ts
 import { LLMService } from '@hypercode/ai';
+=======
+import { LLMService } from '@borg/ai';
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/scripts/verify_darwin.ts
 import { MCPServer } from '../src/MCPServer.js';
 
 // Mock LLM

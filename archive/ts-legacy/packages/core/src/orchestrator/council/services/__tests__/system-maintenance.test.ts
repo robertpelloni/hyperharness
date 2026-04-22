@@ -28,7 +28,11 @@ describe('AutonomousMaintenanceService', () => {
 
     mockGetDb.mockImplementation(() => {
       throw new Error(
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/orchestrator/council/services/__tests__/system-maintenance.test.ts
         'SQLite runtime is unavailable for HyperCode DB-backed features (Could not locate the bindings file. Tried: better-sqlite3.node)',
+=======
+        'SQLite runtime is unavailable for borg DB-backed features (Could not locate the bindings file. Tried: better-sqlite3.node)',
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/orchestrator/council/services/__tests__/system-maintenance.test.ts
       );
     });
 

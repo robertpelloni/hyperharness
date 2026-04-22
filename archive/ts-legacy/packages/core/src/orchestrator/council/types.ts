@@ -5,7 +5,11 @@ export interface Message {
 
 export interface SupervisorConfig {
   name: string;
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/orchestrator/council/types.ts
   provider: 'openai' | 'anthropic' | 'google' | 'xai' | 'moonshot' | 'deepseek' | 'qwen' | 'custom' | 'gemini' | 'grok' | 'kimi' | 'openrouter';
+=======
+  provider: 'openai' | 'anthropic' | 'google' | 'xai' | 'moonshot' | 'deepseek' | 'qwen' | 'custom' | 'gemini' | 'grok' | 'kimi';
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/orchestrator/council/types.ts
   apiKey?: string;
   model?: string;
   temperature?: number;
@@ -174,7 +178,11 @@ export interface SessionPersistenceConfig {
 }
 
 export type CLIType =
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/orchestrator/council/types.ts
   | 'hypercode'
+=======
+  | 'borg'
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/orchestrator/council/types.ts
   | 'opencode'
   | 'antigravity'
   | 'claude'

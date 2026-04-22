@@ -839,7 +839,11 @@ export default function ToolsPage() {
 
                 {/* Footer */}
                 <footer className="mt-12 pt-8 border-t border-zinc-200 dark:border-zinc-800 text-center text-sm text-zinc-500">
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/docs/tools/page.tsx
                     <p>HyperCode Mission Control • {totalTools} MCP Tools</p>
+=======
+                    <p>borg Mission Control • {totalTools} MCP Tools</p>
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/docs/tools/page.tsx
                     <div className="mt-2 flex justify-center gap-4">
                         <Link href="/docs" className="text-blue-500 hover:text-blue-400">Feature Docs</Link>
                         <Link href="/docs/api" className="text-blue-500 hover:text-blue-400">API Reference</Link>

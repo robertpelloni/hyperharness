@@ -61,13 +61,21 @@ export class GitWorktreeManager {
 
     async createTaskEnvironment(taskId: string): Promise<string> {
         const branchName = `task/${taskId}`;
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/orchestrator/GitWorktreeManager.ts
         const relativePath = `.hypercode/worktrees/${taskId}`;
+=======
+        const relativePath = `.borg/worktrees/${taskId}`;
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/orchestrator/GitWorktreeManager.ts
         console.log(`[GitWorktree] Creating task environment: ${taskId} at ${relativePath}`);
         return this.addWorktree(branchName, relativePath);
     }
 
     async cleanupTaskEnvironment(taskId: string): Promise<void> {
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/orchestrator/GitWorktreeManager.ts
         const relativePath = `.hypercode/worktrees/${taskId}`;
+=======
+        const relativePath = `.borg/worktrees/${taskId}`;
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/orchestrator/GitWorktreeManager.ts
         const fullPath = path.resolve(this.rootDir, relativePath);
         console.log(`[GitWorktree] Cleaning up task environment: ${taskId}`);
         await this.removeWorktree(fullPath, true);

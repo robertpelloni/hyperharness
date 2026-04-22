@@ -6,7 +6,11 @@ import fs from 'fs/promises';
 
 // Resolve the monorepo root safely without overly broad path traversals
 function getMonorepoRoot(): string {
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/submodules/actions.ts
     return process.env.HYPERCODE_ROOT || path.resolve(process.cwd(), '..', '..');
+=======
+    return process.env.BORG_ROOT || path.resolve(process.cwd(), '..', '..');
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/submodules/actions.ts
 }
 
 export async function fetchSubmodulesAction(): Promise<SubmoduleInfo[]> {
@@ -39,14 +43,22 @@ export interface WorkspaceInventorySection {
 const SECTION_DESCRIPTIONS: Record<string, string> = {
     apps: 'Operator-facing applications and external integration surfaces.',
     packages: 'Shared runtime libraries, services, engines, and reusable UI packages.',
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/submodules/actions.ts
     submodules: 'Reference repos and mirrored upstream code tracked alongside HyperCode.',
+=======
+    submodules: 'Reference repos and mirrored upstream code tracked alongside borg.',
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/submodules/actions.ts
     docs: 'Long-lived architecture, deployment, planning, and research documents.',
     scripts: 'Repo automation, build orchestration, maintenance, and tooling entrypoints.',
 };
 
 const ENTRY_SUMMARIES: Record<string, string> = {
     'apps/web': 'Next.js operator dashboard and web control plane.',
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/submodules/actions.ts
     'apps/hypercode-extension': 'Browser extension workspace for Chromium and Firefox bridge builds.',
+=======
+    'apps/borg-extension': 'Browser extension workspace for Chromium and Firefox bridge builds.',
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/submodules/actions.ts
     'apps/maestro': 'electron-orchestrator desktop shell for multi-agent coordination.',
     'apps/mobile': 'React Native companion app for remote monitoring and control.',
     'packages/core': 'Core backend runtime, council orchestration, MCP server, and tRPC APIs.',

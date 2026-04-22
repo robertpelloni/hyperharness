@@ -10,7 +10,11 @@ import {
 } from './toolContextInjection.js';
 
 describe('toolContextInjection', () => {
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/services/toolContextInjection.test.ts
     it('skips HyperCode meta-tools for automatic JIT resolution', () => {
+=======
+    it('skips borg meta-tools for automatic JIT resolution', () => {
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/services/toolContextInjection.test.ts
         expect(shouldResolveAutomaticToolContext('get_tool_context')).toBe(false);
         expect(shouldResolveAutomaticToolContext('search_tools')).toBe(false);
         expect(shouldResolveAutomaticToolContext('read_file')).toBe(true);

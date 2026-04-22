@@ -2,10 +2,17 @@
 
 import React, { useState } from 'react';
 import { trpc } from '@/utils/trpc';
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/skills/page.tsx
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@hypercode/ui';
 import { Input } from '@hypercode/ui';
 import { Button } from '@hypercode/ui';
 import { Badge } from "@hypercode/ui";
+=======
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@borg/ui';
+import { Input } from '@borg/ui';
+import { Button } from '@borg/ui';
+import { Badge } from "@borg/ui";
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/skills/page.tsx
 import { Hammer, BookOpen, Terminal, CheckCircle2, Loader2, AlertCircle } from 'lucide-react';
 
 interface SkillListItem {

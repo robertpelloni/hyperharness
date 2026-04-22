@@ -1,6 +1,10 @@
 # Plugin System Core
 
+<<<<<<<< HEAD:archive/ts-legacy/apps/hypercode-extension/pages/content/src/plugins/README.md
 This directory contains the core components for the HyperCode-Extension's plugin architecture, implementing a modern Zustand-based system for extensible website adapters.
+========
+This directory contains the core components for the borg-Extension's plugin architecture, implementing a modern Zustand-based system for extensible website adapters.
+>>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/borg-extension/pages/content/src/plugins/README.md
 
 ## Overview
 

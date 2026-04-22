@@ -9,7 +9,11 @@ import { createClientFactory, FakeMCPClient } from './test-helpers.ts';
 const tempDirs: string[] = [];
 
 function createConfigPath(config: object): string {
+<<<<<<< HEAD:archive/ts-legacy/packages/core/mcp/__tests__/lifecycle.test.ts
     const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'hypercode-mcp-lifecycle-'));
+=======
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'borg-mcp-lifecycle-'));
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/mcp/__tests__/lifecycle.test.ts
     tempDirs.push(dir);
     const configPath = path.join(dir, 'mcp.json');
     fs.writeFileSync(configPath, JSON.stringify(config, null, 2));

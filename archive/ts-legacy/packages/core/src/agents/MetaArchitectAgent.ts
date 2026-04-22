@@ -1,4 +1,8 @@
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/agents/MetaArchitectAgent.ts
 import { IAgent, LLMService } from "@hypercode/ai";
+=======
+import { IAgent, LLMService } from "@borg/ai";
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/agents/MetaArchitectAgent.ts
 import { PromptRegistry } from "../prompts/PromptRegistry.js";
 import { ClaudeAgent } from "./ClaudeAgent.js";
 
@@ -9,7 +13,11 @@ export class MetaArchitectAgent extends ClaudeAgent {
 
     // Override send to inject specialized system prompt
     async send(message: string, context?: any): Promise<string> {
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/agents/MetaArchitectAgent.ts
         let systemPrompt = `You are the META-ARCHITECT of the HyperCode System.
+=======
+        let systemPrompt = `You are the META-ARCHITECT of the borg System.
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/agents/MetaArchitectAgent.ts
 Your purpose is SELF-EVOLUTION. You verify modifications to the system itself.
 - You analyze code structure for cleanliness, modularity, and safety.
 - You design new tools and capabilities.

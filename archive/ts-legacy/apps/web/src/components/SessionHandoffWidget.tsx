@@ -1,7 +1,11 @@
 "use client";
 
 import React, { useState } from 'react';
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/components/SessionHandoffWidget.tsx
 import { Card, CardHeader, CardTitle, CardContent, Button } from "@hypercode/ui";
+=======
+import { Card, CardHeader, CardTitle, CardContent, Button } from "@borg/ui";
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/components/SessionHandoffWidget.tsx
 import { Download, Upload, Copy, Check, Loader2, Save } from "lucide-react";
 import { trpc } from '@/utils/trpc';
 import { toast } from 'sonner';

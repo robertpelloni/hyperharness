@@ -5,7 +5,11 @@ import { wsManager } from '../../orchestrator/council/services/ws-manager.js';
 import { loadConfig } from '../../orchestrator/council/services/config.js';
 
 const cliTypeSchema = z.enum([
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/routers/council/sessionRouter.ts
   'hypercode', 'opencode', 'claude', 'aider', 'cursor', 'continue', 'cody', 'copilot', 'custom',
+=======
+  'borg', 'opencode', 'claude', 'aider', 'cursor', 'continue', 'cody', 'copilot', 'custom',
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/routers/council/sessionRouter.ts
   'adrenaline', 'amazon-q', 'amazon-q-developer', 'amp-code', 'auggie', 'azure-openai',
   'bito', 'byterover', 'claude-code', 'code-codex', 'codebuff', 'codemachine', 'codex',
   'crush', 'dolt', 'factory', 'factory-droid', 'gemini', 'goose', 'grok', 'jules', 'kilo-code', 'kimi',

@@ -14,7 +14,10 @@
 
 import { v4 as uuidv4 } from 'uuid';
 import { EventEmitter } from 'events';
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/agents/swarm/SwarmOrchestrator.ts
 import { DEFAULT_OPENROUTER_FREE_MODEL } from '@hypercode/ai';
+=======
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/agents/swarm/SwarmOrchestrator.ts
 import { MeshService, SwarmMessageType, SwarmMessage } from '../../mesh/MeshService.js';
 import { MissionService, SwarmMission } from '../../services/MissionService.js';
 import { RateLimiter } from './RateLimiter.js';
@@ -143,7 +146,11 @@ export class SwarmOrchestrator extends EventEmitter {
         super();
         this.config = {
             maxConcurrency: config.maxConcurrency || 5,
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/agents/swarm/SwarmOrchestrator.ts
             defaultModel: config.defaultModel || DEFAULT_OPENROUTER_FREE_MODEL,
+=======
+            defaultModel: config.defaultModel || 'gpt-4o-mini',
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/agents/swarm/SwarmOrchestrator.ts
             timeoutMs: config.timeoutMs || 300000,
             maxRetries: config.maxRetries || 3,
             maxTokensPerMission: config.maxTokensPerMission || 1000000,
@@ -240,7 +247,11 @@ export class SwarmOrchestrator extends EventEmitter {
 
         try {
             if (!this.opencodeUrl) {
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/agents/swarm/SwarmOrchestrator.ts
                 throw new Error('No HyperCode Orchestrator base configured.');
+=======
+                throw new Error('No borg Orchestrator base configured.');
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/agents/swarm/SwarmOrchestrator.ts
             }
             // Use the Autopilot Council to decompose the goal via multi-model debate.
             const res = await fetch(`${this.opencodeUrl}/api/council/debate`, {

@@ -20,6 +20,7 @@ const packageJson = JSON.parse(readFileSync('./package.json', 'utf8'));
 const manifest = {
   manifest_version: 3,
   default_locale: 'en',
+<<<<<<<< HEAD:archive/ts-legacy/apps/hypercode-extension/chrome-extension/manifest.ts
   name: 'HyperCode Extension',
   browser_specific_settings: {
     gecko: {
@@ -28,6 +29,16 @@ const manifest = {
   },
   version: packageJson.version,
   description: 'HyperCode Extension',
+========
+  name: 'borg Extension',
+  browser_specific_settings: {
+    gecko: {
+      id: 'extension@borg.local',
+    },
+  },
+  version: packageJson.version,
+  description: 'borg Extension',
+>>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/borg-extension/chrome-extension/manifest.ts
   host_permissions: [
     '*://*.perplexity.ai/*',
     '*://*.chat.openai.com/*',

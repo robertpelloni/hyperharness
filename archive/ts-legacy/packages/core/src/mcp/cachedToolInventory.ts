@@ -1,7 +1,11 @@
 import { mcpServersRepository, toolsRepository } from '../db/repositories/index.js';
 
 import { deriveSemanticCatalogForServer } from './catalogMetadata.js';
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/mcp/cachedToolInventory.ts
 import { loadHyperCodeMcpConfig, type HyperCodeMcpServerEntry, type HyperCodeMcpToolMetadata } from './mcpJsonConfig.js';
+=======
+import { loadBorgMcpConfig, type BorgMcpServerEntry, type BorgMcpToolMetadata } from './mcpJsonConfig.js';
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/mcp/cachedToolInventory.ts
 import { namespaceToolName } from './namespaces.js';
 import { formatOptionalSqliteFailure } from '../db/sqliteAvailability.js';
 
@@ -57,7 +61,11 @@ function toDateOrNull(value: string | undefined | null): Date | null {
     return Number.isNaN(parsed.getTime()) ? null : parsed;
 }
 
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/mcp/cachedToolInventory.ts
 function buildConfigSnapshot(configServers: Record<string, HyperCodeMcpServerEntry>): CachedMcpInventorySnapshot {
+=======
+function buildConfigSnapshot(configServers: Record<string, BorgMcpServerEntry>): CachedMcpInventorySnapshot {
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/mcp/cachedToolInventory.ts
     const servers = Object.entries(configServers).map(([name, server], index) => {
         const metadata = server._meta;
         return {
@@ -102,7 +110,11 @@ function buildConfigSnapshot(configServers: Record<string, HyperCodeMcpServerEnt
         }
 
         metadataTools.forEach((tool) => {
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/mcp/cachedToolInventory.ts
             const typedTool = tool as HyperCodeMcpToolMetadata;
+=======
+            const typedTool = tool as BorgMcpToolMetadata;
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/mcp/cachedToolInventory.ts
             tools.push({
                 name: namespaceToolName(server.name, typedTool.name),
                 description: typedTool.description ?? '',
@@ -207,7 +219,11 @@ async function buildDatabaseSnapshot(): Promise<CachedMcpInventorySnapshot> {
 }
 
 export async function getCachedToolInventory() {
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/mcp/cachedToolInventory.ts
     const config = await loadHyperCodeMcpConfig().catch(() => ({ mcpServers: {} }));
+=======
+    const config = await loadBorgMcpConfig().catch(() => ({ mcpServers: {} }));
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/mcp/cachedToolInventory.ts
     const configSnapshot = buildConfigSnapshot(config.mcpServers ?? {});
 
     try {

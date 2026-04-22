@@ -4,7 +4,11 @@ import { t, publicProcedure, getResearchService, getDeepResearchService } from '
 import fs from 'node:fs/promises';
 import path from 'node:path';
 
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/routers/researchRouter.ts
 const MASTER_INDEX_PATH = path.join(process.cwd(), 'HYPERCODE_MASTER_INDEX.jsonc');
+=======
+const MASTER_INDEX_PATH = path.join(process.cwd(), 'BORG_MASTER_INDEX.jsonc');
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/routers/researchRouter.ts
 const INGESTION_STATUS_PATH = path.join(process.cwd(), 'scripts', 'ingestion-status.json');
 
 const isMissingFileError = (error: unknown): boolean =>

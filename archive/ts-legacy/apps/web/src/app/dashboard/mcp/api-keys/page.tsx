@@ -1,8 +1,13 @@
 "use client";
 
 import { useState } from 'react';
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/mcp/api-keys/page.tsx
 import { Card, CardHeader, CardTitle, CardContent } from "@hypercode/ui";
 import { Button } from "@hypercode/ui";
+=======
+import { Card, CardHeader, CardTitle, CardContent } from "@borg/ui";
+import { Button } from "@borg/ui";
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/mcp/api-keys/page.tsx
 import { Loader2, Plus, Key, Trash2, Copy, Check } from "lucide-react";
 import { trpc } from '@/utils/trpc';
 import { toast } from 'sonner';
@@ -21,7 +26,11 @@ export default function ApiKeysDashboard() {
                 <div>
                     <h1 className="text-3xl font-bold tracking-tight text-white">API Keys</h1>
                     <p className="text-zinc-500">
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/mcp/api-keys/page.tsx
                         Manage authentication keys for accessing HyperCode-managed MCP traffic
+=======
+                        Manage authentication keys for accessing borg-managed MCP traffic
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/mcp/api-keys/page.tsx
                     </p>
                 </div>
                 <div className="flex gap-2">
@@ -78,7 +87,11 @@ function ApiKeyCard({ apiKey, onUpdate }: { apiKey: any; onUpdate: () => void })
         // If the key IS available (e.g. for display purposes in this internal dashboard), we copy it.
         // Usually we only show it on creation. 
         // For now, let's assume we copy the ID or a placeholder if actual key isn't stored in plain text (it shouldn't be).
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/mcp/api-keys/page.tsx
         // HyperCode stores API key metadata for dashboard display; the raw secret should only be
+=======
+        // borg stores API key metadata for dashboard display; the raw secret should only be
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/mcp/api-keys/page.tsx
         // available at creation time. This view mostly copies the visible identifier/prefix.
         // Checked api-keys.repo.ts -> findPublicApiKeys.
         // If it returns full key, that's a security risk, but for MVP/Internal usage might be acceptable or it returns a masked version.

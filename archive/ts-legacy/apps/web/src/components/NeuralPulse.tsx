@@ -1,7 +1,11 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from 'react';
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/components/NeuralPulse.tsx
 import { Card, CardHeader, CardTitle, CardContent, Badge, resolveCoreWsUrl } from "@hypercode/ui";
+=======
+import { Card, CardHeader, CardTitle, CardContent, Badge, resolveCoreWsUrl } from "@borg/ui";
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/components/NeuralPulse.tsx
 import { Zap, Activity, Shield, Brain, MessageSquare, AlertTriangle, FileText } from "lucide-react";
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -18,7 +22,11 @@ export function NeuralPulse() {
     const scrollRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/components/NeuralPulse.tsx
         // Connect to HyperCode WebSocket for live NEURAL_PULSE feed
+=======
+        // Connect to borg WebSocket for live NEURAL_PULSE feed
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/components/NeuralPulse.tsx
         const ws = new WebSocket(resolveCoreWsUrl(process.env.NEXT_PUBLIC_CORE_WS_URL));
 
         ws.onopen = () => {

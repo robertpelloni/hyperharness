@@ -1,7 +1,11 @@
 /**
  * Core Architecture Components
  *
+<<<<<<<< HEAD:archive/ts-legacy/apps/hypercode-extension/pages/content/src/core/index.ts
  * Exports all core architectural components for the HyperCode Extension.
+========
+ * Exports all core architectural components for the borg Extension.
+>>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/borg-extension/pages/content/src/core/index.ts
  */
 
 export { circuitBreaker, CircuitBreaker } from './circuit-breaker';

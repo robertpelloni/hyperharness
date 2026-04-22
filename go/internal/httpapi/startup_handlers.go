@@ -8,6 +8,9 @@ import (
 	"github.com/hypercodehq/hypercode-go/internal/config"
 	"github.com/hypercodehq/hypercode-go/internal/interop"
 	"github.com/hypercodehq/hypercode-go/internal/memorystore"
+	"github.com/borghq/borg-go/internal/config"
+	"github.com/borghq/borg-go/internal/interop"
+	"github.com/borghq/borg-go/internal/memorystore"
 )
 
 type StartupBlockingReason struct {

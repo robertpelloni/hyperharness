@@ -22,7 +22,11 @@ export default function OpenWebUIDashboardPage() {
                 <div className="flex gap-2">
                     <div className="flex items-center gap-2 px-3 py-1.5 bg-blue-500/10 text-blue-400 border border-blue-500/20 rounded text-xs font-medium">
                         <Shield className="h-3.5 w-3.5" />
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/webui/page.tsx
                         Native HyperCode Integration Active
+=======
+                        Native borg Integration Active
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/webui/page.tsx
                     </div>
                     <a
                         href={webuiUrl}

@@ -107,11 +107,16 @@ describe('selectSessionExecutionPolicy', () => {
         expect(policy.reason).toContain('falling back to PowerShell 7');
     });
 
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/services/session-execution-policy.test.ts
     it('exports reserved HyperCode execution environment variables', () => {
+=======
+    it('exports reserved borg execution environment variables', () => {
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/services/session-execution-policy.test.ts
         const policy = selectSessionExecutionPolicy(createEnvironment(), 'compatibility');
         const env = buildExecutionPolicyEnv(policy);
 
         expect(env).toEqual(expect.objectContaining({
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/services/session-execution-policy.test.ts
             HYPERCODE_EXECUTION_PROFILE_REQUESTED: 'compatibility',
             HYPERCODE_EXECUTION_SHELL_ID: 'cmd',
             HYPERCODE_EXECUTION_SHELL_FAMILY: 'cmd',
@@ -120,6 +125,16 @@ describe('selectSessionExecutionPolicy', () => {
             npm_config_script_shell: 'C:\\Windows\\System32\\cmd.exe',
             HYPERCODE_SUPPORTS_POWERSHELL: '1',
             HYPERCODE_SUPPORTS_POSIX_SHELL: '1',
+=======
+            BORG_EXECUTION_PROFILE_REQUESTED: 'compatibility',
+            BORG_EXECUTION_SHELL_ID: 'cmd',
+            BORG_EXECUTION_SHELL_FAMILY: 'cmd',
+            SHELL: 'C:\\Windows\\System32\\cmd.exe',
+            COMSPEC: 'C:\\Windows\\System32\\cmd.exe',
+            npm_config_script_shell: 'C:\\Windows\\System32\\cmd.exe',
+            BORG_SUPPORTS_POWERSHELL: '1',
+            BORG_SUPPORTS_POSIX_SHELL: '1',
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/services/session-execution-policy.test.ts
         }));
     });
 
@@ -128,7 +143,11 @@ describe('selectSessionExecutionPolicy', () => {
         const env = buildExecutionPolicyEnv(policy);
 
         expect(env).toEqual(expect.objectContaining({
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/services/session-execution-policy.test.ts
             HYPERCODE_EXECUTION_SHELL_ID: 'pwsh',
+=======
+            BORG_EXECUTION_SHELL_ID: 'pwsh',
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/services/session-execution-policy.test.ts
             SHELL: 'C:\\Program Files\\PowerShell\\7\\pwsh.exe',
             npm_config_script_shell: 'C:\\Program Files\\PowerShell\\7\\pwsh.exe',
         }));

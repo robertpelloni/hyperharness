@@ -21,7 +21,11 @@ describe('serverHealthRouter degraded status handling', () => {
 
     it('returns a concise TRPC error when persisted server error state is unavailable', async () => {
         trackerMock.isServerInErrorState.mockRejectedValueOnce(
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/routers/serverHealthRouter.test.ts
             new Error('SQLite runtime is unavailable for HyperCode DB-backed features (Could not locate the bindings file. Tried: better-sqlite3.node)'),
+=======
+            new Error('SQLite runtime is unavailable for borg DB-backed features (Could not locate the bindings file. Tried: better-sqlite3.node)'),
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/routers/serverHealthRouter.test.ts
         );
 
         const { serverHealthRouter } = await import('./serverHealthRouter.js');

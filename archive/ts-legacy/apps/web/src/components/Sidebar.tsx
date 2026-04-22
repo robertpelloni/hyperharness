@@ -14,10 +14,17 @@ import { buildExportedNavPreferences, buildNavItemsByNormalizedHref, buildRecent
 
 interface SidebarProps extends React.HTMLAttributes<HTMLDivElement> { }
 
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/components/Sidebar.tsx
 const SIDEBAR_COLLAPSE_STORAGE_KEY = 'hypercode_sidebar_collapsed_sections_v1';
 const SIDEBAR_FAVORITES_STORAGE_KEY = 'hypercode_sidebar_favorites_v1';
 const SIDEBAR_RECENT_STORAGE_KEY = 'hypercode_sidebar_recent_routes_v1';
 const SIDEBAR_RECENT_SEARCHES_STORAGE_KEY = 'hypercode_sidebar_recent_searches_v1';
+=======
+const SIDEBAR_COLLAPSE_STORAGE_KEY = 'borg_sidebar_collapsed_sections_v1';
+const SIDEBAR_FAVORITES_STORAGE_KEY = 'borg_sidebar_favorites_v1';
+const SIDEBAR_RECENT_STORAGE_KEY = 'borg_sidebar_recent_routes_v1';
+const SIDEBAR_RECENT_SEARCHES_STORAGE_KEY = 'borg_sidebar_recent_searches_v1';
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/components/Sidebar.tsx
 const MAX_RECENT_ROUTES = 8;
 const MAX_RECENT_SEARCHES = 6;
 
@@ -265,7 +272,11 @@ export function Sidebar({ className }: SidebarProps) {
                 id: 'open-mcp-router',
                 title: 'Open MCP Router Dashboard',
                 section: 'Actions',
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/components/Sidebar.tsx
                 description: 'Go to HyperCode\'s MCP router control plane',
+=======
+                description: 'Go to borg\'s MCP router control plane',
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/components/Sidebar.tsx
                 icon: Command,
             },
             {
@@ -471,7 +482,11 @@ export function Sidebar({ className }: SidebarProps) {
         const url = URL.createObjectURL(blob);
         const link = document.createElement('a');
         link.href = url;
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/components/Sidebar.tsx
         link.download = `hypercode-nav-preferences-${new Date().toISOString().slice(0, 10)}.json`;
+=======
+        link.download = `borg-nav-preferences-${new Date().toISOString().slice(0, 10)}.json`;
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/components/Sidebar.tsx
         document.body.appendChild(link);
         link.click();
         link.remove();
@@ -664,7 +679,11 @@ export function Sidebar({ className }: SidebarProps) {
             <div className="space-y-4 py-4">
                 <div className="px-3 py-2 space-y-5 max-h-[calc(100vh-2rem)] overflow-auto">
                     <h2 className="mb-1 px-4 text-lg font-semibold tracking-tight text-white">
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/components/Sidebar.tsx
                         HyperCode Navigation
+=======
+                        borg Navigation
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/components/Sidebar.tsx
                     </h2>
                     <div className="px-3">
                         <input

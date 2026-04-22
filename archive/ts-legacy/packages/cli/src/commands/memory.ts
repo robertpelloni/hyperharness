@@ -104,7 +104,11 @@ async function withMemoryErrorHandling(
       const location = resolveControlPlaneLocation();
       console.error(chalk.red(`  ✗ ${message}`));
       console.error(chalk.dim(`  Control plane: ${location.baseUrl} (${location.source})`));
+<<<<<<< HEAD:archive/ts-legacy/packages/cli/src/commands/memory.ts
       console.error(chalk.dim('  Start HyperCode with `hypercode start` or point HYPERCODE_TRPC_UPSTREAM at a live /trpc endpoint.'));
+=======
+      console.error(chalk.dim('  Start borg with `borg start` or point BORG_TRPC_UPSTREAM at a live /trpc endpoint.'));
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/cli/src/commands/memory.ts
     }
     process.exitCode = 1;
   }
@@ -124,9 +128,15 @@ export function registerMemoryCommand(program: Command): void {
     .option('-s, --source <source>', 'Source of the memory', 'cli')
     .addHelpText('after', `
 Examples:
+<<<<<<< HEAD:archive/ts-legacy/packages/cli/src/commands/memory.ts
   $ hypercode memory add "User prefers dark mode"
   $ hypercode memory add "API uses OAuth 2.0" -t semantic --tags auth api
   $ hypercode memory add "Deploy with: pnpm build && pnpm start" -t procedural
+=======
+  $ borg memory add "User prefers dark mode"
+  $ borg memory add "API uses OAuth 2.0" -t semantic --tags auth api
+  $ borg memory add "Deploy with: pnpm build && pnpm start" -t procedural
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/cli/src/commands/memory.ts
     `)
     .option('--json', 'Output as JSON')
     .action(async (content, opts) => {
@@ -287,7 +297,11 @@ Examples:
         }
 
         const chalk = (await import('chalk')).default;
+<<<<<<< HEAD:archive/ts-legacy/packages/cli/src/commands/memory.ts
         const file = opts.output || `hypercode-memories-export.${result.format}`;
+=======
+        const file = opts.output || `borg-memories-export.${result.format}`;
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/cli/src/commands/memory.ts
         writeFileSync(file, result.data, 'utf8');
         console.log(chalk.green(`  ✓ Exported memories to ${file}`));
       }, opts);

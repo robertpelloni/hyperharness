@@ -1,11 +1,19 @@
 #!/usr/bin/env node
 
 /**
+<<<<<<< HEAD:archive/ts-legacy/scripts/build_all.mjs
  * Cross-platform HyperCode build orchestrator.
  *
  * Why this exists:
  * - Root Turbo builds only cover packages included in `pnpm-workspace.yaml`.
  * - Some extension deliverables live outside the root workspace (`apps/hypercode-extension`).
+=======
+ * Cross-platform Borg build orchestrator.
+ *
+ * Why this exists:
+ * - Root Turbo builds only cover packages included in `pnpm-workspace.yaml`.
+ * - Some extension deliverables live outside the root workspace (`apps/borg-extension`).
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:scripts/build_all.mjs
  * - The JetBrains plugin uses Gradle, so it needs a native build step.
  * - The richer browser extension has separate Chromium and Firefox modes that would
  *   otherwise overwrite the same `dist/` directory.
@@ -206,6 +214,7 @@ function directoryHasMergeMarkers(rootDir) {
   return false;
 }
 
+<<<<<<< HEAD:archive/ts-legacy/scripts/build_all.mjs
 function getWorkspacePackageName(packageRoot, fallbackName) {
   const packageJsonPath = path.join(packageRoot, "package.json");
   if (!existsSync(packageJsonPath)) {
@@ -224,6 +233,8 @@ function getWorkspacePackageName(packageRoot, fallbackName) {
   return fallbackName;
 }
 
+=======
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:scripts/build_all.mjs
 function runWorkspaceBuild() {
   printStep("Running Turbo workspace build (includes VS Code and browser-extension package workspaces)...");
   clearStaleNextBuildLock("apps/web");
@@ -237,17 +248,26 @@ function runWorkspaceBuild() {
   ];
 
   const claudeMemRoot = path.join(repoRoot, "packages", "claude-mem");
+<<<<<<< HEAD:archive/ts-legacy/scripts/build_all.mjs
   const claudeMemPackageName = getWorkspacePackageName(claudeMemRoot, "claude-mem");
   const shouldRequireClaudeMem = process.env.HYPERCODE_REQUIRE_CLAUDE_MEM_BUILD === "true";
+=======
+  const shouldRequireClaudeMem = process.env.BORG_REQUIRE_CLAUDE_MEM_BUILD === "true";
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:scripts/build_all.mjs
   const claudeMemHasMergeMarkers = directoryHasMergeMarkers(path.join(claudeMemRoot, "src"))
     || directoryHasMergeMarkers(path.join(claudeMemRoot, "scripts"));
 
   if (claudeMemHasMergeMarkers && !shouldRequireClaudeMem) {
+<<<<<<< HEAD:archive/ts-legacy/scripts/build_all.mjs
     const exclusionTargets = Array.from(new Set(["claude-mem", claudeMemPackageName]));
     printStep(`Detected unresolved merge markers in packages/claude-mem; excluding ${exclusionTargets.join(", ")} from the workspace build so HyperCode can still start.`);
     for (const target of exclusionTargets) {
       turboArgs.push(`--filter=!${target}`);
     }
+=======
+    printStep("Detected unresolved merge markers in packages/claude-mem; excluding claude-mem from the workspace build so Borg can still start.");
+    turboArgs.push("--filter=!claude-mem");
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:scripts/build_all.mjs
   }
 
   const result = runPnpm(
@@ -267,7 +287,11 @@ function runWorkspaceBuild() {
 }
 
 function runBrowserExtensionBuilds() {
+<<<<<<< HEAD:archive/ts-legacy/scripts/build_all.mjs
   const extensionRoot = path.join(repoRoot, "apps", "hypercode-extension");
+=======
+  const extensionRoot = path.join(repoRoot, "apps", "borg-extension");
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:scripts/build_all.mjs
   const distDir = path.join(extensionRoot, "dist");
   const chromiumDistDir = path.join(extensionRoot, "dist-chromium");
   const firefoxDistDir = path.join(extensionRoot, "dist-firefox");
@@ -275,13 +299,21 @@ function runBrowserExtensionBuilds() {
   const chromiumSnapshotDir = path.join(snapshotRoot, "dist-chromium-snapshot");
 
   if (!existsSync(extensionRoot)) {
+<<<<<<< HEAD:archive/ts-legacy/scripts/build_all.mjs
     printStep("Skipping browser-extension aggregate build because `apps/hypercode-extension` is not present.");
+=======
+    printStep("Skipping browser-extension aggregate build because `apps/borg-extension` is not present.");
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:scripts/build_all.mjs
     return;
   }
 
   mkdirSync(snapshotRoot, { recursive: true });
 
+<<<<<<< HEAD:archive/ts-legacy/scripts/build_all.mjs
   printStep("Installing HyperCode browser-extension workspace dependencies...");
+=======
+  printStep("Installing Borg browser-extension workspace dependencies...");
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:scripts/build_all.mjs
   const installResult = runPnpm(["install", "--frozen-lockfile"], {
     cwd: extensionRoot,
     env: {
@@ -308,7 +340,11 @@ function runBrowserExtensionBuilds() {
     printStep("Browser-extension dependencies installed via --ignore-scripts fallback.");
   }
 
+<<<<<<< HEAD:archive/ts-legacy/scripts/build_all.mjs
   printStep("Building HyperCode browser extension for Chromium/Chrome/Edge...");
+=======
+  printStep("Building Borg browser extension for Chromium/Chrome/Edge...");
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:scripts/build_all.mjs
   const chromiumBuild = runPnpm(["run", "base-build"], {
     cwd: extensionRoot,
     env: {
@@ -329,7 +365,11 @@ function runBrowserExtensionBuilds() {
   copyDirectory(distDir, chromiumDistDir);
   copyDirectory(distDir, chromiumSnapshotDir);
 
+<<<<<<< HEAD:archive/ts-legacy/scripts/build_all.mjs
   printStep("Building HyperCode browser extension for Firefox...");
+=======
+  printStep("Building Borg browser extension for Firefox...");
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:scripts/build_all.mjs
   const firefoxBuild = runPnpm(["run", "base-build"], {
     cwd: extensionRoot,
     env: {
@@ -396,8 +436,13 @@ function runJetBrainsBuild() {
 
   const gradle = detectGradleCommand(jetbrainsRoot);
   if (!gradle) {
+<<<<<<< HEAD:archive/ts-legacy/scripts/build_all.mjs
     const strictJetBrainsBuild = process.env.HYPERCODE_REQUIRE_JETBRAINS_BUILD === "true";
     const message = "Skipping JetBrains plugin build because Gradle is not available. Install Gradle or add a Gradle wrapper under `packages/jetbrains`, or set HYPERCODE_REQUIRE_JETBRAINS_BUILD=true to fail instead.";
+=======
+    const strictJetBrainsBuild = process.env.BORG_REQUIRE_JETBRAINS_BUILD === "true";
+    const message = "Skipping JetBrains plugin build because Gradle is not available. Install Gradle or add a Gradle wrapper under `packages/jetbrains`, or set BORG_REQUIRE_JETBRAINS_BUILD=true to fail instead.";
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:scripts/build_all.mjs
 
     if (strictJetBrainsBuild) {
       fail(message);

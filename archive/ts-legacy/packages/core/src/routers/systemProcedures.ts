@@ -21,7 +21,11 @@ import { summarizeCachedInventory } from './startupInventorySummary.js';
 import { mcpServerPool } from '../services/mcp-server-pool.service.js';
 import type { MemoryPipelineSummary } from '../services/memory/MemoryManager.js';
 
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/routers/systemProcedures.ts
 const EXECUTION_ENV_CACHE_TTL_MS = Number(process.env.HYPERCODE_EXECUTION_ENV_CACHE_TTL_MS ?? 30_000);
+=======
+const EXECUTION_ENV_CACHE_TTL_MS = Number(process.env.BORG_EXECUTION_ENV_CACHE_TTL_MS ?? 30_000);
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/routers/systemProcedures.ts
 
 let executionEnvironmentCache:
     | {
@@ -69,7 +73,11 @@ async function getCachedExecutionEnvironment() {
 
 export const systemProcedures = {
     health: publicProcedure.query(() => {
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/routers/systemProcedures.ts
         return { status: 'running', service: '@hypercode/core' };
+=======
+        return { status: 'running', service: '@borg/core' };
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/routers/systemProcedures.ts
     }),
     startupStatus: publicProcedure.query(async () => {
         const mcpServer = getMcpServer();

@@ -6,7 +6,11 @@ const mockState = {
   handoffsError: null as { message: string } | null,
 };
 
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/project/page.test.tsx
 vi.mock('@hypercode/ui', () => ({
+=======
+vi.mock('@borg/ui', () => ({
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/project/page.test.tsx
   Card: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   CardHeader: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   CardTitle: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,

@@ -22,7 +22,11 @@ export const useRootStore = create<RootState>()(
         ...createAdapterSlice(...a),
       }),
       {
+<<<<<<<< HEAD:archive/ts-legacy/apps/hypercode-extension/pages/content/src/stores/root.store.ts
         name: 'hypercode-extension-root-store',
+========
+        name: 'borg-extension-root-store',
+>>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/borg-extension/pages/content/src/stores/root.store.ts
         storage: createJSONStorage(createExtensionStateStorage),
         partialize: (state) => ({
           ui: {

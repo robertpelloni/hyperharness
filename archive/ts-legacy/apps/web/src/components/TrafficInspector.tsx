@@ -1,7 +1,11 @@
 "use client";
 
 import { useEffect, useState, useRef } from 'react';
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/components/TrafficInspector.tsx
 import { createReconnectPolicy, getReconnectDelayMs, resolveCoreWsUrl, shouldRetryReconnect } from '@hypercode/ui';
+=======
+import { createReconnectPolicy, getReconnectDelayMs, resolveCoreWsUrl, shouldRetryReconnect } from '@borg/ui';
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/components/TrafficInspector.tsx
 import { trpc } from '@/utils/trpc';
 
 interface Packet {
@@ -106,7 +110,11 @@ export function TrafficInspector() {
                 wsRef.current.close();
             }
 
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/components/TrafficInspector.tsx
             // Connect to HyperCode Core Bridge
+=======
+            // Connect to borg Core Bridge
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/components/TrafficInspector.tsx
             const ws = new WebSocket(wsUrl);
 
             ws.onopen = () => {

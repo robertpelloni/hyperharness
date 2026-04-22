@@ -97,7 +97,11 @@ export class TelemetryService extends EventEmitter {
             status: 'unset',
             startTime: Date.now(),
             attributes: {
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/services/TelemetryService.ts
                 'service.name': 'hypercode-core',
+=======
+                'service.name': 'borg-core',
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/services/TelemetryService.ts
             },
             events: [],
         };

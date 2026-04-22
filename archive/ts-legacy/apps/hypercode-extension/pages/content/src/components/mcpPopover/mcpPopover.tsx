@@ -996,7 +996,11 @@ export const MCPPopover: React.FC<MCPPopoverProps> = ({ toggleStateManager, adap
       const isGemini = activePlugin.name === 'Gemini';
       const fileType = isPerplexity || isGemini ? 'text/plain' : 'text/markdown';
       const fileExtension = fileType === 'text/plain' ? '.txt' : '.md';
+<<<<<<<< HEAD:archive/ts-legacy/apps/hypercode-extension/pages/content/src/components/mcpPopover/mcpPopover.tsx
       const fileName = `hypercode_bridge_instructions${fileExtension}`;
+========
+      const fileName = `borg_bridge_instructions${fileExtension}`;
+>>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/borg-extension/pages/content/src/components/mcpPopover/mcpPopover.tsx
       const file = new File([instructions], fileName, { type: fileType });
       try {
         logger.debug(`Attempting to attach file using ${activePlugin.name} adapter`);

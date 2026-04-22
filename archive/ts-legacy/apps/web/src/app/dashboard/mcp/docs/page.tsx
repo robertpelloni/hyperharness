@@ -1,8 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/mcp/docs/page.tsx
 import { Card, CardContent } from "@hypercode/ui";
 import { Button } from "@hypercode/ui";
+=======
+import { Card, CardContent } from "@borg/ui";
+import { Button } from "@borg/ui";
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/mcp/docs/page.tsx
 import { FileText, Loader2, RefreshCw } from "lucide-react";
 import { trpc } from '@/utils/trpc';
 

@@ -1,7 +1,11 @@
 "use client";
 
 import { useState } from 'react';
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/components/mcp/EditMcpServer.tsx
 import { Button } from "@hypercode/ui";
+=======
+import { Button } from "@borg/ui";
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/components/mcp/EditMcpServer.tsx
 import { Database, Loader2, X, Server } from "lucide-react";
 import { trpc } from '@/utils/trpc';
 import { toast } from 'sonner';

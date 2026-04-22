@@ -1,8 +1,14 @@
 'use client';
 
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/components/council/CouncilMemberGrid.tsx
 import { Card, CardContent, CardHeader, CardTitle } from "@hypercode/ui";
 import { Badge } from "@hypercode/ui";
 import { Button } from "@hypercode/ui";
+=======
+import { Card, CardContent, CardHeader, CardTitle } from "@borg/ui";
+import { Badge } from "@borg/ui";
+import { Button } from "@borg/ui";
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/components/council/CouncilMemberGrid.tsx
 import { Users, MoreVertical, Edit2, Shield, Brain, Zap } from "lucide-react";
 
 interface Supervisor {

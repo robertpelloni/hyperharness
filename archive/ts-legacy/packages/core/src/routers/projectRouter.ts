@@ -6,7 +6,11 @@ import path from 'path';
 
 export const projectRouter = t.router({
     getContext: publicProcedure.query(async () => {
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/routers/projectRouter.ts
         const contextPath = path.join(process.cwd(), '.hypercode', 'project_context.md');
+=======
+        const contextPath = path.join(process.cwd(), '.borg', 'project_context.md');
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/routers/projectRouter.ts
         try {
             if (!(await fs.access(contextPath).then(() => true).catch(() => false))) {
                 return "# Project Context\n\nDefine your repository rules and architectural vision here.";
@@ -28,11 +32,19 @@ export const projectRouter = t.router({
     updateContext: publicProcedure
         .input(z.object({ content: z.string() }))
         .mutation(async ({ input }) => {
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/routers/projectRouter.ts
             const contextPath = path.join(process.cwd(), '.hypercode', 'project_context.md');
             const hypercodeDir = path.dirname(contextPath);
             
             try {
                 await fs.mkdir(hypercodeDir, { recursive: true });
+=======
+            const contextPath = path.join(process.cwd(), '.borg', 'project_context.md');
+            const borgDir = path.dirname(contextPath);
+            
+            try {
+                await fs.mkdir(borgDir, { recursive: true });
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/routers/projectRouter.ts
                 await fs.writeFile(contextPath, input.content, 'utf-8');
                 return { success: true };
             } catch (e: any) {
@@ -41,7 +53,11 @@ export const projectRouter = t.router({
         }),
         
     getHandoffs: publicProcedure.query(async () => {
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/routers/projectRouter.ts
         const handoffDir = path.join(process.cwd(), '.hypercode', 'handoffs');
+=======
+        const handoffDir = path.join(process.cwd(), '.borg', 'handoffs');
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/routers/projectRouter.ts
         try {
             if (!(await fs.access(handoffDir).then(() => true).catch(() => false))) {
                 return [];

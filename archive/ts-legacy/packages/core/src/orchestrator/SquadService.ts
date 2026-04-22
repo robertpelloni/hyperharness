@@ -1,6 +1,11 @@
 import path from "path";
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/orchestrator/SquadService.ts
 import { Director } from "@hypercode/agents";
 import type { IMCPServer } from "@hypercode/adk";
+=======
+import { Director } from "@borg/agents";
+import type { IMCPServer } from "@borg/adk";
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/orchestrator/SquadService.ts
 
 interface ServerWithCouncil {
     council: unknown;
@@ -85,7 +90,11 @@ export class SquadService {
     private worktreesDir: string;
 
     constructor(private server: IMCPServer) {
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/orchestrator/SquadService.ts
         this.worktreesDir = path.join(process.cwd(), '.hypercode', 'worktrees');
+=======
+        this.worktreesDir = path.join(process.cwd(), '.borg', 'worktrees');
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/orchestrator/SquadService.ts
     }
 
     /**

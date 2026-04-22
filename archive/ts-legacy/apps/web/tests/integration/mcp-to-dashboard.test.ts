@@ -12,20 +12,34 @@ vi.mock('../../src/components/ContextHealthWidget', () => ({ ContextHealthWidget
 
 describe('dashboard MCP flow integration', () => {
   const originalFetch = global.fetch;
+<<<<<<< HEAD:archive/ts-legacy/apps/web/tests/integration/mcp-to-dashboard.test.ts
   const originalUpstream = process.env.HYPERCODE_TRPC_UPSTREAM;
+=======
+  const originalUpstream = process.env.BORG_TRPC_UPSTREAM;
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/tests/integration/mcp-to-dashboard.test.ts
 
   afterEach(() => {
     global.fetch = originalFetch;
 
     if (originalUpstream === undefined) {
+<<<<<<< HEAD:archive/ts-legacy/apps/web/tests/integration/mcp-to-dashboard.test.ts
       delete process.env.HYPERCODE_TRPC_UPSTREAM;
     } else {
       process.env.HYPERCODE_TRPC_UPSTREAM = originalUpstream;
+=======
+      delete process.env.BORG_TRPC_UPSTREAM;
+    } else {
+      process.env.BORG_TRPC_UPSTREAM = originalUpstream;
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/tests/integration/mcp-to-dashboard.test.ts
     }
   });
 
   it('bridges modern MCP dashboard procedure batches when the upstream is unavailable', async () => {
+<<<<<<< HEAD:archive/ts-legacy/apps/web/tests/integration/mcp-to-dashboard.test.ts
     process.env.HYPERCODE_TRPC_UPSTREAM = 'http://127.0.0.1:59999/trpc';
+=======
+    process.env.BORG_TRPC_UPSTREAM = 'http://127.0.0.1:59999/trpc';
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/tests/integration/mcp-to-dashboard.test.ts
     global.fetch = vi.fn(async () => {
       throw new Error('connect ECONNREFUSED');
     }) as typeof fetch;
@@ -43,7 +57,11 @@ describe('dashboard MCP flow integration', () => {
     const payload = await response.json();
 
     expect(response.status).toBe(200);
+<<<<<<< HEAD:archive/ts-legacy/apps/web/tests/integration/mcp-to-dashboard.test.ts
     expect(response.headers.get('x-hypercode-trpc-compat')).toBe('legacy-mcp-dashboard-bridge');
+=======
+    expect(response.headers.get('x-borg-trpc-compat')).toBe('legacy-mcp-dashboard-bridge');
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/tests/integration/mcp-to-dashboard.test.ts
     expect(payload).toHaveLength(3);
     expect(payload[0]).toEqual({ result: { data: expect.any(Array) } });
     expect(payload[1]).toEqual({ result: { data: expect.any(Array) } });

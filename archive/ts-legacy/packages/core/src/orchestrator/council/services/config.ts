@@ -2,9 +2,15 @@ import type { CouncilConfig, SupervisorConfig, SessionTemplate, LogRotationConfi
 import { existsSync, readFileSync, writeFileSync, mkdirSync } from 'fs';
 import { join, dirname } from 'path';
 
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/orchestrator/council/services/config.ts
 const DEFAULT_ORCHESTRATOR_CONFIG_DIR = join(process.cwd(), '.hypercode', 'orchestrator');
 const LEGACY_CONFIG_DIR = process.env.AUTOPILOT_CONFIG_DIR || join(process.cwd(), '.autopilot');
 const CONFIG_DIR = process.env.HYPERCODE_ORCHESTRATOR_CONFIG_DIR
+=======
+const DEFAULT_ORCHESTRATOR_CONFIG_DIR = join(process.cwd(), '.borg', 'orchestrator');
+const LEGACY_CONFIG_DIR = process.env.AUTOPILOT_CONFIG_DIR || join(process.cwd(), '.autopilot');
+const CONFIG_DIR = process.env.BORG_ORCHESTRATOR_CONFIG_DIR
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/orchestrator/council/services/config.ts
   || process.env.AUTOPILOT_CONFIG_DIR
   || (existsSync(join(DEFAULT_ORCHESTRATOR_CONFIG_DIR, 'config.json')) ? DEFAULT_ORCHESTRATOR_CONFIG_DIR : undefined)
   || (existsSync(join(LEGACY_CONFIG_DIR, 'config.json')) ? LEGACY_CONFIG_DIR : DEFAULT_ORCHESTRATOR_CONFIG_DIR);
@@ -62,7 +68,11 @@ const DEFAULT_CONFIG: AutopilotConfig = {
   },
   persistence: {
     enabled: true,
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/orchestrator/council/services/config.ts
     filePath: '.hypercode/orchestrator/sessions.json',
+=======
+    filePath: '.borg/orchestrator/sessions.json',
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/orchestrator/council/services/config.ts
     autoSaveIntervalMs: 5000,
     autoResumeOnStart: true,
     maxPersistedSessions: 100,
@@ -231,6 +241,7 @@ export function loadConfig(): AutopilotConfig {
     }
   }
 
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/orchestrator/council/services/config.ts
   const orchestratorPort = getEnvValue('HYPERCODE_ORCHESTRATOR_PORT', 'AUTOPILOT_PORT');
   if (orchestratorPort) {
     config.server.port = parseInt(orchestratorPort);
@@ -252,6 +263,29 @@ export function loadConfig(): AutopilotConfig {
     config.council.consensusThreshold = parseFloat(consensusThreshold);
   }
   const smartPilot = getEnvValue('HYPERCODE_ORCHESTRATOR_SMART_PILOT', 'AUTOPILOT_SMART_PILOT');
+=======
+  const orchestratorPort = getEnvValue('BORG_ORCHESTRATOR_PORT', 'AUTOPILOT_PORT');
+  if (orchestratorPort) {
+    config.server.port = parseInt(orchestratorPort);
+  }
+  const orchestratorHost = getEnvValue('BORG_ORCHESTRATOR_HOST', 'AUTOPILOT_HOST');
+  if (orchestratorHost) {
+    config.server.host = orchestratorHost;
+  }
+  const basePort = getEnvValue('BORG_ORCHESTRATOR_BASE_PORT', 'AUTOPILOT_BASE_PORT');
+  if (basePort) {
+    config.sessions.basePort = parseInt(basePort);
+  }
+  const debateRounds = getEnvValue('BORG_ORCHESTRATOR_DEBATE_ROUNDS', 'AUTOPILOT_DEBATE_ROUNDS');
+  if (debateRounds) {
+    config.council.debateRounds = parseInt(debateRounds);
+  }
+  const consensusThreshold = getEnvValue('BORG_ORCHESTRATOR_CONSENSUS', 'AUTOPILOT_CONSENSUS');
+  if (consensusThreshold) {
+    config.council.consensusThreshold = parseFloat(consensusThreshold);
+  }
+  const smartPilot = getEnvValue('BORG_ORCHESTRATOR_SMART_PILOT', 'AUTOPILOT_SMART_PILOT');
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/orchestrator/council/services/config.ts
   if (smartPilot) {
     config.council.smartPilot = smartPilot === 'true';
   }

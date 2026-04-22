@@ -172,7 +172,11 @@ describe('registerMemoryCommand', () => {
       exportedAt: '2026-04-02T09:00:00.000Z',
     });
 
+<<<<<<< HEAD:archive/ts-legacy/packages/cli/src/commands/memory.test.ts
     const output = join(tmpdir(), `hypercode-memory-export-${Date.now()}.json`);
+=======
+    const output = join(tmpdir(), `borg-memory-export-${Date.now()}.json`);
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/cli/src/commands/memory.test.ts
 
     try {
       const program = createProgram();
@@ -189,7 +193,11 @@ describe('registerMemoryCommand', () => {
   });
 
   it('imports memories through the live control plane as JSON', async () => {
+<<<<<<< HEAD:archive/ts-legacy/packages/cli/src/commands/memory.test.ts
     const input = join(tmpdir(), `hypercode-memory-import-${Date.now()}.json`);
+=======
+    const input = join(tmpdir(), `borg-memory-import-${Date.now()}.json`);
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/cli/src/commands/memory.test.ts
     queryTrpcMock.mockResolvedValue({
       imported: 2,
       errors: 0,

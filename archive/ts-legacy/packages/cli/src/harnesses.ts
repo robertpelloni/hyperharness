@@ -2,7 +2,11 @@ import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 
 export const CLI_HARNESSES = [
+<<<<<<< HEAD:archive/ts-legacy/packages/cli/src/harnesses.ts
   'hypercode',
+=======
+  'borg',
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/cli/src/harnesses.ts
   'aider',
   'antigravity',
   'opencode',
@@ -53,6 +57,7 @@ export interface CliHarnessParitySummary {
   sourceBackedToolCount: number;
 }
 
+<<<<<<< HEAD:archive/ts-legacy/packages/cli/src/harnesses.ts
 export const PRIMARY_CLI_HARNESS: CliHarness = 'hypercode';
 
 const EXTERNAL_HARNESS_NOTE =
@@ -70,6 +75,25 @@ export const CLI_HARNESS_DEFINITIONS: Record<CliHarness, CliHarnessDefinition> =
     launchCommand: 'go run .',
     capabilities: ['repl', 'pipe', 'hypercode-adapter', 'tool-registry'],
     parityNotes: 'HyperCode can read HyperCode tool calls directly from the assimilated submodule source.',
+=======
+export const PRIMARY_CLI_HARNESS: CliHarness = 'borg';
+
+const EXTERNAL_HARNESS_NOTE =
+  'External harness; borg currently tracks install/runtime metadata only, not a source-backed tool registry.';
+
+export const CLI_HARNESS_DEFINITIONS: Record<CliHarness, CliHarnessDefinition> = {
+  borg: {
+    id: 'borg',
+    description: 'borg Go CLI harness',
+    maturity: 'Experimental',
+    primary: true,
+    submodulePath: 'submodules/borg',
+    upstream: 'https://github.com/robertpelloni/borg',
+    runtime: 'Go / Cobra / TUI',
+    launchCommand: 'go run .',
+    capabilities: ['repl', 'pipe', 'borg-adapter', 'tool-registry'],
+    parityNotes: 'borg can read borg tool calls directly from the assimilated submodule source.',
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/cli/src/harnesses.ts
   },
   aider: {
     id: 'aider',
@@ -85,7 +109,11 @@ export const CLI_HARNESS_DEFINITIONS: Record<CliHarness, CliHarnessDefinition> =
     runtime: 'Desktop IDE / command surface',
     upstream: 'https://antigravity.google/',
     parityNotes:
+<<<<<<< HEAD:archive/ts-legacy/packages/cli/src/harnesses.ts
       'Docs-backed Antigravity editor surface; HyperCode does not yet have a source-backed shell contract or tool registry for parity-safe integration.',
+=======
+      'Docs-backed Antigravity editor surface; borg does not yet have a source-backed shell contract or tool registry for parity-safe integration.',
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/cli/src/harnesses.ts
   },
   opencode: {
     id: 'opencode',
@@ -201,11 +229,19 @@ export function resolveCliHarnessDefinition(harness: string, workspaceRoot = pro
     toolInventoryStatus: definition.id === 'custom' ? 'operator-defined' : 'metadata-only',
     integrationLevel: definition.id === 'custom' ? 'operator-defined' : 'metadata-only',
   };
+<<<<<<< HEAD:archive/ts-legacy/packages/cli/src/harnesses.ts
   if (definition.id !== 'hypercode') {
     return resolved;
   }
 
   const toolInventory = readHypercodeToolInventory(workspaceRoot);
+=======
+  if (definition.id !== 'borg') {
+    return resolved;
+  }
+
+  const toolInventory = readborgToolInventory(workspaceRoot);
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/cli/src/harnesses.ts
   if (!toolInventory) {
     return resolved;
   }
@@ -262,8 +298,13 @@ export function formatCliHarnessHelpLines(workspaceRoot = process.cwd()): string
   }).join('\n');
 }
 
+<<<<<<< HEAD:archive/ts-legacy/packages/cli/src/harnesses.ts
 function readHypercodeToolInventory(workspaceRoot: string): { toolCallNames: string[]; toolInventorySource: string } | null {
   const toolsDir = path.join(workspaceRoot, 'submodules', 'hypercode', 'tools');
+=======
+function readborgToolInventory(workspaceRoot: string): { toolCallNames: string[]; toolInventorySource: string } | null {
+  const toolsDir = path.join(workspaceRoot, 'submodules', 'borg', 'tools');
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/cli/src/harnesses.ts
   if (!existsSync(toolsDir)) {
     return null;
   }
@@ -287,6 +328,10 @@ function readHypercodeToolInventory(workspaceRoot: string): { toolCallNames: str
 
   return {
     toolCallNames: [...toolCallNames].sort((left, right) => left.localeCompare(right)),
+<<<<<<< HEAD:archive/ts-legacy/packages/cli/src/harnesses.ts
     toolInventorySource: 'submodules/hyperharness/tools/*.go',
+=======
+    toolInventorySource: 'submodules/borg/tools/*.go',
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/cli/src/harnesses.ts
   };
 }

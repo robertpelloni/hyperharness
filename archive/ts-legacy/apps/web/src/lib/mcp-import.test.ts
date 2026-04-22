@@ -63,7 +63,11 @@ describe('buildBulkImportServers', () => {
         ]);
     });
 
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/lib/mcp-import.test.ts
     it('normalizes imported server names so bulk import matches HyperCode validation', () => {
+=======
+    it('normalizes imported server names so bulk import matches borg validation', () => {
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/lib/mcp-import.test.ts
         const preview = buildBulkImportServers(JSON.stringify({
             mcpServers: {
                 'robertpelloni.com': {

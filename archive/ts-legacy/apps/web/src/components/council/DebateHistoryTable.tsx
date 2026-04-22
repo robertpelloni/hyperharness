@@ -7,8 +7,13 @@ import {
   TableHead,
   TableHeader,
   TableRow,
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/components/council/DebateHistoryTable.tsx
 } from "@hypercode/ui";
 import { Badge } from "@hypercode/ui";
+=======
+} from "@borg/ui";
+import { Badge } from "@borg/ui";
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/components/council/DebateHistoryTable.tsx
 import { formatDistanceToNow } from 'date-fns';
 import { CheckCircle2, XCircle, AlertTriangle, Users, BarChart } from 'lucide-react';
 

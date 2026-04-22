@@ -46,7 +46,11 @@ async function withMeshErrorHandling(
     } else {
       const chalk = (await import('chalk')).default;
       console.error(chalk.red(`  ✗ ${message}`));
+<<<<<<< HEAD:archive/ts-legacy/packages/cli/src/commands/mesh.ts
       console.error(chalk.dim('  Start HyperCode with `hypercode start` or point HYPERCODE_TRPC_UPSTREAM at a live /trpc endpoint.'));
+=======
+      console.error(chalk.dim('  Start borg with `borg start` or point BORG_TRPC_UPSTREAM at a live /trpc endpoint.'));
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/cli/src/commands/mesh.ts
     }
     process.exitCode = 1;
   }
@@ -55,7 +59,11 @@ async function withMeshErrorHandling(
 export function registerMeshCommand(program: Command): void {
   const mesh = program
     .command('mesh')
+<<<<<<< HEAD:archive/ts-legacy/packages/cli/src/commands/mesh.ts
     .description('Mesh — inspect HyperCode peer mesh status, peers, and capability matches');
+=======
+    .description('Mesh — inspect borg peer mesh status, peers, and capability matches');
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/cli/src/commands/mesh.ts
 
   mesh
     .command('status')
@@ -81,7 +89,11 @@ export function registerMeshCommand(program: Command): void {
         }
 
         const chalk = (await import('chalk')).default;
+<<<<<<< HEAD:archive/ts-legacy/packages/cli/src/commands/mesh.ts
         console.log(chalk.bold.cyan('\n  HyperCode Mesh Status\n'));
+=======
+        console.log(chalk.bold.cyan('\n  borg Mesh Status\n'));
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/cli/src/commands/mesh.ts
         console.log(chalk.dim('  Node ID:        ') + status.nodeId);
         console.log(chalk.dim('  Known peers:    ') + String(status.peersCount));
         console.log(chalk.dim('  Capabilities:   ') + (localCapabilities.length > 0 ? localCapabilities.join(', ') : 'none advertised'));
@@ -125,7 +137,11 @@ export function registerMeshCommand(program: Command): void {
           ]);
         }
 
+<<<<<<< HEAD:archive/ts-legacy/packages/cli/src/commands/mesh.ts
         console.log(chalk.bold.cyan('\n  HyperCode Mesh Peers\n'));
+=======
+        console.log(chalk.bold.cyan('\n  borg Mesh Peers\n'));
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/cli/src/commands/mesh.ts
         if (rows.length === 0) {
           console.log(chalk.dim('  No peers discovered yet.\n'));
           return;
@@ -223,7 +239,11 @@ export function registerMeshCommand(program: Command): void {
         }
 
         const chalk = (await import('chalk')).default;
+<<<<<<< HEAD:archive/ts-legacy/packages/cli/src/commands/mesh.ts
         console.log(chalk.bold.cyan('\n  HyperCode Mesh Capability Match\n'));
+=======
+        console.log(chalk.bold.cyan('\n  borg Mesh Capability Match\n'));
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/cli/src/commands/mesh.ts
         console.log(chalk.dim('  Required: ') + requiredCapabilities.join(', '));
         if (!match) {
           console.log(chalk.yellow('  No matching peer found.\n'));

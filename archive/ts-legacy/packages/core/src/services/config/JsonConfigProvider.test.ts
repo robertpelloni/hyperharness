@@ -5,12 +5,20 @@ import path from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
 
 import { JsonConfigProvider } from './JsonConfigProvider.js';
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/services/config/JsonConfigProvider.test.ts
 import { loadHyperCodeMcpConfig } from '../../mcp/mcpJsonConfig.js';
+=======
+import { loadBorgMcpConfig } from '../../mcp/mcpJsonConfig.js';
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/services/config/JsonConfigProvider.test.ts
 
 const tempDirs: string[] = [];
 
 async function createTempWorkspace(): Promise<string> {
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/services/config/JsonConfigProvider.test.ts
     const dir = await fs.mkdtemp(path.join(os.tmpdir(), 'hypercode-json-config-provider-'));
+=======
+    const dir = await fs.mkdtemp(path.join(os.tmpdir(), 'borg-json-config-provider-'));
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/services/config/JsonConfigProvider.test.ts
     tempDirs.push(dir);
     return dir;
 }
@@ -45,7 +53,11 @@ describe('JsonConfigProvider always-visible tools compatibility', () => {
 
         await expect(provider.saveAlwaysVisibleTools([' browser__open ', 'browser__open', ''])).resolves.toEqual(['browser__open']);
 
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/services/config/JsonConfigProvider.test.ts
         const config = await loadHyperCodeMcpConfig(workspace);
+=======
+        const config = await loadBorgMcpConfig(workspace);
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/services/config/JsonConfigProvider.test.ts
         expect(config.alwaysVisibleTools).toEqual(['browser__open']);
         expect(config.settings?.toolSelection).toMatchObject({
             importantTools: [],

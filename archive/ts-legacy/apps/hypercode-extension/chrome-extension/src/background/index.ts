@@ -754,7 +754,11 @@ onMessage('mcp:save-context', async ({ data }) => {
     const memoryPayload = {
       text: content,
       title: name || sourceTitle,
+<<<<<<<< HEAD:archive/ts-legacy/apps/hypercode-extension/chrome-extension/src/background/index.ts
       project: 'hypercode-browser-memory',
+========
+      project: 'borg-browser-memory',
+>>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/borg-extension/chrome-extension/src/background/index.ts
       metadata: {
         source,
         url: sourceUrl,

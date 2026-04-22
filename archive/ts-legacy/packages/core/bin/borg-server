@@ -1,6 +1,10 @@
 #!/usr/bin/env node
 
+<<<<<<< HEAD:archive/ts-legacy/packages/core/bin/borg-server
 // This script is the entry point for the hypercode Hub when running as an MCP server.
+=======
+// This script is the entry point for the borg Hub when running as an MCP server.
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/bin/borg-server
 // It ensures that the process runs with the correct environment variables.
 
 import path from 'path';

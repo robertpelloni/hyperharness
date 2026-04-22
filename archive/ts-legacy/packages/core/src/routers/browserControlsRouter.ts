@@ -6,7 +6,11 @@ import { rethrowSqliteUnavailableAsTrpc } from './sqliteTrpc.js';
 /**
  * Browser Controls Router (Phase J)
  *
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/routers/browserControlsRouter.ts
  * Enables HyperCode to interact with browser content:
+=======
+ * Enables borg to interact with browser content:
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/routers/browserControlsRouter.ts
  * - Scrape web pages (via fetch or headless browser)
  * - Read browser history (from extension bridge)
  * - Intercept console/debug logs (from extension bridge)
@@ -108,7 +112,11 @@ export const browserControlsRouter = t.router({
         .mutation(async ({ input }) => {
             const headers: Record<string, string> = {
                 Accept: 'text/html,application/xhtml+xml',
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/routers/browserControlsRouter.ts
                 'User-Agent': input.userAgent || 'HyperCode/BrowserControls (compatible)',
+=======
+                'User-Agent': input.userAgent || 'borg/BrowserControls (compatible)',
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/routers/browserControlsRouter.ts
             };
 
             const response = await fetch(input.url, { headers });

@@ -83,7 +83,11 @@ export const HelpWidget: React.FC = () => {
 
             <div className="mt-4 text-center text-[10px] text-zinc-600 border-t border-zinc-800 pt-3">
                 <p>Drag widgets to rearrange • Layout auto-saves</p>
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/components/HelpWidget.tsx
                 <p className="mt-1">Access Key: <code className="bg-zinc-800 px-1 rounded">admin</code> or <code className="bg-zinc-800 px-1 rounded">hypercode</code></p>
+=======
+                <p className="mt-1">Access Key: <code className="bg-zinc-800 px-1 rounded">admin</code> or <code className="bg-zinc-800 px-1 rounded">borg</code></p>
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/components/HelpWidget.tsx
             </div>
         </div>
     );

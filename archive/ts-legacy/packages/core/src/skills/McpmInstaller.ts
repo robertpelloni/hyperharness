@@ -1,5 +1,9 @@
 import { McpmRegistry } from './McpmRegistry.js';
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/skills/McpmInstaller.ts
 import { Registry as McpServerRegistry } from '@hypercode/mcp-registry';
+=======
+import { Registry as McpServerRegistry } from '@borg/mcp-registry';
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/skills/McpmInstaller.ts
 import { spawn } from 'child_process';
 import path from 'path';
 import fs from 'fs/promises';
@@ -27,8 +31,13 @@ export class McpmInstaller {
         if (mcpServer) {
             console.log(`[McpmInstaller] Installing MCP Server: ${mcpServer.package}`);
             try {
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/skills/McpmInstaller.ts
                 // Execute the internal hypercode CLI command
                 await this.runCommand(`npx hypercode mcp install ${mcpServer.package}`);
+=======
+                // Execute the internal borg CLI command
+                await this.runCommand(`npx borg mcp install ${mcpServer.package}`);
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/skills/McpmInstaller.ts
                 return `Successfully installed MCP Server '${mcpServer.name}'`;
             } catch (e: unknown) {
                 throw new Error(`Failed to install MCP server: ${getErrorMessage(e)}`);

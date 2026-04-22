@@ -1,5 +1,9 @@
 import './debug_marker.js';
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/MCPServer.d.ts
 import { ModelSelector } from "@hypercode/ai";
+=======
+import { ModelSelector } from "@borg/ai";
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/MCPServer.d.ts
 import { PermissionManager } from "./security/PermissionManager.js";
 export declare class MCPServer {
     private server;

@@ -87,6 +87,7 @@ async function resolveLastModifiedAt(workspaceRoot: string, relativePath: string
 
 export async function detectInstallSurfaceArtifacts(workspaceRoot: string = findMonorepoRoot()): Promise<InstallSurfaceArtifactStatus[]> {
     const chromiumBundlePath = resolveExistingRelativePath(workspaceRoot, [
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/services/install-surface-detection.ts
         path.join('apps', 'hypercode-extension', 'dist-chromium'),
         path.join('apps', 'extension', 'dist'),
         path.join('apps', 'hypercode-extension', 'dist'),
@@ -94,6 +95,15 @@ export async function detectInstallSurfaceArtifacts(workspaceRoot: string = find
 
     const firefoxBundlePath = resolveExistingRelativePath(workspaceRoot, [
         path.join('apps', 'hypercode-extension', 'dist-firefox'),
+=======
+        path.join('apps', 'borg-extension', 'dist-chromium'),
+        path.join('apps', 'extension', 'dist'),
+        path.join('apps', 'borg-extension', 'dist'),
+    ]);
+
+    const firefoxBundlePath = resolveExistingRelativePath(workspaceRoot, [
+        path.join('apps', 'borg-extension', 'dist-firefox'),
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/services/install-surface-detection.ts
     ]);
     const firefoxManifestPath = resolveExistingRelativePath(workspaceRoot, [
         path.join('apps', 'extension', 'manifest.firefox.json'),
@@ -108,7 +118,11 @@ export async function detectInstallSurfaceArtifacts(workspaceRoot: string = find
     const mcpConfigPath = resolveExistingRelativePath(workspaceRoot, ['mcp.jsonc', 'mcp.json']);
 
     const [browserExtensionVersion, vscodeExtensionVersion] = await Promise.all([
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/services/install-surface-detection.ts
         readPackageVersion(workspaceRoot, path.join('apps', 'hypercode-extension', 'package.json')),
+=======
+        readPackageVersion(workspaceRoot, path.join('apps', 'borg-extension', 'package.json')),
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/services/install-surface-detection.ts
         readPackageVersion(workspaceRoot, path.join('packages', 'vscode', 'package.json')),
     ]);
 
@@ -129,12 +143,21 @@ export async function detectInstallSurfaceArtifacts(workspaceRoot: string = find
             id: 'browser-extension-chromium',
             status: chromiumBundlePath ? 'ready' : 'missing',
             artifactPath: chromiumBundlePath,
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/services/install-surface-detection.ts
             artifactKind: chromiumBundlePath === path.join('apps', 'hypercode-extension', 'dist-chromium')
                 ? 'Chromium unpacked bundle'
                 : chromiumBundlePath === path.join('apps', 'extension', 'dist')
                     ? 'Legacy extension dist bundle'
                     : chromiumBundlePath === path.join('apps', 'hypercode-extension', 'dist')
                         ? 'Generic hypercode-extension dist bundle'
+=======
+            artifactKind: chromiumBundlePath === path.join('apps', 'borg-extension', 'dist-chromium')
+                ? 'Chromium unpacked bundle'
+                : chromiumBundlePath === path.join('apps', 'extension', 'dist')
+                    ? 'Legacy extension dist bundle'
+                    : chromiumBundlePath === path.join('apps', 'borg-extension', 'dist')
+                        ? 'Generic borg-extension dist bundle'
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/services/install-surface-detection.ts
                         : null,
             detail: chromiumBundlePath
                 ? 'Unpacked Chromium-compatible browser extension output is available.'
@@ -186,8 +209,13 @@ export async function detectInstallSurfaceArtifacts(workspaceRoot: string = find
                     ? 'JSON config source'
                     : null,
             detail: mcpConfigPath
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/services/install-surface-detection.ts
                 ? 'HyperCode-managed MCP config source is present for dashboard sync and preview flows.'
                 : 'No HyperCode MCP config source file was detected yet.',
+=======
+                ? 'borg-managed MCP config source is present for dashboard sync and preview flows.'
+                : 'No borg MCP config source file was detected yet.',
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/services/install-surface-detection.ts
             declaredVersion: null,
             lastModifiedAt: mcpConfigLastModifiedAt,
         },

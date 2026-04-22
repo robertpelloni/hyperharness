@@ -593,9 +593,15 @@ class KimiCodingQuotaProvider implements ProviderQuotaProvider {
             headers: {
                 Authorization: `Bearer ${connection.accessToken}`,
                 'Content-Type': 'application/json',
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/providers/ProviderBalanceService.ts
                 'X-Msh-Platform': 'hypercode',
                 'X-Msh-Version': '0.1.0',
                 'X-Msh-Device-Model': 'hypercode-core',
+=======
+                'X-Msh-Platform': 'borg',
+                'X-Msh-Version': '0.1.0',
+                'X-Msh-Device-Model': 'borg-core',
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/providers/ProviderBalanceService.ts
                 'X-Msh-Device-Id': connection.id,
             },
         });

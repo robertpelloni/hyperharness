@@ -1,7 +1,12 @@
 
 <div align="center">
+<<<<<<<< HEAD:archive/ts-legacy/apps/hypercode-extension/README.md
    <!-- <img src="chrome-extension/public/icon-34.png" alt="HyperCode Extension Logo" width="100" height="100"> -->
    <h1>HyperCode Extension Chrome Extension</h1>
+========
+   <!-- <img src="chrome-extension/public/icon-34.png" alt="borg Extension Logo" width="100" height="100"> -->
+   <h1>borg Extension Chrome Extension</h1>
+>>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/borg-extension/README.md
 </div>
 
 <p align="center">
@@ -12,18 +17,32 @@ Brings MCP to ChatGPT, Perplexity, Grok, Gemini, Google AI Studio, OpenRouter, K
    <a href="https://mcpsuperassistant.ai/" target="_blank"><strong>🌐 Visit Official Website</strong></a>
 </p>
 
+<<<<<<<< HEAD:archive/ts-legacy/apps/hypercode-extension/README.md
 <!-- ![HyperCode Extension](chrome-extension/public/Cover3.jpg) -->
 <div align="center">
  <img src="chrome-extension/public/Cover5.jpg" alt="HyperCode Extension Cover" width="800">
+========
+<!-- ![borg Extension](chrome-extension/public/Cover3.jpg) -->
+<div align="center">
+ <img src="chrome-extension/public/Cover5.jpg" alt="borg Extension Cover" width="800">
+>>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/borg-extension/README.md
 </div>
 
 <div align="center">
    
+<<<<<<<< HEAD:archive/ts-legacy/apps/hypercode-extension/README.md
    ![Latest Release](https://img.shields.io/github/v/release/srbhptl39/HyperCode-Extension?style=flat-square&label=Latest%20Release&color=brightgreen)
    ![GitHub Stars](https://img.shields.io/github/stars/srbhptl39/HyperCode-Extension?style=flat-square&label=Stars)
    ![License](https://img.shields.io/badge/License-MIT-blue?style=flat-square)
    ![Chrome Users](https://img.shields.io/chrome-web-store/users/kngiafgkdnlkgmefdafaibkibegkcaef?style=flat-square&label=Chrome%20Users)
    ![Firefox Users](https://img.shields.io/amo/users/hypercode-extension?style=flat-square&label=Firefox%20Users)
+========
+   ![Latest Release](https://img.shields.io/github/v/release/srbhptl39/borg-Extension?style=flat-square&label=Latest%20Release&color=brightgreen)
+   ![GitHub Stars](https://img.shields.io/github/stars/srbhptl39/borg-Extension?style=flat-square&label=Stars)
+   ![License](https://img.shields.io/badge/License-MIT-blue?style=flat-square)
+   ![Chrome Users](https://img.shields.io/chrome-web-store/users/kngiafgkdnlkgmefdafaibkibegkcaef?style=flat-square&label=Chrome%20Users)
+   ![Firefox Users](https://img.shields.io/amo/users/borg-extension?style=flat-square&label=Firefox%20Users)
+>>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/borg-extension/README.md
    ![Build Status](https://img.shields.io/badge/Status-Active-success?style=flat-square)
 
 </div>
@@ -31,15 +50,24 @@ Brings MCP to ChatGPT, Perplexity, Grok, Gemini, Google AI Studio, OpenRouter, K
 ## Installation
 
 <div align="center" style="display: flex; justify-content: center; gap: 20px; align-items: center;">
+<<<<<<<< HEAD:archive/ts-legacy/apps/hypercode-extension/README.md
    <a href="https://chromewebstore.google.com/detail/hypercode-extension/kngiafgkdnlkgmefdafaibkibegkcaef?hl=en"><img src="https://developer.chrome.com/static/docs/webstore/branding/image/HRs9MPufa1J1h5glNhut.png" alt="Chrome Web Store" width="200" height="auto" style="vertical-align: middle;" /></a>
    <a href="https://addons.mozilla.org/en-US/firefox/addon/hypercode-extension/"><img src="https://blog.mozilla.org/addons/files/2015/11/get-the-addon.png" alt="Firefox Add-ons" width="200" height="auto" style="vertical-align: middle;" /></a>
+========
+   <a href="https://chromewebstore.google.com/detail/borg-extension/kngiafgkdnlkgmefdafaibkibegkcaef?hl=en"><img src="https://developer.chrome.com/static/docs/webstore/branding/image/HRs9MPufa1J1h5glNhut.png" alt="Chrome Web Store" width="200" height="auto" style="vertical-align: middle;" /></a>
+   <a href="https://addons.mozilla.org/en-US/firefox/addon/borg-extension/"><img src="https://blog.mozilla.org/addons/files/2015/11/get-the-addon.png" alt="Firefox Add-ons" width="200" height="auto" style="vertical-align: middle;" /></a>
+>>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/borg-extension/README.md
 </div>
 
 <br>
 
 ## Overview
 
+<<<<<<<< HEAD:archive/ts-legacy/apps/hypercode-extension/README.md
 HyperCode Extension is a Chrome extension that integrates the Model Context Protocol (MCP) tools with AI platforms like Perplexity, ChatGPT, Google Gemini, Google AI Studio, Grokand more. It allows users to execute MCP tools directly from these platforms enhancing the capabilities of web-based AI assistants.
+========
+borg Extension is a Chrome extension that integrates the Model Context Protocol (MCP) tools with AI platforms like Perplexity, ChatGPT, Google Gemini, Google AI Studio, Grokand more. It allows users to execute MCP tools directly from these platforms enhancing the capabilities of web-based AI assistants.
+>>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/borg-extension/README.md
 
 ## Currently Supported Platforms
 
@@ -62,6 +90,7 @@ HyperCode Extension is a Chrome extension that integrates the Model Context Prot
 
 Kimi.com
 
+<<<<<<<< HEAD:archive/ts-legacy/apps/hypercode-extension/README.md
 [![HyperCode Extension Demo](https://img.youtube.com/vi/jnBPh2jzunM/0.jpg)](https://www.youtube.com/watch?v=jnBPh2jzunM)
 
 ChatGPT
@@ -71,12 +100,27 @@ ChatGPT
 Watch the demo to see HyperCode Extension in action!
 
 [HyperCode Extension Demo Playlist](https://www.youtube.com/playlist?list=PLOK1DBnkeaJFzxC4M-z7TU7_j04SShX_w)
+========
+[![borg Extension Demo](https://img.youtube.com/vi/jnBPh2jzunM/0.jpg)](https://www.youtube.com/watch?v=jnBPh2jzunM)
+
+ChatGPT
+
+[![borg Extension Demo](https://img.youtube.com/vi/PY0SKjtmy4E/0.jpg)](https://www.youtube.com/watch?v=PY0SKjtmy4E)
+
+Watch the demo to see borg Extension in action!
+
+[borg Extension Demo Playlist](https://www.youtube.com/playlist?list=PLOK1DBnkeaJFzxC4M-z7TU7_j04SShX_w)
+>>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/borg-extension/README.md
 
 ## Setup Tutorial
 
 [![Setup Tutorial](https://img.youtube.com/vi/h9f_GX1Ef20/0.jpg)](https://www.youtube.com/watch?v=h9f_GX1Ef20&pp=ygUTbWNwIHN1cGVyIGFzc2lzdGFudA%3D%3D)
 
+<<<<<<<< HEAD:archive/ts-legacy/apps/hypercode-extension/README.md
 **New to HyperCode Extension?** Watch this complete setup guide to get started in minutes!
+========
+**New to borg Extension?** Watch this complete setup guide to get started in minutes!
+>>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/borg-extension/README.md
 
 [View Setup Tutorial](https://www.youtube.com/watch?v=h9f_GX1Ef20&pp=ygUTbWNwIHN1cGVyIGFzc2lzdGFudA%3D%3D)
 
@@ -112,7 +156,11 @@ flowchart TD
 
 To connect the Chrome extension to a local server for proxying connections:
 
+<<<<<<<< HEAD:archive/ts-legacy/apps/hypercode-extension/README.md
 #### Run HyperCode Extension Proxy via npx:
+========
+#### Run borg Extension Proxy via npx:
+>>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/borg-extension/README.md
 
 1. Create a `config.json` file with your MCP server details. For example, to use the [Desktop Commander](https://github.com/wonderwhy-er/DesktopCommanderMCP):
 
@@ -140,6 +188,7 @@ To connect the Chrome extension to a local server for proxying connections:
    Windows: %APPDATA%\Claude\claude_desktop_config.json
    ```
 
+<<<<<<<< HEAD:archive/ts-legacy/apps/hypercode-extension/README.md
 2. Start the HyperCode Extension Proxy server using one of the following commands:
 
    ```bash
@@ -152,11 +201,29 @@ To connect the Chrome extension to a local server for proxying connections:
    or
    ```bash
    npx -y @srbhptl39/hypercode-extension-proxy --config ./config.json --outputTransport ws
+========
+2. Start the borg Extension Proxy server using one of the following commands:
+
+   ```bash
+   npx -y @srbhptl39/borg-extension-proxy@latest --config ./config.json --outputTransport sse
+   ```
+   or 
+   ```bash
+   npx -y @srbhptl39/borg-extension-proxy --config ./config.json --outputTransport streamableHttp
+   ```
+   or
+   ```bash
+   npx -y @srbhptl39/borg-extension-proxy --config ./config.json --outputTransport ws
+>>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/borg-extension/README.md
    ```
 
    **View all available options:**
    ```bash
+<<<<<<<< HEAD:archive/ts-legacy/apps/hypercode-extension/README.md
    npx -y @srbhptl39/hypercode-extension-proxy@latest --help
+========
+   npx -y @srbhptl39/borg-extension-proxy@latest --help
+>>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/borg-extension/README.md
    ```
    
    This is useful for:
@@ -167,7 +234,11 @@ To connect the Chrome extension to a local server for proxying connections:
 #### Connection Steps:
 
 1. Start the proxy server using one of the commands above
+<<<<<<<< HEAD:archive/ts-legacy/apps/hypercode-extension/README.md
 2. Open the HyperCode Extension sidebar in one of the supported AI platforms, this should show the sidebar UI
+========
+2. Open the borg Extension sidebar in one of the supported AI platforms, this should show the sidebar UI
+>>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/borg-extension/README.md
 3. Click on the server status indicator (usually showing as "Disconnected")
 4. Enter the local server URL (default: `http://localhost:3006/sse`)
    URL format depends on the --outputTransport method used:
@@ -185,10 +256,17 @@ For a comprehensive guide on all features and configuration options, please refe
 
 Example Workflow:
 1. Navigate to a supported AI platform example chatgpt.
+<<<<<<<< HEAD:archive/ts-legacy/apps/hypercode-extension/README.md
 2. The HyperCode Extension sidebar will appear on the right side of the page
 3. Configure your MCP Tools to enable and disable the tools you want to use.
 4. In the message prompt area, hover the 'MCP' button to see the available tools and their descriptions.
 5. HyperCode Extension requires to add an MCP working instructions prompt to the chat, to give details of its new capabilities and how to use the tools. Use the 'Insert' or attach button to add the instructions prompt.
+========
+2. The borg Extension sidebar will appear on the right side of the page
+3. Configure your MCP Tools to enable and disable the tools you want to use.
+4. In the message prompt area, hover the 'MCP' button to see the available tools and their descriptions.
+5. borg Extension requires to add an MCP working instructions prompt to the chat, to give details of its new capabilities and how to use the tools. Use the 'Insert' or attach button to add the instructions prompt.
+>>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/borg-extension/README.md
 6. Once the instructions prompt is added, Now you can ask it to read files or any related MCP tool operations.
 7. When AI wants to use any tool it will show a custom tool call card with the tool name and parameters.
 8. User can manually execute the tool call by clicking on the "RUN" button on the tool call card, or if Auto-Execute mode is enabled, it will execute automatically.
@@ -197,16 +275,26 @@ Example Workflow:
 
 ## Tips & Tricks
 
+<<<<<<<< HEAD:archive/ts-legacy/apps/hypercode-extension/README.md
 1. **Turn off search mode** (chatgpt, perplexity) in AI chat interfaces for better tool call prompt experience and to prevent HyperCode Extension from getting derail.
+========
+1. **Turn off search mode** (chatgpt, perplexity) in AI chat interfaces for better tool call prompt experience and to prevent borg Extension from getting derail.
+>>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/borg-extension/README.md
 2. **Turn on Reasoning mode** (chatgpt, perplexity, grok) in AI chat interfaces, which will help the AI to understand the context better and generate the correct tool calls.
 3. Use newer high-end models as they are better at understanding the context and generating the correct tool calls.
 4. Copy the MCP instructions prompt and paste it in the AI chat system prompt (Google AI Studio).
 5. Mention the specific tools you want to use in your conversation.
 6. Use the MCP Auto toggles to control the tool execution.
 
+<<<<<<<< HEAD:archive/ts-legacy/apps/hypercode-extension/README.md
 ## Common Issues with HyperCode Extension
 
 This page covers the most common issues users encounter with HyperCode Extension and provides solutions to resolve them.
+========
+## Common Issues with borg Extension
+
+This page covers the most common issues users encounter with borg Extension and provides solutions to resolve them.
+>>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/borg-extension/README.md
 
 ### 1. Extension Not Detecting Tool Calls
 
@@ -225,7 +313,11 @@ This page covers the most common issues users encounter with HyperCode Extension
 
 - Ensure that your MCP server is running and accessible.
 - Check the server URL in the extension settings.
+<<<<<<<< HEAD:archive/ts-legacy/apps/hypercode-extension/README.md
 - First start the npx mcp-HyperCode-proxy server and then reload/restart the extension from chrome://extensions/ page.
+========
+- First start the npx mcp-borg-proxy server and then reload/restart the extension from chrome://extensions/ page.
+>>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/borg-extension/README.md
 - Check the proxy server logs for any errors or issues.
 - Ensure that your firewall or antivirus software is not blocking the connection.
 - Make sure the server shows the proper connected status and exposes the `/sse` endpoint.
@@ -234,9 +326,15 @@ This page covers the most common issues users encounter with HyperCode Extension
 
 - There are times model does not generate correct tool call format as requested, this makes the tool detection to fail.
 In such cases, use better models which are meant for tool calling or have better tool calling capabilities.
+<<<<<<<< HEAD:archive/ts-legacy/apps/hypercode-extension/README.md
 - Use the custom instructions prompt, which can be found in the HyperCode Extension sidebar.
 - Ask explicitily to use the tools by mentioning them in the prompt.
 - This Below is an example of correct MCP function call format, which is rendered by HyperCode Extension extension:
+========
+- Use the custom instructions prompt, which can be found in the borg Extension sidebar.
+- Ask explicitily to use the tools by mentioning them in the prompt.
+- This Below is an example of correct MCP function call format, which is rendered by borg Extension extension:
+>>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/borg-extension/README.md
 
 ```
 ```jsonl
@@ -251,7 +349,11 @@ In such cases, use better models which are meant for tool calling or have better
 ### Manual Installation (Development)
 
 #### Release Version
+<<<<<<<< HEAD:archive/ts-legacy/apps/hypercode-extension/README.md
 1. Download the latest release from [Releases](https://github.com/srbhptl39/HyperCode-Extension/releases)
+========
+1. Download the latest release from [Releases](https://github.com/srbhptl39/borg-Extension/releases)
+>>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/borg-extension/README.md
 2. Unzip the downloaded file
 3. Navigate to `chrome://extensions/` in Chrome
 4. Enable "Developer mode"
@@ -340,4 +442,8 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 ## Star History
 
+<<<<<<<< HEAD:archive/ts-legacy/apps/hypercode-extension/README.md
 [![Star History Chart](https://api.star-history.com/svg?repos=srbhptl39/HyperCode-Extension&type=Date)](https://www.star-history.com/#srbhptl39/HyperCode-Extension&Date)
+========
+[![Star History Chart](https://api.star-history.com/svg?repos=srbhptl39/borg-Extension&type=Date)](https://www.star-history.com/#srbhptl39/borg-Extension&Date)
+>>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/borg-extension/README.md

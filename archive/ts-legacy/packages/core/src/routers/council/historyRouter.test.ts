@@ -31,7 +31,11 @@ describe('historyRouter degraded debate history handling', () => {
 
   it('returns a concise TRPC error when status cannot read debate history', async () => {
     mockDebateHistory.getRecordCount.mockRejectedValueOnce(
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/routers/council/historyRouter.test.ts
       new Error('SQLite runtime is unavailable for HyperCode DB-backed features (Could not locate the bindings file. Tried: better-sqlite3.node)'),
+=======
+      new Error('SQLite runtime is unavailable for borg DB-backed features (Could not locate the bindings file. Tried: better-sqlite3.node)'),
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/routers/council/historyRouter.test.ts
     );
 
     const { historyRouter } = await import('./historyRouter.js');
@@ -44,7 +48,11 @@ describe('historyRouter degraded debate history handling', () => {
 
   it('returns a concise TRPC error when list cannot query debate records', async () => {
     mockDebateHistory.queryDebates.mockRejectedValueOnce(
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/routers/council/historyRouter.test.ts
       new Error('SQLite runtime is unavailable for HyperCode DB-backed features (Could not locate the bindings file. Tried: better-sqlite3.node)'),
+=======
+      new Error('SQLite runtime is unavailable for borg DB-backed features (Could not locate the bindings file. Tried: better-sqlite3.node)'),
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/routers/council/historyRouter.test.ts
     );
 
     const { historyRouter } = await import('./historyRouter.js');
@@ -57,7 +65,11 @@ describe('historyRouter degraded debate history handling', () => {
 
   it('returns a concise TRPC error when stats cannot aggregate debate history', async () => {
     mockDebateHistory.getStats.mockRejectedValueOnce(
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/routers/council/historyRouter.test.ts
       new Error('SQLite runtime is unavailable for HyperCode DB-backed features (Could not locate the bindings file. Tried: better-sqlite3.node)'),
+=======
+      new Error('SQLite runtime is unavailable for borg DB-backed features (Could not locate the bindings file. Tried: better-sqlite3.node)'),
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/routers/council/historyRouter.test.ts
     );
 
     const { historyRouter } = await import('./historyRouter.js');

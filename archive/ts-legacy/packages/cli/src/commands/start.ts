@@ -1,15 +1,28 @@
 /**
+<<<<<<< HEAD:archive/ts-legacy/packages/cli/src/commands/start.ts
  * `hypercode start` - Start the HyperCode backend server
  *
  * Launches the HyperCode core server with Express/tRPC/WebSocket/MCP endpoints.
+=======
+ * `borg start` - Start the borg backend server
+ *
+ * Launches the borg core server with Express/tRPC/WebSocket/MCP endpoints.
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/cli/src/commands/start.ts
  * The server provides the API backend for the WebUI dashboard, CLI commands,
  * and external MCP clients.
  *
  * @example
+<<<<<<< HEAD:archive/ts-legacy/packages/cli/src/commands/start.ts
  *   hypercode start                    # Start on default port 3000
  *   hypercode start --port 8080        # Start on custom port
  *   hypercode start --no-mcp           # Start without MCP server
  *   hypercode start --config ./my.json # Use custom config file
+=======
+ *   borg start                    # Start on default port 3000
+ *   borg start --port 8080        # Start on custom port
+ *   borg start --no-mcp           # Start without MCP server
+ *   borg start --config ./my.json # Use custom config file
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/cli/src/commands/start.ts
  */
 
 import { spawn, type ChildProcess } from 'node:child_process';
@@ -22,7 +35,11 @@ import { fileURLToPath } from 'node:url';
 import type { Command } from 'commander';
 import { readCanonicalVersion } from '../version.js';
 
+<<<<<<< HEAD:archive/ts-legacy/packages/cli/src/commands/start.ts
 export interface HyperCodeStartLockRecord {
+=======
+export interface BorgStartLockRecord {
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/cli/src/commands/start.ts
   instanceId: string;
   pid: number;
   port: number;
@@ -30,7 +47,11 @@ export interface HyperCodeStartLockRecord {
   createdAt: string;
 }
 
+<<<<<<< HEAD:archive/ts-legacy/packages/cli/src/commands/start.ts
 export interface HyperCodeStartLockHandle {
+=======
+export interface BorgStartLockHandle {
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/cli/src/commands/start.ts
   port: number;
   lockPath: string;
   clearedStaleLock: boolean;
@@ -40,7 +61,11 @@ export interface HyperCodeStartLockHandle {
   releaseSync: () => void;
 }
 
+<<<<<<< HEAD:archive/ts-legacy/packages/cli/src/commands/start.ts
 export interface HyperCodeStartLifecycleHandlers {
+=======
+export interface BorgStartLifecycleHandlers {
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/cli/src/commands/start.ts
   cleanup: () => void;
   handleSigint: () => void;
   handleSigterm: () => void;
@@ -65,7 +90,10 @@ interface AcquireSingleInstanceLockDeps {
   getPid?: () => number;
   isProcessRunning?: (pid: number) => boolean;
   isPortFree?: (port: number) => Promise<boolean>;
+<<<<<<< HEAD:archive/ts-legacy/packages/cli/src/commands/start.ts
   isExistingHypercode?: (host: string, port: number) => Promise<boolean>;
+=======
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/cli/src/commands/start.ts
 }
 
 type CoreRuntimeModule = {
@@ -143,9 +171,15 @@ export async function isPortFree(port: number): Promise<boolean> {
   });
 }
 
+<<<<<<< HEAD:archive/ts-legacy/packages/cli/src/commands/start.ts
 function readStartLock(lockPath: string): HyperCodeStartLockRecord | null {
   try {
     const parsed = JSON.parse(readFileSync(lockPath, 'utf8')) as Partial<HyperCodeStartLockRecord>;
+=======
+function readStartLock(lockPath: string): BorgStartLockRecord | null {
+  try {
+    const parsed = JSON.parse(readFileSync(lockPath, 'utf8')) as Partial<BorgStartLockRecord>;
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/cli/src/commands/start.ts
     if (
       typeof parsed.instanceId !== 'string'
       || typeof parsed.pid !== 'number'
@@ -156,13 +190,21 @@ function readStartLock(lockPath: string): HyperCodeStartLockRecord | null {
       return null;
     }
 
+<<<<<<< HEAD:archive/ts-legacy/packages/cli/src/commands/start.ts
     return parsed as HyperCodeStartLockRecord;
+=======
+    return parsed as BorgStartLockRecord;
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/cli/src/commands/start.ts
   } catch {
     return null;
   }
 }
 
+<<<<<<< HEAD:archive/ts-legacy/packages/cli/src/commands/start.ts
 function writeStartLock(lockPath: string, record: HyperCodeStartLockRecord): void {
+=======
+function writeStartLock(lockPath: string, record: BorgStartLockRecord): void {
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/cli/src/commands/start.ts
   const fd = openSync(lockPath, 'wx');
   try {
     writeFileSync(fd, `${JSON.stringify(record, null, 2)}\n`, 'utf8');
@@ -174,7 +216,11 @@ function writeStartLock(lockPath: string, record: HyperCodeStartLockRecord): voi
 export async function acquireSingleInstanceLock(
   options: AcquireSingleInstanceLockOptions,
   deps: AcquireSingleInstanceLockDeps = {},
+<<<<<<< HEAD:archive/ts-legacy/packages/cli/src/commands/start.ts
 ): Promise<HyperCodeStartLockHandle> {
+=======
+): Promise<BorgStartLockHandle> {
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/cli/src/commands/start.ts
   const now = deps.now ?? (() => new Date());
   const getPid = deps.getPid ?? (() => process.pid);
   const checkProcessRunning = deps.isProcessRunning ?? isProcessRunning;
@@ -185,7 +231,11 @@ export async function acquireSingleInstanceLock(
   mkdirSync(resolvedDataDir, { recursive: true });
 
   const pid = getPid();
+<<<<<<< HEAD:archive/ts-legacy/packages/cli/src/commands/start.ts
   const instanceId = `hypercode-${pid}-${now().getTime()}`;
+=======
+  const instanceId = `borg-${pid}-${now().getTime()}`;
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/cli/src/commands/start.ts
   let selectedPort = options.requestedPort;
   let clearedStaleLock = false;
   let reusedStalePort = false;
@@ -234,6 +284,7 @@ export async function acquireSingleInstanceLock(
         : true;
 
       if (!selectedPortIsFree) {
+<<<<<<< HEAD:archive/ts-legacy/packages/cli/src/commands/start.ts
         const isExisting = deps.isExistingHypercode
           ? await deps.isExistingHypercode(options.host, selectedPort)
           : false;
@@ -251,6 +302,12 @@ export async function acquireSingleInstanceLock(
         throw new Error(
           `Port ${selectedPort} is already in use by another process. `
           + `Stop that process or start HyperCode with --port <free-port>.`,
+=======
+        releaseSync();
+        throw new Error(
+          `Port ${selectedPort} is already in use by another process. `
+          + `Stop that process or start borg with --port <free-port>.`,
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/cli/src/commands/start.ts
         );
       }
 
@@ -281,7 +338,11 @@ export async function acquireSingleInstanceLock(
 
         if (!lockedPortIsFree) {
           throw new Error(
+<<<<<<< HEAD:archive/ts-legacy/packages/cli/src/commands/start.ts
             `HyperCode is already running (PID ${existingLock.pid}) on port ${existingLock.port}. `
+=======
+            `borg is already running (PID ${existingLock.pid}) on port ${existingLock.port}. `
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/cli/src/commands/start.ts
             + `Stop that process before starting another instance, or remove ${lockPath} if it is incorrect.`,
           );
         }
@@ -300,7 +361,11 @@ export async function acquireSingleInstanceLock(
     }
   }
 
+<<<<<<< HEAD:archive/ts-legacy/packages/cli/src/commands/start.ts
   throw new Error(`Unable to acquire HyperCode startup lock at ${lockPath}`);
+=======
+  throw new Error(`Unable to acquire borg startup lock at ${lockPath}`);
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/cli/src/commands/start.ts
 }
 
 export async function startCoreRuntime(
@@ -311,7 +376,11 @@ export async function startCoreRuntime(
     supervisor?: boolean;
     autoDrive?: boolean;
   },
+<<<<<<< HEAD:archive/ts-legacy/packages/cli/src/commands/start.ts
   loadCore: () => Promise<CoreRuntimeModule> = async () => await import('@hypercode/core/orchestrator'),
+=======
+  loadCore: () => Promise<CoreRuntimeModule> = async () => await import('@borg/core/orchestrator'),
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/cli/src/commands/start.ts
 ) {
   const core = await loadCore();
 
@@ -494,7 +563,11 @@ export async function pickAvailableControlPlaneFallbackPort(
 }
 
 export function syncLockHandlePort(
+<<<<<<< HEAD:archive/ts-legacy/packages/cli/src/commands/start.ts
   lockHandle: HyperCodeStartLockHandle,
+=======
+  lockHandle: BorgStartLockHandle,
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/cli/src/commands/start.ts
   runtimePort: number | null | undefined,
 ): void {
   if (!Number.isInteger(runtimePort) || runtimePort === null || runtimePort === undefined) {
@@ -523,9 +596,15 @@ function getDashboardSpawnSpec(webRoot: string, repoRoot: string, host: string, 
 }
 
 export function createLockLifecycleHandlers(
+<<<<<<< HEAD:archive/ts-legacy/packages/cli/src/commands/start.ts
   lockHandle: HyperCodeStartLockHandle,
   deps: CreateLockLifecycleHandlersDeps = {},
 ): HyperCodeStartLifecycleHandlers {
+=======
+  lockHandle: BorgStartLockHandle,
+  deps: CreateLockLifecycleHandlersDeps = {},
+): BorgStartLifecycleHandlers {
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/cli/src/commands/start.ts
   const exit = deps.exit ?? ((code: number) => process.exit(code));
   const logError = deps.logError ?? ((message?: unknown, ...optionalParams: unknown[]) => console.error(message, ...optionalParams));
 
@@ -556,6 +635,7 @@ export function createLockLifecycleHandlers(
   };
 }
 
+<<<<<<< HEAD:archive/ts-legacy/packages/cli/src/commands/start.ts
 // === Missing exported functions required by start.test.ts ===
 
 export function resolveRuntimePreference(
@@ -832,15 +912,26 @@ export function registerStartCommand(program: Command): void {
   program
     .command('start')
     .description('Start the HyperCode backend server (Express/tRPC/WebSocket/MCP)')
+=======
+export function registerStartCommand(program: Command): void {
+  program
+    .command('start')
+    .description('Start the borg backend server (Express/tRPC/WebSocket/MCP)')
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/cli/src/commands/start.ts
     .option('-p, --port <number>', 'tRPC control-plane port', '4000')
     .option('--dashboard-port <number>', 'Dashboard web runtime port', '3000')
     .option('-H, --host <address>', 'Server host address', '0.0.0.0')
     .option('--no-mcp', 'Disable the MCP server endpoint')
+<<<<<<< HEAD:archive/ts-legacy/packages/cli/src/commands/start.ts
     .option('--supervisor', 'Enable HyperCode supervisor startup')
+=======
+    .option('--supervisor', 'Enable borg supervisor startup')
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/cli/src/commands/start.ts
     .option('--auto-drive', 'Enable Director auto-drive after startup')
     .option('--no-dashboard', 'Disable serving the WebUI dashboard')
     .option('--no-open-dashboard', 'Start the dashboard runtime without opening the browser')
     .option('-c, --config <path>', 'Path to config file')
+<<<<<<< HEAD:archive/ts-legacy/packages/cli/src/commands/start.ts
     .option('-d, --data-dir <path>', 'Data directory for HyperCode state (compat path: ~/.hypercode)', '~/.hypercode')
     .option('--daemon', 'Run as background daemon')
     .addHelpText('after', `
@@ -851,6 +942,18 @@ Examples:
   $ hypercode start --auto-drive        Start the Director after boot completes
   $ hypercode start --daemon            Run as background service
   $ hypercode start --host 127.0.0.1    Bind to localhost only
+=======
+    .option('-d, --data-dir <path>', 'Data directory for borg state (compat path: ~/.borg)', '~/.borg')
+    .option('--daemon', 'Run as background daemon')
+    .addHelpText('after', `
+Examples:
+  $ borg start                     Start with defaults (tRPC on port 4000)
+  $ borg start -p 8080             Start on port 8080
+  $ borg start --no-mcp            Start without MCP server
+  $ borg start --auto-drive        Start the Director after boot completes
+  $ borg start --daemon            Run as background service
+  $ borg start --host 127.0.0.1    Bind to localhost only
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/cli/src/commands/start.ts
     `)
     .action(async (opts) => {
       const chalk = (await import('chalk')).default;
@@ -859,6 +962,7 @@ Examples:
       const host = opts.host;
       const explicitPort = process.argv.includes('--port') || process.argv.includes('-p');
       const explicitDashboardPort = process.argv.some((arg) => arg === '--dashboard-port' || arg.startsWith('--dashboard-port='));
+<<<<<<< HEAD:archive/ts-legacy/packages/cli/src/commands/start.ts
       let lockHandle: HyperCodeStartLockHandle | null = null;
       let dashboardChild: ChildProcess | null = null;
 
@@ -867,6 +971,16 @@ Examples:
       const repoRoot = resolveRepoRoot(cliDir) ?? resolve(cliDir, '..', '..', '..', '..', '..');
       const webRoot = join(repoRoot, 'apps', 'web');
       console.log(chalk.bold.cyan(`\n  ⬡ HyperCode v${hypercodeVersion}`));
+=======
+      let lockHandle: BorgStartLockHandle | null = null;
+      let dashboardChild: ChildProcess | null = null;
+
+      const cliDir = dirname(fileURLToPath(import.meta.url));
+      const borgVersion = readCanonicalVersion(cliDir);
+      const repoRoot = resolveRepoRoot(cliDir) ?? resolve(cliDir, '..', '..', '..', '..', '..');
+      const webRoot = join(repoRoot, 'apps', 'web');
+      console.log(chalk.bold.cyan(`\n  ⬡ borg v${borgVersion}`));
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/cli/src/commands/start.ts
       console.log(chalk.dim('  The Neural Operating System\n'));
 
       try {
@@ -894,7 +1008,11 @@ Examples:
         console.log(chalk.dim(`  Dashboard: ${opts.dashboard ? 'enabled' : 'disabled'}`));
         console.log(chalk.dim(`  Lock: ${lockHandle.lockPath}`));
         if (lockHandle.clearedStaleLock) {
+<<<<<<< HEAD:archive/ts-legacy/packages/cli/src/commands/start.ts
           console.log(chalk.yellow(`  ↺ Cleared stale HyperCode lock${lockHandle.reusedStalePort ? ` and reused port ${port}` : ''}`));
+=======
+          console.log(chalk.yellow(`  ↺ Cleared stale borg lock${lockHandle.reusedStalePort ? ` and reused port ${port}` : ''}`));
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/cli/src/commands/start.ts
         }
         console.log('');
 
@@ -984,8 +1102,13 @@ Examples:
               stdio: 'inherit',
               env: {
                 ...process.env,
+<<<<<<< HEAD:archive/ts-legacy/packages/cli/src/commands/start.ts
                 HYPERCODE_TRPC_UPSTREAM: `${orchestratorBaseUrl}/trpc`,
                 NEXT_PUBLIC_HYPERCODE_ORCHESTRATOR_URL: orchestratorBaseUrl,
+=======
+                BORG_TRPC_UPSTREAM: `${orchestratorBaseUrl}/trpc`,
+                NEXT_PUBLIC_BORG_ORCHESTRATOR_URL: orchestratorBaseUrl,
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/cli/src/commands/start.ts
                 NEXT_PUBLIC_AUTOPILOT_URL: orchestratorBaseUrl,
               },
               windowsHide: true,

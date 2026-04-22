@@ -51,6 +51,7 @@ async function readOptionalFile(filePath: string): Promise<string | null> {
 }
 
 describe('resolveUpstreamBases', () => {
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/api/trpc/[trpc]/route.test.ts
   const originalUpstream = process.env.HYPERCODE_TRPC_UPSTREAM;
   const originalHyperCodeConfigDir = process.env.HYPERCODE_CONFIG_DIR;
   let tempConfigDir = '';
@@ -58,10 +59,20 @@ describe('resolveUpstreamBases', () => {
   beforeEach(async () => {
     tempConfigDir = await fs.mkdtemp(path.join(os.tmpdir(), 'hypercode-trpc-upstream-'));
     process.env.HYPERCODE_CONFIG_DIR = tempConfigDir;
+=======
+  const originalUpstream = process.env.BORG_TRPC_UPSTREAM;
+  const originalBorgConfigDir = process.env.BORG_CONFIG_DIR;
+  let tempConfigDir = '';
+
+  beforeEach(async () => {
+    tempConfigDir = await fs.mkdtemp(path.join(os.tmpdir(), 'borg-trpc-upstream-'));
+    process.env.BORG_CONFIG_DIR = tempConfigDir;
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/api/trpc/[trpc]/route.test.ts
   });
 
   afterEach(() => {
     if (originalUpstream === undefined) {
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/api/trpc/[trpc]/route.test.ts
       delete process.env.HYPERCODE_TRPC_UPSTREAM;
     } else {
       process.env.HYPERCODE_TRPC_UPSTREAM = originalUpstream;
@@ -76,6 +87,22 @@ describe('resolveUpstreamBases', () => {
 
   it('includes HyperCode core\'s default tRPC port before legacy fallbacks', () => {
     delete process.env.HYPERCODE_TRPC_UPSTREAM;
+=======
+      delete process.env.BORG_TRPC_UPSTREAM;
+    } else {
+      process.env.BORG_TRPC_UPSTREAM = originalUpstream;
+    }
+
+    if (originalBorgConfigDir === undefined) {
+      delete process.env.BORG_CONFIG_DIR;
+    } else {
+      process.env.BORG_CONFIG_DIR = originalBorgConfigDir;
+    }
+  });
+
+  it('includes borg core\'s default tRPC port before legacy fallbacks', () => {
+    delete process.env.BORG_TRPC_UPSTREAM;
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/api/trpc/[trpc]/route.test.ts
 
     expect(resolveUpstreamBases()).toEqual([
       'http://127.0.0.1:3100/trpc',
@@ -87,7 +114,11 @@ describe('resolveUpstreamBases', () => {
   });
 
   it('prepends a configured upstream while deduplicating defaults', () => {
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/api/trpc/[trpc]/route.test.ts
     process.env.HYPERCODE_TRPC_UPSTREAM = 'http://127.0.0.1:4000/trpc';
+=======
+    process.env.BORG_TRPC_UPSTREAM = 'http://127.0.0.1:4000/trpc';
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/api/trpc/[trpc]/route.test.ts
 
     expect(resolveUpstreamBases()).toEqual([
       'http://127.0.0.1:4000/trpc',
@@ -98,8 +129,13 @@ describe('resolveUpstreamBases', () => {
     ]);
   });
 
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/api/trpc/[trpc]/route.test.ts
   it('prefers the live HyperCode lock port over stale configured upstreams', async () => {
     process.env.HYPERCODE_TRPC_UPSTREAM = 'http://127.0.0.1:4000/trpc';
+=======
+  it('prefers the live borg lock port over stale configured upstreams', async () => {
+    process.env.BORG_TRPC_UPSTREAM = 'http://127.0.0.1:4000/trpc';
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/api/trpc/[trpc]/route.test.ts
     await fs.writeFile(
       path.join(tempConfigDir, 'lock'),
       JSON.stringify({ host: '0.0.0.0', port: 4001 }),
@@ -118,6 +154,7 @@ describe('resolveUpstreamBases', () => {
 
 describe('legacy MCP dashboard compatibility bridge', () => {
   const originalFetch = global.fetch;
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/api/trpc/[trpc]/route.test.ts
   const originalUpstream = process.env.HYPERCODE_TRPC_UPSTREAM;
   const originalHyperCodeConfigDir = process.env.HYPERCODE_CONFIG_DIR;
   let compatConfigDir = '';
@@ -125,12 +162,22 @@ describe('legacy MCP dashboard compatibility bridge', () => {
   beforeEach(async () => {
     compatConfigDir = await fs.mkdtemp(path.join(os.tmpdir(), 'hypercode-trpc-compat-'));
     process.env.HYPERCODE_CONFIG_DIR = compatConfigDir;
+=======
+  const originalUpstream = process.env.BORG_TRPC_UPSTREAM;
+  const originalBorgConfigDir = process.env.BORG_CONFIG_DIR;
+  let compatConfigDir = '';
+
+  beforeEach(async () => {
+    compatConfigDir = await fs.mkdtemp(path.join(os.tmpdir(), 'borg-trpc-compat-'));
+    process.env.BORG_CONFIG_DIR = compatConfigDir;
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/api/trpc/[trpc]/route.test.ts
   });
 
   afterEach(async () => {
     global.fetch = originalFetch;
 
     if (originalUpstream === undefined) {
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/api/trpc/[trpc]/route.test.ts
       delete process.env.HYPERCODE_TRPC_UPSTREAM;
     } else {
       process.env.HYPERCODE_TRPC_UPSTREAM = originalUpstream;
@@ -140,6 +187,17 @@ describe('legacy MCP dashboard compatibility bridge', () => {
       delete process.env.HYPERCODE_CONFIG_DIR;
     } else {
       process.env.HYPERCODE_CONFIG_DIR = originalHyperCodeConfigDir;
+=======
+      delete process.env.BORG_TRPC_UPSTREAM;
+    } else {
+      process.env.BORG_TRPC_UPSTREAM = originalUpstream;
+    }
+
+    if (originalBorgConfigDir === undefined) {
+      delete process.env.BORG_CONFIG_DIR;
+    } else {
+      process.env.BORG_CONFIG_DIR = originalBorgConfigDir;
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/api/trpc/[trpc]/route.test.ts
     }
 
     if (compatConfigDir) {
@@ -149,7 +207,11 @@ describe('legacy MCP dashboard compatibility bridge', () => {
   });
 
   it('returns compatibility data for modern MCP procedure batches when upstreams are unavailable', async () => {
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/api/trpc/[trpc]/route.test.ts
     process.env.HYPERCODE_TRPC_UPSTREAM = 'http://127.0.0.1:59999/trpc';
+=======
+    process.env.BORG_TRPC_UPSTREAM = 'http://127.0.0.1:59999/trpc';
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/api/trpc/[trpc]/route.test.ts
     global.fetch = vi.fn(async () => {
       throw new Error('connect ECONNREFUSED');
     }) as typeof fetch;
@@ -167,7 +229,11 @@ describe('legacy MCP dashboard compatibility bridge', () => {
     const payload = await response.json();
 
     expect(response.status).toBe(200);
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/api/trpc/[trpc]/route.test.ts
     expect(response.headers.get('x-hypercode-trpc-compat')).toBe('legacy-mcp-dashboard-bridge');
+=======
+    expect(response.headers.get('x-borg-trpc-compat')).toBe('legacy-mcp-dashboard-bridge');
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/api/trpc/[trpc]/route.test.ts
     expect(Array.isArray(payload)).toBe(true);
     expect(payload).toHaveLength(3);
     expect(Array.isArray(payload[0]?.result?.data)).toBe(true);
@@ -185,7 +251,11 @@ describe('legacy MCP dashboard compatibility bridge', () => {
   });
 
   it('supports mixed legacy and modern MCP procedure aliases in the same batch', async () => {
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/api/trpc/[trpc]/route.test.ts
     process.env.HYPERCODE_TRPC_UPSTREAM = 'http://127.0.0.1:59999/trpc';
+=======
+    process.env.BORG_TRPC_UPSTREAM = 'http://127.0.0.1:59999/trpc';
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/api/trpc/[trpc]/route.test.ts
     global.fetch = vi.fn(async () => {
       throw new Error('connect ECONNREFUSED');
     }) as typeof fetch;
@@ -203,7 +273,11 @@ describe('legacy MCP dashboard compatibility bridge', () => {
     const payload = await response.json();
 
     expect(response.status).toBe(200);
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/api/trpc/[trpc]/route.test.ts
     expect(response.headers.get('x-hypercode-trpc-compat')).toBe('legacy-mcp-dashboard-bridge');
+=======
+    expect(response.headers.get('x-borg-trpc-compat')).toBe('legacy-mcp-dashboard-bridge');
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/api/trpc/[trpc]/route.test.ts
     expect(Array.isArray(payload)).toBe(true);
     expect(payload).toHaveLength(3);
     expect(Array.isArray(payload[0]?.result?.data)).toBe(true);
@@ -221,7 +295,11 @@ describe('legacy MCP dashboard compatibility bridge', () => {
   });
 
   it('probes top-level mcpServers.list when bridging legacy MCP batches', async () => {
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/api/trpc/[trpc]/route.test.ts
     process.env.HYPERCODE_TRPC_UPSTREAM = 'http://127.0.0.1:4100/trpc';
+=======
+    process.env.BORG_TRPC_UPSTREAM = 'http://127.0.0.1:4100/trpc';
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/api/trpc/[trpc]/route.test.ts
     const upstreamServers = [
       {
         uuid: 'server-1',
@@ -270,7 +348,11 @@ describe('legacy MCP dashboard compatibility bridge', () => {
     const payload = await response.json();
 
     expect(response.status).toBe(200);
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/api/trpc/[trpc]/route.test.ts
     expect(response.headers.get('x-hypercode-trpc-compat')).toBe('legacy-mcp-dashboard-bridge');
+=======
+    expect(response.headers.get('x-borg-trpc-compat')).toBe('legacy-mcp-dashboard-bridge');
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/api/trpc/[trpc]/route.test.ts
     expect(payload[0]?.result?.data).toEqual(upstreamServers);
     expect(payload[2]?.result?.data).toEqual({
       initialized: true,
@@ -290,7 +372,11 @@ describe('legacy MCP dashboard compatibility bridge', () => {
   });
 
   it('returns local dashboard fallback data for richer MCP pages when upstreams are unavailable', async () => {
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/api/trpc/[trpc]/route.test.ts
     process.env.HYPERCODE_TRPC_UPSTREAM = 'http://127.0.0.1:59999/trpc';
+=======
+    process.env.BORG_TRPC_UPSTREAM = 'http://127.0.0.1:59999/trpc';
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/api/trpc/[trpc]/route.test.ts
     global.fetch = vi.fn(async () => {
       throw new Error('connect ECONNREFUSED');
     }) as typeof fetch;
@@ -314,7 +400,11 @@ describe('legacy MCP dashboard compatibility bridge', () => {
     const payload = await response.json();
 
     expect(response.status).toBe(200);
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/api/trpc/[trpc]/route.test.ts
     expect(response.headers.get('x-hypercode-trpc-compat')).toBe('local-dashboard-fallback');
+=======
+    expect(response.headers.get('x-borg-trpc-compat')).toBe('local-dashboard-fallback');
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/api/trpc/[trpc]/route.test.ts
     expect(Array.isArray(payload)).toBe(true);
     expect(payload).toHaveLength(5);
 
@@ -360,7 +450,11 @@ describe('legacy MCP dashboard compatibility bridge', () => {
   });
 
   it('normalizes batched bulk import payloads before proxying them upstream', async () => {
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/api/trpc/[trpc]/route.test.ts
     process.env.HYPERCODE_TRPC_UPSTREAM = 'http://127.0.0.1:3100/trpc';
+=======
+    process.env.BORG_TRPC_UPSTREAM = 'http://127.0.0.1:3100/trpc';
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/api/trpc/[trpc]/route.test.ts
     const upstreamResponse = [
       {
         result: {
@@ -420,7 +514,11 @@ describe('legacy MCP dashboard compatibility bridge', () => {
   });
 
   it('preserves realistic mixed transport/auth fields when normalizing batched bulk imports', async () => {
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/api/trpc/[trpc]/route.test.ts
     process.env.HYPERCODE_TRPC_UPSTREAM = 'http://127.0.0.1:3100/trpc';
+=======
+    process.env.BORG_TRPC_UPSTREAM = 'http://127.0.0.1:3100/trpc';
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/api/trpc/[trpc]/route.test.ts
     const upstreamResponse = [
       {
         result: {
@@ -438,7 +536,11 @@ describe('legacy MCP dashboard compatibility bridge', () => {
         type: 'STDIO',
         command: 'npx',
         args: ['-y', '@modelcontextprotocol/server-filesystem'],
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/api/trpc/[trpc]/route.test.ts
         env: { ROOT_PATH: 'C:/Users/hyper/workspace/hypercode' },
+=======
+        env: { ROOT_PATH: 'C:/Users/hyper/workspace/borg' },
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/api/trpc/[trpc]/route.test.ts
         metadataStrategy: 'auto',
       },
       {
@@ -446,7 +548,11 @@ describe('legacy MCP dashboard compatibility bridge', () => {
         type: 'STREAMABLE_HTTP',
         url: 'https://api.githubcopilot.com/mcp/',
         bearerToken: 'ghp_mock_token',
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/api/trpc/[trpc]/route.test.ts
         headers: { 'x-org': 'hypercode-dev', 'x-env': 'test' },
+=======
+        headers: { 'x-org': 'borg-dev', 'x-env': 'test' },
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/api/trpc/[trpc]/route.test.ts
         metadataStrategy: 'auto',
       },
       {
@@ -490,7 +596,11 @@ describe('legacy MCP dashboard compatibility bridge', () => {
   });
 
   it('imports realistic mixed transport servers via local bulk import fallback', async () => {
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/api/trpc/[trpc]/route.test.ts
     process.env.HYPERCODE_TRPC_UPSTREAM = 'http://127.0.0.1:59999/trpc';
+=======
+    process.env.BORG_TRPC_UPSTREAM = 'http://127.0.0.1:59999/trpc';
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/api/trpc/[trpc]/route.test.ts
     global.fetch = vi.fn(async () => {
       throw new Error('connect ECONNREFUSED');
     }) as typeof fetch;
@@ -508,7 +618,11 @@ describe('legacy MCP dashboard compatibility bridge', () => {
         type: 'http',
         url: 'https://api.githubcopilot.com/mcp/',
         bearerToken: 'ghp_mock_token',
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/api/trpc/[trpc]/route.test.ts
         headers: { 'x-org': 'hypercode-dev' },
+=======
+        headers: { 'x-org': 'borg-dev' },
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/api/trpc/[trpc]/route.test.ts
       },
       {
         name: 'remote_sse_runtime',
@@ -529,7 +643,11 @@ describe('legacy MCP dashboard compatibility bridge', () => {
     const importPayload = await importResponse.json();
 
     expect(importResponse.status).toBe(200);
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/api/trpc/[trpc]/route.test.ts
     expect(importResponse.headers.get('x-hypercode-trpc-compat')).toBe('local-mcp-config-bulk-import');
+=======
+    expect(importResponse.headers.get('x-borg-trpc-compat')).toBe('local-mcp-config-bulk-import');
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/api/trpc/[trpc]/route.test.ts
     expect(importPayload?.[0]?.result?.data).toEqual({ imported: 3, errors: [] });
 
     const listResponse = await POST(new Request('http://localhost:3010/api/trpc/mcpServers.list', {
@@ -578,7 +696,11 @@ describe('legacy MCP dashboard compatibility bridge', () => {
       type: 'STREAMABLE_HTTP',
       url: 'https://api.githubcopilot.com/mcp/',
       bearerToken: 'ghp_mock_token',
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/api/trpc/[trpc]/route.test.ts
       headers: { 'x-org': 'hypercode-dev' },
+=======
+      headers: { 'x-org': 'borg-dev' },
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/api/trpc/[trpc]/route.test.ts
     }));
 
     const remoteSseDetail = await POST(new Request('http://localhost:3010/api/trpc/mcpServers.get', {
@@ -598,7 +720,11 @@ describe('legacy MCP dashboard compatibility bridge', () => {
   });
 
   it('supports local pseudo-managed MCP server actions when upstreams are unavailable', async () => {
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/api/trpc/[trpc]/route.test.ts
     process.env.HYPERCODE_TRPC_UPSTREAM = 'http://127.0.0.1:59999/trpc';
+=======
+    process.env.BORG_TRPC_UPSTREAM = 'http://127.0.0.1:59999/trpc';
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/api/trpc/[trpc]/route.test.ts
     global.fetch = vi.fn(async () => {
       throw new Error('connect ECONNREFUSED');
     }) as typeof fetch;
@@ -631,7 +757,11 @@ describe('legacy MCP dashboard compatibility bridge', () => {
       const listData = listPayload?.result?.data as Array<{ uuid: string; name: string; _meta?: { status?: string } }>;
 
       expect(listResponse.status).toBe(200);
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/api/trpc/[trpc]/route.test.ts
       expect(listResponse.headers.get('x-hypercode-trpc-compat')).toBe('legacy-mcp-dashboard-bridge');
+=======
+      expect(listResponse.headers.get('x-borg-trpc-compat')).toBe('legacy-mcp-dashboard-bridge');
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/api/trpc/[trpc]/route.test.ts
       expect(Array.isArray(listData)).toBe(true);
       expect(listData[0]?.uuid).toEqual(expect.stringMatching(/^local-/));
       expect(listData[0]?.name).toBe(testServerName);
@@ -647,7 +777,11 @@ describe('legacy MCP dashboard compatibility bridge', () => {
       const getPayload = await getResponse.json();
 
       expect(getResponse.status).toBe(200);
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/api/trpc/[trpc]/route.test.ts
       expect(getResponse.headers.get('x-hypercode-trpc-compat')).toBe('local-dashboard-fallback');
+=======
+      expect(getResponse.headers.get('x-borg-trpc-compat')).toBe('local-dashboard-fallback');
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/api/trpc/[trpc]/route.test.ts
       expect(getPayload?.result?.data).toEqual(expect.objectContaining({
         uuid: serverUuid,
         name: testServerName,
@@ -660,7 +794,11 @@ describe('legacy MCP dashboard compatibility bridge', () => {
       const getViaQueryPayload = await getViaQueryResponse.json();
 
       expect(getViaQueryResponse.status).toBe(200);
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/api/trpc/[trpc]/route.test.ts
       expect(getViaQueryResponse.headers.get('x-hypercode-trpc-compat')).toBe('local-dashboard-fallback');
+=======
+      expect(getViaQueryResponse.headers.get('x-borg-trpc-compat')).toBe('local-dashboard-fallback');
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/api/trpc/[trpc]/route.test.ts
       expect(getViaQueryPayload?.result?.data).toEqual(expect.objectContaining({
         uuid: serverUuid,
         name: testServerName,
@@ -674,7 +812,11 @@ describe('legacy MCP dashboard compatibility bridge', () => {
       const reloadPayload = await reloadResponse.json();
 
       expect(reloadResponse.status).toBe(200);
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/api/trpc/[trpc]/route.test.ts
       expect(reloadResponse.headers.get('x-hypercode-trpc-compat')).toBe('local-mcp-managed-action');
+=======
+      expect(reloadResponse.headers.get('x-borg-trpc-compat')).toBe('local-mcp-managed-action');
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/api/trpc/[trpc]/route.test.ts
       expect(reloadPayload?.result?.data?.metadata).toEqual(expect.objectContaining({
         uuid: serverUuid,
         status: 'ready',
@@ -765,7 +907,11 @@ describe('legacy MCP dashboard compatibility bridge', () => {
   });
 
   it('returns an explicit local fallback error when mcpServers.get misses locally', async () => {
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/api/trpc/[trpc]/route.test.ts
     process.env.HYPERCODE_TRPC_UPSTREAM = 'http://127.0.0.1:59999/trpc';
+=======
+    process.env.BORG_TRPC_UPSTREAM = 'http://127.0.0.1:59999/trpc';
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/api/trpc/[trpc]/route.test.ts
     global.fetch = vi.fn(async () => {
       throw new Error('connect ECONNREFUSED');
     }) as typeof fetch;
@@ -778,7 +924,11 @@ describe('legacy MCP dashboard compatibility bridge', () => {
     const payload = await response.json();
 
     expect(response.status).toBe(200);
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/api/trpc/[trpc]/route.test.ts
     expect(response.headers.get('x-hypercode-trpc-compat')).toBe('local-dashboard-fallback');
+=======
+    expect(response.headers.get('x-borg-trpc-compat')).toBe('local-dashboard-fallback');
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/api/trpc/[trpc]/route.test.ts
     expect(payload?.result).toBeUndefined();
     expect(payload?.error).toEqual(expect.objectContaining({
       code: 'NOT_FOUND',
@@ -791,7 +941,11 @@ describe('legacy MCP dashboard compatibility bridge', () => {
   });
 
     it('bridges bulk imports via legacy mcpServers format when upstream rejects modern array body', async () => {
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/api/trpc/[trpc]/route.test.ts
       process.env.HYPERCODE_TRPC_UPSTREAM = 'http://127.0.0.1:4100/trpc';
+=======
+      process.env.BORG_TRPC_UPSTREAM = 'http://127.0.0.1:4100/trpc';
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/api/trpc/[trpc]/route.test.ts
 
       const legacyUpstreamResult = { imported: 2, skipped: 0 };
 
@@ -853,7 +1007,11 @@ describe('legacy MCP dashboard compatibility bridge', () => {
       const payload = await response.json();
 
       expect(response.status).toBe(200);
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/api/trpc/[trpc]/route.test.ts
       expect(response.headers.get('x-hypercode-trpc-compat')).toBe('legacy-mcp-bulk-import-bridge');
+=======
+      expect(response.headers.get('x-borg-trpc-compat')).toBe('legacy-mcp-bulk-import-bridge');
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/api/trpc/[trpc]/route.test.ts
       expect(payload?.result?.data ?? payload?.[0]?.result?.data).toEqual(legacyUpstreamResult);
 
       // Verify the bridge call used the legacy { mcpServers: { name: config } } format
@@ -868,6 +1026,7 @@ describe('legacy MCP dashboard compatibility bridge', () => {
       expect(bridgeBody.mcpServers).toHaveProperty('bridge_stdio_test');
       expect(bridgeBody.mcpServers).toHaveProperty('bridge_http_test');
     });
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/api/trpc/[trpc]/route.test.ts
 
     it('prefers go-native saved script reads and mutations in local dashboard fallback mode', async () => {
       process.env.HYPERCODE_TRPC_UPSTREAM = 'http://127.0.0.1:4590/trpc';
@@ -971,4 +1130,6 @@ describe('legacy MCP dashboard compatibility bridge', () => {
       expect((global.fetch as ReturnType<typeof vi.fn>).mock.calls.some(([url]) => String(url) === 'http://127.0.0.1:4590/api/scripts/execute')).toBe(true);
       expect((global.fetch as ReturnType<typeof vi.fn>).mock.calls.some(([url]) => String(url) === 'http://127.0.0.1:4590/api/scripts/delete')).toBe(true);
     });
+=======
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/api/trpc/[trpc]/route.test.ts
   });

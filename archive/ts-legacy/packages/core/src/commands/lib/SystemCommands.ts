@@ -1,5 +1,9 @@
 import { ICommand, CommandResult, CommandRegistry } from "../CommandRegistry.js";
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/commands/lib/SystemCommands.ts
 import { Director } from "@hypercode/agents";
+=======
+import { Director } from "@borg/agents";
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/commands/lib/SystemCommands.ts
 
 interface DirectorStatusView {
     active?: boolean;

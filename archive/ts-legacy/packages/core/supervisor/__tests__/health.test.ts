@@ -9,7 +9,11 @@ import { createFakeDetectEnvironment, createSpawnStub, FakeProcess, ManualSchedu
 const tempDirs: string[] = [];
 
 function createTempDir() {
+<<<<<<< HEAD:archive/ts-legacy/packages/core/supervisor/__tests__/health.test.ts
     const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'hypercode-session-health-'));
+=======
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'borg-session-health-'));
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/supervisor/__tests__/health.test.ts
     tempDirs.push(dir);
     return dir;
 }

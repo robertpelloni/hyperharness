@@ -10,7 +10,11 @@ import matter from 'gray-matter';
  * Skills are markdown files with YAML frontmatter (name, description) stored
  * as `SKILL.md` in directories under the configured search paths.
  *
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/skills/SkillRegistry.ts
  * Example: `.hypercode/skills/deploy-to-prod/SKILL.md`
+=======
+ * Example: `.borg/skills/deploy-to-prod/SKILL.md`
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/skills/SkillRegistry.ts
  */
 export interface Skill {
     /** Unique identifier — derived from frontmatter `name` or parent directory name */
@@ -32,7 +36,11 @@ function getErrorMessage(error: unknown): string {
 /**
  * SkillRegistry
  *
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/skills/SkillRegistry.ts
  * Discovers, loads, and manages HyperCode's skill library.
+=======
+ * Discovers, loads, and manages borg's skill library.
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/skills/SkillRegistry.ts
  * Skills are portable runbooks (SKILL.md files with YAML frontmatter) that
  * agents can read and follow to perform specialized tasks.
  *
@@ -110,7 +118,11 @@ export class SkillRegistry {
                 // Ignore missing directories
             }
         }
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/skills/SkillRegistry.ts
         console.log(`HyperCode Core: Loaded ${this.skills.size} skills.`);
+=======
+        console.log(`borg Core: Loaded ${this.skills.size} skills.`);
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/skills/SkillRegistry.ts
     }
 
     private async parseSkill(filePath: string) {
@@ -167,6 +179,7 @@ export class SkillRegistry {
                 }
             },
             {
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/skills/SkillRegistry.ts
                 name: "search_skills",
                 description: "Search for skills (runbooks) by name or description",
                 inputSchema: {
@@ -178,6 +191,8 @@ export class SkillRegistry {
                 }
             },
             {
+=======
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/skills/SkillRegistry.ts
                 name: "update_skill",
                 description: "Update content of an existing skill",
                 inputSchema: {
@@ -192,6 +207,7 @@ export class SkillRegistry {
         ];
     }
 
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/skills/SkillRegistry.ts
     async searchSkills(query: string) {
         const queryLower = query.toLowerCase();
         const matches = Array.from(this.skills.values())
@@ -214,6 +230,8 @@ export class SkillRegistry {
         };
     }
 
+=======
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/skills/SkillRegistry.ts
     async listSkills() {
         // Progressive disclosure: only return the skill names/ids without descriptions
         const skillList = Array.from(this.skills.values()).map(s => s.id);
@@ -243,7 +261,11 @@ export class SkillRegistry {
     }
 
     async createSkill(id: string, name: string, description: string) {
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/skills/SkillRegistry.ts
         // Default to the first search path (usually .hypercode/skills in cwd)
+=======
+        // Default to the first search path (usually .borg/skills in cwd)
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/skills/SkillRegistry.ts
         const targetDir = this.searchPaths[0];
         const skillDir = path.join(targetDir, id);
         const skillFile = path.join(skillDir, 'SKILL.md');

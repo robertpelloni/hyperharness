@@ -19,7 +19,11 @@ vi.mock('fs', async () => {
 describe('ConfigManager', () => {
     let configManager: ConfigManager;
     const mockCwd = '/mock/cwd';
+<<<<<<< HEAD:archive/ts-legacy/packages/core/test/ConfigManager.test.ts
     const configPath = path.join(mockCwd, '.hypercode', 'config.json');
+=======
+    const configPath = path.join(mockCwd, '.borg', 'config.json');
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/test/ConfigManager.test.ts
 
     beforeEach(() => {
         vi.spyOn(process, 'cwd').mockReturnValue(mockCwd);
@@ -60,7 +64,11 @@ describe('ConfigManager', () => {
         configManager.saveConfig(newConfig);
 
         // Check mkdir
+<<<<<<< HEAD:archive/ts-legacy/packages/core/test/ConfigManager.test.ts
         expect(fs.mkdirSync).toHaveBeenCalledWith(expect.stringContaining('.hypercode'), { recursive: true });
+=======
+        expect(fs.mkdirSync).toHaveBeenCalledWith(expect.stringContaining('.borg'), { recursive: true });
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/test/ConfigManager.test.ts
         // Check write
         expect(fs.writeFileSync).toHaveBeenCalledWith(
             expect.stringContaining('config.json'),

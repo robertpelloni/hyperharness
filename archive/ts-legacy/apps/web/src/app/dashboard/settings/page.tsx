@@ -2,9 +2,15 @@
 
 import { trpc } from '@/utils/trpc';
 import { useState, useEffect } from 'react';
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/settings/page.tsx
 import { Card } from '@hypercode/ui';
 import { Button } from '@hypercode/ui';
 import { Textarea } from '@hypercode/ui';
+=======
+import { Card } from '@borg/ui';
+import { Button } from '@borg/ui';
+import { Textarea } from '@borg/ui';
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/settings/page.tsx
 import { formatSettingsConfig, getSettingsSaveErrorMessage } from './settings-page-normalizers';
 
 export default function SettingsDashboard() {
@@ -39,7 +45,11 @@ export default function SettingsDashboard() {
             <div className="flex justify-between items-center">
                 <div>
                     <h1 className="text-3xl font-bold tracking-tight text-yellow-400">System Settings</h1>
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/settings/page.tsx
                     <p className="text-muted-foreground">Manage core configuration (.hypercode/config.json)</p>
+=======
+                    <p className="text-muted-foreground">Manage core configuration (.borg/config.json)</p>
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/settings/page.tsx
                 </div>
                 <Button
                     onClick={handleSave}

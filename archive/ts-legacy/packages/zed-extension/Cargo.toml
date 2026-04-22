@@ -1,9 +1,17 @@
 [package]
+<<<<<<< HEAD:archive/ts-legacy/packages/zed-extension/Cargo.toml
 name = "HyperCode-zed-extension"
 version = "0.1.0"
 edition = "2021"
 license = "MIT"
 description = "HyperCode integration for Zed editor"
+=======
+name = "borg-zed-extension"
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+description = "borg integration for Zed editor"
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/zed-extension/Cargo.toml
 
 [lib]
 crate-type = ["cdylib"]

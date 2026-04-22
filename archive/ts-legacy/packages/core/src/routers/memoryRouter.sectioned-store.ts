@@ -104,8 +104,13 @@ export function summarizeSectionedMemoryStore(storePath: string, rawStore: RawSe
 }
 
 export async function readSectionedMemoryStoreStatus(workspaceRoot: string, pipelineSummary?: MemoryPipelineSummary | null): Promise<SectionedMemoryStoreStatus> {
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/routers/memoryRouter.sectioned-store.ts
     const storePath = path.join(workspaceRoot, '.hypercode', 'sectioned_memory.json');
     const legacyStorePath = path.join(workspaceRoot, '.hypercode', LEGACY_STORE_FILE);
+=======
+    const storePath = path.join(workspaceRoot, '.borg', 'sectioned_memory.json');
+    const legacyStorePath = path.join(workspaceRoot, '.borg', LEGACY_STORE_FILE);
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/routers/memoryRouter.sectioned-store.ts
 
     for (const candidatePath of [storePath, legacyStorePath]) {
         try {

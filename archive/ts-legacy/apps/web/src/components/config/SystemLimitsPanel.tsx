@@ -2,7 +2,11 @@
 
 import { useState, useEffect } from 'react';
 import { trpc } from '@/utils/trpc';
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/components/config/SystemLimitsPanel.tsx
 import { Card, Switch, Label } from '@hypercode/ui';
+=======
+import { Card, Switch, Label } from '@borg/ui';
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/components/config/SystemLimitsPanel.tsx
 
 function isBooleanSetting(value: unknown): value is boolean {
     return typeof value === 'boolean';

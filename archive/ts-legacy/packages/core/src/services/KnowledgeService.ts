@@ -1,6 +1,10 @@
 
 import { MemoryManager } from './MemoryManager.js';
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/services/KnowledgeService.ts
 import { GraphNode, GraphEdge } from '@hypercode/memory';
+=======
+import { GraphNode, GraphEdge } from '@borg/memory';
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/services/KnowledgeService.ts
 
 export interface ContextBundle {
     root: { id: string, type: string };

@@ -1,6 +1,10 @@
 # Shared Package (`@extension/shared`)
 
+<<<<<<<< HEAD:archive/ts-legacy/apps/hypercode-extension/packages/shared/README.md
 This package contains shared TypeScript types, utilities, and constants used across the HyperCode Extension extension, particularly between the content script and background script components.
+========
+This package contains shared TypeScript types, utilities, and constants used across the borg Extension extension, particularly between the content script and background script components.
+>>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/borg-extension/packages/shared/README.md
 
 ## Contents
 

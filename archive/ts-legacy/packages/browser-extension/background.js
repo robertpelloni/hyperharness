@@ -1,9 +1,14 @@
+<<<<<<< HEAD:archive/ts-legacy/packages/browser-extension/background.js
 // HyperCode Director Link - Background Worker
+=======
+// borg Director Link - Background Worker
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/browser-extension/background.js
 
 const SOCKET_URL = 'ws://localhost:3001';
 let socket = null;
 let keepAliveInterval = null;
 
+<<<<<<< HEAD:archive/ts-legacy/packages/browser-extension/background.js
 // Connect to HyperCode Core
 function connect() {
     console.log(`[HyperCodeLink] Connecting to ${SOCKET_URL}...`);
@@ -11,6 +16,15 @@ function connect() {
 
     socket.onopen = () => {
         console.log("[HyperCodeLink] Connected!");
+=======
+// Connect to borg Core
+function connect() {
+    console.log(`[BorgLink] Connecting to ${SOCKET_URL}...`);
+    socket = new WebSocket(SOCKET_URL);
+
+    socket.onopen = () => {
+        console.log("[BorgLink] Connected!");
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/browser-extension/background.js
         chrome.action.setBadgeText({ text: "ON" });
         chrome.action.setBadgeBackgroundColor({ color: "#4CAF50" });
 
@@ -27,7 +41,11 @@ function connect() {
     socket.onmessage = async (event) => {
         try {
             const msg = JSON.parse(event.data);
+<<<<<<< HEAD:archive/ts-legacy/packages/browser-extension/background.js
             console.log("[HyperCodeLink] Received:", msg);
+=======
+            console.log("[BorgLink] Received:", msg);
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/browser-extension/background.js
             handleMessage(msg);
         } catch (e) {
             console.error("Failed to parse message", e);
@@ -35,7 +53,11 @@ function connect() {
     };
 
     socket.onclose = () => {
+<<<<<<< HEAD:archive/ts-legacy/packages/browser-extension/background.js
         console.log("[HyperCodeLink] Disconnected. Reconnecting in 5s...");
+=======
+        console.log("[BorgLink] Disconnected. Reconnecting in 5s...");
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/browser-extension/background.js
         chrome.action.setBadgeText({ text: "OFF" });
         chrome.action.setBadgeBackgroundColor({ color: "#F44336" });
         stopKeepAlive();
@@ -43,7 +65,11 @@ function connect() {
     };
 
     socket.onerror = (err) => {
+<<<<<<< HEAD:archive/ts-legacy/packages/browser-extension/background.js
         console.error("[HyperCodeLink] Socket Error:", err);
+=======
+        console.error("[BorgLink] Socket Error:", err);
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/browser-extension/background.js
         socket.close();
     };
 }

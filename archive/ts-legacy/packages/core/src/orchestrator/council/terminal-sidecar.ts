@@ -2,7 +2,11 @@ import * as pty from 'node-pty';
 import { createServer } from 'net';
 
 /**
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/orchestrator/council/terminal-sidecar.ts
  * Terminal Sidecar - Integrated into HyperCode Core
+=======
+ * Terminal Sidecar - Integrated into borg Core
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/orchestrator/council/terminal-sidecar.ts
  * 
  * This is a standalone process that manages a PTY session.
  * It allows the main Orchestrator to restart without killing the CLI process.
@@ -37,7 +41,11 @@ const server = createServer((socket) => {
       timestamp: Date.now(),
       pid: ptyProcess.pid,
     };
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/orchestrator/council/terminal-sidecar.ts
     socket.write(`HYPERCODE_TELEMETRY:${JSON.stringify(telemetry)}`);
+=======
+    socket.write(`BORG_TELEMETRY:${JSON.stringify(telemetry)}`);
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/orchestrator/council/terminal-sidecar.ts
   }, 5000);
 
   // Send client input to PTY
@@ -45,7 +53,11 @@ const server = createServer((socket) => {
     const text = data.toString();
     
     // Check for control messages
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/orchestrator/council/terminal-sidecar.ts
     if (text.startsWith('HYPERCODE_CTRL:')) {
+=======
+    if (text.startsWith('BORG_CTRL:')) {
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/orchestrator/council/terminal-sidecar.ts
       try {
         const ctrl = JSON.parse(text.substring(10));
         if (ctrl.type === 'SET_ENV') {

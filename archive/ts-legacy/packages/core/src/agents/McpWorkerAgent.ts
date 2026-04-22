@@ -1,5 +1,9 @@
 import { SpecializedAgent } from '../mesh/SpecializedAgent.js';
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/agents/McpWorkerAgent.ts
 import { LLMService } from '@hypercode/ai';
+=======
+import { LLMService } from '@borg/ai';
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/agents/McpWorkerAgent.ts
 import { MCPServer } from '../MCPServer.js';
 
 export class McpWorkerAgent extends SpecializedAgent {

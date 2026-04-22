@@ -412,7 +412,11 @@ export class RemoteConfigPlugin implements AdapterPlugin {
             id: `version-update-${data.newVersion}`,
             type: 'info',
             title: `Updated to v${data.newVersion}`,
+<<<<<<<< HEAD:archive/ts-legacy/apps/hypercode-extension/pages/content/src/plugins/remote-config.plugin.ts
             message: `HyperCode Extension has been updated. Check out what's new!`,
+========
+            message: `borg Extension has been updated. Check out what's new!`,
+>>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/borg-extension/pages/content/src/plugins/remote-config.plugin.ts
             actions: [
               { text: 'View Changelog', action: 'view-changelog', style: 'primary' },
               { text: 'Dismiss', action: 'dismiss', style: 'secondary' },

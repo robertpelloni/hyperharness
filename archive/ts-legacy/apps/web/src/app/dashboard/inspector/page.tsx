@@ -1,7 +1,11 @@
 "use client";
 
 import { TrafficInspector } from "@/components/TrafficInspector";
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/inspector/page.tsx
 import { resolveCoreWsUrl } from "@hypercode/ui";
+=======
+import { resolveCoreWsUrl } from "@borg/ui";
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/inspector/page.tsx
 import Link from "next/link";
 
 function getBridgeDisplayUrl(): string {

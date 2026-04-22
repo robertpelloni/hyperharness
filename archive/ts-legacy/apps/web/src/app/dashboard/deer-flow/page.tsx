@@ -1,7 +1,11 @@
 "use client";
 
 import { useState } from 'react';
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/deer-flow/page.tsx
 import { Card, CardHeader, CardTitle, CardContent, Button, Badge } from "@hypercode/ui";
+=======
+import { Card, CardHeader, CardTitle, CardContent, Button, Badge } from "@borg/ui";
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/deer-flow/page.tsx
 import { Loader2, ExternalLink, Activity, BrainCircuit, Box, Workflow, Network, Cable, ShieldAlert } from "lucide-react";
 import { trpc } from '@/utils/trpc';
 import { toast } from 'sonner';
@@ -141,7 +145,11 @@ export default function DeerFlowDashboard() {
                             <PageStatusBanner
                                 status="experimental"
                                 message="DeerFlow is an external LangGraph agent harness. This page requires the DeerFlow service to be running independently."
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/deer-flow/page.tsx
                                 note="Full HyperCode-native orchestration is planned for a future release."
+=======
+                                note="Full borg-native orchestration is planned for a future release."
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/deer-flow/page.tsx
                             />
                 </div>
             </div>

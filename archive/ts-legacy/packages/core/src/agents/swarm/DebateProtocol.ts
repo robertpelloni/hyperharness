@@ -111,7 +111,11 @@ export class DebateProtocol extends EventEmitter {
 
         try {
             if (!this.councilUrl) {
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/agents/swarm/DebateProtocol.ts
                 throw new Error('No HyperCode Orchestrator base configured.');
+=======
+                throw new Error('No borg Orchestrator base configured.');
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/agents/swarm/DebateProtocol.ts
             }
             const supervisorName = this.modelToSupervisor(model);
             const systemPrompt = this.buildSystemPrompt(profile);
@@ -174,7 +178,11 @@ export class DebateProtocol extends EventEmitter {
 
         try {
             if (!this.councilUrl) {
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/agents/swarm/DebateProtocol.ts
                 throw new Error('No HyperCode Orchestrator base configured.');
+=======
+                throw new Error('No borg Orchestrator base configured.');
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/agents/swarm/DebateProtocol.ts
             }
             const judgeSupervisor = this.modelToSupervisor(this.config.judgeModel);
             const res = await fetch(`${this.councilUrl}/api/supervisors/${judgeSupervisor}/chat`, {

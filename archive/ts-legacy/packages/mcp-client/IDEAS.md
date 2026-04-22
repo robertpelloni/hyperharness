@@ -1,4 +1,8 @@
+<<<<<<< HEAD:archive/ts-legacy/packages/mcp-client/IDEAS.md
 # Ideas for Improvement: @hypercode/mcp-client
+=======
+# Ideas for Improvement: @borg/mcp-client
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/mcp-client/IDEAS.md
 
 Evolving the MCP client from a minimal stub into a high-performance, universal tool connector.
 
@@ -10,7 +14,11 @@ Evolving the MCP client from a minimal stub into a high-performance, universal t
 ## 2. Advanced Transports
 - **Secure Remote Stdio (SSH):** Allow connecting to MCP servers running on remote machines over SSH tunnels as if they were local.
 - **Browser-Native MCP:** A specialized transport that allows the client to talk to MCP servers running as browser extensions or within webworkers.
+<<<<<<< HEAD:archive/ts-legacy/packages/mcp-client/IDEAS.md
 - **P2P Discovery Transport:** Use the HyperCode mesh to discover and connect to MCP servers hosted by other nodes in the swarm.
+=======
+- **P2P Discovery Transport:** Use the borg mesh to discover and connect to MCP servers hosted by other nodes in the swarm.
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/mcp-client/IDEAS.md
 
 ## 3. Reliability & Observability
 - **Circuit Breakers for Flaky Tools:** Automatically detect and disable tools that crash or time out frequently, preventing them from hanging the agent session.
@@ -20,4 +28,8 @@ Evolving the MCP client from a minimal stub into a high-performance, universal t
 ## 4. Ecosystem & DX
 - **Client-side Middleware:** Support for "plugins" that can intercept and modify tool calls (e.g., for logging, safety filtering, or auto-documentation).
 - **Auto-generated Mock Servers:** Automatically generate mock MCP servers from existing tool schemas to enable offline testing and development.
+<<<<<<< HEAD:archive/ts-legacy/packages/mcp-client/IDEAS.md
 - **TypeScript Type Generator:** A tool that scans active MCP servers and generates a strictly-typed TypeScript SDK for use in other HyperCode packages.
+=======
+- **TypeScript Type Generator:** A tool that scans active MCP servers and generates a strictly-typed TypeScript SDK for use in other borg packages.
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/mcp-client/IDEAS.md

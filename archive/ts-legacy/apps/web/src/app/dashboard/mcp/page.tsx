@@ -3,7 +3,11 @@
 import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
 import type { ComponentType, FormEvent } from 'react';
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/mcp/page.tsx
 import { Button, Card, CardContent, CardHeader, CardTitle, Alert, AlertDescription, AlertTitle } from '@hypercode/ui';
+=======
+import { Button, Card, CardContent, CardHeader, CardTitle, Alert, AlertDescription, AlertTitle } from '@borg/ui';
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/mcp/page.tsx
 import { trpc } from '@/utils/trpc';
 import { buildBulkImportServers } from '@/lib/mcp-import';
 import { toast } from 'sonner';
@@ -485,7 +489,11 @@ function AddServerForm({ onDone }: { onDone: () => void }): React.JSX.Element {
             <CardHeader className="flex flex-row items-start justify-between">
                 <div>
                     <CardTitle className="text-white text-base">Add downstream MCP server</CardTitle>
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/mcp/page.tsx
                     <p className="text-sm text-zinc-500 mt-1">Register another MCP endpoint under HyperCode’s aggregated router.</p>
+=======
+                    <p className="text-sm text-zinc-500 mt-1">Register another MCP endpoint under borg’s aggregated router.</p>
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/mcp/page.tsx
                 </div>
                 <Button
                     variant="ghost"
@@ -615,7 +623,11 @@ function AddServerForm({ onDone }: { onDone: () => void }): React.JSX.Element {
                         <Button
                             type="submit"
                             disabled={createMutation.isPending}
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/mcp/page.tsx
                             title="Register this downstream MCP server in HyperCode"
+=======
+                            title="Register this downstream MCP server in borg"
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/mcp/page.tsx
                             aria-label="Add downstream MCP server"
                             className="bg-blue-600 hover:bg-blue-500 text-white"
                         >
@@ -712,7 +724,11 @@ function BulkImportForm({ onDone, existingServerNames }: { onDone: () => void; e
             <CardHeader className="flex flex-row items-start justify-between">
                 <div>
                     <CardTitle className="text-white text-base">Bulk import MCP config</CardTitle>
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/mcp/page.tsx
                     <p className="text-sm text-zinc-500 mt-1">Import existing client configs and fold them into HyperCode’s router.</p>
+=======
+                    <p className="text-sm text-zinc-500 mt-1">Import existing client configs and fold them into borg’s router.</p>
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/mcp/page.tsx
                 </div>
                 <Button
                     variant="ghost"
@@ -800,7 +816,11 @@ function BulkImportForm({ onDone, existingServerNames }: { onDone: () => void; e
                         <Button
                             type="submit"
                             disabled={importMutation.isPending || Boolean(preview?.error)}
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/mcp/page.tsx
                             title="Import all valid server definitions from this config into HyperCode"
+=======
+                            title="Import all valid server definitions from this config into borg"
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/mcp/page.tsx
                             aria-label="Import MCP server configuration"
                             className="bg-purple-600 hover:bg-purple-500 text-white"
                         >
@@ -1325,7 +1345,11 @@ export default function MCPDashboard(): React.JSX.Element {
     async function handleDeleteServer(uuid: string, serverName: string) {
         const confirmed = typeof window === 'undefined'
             ? true
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/mcp/page.tsx
             : window.confirm(`Delete MCP server '${serverName}'? This removes the server from HyperCode configuration.`);
+=======
+            : window.confirm(`Delete MCP server '${serverName}'? This removes the server from borg configuration.`);
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/mcp/page.tsx
         if (!confirmed) {
             return;
         }
@@ -1629,7 +1653,11 @@ export default function MCPDashboard(): React.JSX.Element {
                     <AlertTriangle className="h-4 w-4 text-amber-400" />
                     <AlertTitle>Last-Known-Good Configuration Active</AlertTitle>
                     <AlertDescription>
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/mcp/page.tsx
                         HyperCode failed to load the primary MCP configuration and has fallen back to the last-known-good (LKG) backup.
+=======
+                        borg failed to load the primary MCP configuration and has fallen back to the last-known-good (LKG) backup.
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/mcp/page.tsx
                         Please check your configuration files for syntax errors or permission issues.
                     </AlertDescription>
                 </Alert>
@@ -1645,7 +1673,11 @@ export default function MCPDashboard(): React.JSX.Element {
                 <div>
                     <h1 className="text-3xl font-bold tracking-tight text-white">MCP Router Control Plane</h1>
                     <p className="text-zinc-500 mt-2 max-w-3xl">
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/mcp/page.tsx
                         HyperCode should read like the ultimate MCP aggregator/router first: one operator surface, many downstream servers, semantic search and grouping, lifecycle control, traffic visibility, and client config sync.
+=======
+                        borg should read like the ultimate MCP aggregator/router first: one operator surface, many downstream servers, semantic search and grouping, lifecycle control, traffic visibility, and client config sync.
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/mcp/page.tsx
                     </p>
                 </div>
                 <div className="flex flex-wrap gap-2">
@@ -2239,7 +2271,11 @@ export default function MCPDashboard(): React.JSX.Element {
                     <CardContent className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
                         <div className="rounded-lg border border-zinc-800 bg-zinc-950/60 p-4">
                             <div className="flex items-center gap-2 text-sm font-semibold text-white"><Server className="h-4 w-4 text-blue-400" /> Aggregation</div>
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/mcp/page.tsx
                             <p className="mt-2 text-sm text-zinc-500">One HyperCode endpoint should make many downstream MCP servers feel like a coherent control plane, not a pile of loose wires.</p>
+=======
+                            <p className="mt-2 text-sm text-zinc-500">One borg endpoint should make many downstream MCP servers feel like a coherent control plane, not a pile of loose wires.</p>
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/mcp/page.tsx
                         </div>
                         <div className="rounded-lg border border-zinc-800 bg-zinc-950/60 p-4">
                             <div className="flex items-center gap-2 text-sm font-semibold text-white"><Search className="h-4 w-4 text-cyan-400" /> Semantic grouping</div>
@@ -2343,7 +2379,11 @@ export default function MCPDashboard(): React.JSX.Element {
                                         </span>
                                     ) : localCompatActive ? (
                                         <span>
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/mcp/page.tsx
                                             Local compat fallback is active for {discoverySummary.localCompatCount} managed server{discoverySummary.localCompatCount === 1 ? '' : 's'}, so HyperCode is surfacing config-backed records with stable local IDs and action links while live core telemetry is unavailable.
+=======
+                                            Local compat fallback is active for {discoverySummary.localCompatCount} managed server{discoverySummary.localCompatCount === 1 ? '' : 's'}, so borg is surfacing config-backed records with stable local IDs and action links while live core telemetry is unavailable.
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/mcp/page.tsx
                                         </span>
                                     ) : discoverySummary.staleReadyCount > 0 ? (
                                         <span>
@@ -2470,7 +2510,11 @@ export default function MCPDashboard(): React.JSX.Element {
                                                     Ready cache looks stale
                                                 </div>
                                                 <p className="mt-1 text-rose-100/90">
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/mcp/page.tsx
                                                     This server is marked ready, but HyperCode has zero cached tools for it. That usually means an older discovery failure got cached as success. Run a binary refresh to repair it.
+=======
+                                                    This server is marked ready, but borg has zero cached tools for it. That usually means an older discovery failure got cached as success. Run a binary refresh to repair it.
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/mcp/page.tsx
                                                 </p>
                                             </div>
                                         ) : null}
@@ -2480,7 +2524,11 @@ export default function MCPDashboard(): React.JSX.Element {
                                                     <div className="text-[11px] uppercase tracking-[0.24em] text-cyan-300">Server actions live here</div>
                                                     <p className="mt-1 text-xs text-zinc-400">
                                                         {isLocalCompatServer
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/mcp/page.tsx
                                                             ? 'This server is being surfaced through local compat fallback, so these controls act on the HyperCode-managed local config record while upstream core telemetry is unavailable.'
+=======
+                                                            ? 'This server is being surfaced through local compat fallback, so these controls act on the borg-managed local config record while upstream core telemetry is unavailable.'
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/mcp/page.tsx
                                                             : 'Keep the operator controls anchored on every server card so inspection, edits, cache warm-up, health tests, and logs stay one click away.'}
                                                     </p>
                                                 </div>
@@ -2666,7 +2714,11 @@ export default function MCPDashboard(): React.JSX.Element {
                                                             size="sm"
                                                             onClick={() => void handleDeleteServer(serverUuid, server.name)}
                                                             disabled={deleteServerMutation.isPending}
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/mcp/page.tsx
                                                             title={`Delete ${server.name} from HyperCode configuration`}
+=======
+                                                            title={`Delete ${server.name} from borg configuration`}
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/mcp/page.tsx
                                                             aria-label={`Delete ${server.name}`}
                                                             className="border-red-500/30 text-red-200 hover:bg-red-500/10"
                                                         >

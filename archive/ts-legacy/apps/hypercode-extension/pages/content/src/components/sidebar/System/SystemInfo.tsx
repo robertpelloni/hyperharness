@@ -43,7 +43,11 @@ const SystemInfo: React.FC = () => {
         </CardHeader>
         <CardContent className="p-4">
           <div className="text-xs font-mono bg-slate-50 dark:bg-slate-950 p-2 rounded border border-slate-100 dark:border-slate-800 overflow-x-auto whitespace-pre">
+<<<<<<<< HEAD:archive/ts-legacy/apps/hypercode-extension/pages/content/src/components/sidebar/System/SystemInfo.tsx
 {`hypercode-extension/
+========
+{`borg-extension/
+>>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/borg-extension/pages/content/src/components/sidebar/System/SystemInfo.tsx
 ├── chrome-extension/       (v1.1.0)
 │   ├── background/         (Service Worker)
 │   └── mcpclient/          (Protocol Layer)

@@ -1,6 +1,9 @@
 import { z } from 'zod';
 import { t, publicProcedure, getMcpServer } from '../lib/trpc-core.js';
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/routers/agentRouter.ts
 import { a2aBroker, taskQueue } from '@hypercode/agents';
+=======
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/routers/agentRouter.ts
 import { TRPCError } from '@trpc/server';
 
 function getErrorMessage(error: unknown): string {
@@ -25,7 +28,11 @@ export const agentRouter = t.router({
                 throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: 'MCP Server not initialized' });
             }
 
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/routers/agentRouter.ts
             // In MetaMCP/HyperCode, tools are often namespaced: "server__tool" or just "tool" if unique.
+=======
+            // In MetaMCP/borg, tools are often namespaced: "server__tool" or just "tool" if unique.
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/routers/agentRouter.ts
             // If serverName is provided, we might need to look it up specifically, 
             // but the aggregator usually acts as a unified client.
             // We'll call the server's executeTool method which handles policies and permissions.
@@ -69,7 +76,11 @@ export const agentRouter = t.router({
             }
 
             const contextSnippet = input.context ? `\n\nContext:\n${JSON.stringify(input.context).slice(0, 4000)}` : '';
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/routers/agentRouter.ts
             const prompt = `You are HyperCode Agent Chat. Give concise, actionable guidance and suggest tool usage when helpful.\n\nUser:\n${input.message}${contextSnippet}`;
+=======
+            const prompt = `You are borg Agent Chat. Give concise, actionable guidance and suggest tool usage when helpful.\n\nUser:\n${input.message}${contextSnippet}`;
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/routers/agentRouter.ts
 
             try {
                 const result = await llm.generate(prompt, {
@@ -89,6 +100,7 @@ export const agentRouter = t.router({
                 };
             }
         }),
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/routers/agentRouter.ts
 
     /**
      * List all currently active A2A-capable agents.
@@ -148,4 +160,6 @@ export const agentRouter = t.router({
             });
             return { success: true };
         }),
+=======
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/routers/agentRouter.ts
 });

@@ -1,13 +1,23 @@
 /**
+<<<<<<< HEAD:archive/ts-legacy/packages/cli/src/commands/session.ts
  * `hypercode session` - Development session management
+=======
+ * `borg session` - Development session management
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/cli/src/commands/session.ts
  *
  * Track, manage, and control development sessions across local
  * and cloud environments with auto-restart and export capabilities.
  *
  * @example
+<<<<<<< HEAD:archive/ts-legacy/packages/cli/src/commands/session.ts
  *   hypercode session list               # List all sessions
  *   hypercode session start ./my-project  # Start new session
  *   hypercode session export sess_123     # Export session history
+=======
+ *   borg session list               # List all sessions
+ *   borg session start ./my-project  # Start new session
+ *   borg session export sess_123     # Export session history
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/cli/src/commands/session.ts
  */
 
 import type { Command } from 'commander';
@@ -188,7 +198,11 @@ async function withSessionErrorHandling(
       const location = resolveControlPlaneLocation();
       console.error(chalk.red(`  ✗ ${message}`));
       console.error(chalk.dim(`  Control plane: ${location.baseUrl} (${location.source})`));
+<<<<<<< HEAD:archive/ts-legacy/packages/cli/src/commands/session.ts
       console.error(chalk.dim('  Start HyperCode with `hypercode start` or point HYPERCODE_TRPC_UPSTREAM at a live /trpc endpoint.'));
+=======
+      console.error(chalk.dim('  Start borg with `borg start` or point BORG_TRPC_UPSTREAM at a live /trpc endpoint.'));
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/cli/src/commands/session.ts
     }
     process.exitCode = 1;
   }
@@ -265,7 +279,11 @@ export function registerSessionCommand(program: Command): void {
         if (normalized.length === 0) {
           const emptyMessage = opts.cloud
             ? '  No matching cloud sessions found.\n'
+<<<<<<< HEAD:archive/ts-legacy/packages/cli/src/commands/session.ts
             : '  No matching sessions found. Use `hypercode session start` or `hypercode session cloud` to create one.\n';
+=======
+            : '  No matching sessions found. Use `borg session start` or `borg session cloud` to create one.\n';
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/cli/src/commands/session.ts
           console.log(chalk.dim(emptyMessage));
           return;
         }
@@ -289,7 +307,11 @@ export function registerSessionCommand(program: Command): void {
 
   session
     .command('harnesses')
+<<<<<<< HEAD:archive/ts-legacy/packages/cli/src/commands/session.ts
     .description('List HyperCode-supported CLI harness identities and maturity')
+=======
+    .description('List borg-supported CLI harness identities and maturity')
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/cli/src/commands/session.ts
     .option('--json', 'Output harness metadata as JSON')
     .option('--verbose', 'Show extra integration and tool inventory details')
     .action(async (opts) => {
@@ -320,7 +342,11 @@ export function registerSessionCommand(program: Command): void {
       }
 
       console.log(chalk.bold.cyan('\n  CLI Harnesses\n'));
+<<<<<<< HEAD:archive/ts-legacy/packages/cli/src/commands/session.ts
       console.log(chalk.dim(`  Source-backed: ${parity.sourceBackedHarnessCount}/${parity.totalHarnesses} harnesses, ${parity.sourceBackedToolCount} enumerated HyperCode tool calls`));
+=======
+      console.log(chalk.dim(`  Source-backed: ${parity.sourceBackedHarnessCount}/${parity.totalHarnesses} harnesses, ${parity.sourceBackedToolCount} enumerated borg tool calls`));
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/cli/src/commands/session.ts
       console.log(chalk.dim(`  Metadata-only: ${parity.metadataOnlyHarnessCount}, operator-defined: ${parity.operatorDefinedHarnessCount}\n`));
       console.log(table.toString());
       if (opts.verbose) {
@@ -355,10 +381,17 @@ export function registerSessionCommand(program: Command): void {
     .option('--supervisor', 'Enable supervisor mode')
     .addHelpText('after', `
 Examples:
+<<<<<<< HEAD:archive/ts-legacy/packages/cli/src/commands/session.ts
   $ hypercode session start ./my-app
   $ hypercode session start ./my-app --harness hypercode
   $ hypercode session start ./my-app --harness claude --model claude-opus-4
   $ hypercode session start ./my-app --supervisor --auto-restart
+=======
+  $ borg session start ./my-app
+  $ borg session start ./my-app --harness borg
+  $ borg session start ./my-app --harness claude --model claude-opus-4
+  $ borg session start ./my-app --supervisor --auto-restart
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/cli/src/commands/session.ts
 
 Harnesses:
     ${formatCliHarnessHelpLines()}
@@ -418,7 +451,11 @@ Harnesses:
         console.log(chalk.dim(`    Model:    ${opts.model || extractSessionModel(started.metadata) || 'auto'}`));
         console.log(chalk.dim(`    Restart:  ${opts.autoRestart ? 'enabled' : 'disabled'}`));
         if (definition.primary) {
+<<<<<<< HEAD:archive/ts-legacy/packages/cli/src/commands/session.ts
           console.log(chalk.cyan('    Role:     primary HyperCode CLI harness lane'));
+=======
+          console.log(chalk.cyan('    Role:     primary borg CLI harness lane'));
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/cli/src/commands/session.ts
         }
         if (definition.submodulePath) {
           console.log(chalk.dim(`    Source:   ${definition.submodulePath}`));
@@ -430,7 +467,11 @@ Harnesses:
           console.log(chalk.dim(`    Features: ${definition.capabilities.join(', ')}`));
         }
         if (definition.toolCallCount) {
+<<<<<<< HEAD:archive/ts-legacy/packages/cli/src/commands/session.ts
           console.log(chalk.dim(`    Tools:    ${definition.toolCallCount} source-backed HyperCode tool calls`));
+=======
+          console.log(chalk.dim(`    Tools:    ${definition.toolCallCount} source-backed borg tool calls`));
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/cli/src/commands/session.ts
         }
         if (definition.toolInventorySource) {
           console.log(chalk.dim(`    Source:   ${definition.toolInventorySource}`));

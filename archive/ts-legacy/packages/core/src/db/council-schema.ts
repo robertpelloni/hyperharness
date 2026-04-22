@@ -1,6 +1,10 @@
 /**
  * @file council-schema.ts
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/db/council-schema.ts
  * @description SQLite schema definition for HyperCode Council (Auto-Orchestrator) integration.
+=======
+ * @description SQLite schema definition for borg Council (Auto-Orchestrator) integration.
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/db/council-schema.ts
  * @module packages/core/src/db/council-schema
  */
 

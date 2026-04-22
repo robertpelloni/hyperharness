@@ -1,7 +1,11 @@
 #!/usr/bin/env node
 
 /**
+<<<<<<< HEAD:archive/ts-legacy/scripts/verify_dev_readiness.mjs
  * Verifies local multi-service dev readiness for Hypercode workspace.
+=======
+ * Verifies local multi-service dev readiness for Borg workspace.
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:scripts/verify_dev_readiness.mjs
  *
  * Why this exists:
  * - Root `pnpm run dev` starts many long-running tasks across packages/submodules.
@@ -44,37 +48,62 @@ function normalizePort(value) {
 }
 
 function resolveBridgePort(env = process.env) {
+<<<<<<< HEAD:archive/ts-legacy/scripts/verify_dev_readiness.mjs
   return normalizePort(env.HYPERCODE_BRIDGE_PORT)
     ?? normalizePort(env.HYPERCODE_CORE_BRIDGE_PORT)
+=======
+  return normalizePort(env.BORG_BRIDGE_PORT)
+    ?? normalizePort(env.BORG_CORE_BRIDGE_PORT)
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:scripts/verify_dev_readiness.mjs
     ?? 3001;
 }
 
 function buildServiceChecks(coreBridgePorts) {
   return [
     {
+<<<<<<< HEAD:archive/ts-legacy/scripts/verify_dev_readiness.mjs
       id: "hypercode-web",
       description: "Hypercode Next.js dashboard",
+=======
+      id: "borg-web",
+      description: "Borg Next.js dashboard",
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:scripts/verify_dev_readiness.mjs
       ports: getPreferredWebPorts(REPO_ROOT, WEB_PORT_CANDIDATES),
       path: "/api/trpc/startupStatus?input=%7B%7D|/dashboard",
       critical: true,
     },
     {
+<<<<<<< HEAD:archive/ts-legacy/scripts/verify_dev_readiness.mjs
       id: "hypercode-core-bridge",
       description: "Hypercode Core extension bridge stream",
+=======
+      id: "borg-core-bridge",
+      description: "Borg Core extension bridge stream",
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:scripts/verify_dev_readiness.mjs
       ports: coreBridgePorts,
       path: "/api/mesh/stream|/health",
       critical: true,
     },
     {
+<<<<<<< HEAD:archive/ts-legacy/scripts/verify_dev_readiness.mjs
       id: "hypercode-mcp-status",
       description: "Hypercode MCP status query via web API",
+=======
+      id: "borg-mcp-status",
+      description: "Borg MCP status query via web API",
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:scripts/verify_dev_readiness.mjs
       ports: getPreferredWebPorts(REPO_ROOT, WEB_PORT_CANDIDATES),
       path: "/api/trpc/mcp.getStatus?input=%7B%7D",
       critical: true,
     },
     {
+<<<<<<< HEAD:archive/ts-legacy/scripts/verify_dev_readiness.mjs
       id: "hypercode-memory-status",
       description: "Hypercode memory status query via web API",
+=======
+      id: "borg-memory-status",
+      description: "Borg memory status query via web API",
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:scripts/verify_dev_readiness.mjs
       ports: getPreferredWebPorts(REPO_ROOT, WEB_PORT_CANDIDATES),
       path: "/api/trpc/memory.getAgentStats?input=%7B%7D",
       critical: true,
@@ -232,18 +261,30 @@ function formatLine(service, result) {
 }
 
 function getFailureHint(serviceId, result) {
+<<<<<<< HEAD:archive/ts-legacy/scripts/verify_dev_readiness.mjs
   if (serviceId === 'hypercode-core-bridge') {
     return 'Core API bridge is unreachable. Ensure the configured Hypercode bridge port is running and not blocked by another process.';
   }
 
   if (serviceId === 'hypercode-memory-status') {
+=======
+  if (serviceId === 'borg-core-bridge') {
+    return 'Core API bridge is unreachable. Ensure the configured Borg bridge port is running and not blocked by another process.';
+  }
+
+  if (serviceId === 'borg-memory-status') {
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:scripts/verify_dev_readiness.mjs
     if (result.statusCode === 502) {
       return 'Web is up but memory API upstream is unavailable (502). Start/restart core services and verify memory router initialization logs.';
     }
     return 'Memory status endpoint is unavailable. Verify web app can reach core backend and that memory procedures are registered.';
   }
 
+<<<<<<< HEAD:archive/ts-legacy/scripts/verify_dev_readiness.mjs
   if (serviceId === 'hypercode-mcp-status') {
+=======
+  if (serviceId === 'borg-mcp-status') {
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:scripts/verify_dev_readiness.mjs
     return 'MCP status endpoint failed. Verify tRPC routing and core MCP aggregator startup logs.';
   }
 
@@ -273,7 +314,11 @@ function checkExtensionArtifacts() {
 
 async function main() {
   if (!jsonMode) {
+<<<<<<< HEAD:archive/ts-legacy/scripts/verify_dev_readiness.mjs
     console.log(`\n[Hypercode Dev Readiness] timeout=${REQUEST_TIMEOUT_MS}ms mode=${softMode ? "soft" : "strict"}`);
+=======
+    console.log(`\n[Borg Dev Readiness] timeout=${REQUEST_TIMEOUT_MS}ms mode=${softMode ? "soft" : "strict"}`);
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:scripts/verify_dev_readiness.mjs
   }
 
   const serviceChecks = buildServiceChecks(await detectBridgePorts());
@@ -384,6 +429,10 @@ async function main() {
 }
 
 main().catch((error) => {
+<<<<<<< HEAD:archive/ts-legacy/scripts/verify_dev_readiness.mjs
   console.error("[Hypercode Dev Readiness] Unexpected error:", error);
+=======
+  console.error("[Borg Dev Readiness] Unexpected error:", error);
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:scripts/verify_dev_readiness.mjs
   process.exit(1);
 });

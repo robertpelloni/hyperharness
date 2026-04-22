@@ -1,5 +1,9 @@
 
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/services/HealerService.ts
 import { DEFAULT_OPENROUTER_FREE_MODEL, LLMService } from '@hypercode/ai';
+=======
+import { LLMService } from '@borg/ai';
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/services/HealerService.ts
 import type { MCPServer } from '../MCPServer.js';
 import path from 'path';
 import fs from 'fs';
@@ -124,7 +128,11 @@ export class HealerService extends EventEmitter {
         Output the COMPLETE, CORRECTED file content. Do not include markdown fences.
         `;
 
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/services/HealerService.ts
         const response = await this.llm.generateText('openrouter', DEFAULT_OPENROUTER_FREE_MODEL, 'You are a code fixer.', prompt);
+=======
+        const response = await this.llm.generateText('anthropic', 'claude-3-5-sonnet-latest', 'You are a code fixer.', prompt);
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/services/HealerService.ts
         const newContent = response.content.replace(/```typescript|```/g, '').trim();
 
         // 4. Write
@@ -159,7 +167,11 @@ export class HealerService extends EventEmitter {
         }
         `;
 
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/services/HealerService.ts
         const response = await this.llm.generateText("openrouter", DEFAULT_OPENROUTER_FREE_MODEL, "You are a JSON-only debugging tool.", prompt, {});
+=======
+        const response = await this.llm.generateText("openai", "gpt-4o", "You are a JSON-only debugging tool.", prompt, {});
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/services/HealerService.ts
 
         try {
             return JSON.parse(extractJsonObject(extractLlmText(response)));
@@ -206,7 +218,11 @@ export class HealerService extends EventEmitter {
         }
         `;
 
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/services/HealerService.ts
         const response = await this.llm.generateText("openrouter", DEFAULT_OPENROUTER_FREE_MODEL, "You are a code repair agent. Return only JSON with 'explanation' and 'newContent'.", prompt, {});
+=======
+        const response = await this.llm.generateText("openai", "gpt-4o", "You are a code repair agent. Return only JSON with 'explanation' and 'newContent'.", prompt, {});
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/services/HealerService.ts
 
         try {
             const result = JSON.parse(extractLlmText(response));

@@ -13,7 +13,11 @@ import {
     type ToolSearchScoreBreakdown,
 } from '../mcp/toolSearchRanking.js';
 import { toolSelectionTelemetry } from '../mcp/toolSelectionTelemetry.js';
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/routers/mcpRouter.ts
 import { getHyperCodeMcpJsoncPath, loadHyperCodeMcpConfig, stripJsonComments, writeHyperCodeMcpConfig } from '../mcp/mcpJsonConfig.js';
+=======
+import { getBorgMcpJsoncPath, loadBorgMcpConfig, stripJsonComments, writeBorgMcpConfig } from '../mcp/mcpJsonConfig.js';
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/routers/mcpRouter.ts
 import {
     applyToolPreferencePatch,
     buildToolPreferenceSettings,
@@ -241,7 +245,11 @@ const toolSearchProfileSchema = z.enum(['web-research', 'repo-coding', 'browser-
 
 async function readToolPreferences(): Promise<ToolPreferences> {
     try {
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/routers/mcpRouter.ts
         const config = await loadHyperCodeMcpConfig();
+=======
+        const config = await loadBorgMcpConfig();
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/routers/mcpRouter.ts
         const settings = config.settings as { toolSelection?: { importantTools?: unknown; alwaysLoadedTools?: unknown; autoLoadMinConfidence?: unknown; maxLoadedTools?: unknown; maxHydratedSchemas?: unknown; idleEvictionThresholdMs?: unknown } } | undefined;
         return readToolPreferencesFromSettings(settings?.toolSelection);
     } catch {
@@ -250,7 +258,11 @@ async function readToolPreferences(): Promise<ToolPreferences> {
 }
 
 async function writeToolPreferences(nextPreferences: ToolPreferences): Promise<ToolPreferences> {
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/routers/mcpRouter.ts
     const config = await loadHyperCodeMcpConfig();
+=======
+    const config = await loadBorgMcpConfig();
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/routers/mcpRouter.ts
     const existingSettings = config.settings && typeof config.settings === 'object'
         ? config.settings as Record<string, unknown>
         : {};
@@ -258,7 +270,11 @@ async function writeToolPreferences(nextPreferences: ToolPreferences): Promise<T
     const normalized = readToolPreferencesFromSettings(nextPreferences);
     const nextSettings = buildToolPreferenceSettings(existingSettings, normalized);
 
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/routers/mcpRouter.ts
     await writeHyperCodeMcpConfig({
+=======
+    await writeBorgMcpConfig({
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/routers/mcpRouter.ts
         ...config,
         settings: nextSettings,
     });
@@ -951,17 +967,28 @@ export const mcpRouter = t.router({
     }),
 
     getJsoncEditor: publicProcedure.query(async () => {
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/routers/mcpRouter.ts
         const jsoncPath = getHyperCodeMcpJsoncPath();
+=======
+        const jsoncPath = getBorgMcpJsoncPath();
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/routers/mcpRouter.ts
         try {
             const content = await fs.readFile(jsoncPath, 'utf-8');
             return { path: jsoncPath, content };
         } catch (error) {
             const errorCode = (error as NodeJS.ErrnoException).code;
             if (errorCode === 'ENOENT') {
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/routers/mcpRouter.ts
                 const fallbackConfig = await loadHyperCodeMcpConfig();
                 return {
                     path: jsoncPath,
                     content: `// HyperCode MCP configuration\n${JSON.stringify(fallbackConfig, null, 2)}\n`,
+=======
+                const fallbackConfig = await loadBorgMcpConfig();
+                return {
+                    path: jsoncPath,
+                    content: `// borg MCP configuration\n${JSON.stringify(fallbackConfig, null, 2)}\n`,
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/routers/mcpRouter.ts
                 };
             }
             throw error;
@@ -972,7 +999,11 @@ export const mcpRouter = t.router({
         content: z.string().min(2),
     })).mutation(async ({ input }) => {
         const parsed = JSON.parse(stripJsonComments(input.content)) as Record<string, unknown>;
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/routers/mcpRouter.ts
         await writeHyperCodeMcpConfig(parsed as never);
+=======
+        await writeBorgMcpConfig(parsed as never);
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/routers/mcpRouter.ts
         return { ok: true };
     }),
 
@@ -1016,9 +1047,15 @@ export const mcpRouter = t.router({
                 }
                 : {},
             target: input.targetKind === 'router'
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/routers/mcpRouter.ts
                 ? 'hypercode-router'
                 : input.serverName ?? 'unknown-server',
             via: input.targetKind === 'router' ? 'hypercode-router' : 'direct-downstream',
+=======
+                ? 'borg-router'
+                : input.serverName ?? 'unknown-server',
+            via: input.targetKind === 'router' ? 'borg-router' : 'direct-downstream',
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/routers/mcpRouter.ts
         };
 
         if (input.targetKind === 'server' && !input.serverName) {
@@ -1048,9 +1085,15 @@ export const mcpRouter = t.router({
                 success: false,
                 target: {
                     kind: input.targetKind,
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/routers/mcpRouter.ts
                     displayName: input.targetKind === 'router' ? 'HyperCode router' : input.serverName ?? 'Unknown downstream server',
                     serverName: input.serverName ?? null,
                     via: input.targetKind === 'router' ? 'hypercode-router' : 'direct-downstream',
+=======
+                    displayName: input.targetKind === 'router' ? 'borg router' : input.serverName ?? 'Unknown downstream server',
+                    serverName: input.serverName ?? null,
+                    via: input.targetKind === 'router' ? 'borg-router' : 'direct-downstream',
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/routers/mcpRouter.ts
                 },
                 operation: input.operation,
                 startedAt,
@@ -1075,7 +1118,11 @@ export const mcpRouter = t.router({
                 } | null;
 
                 if (!aggregator) {
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/routers/mcpRouter.ts
                     throw new Error('HyperCode MCP router is not initialized.');
+=======
+                    throw new Error('borg MCP router is not initialized.');
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/routers/mcpRouter.ts
                 }
 
                 if (input.operation === 'tools/list') {
@@ -1116,9 +1163,15 @@ export const mcpRouter = t.router({
                 success: true,
                 target: {
                     kind: input.targetKind,
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/routers/mcpRouter.ts
                     displayName: input.targetKind === 'router' ? 'HyperCode router' : input.serverName!,
                     serverName: input.serverName ?? null,
                     via: input.targetKind === 'router' ? 'hypercode-router' : 'direct-downstream',
+=======
+                    displayName: input.targetKind === 'router' ? 'borg router' : input.serverName!,
+                    serverName: input.serverName ?? null,
+                    via: input.targetKind === 'router' ? 'borg-router' : 'direct-downstream',
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/routers/mcpRouter.ts
                 },
                 operation: input.operation,
                 startedAt,
@@ -1144,9 +1197,15 @@ export const mcpRouter = t.router({
                 success: false,
                 target: {
                     kind: input.targetKind,
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/routers/mcpRouter.ts
                     displayName: input.targetKind === 'router' ? 'HyperCode router' : input.serverName ?? 'Unknown downstream server',
                     serverName: input.serverName ?? null,
                     via: input.targetKind === 'router' ? 'hypercode-router' : 'direct-downstream',
+=======
+                    displayName: input.targetKind === 'router' ? 'borg router' : input.serverName ?? 'Unknown downstream server',
+                    serverName: input.serverName ?? null,
+                    via: input.targetKind === 'router' ? 'borg-router' : 'direct-downstream',
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/routers/mcpRouter.ts
                 },
                 operation: input.operation,
                 startedAt,

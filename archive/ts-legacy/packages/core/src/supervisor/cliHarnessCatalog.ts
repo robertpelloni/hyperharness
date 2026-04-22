@@ -14,6 +14,7 @@ export interface CliHarnessCatalogEntry {
 
 export const CLI_HARNESS_CATALOG: CliHarnessCatalogEntry[] = [
     {
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/supervisor/cliHarnessCatalog.ts
         id: 'hypercode',
         name: 'HyperCode',
         command: 'hypercode',
@@ -21,6 +22,15 @@ export const CLI_HARNESS_CATALOG: CliHarnessCatalogEntry[] = [
         homepage: 'https://github.com/robertpelloni/hypercode',
         docsUrl: 'https://github.com/robertpelloni/hypercode',
         installHint: 'Use HyperCode\'s tracked `submodules/hyperharness` checkout or install HyperCode and ensure `hypercode` is on PATH.',
+=======
+        id: 'borg',
+        name: 'borg',
+        command: 'borg',
+        args: [],
+        homepage: 'https://github.com/robertpelloni/borg',
+        docsUrl: 'https://github.com/robertpelloni/borg',
+        installHint: 'Use borg\'s tracked `submodules/borg` checkout or install borg and ensure `borg` is on PATH.',
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/supervisor/cliHarnessCatalog.ts
         category: 'cli',
         sessionCapable: true,
         versionArgs: ['version'],
@@ -44,7 +54,11 @@ export const CLI_HARNESS_CATALOG: CliHarnessCatalogEntry[] = [
         args: [],
         homepage: 'https://antigravity.google/',
         docsUrl: 'https://antigravity.google/docs/home',
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/supervisor/cliHarnessCatalog.ts
         installHint: 'Download the Antigravity desktop app from https://antigravity.google/download and launch it directly; HyperCode does not currently detect it as a PATH CLI.',
+=======
+        installHint: 'Download the Antigravity desktop app from https://antigravity.google/download and launch it directly; borg does not currently detect it as a PATH CLI.',
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/supervisor/cliHarnessCatalog.ts
         category: 'editor',
         sessionCapable: false,
         versionArgs: [],

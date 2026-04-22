@@ -160,7 +160,11 @@ export function ToolInventory() {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
+<<<<<<< HEAD:archive/ts-legacy/packages/ui/src/components/enterprise/ToolInventory.tsx
             <p className="text-xs text-slate-400">Current HyperCode service path includes 14 validated tool directories.</p>
+=======
+            <p className="text-xs text-slate-400">Current borg service path includes 14 validated tool directories.</p>
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/ui/src/components/enterprise/ToolInventory.tsx
             <div className="p-3 rounded bg-slate-950 border border-slate-800 font-mono text-[9px] text-slate-500 break-all overflow-hidden h-20">
               System Path: /usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin...
             </div>

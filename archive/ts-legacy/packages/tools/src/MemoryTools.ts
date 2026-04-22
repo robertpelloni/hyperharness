@@ -3,7 +3,11 @@ import fs from "fs/promises";
 import path from "path";
 import os from "os";
 
+<<<<<<< HEAD:archive/ts-legacy/packages/tools/src/MemoryTools.ts
 const MEMORY_DIR = path.join(os.homedir(), '.hypercode', 'memory');
+=======
+const MEMORY_DIR = path.join(os.homedir(), '.borg', 'memory');
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/tools/src/MemoryTools.ts
 
 async function ensureMemoryDir() {
     await fs.mkdir(MEMORY_DIR, { recursive: true });

@@ -1,7 +1,11 @@
 "use client";
 
 import Link from 'next/link';
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/library/page.tsx
 import { Card, CardContent } from "@hypercode/ui";
+=======
+import { Card, CardContent } from "@borg/ui";
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/library/page.tsx
 import { Library, FileCode, Hammer, Brain, BookOpenText, Lightbulb, Layers, ScrollText, ExternalLink, Loader2 } from "lucide-react";
 import { trpc } from '@/utils/trpc';
 
@@ -56,7 +60,11 @@ export default function LibraryDashboard() {
     const sections: ResourceSection[] = [
         {
             title: "Saved Scripts",
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/library/page.tsx
             description: "Reusable automation scripts for common HyperCode operations and workflows.",
+=======
+            description: "Reusable automation scripts for common borg operations and workflows.",
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/library/page.tsx
             href: "/dashboard/mcp/scripts",
             icon: FileCode,
             accentClass: "text-blue-400",
@@ -65,7 +73,11 @@ export default function LibraryDashboard() {
         },
         {
             title: "Skills",
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/library/page.tsx
             description: "Curated skill bundles that extend HyperCode's reasoning and action capabilities.",
+=======
+            description: "Curated skill bundles that extend borg's reasoning and action capabilities.",
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/library/page.tsx
             href: "/dashboard/skills",
             icon: Hammer,
             accentClass: "text-orange-400",
@@ -90,28 +102,44 @@ export default function LibraryDashboard() {
         },
         {
             title: "Memory Bank",
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/library/page.tsx
             description: "Searchable observations, prompts, and session summaries persisted by HyperCode.",
+=======
+            description: "Searchable observations, prompts, and session summaries persisted by borg.",
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/library/page.tsx
             href: "/dashboard/memory",
             icon: Brain,
             accentClass: "text-purple-400",
         },
         {
             title: "Plans",
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/library/page.tsx
             description: "Structured reasoning plans and goal decompositions generated or stored by HyperCode.",
+=======
+            description: "Structured reasoning plans and goal decompositions generated or stored by borg.",
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/library/page.tsx
             href: "/dashboard/plans",
             icon: Lightbulb,
             accentClass: "text-yellow-400",
         },
         {
             title: "Manual",
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/library/page.tsx
             description: "Operator documentation, usage guides, and feature reference for HyperCode.",
+=======
+            description: "Operator documentation, usage guides, and feature reference for borg.",
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/library/page.tsx
             href: "/dashboard/manual",
             icon: BookOpenText,
             accentClass: "text-emerald-400",
         },
         {
             title: "Chronicle",
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/library/page.tsx
             description: "Git commit history and working-tree status for the active HyperCode workspace.",
+=======
+            description: "Git commit history and working-tree status for the active borg workspace.",
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/library/page.tsx
             href: "/dashboard/chronicle",
             icon: ScrollText,
             accentClass: "text-violet-400",
@@ -125,7 +153,11 @@ export default function LibraryDashboard() {
         },
     ];
 
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/library/page.tsx
     const isLoading = scriptsQuery.isLoading || skillsQuery.isLoading || promptsQuery.isLoading;
+=======
+    const isLoading = scriptsQuery.isLoading || skillsQuery.isLoading;
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/library/page.tsx
 
     return (
         <div className="p-8 space-y-8">
@@ -136,7 +168,11 @@ export default function LibraryDashboard() {
                         Resource Library
                     </h1>
                     <p className="text-zinc-500 mt-2 max-w-2xl">
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/library/page.tsx
                         Central hub for scripts, prompts, skills, tool sets, memory, plans, and documentation — all the reusable resources that power HyperCode workflows.
+=======
+                        Central hub for scripts, skills, tool sets, memory, plans, and documentation — all the reusable resources that power borg workflows.
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/library/page.tsx
                     </p>
                 </div>
                 {isLoading && (

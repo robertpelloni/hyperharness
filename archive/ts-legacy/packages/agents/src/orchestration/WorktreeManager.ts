@@ -11,7 +11,11 @@ export class WorktreeManager {
 
     constructor(rootDir: string = process.cwd()) {
         this.rootDir = rootDir;
+<<<<<<< HEAD:archive/ts-legacy/packages/agents/src/orchestration/WorktreeManager.ts
         this.worktreeRoot = path.join(rootDir, '.hypercode', 'worktrees');
+=======
+        this.worktreeRoot = path.join(rootDir, '.borg', 'worktrees');
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/agents/src/orchestration/WorktreeManager.ts
     }
 
     /**
@@ -24,7 +28,11 @@ export class WorktreeManager {
         const branchName = `task/${taskId}`;
         const worktreePath = path.join(this.worktreeRoot, taskId);
 
+<<<<<<< HEAD:archive/ts-legacy/packages/agents/src/orchestration/WorktreeManager.ts
         // Ensure .hypercode/worktrees exists (mkdir handled by git usually, but parent needed)
+=======
+        // Ensure .borg/worktrees exists (mkdir handled by git usually, but parent needed)
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/agents/src/orchestration/WorktreeManager.ts
         await fs.mkdir(this.worktreeRoot, { recursive: true });
 
         // Check if branch exists, if so, just use it? Or error?
@@ -71,7 +79,11 @@ export class WorktreeManager {
         const branchName = `task/${taskId}`;
         try {
             console.log(`[WorktreeManager] Merging ${branchName} into ${targetBranch}`);
+<<<<<<< HEAD:archive/ts-legacy/packages/agents/src/orchestration/WorktreeManager.ts
             await execAsync(`git checkout ${targetBranch} && git merge ${branchName} --squash --author="HyperCode <hypercode@system>" -m "task: ${taskId}"`, { cwd: this.rootDir });
+=======
+            await execAsync(`git checkout ${targetBranch} && git merge ${branchName} --squash --author="borg <borg@system>" -m "task: ${taskId}"`, { cwd: this.rootDir });
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/agents/src/orchestration/WorktreeManager.ts
             // Don't push yet, let Director decide.
         } catch (e: any) {
             throw new Error(`Merge failed: ${e.message}`);

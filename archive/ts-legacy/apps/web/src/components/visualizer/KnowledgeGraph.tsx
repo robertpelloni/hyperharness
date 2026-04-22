@@ -4,7 +4,11 @@
 import dynamic from 'next/dynamic';
 import React, { useRef } from 'react';
 import { trpc } from '@/utils/trpc'; // Assuming standard TRPC hook location or adjust
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/components/visualizer/KnowledgeGraph.tsx
 import { Card, CardHeader, CardTitle, CardContent } from '@hypercode/ui';
+=======
+import { Card, CardHeader, CardTitle, CardContent } from '@borg/ui';
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/components/visualizer/KnowledgeGraph.tsx
 
 // ForceGraph must be dynamically imported as it uses window
 const ForceGraph2D = dynamic(() => import('react-force-graph-2d'), { ssr: false });

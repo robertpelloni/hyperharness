@@ -40,11 +40,19 @@ export default function ArchitecturePage() {
   
 /packages
   /core             # Core Agentic Framework (MCPServer, Director, Memory)
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/architecture/page.tsx
   /cli              # CLI functionality (hypercode start, hypercode doctor)
   /vscode           # VS Code Extension (Editor Interface)
   
 /dockers
   /hypercode-server      # Containerized Deployment
+=======
+  /cli              # CLI functionality (borg start, borg doctor)
+  /vscode           # VS Code Extension (Editor Interface)
+  
+/dockers
+  /borg-server      # Containerized Deployment
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/architecture/page.tsx
   
 /docs               # Documentation & Research
 `}

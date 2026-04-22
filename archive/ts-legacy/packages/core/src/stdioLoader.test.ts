@@ -1,7 +1,11 @@
 import { describe, expect, it, vi } from 'vitest';
 
 import {
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/stdioLoader.test.ts
     HYPERCODE_CORE_LOADER_STATUS_TOOL,
+=======
+    BORG_CORE_LOADER_STATUS_TOOL,
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/stdioLoader.test.ts
     buildCachedLoaderCatalog,
     callLoaderTool,
     createEmptyLoaderRuntimeState,
@@ -47,7 +51,11 @@ describe('buildCachedLoaderCatalog', () => {
         expect(catalog.enabledServerCount).toBe(1);
         expect(catalog.cachedToolCount).toBe(1);
         expect(catalog.tools.map((tool) => tool.name)).toEqual([
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/stdioLoader.test.ts
             HYPERCODE_CORE_LOADER_STATUS_TOOL,
+=======
+            BORG_CORE_LOADER_STATUS_TOOL,
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/stdioLoader.test.ts
             'alpha__search_docs',
         ]);
     });
@@ -58,7 +66,11 @@ describe('callLoaderTool', () => {
         const runtimeState = createEmptyLoaderRuntimeState();
         const proxyToolCall = vi.fn();
 
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/stdioLoader.test.ts
         const result = await callLoaderTool(HYPERCODE_CORE_LOADER_STATUS_TOOL, {}, runtimeState, {
+=======
+        const result = await callLoaderTool(BORG_CORE_LOADER_STATUS_TOOL, {}, runtimeState, {
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/stdioLoader.test.ts
             isCoreBridgeHealthy: vi.fn().mockResolvedValue(false) as any,
             proxyToolCall,
         });
@@ -67,7 +79,11 @@ describe('callLoaderTool', () => {
         expect(result.isError).toBeFalsy();
         expect(result.content[0]).toMatchObject({
             type: 'text',
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/stdioLoader.test.ts
             text: expect.stringContaining('hypercode-core-stdio-loader'),
+=======
+            text: expect.stringContaining('borg-core-stdio-loader'),
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/stdioLoader.test.ts
         });
     });
 
@@ -79,7 +95,11 @@ describe('callLoaderTool', () => {
             ensureBackgroundCoreRunning: vi.fn().mockResolvedValue({
                 status: 'spawned',
                 pid: 4242,
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/stdioLoader.test.ts
                 cliEntryPath: 'C:/hypercode/packages/cli/dist/index.js',
+=======
+                cliEntryPath: 'C:/borg/packages/cli/dist/index.js',
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/stdioLoader.test.ts
             }) as any,
             waitForCoreBridge: vi.fn().mockResolvedValue(false) as any,
             proxyToolCall: vi.fn(),

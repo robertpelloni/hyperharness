@@ -9,7 +9,11 @@ describe('Phase 26: Infinite Context V3', () => {
         // Generate a synthetic conversation
         // System Prompt + 50 User/Assistant turns
         const messages: any[] = [
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/tests/Phase26_Memory.test.ts
             { role: 'system', content: 'You are HyperCode.' }
+=======
+            { role: 'system', content: 'You are borg.' }
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/tests/Phase26_Memory.test.ts
         ];
 
         for (let i = 0; i < 50; i++) {
@@ -39,7 +43,11 @@ describe('Phase 26: Infinite Context V3', () => {
 
         // Assertions
         expect(finalSize).toBeLessThanOrEqual(Math.max(200, minimumAchievableSize));
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/tests/Phase26_Memory.test.ts
         expect(pruned[0].content).toBe('You are HyperCode.'); // System prompt kept
+=======
+        expect(pruned[0].content).toBe('You are borg.'); // System prompt kept
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/tests/Phase26_Memory.test.ts
         expect(pruned[pruned.length - 1].content).toContain('Answer 49'); // Last message kept
         expect(pruned.length).toBeLessThan(messages.length);
         expect(pruned.length).toBeGreaterThan(5); // At least 1 + 4

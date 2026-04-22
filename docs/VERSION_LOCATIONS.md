@@ -1,6 +1,9 @@
 # HyperCode Version Number Locations
 
 This document tracks all locations where the HyperCode version number is hardcoded or referenced. When performing a major version bump (like the `0.90.0` milestone), ensure all these locations are synchronized.
+# borg Version Number Locations
+
+This document tracks all locations where the borg version number is hardcoded or referenced. When performing a major version bump (like the `0.90.0` milestone), ensure all these locations are synchronized.
 
 ## 1. Primary Version Sources
 - `VERSION`: (Current: `0.99.3`) - Authoritative plain-text version.
@@ -12,12 +15,14 @@ This document tracks all locations where the HyperCode version number is hardcod
 All these currently reference `0.99.3`:
 - `package.json` (Root)
 - `apps/hypercode-extension/package.json`
+- `apps/borg-extension/package.json`
 - `apps/vscode/package.json`
 - `apps/web/package.json`
 - `packages/adk/package.json`
 - `packages/agents/package.json`
 - `packages/ai/package.json`
 - `packages/hypercode-supervisor/package.json`
+- `packages/borg-supervisor/package.json`
 - `packages/browser/package.json`
 - `packages/browser-extension/package.json`
 - `packages/cli/package.json`
@@ -37,6 +42,8 @@ All these currently reference `0.99.3`:
 ## 3. Web UI Fallbacks & Branding
 - `apps/web/src/components/Navigation.tsx`: Fallback for `NEXT_PUBLIC_HYPERCODE_VERSION`.
 - `apps/web/src/components/mcp/nav-config.ts`: Hardcoded branding string "HyperCode 0.99.3 Core".
+- `apps/web/src/components/Navigation.tsx`: Fallback for `NEXT_PUBLIC_BORG_VERSION`.
+- `apps/web/src/components/mcp/nav-config.ts`: Hardcoded branding string "borg 0.99.3 Core".
 
 ## 4. CLI & Core Runtime Fallbacks
 - `packages/cli/src/version.ts`: Returns hardcoded version string.
@@ -49,6 +56,7 @@ All these currently reference `0.99.3`:
 
 ## 5. Other Components (Fixed Versions)
 These versions are typically independent of the main HyperCode version:
+These versions are typically independent of the main borg version:
 - `packages/claude-mem/package.json`: (Currently `10.5.7`)
 - `archive/OmniRoute/package.json`: (Currently `2.3.1`)
 - Various submodules in `submodules/` or `archive/submodules/`.

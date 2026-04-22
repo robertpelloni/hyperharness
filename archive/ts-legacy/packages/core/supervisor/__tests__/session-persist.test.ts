@@ -9,7 +9,11 @@ import { createFakeDetectEnvironment, createSpawnStub, FakeProcess } from './tes
 const tempDirs: string[] = [];
 
 function createTempDir() {
+<<<<<<< HEAD:archive/ts-legacy/packages/core/supervisor/__tests__/session-persist.test.ts
     const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'hypercode-session-persist-'));
+=======
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'borg-session-persist-'));
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/supervisor/__tests__/session-persist.test.ts
     tempDirs.push(dir);
     return dir;
 }
@@ -23,7 +27,11 @@ afterEach(() => {
 describe('session supervisor persistence', () => {
     it('restores persisted sessions after a restart and normalizes running state', async () => {
         const rootDir = createTempDir();
+<<<<<<< HEAD:archive/ts-legacy/packages/core/supervisor/__tests__/session-persist.test.ts
         const persistencePath = path.join(rootDir, '.hypercode', 'session-supervisor.json');
+=======
+        const persistencePath = path.join(rootDir, '.borg', 'session-supervisor.json');
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/supervisor/__tests__/session-persist.test.ts
         const child = new FakeProcess(9001);
         const { spawn } = createSpawnStub([child]);
 

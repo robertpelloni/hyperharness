@@ -1,5 +1,10 @@
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/services/PreemptiveToolAdvertiser.ts
 import { DEFAULT_OPENROUTER_FREE_MODEL, LLMService } from '@hypercode/ai';
 import { SearchService, type SearchResult } from '@hypercode/search';
+=======
+import { LLMService } from '@borg/ai';
+import { SearchService, type SearchResult } from '@borg/search';
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/services/PreemptiveToolAdvertiser.ts
 
 export class PreemptiveToolAdvertiser {
     private llmService: LLMService;
@@ -23,8 +28,13 @@ export class PreemptiveToolAdvertiser {
         
         // 1. Analyze topic
         const topicResponse = await this.llmService.generateText(
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/services/PreemptiveToolAdvertiser.ts
             'openrouter', 
             DEFAULT_OPENROUTER_FREE_MODEL,
+=======
+            'openai', 
+            'gpt-4o-mini',
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/services/PreemptiveToolAdvertiser.ts
             'You are a tool orchestration assistant. Determine the core actionable technical topic or task from the user\'s recent messages. Output ONLY the topic keywords.',
             `Recent messages:\n${recentContext}`
         );

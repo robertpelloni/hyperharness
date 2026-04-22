@@ -29,7 +29,11 @@ export class GraphMemory {
     private initialized: boolean = false;
 
     constructor(storageRoot: string = process.cwd()) {
+<<<<<<< HEAD:archive/ts-legacy/packages/memory/src/GraphMemory.ts
         this.persistPath = path.join(storageRoot, '.hypercode', 'memory', 'knowledge_graph.json');
+=======
+        this.persistPath = path.join(storageRoot, '.borg', 'memory', 'knowledge_graph.json');
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/memory/src/GraphMemory.ts
     }
 
     public async initialize() {

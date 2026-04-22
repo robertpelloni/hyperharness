@@ -43,7 +43,11 @@ var stdio_js_1 = require("@modelcontextprotocol/sdk/client/stdio.js");
  * Router (MCP Aggregator)
  *
  * The central hub that manages connections to multiple MCP servers and provides
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/Router.js
  * a unified tool interface. This is HyperCode's "Meta-MCP" layer.
+=======
+ * a unified tool interface. This is borg's "Meta-MCP" layer.
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/Router.js
  *
  * Architecture:
  * - Maintains a Map of named MCP `Client` connections (e.g., "filesystem", "browser", "search").
@@ -87,7 +91,11 @@ var Router = /** @class */ (function () {
                             args: args,
                         });
                         client = new index_js_1.Client({
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/Router.js
                             name: "hypercode-router",
+=======
+                            name: "borg-router",
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/Router.js
                             version: "0.1.0",
                         }, {
                             capabilities: {},

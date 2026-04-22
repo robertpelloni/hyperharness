@@ -18,7 +18,11 @@ import {
 import type { ToolContextPayload } from '../services/toolContextMemory.js';
 
 import { executeSemanticAutoCall } from './compatibilityToolRuntime.js';
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/mcp/NativeSessionMetaTools.ts
 import { LLMService } from '@hypercode/ai';
+=======
+import { LLMService } from '@borg/ai';
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/mcp/NativeSessionMetaTools.ts
 
 type SearchableTool = Tool & {
     server?: string;
@@ -145,7 +149,11 @@ export class NativeSessionMetaTools {
 
         if (name === 'search_published_catalog') {
             if (!this.searchPublishedCatalogCb) {
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/mcp/NativeSessionMetaTools.ts
                 return createTextResult('Catalog search is not available in this HyperCode session.', true);
+=======
+                return createTextResult('Catalog search is not available in this borg session.', true);
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/mcp/NativeSessionMetaTools.ts
             }
             const query = typeof args.query === 'string' ? args.query : '';
             if (!query) return createTextResult('Query is required.', true);
@@ -161,7 +169,11 @@ export class NativeSessionMetaTools {
 
         if (name === 'install_published_server') {
             if (!this.installPublishedServerCb) {
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/mcp/NativeSessionMetaTools.ts
                 return createTextResult('Server installation is not available in this HyperCode session.', true);
+=======
+                return createTextResult('Server installation is not available in this borg session.', true);
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/mcp/NativeSessionMetaTools.ts
             }
             const identifier = typeof args.identifier === 'string' ? args.identifier : '';
             if (!identifier) return createTextResult('Identifier is required.', true);
@@ -199,7 +211,11 @@ export class NativeSessionMetaTools {
             }
 
             if (!this.toolContextResolver) {
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/mcp/NativeSessionMetaTools.ts
                 return createTextResult('Tool context resolver is not available in this HyperCode session.', true);
+=======
+                return createTextResult('Tool context resolver is not available in this borg session.', true);
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/mcp/NativeSessionMetaTools.ts
             }
 
             const payload = this.toolContextResolver({
@@ -260,7 +276,11 @@ export class NativeSessionMetaTools {
 
         if (name === 'auto_call_tool') {
             if (!this.llmService || !this.delegatedToolCaller) {
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/mcp/NativeSessionMetaTools.ts
                 return createTextResult('Auto-execution is not available in this HyperCode session.', true);
+=======
+                return createTextResult('Auto-execution is not available in this borg session.', true);
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/mcp/NativeSessionMetaTools.ts
             }
 
             return await executeSemanticAutoCall(

@@ -2,7 +2,11 @@ import { z } from 'zod';
 import { McpmRegistry, RegistryItem } from '../skills/McpmRegistry.js';
 import { McpmInstaller } from '../skills/McpmInstaller.js';
 import { MeshService, SwarmMessageType } from '../mesh/MeshService.js';
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/services/MarketplaceService.ts
 import { Registry } from '@hypercode/mcp-registry';
+=======
+import { Registry } from '@borg/mcp-registry';
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/services/MarketplaceService.ts
 import path from 'path';
 
 export const MarketplaceEntrySchema = z.object({
@@ -51,7 +55,11 @@ export class MarketplaceService {
             id: item.name,
             name: item.name,
             description: "Official Skill",
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/services/MarketplaceService.ts
             author: "HyperCode Ecosystem",
+=======
+            author: "borg Ecosystem",
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/services/MarketplaceService.ts
             type: 'skill', // Legacy are mostly skills
             source: 'official',
             url: item.url,
@@ -143,7 +151,11 @@ export class MarketplaceService {
         try {
             const os = await import('os');
             // Check the unified config path
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/services/MarketplaceService.ts
             const mcpJsonPath = path.join(os.homedir(), '.hypercode', 'mcp.json');
+=======
+            const mcpJsonPath = path.join(os.homedir(), '.borg', 'mcp.json');
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/services/MarketplaceService.ts
             const mcpJsonRaw = await fs.readFile(mcpJsonPath, 'utf-8');
             const mcpConfig = JSON.parse(mcpJsonRaw);
 

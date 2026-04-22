@@ -26,14 +26,23 @@ export function buildServerProbeTargets(servers: ProbeServerSummary[]): ServerPr
         {
             id: 'router',
             kind: 'router',
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/mcp/testing/server-probe-utils.ts
             label: 'HyperCode router',
             description: 'Simulate a client hitting HyperCode’s aggregated MCP surface.',
+=======
+            label: 'borg router',
+            description: 'Simulate a client hitting borg’s aggregated MCP surface.',
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/mcp/testing/server-probe-utils.ts
         },
         ...sortedServers.map((server) => ({
             id: `server:${server.name}`,
             kind: 'server' as const,
             label: server.name,
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/mcp/testing/server-probe-utils.ts
             description: 'Probe the downstream server directly without going through the HyperCode router.',
+=======
+            description: 'Probe the downstream server directly without going through the borg router.',
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/mcp/testing/server-probe-utils.ts
             serverName: server.name,
             toolCount: server.toolCount ?? 0,
             status: server.status ?? 'unknown',

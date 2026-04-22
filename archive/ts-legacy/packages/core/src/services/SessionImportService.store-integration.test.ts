@@ -72,7 +72,11 @@ function createSchema(database: Database.Database): void {
 }
 
 async function createTempRoot(): Promise<string> {
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/services/SessionImportService.store-integration.test.ts
     const root = await fs.mkdtemp(path.join(os.tmpdir(), 'hypercode-session-import-store-'));
+=======
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), 'borg-session-import-store-'));
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/services/SessionImportService.store-integration.test.ts
     tempRoots.push(root);
     return root;
 }
@@ -114,7 +118,11 @@ describe('SessionImportService with ImportedSessionStore', () => {
 
         const addLongTerm = vi.fn(async () => ({}));
         const captureSessionSummary = vi.fn(async () => ({}));
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/services/SessionImportService.store-integration.test.ts
         const archiveRoot = path.join(root, '.hypercode', 'imported_sessions', 'archive');
+=======
+        const archiveRoot = path.join(root, '.borg', 'imported_sessions', 'archive');
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/services/SessionImportService.store-integration.test.ts
 
         const { ImportedSessionStore } = await import('./ImportedSessionStore.js') as ImportedSessionStoreModule;
         const { SessionImportService } = await import('./SessionImportService.js') as SessionImportServiceModule;

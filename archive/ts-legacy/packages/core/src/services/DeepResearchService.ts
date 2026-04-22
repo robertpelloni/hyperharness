@@ -1,6 +1,11 @@
 
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/services/DeepResearchService.ts
 import { LLMService } from '@hypercode/ai';
 import { SearchService } from '@hypercode/search';
+=======
+import { LLMService } from '@borg/ai';
+import { SearchService } from '@borg/search';
+>>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/services/DeepResearchService.ts
 import { MemoryManager } from './MemoryManager.js';
 import type { MCPServer } from '../MCPServer.js';
 
