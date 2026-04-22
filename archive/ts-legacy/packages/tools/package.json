@@ -34,7 +34,13 @@
         "@types/jsdom": "^27.0.0",
         "@types/node": "^20.10.0",
         "@types/turndown": "^5.0.6",
+<<<<<<< HEAD:archive/ts-legacy/packages/tools/package.json
         "eslint": "^8.56.0",
         "typescript": "^5.9.3"
+=======
+        "@types/jsdom": "^27.0.0",
+        "eslint": "^9.26.0",
+        "typescript": "^5.3.3"
+>>>>>>> origin/dependabot/npm_and_yarn/eslint-9.26.0:packages/tools/package.json
     }
 }
