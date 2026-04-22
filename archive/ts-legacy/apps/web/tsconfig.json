@@ -36,11 +36,14 @@
     "**/*.tsx",
     ".next/types/**/*.ts",
     ".next/dev/types/**/*.ts",
+<<<<<<< HEAD:archive/ts-legacy/apps/web/tsconfig.json
     ".next-dev-3100/dev/dev/types/**/*.ts",
     ".next-dev-3102/dev/dev/types/**/*.ts",
     ".next-dev-3103/dev/dev/types/**/*.ts",
     ".next/dev/dev/types/**/*.ts",
     ".next-dev-3105/dev/dev/types/**/*.ts",
+=======
+>>>>>>> origin/rewrite/main-sanitized:apps/web/tsconfig.json
     ".next-dev-3000/types/**/*.ts",
     ".next-dev-3000/dev/types/**/*.ts"
   ],

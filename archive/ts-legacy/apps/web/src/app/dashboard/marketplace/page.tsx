@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { normalizeMarketplaceEntries } from './marketplace-page-normalizers';
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/marketplace/page.tsx
 
 function isMarketplaceEntryPayload(value: unknown): value is Array<{
     id: string;
@@ -57,6 +58,13 @@ export default function MarketplacePage() {
     const { data: entries, isLoading, error } = trpc.marketplace.list.useQuery({ filter });
     const entriesUnavailable = Boolean(error) || (entries !== undefined && !isMarketplaceEntryPayload(entries));
     const normalizedEntries = normalizeMarketplaceEntries(entriesUnavailable ? undefined : entries);
+=======
+
+export default function MarketplacePage() {
+    const [filter, setFilter] = useState("");
+    const { data: entries, isLoading, refetch } = trpc.marketplace.list.useQuery({ filter });
+    const normalizedEntries = normalizeMarketplaceEntries(entries);
+>>>>>>> origin/rewrite/main-sanitized:apps/web/src/app/dashboard/marketplace/page.tsx
     const utils = trpc.useContext();
 
     const installMutation = trpc.marketplace.install.useMutation({

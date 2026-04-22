@@ -66,10 +66,14 @@ export default function MCPTestingPage() {
                 <TestingCard
                     title="Server Probes"
 <<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/mcp/testing/page.tsx
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/mcp/testing/page.tsx
                     description="Interactive client-style probes for every downstream server and for the HyperCode router itself, with request/response transcripts."
 =======
                     description="Interactive client-style probes for every downstream server and for the borg router itself, with request/response transcripts."
 >>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/mcp/testing/page.tsx
+=======
+                    description="Interactive client-style probes for every downstream server and for the Borg router itself, with request/response transcripts."
+>>>>>>> origin/rewrite/main-sanitized:apps/web/src/app/dashboard/mcp/testing/page.tsx
                     href="/dashboard/mcp/testing/servers"
                     icon={Wrench}
                     accentClass="text-cyan-400"

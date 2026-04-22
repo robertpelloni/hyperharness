@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { PageHeader } from '@/components/PageHeader';
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/swarm/page.tsx
 import { PageStatusBanner } from '@/components/PageStatusBanner';
 <<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/swarm/page.tsx
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, Button, Input, Textarea } from '@hypercode/ui';
@@ -9,6 +10,10 @@ import { SwarmTranscript } from '@/components/swarm/SwarmTranscript';
 =======
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, Button, Input, Textarea } from '@borg/ui';
 >>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/swarm/page.tsx
+=======
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, Button, Input } from '@borg/ui';
+import { Textarea } from '@/components/ui/textarea';
+>>>>>>> origin/rewrite/main-sanitized:apps/web/src/app/dashboard/swarm/page.tsx
 import { trpc } from '@/utils/trpc';
 import {
     Users as UsersIcon,

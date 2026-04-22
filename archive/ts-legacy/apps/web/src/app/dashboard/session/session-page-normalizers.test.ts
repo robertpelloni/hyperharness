@@ -102,6 +102,7 @@ describe('session page normalizers', () => {
       restartCount: 0,
       maxRestartAttempts: 0,
       autoRestart: true,
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/session/session-page-normalizers.test.ts
       isolateWorktree: false,
       lastExitCode: undefined,
       lastExitSignal: undefined,
@@ -160,5 +161,9 @@ describe('session page normalizers', () => {
       lastExitCode: undefined,
       lastExitSignal: undefined,
     });
+=======
+      logs: [],
+    });
+>>>>>>> origin/rewrite/main-sanitized:apps/web/src/app/dashboard/session/session-page-normalizers.test.ts
   });
 });

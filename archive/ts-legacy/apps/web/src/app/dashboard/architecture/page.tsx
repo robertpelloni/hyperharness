@@ -3,6 +3,7 @@
 import React from 'react';
 import { trpc } from '@/utils/trpc';
 import { normalizeArchitectureSubmodules, normalizeDependencyGraph } from './architecture-page-normalizers';
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/architecture/page.tsx
 
 function isArchitectureSubmodule(value: unknown): value is { name: string; path: string; url?: string } {
     return typeof value === 'object'
@@ -23,6 +24,12 @@ export default function ArchitecturePage() {
         () => normalizeArchitectureSubmodules(submodulesUnavailable ? undefined : submodules),
         [submodules, submodulesUnavailable],
     );
+=======
+
+export default function ArchitecturePage() {
+    const { data: submodules, isLoading } = trpc.git.getModules.useQuery();
+    const normalizedSubmodules = React.useMemo(() => normalizeArchitectureSubmodules(submodules), [submodules]);
+>>>>>>> origin/rewrite/main-sanitized:apps/web/src/app/dashboard/architecture/page.tsx
 
     return (
         <div className="p-6">
@@ -75,12 +82,15 @@ export default function ArchitecturePage() {
                             <tbody className="divide-y divide-zinc-700 text-zinc-300">
                                 {isLoading ? (
                                     <tr><td colSpan={4} className="px-4 py-4 text-center">Loading git modules...</td></tr>
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/architecture/page.tsx
                                 ) : submodulesUnavailable ? (
                                     <tr>
                                         <td colSpan={4} className="px-4 py-4 text-center text-rose-400">
                                             {submodulesError?.message ?? 'Submodule inventory unavailable due to malformed data.'}
                                         </td>
                                     </tr>
+=======
+>>>>>>> origin/rewrite/main-sanitized:apps/web/src/app/dashboard/architecture/page.tsx
                                 ) : normalizedSubmodules.map((mod, index) => (
                                     <tr key={`${mod.path}-${index}`}>
                                         <td className="px-4 py-2 font-medium">{mod.name}</td>
@@ -89,7 +99,11 @@ export default function ArchitecturePage() {
                                         <td className="px-4 py-2 text-emerald-500">Active</td>
                                     </tr>
                                 ))}
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/architecture/page.tsx
                                 {!isLoading && !submodulesUnavailable && normalizedSubmodules.length === 0 && (
+=======
+                                {!isLoading && normalizedSubmodules.length === 0 && (
+>>>>>>> origin/rewrite/main-sanitized:apps/web/src/app/dashboard/architecture/page.tsx
                                     <tr><td colSpan={4} className="px-4 py-4 text-center text-zinc-500">No submodules found (.gitmodules empty)</td></tr>
                                 )}
                             </tbody>
@@ -119,7 +133,10 @@ function GraphVisualizer() {
     const { data: graph, isLoading, error } = trpc.graph.get.useQuery();
     const [mermaidSrc, setMermaidSrc] = React.useState('');
     const normalizedGraph = React.useMemo(() => normalizeDependencyGraph(graph), [graph]);
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/architecture/page.tsx
     const graphUnavailable = Boolean(error) || (graph != null && (typeof graph !== 'object' || graph === null || !('dependencies' in graph) || typeof (graph as { dependencies?: unknown }).dependencies !== 'object' || (graph as { dependencies?: unknown }).dependencies === null));
+=======
+>>>>>>> origin/rewrite/main-sanitized:apps/web/src/app/dashboard/architecture/page.tsx
 
     React.useEffect(() => {
         let src = 'graph TD\n';

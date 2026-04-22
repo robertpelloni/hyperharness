@@ -21,8 +21,11 @@ export default function ToolSetsDashboard() {
     const [isCreateOpen, setIsCreateOpen] = useState(false);
     const normalizedToolSets = normalizeToolSets(toolSets);
     const normalizedSelectableTools = normalizeSelectableTools(tools);
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/mcp/tool-sets/page.tsx
     const toolSetsUnavailable = toolSetsQuery.isError || (toolSets != null && !Array.isArray(toolSets));
     const toolsUnavailable = toolsQuery.isError || (tools != null && !Array.isArray(tools));
+=======
+>>>>>>> origin/rewrite/main-sanitized:apps/web/src/app/dashboard/mcp/tool-sets/page.tsx
 
     return (
         <div className="p-8 space-y-8">
@@ -43,7 +46,10 @@ export default function ToolSetsDashboard() {
             {isCreateOpen && (
                 <CreateToolSetForm
                     tools={normalizedSelectableTools}
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/mcp/tool-sets/page.tsx
                     toolsUnavailable={toolsUnavailable}
+=======
+>>>>>>> origin/rewrite/main-sanitized:apps/web/src/app/dashboard/mcp/tool-sets/page.tsx
                     onSuccess={() => { setIsCreateOpen(false); refetch(); }}
                 />
             )}
@@ -53,12 +59,15 @@ export default function ToolSetsDashboard() {
                     <div className="col-span-3 flex justify-center p-12">
                         <Loader2 className="h-8 w-8 animate-spin text-zinc-500" />
                     </div>
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/mcp/tool-sets/page.tsx
                 ) : toolSetsUnavailable ? (
                     <div className="col-span-3 text-center p-12 text-red-300 bg-red-950/20 rounded-lg border border-red-900/40">
                         <Layers className="h-12 w-12 mx-auto mb-4 opacity-60" />
                         <p className="text-lg font-medium">Tool set inventory unavailable</p>
                         <p className="text-sm mt-1">{toolSetsQuery.isError ? toolSetsQuery.error.message : 'Malformed tool set payload.'}</p>
                     </div>
+=======
+>>>>>>> origin/rewrite/main-sanitized:apps/web/src/app/dashboard/mcp/tool-sets/page.tsx
                 ) : normalizedToolSets.length === 0 ? (
                     <div className="col-span-3 text-center p-12 text-zinc-500 bg-zinc-900/50 rounded-lg border border-zinc-800 border-dashed">
                         <Layers className="h-12 w-12 mx-auto mb-4 opacity-30" />

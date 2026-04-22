@@ -59,8 +59,11 @@ export default function MCPSettings() {
     } = mcpServersClient.syncTargets.useQuery();
     const config = normalizeConfigItems(rawConfig);
     const syncTargets = normalizeSyncTargets(rawSyncTargets);
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/mcp/settings/page.tsx
     const configUnavailable = configQuery.isError || (rawConfig != null && !Array.isArray(rawConfig));
     const syncTargetsUnavailable = Boolean(syncTargetsError) || (rawSyncTargets != null && !Array.isArray(rawSyncTargets));
+=======
+>>>>>>> origin/rewrite/main-sanitized:apps/web/src/app/dashboard/mcp/settings/page.tsx
     const [editing, setEditing] = useState<Record<string, string>>({});
     const [selectedClient, setSelectedClient] = useState<SupportedClient>('claude-desktop');
 <<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/mcp/settings/page.tsx
@@ -206,10 +209,13 @@ export default function MCPSettings() {
                         <div className="flex justify-center p-8">
                             <Loader2 className="h-6 w-6 animate-spin text-zinc-500" />
                         </div>
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/mcp/settings/page.tsx
                     ) : syncTargetsUnavailable ? (
                         <div className="rounded-lg border border-red-900/40 bg-red-950/20 p-4 text-sm text-red-300">
                             Sync targets unavailable{syncTargetsError ? `: ${syncTargetsError.message}` : ' due to malformed data'}.
                         </div>
+=======
+>>>>>>> origin/rewrite/main-sanitized:apps/web/src/app/dashboard/mcp/settings/page.tsx
                     ) : syncTargets.length === 0 ? (
                         <div className="rounded-lg border border-zinc-800 bg-zinc-950 p-4 text-sm text-zinc-500">
                             No supported MCP client targets were detected.
@@ -323,10 +329,13 @@ export default function MCPSettings() {
                         <div className="flex justify-center p-12">
                             <Loader2 className="h-8 w-8 animate-spin text-zinc-500" />
                         </div>
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/mcp/settings/page.tsx
                     ) : configUnavailable ? (
                         <div className="text-center p-8 text-red-300 bg-red-950/20 rounded-lg border border-red-900/40">
                             Configuration inventory unavailable{configQuery.isError ? `: ${configQuery.error.message}` : ' due to malformed data'}.
                         </div>
+=======
+>>>>>>> origin/rewrite/main-sanitized:apps/web/src/app/dashboard/mcp/settings/page.tsx
                     ) : config.length === 0 ? (
                         <div className="text-center p-8 text-zinc-500">
                             No configuration parameters defined.

@@ -58,10 +58,14 @@ const EXECUTION_PROFILE_OPTIONS = [
         value: 'auto',
         label: 'Auto',
 <<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/session/session-create-dialog.tsx
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/session/session-create-dialog.tsx
         description: 'Prefer HyperCode\'s default verified shell for this host.',
 =======
         description: 'Prefer borg\'s default verified shell for this host.',
 >>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/session/session-create-dialog.tsx
+=======
+        description: 'Prefer Borg\'s default verified shell for this host.',
+>>>>>>> origin/rewrite/main-sanitized:apps/web/src/app/dashboard/session/session-create-dialog.tsx
     },
     {
         value: 'powershell',
@@ -77,10 +81,14 @@ const EXECUTION_PROFILE_OPTIONS = [
         value: 'compatibility',
         label: 'Compatibility-first',
 <<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/session/session-create-dialog.tsx
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/session/session-create-dialog.tsx
         description: 'Use the most conservative shell posture HyperCode can verify on this host.',
 =======
         description: 'Use the most conservative shell posture borg can verify on this host.',
 >>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/session/session-create-dialog.tsx
+=======
+        description: 'Use the most conservative shell posture Borg can verify on this host.',
+>>>>>>> origin/rewrite/main-sanitized:apps/web/src/app/dashboard/session/session-create-dialog.tsx
     },
 ] as const;
 

@@ -168,6 +168,7 @@ export type AgentMemoryServiceRuntime = {
     searchByPivot?: (input: Record<string, unknown>) => unknown[];
     getTimelineWindow?: (input: Record<string, unknown>) => unknown[];
     getCrossSessionLinks?: (input: Record<string, unknown>) => unknown[];
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/lib/trpc-core.ts
 };
 
 export type SessionImportServiceRuntime = {
@@ -176,6 +177,8 @@ export type SessionImportServiceRuntime = {
     getImportedSession: (id: string) => unknown | null;
     getImportedMaintenanceStats?: () => unknown;
     listInstructionDocs?: () => Promise<unknown[]>;
+=======
+>>>>>>> origin/rewrite/main-sanitized:packages/core/src/lib/trpc-core.ts
 };
 
 export type SymbolPinServiceRuntime = {

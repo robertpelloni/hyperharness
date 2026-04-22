@@ -21,10 +21,14 @@ import {
 describe('memory dashboard utils', () => {
     const factRecord = {
 <<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/memory/memory-dashboard-utils.test.ts
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/memory/memory-dashboard-utils.test.ts
         content: 'Remember that HyperCode boots the control plane before opening the dashboard.',
 =======
         content: 'Remember that borg boots the control plane before opening the dashboard.',
 >>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/memory/memory-dashboard-utils.test.ts
+=======
+        content: 'Remember that Borg boots the control plane before opening the dashboard.',
+>>>>>>> origin/rewrite/main-sanitized:apps/web/src/app/dashboard/memory/memory-dashboard-utils.test.ts
         createdAt: '2026-03-12T10:00:00.000Z',
         metadata: { source: 'dashboard', type: 'working' },
     };
@@ -57,10 +61,14 @@ describe('memory dashboard utils', () => {
             structuredUserPrompt: {
                 role: 'goal',
 <<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/memory/memory-dashboard-utils.test.ts
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/memory/memory-dashboard-utils.test.ts
                 content: 'Make the memory page reflect one coherent HyperCode-owned model.',
 =======
                 content: 'Make the memory page reflect one coherent borg-owned model.',
 >>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/memory/memory-dashboard-utils.test.ts
+=======
+                content: 'Make the memory page reflect one coherent Borg-owned model.',
+>>>>>>> origin/rewrite/main-sanitized:apps/web/src/app/dashboard/memory/memory-dashboard-utils.test.ts
                 promptNumber: 4,
                 sessionId: 'session-77',
             },
@@ -103,10 +111,14 @@ describe('memory dashboard utils', () => {
     };
 
 <<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/memory/memory-dashboard-utils.test.ts
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/memory/memory-dashboard-utils.test.ts
     it('classifies HyperCode memory record kinds correctly', () => {
 =======
     it('classifies borg memory record kinds correctly', () => {
 >>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/memory/memory-dashboard-utils.test.ts
+=======
+    it('classifies Borg memory record kinds correctly', () => {
+>>>>>>> origin/rewrite/main-sanitized:apps/web/src/app/dashboard/memory/memory-dashboard-utils.test.ts
         expect(getMemoryRecordKind(factRecord)).toBe('fact');
         expect(getMemoryRecordKind(observationRecord)).toBe('observation');
         expect(getMemoryRecordKind(promptRecord)).toBe('prompt');
@@ -126,10 +138,14 @@ describe('memory dashboard utils', () => {
     it('builds coherent titles, previews, and badges for each record type', () => {
         expect(getMemoryBadgeLabel(factRecord)).toBe('working');
 <<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/memory/memory-dashboard-utils.test.ts
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/memory/memory-dashboard-utils.test.ts
         expect(getMemoryTitle(factRecord)).toContain('Remember that HyperCode boots');
 =======
         expect(getMemoryTitle(factRecord)).toContain('Remember that borg boots');
 >>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/memory/memory-dashboard-utils.test.ts
+=======
+        expect(getMemoryTitle(factRecord)).toContain('Remember that Borg boots');
+>>>>>>> origin/rewrite/main-sanitized:apps/web/src/app/dashboard/memory/memory-dashboard-utils.test.ts
         expect(getMemoryPreview(factRecord)).toContain('control plane');
 
         expect(getMemoryBadgeLabel(observationRecord)).toBe('discovery');
@@ -139,10 +155,14 @@ describe('memory dashboard utils', () => {
         expect(getMemoryBadgeLabel(promptRecord)).toBe('goal');
         expect(getMemoryTitle(promptRecord)).toBe('Prompt #4');
 <<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/memory/memory-dashboard-utils.test.ts
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/memory/memory-dashboard-utils.test.ts
         expect(getMemoryPreview(promptRecord)).toContain('coherent HyperCode-owned model');
 =======
         expect(getMemoryPreview(promptRecord)).toContain('coherent borg-owned model');
 >>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/memory/memory-dashboard-utils.test.ts
+=======
+        expect(getMemoryPreview(promptRecord)).toContain('coherent Borg-owned model');
+>>>>>>> origin/rewrite/main-sanitized:apps/web/src/app/dashboard/memory/memory-dashboard-utils.test.ts
 
         expect(getMemoryBadgeLabel(summaryRecord)).toBe('running');
         expect(getMemoryTitle(summaryRecord)).toBe('Morning memory review');
@@ -235,10 +255,14 @@ describe('memory dashboard utils', () => {
             {
                 title: 'Prompt content',
 <<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/memory/memory-dashboard-utils.test.ts
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/memory/memory-dashboard-utils.test.ts
                 body: 'Make the memory page reflect one coherent HyperCode-owned model.',
 =======
                 body: 'Make the memory page reflect one coherent borg-owned model.',
 >>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/memory/memory-dashboard-utils.test.ts
+=======
+                body: 'Make the memory page reflect one coherent Borg-owned model.',
+>>>>>>> origin/rewrite/main-sanitized:apps/web/src/app/dashboard/memory/memory-dashboard-utils.test.ts
             },
             {
                 title: 'Canonical record',
@@ -402,6 +426,7 @@ describe('memory dashboard utils', () => {
                 actions: [
                     {
 <<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/memory/memory-dashboard-utils.test.ts
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/memory/memory-dashboard-utils.test.ts
                         key: 'goal:Make the memory page reflect one coherent HyperCode-owned model.',
                         label: 'Make the memory page reflect one coherent HyperCode-owned model.',
                         query: 'Make the memory page reflect one coherent HyperCode-owned model.',
@@ -410,6 +435,11 @@ describe('memory dashboard utils', () => {
                         label: 'Make the memory page reflect one coherent borg-owned model.',
                         query: 'Make the memory page reflect one coherent borg-owned model.',
 >>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/memory/memory-dashboard-utils.test.ts
+=======
+                        key: 'goal:Make the memory page reflect one coherent Borg-owned model.',
+                        label: 'Make the memory page reflect one coherent Borg-owned model.',
+                        query: 'Make the memory page reflect one coherent Borg-owned model.',
+>>>>>>> origin/rewrite/main-sanitized:apps/web/src/app/dashboard/memory/memory-dashboard-utils.test.ts
                         mode: 'all',
                         group: 'goal',
                         description: 'Search all related records anchored to this active goal.',

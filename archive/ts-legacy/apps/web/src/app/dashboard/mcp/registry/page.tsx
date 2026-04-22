@@ -75,9 +75,12 @@ export default function RegistryDashboard() {
 
     const installedServerNames = getInstalledServerNames(installedServers);
     const liveRegistry: RegistryItem[] = normalizeRegistryItems(registry);
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/mcp/registry/page.tsx
     const installedServersUnavailable = installedServers != null && !Array.isArray(installedServers);
     const registryUnavailable = Boolean(registryError) || (registry != null && !Array.isArray(registry));
     const catalogStatsUnavailable = catalogStats != null && (typeof catalogStats !== 'object' || Array.isArray(catalogStats));
+=======
+>>>>>>> origin/rewrite/main-sanitized:apps/web/src/app/dashboard/mcp/registry/page.tsx
 
     const source = liveRegistry.length > 0 ? liveRegistry : QUICK_INSTALL_TEMPLATES;
     const filtered = source.filter((item) =>
@@ -163,7 +166,11 @@ export default function RegistryDashboard() {
                     <RegistryCard
                         key={item.id || item.name}
                         item={item}
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/mcp/registry/page.tsx
                         isInstalled={!installedServersUnavailable && installedServerNames.has(item.name)}
+=======
+                        isInstalled={installedServerNames.has(item.name)}
+>>>>>>> origin/rewrite/main-sanitized:apps/web/src/app/dashboard/mcp/registry/page.tsx
                     />
                 ))}
             </div>

@@ -250,6 +250,7 @@ export class MCPAggregator {
         const allTools: MCPAggregatedTool[] = [];
 
         for (const [serverName] of this.getEnabledServerEntries()) {
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/mcp/MCPAggregator.ts
             // In lazy mode, skip servers that are not already connected. Spawning every
             // configured binary just to enumerate available tools defeats deferred startup.
             // Callers such as the MCP router prefer the database-cached tool inventory;
@@ -258,6 +259,8 @@ export class MCPAggregator {
                 continue;
             }
 
+=======
+>>>>>>> origin/rewrite/main-sanitized:packages/core/src/mcp/MCPAggregator.ts
             const client = await this.ensureConnectedClient(serverName);
             const tools = await this.listToolsForServer(serverName, client);
             const namespaced = tools.map((tool) => this.namespaceTool(serverName, tool));

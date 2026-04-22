@@ -18,7 +18,10 @@ import { ScrollArea } from '@borg/ui';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@borg/ui";
 import { GitBranch, GitCommit, Play, Rewind, CheckCircle, XCircle, AlertCircle, FileCode } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from "@borg/ui";
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/plans/page.tsx
 >>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/plans/page.tsx
+=======
+>>>>>>> origin/rewrite/main-sanitized:apps/web/src/app/dashboard/plans/page.tsx
 import { normalizePlanCheckpoints, normalizePlanDiffs } from './plans-page-normalizers';
 
 export default function PlansDashboard() {

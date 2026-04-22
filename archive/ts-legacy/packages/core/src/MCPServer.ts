@@ -85,6 +85,7 @@ import { AgentMemoryService } from "./services/AgentMemoryService.js";
 import { SessionImportService } from "./services/SessionImportService.js";
 import { MemoryManager } from "./services/MemoryManager.js"; // Use legacy MemoryManager
 <<<<<<< HEAD:archive/ts-legacy/packages/core/src/MCPServer.ts
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/MCPServer.ts
 import { BobbyBookmarksSyncWorker } from "./daemons/hyperingest/BobbyBookmarksSyncWorker.js";
 import { LinkCrawlerWorker } from "./daemons/hyperingest/LinkCrawlerWorker.js";
 import { MemoryArchiver } from "./services/MemoryArchiver.js";
@@ -93,6 +94,8 @@ import { BobbyBookmarksSyncWorker } from "./daemons/borgingest/BobbyBookmarksSyn
 import { LinkCrawlerWorker } from "./daemons/borgingest/LinkCrawlerWorker.js";
 >>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/MCPServer.ts
 import { workspaceTracker } from "./services/WorkspaceTracker.js";
+=======
+>>>>>>> origin/rewrite/main-sanitized:packages/core/src/MCPServer.ts
 mcpServerDebugLog('[MCPServer] ✓ Phase 51/53 Infrastructure');
 import { SkillAssimilationService } from "./services/SkillAssimilationService.js";
 import { MarketplaceService } from "./services/MarketplaceService.js";
@@ -157,7 +160,10 @@ import {
 =======
     type ChainRequest
 } from "@borg/tools";
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/MCPServer.ts
 >>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/MCPServer.ts
+=======
+>>>>>>> origin/rewrite/main-sanitized:packages/core/src/MCPServer.ts
 mcpServerDebugLog('[MCPServer] ✓ All Tools & ChainExecutor');
 
 mcpServerDebugLog('[MCPServer] ✓ All Tools & ChainExecutor');
@@ -210,12 +216,15 @@ import {
     createDefaultBridgeClient,
     type RegisteredBridgeClient,
 } from './bridge/bridge-manifest.js';
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/MCPServer.ts
 import {
     getBridgeHealthUrl,
     getBridgeStreamUrl,
     getBridgeWebSocketUrl,
     resolveBridgePort,
 } from './bridge/bridgePort.js';
+=======
+>>>>>>> origin/rewrite/main-sanitized:packages/core/src/MCPServer.ts
 mcpServerDebugLog('[MCPServer] ✓ PermissionManager');
 
 const __filename = fileURLToPath(import.meta.url);
@@ -873,7 +882,11 @@ export class MCPServer {
         this.serverSetupPromise = primaryServer.ready;
 
         if (!options.skipWebsocket) {
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/MCPServer.ts
             const PORT = this.bridgePort;
+=======
+            const PORT = 3001;
+>>>>>>> origin/rewrite/main-sanitized:packages/core/src/MCPServer.ts
             mcpServerDebugLog(`[MCPServer] Preparing WebSocket/HTTP bridge for port ${PORT}...`);
 
             // Create a dedicated MCP server instance for websocket transport.
@@ -3632,10 +3645,14 @@ ${env.tools.filter((tool) => tool.installed).map((tool) => `- **${tool.name}**: 
 
     private async setupHandlers(serverInstance: Server) {
 <<<<<<< HEAD:archive/ts-legacy/packages/core/src/MCPServer.ts
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/MCPServer.ts
         mcpServerDebugLog('[MCPServer] Using HyperCode-native MCP handlers.');
 =======
         mcpServerDebugLog('[MCPServer] Using borg-native MCP handlers.');
 >>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/MCPServer.ts
+=======
+        mcpServerDebugLog('[MCPServer] Using Borg-native MCP handlers.');
+>>>>>>> origin/rewrite/main-sanitized:packages/core/src/MCPServer.ts
         await this.setupDirectHandlers(serverInstance);
     }
 
@@ -3733,6 +3750,7 @@ ${env.tools.filter((tool) => tool.installed).map((tool) => `- **${tool.name}**: 
     }
 
     private async getDirectModeTools(): Promise<Tool[]> {
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/MCPServer.ts
         const cachedInventory = await getCachedToolInventory();
         const cachedAdvertisedDownstreamTools = cachedInventory.tools.map((tool) => ({
             ...tool,
@@ -3741,6 +3759,9 @@ ${env.tools.filter((tool) => tool.installed).map((tool) => `- **${tool.name}**: 
                 : { type: 'object', properties: {} },
         })) as (Tool & { alwaysOn: boolean })[];
 
+=======
+        const cachedAdvertisedDownstreamTools = await this.getCachedAdvertisedDownstreamTools();
+>>>>>>> origin/rewrite/main-sanitized:packages/core/src/MCPServer.ts
         this.nativeSessionMetaTools.refreshCatalog(cachedAdvertisedDownstreamTools);
         await this.syncNativeToolPreferences();
 
@@ -3846,7 +3867,12 @@ ${env.tools.filter((tool) => tool.installed).map((tool) => `- **${tool.name}**: 
 
     async start() {
         mcpServerDebugLog('[MCPServer] Loading Skills...');
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/MCPServer.ts
         const aggregatorStartup = this.mcpAggregator.initialize()
+=======
+        // Non-blocking initialization of aggregator to prevent stalling Stdio/WS start
+        this.mcpAggregator.initialize()
+>>>>>>> origin/rewrite/main-sanitized:packages/core/src/MCPServer.ts
             .then(async () => {
                 const inventory = await getCachedToolInventory();
                 const toolCountsByName = new Map(
@@ -3861,6 +3887,7 @@ ${env.tools.filter((tool) => tool.installed).map((tool) => `- **${tool.name}**: 
                     })),
                     source: inventory.source,
                 });
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/MCPServer.ts
                 const { lazySessionMode } = mcpServerPool.getLifecycleModes();
                 // Keep aggregator in sync with the resolved lifecycle mode so that
                 // any restarts or hot-reload paths also respect the latest setting.
@@ -3870,6 +3897,9 @@ ${env.tools.filter((tool) => tool.installed).map((tool) => `- **${tool.name}**: 
                 } else {
                     this.mcpAggregator.warmAdvertisedServers();
                 }
+=======
+                this.mcpAggregator.warmAdvertisedServers();
+>>>>>>> origin/rewrite/main-sanitized:packages/core/src/MCPServer.ts
             })
             .catch(e => console.error("[MCPServer] Aggregator Init Failed:", e));
 
@@ -3900,6 +3930,7 @@ ${env.tools.filter((tool) => tool.installed).map((tool) => `- **${tool.name}**: 
         this.autoTestService.repoGraph.buildGraph().catch(e => console.error("Graph build failed", e));
 
 <<<<<<< HEAD:archive/ts-legacy/packages/core/src/MCPServer.ts
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/MCPServer.ts
         mcpServerDebugLog('[MCPServer] 🚀 HyperCode Core ready.');
 =======
         mcpServerDebugLog('[MCPServer] 🚀 borg Core ready.');
@@ -3919,11 +3950,26 @@ ${env.tools.filter((tool) => tool.installed).map((tool) => `- **${tool.name}**: 
         } else {
             mcpServerDebugLog('[MCPServer] Skipping Stdio transport (managed by external loader).');
         }
+=======
+        mcpServerDebugLog('[MCPServer] 🚀 Borg Core ready.');
+        mcpServerDebugLog('[MCPServer] Preparing request handlers...');
+        await this.serverSetupPromise;
+
+        // 1. Start Stdio (for local CLI usage)
+        mcpServerDebugLog('[MCPServer] Connecting Stdio...');
+        const stdioTransport = new StdioServerTransport();
+        await this.server.connect(stdioTransport);
+        mcpServerDebugLog('Borg Core: Stdio Transport Active');
+>>>>>>> origin/rewrite/main-sanitized:packages/core/src/MCPServer.ts
 
         // 2. Start WebSocket (for Extension/Web usage)
         if (this.wsServer && !this.wssInstance) {
             mcpServerDebugLog('[MCPServer] Starting WebSocket Server...');
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/MCPServer.ts
             const PORT = this.bridgePort;
+=======
+            const PORT = 3001;
+>>>>>>> origin/rewrite/main-sanitized:packages/core/src/MCPServer.ts
             const httpServer = http.createServer(async (req, res) => {
                 if (req.method === 'GET' && req.url === '/api/mesh/stream') {
                     res.writeHead(200, {
@@ -4186,6 +4232,7 @@ ${env.tools.filter((tool) => tool.installed).map((tool) => `- **${tool.name}**: 
                 });
             });
 
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/MCPServer.ts
 =======
 >>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/MCPServer.ts
             let bridgePortConflictHandled = false;
@@ -4214,6 +4261,10 @@ ${env.tools.filter((tool) => tool.installed).map((tool) => `- **${tool.name}**: 
 =======
                 console.error(`[borg Core] ❌ WebSocket Server Error (Port ${PORT}):`, err.message);
 >>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/MCPServer.ts
+=======
+            httpServer.listen(PORT, () => {
+                mcpServerDebugLog(`Borg Core: WebSocket Transport Active on ws://localhost:${PORT}`);
+>>>>>>> origin/rewrite/main-sanitized:packages/core/src/MCPServer.ts
             });
 
             wss.on('error', (err: any) => {
@@ -4483,8 +4534,12 @@ ${env.tools.filter((tool) => tool.installed).map((tool) => `- **${tool.name}**: 
                 mcpServerDebugLog(`[MCPServer] Supervisor Path Resolved: ${supervisorPath}`);
 
                 await this.router.connectToServer('borg-supervisor', 'node', [supervisorPath]);
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/MCPServer.ts
                 mcpServerDebugLog(`borg Core: Connected to Supervisor at ${supervisorPath}`);
 >>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/MCPServer.ts
+=======
+                mcpServerDebugLog(`Borg Core: Connected to Supervisor at ${supervisorPath}`);
+>>>>>>> origin/rewrite/main-sanitized:packages/core/src/MCPServer.ts
 
                 // Phase 16: Google Workspace Integration
                 const workspacePath = path.join(rootDir, 'external', 'mcp-servers', 'workspace', 'workspace-server', 'dist', 'index.js');
@@ -4492,10 +4547,14 @@ ${env.tools.filter((tool) => tool.installed).map((tool) => `- **${tool.name}**: 
                 if (fs.existsSync(workspacePath)) {
                     await this.router.connectToServer('google-workspace', 'node', [workspacePath]);
 <<<<<<< HEAD:archive/ts-legacy/packages/core/src/MCPServer.ts
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/MCPServer.ts
                     mcpServerDebugLog('HyperCode Core: Connected to Google Workspace Server (GMail/Calendar)');
 =======
                     mcpServerDebugLog('borg Core: Connected to Google Workspace Server (GMail/Calendar)');
 >>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/MCPServer.ts
+=======
+                    mcpServerDebugLog('Borg Core: Connected to Google Workspace Server (GMail/Calendar)');
+>>>>>>> origin/rewrite/main-sanitized:packages/core/src/MCPServer.ts
                 }
             } else {
                 console.error("[MCPServer] Failed to locate Monorepo Root. Skipping Supervisor.");

@@ -1,10 +1,14 @@
 import React from 'react';
 import { PageHeader } from '@/components/PageHeader';
 <<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/ingestion/page.tsx
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/ingestion/page.tsx
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@hypercode/ui';
 =======
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@borg/ui';
 >>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/ingestion/page.tsx
+=======
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@borg/ui';
+>>>>>>> origin/rewrite/main-sanitized:apps/web/src/app/dashboard/ingestion/page.tsx
 import { Database, AlertTriangle, CheckCircle, Clock } from 'lucide-react';
 import fs from 'fs/promises';
 import path from 'path';

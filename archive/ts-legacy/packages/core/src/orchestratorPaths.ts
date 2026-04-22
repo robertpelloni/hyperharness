@@ -50,6 +50,7 @@ export function resolveCliEntryPath(startDir: string = process.cwd()): string | 
   ].filter((value, index, array): value is string => Boolean(value) && array.indexOf(value) === index);
 
   for (const root of candidateRoots) {
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/orchestratorPaths.ts
     const candidates = [
       path.join(root, 'packages', 'cli', 'dist', 'cli', 'src', 'index.js'),
       path.join(root, 'packages', 'cli', 'dist', 'index.js'),
@@ -59,6 +60,11 @@ export function resolveCliEntryPath(startDir: string = process.cwd()): string | 
       if (fs.existsSync(candidate)) {
         return candidate;
       }
+=======
+    const candidate = path.join(root, 'packages', 'cli', 'dist', 'index.js');
+    if (fs.existsSync(candidate)) {
+      return candidate;
+>>>>>>> origin/rewrite/main-sanitized:packages/core/src/orchestratorPaths.ts
     }
   }
 

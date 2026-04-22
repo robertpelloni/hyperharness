@@ -12,6 +12,7 @@ interface BrowserStorageArea {
   remove(key: string): Promise<void>;
 }
 
+<<<<<<< HEAD
 let hasLoggedExtensionStorageFallbackWarning = false;
 
 function logExtensionStorageFallback(error: unknown): void {
@@ -24,6 +25,8 @@ function logExtensionStorageFallback(error: unknown): void {
   console.warn(`[extension-storage] Falling back to localStorage because extension storage is unavailable: ${message}`);
 }
 
+=======
+>>>>>>> origin/rewrite/main-sanitized
 function hasLocalStorage(): boolean {
   try {
     return typeof localStorage !== 'undefined';
@@ -68,6 +71,7 @@ function removeLocalStorageValue(key: string): void {
   }
 }
 
+<<<<<<< HEAD
 export function safeLocalStorageGetItem(key: string): string | null {
   return getLocalStorageValue(key);
 }
@@ -80,6 +84,8 @@ export function safeLocalStorageRemoveItem(key: string): void {
   removeLocalStorageValue(key);
 }
 
+=======
+>>>>>>> origin/rewrite/main-sanitized
 function createChromeStorageArea(): ExtensionStorageArea | null {
   if (typeof chrome === 'undefined' || !chrome.storage?.local) {
     return null;
@@ -175,6 +181,7 @@ function getExtensionStorageArea(): ExtensionStorageArea | null {
   return createBrowserStorageArea() ?? createChromeStorageArea();
 }
 
+<<<<<<< HEAD
 export async function getExtensionStorageValue(name: string): Promise<string | null> {
   const extensionStorage = getExtensionStorageArea();
 
@@ -249,16 +256,24 @@ export async function setExtensionStorageJson(name: string, value: unknown): Pro
   await setExtensionStorageValue(name, JSON.stringify(value));
 }
 
+=======
+>>>>>>> origin/rewrite/main-sanitized
 /**
  * Persist state in extension-scoped storage when available.
  *
  * Content-script `localStorage` is page-origin scoped, which fragments saved data by site.
+<<<<<<< HEAD
  * This adapter promotes the source of truth to extension storage and only falls back to
  * localStorage in tests or non-extension environments where extension storage does not exist.
+=======
+ * This adapter promotes the source of truth to extension storage while still falling back to
+ * localStorage in tests or non-extension environments.
+>>>>>>> origin/rewrite/main-sanitized
  */
 export function createExtensionStateStorage(): StateStorage {
   return {
     async getItem(name: string) {
+<<<<<<< HEAD
       return await getExtensionStorageValue(name);
     },
     async setItem(name: string, value: string) {
@@ -266,6 +281,42 @@ export function createExtensionStateStorage(): StateStorage {
     },
     async removeItem(name: string) {
       await removeExtensionStorageValue(name);
+=======
+      const extensionStorage = getExtensionStorageArea();
+
+      if (!extensionStorage) {
+        return getLocalStorageValue(name);
+      }
+
+      const extensionValue = await extensionStorage.get(name);
+      if (typeof extensionValue === 'string') {
+        return extensionValue;
+      }
+
+      const legacyValue = getLocalStorageValue(name);
+      if (legacyValue !== null) {
+        await extensionStorage.set({ [name]: legacyValue });
+        return legacyValue;
+      }
+
+      return null;
+    },
+    async setItem(name: string, value: string) {
+      const extensionStorage = getExtensionStorageArea();
+      if (extensionStorage) {
+        await extensionStorage.set({ [name]: value });
+      }
+
+      setLocalStorageValue(name, value);
+    },
+    async removeItem(name: string) {
+      const extensionStorage = getExtensionStorageArea();
+      if (extensionStorage) {
+        await extensionStorage.remove(name);
+      }
+
+      removeLocalStorageValue(name);
+>>>>>>> origin/rewrite/main-sanitized
     },
   };
 }

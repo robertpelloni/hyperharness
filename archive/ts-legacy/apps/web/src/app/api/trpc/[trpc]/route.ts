@@ -35,6 +35,7 @@ const LEGACY_REPO_ROOT = resolveRepoRoot();
 const LEGACY_MCP_JSONC_PATH = path.join(LEGACY_REPO_ROOT, 'mcp.jsonc');
 const LEGACY_MCP_JSON_PATH = path.join(LEGACY_REPO_ROOT, 'mcp.json');
 <<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/api/trpc/[trpc]/route.ts
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/api/trpc/[trpc]/route.ts
 const JSONC_HEADER = `// HyperCode MCP configuration\n// This file is HyperCode-owned and may include cached server metadata under mcpServers.<name>._meta.\n`;
 
 function resolveHyperCodeConfigDir(): string {
@@ -62,6 +63,36 @@ function resolvePrimaryMcpPaths(): { jsoncPath: string; jsonPath: string } {
 function resolvePrimaryMcpPaths(): { jsoncPath: string; jsonPath: string } {
   const configDir = resolveBorgConfigDir();
 >>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/api/trpc/[trpc]/route.ts
+  return {
+    jsoncPath: path.join(configDir, 'mcp.jsonc'),
+    jsonPath: path.join(configDir, 'mcp.json'),
+  };
+}
+
+function resolveMcpReadCandidates(): Array<{ filePath: string; allowComments: boolean }> {
+  const primaryPaths = resolvePrimaryMcpPaths();
+  return [
+    { filePath: primaryPaths.jsoncPath, allowComments: true },
+    { filePath: primaryPaths.jsonPath, allowComments: false },
+    { filePath: LEGACY_MCP_JSONC_PATH, allowComments: true },
+    { filePath: LEGACY_MCP_JSON_PATH, allowComments: false },
+  ];
+}
+=======
+const JSONC_HEADER = `// Borg MCP configuration\n// This file is Borg-owned and may include cached server metadata under mcpServers.<name>._meta.\n`;
+>>>>>>> origin/rewrite/main-sanitized:apps/web/src/app/api/trpc/[trpc]/route.ts
+
+function resolveBorgConfigDir(): string {
+  const configuredDir = process.env.BORG_CONFIG_DIR?.trim();
+  if (configuredDir) {
+    return configuredDir;
+  }
+
+  return path.join(os.homedir(), '.borg');
+}
+
+function resolvePrimaryMcpPaths(): { jsoncPath: string; jsonPath: string } {
+  const configDir = resolveBorgConfigDir();
   return {
     jsoncPath: path.join(configDir, 'mcp.jsonc'),
     jsonPath: path.join(configDir, 'mcp.json'),

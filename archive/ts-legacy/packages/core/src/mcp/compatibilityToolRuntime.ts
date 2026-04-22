@@ -318,6 +318,7 @@ export async function executeCompatibleRunPython(
     }
 }
 
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/mcp/compatibilityToolRuntime.ts
 export type ToolSearchFunction = (
     query: string,
     limit: number,
@@ -335,6 +336,9 @@ export type ToolSearchFunction = (
     hydrated?: boolean;
     requiresSchemaHydration?: boolean;
 }>;
+=======
+export type ToolSearchFunction = (query: string, limit: number) => Array<{ name: string; description: string; inputSchema?: unknown }>;
+>>>>>>> origin/rewrite/main-sanitized:packages/core/src/mcp/compatibilityToolRuntime.ts
 
 export async function executeSemanticAutoCall(
     args: Record<string, unknown>,
@@ -367,8 +371,11 @@ export async function executeSemanticAutoCall(
     const systemPrompt = `You are an expert Tool Selection Agent.
 Given an objective and a list of available tools, you must return JSON containing the EXACT perfect tool name to accomplish the objective, and map the arguments precisely to its schema.
 Do NOT hallucinate tools. You MUST pick from the provided list.
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/mcp/compatibilityToolRuntime.ts
 Prefer candidates with strong match reasons, explicit schemas, and already-loaded or hydrated status when those fit the objective.
 If a schema is partial or empty, infer only conservative arguments from the objective/context and avoid inventing unsupported fields.
+=======
+>>>>>>> origin/rewrite/main-sanitized:packages/core/src/mcp/compatibilityToolRuntime.ts
 
 Output ONLY valid JSON like:
 {
@@ -377,6 +384,7 @@ Output ONLY valid JSON like:
   "reasoning": "why this tool and args were chosen"
 }`;
 
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/mcp/compatibilityToolRuntime.ts
     const toolsListStr = candidates.map((tool, index) => `- Rank: ${index + 1}
   Name: ${tool.name}
   Advertised Name: ${tool.advertisedName ?? 'n/a'}
@@ -389,6 +397,9 @@ Output ONLY valid JSON like:
   Requires Schema Hydration: ${tool.requiresSchemaHydration ? 'yes' : 'no'}
   Desc: ${tool.description}
   Schema: ${JSON.stringify(tool.inputSchema ?? 'unknown')}`).join('\n\n');
+=======
+    const toolsListStr = candidates.map(t => `- Name: ${t.name}\n  Desc: ${t.description}\n  Schema: ${JSON.stringify(t.inputSchema || 'unknown')}`).join('\n\n');
+>>>>>>> origin/rewrite/main-sanitized:packages/core/src/mcp/compatibilityToolRuntime.ts
 
     const prompt = `Objective:\n${objective}\n\nContext/Variables:\n${context}\n\nCandidate Tools:\n${toolsListStr}`;
 
@@ -410,6 +421,7 @@ Output ONLY valid JSON like:
             return { isError: true, content: [{ type: 'text', text: `LLM failed to select a tool.\nRaw output: ${raw}` }] };
         }
 
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/mcp/compatibilityToolRuntime.ts
         const selectedTool = candidates.find((candidate) => candidate.name === parsed.toolName);
         if (!selectedTool) {
             return {
@@ -418,12 +430,15 @@ Output ONLY valid JSON like:
             };
         }
 
+=======
+>>>>>>> origin/rewrite/main-sanitized:packages/core/src/mcp/compatibilityToolRuntime.ts
         const argsToPass = normalizeToolArgs(parsed.arguments);
         const result = await delegatedToolCaller(parsed.toolName, argsToPass, { source: 'auto_call_tool' });
 
         return {
             isError: false,
             content: [
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/mcp/compatibilityToolRuntime.ts
                 {
                     type: 'text',
                     text: `[Auto-Execution Logic: Chose ${parsed.toolName}]
@@ -434,6 +449,9 @@ Output ONLY valid JSON like:
 --- Result ---
 ${typeof result === 'string' ? result : JSON.stringify(result, null, 2)}`,
                 }
+=======
+                { type: 'text', text: `[Auto-Execution Logic: Chose ${parsed.toolName}]\n[Reasoning: ${parsed.reasoning}]\n\n--- Result ---\n${typeof result === 'string' ? result : JSON.stringify(result, null, 2)}` }
+>>>>>>> origin/rewrite/main-sanitized:packages/core/src/mcp/compatibilityToolRuntime.ts
             ]
         };
     } catch (e) {

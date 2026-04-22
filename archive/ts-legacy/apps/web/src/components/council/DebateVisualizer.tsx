@@ -1,9 +1,14 @@
 
 <<<<<<< HEAD:archive/ts-legacy/apps/web/src/components/council/DebateVisualizer.tsx
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/components/council/DebateVisualizer.tsx
 import { Card, CardHeader, CardTitle, CardContent, Badge } from "@hypercode/ui";
 import { Avatar, AvatarFallback, AvatarImage } from "@hypercode/ui";
 =======
 import { Card, CardHeader, CardTitle, CardContent, Badge } from "@borg/ui";
+=======
+import { Card, CardHeader, CardTitle, CardContent, Badge } from "@borg/ui";
+import { ScrollArea } from "@/components/ui/scroll-area";
+>>>>>>> origin/rewrite/main-sanitized:apps/web/src/components/council/DebateVisualizer.tsx
 import { Avatar, AvatarFallback, AvatarImage } from "@borg/ui";
 >>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/components/council/DebateVisualizer.tsx
 import { Check, X, Shield, Users, Brain, Activity, Gavel } from "lucide-react";

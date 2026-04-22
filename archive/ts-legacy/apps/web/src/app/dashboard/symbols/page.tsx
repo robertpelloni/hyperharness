@@ -10,7 +10,10 @@ import { Loader2, Code2, Trash2, Pin, Search, StickyNote, Star, Trash } from "lu
 import { trpc } from '@/utils/trpc';
 import { toast } from 'sonner';
 import { filterSymbols, normalizeSymbols, type NormalizedSymbol, type SymbolType } from './symbols-page-normalizers';
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/symbols/page.tsx
 import { PageStatusBanner } from '@/components/PageStatusBanner';
+=======
+>>>>>>> origin/rewrite/main-sanitized:apps/web/src/app/dashboard/symbols/page.tsx
 
 export default function SymbolsDashboard() {
     const { data: symbols, isLoading, error, refetch } = trpc.symbols.list.useQuery();
@@ -38,7 +41,10 @@ export default function SymbolsDashboard() {
 
     const normalizedSymbols = normalizeSymbols(symbols);
     const filteredSymbols = filterSymbols(normalizedSymbols, searchQuery);
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/symbols/page.tsx
     const symbolsUnavailable = Boolean(error) || (symbols != null && !Array.isArray(symbols));
+=======
+>>>>>>> origin/rewrite/main-sanitized:apps/web/src/app/dashboard/symbols/page.tsx
 
     return (
         <div className="p-8 space-y-8">
@@ -59,7 +65,11 @@ export default function SymbolsDashboard() {
                         size="sm" 
                         className="text-zinc-400 hover:text-red-400 border-zinc-800"
                         onClick={() => { if(confirm("Clear all pins?")) clearMutation.mutate(); }}
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/symbols/page.tsx
                         disabled={clearMutation.isPending || symbolsUnavailable || normalizedSymbols.length === 0}
+=======
+                        disabled={clearMutation.isPending || normalizedSymbols.length === 0}
+>>>>>>> origin/rewrite/main-sanitized:apps/web/src/app/dashboard/symbols/page.tsx
                     >
                         <Trash className="mr-2 h-4 w-4" /> Clear All
                     </Button>
@@ -84,12 +94,15 @@ export default function SymbolsDashboard() {
                     <div className="col-span-full flex justify-center p-12">
                         <Loader2 className="h-8 w-8 animate-spin text-zinc-500" />
                     </div>
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/symbols/page.tsx
                 ) : symbolsUnavailable ? (
                     <div className="col-span-full text-center p-20 bg-red-500/10 rounded-lg border border-red-500/20">
                         <Pin className="h-12 w-12 mx-auto mb-4 opacity-40 text-red-300" />
                         <p className="text-lg font-medium text-red-200">Symbol data unavailable.</p>
                         <p className="text-sm mt-1 text-red-300/80">{error?.message ?? 'Malformed symbol payload.'}</p>
                     </div>
+=======
+>>>>>>> origin/rewrite/main-sanitized:apps/web/src/app/dashboard/symbols/page.tsx
                 ) : filteredSymbols.length === 0 ? (
                     <div className="col-span-full text-center p-20 bg-zinc-900/30 rounded-lg border border-zinc-800 border-dashed">
                         <Pin className="h-12 w-12 mx-auto mb-4 opacity-10 rotate-12" />

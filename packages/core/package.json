@@ -28,7 +28,12 @@
     "@borg/ai": "workspace:*",
     "@borg/memory": "workspace:*",
     "@borg/tools": "workspace:*",
+<<<<<<< HEAD
     "@borg/search": "workspace:*",
+=======
+    "@borg/types": "workspace:*",
+    "@hyperswarm/secret-stream": "^6.9.1",
+>>>>>>> origin/rewrite/main-sanitized
     "@lancedb/lancedb": "^0.23.0",
     "@modelcontextprotocol/sdk": "^1.26.0",
     "@modelcontextprotocol/server-filesystem": "^2026.1.14",

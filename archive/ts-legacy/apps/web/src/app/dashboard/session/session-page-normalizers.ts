@@ -1,12 +1,19 @@
 type ExecutionProfile = 'auto' | 'powershell' | 'posix' | 'compatibility';
 
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/session/session-page-normalizers.ts
 type SessionStatus = 'created' | 'starting' | 'running' | 'stopping' | 'stopped' | 'restarting' | 'error';
+=======
+type SessionStatus = 'created' | 'starting' | 'running' | 'stopped' | 'restarting' | 'error';
+>>>>>>> origin/rewrite/main-sanitized:apps/web/src/app/dashboard/session/session-page-normalizers.ts
 
 const SESSION_STATUSES = new Set<SessionStatus>([
     'created',
     'starting',
     'running',
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/session/session-page-normalizers.ts
     'stopping',
+=======
+>>>>>>> origin/rewrite/main-sanitized:apps/web/src/app/dashboard/session/session-page-normalizers.ts
     'stopped',
     'restarting',
     'error',
@@ -73,12 +80,15 @@ export interface NormalizedSessionRow {
     scheduledRestartAt?: number;
     lastActivityAt: number;
     lastError?: string;
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/session/session-page-normalizers.ts
     /** Worktree isolation flag surfaced from the supervisor snapshot. */
     isolateWorktree: boolean;
     /** Exit code of the last process run, when available. */
     lastExitCode?: number;
     /** Exit signal of the last process run (e.g. 'SIGTERM'), when available. */
     lastExitSignal?: string;
+=======
+>>>>>>> origin/rewrite/main-sanitized:apps/web/src/app/dashboard/session/session-page-normalizers.ts
     logs: NormalizedSessionLog[];
     metadata?: {
         memoryBootstrap?: {
@@ -207,11 +217,14 @@ export const normalizeSessionList = (payload: unknown): NormalizedSessionRow[] =
                 : undefined,
             lastActivityAt: asFiniteNumber(session.lastActivityAt, Date.now()),
             lastError: asOptionalTrimmedString(session.lastError),
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/session/session-page-normalizers.ts
             isolateWorktree: asBoolean(session.isolateWorktree, false),
             lastExitCode: typeof session.lastExitCode === 'number' && Number.isFinite(session.lastExitCode)
                 ? session.lastExitCode
                 : undefined,
             lastExitSignal: asOptionalTrimmedString(session.lastExitSignal),
+=======
+>>>>>>> origin/rewrite/main-sanitized:apps/web/src/app/dashboard/session/session-page-normalizers.ts
             logs,
             metadata: session.metadata && typeof session.metadata === 'object'
                 ? (session.metadata as NormalizedSessionRow['metadata'])

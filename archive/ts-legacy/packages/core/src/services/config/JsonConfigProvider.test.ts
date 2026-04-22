@@ -4,12 +4,17 @@ import path from 'node:path';
 
 import { afterEach, describe, expect, it } from 'vitest';
 
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/services/config/JsonConfigProvider.test.ts
 import { JsonConfigProvider } from './JsonConfigProvider.js';
 <<<<<<< HEAD:archive/ts-legacy/packages/core/src/services/config/JsonConfigProvider.test.ts
 import { loadHyperCodeMcpConfig } from '../../mcp/mcpJsonConfig.js';
 =======
 import { loadBorgMcpConfig } from '../../mcp/mcpJsonConfig.js';
 >>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/services/config/JsonConfigProvider.test.ts
+=======
+import { JsonConfigProvider } from './JsonConfigProvider.ts';
+import { loadBorgMcpConfig } from '../../mcp/mcpJsonConfig.ts';
+>>>>>>> origin/rewrite/main-sanitized:packages/core/src/services/config/JsonConfigProvider.test.ts
 
 const tempDirs: string[] = [];
 
@@ -63,10 +68,13 @@ describe('JsonConfigProvider always-visible tools compatibility', () => {
             importantTools: [],
             alwaysLoadedTools: ['browser__open'],
             autoLoadMinConfidence: 0.85,
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/services/config/JsonConfigProvider.test.ts
             // Session working-set capacity fields
             maxLoadedTools: expect.any(Number),
             maxHydratedSchemas: expect.any(Number),
             idleEvictionThresholdMs: expect.any(Number),
+=======
+>>>>>>> origin/rewrite/main-sanitized:packages/core/src/services/config/JsonConfigProvider.test.ts
         });
     });
 });

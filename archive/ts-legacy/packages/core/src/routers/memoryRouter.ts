@@ -6,7 +6,11 @@ import {
     MemoryExportImportService,
     MEMORY_INTERCHANGE_FORMATS,
 } from '../services/memory/MemoryExportImportService.js';
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/routers/memoryRouter.ts
 import { readSectionedMemoryStoreStatus } from './memoryRouter.sectioned-store.js';
+=======
+import { readClaudeMemStoreStatus } from './memoryRouter.claude-mem.js';
+>>>>>>> origin/rewrite/main-sanitized:packages/core/src/routers/memoryRouter.ts
 import { 
     getCrossSessionMemoryLinksInputSchema,
     memoryInterchangeFormatSchema, 
@@ -20,6 +24,7 @@ import {
     searchObservationsInputSchema, 
     getRecentUserPromptsInputSchema, 
     searchUserPromptsInputSchema 
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/routers/memoryRouter.ts
 <<<<<<< HEAD:archive/ts-legacy/packages/core/src/routers/memoryRouter.ts
 } from '@hypercode/types';
 =======
@@ -46,6 +51,9 @@ function requireAgentMemoryCapability<T>(value: T | undefined, contextLabel: str
     }
     return value;
 }
+=======
+} from '@borg/types';
+>>>>>>> origin/rewrite/main-sanitized:packages/core/src/routers/memoryRouter.ts
 
 export const memoryRouter = t.router({
     saveContext: publicProcedure.input(z.object({
@@ -138,18 +146,30 @@ export const memoryRouter = t.router({
     }),
 
     getRecentObservations: publicProcedure.input(getRecentObservationsInputSchema).query(async ({ input }) => {
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/routers/memoryRouter.ts
         const service = requireAgentMemoryService('Recent observations');
         const getRecentObservations = requireAgentMemoryCapability(service.getRecentObservations, 'Recent observations');
         return getRecentObservations(input.limit, {
+=======
+        const service = getAgentMemoryService();
+        if (!service?.getRecentObservations) return [];
+        return service.getRecentObservations(input.limit, {
+>>>>>>> origin/rewrite/main-sanitized:packages/core/src/routers/memoryRouter.ts
             namespace: input.namespace,
             type: input.type,
         });
     }),
 
     searchObservations: publicProcedure.input(searchObservationsInputSchema).query(async ({ input }) => {
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/routers/memoryRouter.ts
         const service = requireAgentMemoryService('Observation search');
         const searchObservations = requireAgentMemoryCapability(service.searchObservations, 'Observation search');
         return await searchObservations(input.query, {
+=======
+        const service = getAgentMemoryService();
+        if (!service?.searchObservations) return [];
+        return await service.searchObservations(input.query, {
+>>>>>>> origin/rewrite/main-sanitized:packages/core/src/routers/memoryRouter.ts
             limit: input.limit,
             namespace: input.namespace,
             type: input.type,
@@ -157,23 +177,36 @@ export const memoryRouter = t.router({
     }),
 
     getRecentUserPrompts: publicProcedure.input(getRecentUserPromptsInputSchema).query(async ({ input }) => {
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/routers/memoryRouter.ts
         const service = requireAgentMemoryService('Recent user prompts');
         const getRecentUserPrompts = requireAgentMemoryCapability(service.getRecentUserPrompts, 'Recent user prompts');
         return getRecentUserPrompts(input.limit, {
+=======
+        const service = getAgentMemoryService();
+        if (!service?.getRecentUserPrompts) return [];
+        return service.getRecentUserPrompts(input.limit, {
+>>>>>>> origin/rewrite/main-sanitized:packages/core/src/routers/memoryRouter.ts
             role: input.role,
         });
     }),
 
     searchUserPrompts: publicProcedure.input(searchUserPromptsInputSchema).query(async ({ input }) => {
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/routers/memoryRouter.ts
         const service = requireAgentMemoryService('User prompt search');
         const searchUserPrompts = requireAgentMemoryCapability(service.searchUserPrompts, 'User prompt search');
         return await searchUserPrompts(input.query, {
+=======
+        const service = getAgentMemoryService();
+        if (!service?.searchUserPrompts) return [];
+        return await service.searchUserPrompts(input.query, {
+>>>>>>> origin/rewrite/main-sanitized:packages/core/src/routers/memoryRouter.ts
             limit: input.limit,
             role: input.role,
         });
     }),
 
     searchMemoryPivot: publicProcedure.input(searchMemoryPivotInputSchema).query(async ({ input }) => {
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/routers/memoryRouter.ts
         const service = requireAgentMemoryService('Memory pivot search');
         const searchByPivot = requireAgentMemoryCapability(service.searchByPivot, 'Memory pivot search');
         return searchByPivot(input);
@@ -189,6 +222,23 @@ export const memoryRouter = t.router({
         const service = requireAgentMemoryService('Cross-session memory links');
         const getCrossSessionLinks = requireAgentMemoryCapability(service.getCrossSessionLinks, 'Cross-session memory links');
         return getCrossSessionLinks(input);
+=======
+        const service = getAgentMemoryService();
+        if (!service?.searchByPivot) return [];
+        return service.searchByPivot(input);
+    }),
+
+    getMemoryTimelineWindow: publicProcedure.input(getMemoryTimelineWindowInputSchema).query(async ({ input }) => {
+        const service = getAgentMemoryService();
+        if (!service?.getTimelineWindow) return [];
+        return service.getTimelineWindow(input);
+    }),
+
+    getCrossSessionMemoryLinks: publicProcedure.input(getCrossSessionMemoryLinksInputSchema).query(async ({ input }) => {
+        const service = getAgentMemoryService();
+        if (!service?.getCrossSessionLinks) return [];
+        return service.getCrossSessionLinks(input);
+>>>>>>> origin/rewrite/main-sanitized:packages/core/src/routers/memoryRouter.ts
     }),
 
     captureSessionSummary: publicProcedure.input(z.object({

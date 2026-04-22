@@ -56,7 +56,10 @@ describe('compatibilityToolDefinitions', () => {
             'get_tool_context',
             'unload_tool',
             'list_loaded_tools',
+<<<<<<< HEAD:archive/ts-legacy/packages/core/mcp/__tests__/compatibility-tool-definitions.test.ts
             'list_all_tools',
+=======
+>>>>>>> origin/rewrite/main-sanitized:packages/core/mcp/__tests__/compatibility-tool-definitions.test.ts
             'set_capacity',
             'get_eviction_history',
             'clear_eviction_history',

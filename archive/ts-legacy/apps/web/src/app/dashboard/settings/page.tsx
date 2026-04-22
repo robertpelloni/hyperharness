@@ -10,7 +10,10 @@ import { Textarea } from '@hypercode/ui';
 import { Card } from '@borg/ui';
 import { Button } from '@borg/ui';
 import { Textarea } from '@borg/ui';
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/settings/page.tsx
 >>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/settings/page.tsx
+=======
+>>>>>>> origin/rewrite/main-sanitized:apps/web/src/app/dashboard/settings/page.tsx
 import { formatSettingsConfig, getSettingsSaveErrorMessage } from './settings-page-normalizers';
 
 export default function SettingsDashboard() {

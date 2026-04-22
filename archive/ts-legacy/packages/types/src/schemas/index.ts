@@ -16,5 +16,8 @@ export * from "./config-schemas.zod";
 export * from "./server-health.zod";
 export * from "./auto-reconnect.zod";
 export * from "./auto-discovery.zod";
+<<<<<<< HEAD:archive/ts-legacy/packages/types/src/schemas/index.ts
 export * from "./mesh.zod";
+=======
+>>>>>>> origin/rewrite/main-sanitized:packages/types/src/schemas/index.ts
 export * from "./memory.js";

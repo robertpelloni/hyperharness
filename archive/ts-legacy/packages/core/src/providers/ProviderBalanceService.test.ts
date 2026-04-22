@@ -9,10 +9,14 @@ describe('ProviderBalanceService', () => {
     });
 
 <<<<<<< HEAD:archive/ts-legacy/packages/core/src/providers/ProviderBalanceService.test.ts
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/providers/ProviderBalanceService.test.ts
     it('normalizes GitHub Copilot quota snapshots into HyperCode provider quotas', async () => {
 =======
     it('normalizes GitHub Copilot quota snapshots into borg provider quotas', async () => {
 >>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/providers/ProviderBalanceService.test.ts
+=======
+    it('normalizes GitHub Copilot quota snapshots into Borg provider quotas', async () => {
+>>>>>>> origin/rewrite/main-sanitized:packages/core/src/providers/ProviderBalanceService.test.ts
         const source: ProviderBalanceConnectionSource = {
             async getConnection(provider) {
                 if (provider !== 'github') {

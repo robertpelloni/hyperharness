@@ -18,7 +18,10 @@ export default function ApiKeysDashboard() {
     const { data: apiKeys, isLoading, refetch } = apiKeysQuery;
     const [isCreateOpen, setIsCreateOpen] = useState(false);
     const normalizedApiKeys = normalizeApiKeyList(apiKeys);
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/mcp/api-keys/page.tsx
     const apiKeysUnavailable = apiKeysQuery.isError || (apiKeys != null && !Array.isArray(apiKeys));
+=======
+>>>>>>> origin/rewrite/main-sanitized:apps/web/src/app/dashboard/mcp/api-keys/page.tsx
 
     return (
         <div className="p-8 space-y-8">
@@ -49,12 +52,15 @@ export default function ApiKeysDashboard() {
                     <div className="col-span-3 flex justify-center p-12">
                         <Loader2 className="h-8 w-8 animate-spin text-zinc-500" />
                     </div>
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/mcp/api-keys/page.tsx
                 ) : apiKeysUnavailable ? (
                     <div className="col-span-3 text-center p-12 text-red-300 bg-red-950/20 rounded-lg border border-red-900/40">
                         <Key className="h-12 w-12 mx-auto mb-4 opacity-60" />
                         <p className="text-lg font-medium">API key inventory unavailable</p>
                         <p className="text-sm mt-1">{apiKeysQuery.isError ? apiKeysQuery.error.message : 'Malformed API key payload.'}</p>
                     </div>
+=======
+>>>>>>> origin/rewrite/main-sanitized:apps/web/src/app/dashboard/mcp/api-keys/page.tsx
                 ) : normalizedApiKeys.length === 0 ? (
                     <div className="col-span-3 text-center p-12 text-zinc-500 bg-zinc-900/50 rounded-lg border border-zinc-800 border-dashed">
                         <Key className="h-12 w-12 mx-auto mb-4 opacity-30" />

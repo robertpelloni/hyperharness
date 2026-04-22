@@ -1,6 +1,10 @@
 import { z } from 'zod';
 
+<<<<<<< HEAD:archive/ts-legacy/packages/types/src/schemas/memory.ts
 export const memoryInterchangeFormatSchema = z.enum(['json', 'csv', 'jsonl', 'json-provider', 'sectioned-memory-store']);
+=======
+export const memoryInterchangeFormatSchema = z.enum(['json', 'csv', 'jsonl', 'json-provider', 'claude-mem-store']);
+>>>>>>> origin/rewrite/main-sanitized:packages/types/src/schemas/memory.ts
 export type MemoryInterchangeFormat = z.infer<typeof memoryInterchangeFormatSchema>;
 
 export const observationTypeSchema = z.enum(['discovery', 'decision', 'progress', 'warning', 'fix']);

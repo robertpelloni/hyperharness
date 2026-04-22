@@ -13,6 +13,7 @@ export type StartupStatusSummary = {
     status?: string;
     summary?: string;
 <<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/integrations/integration-catalog.ts
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/integrations/integration-catalog.ts
     startupMode?: {
         requestedRuntime?: string;
         activeRuntime?: string;
@@ -30,6 +31,8 @@ export type StartupStatusSummary = {
     } | null;
 =======
 >>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/integrations/integration-catalog.ts
+=======
+>>>>>>> origin/rewrite/main-sanitized:apps/web/src/app/dashboard/integrations/integration-catalog.ts
     checks?: {
         extensionBridge?: {
             ready?: boolean;
@@ -74,9 +77,12 @@ export type IntegrationOverview = {
     startupDegraded: boolean;
     startupSummary: string | null;
 <<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/integrations/integration-catalog.ts
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/integrations/integration-catalog.ts
     startupMode: StartupStatusSummary['startupMode'];
 =======
 >>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/integrations/integration-catalog.ts
+=======
+>>>>>>> origin/rewrite/main-sanitized:apps/web/src/app/dashboard/integrations/integration-catalog.ts
     extensionBridgeReady: boolean;
     extensionBridgeAcceptingConnections: boolean;
     hasConnectedBridgeClients: boolean;
@@ -656,9 +662,12 @@ export function getIntegrationOverview(
         startupDegraded,
         startupSummary,
 <<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/integrations/integration-catalog.ts
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/integrations/integration-catalog.ts
         startupMode: startupStatus?.startupMode ?? null,
 =======
 >>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/integrations/integration-catalog.ts
+=======
+>>>>>>> origin/rewrite/main-sanitized:apps/web/src/app/dashboard/integrations/integration-catalog.ts
         extensionBridgeReady,
         extensionBridgeAcceptingConnections,
         hasConnectedBridgeClients,

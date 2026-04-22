@@ -11,6 +11,7 @@ export interface DashboardSystemStatus {
     agents: string[];
 }
 
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/events/events-page-normalizers.ts
 export interface NormalizedDashboardEventsResult {
     data: DashboardEventRow[];
     invalid: boolean;
@@ -21,6 +22,8 @@ export interface NormalizedDashboardSystemStatusResult {
     invalid: boolean;
 }
 
+=======
+>>>>>>> origin/rewrite/main-sanitized:apps/web/src/app/dashboard/events/events-page-normalizers.ts
 function isObject(value: unknown): value is Record<string, unknown> {
     return typeof value === 'object' && value !== null;
 }
@@ -59,6 +62,7 @@ function normalizeTimestamp(value: unknown): number | null {
     return null;
 }
 
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/events/events-page-normalizers.ts
 export function normalizeDashboardEvents(payload: unknown): NormalizedDashboardEventsResult {
     if (!Array.isArray(payload)) {
         return { data: [], invalid: payload != null };
@@ -68,13 +72,25 @@ export function normalizeDashboardEvents(payload: unknown): NormalizedDashboardE
     const data = payload.reduce<DashboardEventRow[]>((acc, item, index) => {
         if (!isObject(item)) {
             invalid = true;
+=======
+export function normalizeDashboardEvents(payload: unknown): DashboardEventRow[] {
+    if (!Array.isArray(payload)) {
+        return [];
+    }
+
+    return payload.reduce<DashboardEventRow[]>((acc, item, index) => {
+        if (!isObject(item)) {
+>>>>>>> origin/rewrite/main-sanitized:apps/web/src/app/dashboard/events/events-page-normalizers.ts
             return acc;
         }
 
         const rawType = typeof item.type === 'string' ? item.type.trim() : '';
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/events/events-page-normalizers.ts
         if (rawType.length === 0) {
             invalid = true;
         }
+=======
+>>>>>>> origin/rewrite/main-sanitized:apps/web/src/app/dashboard/events/events-page-normalizers.ts
         const rawSource = typeof item.source === 'string' ? item.source.trim() : '';
 
         acc.push({
@@ -86,6 +102,7 @@ export function normalizeDashboardEvents(payload: unknown): NormalizedDashboardE
 
         return acc;
     }, []);
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/events/events-page-normalizers.ts
 
     return { data, invalid };
 }
@@ -99,6 +116,16 @@ export function normalizeDashboardSystemStatus(payload: unknown): NormalizedDash
                 agents: [],
             },
             invalid: payload != null,
+=======
+}
+
+export function normalizeDashboardSystemStatus(payload: unknown): DashboardSystemStatus {
+    if (!isObject(payload)) {
+        return {
+            status: 'offline',
+            uptime: 0,
+            agents: [],
+>>>>>>> origin/rewrite/main-sanitized:apps/web/src/app/dashboard/events/events-page-normalizers.ts
         };
     }
 
@@ -107,6 +134,7 @@ export function normalizeDashboardSystemStatus(payload: unknown): NormalizedDash
     const agents = Array.isArray(payload.agents)
         ? payload.agents.filter((agent): agent is string => typeof agent === 'string' && agent.trim().length > 0).map((agent) => agent.trim())
         : [];
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/events/events-page-normalizers.ts
     const invalid = (payload.status !== 'online' && payload.status !== 'offline')
         || !(typeof payload.uptime === 'number' && Number.isFinite(payload.uptime))
         || !Array.isArray(payload.agents);
@@ -120,3 +148,12 @@ export function normalizeDashboardSystemStatus(payload: unknown): NormalizedDash
         invalid,
     };
 }
+=======
+
+    return {
+        status,
+        uptime,
+        agents,
+    };
+}
+>>>>>>> origin/rewrite/main-sanitized:apps/web/src/app/dashboard/events/events-page-normalizers.ts

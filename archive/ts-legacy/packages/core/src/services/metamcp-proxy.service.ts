@@ -458,6 +458,7 @@ export const attachTo = async (
                 descriptions: {
                     search_tools: "Semantically search for available tools across all connected MCP servers. Use this to find tools for a specific task.",
                     load_tool: "Load a specific tool by name into your context so you can use it. In progressive mode this loads lightweight metadata first; use get_tool_schema to hydrate the full parameter schema when needed.",
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/services/metamcp-proxy.service.ts
                      get_tool_schema: "Explicitly fetch and hydrate the full JSON schema for a deferred tool after search/load, reducing default token overhead for sub-agents.",
 <<<<<<< HEAD:archive/ts-legacy/packages/core/src/services/metamcp-proxy.service.ts
                      get_tool_context: "Fetch compact HyperCode memory context before calling a downstream tool so the model can reuse recent observations, summaries, and file-specific learnings.",
@@ -473,6 +474,15 @@ export const attachTo = async (
                      clear_eviction_history: "Clear the bounded recent eviction-history buffer for the current session working set.",
                  },
              }),
+=======
+                    get_tool_schema: "Explicitly fetch and hydrate the full JSON schema for a deferred tool after search/load, reducing default token overhead for sub-agents.",
+                    get_tool_context: "Fetch compact Borg memory context before calling a downstream tool so the model can reuse recent observations, summaries, and file-specific learnings.",
+                    unload_tool: "Remove a previously loaded tool from the current session working set so it no longer appears in the exposed tool list.",
+                    list_loaded_tools: "List tools currently loaded into the session working set, including whether their full schemas are hydrated.",
+                    clear_eviction_history: "Clear the bounded recent eviction-history buffer for the current session working set.",
+                },
+            }),
+>>>>>>> origin/rewrite/main-sanitized:packages/core/src/services/metamcp-proxy.service.ts
             ...getCompatibilityToolDefinitions(),
         ];
 
@@ -822,24 +832,37 @@ export const attachTo = async (
             return formatResult(await executeListLoadedToolsCompatibility(toolWorkingSet));
         }
 
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/services/metamcp-proxy.service.ts
         if (name === "list_all_tools") {
             return formatResult(await executeListAllToolsCompatibility(await buildAllAdvertisedToolsPayload(args ?? {})));
         }
 
+=======
+>>>>>>> origin/rewrite/main-sanitized:packages/core/src/services/metamcp-proxy.service.ts
         if (name === "set_capacity") {
             // Clamp inputs to safe bounds before forwarding to the working-set service.
             const rawMax = typeof args?.maxLoadedTools === 'number' ? args.maxLoadedTools : undefined;
             const rawHydrated = typeof args?.maxHydratedSchemas === 'number' ? args.maxHydratedSchemas : undefined;
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/services/metamcp-proxy.service.ts
             const rawIdle = typeof args?.idleEvictionThresholdMs === 'number' ? args.idleEvictionThresholdMs : undefined;
             const maxLoadedTools = rawMax !== undefined ? Math.max(4, Math.min(64, Math.round(rawMax))) : undefined;
             const maxHydratedSchemas = rawHydrated !== undefined ? Math.max(2, Math.min(32, Math.round(rawHydrated))) : undefined;
             const idleEvictionThresholdMs = rawIdle !== undefined ? Math.max(10_000, Math.min(24 * 60 * 60 * 1000, Math.round(rawIdle))) : undefined;
             toolWorkingSet.reconfigure({ maxLoadedTools, maxHydratedSchemas, idleEvictionThresholdMs });
+=======
+            const maxLoadedTools = rawMax !== undefined ? Math.max(4, Math.min(64, Math.round(rawMax))) : undefined;
+            const maxHydratedSchemas = rawHydrated !== undefined ? Math.max(2, Math.min(32, Math.round(rawHydrated))) : undefined;
+            toolWorkingSet.reconfigure({ maxLoadedTools, maxHydratedSchemas });
+>>>>>>> origin/rewrite/main-sanitized:packages/core/src/services/metamcp-proxy.service.ts
             const updated = toolWorkingSet.getLimits();
             return {
                 content: [{
                     type: 'text',
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/services/metamcp-proxy.service.ts
                     text: `Working-set capacity updated: maxLoadedTools=${updated.maxLoadedTools}, maxHydratedSchemas=${updated.maxHydratedSchemas}, idleEvictionThresholdMs=${updated.idleEvictionThresholdMs}`,
+=======
+                    text: `Working-set capacity updated: maxLoadedTools=${updated.maxLoadedTools}, maxHydratedSchemas=${updated.maxHydratedSchemas}`,
+>>>>>>> origin/rewrite/main-sanitized:packages/core/src/services/metamcp-proxy.service.ts
                 }],
             };
         }

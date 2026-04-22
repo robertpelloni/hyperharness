@@ -44,7 +44,10 @@ import {
     Puzzle,
     MonitorPlay,
     FolderOpen,
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/components/mcp/nav-config.ts
     Scale,
+=======
+>>>>>>> origin/rewrite/main-sanitized:apps/web/src/components/mcp/nav-config.ts
 } from "lucide-react";
 
 export interface NavItem {
@@ -272,6 +275,7 @@ export const INTEGRATIONS_NAV: NavItem[] = [
 
 export const CORE_DASHBOARD_NAV: NavItem[] = [
     { title: "Mission Control", href: "/", icon: LayoutDashboard, variant: "ghost" },
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/components/mcp/nav-config.ts
     { title: "Supervisor", href: "/dashboard/supervisor", icon: Eye, variant: "ghost", badge: "beta" },
     { title: "Sessions", href: "/dashboard/session", icon: MonitorPlay, description: "Manage supervised AI coding sessions, harness configurations, and restart policies.", variant: "ghost", badge: "beta" },
     { title: "Providers", href: "/dashboard/billing", icon: Key, variant: "ghost", badge: "beta" },
@@ -280,6 +284,14 @@ export const CORE_DASHBOARD_NAV: NavItem[] = [
     { title: "Logs", href: "/dashboard/logs", icon: Terminal, variant: "ghost", badge: "beta" },
     { title: "Audit", href: "/dashboard/audit", icon: FileText, variant: "ghost", badge: "beta" },
     { title: "System", href: "/dashboard/system", icon: Server, description: "Operator console: uptime, subsystem health, boot status.", variant: "ghost", badge: "beta" },
+=======
+    { title: "Supervisor", href: "/dashboard/supervisor", icon: Eye, variant: "ghost" },
+    { title: "Sessions", href: "/dashboard/session", icon: MonitorPlay, description: "Manage supervised AI coding sessions, harness configurations, and restart policies.", variant: "ghost" },
+    { title: "Providers", href: "/dashboard/billing", icon: Key, variant: "ghost" },
+    { title: "Health", href: "/dashboard/health", icon: Activity, variant: "ghost" },
+    { title: "Logs", href: "/dashboard/logs", icon: Terminal, variant: "ghost" },
+    { title: "Audit", href: "/dashboard/audit", icon: FileText, variant: "ghost" },
+>>>>>>> origin/rewrite/main-sanitized:apps/web/src/components/mcp/nav-config.ts
     { title: "Documentation", href: "/docs", icon: BookOpen, variant: "ghost" },
     { title: "Settings", href: "/dashboard/settings", icon: Settings2, variant: "ghost" },
     { title: "Secrets Vault", href: "/dashboard/settings/secrets", icon: Key, description: "Manage environment variables and API credentials injected into MCP servers.", variant: "ghost" },
@@ -298,11 +310,19 @@ export const LABS_DASHBOARD_NAV: NavItem[] = [
     { title: "Project Laws", href: "/dashboard/project", icon: Scale, variant: "ghost" },
     { title: "Research", href: "/dashboard/research", icon: FlaskConical, variant: "ghost" },
     { title: "Browser", href: "/dashboard/browser", icon: Globe, variant: "ghost" },
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/components/mcp/nav-config.ts
     { title: "Symbols", href: "/dashboard/symbols", icon: Code2, description: "Browse pinned code symbols and architectural references.", variant: "ghost", badge: "beta" },
     { title: "Code", href: "/dashboard/code", icon: FileCode2, description: "LSP symbol navigation and search across the active workspace.", variant: "ghost", badge: "beta" },
     { title: "Context Manager", href: "/dashboard/context", icon: FolderOpen, description: "Manage files injected into the borg context prompt for active AI sessions.", variant: "ghost" },
     { title: "Command", href: "/dashboard/command", icon: Terminal, description: "Execute slash commands and explore registered command handlers via a live REPL.", variant: "ghost" },
     { title: "Tests", href: "/dashboard/tests", icon: FlaskConical, description: "Auto-test watcher: start/stop file-watch mode, view per-file pass/fail results.", variant: "ghost", badge: "beta" },
+=======
+    { title: "Symbols", href: "/dashboard/symbols", icon: Code2, description: "Browse pinned code symbols and architectural references.", variant: "ghost" },
+    { title: "Code", href: "/dashboard/code", icon: FileCode2, description: "LSP symbol navigation and search across the active workspace.", variant: "ghost" },
+    { title: "Context Manager", href: "/dashboard/context", icon: FolderOpen, description: "Manage files injected into the Borg context prompt for active AI sessions.", variant: "ghost" },
+    { title: "Command", href: "/dashboard/command", icon: Terminal, description: "Execute slash commands and explore registered command handlers via a live REPL.", variant: "ghost" },
+    { title: "Tests", href: "/dashboard/tests", icon: FlaskConical, description: "Auto-test watcher: start/stop file-watch mode, view per-file pass/fail results.", variant: "ghost" },
+>>>>>>> origin/rewrite/main-sanitized:apps/web/src/components/mcp/nav-config.ts
     { title: "Traffic Inspector", href: "/dashboard/inspector", icon: FileSearch, variant: "ghost" },
     { title: "Workflows", href: "/dashboard/workflows", icon: Workflow, variant: "ghost", badge: "beta" },
     { title: "Swarm", href: "/dashboard/swarm", icon: Users, description: "Horizontal multi-model delegation, adversarial debates, and consensus voting.", variant: "ghost", badge: "experimental" },
@@ -321,7 +341,13 @@ export const LABS_DASHBOARD_NAV: NavItem[] = [
     { title: "Architecture", href: "/dashboard/architecture", icon: Building2, variant: "ghost" },
     { title: "Infrastructure", href: "/dashboard/infrastructure", icon: Server, variant: "ghost" },
     { title: "Evolution", href: "/dashboard/evolution", icon: Sparkles, variant: "ghost" },
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/components/mcp/nav-config.ts
     { title: "Chronicle", href: "/dashboard/chronicle", icon: ScrollText, description: "Git commit log and working-tree status for the active borg workspace.", variant: "ghost" },
+=======
+    { title: "Chronicle", href: "/dashboard/chronicle", icon: ScrollText, variant: "ghost" },
+    { title: "Chronicle", href: "/dashboard/chronicle", icon: ScrollText, description: "Git commit log and working-tree status for the active Borg workspace.", variant: "ghost" },
+    { title: "Library", href: "/dashboard/library", icon: Library, description: "Resource hub for scripts, skills, tool sets, memory, plans, and documentation.", variant: "ghost" },
+>>>>>>> origin/rewrite/main-sanitized:apps/web/src/components/mcp/nav-config.ts
     { title: "Submodules", href: "/dashboard/submodules", icon: FileCode, variant: "ghost" },
     { title: "Workshop", href: "/dashboard/workshop", icon: Wrench, variant: "ghost" },
     { title: "Auto-Dev", href: "/dashboard/workshop/auto-dev", icon: Bot, variant: "ghost" },

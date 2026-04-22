@@ -30,10 +30,13 @@ interface ProviderQuotaRuntime {
     }>;
     source?: string;
     connectionId?: string | null;
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/routers/billingRouter.ts
     /** @see QuotaDataConfidence */
     quotaConfidence?: string;
     /** ISO-8601 timestamp of last real-time fetch from provider, or null. */
     quotaRefreshedAt?: string | null;
+=======
+>>>>>>> origin/rewrite/main-sanitized:packages/core/src/routers/billingRouter.ts
 }
 
 interface BillingSelectorRuntime {
@@ -163,8 +166,11 @@ export const billingRouter = t.router({
                 windows: provider.windows ?? [],
                 source: provider.source ?? null,
                 connectionId: provider.connectionId ?? null,
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/routers/billingRouter.ts
                 quotaConfidence: provider.quotaConfidence ?? 'estimated',
                 quotaRefreshedAt: provider.quotaRefreshedAt ?? null,
+=======
+>>>>>>> origin/rewrite/main-sanitized:packages/core/src/routers/billingRouter.ts
             }));
         }
 

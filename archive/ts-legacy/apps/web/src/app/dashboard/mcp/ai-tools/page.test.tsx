@@ -193,10 +193,14 @@ vi.mock('next/link', () => ({
 }));
 
 <<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/mcp/ai-tools/page.test.tsx
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/mcp/ai-tools/page.test.tsx
 vi.mock('@hypercode/ui', () => ({
 =======
 vi.mock('@borg/ui', () => ({
 >>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/mcp/ai-tools/page.test.tsx
+=======
+vi.mock('@borg/ui', () => ({
+>>>>>>> origin/rewrite/main-sanitized:apps/web/src/app/dashboard/mcp/ai-tools/page.test.tsx
   Button: ({ children, ...props }: any) => <button {...props}>{children}</button>,
   Card: ({ children, ...props }: any) => <section {...props}>{children}</section>,
   CardHeader: ({ children, ...props }: any) => <header {...props}>{children}</header>,

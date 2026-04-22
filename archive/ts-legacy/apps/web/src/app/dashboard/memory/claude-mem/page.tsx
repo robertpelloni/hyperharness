@@ -3,10 +3,14 @@
 import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
 <<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/memory/claude-mem/page.tsx
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/memory/claude-mem/page.tsx
 import { Badge, Button, Card, CardContent, CardDescription, CardHeader, CardTitle, ScrollArea } from '@hypercode/ui';
 =======
 import { Badge, Button, Card, CardContent, CardDescription, CardHeader, CardTitle, ScrollArea } from '@borg/ui';
 >>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/memory/claude-mem/page.tsx
+=======
+import { Badge, Button, Card, CardContent, CardDescription, CardHeader, CardTitle, ScrollArea } from '@borg/ui';
+>>>>>>> origin/rewrite/main-sanitized:apps/web/src/app/dashboard/memory/claude-mem/page.tsx
 import { trpc } from '@/utils/trpc';
 import { AlertTriangle, ArrowRight, BookOpenText, BrainCircuit, CheckCircle2, FileCode2, Layers3, Loader2, RefreshCw, Route } from 'lucide-react';
 
@@ -103,6 +107,7 @@ export default function ClaudeMemDashboardPage() {
 				<div>
 					<h1 className="text-xl font-bold text-white flex items-center gap-2">
 <<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/memory/claude-mem/page.tsx
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/memory/claude-mem/page.tsx
 						<BrainCircuit className="w-5 h-5 text-cyan-400" /> hypercode-memory Integration (Adapter)
 					</h1>
 					<p className="text-gray-400 text-sm">
@@ -113,6 +118,12 @@ export default function ClaudeMemDashboardPage() {
 					<p className="text-gray-400 text-sm">
 						borg&apos;s memory system is sovereign. The borg-memory layer is an adapter around borg-native observations, prompts, summaries, and interchange workflows.
 >>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/memory/claude-mem/page.tsx
+=======
+						<BrainCircuit className="w-5 h-5 text-cyan-400" /> claude-mem Integration (Adapter)
+					</h1>
+					<p className="text-gray-400 text-sm">
+						Borg&apos;s memory system is sovereign. The claude-mem layer is an adapter around Borg-native observations, prompts, summaries, and interchange workflows.
+>>>>>>> origin/rewrite/main-sanitized:apps/web/src/app/dashboard/memory/claude-mem/page.tsx
 					</p>
 				</div>
 				<div className="flex gap-2 items-center">
@@ -191,14 +202,19 @@ export default function ClaudeMemDashboardPage() {
 						<CardHeader>
 							<CardTitle className="flex items-center gap-2 text-sm">
 <<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/memory/claude-mem/page.tsx
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/memory/claude-mem/page.tsx
 								<Route className="w-4 h-4 text-emerald-400" /> HyperCode-native memory model
 =======
 								<Route className="w-4 h-4 text-emerald-400" /> borg-native memory model
 >>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/memory/claude-mem/page.tsx
+=======
+								<Route className="w-4 h-4 text-emerald-400" /> Borg-native memory model
+>>>>>>> origin/rewrite/main-sanitized:apps/web/src/app/dashboard/memory/claude-mem/page.tsx
 							</CardTitle>
 						</CardHeader>
 						<CardContent className="space-y-3 text-sm text-zinc-300">
 							<p>
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/memory/claude-mem/page.tsx
 <<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/memory/claude-mem/page.tsx
 								HyperCode already captures <strong>typed observations, structured prompts, and session summaries</strong> natively. The hypercode-memory layer exists to mirror and exchange that data with adjacent tools when needed.
 							</p>
@@ -218,6 +234,16 @@ export default function ClaudeMemDashboardPage() {
 								<Link href="/dashboard/memory" className="inline-flex items-center gap-2 rounded-md border border-cyan-500/30 bg-cyan-500/10 px-3 py-2 text-xs font-medium text-cyan-200 hover:bg-cyan-500/15">
 									Open borg memory dashboard <ArrowRight className="h-3.5 w-3.5" />
 >>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/memory/claude-mem/page.tsx
+=======
+								Borg already captures <strong>typed observations, structured prompts, and session summaries</strong> natively. The claude-mem layer exists to mirror and exchange that data with adjacent tools when needed.
+							</p>
+							<p>
+								What is still missing is the deeper claude-mem runtime story: Claude Code lifecycle hooks, richer model-driven compression workers, observation timelines, progressive context injection, and transcript rewriting.
+							</p>
+							<div className="flex flex-wrap gap-2 pt-1">
+								<Link href="/dashboard/memory" className="inline-flex items-center gap-2 rounded-md border border-cyan-500/30 bg-cyan-500/10 px-3 py-2 text-xs font-medium text-cyan-200 hover:bg-cyan-500/15">
+									Open Borg memory dashboard <ArrowRight className="h-3.5 w-3.5" />
+>>>>>>> origin/rewrite/main-sanitized:apps/web/src/app/dashboard/memory/claude-mem/page.tsx
 								</Link>
 							</div>
 						</CardContent>
@@ -237,12 +263,15 @@ export default function ClaudeMemDashboardPage() {
 							</CardDescription>
 						</CardHeader>
 						<CardContent className="space-y-3 text-sm text-zinc-300">
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/memory/claude-mem/page.tsx
 							{claudeMemStatusError ? (
 								<div className="rounded border border-rose-500/20 bg-rose-950/10 px-3 py-3">
 									<div className="font-medium text-white">Store status unavailable</div>
 									<div className="mt-2 text-xs text-rose-200">{claudeMemStatusError}</div>
 								</div>
 							) : null}
+=======
+>>>>>>> origin/rewrite/main-sanitized:apps/web/src/app/dashboard/memory/claude-mem/page.tsx
 							{summary.coreStatusDetail ? (
 								<div className={summary.coreStatusTone === 'degraded'
 									? 'rounded border border-amber-500/20 bg-amber-950/10 px-3 py-3'
@@ -310,10 +339,14 @@ export default function ClaudeMemDashboardPage() {
 								<div className="font-medium text-white">Recommended engineering next slice</div>
 								<div className="text-xs text-gray-400 mt-2">
 <<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/memory/claude-mem/page.tsx
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/memory/claude-mem/page.tsx
 									Finish the observation search, session timeline, and provenance workflow so HyperCode&apos;s native memory model is visible end to end before deeper hypercode-memory hook parity work.
 =======
 									Finish the observation search, session timeline, and provenance workflow so borg&apos;s native memory model is visible end to end before deeper borg-memory hook parity work.
 >>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/memory/claude-mem/page.tsx
+=======
+									Finish the observation search, session timeline, and provenance workflow so Borg&apos;s native memory model is visible end to end before deeper claude-mem hook parity work.
+>>>>>>> origin/rewrite/main-sanitized:apps/web/src/app/dashboard/memory/claude-mem/page.tsx
 								</div>
 							</div>
 						</CardContent>

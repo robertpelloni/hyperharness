@@ -75,7 +75,10 @@ export type DashboardServerRecord = {
     metadataToolCount?: number;
     lastSuccessfulBinaryLoadAt?: string;
     always_on?: boolean;
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/mcp/mcp-dashboard-utils.ts
     source_published_server_uuid?: string | null;
+=======
+>>>>>>> origin/rewrite/main-sanitized:apps/web/src/app/dashboard/mcp/mcp-dashboard-utils.ts
     config?: {
         command?: string;
         args?: string[];
@@ -202,7 +205,10 @@ export function buildDashboardServerRecords(
             metadataToolCount: server._meta?.toolCount ?? undefined,
             lastSuccessfulBinaryLoadAt: server._meta?.lastSuccessfulBinaryLoadAt ?? undefined,
             always_on: server.always_on,
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/mcp/mcp-dashboard-utils.ts
             source_published_server_uuid: server.source_published_server_uuid ?? null,
+=======
+>>>>>>> origin/rewrite/main-sanitized:apps/web/src/app/dashboard/mcp/mcp-dashboard-utils.ts
             config: {
                 command: runtime?.config?.command ?? server.command ?? undefined,
                 args: runtime?.config?.args ?? server.args ?? [],

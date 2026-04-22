@@ -507,7 +507,10 @@ export class McpServersRepository {
                     alwaysOn: server.always_on ?? false,
                     tools,
                 });
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/db/repositories/mcp-servers.repo.ts
                 
+=======
+>>>>>>> origin/rewrite/main-sanitized:packages/core/src/db/repositories/mcp-servers.repo.ts
                 const metadata = overrideMetadata ?? {
                     ...(existingServerConfig?._meta ?? {}),
                     ...buildBaseServerMetadata(server),
@@ -533,6 +536,7 @@ export class McpServersRepository {
                 if (overrideMetadata && overrideMetadata.tools.length === 0 && tools.length > 0) {
                     metadata.tools = derivedCatalog.tools;
                     metadata.toolCount = derivedCatalog.tools.length;
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/db/repositories/mcp-servers.repo.ts
                 }
 
                 // Create a synthetic server entry for DB servers not in mcp.jsonc
@@ -546,6 +550,8 @@ export class McpServersRepository {
 
                 if (server.type !== 'STDIO' && server.url) {
                     config.url = server.url;
+=======
+>>>>>>> origin/rewrite/main-sanitized:packages/core/src/db/repositories/mcp-servers.repo.ts
                 }
 
                 config._meta = metadata;

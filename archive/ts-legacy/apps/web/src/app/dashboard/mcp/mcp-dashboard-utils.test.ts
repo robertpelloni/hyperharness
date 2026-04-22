@@ -165,7 +165,10 @@ describe('buildDashboardServerRecords', () => {
                 metadataToolCount: 12,
                 lastSuccessfulBinaryLoadAt: '2026-03-11T00:00:00.000Z',
                 always_on: undefined,
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/mcp/mcp-dashboard-utils.test.ts
                 source_published_server_uuid: null,
+=======
+>>>>>>> origin/rewrite/main-sanitized:apps/web/src/app/dashboard/mcp/mcp-dashboard-utils.test.ts
                 config: {
                     command: 'npx',
                     args: ['-y', 'github-mcp'],

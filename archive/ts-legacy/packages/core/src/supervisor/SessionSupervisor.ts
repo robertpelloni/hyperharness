@@ -451,6 +451,7 @@ export class SessionSupervisor {
     }
 
     private async shouldUseWorktree(workingDirectory: string, requestedIsolation: boolean): Promise<boolean> {
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/supervisor/SessionSupervisor.ts
         if (!requestedIsolation || !this.worktreeManager) {
             return false;
         }
@@ -465,6 +466,9 @@ export class SessionSupervisor {
                 path.resolve(session.workingDirectory) === resolvedDir,
         );
         return conflict;
+=======
+        return !!(requestedIsolation && this.worktreeManager);
+>>>>>>> origin/rewrite/main-sanitized:packages/core/src/supervisor/SessionSupervisor.ts
     }
 
     private async createWorktree(sessionId: string): Promise<string> {

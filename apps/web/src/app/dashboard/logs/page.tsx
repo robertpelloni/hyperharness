@@ -1,18 +1,31 @@
 "use client";
 
 import { useState } from 'react';
+<<<<<<< HEAD
 import { PageStatusBanner } from '@/components/PageStatusBanner';
 import { Badge, Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Input, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@borg/ui";
 import { Activity, Trash2, Search, RefreshCcw, BarChart3, AlertTriangle, CheckCircle2, Clock } from "lucide-react";
 import { trpc } from '@/utils/trpc';
 import { toast } from 'sonner';
 import { filterLogEntries, filterLogEntriesByLevel, normalizeLogEntries, normalizeLogSummary } from './logs-page-normalizers';
+=======
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@borg/ui";
+import { Button } from "@borg/ui";
+import { Badge } from "@borg/ui";
+import { Input } from "@borg/ui";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@borg/ui";
+import { Activity, Trash2, Search, RefreshCcw, BarChart3, AlertTriangle, CheckCircle2, Clock } from "lucide-react";
+import { trpc } from '@/utils/trpc';
+import { toast } from 'sonner';
+import { filterLogEntries, normalizeLogEntries, normalizeLogSummary } from './logs-page-normalizers';
+>>>>>>> origin/rewrite/main-sanitized
 
 function formatDuration(ms: number) {
     if (ms < 1000) return `${ms}ms`;
     return `${(ms / 1000).toFixed(2)}s`;
 }
 
+<<<<<<< HEAD
 export default function LogsDashboard() {
     const [searchQuery, setSearchQuery] = useState("");
     const [serverNameFilter, setServerNameFilter] = useState("");
@@ -38,6 +51,23 @@ export default function LogsDashboard() {
         listQueryInput,
         { refetchInterval: autoRefresh ? 5_000 : false },
     );
+=======
+function formatTime(timestamp: number) {
+    return new Date(timestamp).toLocaleTimeString([], { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' });
+}
+
+export default function LogsDashboard() {
+    const [searchQuery, setSearchQuery] = useState("");
+    const [limit, setLimit] = useState(100);
+
+    const utils = trpc.useUtils();
+    
+    // Fetch summary metrics
+    const { data: summary, refetch: refetchSummary, isFetching: isFetchingSummary } = trpc.logs.summary.useQuery({ limit: 5000 });
+    
+    // Fetch log entries
+    const { data: logs, refetch: refetchLogs, isFetching: isFetchingLogs } = trpc.logs.list.useQuery({ limit });
+>>>>>>> origin/rewrite/main-sanitized
 
     const clearLogs = trpc.logs.clear.useMutation({
         onSuccess: () => {
@@ -49,6 +79,7 @@ export default function LogsDashboard() {
     });
 
     const handleRefresh = async () => {
+<<<<<<< HEAD
         await Promise.all([summaryQuery.refetch(), logsQuery.refetch()]);
         toast.success("Logs refreshed");
     };
@@ -62,12 +93,28 @@ export default function LogsDashboard() {
     const summaryErrorMessage = summaryQuery.error?.message ?? 'Execution log summary is unavailable.';
 
     const filteredLogs = filterLogEntriesByLevel(filterLogEntries(normalizedLogs, searchQuery), levelFilter);
+=======
+        await Promise.all([refetchSummary(), refetchLogs()]);
+        toast.success("Logs refreshed");
+    };
+
+    const isRefreshing = isFetchingSummary || isFetchingLogs;
+    const normalizedSummary = normalizeLogSummary(summary);
+    const normalizedLogs = normalizeLogEntries(logs);
+
+    // Filter logs client-side for immediate feedback
+    const filteredLogs = filterLogEntries(normalizedLogs, searchQuery);
+>>>>>>> origin/rewrite/main-sanitized
     const topTools = normalizedSummary.topTools;
     const topToolMaxCount = topTools[0]?.count ?? 0;
 
     return (
         <div className="p-8 space-y-8 h-full overflow-y-auto w-full max-w-[1600px] mx-auto">
+<<<<<<< HEAD
             <PageStatusBanner status="beta" message="Execution logs are filterable and searchable. Log streaming and advanced querying are planned." />
+=======
+            {/* Header */}
+>>>>>>> origin/rewrite/main-sanitized
             <div className="flex justify-between items-center">
                 <div>
                     <h1 className="text-3xl font-bold tracking-tight text-white flex items-center gap-3">
@@ -79,6 +126,7 @@ export default function LogsDashboard() {
                     </p>
                 </div>
                 <div className="flex items-center gap-3">
+<<<<<<< HEAD
                     <Button
                         type="button"
                         onClick={() => setAutoRefresh((current) => !current)}
@@ -87,6 +135,8 @@ export default function LogsDashboard() {
                     >
                         {autoRefresh ? 'Auto-refresh on' : 'Auto-refresh off'}
                     </Button>
+=======
+>>>>>>> origin/rewrite/main-sanitized
                     <Button 
                         onClick={handleRefresh} 
                         disabled={isRefreshing}
@@ -108,6 +158,7 @@ export default function LogsDashboard() {
                 </div>
             </div>
 
+<<<<<<< HEAD
             {summaryUnavailable || logsUnavailable ? (
                 <div className="rounded-lg border border-red-900/40 bg-red-950/20 p-4 text-sm text-red-300 space-y-1">
                     {summaryUnavailable ? <div>{summaryErrorMessage}</div> : null}
@@ -115,6 +166,9 @@ export default function LogsDashboard() {
                 </div>
             ) : null}
 
+=======
+            {/* Metrics Row */}
+>>>>>>> origin/rewrite/main-sanitized
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <Card className="bg-zinc-900 border-zinc-800">
                     <CardContent className="p-6">
@@ -123,7 +177,11 @@ export default function LogsDashboard() {
                             <Activity className="h-4 w-4 text-blue-500" />
                         </div>
                         <div className="text-3xl font-bold text-white mb-1">
+<<<<<<< HEAD
                             {summaryUnavailable ? '—' : normalizedSummary.totals.totalCalls}
+=======
+                            {normalizedSummary.totals.totalCalls}
+>>>>>>> origin/rewrite/main-sanitized
                         </div>
                     </CardContent>
                 </Card>
@@ -134,7 +192,11 @@ export default function LogsDashboard() {
                             <CheckCircle2 className="h-4 w-4 text-green-500" />
                         </div>
                         <div className="text-3xl font-bold text-white mb-1">
+<<<<<<< HEAD
                             {summaryUnavailable ? '—' : `${normalizedSummary.totals.successRate}%`}
+=======
+                            {normalizedSummary.totals.successRate}%
+>>>>>>> origin/rewrite/main-sanitized
                         </div>
                     </CardContent>
                 </Card>
@@ -145,7 +207,11 @@ export default function LogsDashboard() {
                             <AlertTriangle className="h-4 w-4 text-red-500" />
                         </div>
                         <div className="text-3xl font-bold text-white mb-1">
+<<<<<<< HEAD
                             {summaryUnavailable ? '—' : normalizedSummary.totals.errorCount}
+=======
+                            {normalizedSummary.totals.errorCount}
+>>>>>>> origin/rewrite/main-sanitized
                         </div>
                     </CardContent>
                 </Card>
@@ -156,15 +222,28 @@ export default function LogsDashboard() {
                             <Clock className="h-4 w-4 text-purple-500" />
                         </div>
                         <div className="text-3xl font-bold text-white mb-1">
+<<<<<<< HEAD
                             {summaryUnavailable ? '—' : normalizedSummary.totals.avgDurationMs > 0 ? formatDuration(normalizedSummary.totals.avgDurationMs) : '0ms'}
+=======
+                            {normalizedSummary.totals.avgDurationMs > 0 ? formatDuration(normalizedSummary.totals.avgDurationMs) : '0ms'}
+>>>>>>> origin/rewrite/main-sanitized
                         </div>
                     </CardContent>
                 </Card>
             </div>
 
+<<<<<<< HEAD
             <div className="grid grid-cols-1 xl:grid-cols-4 gap-8">
                 <div className="xl:col-span-3 space-y-4">
                     <div className="grid grid-cols-1 lg:grid-cols-12 gap-3">
+=======
+            {/* Main Content Area */}
+            <div className="grid grid-cols-1 xl:grid-cols-4 gap-8">
+                
+                {/* Left Column: Log Feed */}
+                <div className="xl:col-span-3 space-y-4">
+                    <div className="flex items-center gap-4">
+>>>>>>> origin/rewrite/main-sanitized
                         <div className="relative flex-1">
                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
                             <Input 
@@ -174,6 +253,7 @@ export default function LogsDashboard() {
                                 className="w-full pl-9 bg-zinc-900 border-zinc-800 text-white"
                             />
                         </div>
+<<<<<<< HEAD
                         <Input
                             value={serverNameFilter}
                             onChange={(e) => setServerNameFilter(e.target.value)}
@@ -188,6 +268,10 @@ export default function LogsDashboard() {
                         />
                         <div className="flex items-center gap-2 text-sm text-zinc-500 lg:col-span-3 justify-end">
                             <span>{logsUnavailable ? 'Showing — of —' : `Showing ${filteredLogs.length} of ${normalizedLogs.length}`}</span>
+=======
+                        <div className="flex items-center gap-2 text-sm text-zinc-500">
+                            <span>Showing {filteredLogs.length} of {limit}</span>
+>>>>>>> origin/rewrite/main-sanitized
                             <select 
                                 value={limit} 
                                 onChange={(e) => setLimit(Number(e.target.value))}
@@ -198,6 +282,7 @@ export default function LogsDashboard() {
                                 <option value={500}>500</option>
                                 <option value={1000}>1000</option>
                             </select>
+<<<<<<< HEAD
                             <select
                                 value={levelFilter}
                                 onChange={(e) => setLevelFilter(e.target.value)}
@@ -209,6 +294,8 @@ export default function LogsDashboard() {
                                 <option value="warn">Warn</option>
                                 <option value="error">Error</option>
                             </select>
+=======
+>>>>>>> origin/rewrite/main-sanitized
                         </div>
                     </div>
 
@@ -217,16 +304,24 @@ export default function LogsDashboard() {
                             <Table>
                                 <TableHeader className="bg-zinc-950">
                                     <TableRow className="border-zinc-800 hover:bg-transparent">
+<<<<<<< HEAD
                                         <TableHead className="w-[120px] text-zinc-400">Time</TableHead>
+=======
+                                        <TableHead className="w-[100px] text-zinc-400">Time</TableHead>
+>>>>>>> origin/rewrite/main-sanitized
                                         <TableHead className="w-[80px] text-zinc-400">Status</TableHead>
                                         <TableHead className="w-[180px] text-zinc-400">Server</TableHead>
                                         <TableHead className="w-[200px] text-zinc-400">Tool</TableHead>
                                         <TableHead className="w-[100px] text-zinc-400 text-right">Duration</TableHead>
+<<<<<<< HEAD
                                         <TableHead className="w-[320px] text-zinc-400">Message</TableHead>
+=======
+>>>>>>> origin/rewrite/main-sanitized
                                         <TableHead className="text-zinc-400">Result / Error</TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
+<<<<<<< HEAD
                                     {logsUnavailable ? (
                                         <TableRow>
                                             <TableCell colSpan={7} className="h-32 text-center text-red-300">
@@ -236,6 +331,11 @@ export default function LogsDashboard() {
                                     ) : filteredLogs.length === 0 ? (
                                         <TableRow>
                                             <TableCell colSpan={7} className="h-32 text-center text-zinc-500">
+=======
+                                    {filteredLogs.length === 0 ? (
+                                        <TableRow>
+                                            <TableCell colSpan={6} className="h-32 text-center text-zinc-500">
+>>>>>>> origin/rewrite/main-sanitized
                                                 No logs found.
                                             </TableCell>
                                         </TableRow>
@@ -245,8 +345,12 @@ export default function LogsDashboard() {
                                             return (
                                                 <TableRow key={log.id} className="border-zinc-800/50 hover:bg-zinc-800/30">
                                                     <TableCell className="font-mono text-xs text-zinc-500 whitespace-nowrap">
+<<<<<<< HEAD
                                                         <div>{new Date(log.timestamp).toLocaleTimeString([], { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' })}</div>
                                                         <div className="text-[10px] text-zinc-600">{new Date(log.timestamp).toLocaleDateString()}</div>
+=======
+                                                        {formatTime(log.timestamp)}
+>>>>>>> origin/rewrite/main-sanitized
                                                     </TableCell>
                                                     <TableCell>
                                                         {isError ? (
@@ -264,9 +368,12 @@ export default function LogsDashboard() {
                                                     <TableCell className="font-mono text-xs text-zinc-400 text-right">
                                                         {formatDuration(log.durationMs || 0)}
                                                     </TableCell>
+<<<<<<< HEAD
                                                     <TableCell className="text-xs text-zinc-500 truncate max-w-[320px]" title={log.message}>
                                                         {log.message ?? '—'}
                                                     </TableCell>
+=======
+>>>>>>> origin/rewrite/main-sanitized
                                                     <TableCell className="text-xs text-zinc-400 truncate max-w-[400px]" title={isError ? log.error : 'Success'}>
                                                         {isError ? (
                                                             <span className="text-red-400">{log.error || 'Unknown error'}</span>
@@ -284,6 +391,10 @@ export default function LogsDashboard() {
                     </Card>
                 </div>
 
+<<<<<<< HEAD
+=======
+                {/* Right Column: Top Tools */}
+>>>>>>> origin/rewrite/main-sanitized
                 <div className="space-y-6">
                     <Card className="bg-zinc-900 border-zinc-800">
                         <CardHeader className="pb-4">
@@ -295,9 +406,13 @@ export default function LogsDashboard() {
                         </CardHeader>
                         <CardContent>
                             <div className="space-y-4">
+<<<<<<< HEAD
                                 {summaryUnavailable ? (
                                     <div className="text-center text-sm text-red-300 py-4">{summaryErrorMessage}</div>
                                 ) : topTools.length === 0 ? (
+=======
+                                {topTools.length === 0 ? (
+>>>>>>> origin/rewrite/main-sanitized
                                     <div className="text-center text-sm text-zinc-600 py-4">No tool activity recorded yet.</div>
                                 ) : (
                                     topTools.map((tool) => (
@@ -331,6 +446,10 @@ export default function LogsDashboard() {
                         </CardContent>
                     </Card>
                 </div>
+<<<<<<< HEAD
+=======
+
+>>>>>>> origin/rewrite/main-sanitized
             </div>
         </div>
     );

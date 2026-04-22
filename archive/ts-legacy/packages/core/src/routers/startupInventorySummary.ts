@@ -13,8 +13,13 @@ export function summarizeCachedInventory(cachedInventory: Awaited<ReturnType<typ
         toolCount,
         alwaysOnServerCount,
         alwaysOnToolCount,
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/routers/startupInventorySummary.ts
         databaseAvailable: cachedInventory.databaseAvailable,
         databaseError: cachedInventory.databaseError,
         fallbackUsed: cachedInventory.fallbackUsed,
     };
 }
+=======
+    };
+}
+>>>>>>> origin/rewrite/main-sanitized:packages/core/src/routers/startupInventorySummary.ts

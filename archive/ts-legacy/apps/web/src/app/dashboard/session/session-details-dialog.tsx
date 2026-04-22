@@ -330,7 +330,10 @@ export function SessionDetailsDialog({ session, currentTimestamp }: SessionDetai
                                 <div className="space-y-2">
                                     <p>Status: <span className="text-white">{session.status ?? 'unknown'}</span></p>
                                     <p>Restart policy: <span className="text-white">{session.autoRestart === false ? 'Manual only' : 'Automatic'}</span></p>
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/session/session-details-dialog.tsx
                                     <p>Worktree isolation: <span className="text-white">{session.isolateWorktree ? 'Enabled' : 'Disabled'}</span></p>
+=======
+>>>>>>> origin/rewrite/main-sanitized:apps/web/src/app/dashboard/session/session-details-dialog.tsx
                                     <p>Execution profile: <span className="text-white">{session.executionProfile ?? 'auto'}</span></p>
                                     {session.executionPolicy?.shellLabel ? (
                                         <p>Selected shell: <span className="text-white">{session.executionPolicy.shellLabel}</span></p>
@@ -550,7 +553,10 @@ export function SessionDetailsDialog({ session, currentTimestamp }: SessionDetai
                                         </div>
                                     ) : null}
 
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/session/session-details-dialog.tsx
                                     {(attachInfo.attachReadiness === 'ready') && (
+=======
+>>>>>>> origin/rewrite/main-sanitized:apps/web/src/app/dashboard/session/session-details-dialog.tsx
                                     <div className="rounded-lg border border-zinc-800 bg-zinc-950/80 p-3">
                                         <div className="mb-2 flex items-center justify-between gap-3">
                                             <span className="text-xs uppercase tracking-[0.18em] text-zinc-500">Run one-shot shell command</span>
@@ -577,10 +583,14 @@ export function SessionDetailsDialog({ session, currentTimestamp }: SessionDetai
                                         </div>
                                         <p className="mt-2 text-xs text-zinc-500">
 <<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/session/session-details-dialog.tsx
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/session/session-details-dialog.tsx
                                             Runs inside the session workspace using the selected HyperCode execution policy.
 =======
                                             Runs inside the session workspace using the selected borg execution policy.
 >>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/session/session-details-dialog.tsx
+=======
+                                            Runs inside the session workspace using the selected Borg execution policy.
+>>>>>>> origin/rewrite/main-sanitized:apps/web/src/app/dashboard/session/session-details-dialog.tsx
                                         </p>
                                         {shellResult ? (
                                             <div className="mt-3 rounded-md border border-white/5 bg-black/30 p-3">
@@ -595,7 +605,10 @@ export function SessionDetailsDialog({ session, currentTimestamp }: SessionDetai
                                             </div>
                                         ) : null}
                                     </div>
+<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/session/session-details-dialog.tsx
                                     )}
+=======
+>>>>>>> origin/rewrite/main-sanitized:apps/web/src/app/dashboard/session/session-details-dialog.tsx
                                 </div>
                             ) : (
                                 <p className="text-sm text-zinc-500">Attach information is unavailable for this session.</p>

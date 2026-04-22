@@ -181,7 +181,11 @@ const baseDefinitions: Record<CompatibilityToolName, Tool> = {
     },
     auto_call_tool: {
         name: 'auto_call_tool',
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/mcp/compatibilityToolDefinitions.ts
         description: 'One-shot discovery and execution. Automatically searches for the best tool to accomplish an objective, maps the parameters using the best available schema and metadata, and executes it immediately.',
+=======
+        description: 'Automatically searches for the best tool to accomplish an objective, maps the parameters using an LLM, and executes it. Use this when you know what you want to do but don\'t have the exact tool schema loaded.',
+>>>>>>> origin/rewrite/main-sanitized:packages/core/src/mcp/compatibilityToolDefinitions.ts
         inputSchema: {
             type: 'object',
             properties: {
@@ -191,10 +195,17 @@ const baseDefinitions: Record<CompatibilityToolName, Tool> = {
                 },
                 context: {
                     type: 'string',
+<<<<<<< HEAD:archive/ts-legacy/packages/core/src/mcp/compatibilityToolDefinitions.ts
                     description: 'Optional variables, file paths, snippets, or structured notes required to fill tool arguments.',
                 },
             },
             required: ['objective'],
+=======
+                    description: 'Any necessary variables, file paths, or text snippets required to fill the tool arguments.',
+                },
+            },
+            required: ['objective', 'context'],
+>>>>>>> origin/rewrite/main-sanitized:packages/core/src/mcp/compatibilityToolDefinitions.ts
         },
     },
 };

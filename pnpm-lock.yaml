@@ -776,6 +776,7 @@ importers:
         specifier: workspace:*
         version: link:../tools
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
       '@borg/types':
         specifier: workspace:*
@@ -786,6 +787,11 @@ importers:
       '@hono/zod-validator':
         specifier: ^0.7.2
         version: 0.7.6(hono@4.11.3)(zod@3.25.76)
+=======
+      '@borg/types':
+        specifier: workspace:*
+        version: link:../types
+>>>>>>> origin/rewrite/main-sanitized
       '@hyperswarm/secret-stream':
         specifier: ^6.9.1
         version: 6.9.1(bare-url@2.3.2)
