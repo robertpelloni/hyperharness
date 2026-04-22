@@ -21,7 +21,7 @@
     "@types/react-dom": "^18.3.0",
     "@vitejs/plugin-react": "^4.7.0",
     "autoprefixer": "^10.4.18",
-    "eslint": "^9.9.1",
+    "eslint": "^9.39.4",
     "eslint-plugin-react-hooks": "^5.1.0-rc.0",
     "eslint-plugin-react-refresh": "^0.4.11",
     "globals": "^15.9.0",
@@ -29,6 +29,7 @@
     "tailwindcss": "^3.4.1",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.3.0",
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -42,6 +43,9 @@
 =======
     "vite": "^8.0.5"
 >>>>>>> origin/dependabot/npm_and_yarn/apps/borg-extension/npm_and_yarn-afabecb434
+=======
+    "vite": "^8.0.3"
+>>>>>>> origin/dependabot/npm_and_yarn/apps/web/npm_and_yarn-362cc9c729
   }
 }
 =======
