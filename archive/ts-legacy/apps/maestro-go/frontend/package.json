@@ -57,6 +57,7 @@
     "typescript": "^5.9.3",
 <<<<<<< HEAD:archive/ts-legacy/apps/maestro-go/frontend/package.json
 <<<<<<< HEAD:archive/ts-legacy/apps/maestro-go/frontend/package.json
+<<<<<<< HEAD:archive/ts-legacy/apps/maestro-go/frontend/package.json
     "vite": "^8.0.5",
 =======
     "vite": "^8.0.7",
@@ -64,6 +65,9 @@
 =======
     "vite": "^8.0.7",
 >>>>>>> origin/dependabot/npm_and_yarn/apps/borg-extension/npm_and_yarn-9def124d29:apps/maestro-go/frontend/package.json
+=======
+    "vite": "^8.0.5",
+>>>>>>> origin/dependabot/npm_and_yarn/apps/borg-extension/npm_and_yarn-afabecb434:apps/maestro-go/frontend/package.json
     "@eslint/js": "^9.39.2",
     "@playwright/test": "^1.57.0",
     "@testing-library/jest-dom": "^6.9.1",

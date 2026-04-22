@@ -30,6 +30,7 @@
     "typescript-eslint": "^8.3.0",
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
     "vite": "^8.0.5"
 =======
     "vite": "^8.0.7"
@@ -37,5 +38,8 @@
 =======
     "vite": "^8.0.7"
 >>>>>>> origin/dependabot/npm_and_yarn/apps/borg-extension/npm_and_yarn-9def124d29
+=======
+    "vite": "^8.0.5"
+>>>>>>> origin/dependabot/npm_and_yarn/apps/borg-extension/npm_and_yarn-afabecb434
   }
 }
