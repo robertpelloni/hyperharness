@@ -22,7 +22,12 @@
     },
     "dependencies": {
         "@borg/adk": "workspace:*",
+<<<<<<< HEAD:archive/ts-legacy/packages/tools/package.json
         "@modelcontextprotocol/sdk": "^1.0.0",
+=======
+        "@modelcontextprotocol/sdk": "^1.26.0",
+        "zod": "^3.22.4",
+>>>>>>> origin/dependabot/npm_and_yarn/modelcontextprotocol/sdk-1.26.0:packages/tools/package.json
         "active-win": "^8.2.0",
         "jsdom": "^27.4.0",
         "turndown": "^7.1.3",

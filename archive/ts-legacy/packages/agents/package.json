@@ -22,8 +22,12 @@
     },
     "dependencies": {
         "@borg/adk": "workspace:*",
+<<<<<<< HEAD:archive/ts-legacy/packages/agents/package.json
         "@borg/ai": "workspace:*",
         "@modelcontextprotocol/sdk": "^1.0.0",
+=======
+        "@modelcontextprotocol/sdk": "^1.26.0",
+>>>>>>> origin/dependabot/npm_and_yarn/modelcontextprotocol/sdk-1.26.0:packages/agents/package.json
         "zod": "^3.22.4"
     },
     "devDependencies": {
