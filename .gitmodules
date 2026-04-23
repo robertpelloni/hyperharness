@@ -88,6 +88,36 @@
 [submodule "qwen-code-cli"]
 	path = qwen-code-cli
 	url = https://github.com/dinoanderson/qwen_cli_coder
-[submodule "amazon-q-cli"]
-	path = amazon-q-developer-cli
-	url = https://github.com/aws/amazon-q-developer-cli
+[submodule "external/MetaMCP"]
+        path = external/MetaMCP
+        url = https://github.com/robertpelloni/MetaMCP
+[submodule "submodules/mcpproxy"]
+	path = archive/submodules/mcpproxy
+        url = https://github.com/Dumbris/mcpproxy
+[submodule "submodules/litellm"]
+	path = archive/submodules/litellm
+        url = https://github.com/BerriAI/litellm
+[submodule "external/claude-mem"]
+	path = archive/claude-mem
+	url = https://github.com/robertpelloni/claude-mem
+[submodule "external/OmniRoute"]
+	path = archive/OmniRoute
+	url = https://github.com/diegosouzapw/OmniRoute
+[submodule "packages/claude-mem"]
+	path = packages/claude-mem
+	url = https://github.com/robertpelloni/claude-mem
+[submodule "apps/maestro"]
+	path = apps/maestro
+	url = https://github.com/robertpelloni/Maestro
+[submodule "data/bobbybookmarks"]
+	path = data/bobbybookmarks
+	url = https://github.com/robertpelloni/bobbybookmarks
+[submodule "apps/cloud-orchestrator"]
+	path = apps/cloud-orchestrator
+	url = https://github.com/robertpelloni/jules-autopilot
+[submodule "submodules/prism-mcp"]
+	path = submodules/prism-mcp
+	url = https://github.com/dcostenco/prism-mcp
+[submodule "submodules/borg"]
+	path = submodules/borg
+	url = https://github.com/robertpelloni/borg.git
