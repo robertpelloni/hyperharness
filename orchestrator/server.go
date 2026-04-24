@@ -8,7 +8,7 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/logger"
 )
 
-// Server encapsulates the Fiber app for the Borg Orchestrator
+// Server encapsulates the Fiber app for the HyperCode Orchestrator
 type Server struct {
 	App *fiber.App
 }
@@ -17,7 +17,7 @@ type Server struct {
 func NewServer() *Server {
 	app := fiber.New(fiber.Config{
 		DisableStartupMessage: false,
-		AppName:               "Hypercode / Borg Orchestrator",
+		AppName:               "Hypercode / HyperCode Orchestrator",
 	})
 
 	// Middleware
@@ -47,7 +47,7 @@ func setupRoutes(app *fiber.App) {
 	app.Get("/health", func(c *fiber.Ctx) error {
 		return c.JSON(fiber.Map{
 			"status":    "ok",
-			"name":      "@borg/core-go",
+			"name":      "@hypercode/core-go",
 			"mcpReady":  true, // To be wired to actual MCP status
 			"timestamp": "now",
 		})

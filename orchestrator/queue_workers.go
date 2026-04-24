@@ -7,7 +7,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/robertpelloni/hypercode/agents"
+	"github.com/robertpelloni/hyperharness/agents"
 )
 
 // HandleIndexCodebase explicitly proxies out the TS handler triggering our new Vector Store recursively.
@@ -177,7 +177,7 @@ func BackgroundWorker() {
 				DB.Model(&runningSession).Update("raw_state", "IN_PROGRESS")
 
 				// Dynamically extract the execution sandbox
-				sandboxDir := fmt.Sprintf("/tmp/borg_run_%s", runningSession.ID)
+				sandboxDir := fmt.Sprintf("/tmp/hypercode_run_%s", runningSession.ID)
 				branchName := fmt.Sprintf("run-%s", runningSession.ID)
 
 				log.Printf("[Sandbox] Extracting Git boundaries creating protective shield %s natively...", sandboxDir)

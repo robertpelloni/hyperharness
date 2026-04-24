@@ -10,7 +10,7 @@ The user goal is not a narrow feature addition. The goal is to create a new **Go
 3. Aider-level repository context and edit strategy quality.
 4. Goose/Crush-grade native performance and terminal feel.
 5. Factory/Grok-grade long-running orchestration, verification, and delegation.
-6. HyperCode/Borg-native integration for MCP routing, memory, provider routing, and context continuity.
+6. HyperCode/HyperCode-native integration for MCP routing, memory, provider routing, and context continuity.
 7. Exact model-facing tool names and parameter contracts wherever compatibility matters.
 
 ## Non-Negotiable Requirements
@@ -27,7 +27,7 @@ Initial exact-name focus:
 Longer-term exact-contract focus:
 - Pi-compatible default tool surface
 - Codex/OpenCode-compatible high-value tool surfaces where stable public contracts exist
-- HyperCode/Borg-backed MCP tool surfaces exposed through stable adapters
+- HyperCode/HyperCode-backed MCP tool surfaces exposed through stable adapters
 
 ### 2. Clean-room implementation
 Assimilation should preserve behavior, not copy licensed internals from closed or questionable upstream sources.

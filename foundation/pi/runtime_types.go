@@ -46,6 +46,43 @@ type BashToolInput struct {
 	Timeout float64 `json:"timeout,omitempty"`
 }
 
+type GrepToolInput struct {
+	Pattern    string `json:"pattern"`
+	Path       string `json:"path,omitempty"`
+	Glob       string `json:"glob,omitempty"`
+	IgnoreCase bool   `json:"ignoreCase,omitempty"`
+	Literal    bool   `json:"literal,omitempty"`
+	Context    int    `json:"context,omitempty"`
+	Limit      int    `json:"limit,omitempty"`
+}
+
+type GrepToolDetails struct {
+	Truncation        *TruncationDetails `json:"truncation,omitempty"`
+	MatchLimitReached int                `json:"matchLimitReached,omitempty"`
+	LinesTruncated    bool               `json:"linesTruncated,omitempty"`
+}
+
+type FindToolInput struct {
+	Pattern string `json:"pattern"`
+	Path    string `json:"path,omitempty"`
+	Limit   int    `json:"limit,omitempty"`
+}
+
+type FindToolDetails struct {
+	Truncation         *TruncationDetails `json:"truncation,omitempty"`
+	ResultLimitReached int                `json:"resultLimitReached,omitempty"`
+}
+
+type LSToolInput struct {
+	Path  string `json:"path,omitempty"`
+	Limit int    `json:"limit,omitempty"`
+}
+
+type LsToolDetails struct {
+	Truncation        *TruncationDetails `json:"truncation,omitempty"`
+	EntryLimitReached int                `json:"entryLimitReached,omitempty"`
+}
+
 type TruncationDetails struct {
 	Truncated          bool   `json:"truncated"`
 	TruncatedBy        string `json:"truncatedBy,omitempty"`

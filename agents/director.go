@@ -6,8 +6,8 @@ import (
 	"os"
 	"strings"
 
-	"github.com/robertpelloni/hypercode/foundation/adapters"
-	foundationorchestration "github.com/robertpelloni/hypercode/foundation/orchestration"
+	"github.com/robertpelloni/hyperharness/foundation/adapters"
+	foundationorchestration "github.com/robertpelloni/hyperharness/foundation/orchestration"
 )
 
 // Director Agent translates the TS core Director orchestrator.
@@ -33,7 +33,7 @@ func NewDirector(provider ILLMProvider) *Director {
 		History: []Message{
 			{
 				Role:    RoleSystem,
-				Content: strings.Join([]string{"You are the Borg TechLead Director. Your role is absolute architectural supervision. Plan, delegate, and review.", hyperAdapter.BuildSystemContext()}, "\n\n"),
+				Content: strings.Join([]string{"You are the HyperCode TechLead Director. Your role is absolute architectural supervision. Plan, delegate, and review.", hyperAdapter.BuildSystemContext()}, "\n\n"),
 			},
 		},
 	}
@@ -48,6 +48,18 @@ func (d *Director) GetRole() string {
 }
 
 func (d *Director) HandleInput(ctx context.Context, input string) (string, error) {
+	if d == nil {
+		return "", fmt.Errorf("director is required")
+	}
+	if d.Provider == nil {
+		return "", fmt.Errorf("provider is required")
+	}
+	if d.State == nil {
+		d.State = make(map[string]interface{})
+	}
+	if len(d.History) == 0 {
+		d.History = []Message{{Role: RoleSystem, Content: "You are the Borg TechLead Director. Your role is absolute architectural supervision. Plan, delegate, and review."}}
+	}
 	d.History = append(d.History, Message{Role: RoleUser, Content: input})
 
 	plan, err := foundationorchestration.BuildPlan(foundationorchestration.PlanRequest{
@@ -79,6 +91,13 @@ func (d *Director) HandleInput(ctx context.Context, input string) (string, error
 }
 
 func (d *Director) InjectSystemContext(context string) {
+	if d == nil {
+		return
+	}
+	if len(d.History) == 0 {
+		d.History = []Message{{Role: RoleSystem, Content: context}}
+		return
+	}
 	d.History[0].Content += "\n\n" + context
 }
 

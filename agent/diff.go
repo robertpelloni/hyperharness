@@ -20,12 +20,20 @@ func (a *Agent) ApplyInlineDiff(filePath, diffContent string) error {
 	// In a full implementation, we'd use a robust diff matching algorithm.
 	lines := strings.Split(diffContent, "\n")
 	for _, line := range lines {
-		if strings.HasPrefix(line, "-") {
+		switch {
+		case strings.HasPrefix(line, "---"), strings.HasPrefix(line, "+++"), strings.HasPrefix(line, "@@"):
+			continue
+		case strings.HasPrefix(line, "-"):
 			toRemove := strings.TrimPrefix(line, "-")
-			strContent = strings.Replace(strContent, toRemove+"\n", "", 1)
-		} else if strings.HasPrefix(line, "+") {
+			if strings.Contains(strContent, toRemove+"\n") {
+				strContent = strings.Replace(strContent, toRemove+"\n", "", 1)
+			} else {
+				strContent = strings.Replace(strContent, toRemove, "", 1)
+			}
+		case strings.HasPrefix(line, "+"):
 			toAdd := strings.TrimPrefix(line, "+")
-			// This is a naive append; a real diff engine uses hunk headers
+			// This is still intentionally naive; we only skip unified-diff headers
+			// and append added lines rather than interpreting hunk positions.
 			strContent += toAdd + "\n"
 		}
 	}

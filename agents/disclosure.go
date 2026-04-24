@@ -21,6 +21,9 @@ func NewDisclosureProxy(base ILLMProvider, allTools []Tool) *DisclosureProxy {
 
 // FormatBorgNativeTools overrides the massive 649+ array with one deterministic access point
 func (d *DisclosureProxy) FormatBorgNativeTools() []Tool {
+	if d == nil {
+		return nil
+	}
 	var visibleTools []Tool
 
 	// Phase 3: "Always On" Strict Parity constraint
@@ -63,6 +66,9 @@ func (d *DisclosureProxy) FormatBorgNativeTools() []Tool {
 
 // Chat acts as the interceptor, funneling through the massive tools slice but passing only the minimal payload to the API
 func (d *DisclosureProxy) Chat(ctx context.Context, messages []Message, tools []Tool) (Message, error) {
+	if d == nil || d.BaseProvider == nil {
+		return Message{}, fmt.Errorf("base provider is required")
+	}
 	// The core TS Hono backend parity logic:
 	// We override 'tools' natively and send just search_tools.
 	minimalTools := d.FormatBorgNativeTools()
@@ -70,10 +76,16 @@ func (d *DisclosureProxy) Chat(ctx context.Context, messages []Message, tools []
 }
 
 func (d *DisclosureProxy) Stream(ctx context.Context, messages []Message, tools []Tool, chunkChan chan<- string) error {
+	if d == nil || d.BaseProvider == nil {
+		return fmt.Errorf("base provider is required")
+	}
 	minimalTools := d.FormatBorgNativeTools()
 	return d.BaseProvider.Stream(ctx, messages, minimalTools, chunkChan)
 }
 
 func (d *DisclosureProxy) GetModelName() string {
+	if d == nil || d.BaseProvider == nil {
+		return ""
+	}
 	return d.BaseProvider.GetModelName()
 }

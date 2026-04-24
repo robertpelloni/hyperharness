@@ -110,16 +110,111 @@ func (r *Runtime) AppendUserText(sessionID, text string) (*SessionFile, error) {
 	})
 }
 
+func (r *Runtime) AppendThinkingLevelChange(sessionID, level string) (*SessionFile, error) {
+	return r.sessionStore.AppendThinkingLevelChange(sessionID, level)
+}
+
+func (r *Runtime) AppendModelChange(sessionID, provider, modelID string) (*SessionFile, error) {
+	return r.sessionStore.AppendModelChange(sessionID, provider, modelID)
+}
+
+func (r *Runtime) AppendCompaction(sessionID, summary, firstKeptEntryID string, tokensBefore int, details any) (*SessionFile, error) {
+	return r.sessionStore.AppendCompaction(sessionID, summary, firstKeptEntryID, tokensBefore, details)
+}
+
+func (r *Runtime) AppendBranchSummary(sessionID, fromID, summary string, details any) (*SessionFile, error) {
+	return r.sessionStore.AppendBranchSummary(sessionID, fromID, summary, details)
+}
+
+func (r *Runtime) AppendSessionInfo(sessionID, name string) (*SessionFile, error) {
+	return r.sessionStore.AppendSessionInfo(sessionID, name)
+}
+
+func (r *Runtime) AppendLabelChange(sessionID, targetID, label string) (*SessionFile, error) {
+	return r.sessionStore.AppendLabelChange(sessionID, targetID, label)
+}
+
+func (r *Runtime) BuildSessionContext(sessionID, leafID string) (*SessionContext, error) {
+	return r.sessionStore.BuildSessionContext(sessionID, leafID)
+}
+
+func (r *Runtime) GetChildren(sessionID, parentID string) ([]SessionEntry, error) {
+	return r.sessionStore.GetChildren(sessionID, parentID)
+}
+
+func (r *Runtime) GetLabel(sessionID, targetID string) (string, error) {
+	return r.sessionStore.GetLabel(sessionID, targetID)
+}
+
+func (r *Runtime) GetSessionName(sessionID string) (string, error) {
+	return r.sessionStore.GetSessionName(sessionID)
+}
+
+func (r *Runtime) GetLeafID(sessionID string) (string, error) {
+	return r.sessionStore.GetLeafID(sessionID)
+}
+
+func (r *Runtime) BranchSession(sessionID, entryID string) (*SessionFile, error) {
+	return r.sessionStore.Branch(sessionID, entryID)
+}
+
+func (r *Runtime) ResetSessionLeaf(sessionID string) (*SessionFile, error) {
+	return r.sessionStore.ResetLeaf(sessionID)
+}
+
+func (r *Runtime) GetCommonAncestor(sessionID, firstLeafID, secondLeafID string) (string, error) {
+	return r.sessionStore.GetCommonAncestor(sessionID, firstLeafID, secondLeafID)
+}
+
+func (r *Runtime) PrepareBranchSummary(sessionID, targetID string) (*BranchSummaryPreparation, error) {
+	return r.sessionStore.PrepareBranchSummary(sessionID, targetID)
+}
+
+func (r *Runtime) PrepareBranchSummaryWithBudget(sessionID, targetID string, maxTokens int) (*BranchSummaryPreparation, error) {
+	return r.sessionStore.PrepareBranchSummaryWithBudget(sessionID, targetID, maxTokens)
+}
+
+func (r *Runtime) BranchWithSummary(sessionID, targetID, summary string, details any) (*SessionFile, error) {
+	return r.sessionStore.BranchWithSummary(sessionID, targetID, summary, details)
+}
+
+func (r *Runtime) GenerateBranchSummary(ctx context.Context, prep *BranchSummaryPreparation, generator SummaryGenerator) (string, error) {
+	return r.sessionStore.GenerateBranchSummary(ctx, prep, generator)
+}
+
+func (r *Runtime) BranchWithGeneratedSummary(ctx context.Context, sessionID, targetID string, maxTokens int, generator SummaryGenerator, details any) (*SessionFile, string, error) {
+	return r.sessionStore.BranchWithGeneratedSummary(ctx, sessionID, targetID, maxTokens, generator, details)
+}
+
+func (r *Runtime) PrepareCompaction(sessionID string) (*CompactionPreparation, error) {
+	return r.sessionStore.PrepareCompaction(sessionID)
+}
+
+func (r *Runtime) PrepareCompactionWithBudget(sessionID string, keepRecentTokens int) (*CompactionPreparation, error) {
+	return r.sessionStore.PrepareCompactionWithBudget(sessionID, keepRecentTokens)
+}
+
+func (r *Runtime) GenerateCompactionSummary(ctx context.Context, prep *CompactionPreparation, generator CompactionSummaryGenerator) (string, error) {
+	return r.sessionStore.GenerateCompactionSummary(ctx, prep, generator)
+}
+
+func (r *Runtime) CompactWithGeneratedSummary(ctx context.Context, sessionID string, keepRecentTokens int, generator CompactionSummaryGenerator, details any) (*SessionFile, string, error) {
+	return r.sessionStore.CompactWithGeneratedSummary(ctx, sessionID, keepRecentTokens, generator, details)
+}
+
 func (r *Runtime) appendToolRun(sessionID, toolName string, input json.RawMessage, result *ToolResult) error {
 	session, err := r.sessionStore.Load(sessionID)
 	if err != nil {
 		return err
 	}
 	var parentID string
-	if len(session.Entries) > 0 {
+	if session.Metadata.LeafID != "" {
+		parentID = session.Metadata.LeafID
+	} else if len(session.Entries) > 0 {
 		parentID = session.Entries[len(session.Entries)-1].ID
 	}
 	callID := uuid.NewString()
+	resultID := uuid.NewString()
 	session.Entries = append(session.Entries,
 		SessionEntry{
 			ID:        callID,
@@ -130,7 +225,7 @@ func (r *Runtime) appendToolRun(sessionID, toolName string, input json.RawMessag
 			CreatedAt: time.Now().UnixMilli(),
 		},
 		SessionEntry{
-			ID:        uuid.NewString(),
+			ID:        resultID,
 			ParentID:  callID,
 			Kind:      "tool_result",
 			Role:      "toolResult",
@@ -139,6 +234,7 @@ func (r *Runtime) appendToolRun(sessionID, toolName string, input json.RawMessag
 			CreatedAt: time.Now().UnixMilli(),
 		},
 	)
+	session.Metadata.LeafID = resultID
 	return r.sessionStore.Save(session)
 }
 

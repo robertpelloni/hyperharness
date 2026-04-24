@@ -23,7 +23,7 @@ func Inventory() []SourceToolchain {
 			Category:         "control-plane",
 			UpstreamPath:     "../hypercode",
 			Strengths:        []string{"MCP aggregation", "provider routing", "memory and session substrate", "operator observability"},
-			Noteworthy:       []string{"Best existing fit for Borg-native provider routing and MCP management.", "Should remain the substrate instead of being reimplemented in the new harness."},
+			Noteworthy:       []string{"Best existing fit for HyperCode-native provider routing and MCP management.", "Should remain the substrate instead of being reimplemented in the new harness."},
 			AssimilationPlan: []string{"Consume as the default local control plane.", "Expose HyperCode routes and tool inventories as native Go adapters.", "Let the new harness own the agent UX and exact tool contracts while HyperCode owns orchestration truth."},
 		},
 		{ID: "pi", DisplayName: "Pi", Language: "TypeScript", Category: "foundation", UpstreamPath: "pi-cli", Strengths: []string{"minimal harness", "excellent extension seams", "interactive/json/rpc modes", "tool-first design"}, Noteworthy: []string{"The cleanest conceptual base for a Go rewrite.", "Good default philosophy: small core, user-extensible edges."}, AssimilationPlan: []string{"Port agent runtime contracts first.", "Mirror session model, settings, command surface, and extension seams.", "Retain exact default tool names and event vocabulary."}},

@@ -8,15 +8,29 @@ import (
 	"github.com/charmbracelet/bubbles/spinner"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
-	"github.com/robertpelloni/hypercode/agents"
+	"github.com/robertpelloni/hyperharness/agents"
 )
 
 type model struct {
-	director *agents.Director
-	input    string
-	history  []string
-	loading  bool
-	spinner  spinner.Model
+	director                *agents.Director
+	input                   string
+	history                 []string
+	loading                 bool
+	spinner                 spinner.Model
+	foundationSessionID     string
+	foundationTreeSelection []string
+	browserActive           bool
+	browserItems            []TreeBrowserItem
+	browserIndex            int
+	browserFilter           string
+	browserConfirmPending   bool
+	browserCollapsed        map[string]bool
+	browserGrouped          bool
+	browserPinned           bool
+	browserPinnedFocus      bool
+	browserPaneHeight       int
+	browserPanePosition     string
+	browserPanePreview      bool
 }
 
 func initialModel() model {
@@ -25,11 +39,14 @@ func initialModel() model {
 	s.Style = lipgloss.NewStyle().Foreground(lipgloss.Color("205"))
 
 	return model{
-		director: agents.NewDirector(agents.NewHyperCodeProvider()),
-		input:    "",
-		history:  []string{},
-		loading:  false,
-		spinner:  s,
+		director:            agents.NewDirector(agents.NewHyperCodeProvider()),
+		input:               "",
+		history:             []string{},
+		loading:             false,
+		spinner:             s,
+		browserPaneHeight:   8,
+		browserPanePosition: "top",
+		browserPanePreview:  true,
 	}
 }
 
@@ -42,6 +59,309 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
+		if m.browserActive {
+			visible := visibleTreeBrowserItems(m.browserItems, m.browserFilter, m.browserCollapsed)
+			switch msg.Type {
+			case tea.KeyEsc:
+				if m.browserConfirmPending {
+					m.browserConfirmPending = false
+					return m, nil
+				}
+				m.browserActive = false
+				m.browserFilter = ""
+				m.browserConfirmPending = false
+				m.history = append(m.history, "[Foundation Tree Browser] closed")
+				return m, nil
+			case tea.KeyLeft:
+				if m.browserConfirmPending {
+					return m, nil
+				}
+				if m.browserIndex >= 0 && m.browserIndex < len(visible) {
+					item := visible[m.browserIndex]
+					if item.ChildCount > 0 {
+						if m.browserCollapsed == nil {
+							m.browserCollapsed = map[string]bool{}
+						}
+						m.browserCollapsed[item.ID] = true
+						visible = visibleTreeBrowserItems(m.browserItems, m.browserFilter, m.browserCollapsed)
+						if m.browserIndex >= len(visible) {
+							m.browserIndex = max(0, len(visible)-1)
+						}
+					}
+				}
+				return m, nil
+			case tea.KeyRight:
+				if m.browserConfirmPending {
+					return m, nil
+				}
+				if m.browserIndex >= 0 && m.browserIndex < len(visible) {
+					item := visible[m.browserIndex]
+					if m.browserCollapsed != nil {
+						delete(m.browserCollapsed, item.ID)
+					}
+				}
+				return m, nil
+			case tea.KeyHome:
+				if m.browserConfirmPending {
+					return m, nil
+				}
+				m.browserIndex = 0
+				return m, nil
+			case tea.KeyEnd:
+				if m.browserConfirmPending {
+					return m, nil
+				}
+				m.browserIndex = max(0, len(visible)-1)
+				return m, nil
+			case tea.KeyPgUp:
+				if m.browserConfirmPending {
+					return m, nil
+				}
+				m.browserIndex = max(0, m.browserIndex-10)
+				return m, nil
+			case tea.KeyPgDown:
+				if m.browserConfirmPending {
+					return m, nil
+				}
+				m.browserIndex = min(max(0, len(visible)-1), m.browserIndex+10)
+				return m, nil
+			case tea.KeyUp:
+				if m.browserConfirmPending {
+					return m, nil
+				}
+				if m.browserIndex > 0 {
+					m.browserIndex--
+				}
+				return m, nil
+			case tea.KeyDown:
+				if m.browserConfirmPending {
+					return m, nil
+				}
+				if m.browserIndex < len(visible)-1 {
+					m.browserIndex++
+				}
+				return m, nil
+			case tea.KeyBackspace, tea.KeyDelete:
+				if m.browserConfirmPending {
+					m.browserConfirmPending = false
+					return m, nil
+				}
+				if len(m.browserFilter) > 0 {
+					m.browserFilter = m.browserFilter[:len(m.browserFilter)-1]
+					visible = visibleTreeBrowserItems(m.browserItems, m.browserFilter, m.browserCollapsed)
+					if m.browserIndex >= len(visible) {
+						m.browserIndex = max(0, len(visible)-1)
+					}
+				}
+				return m, nil
+			case tea.KeyTab:
+				if m.browserConfirmPending {
+					return m, nil
+				}
+				m.browserGrouped = !m.browserGrouped
+				return m, nil
+			case tea.KeyRunes, tea.KeySpace:
+				if m.browserConfirmPending {
+					if len(msg.Runes) > 0 {
+						r := strings.ToLower(string(msg.Runes))
+						if r == "y" {
+							if m.browserIndex >= 0 && m.browserIndex < len(visible) {
+								display, err := openSelectedTreeBrowser(m.director.WorkingDir, m.foundationSessionID, visible, m.browserIndex, 128)
+								if err != nil {
+									m.history = append(m.history, fmt.Sprintf("[Error] tree browser switch failed: %v", err))
+								} else {
+									m.history = append(m.history, display)
+								}
+								m.browserActive = false
+								m.browserFilter = ""
+								m.browserConfirmPending = false
+							}
+							return m, nil
+						}
+						if r == "n" {
+							m.browserConfirmPending = false
+							return m, nil
+						}
+					}
+					return m, nil
+				}
+				m.browserFilter += msg.String()
+				visible = visibleTreeBrowserItems(m.browserItems, m.browserFilter, m.browserCollapsed)
+				if m.browserIndex >= len(visible) {
+					m.browserIndex = max(0, len(visible)-1)
+				}
+				return m, nil
+			case tea.KeyEnter:
+				if m.browserIndex >= 0 && m.browserIndex < len(visible) {
+					if !m.browserConfirmPending {
+						m.browserConfirmPending = true
+						return m, nil
+					}
+					display, err := openSelectedTreeBrowser(m.director.WorkingDir, m.foundationSessionID, visible, m.browserIndex, 128)
+					if err != nil {
+						m.history = append(m.history, fmt.Sprintf("[Error] tree browser switch failed: %v", err))
+					} else {
+						m.history = append(m.history, display)
+					}
+					m.browserActive = false
+					m.browserFilter = ""
+					m.browserConfirmPending = false
+				}
+				return m, nil
+			}
+		}
+		if m.browserPinned && m.browserPinnedFocus {
+			visible := visibleTreeBrowserItems(m.browserItems, m.browserFilter, m.browserCollapsed)
+			switch msg.Type {
+			case tea.KeyEsc:
+				if m.browserConfirmPending {
+					m.browserConfirmPending = false
+					return m, nil
+				}
+				m.browserPinnedFocus = false
+				return m, nil
+			case tea.KeyHome:
+				if m.browserConfirmPending {
+					return m, nil
+				}
+				m.browserIndex = 0
+				return m, nil
+			case tea.KeyEnd:
+				if m.browserConfirmPending {
+					return m, nil
+				}
+				m.browserIndex = max(0, len(visible)-1)
+				return m, nil
+			case tea.KeyPgUp:
+				if m.browserConfirmPending {
+					return m, nil
+				}
+				step := m.browserPaneHeight
+				if step <= 0 {
+					step = 8
+				}
+				m.browserIndex = max(0, m.browserIndex-step)
+				return m, nil
+			case tea.KeyPgDown:
+				if m.browserConfirmPending {
+					return m, nil
+				}
+				step := m.browserPaneHeight
+				if step <= 0 {
+					step = 8
+				}
+				m.browserIndex = min(max(0, len(visible)-1), m.browserIndex+step)
+				return m, nil
+			case tea.KeyUp:
+				if m.browserConfirmPending {
+					return m, nil
+				}
+				if m.browserIndex > 0 {
+					m.browserIndex--
+				}
+				return m, nil
+			case tea.KeyDown:
+				if m.browserConfirmPending {
+					return m, nil
+				}
+				if m.browserIndex < len(visible)-1 {
+					m.browserIndex++
+				}
+				return m, nil
+			case tea.KeyLeft:
+				if m.browserConfirmPending {
+					return m, nil
+				}
+				if m.browserIndex >= 0 && m.browserIndex < len(visible) {
+					item := visible[m.browserIndex]
+					if item.ChildCount > 0 {
+						if m.browserCollapsed == nil {
+							m.browserCollapsed = map[string]bool{}
+						}
+						m.browserCollapsed[item.ID] = true
+					}
+				}
+				refreshPinnedFoundationTreeBrowser(&m)
+				return m, nil
+			case tea.KeyRight:
+				if m.browserConfirmPending {
+					return m, nil
+				}
+				if m.browserIndex >= 0 && m.browserIndex < len(visible) {
+					item := visible[m.browserIndex]
+					if m.browserCollapsed != nil {
+						delete(m.browserCollapsed, item.ID)
+					}
+				}
+				refreshPinnedFoundationTreeBrowser(&m)
+				return m, nil
+			case tea.KeyTab:
+				if m.browserConfirmPending {
+					return m, nil
+				}
+				m.browserGrouped = !m.browserGrouped
+				return m, nil
+			case tea.KeyBackspace, tea.KeyDelete:
+				if m.browserConfirmPending {
+					m.browserConfirmPending = false
+					return m, nil
+				}
+				if len(m.browserFilter) > 0 {
+					m.browserFilter = m.browserFilter[:len(m.browserFilter)-1]
+					visible = visibleTreeBrowserItems(m.browserItems, m.browserFilter, m.browserCollapsed)
+					if m.browserIndex >= len(visible) {
+						m.browserIndex = max(0, len(visible)-1)
+					}
+				}
+				return m, nil
+			case tea.KeyRunes, tea.KeySpace:
+				if m.browserConfirmPending {
+					if len(msg.Runes) > 0 {
+						r := strings.ToLower(string(msg.Runes))
+						if r == "y" {
+							if m.browserIndex >= 0 && m.browserIndex < len(visible) {
+								display, err := openSelectedTreeBrowser(m.director.WorkingDir, m.foundationSessionID, visible, m.browserIndex, 128)
+								if err != nil {
+									m.history = append(m.history, fmt.Sprintf("[Error] tree pane switch failed: %v", err))
+								} else {
+									m.history = append(m.history, display)
+								}
+								m.browserConfirmPending = false
+								refreshPinnedFoundationTreeBrowser(&m)
+							}
+							return m, nil
+						}
+						if r == "n" {
+							m.browserConfirmPending = false
+							return m, nil
+						}
+					}
+					return m, nil
+				}
+				m.browserFilter += msg.String()
+				visible = visibleTreeBrowserItems(m.browserItems, m.browserFilter, m.browserCollapsed)
+				if m.browserIndex >= len(visible) {
+					m.browserIndex = max(0, len(visible)-1)
+				}
+				return m, nil
+			case tea.KeyEnter:
+				if m.browserIndex >= 0 && m.browserIndex < len(visible) {
+					if !m.browserConfirmPending {
+						m.browserConfirmPending = true
+						return m, nil
+					}
+					display, err := openSelectedTreeBrowser(m.director.WorkingDir, m.foundationSessionID, visible, m.browserIndex, 128)
+					if err != nil {
+						m.history = append(m.history, fmt.Sprintf("[Error] tree pane switch failed: %v", err))
+					} else {
+						m.history = append(m.history, display)
+					}
+					m.browserConfirmPending = false
+					refreshPinnedFoundationTreeBrowser(&m)
+				}
+				return m, nil
+			}
+		}
 		switch msg.Type {
 		case tea.KeyCtrlC, tea.KeyEsc:
 			return m, tea.Quit
@@ -66,6 +386,11 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.history = append(m.history, "You: "+req)
 				m.input = ""
 				m.loading = true
+				if sessionID, err := ensureFoundationSession(&m); err == nil {
+					m.foundationSessionID = sessionID
+					_ = appendFoundationUserText(m.director.WorkingDir, m.foundationSessionID, req)
+					refreshPinnedFoundationTreeBrowser(&m)
+				}
 				cmds = append(cmds, func() tea.Msg {
 					response, err := buildPromptResponse(m.director, req)
 					if err != nil {
@@ -84,11 +409,19 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 	case string:
 		m.loading = false
-		m.history = append(m.history, "Borg-Go-Director: "+msg)
+		m.history = append(m.history, "HyperCode-Go-Director: "+msg)
+		if m.foundationSessionID != "" {
+			_ = appendFoundationAssistantText(m.director.WorkingDir, m.foundationSessionID, msg)
+			refreshPinnedFoundationTreeBrowser(&m)
+		}
 
 	case PromptDisplayMsg:
 		m.loading = false
-		m.history = append(m.history, "Borg-Go-Director: "+msg.Display)
+		m.history = append(m.history, "HyperCode-Go-Director: "+msg.Display)
+		if m.foundationSessionID != "" {
+			_ = appendFoundationAssistantText(m.director.WorkingDir, m.foundationSessionID, msg.Display)
+			refreshPinnedFoundationTreeBrowser(&m)
+		}
 
 	case ShellProposalMsg:
 		m.loading = false
@@ -108,14 +441,32 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m model) View() string {
-	s := strings.Join(m.history, "\n")
-	s += "\n\n"
+	content := strings.Join(m.history, "\n") + "\n\n"
 	if m.loading {
-		s += fmt.Sprintf("%s Processing neural inputs...\n", m.spinner.View())
+		content += fmt.Sprintf("%s Processing neural inputs...\n", m.spinner.View())
 	} else {
-		s += "> " + m.input
+		content += "> " + m.input
 	}
-	return s
+	if m.browserActive {
+		return content + "\n\n" + renderTreeBrowser(m.browserItems, m.browserIndex, m.browserFilter, m.browserConfirmPending, m.browserCollapsed, m.browserGrouped, 0, "[Foundation Tree Browser :: Modal]", true)
+	}
+	if m.browserPinned {
+		paneHeight := m.browserPaneHeight
+		if paneHeight <= 0 {
+			paneHeight = 8
+		}
+		title := "[Foundation Tree Pane :: Passive]"
+		if m.browserPinnedFocus {
+			title = "[Foundation Tree Pane :: Focused]"
+		}
+		pane := renderTreeBrowser(m.browserItems, m.browserIndex, m.browserFilter, m.browserConfirmPending && m.browserPinnedFocus, m.browserCollapsed, m.browserGrouped, paneHeight, title, m.browserPanePreview)
+		divider := "\n════════════════════════════════════════════════════════════\n"
+		if strings.ToLower(strings.TrimSpace(m.browserPanePosition)) == "bottom" {
+			return content + divider + pane
+		}
+		return pane + divider + content
+	}
+	return content
 }
 
 func StartREPL() {
@@ -123,4 +474,18 @@ func StartREPL() {
 	if _, err := p.Run(); err != nil {
 		log.Fatal(err)
 	}
+}
+
+func max(a, b int) int {
+	if a > b {
+		return a
+	}
+	return b
+}
+
+func min(a, b int) int {
+	if a < b {
+		return a
+	}
+	return b
 }
