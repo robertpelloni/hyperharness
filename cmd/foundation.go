@@ -7,11 +7,11 @@ import (
 	"os"
 	"text/tabwriter"
 
-	"github.com/robertpelloni/hyperharness/foundation/adapters"
-	"github.com/robertpelloni/hyperharness/foundation/assimilation"
-	"github.com/robertpelloni/hyperharness/foundation/compat"
-	foundationpi "github.com/robertpelloni/hyperharness/foundation/pi"
-	"github.com/robertpelloni/hyperharness/foundation/repomap"
+	"github.com/robertpelloni/hypercode/foundation/adapters"
+	"github.com/robertpelloni/hypercode/foundation/assimilation"
+	"github.com/robertpelloni/hypercode/foundation/compat"
+	foundationpi "github.com/robertpelloni/hypercode/foundation/pi"
+	"github.com/robertpelloni/hypercode/foundation/repomap"
 	"github.com/spf13/cobra"
 )
 
@@ -191,7 +191,7 @@ var foundationRepomapCmd = &cobra.Command{
 
 var foundationAdaptersCmd = &cobra.Command{
 	Use:   "adapters",
-	Short: "Inspect HyperCode/HyperCode, provider, and MCP adapter seams for the foundation runtime",
+	Short: "Inspect HyperCode/Borg, provider, and MCP adapter seams for the foundation runtime",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		cwd, err := os.Getwd()
 		if err != nil {
@@ -212,52 +212,6 @@ var foundationAdaptersCmd = &cobra.Command{
 var foundationSessionCmd = &cobra.Command{
 	Use:   "session",
 	Short: "Manage native foundation sessions",
-}
-
-var foundationSummaryCmd = &cobra.Command{
-	Use:   "summary",
-	Short: "Prepare and generate native foundation summaries",
-}
-
-var foundationSummaryBranchCmd = &cobra.Command{
-	Use:   "branch",
-	Short: "Prepare and generate a branch summary for a target entry",
-	RunE: func(cmd *cobra.Command, args []string) error {
-		sessionID, _ := cmd.Flags().GetString("session")
-		targetID, _ := cmd.Flags().GetString("target")
-		maxTokens, _ := cmd.Flags().GetInt("max-tokens")
-		cwd, err := os.Getwd()
-		if err != nil {
-			return err
-		}
-		payload, err := generateFoundationBranchSummary(cwd, foundationBranchSummaryRequest{Session: sessionID, Target: targetID, MaxTokens: maxTokens})
-		if err != nil {
-			return err
-		}
-		enc := json.NewEncoder(os.Stdout)
-		enc.SetIndent("", "  ")
-		return enc.Encode(payload)
-	},
-}
-
-var foundationSummaryCompactCmd = &cobra.Command{
-	Use:   "compact",
-	Short: "Prepare and generate a compaction summary for a session",
-	RunE: func(cmd *cobra.Command, args []string) error {
-		sessionID, _ := cmd.Flags().GetString("session")
-		keepRecent, _ := cmd.Flags().GetInt("keep-recent-tokens")
-		cwd, err := os.Getwd()
-		if err != nil {
-			return err
-		}
-		payload, err := generateFoundationCompaction(cwd, foundationCompactionRequest{Session: sessionID, KeepRecentTokens: keepRecent})
-		if err != nil {
-			return err
-		}
-		enc := json.NewEncoder(os.Stdout)
-		enc.SetIndent("", "  ")
-		return enc.Encode(payload)
-	},
 }
 
 var foundationSessionCreateCmd = &cobra.Command{
@@ -370,14 +324,6 @@ func init() {
 	_ = foundationExecCmd.MarkFlagRequired("tool")
 
 	foundationSessionCreateCmd.Flags().String("name", "", "optional session display name")
-	foundationSummaryBranchCmd.Flags().String("session", "", "session id")
-	foundationSummaryBranchCmd.Flags().String("target", "", "target entry id")
-	foundationSummaryBranchCmd.Flags().Int("max-tokens", 0, "optional estimated token budget for abandoned branch summary preparation")
-	_ = foundationSummaryBranchCmd.MarkFlagRequired("session")
-	_ = foundationSummaryBranchCmd.MarkFlagRequired("target")
-	foundationSummaryCompactCmd.Flags().String("session", "", "session id")
-	foundationSummaryCompactCmd.Flags().Int("keep-recent-tokens", 0, "estimated token budget to preserve as recent context")
-	_ = foundationSummaryCompactCmd.MarkFlagRequired("session")
 	foundationSessionShowCmd.Flags().String("session", "", "session id")
 	foundationSessionForkCmd.Flags().String("session", "", "session id")
 	foundationSessionForkCmd.Flags().String("entry", "", "entry id to fork from (defaults to latest entry)")
@@ -393,8 +339,6 @@ func init() {
 	foundationSessionCmd.AddCommand(foundationSessionListCmd)
 	foundationSessionCmd.AddCommand(foundationSessionShowCmd)
 	foundationSessionCmd.AddCommand(foundationSessionForkCmd)
-	foundationSummaryCmd.AddCommand(foundationSummaryBranchCmd)
-	foundationSummaryCmd.AddCommand(foundationSummaryCompactCmd)
 
 	foundationCmd.AddCommand(foundationInventoryCmd)
 	foundationCmd.AddCommand(foundationSpecCmd)
@@ -405,6 +349,5 @@ func init() {
 	foundationCmd.AddCommand(foundationAdaptersCmd)
 	foundationCmd.AddCommand(foundationExecCmd)
 	foundationCmd.AddCommand(foundationSessionCmd)
-	foundationCmd.AddCommand(foundationSummaryCmd)
 	rootCmd.AddCommand(foundationCmd)
 }

@@ -22,15 +22,21 @@ type ProviderExecutionResult struct {
 }
 
 func PrepareProviderExecution(req ProviderExecutionRequest) ProviderExecutionResult {
-	taskType := normalizeTaskType(req.TaskType, req.Prompt)
+	taskType := strings.TrimSpace(req.TaskType)
+	if taskType == "" {
+		taskType = inferTaskType(req.Prompt)
+	}
 	status := BuildProviderStatus()
 	route := SelectProviderRoute(ProviderRouteRequest{
 		TaskType:       taskType,
 		CostPreference: req.CostPreference,
 		RequireLocal:   req.RequireLocal,
 	})
-	preview := promptPreview(req.Prompt)
-	hint := buildExecutionHint(route, taskType)
+	preview := strings.TrimSpace(req.Prompt)
+	if len(preview) > 140 {
+		preview = preview[:140] + "..."
+	}
+	hint := fmt.Sprintf("Route provider execution to %s/%s for %s work.", route.Provider, route.Model, taskType)
 	return ProviderExecutionResult{
 		TaskType:       taskType,
 		Route:          route,
@@ -39,26 +45,6 @@ func PrepareProviderExecution(req ProviderExecutionRequest) ProviderExecutionRes
 		ExecutionHint:  hint,
 		SelectionNotes: append([]string(nil), route.Reasons...),
 	}
-}
-
-func normalizeTaskType(taskType, prompt string) string {
-	taskType = strings.TrimSpace(taskType)
-	if taskType != "" {
-		return taskType
-	}
-	return inferTaskType(prompt)
-}
-
-func promptPreview(prompt string) string {
-	preview := strings.TrimSpace(prompt)
-	if len(preview) > 140 {
-		preview = preview[:140] + "..."
-	}
-	return preview
-}
-
-func buildExecutionHint(route ProviderRoute, taskType string) string {
-	return fmt.Sprintf("Route provider execution to %s/%s for %s work.", route.Provider, route.Model, taskType)
 }
 
 func inferTaskType(prompt string) string {

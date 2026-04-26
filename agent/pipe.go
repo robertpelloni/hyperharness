@@ -6,57 +6,39 @@ import (
 	"os"
 	"strings"
 
-	"github.com/robertpelloni/hyperharness/foundation/adapters"
+	"github.com/robertpelloni/hypercode/foundation/adapters"
 )
 
 // PipeProcessor mimics Simon Willison's "LLM CLI" and Charmbracelet's "Crush".
 // It takes data from standard input, processes it through the LLM with a prompt,
 // and streams or returns the result.
 func (a *Agent) ProcessPipe(prompt string) (string, error) {
-	if a == nil {
-		return "", fmt.Errorf("agent is required")
-	}
 	stat, err := os.Stdin.Stat()
 	if err != nil {
 		return "", err
 	}
-	return processPipeWithReader(prompt, stat.Mode(), os.Stdin, a.Chat)
-}
 
-func processPipeWithReader(prompt string, mode os.FileMode, reader io.Reader, chat func(string) (string, error)) (string, error) {
-	if (mode & os.ModeCharDevice) != 0 {
+	// Check if data is being piped to Stdin
+	if (stat.Mode() & os.ModeCharDevice) != 0 {
 		return "", fmt.Errorf("no data piped to stdin")
 	}
-	if reader == nil {
-		return "", fmt.Errorf("stdin reader is required")
-	}
-	if chat == nil {
-		return "", fmt.Errorf("chat function is required")
-	}
 
-	inputData, err := io.ReadAll(reader)
+	inputData, err := io.ReadAll(os.Stdin)
 	if err != nil {
 		return "", fmt.Errorf("failed to read from stdin: %w", err)
 	}
 
 	execution := adapters.PrepareProviderExecution(adapters.ProviderExecutionRequest{Prompt: prompt, TaskType: "analysis", CostPreference: "budget"})
-	combinedPrompt := buildPipePrompt(prompt, execution.ExecutionHint, string(inputData))
+	combinedPrompt := fmt.Sprintf("%s\n\nExecution Hint:\n%s\n\nInput Data:\n%s", prompt, execution.ExecutionHint, string(inputData))
+
 	fmt.Printf("[PipeProcessor] Processing %d bytes of piped data via %s/%s...\n", len(inputData), execution.Route.Provider, execution.Route.Model)
 
-	response, err := chat(combinedPrompt)
+	response, err := a.Chat(combinedPrompt)
 	if err != nil {
 		return "", err
 	}
-	return formatPipeResponse(execution.ExecutionHint, response), nil
-}
-
-func buildPipePrompt(prompt, executionHint, input string) string {
-	return fmt.Sprintf("%s\n\nExecution Hint:\n%s\n\nInput Data:\n%s", prompt, executionHint, input)
-}
-
-func formatPipeResponse(executionHint, response string) string {
-	if strings.TrimSpace(executionHint) != "" {
-		return fmt.Sprintf("[Pipe Execution]\n%s\n\n%s", executionHint, response)
+	if strings.TrimSpace(execution.ExecutionHint) != "" {
+		return fmt.Sprintf("[Pipe Execution]\n%s\n\n%s", execution.ExecutionHint, response), nil
 	}
-	return response
+	return response, nil
 }

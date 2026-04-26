@@ -31,7 +31,7 @@ func TestRuntimeExecuteReadWriteEditAndBashTools(t *testing.T) {
 		t.Fatalf("unexpected read result: %q", got)
 	}
 
-	editInput, _ := json.Marshal(EditToolInput{Path: "notes.txt", Edits: []EditReplacement{{OldText: "world", NewText: "hypercode"}}})
+	editInput, _ := json.Marshal(EditToolInput{Path: "notes.txt", Edits: []EditReplacement{{OldText: "world", NewText: "borg"}}})
 	editResult, err := runtime.ExecuteTool(context.Background(), "", "edit", editInput, nil)
 	if err != nil {
 		t.Fatalf("edit failed: %v", err)
@@ -43,8 +43,8 @@ func TestRuntimeExecuteReadWriteEditAndBashTools(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if !strings.Contains(string(data), "hypercode") {
-		t.Fatalf("expected file to contain hypercode, got %q", string(data))
+	if !strings.Contains(string(data), "borg") {
+		t.Fatalf("expected file to contain borg, got %q", string(data))
 	}
 
 	bashInput, _ := json.Marshal(BashToolInput{Command: shellEchoCommand("foundation-ok")})
@@ -54,33 +54,6 @@ func TestRuntimeExecuteReadWriteEditAndBashTools(t *testing.T) {
 	}
 	if got := textFromResult(t, bashResult); !strings.Contains(got, "foundation-ok") {
 		t.Fatalf("unexpected bash result: %q", got)
-	}
-
-	grepInput, _ := json.Marshal(GrepToolInput{Pattern: "hypercode", Path: ".", Limit: 10})
-	grepResult, err := runtime.ExecuteTool(context.Background(), "", "grep", grepInput, nil)
-	if err != nil {
-		t.Fatalf("grep failed: %v", err)
-	}
-	if got := textFromResult(t, grepResult); !strings.Contains(got, "notes.txt") {
-		t.Fatalf("unexpected grep result: %q", got)
-	}
-
-	findInput, _ := json.Marshal(FindToolInput{Pattern: "*.txt", Path: ".", Limit: 10})
-	findResult, err := runtime.ExecuteTool(context.Background(), "", "find", findInput, nil)
-	if err != nil {
-		t.Fatalf("find failed: %v", err)
-	}
-	if got := textFromResult(t, findResult); !strings.Contains(got, "notes.txt") {
-		t.Fatalf("unexpected find result: %q", got)
-	}
-
-	lsInput, _ := json.Marshal(LSToolInput{Path: ".", Limit: 10})
-	lsResult, err := runtime.ExecuteTool(context.Background(), "", "ls", lsInput, nil)
-	if err != nil {
-		t.Fatalf("ls failed: %v", err)
-	}
-	if got := textFromResult(t, lsResult); !strings.Contains(got, "notes.txt") {
-		t.Fatalf("unexpected ls result: %q", got)
 	}
 }
 

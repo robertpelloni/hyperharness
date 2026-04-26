@@ -5,13 +5,8 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/robertpelloni/hyperharness/foundation/adapters"
+	"github.com/robertpelloni/hypercode/foundation/adapters"
 	"github.com/sashabaranov/go-openai"
-)
-
-const (
-	defaultGeminiBaseURL = "https://generativelanguage.googleapis.com/v1beta/"
-	defaultGeminiModel   = "gemini-1.5-pro"
 )
 
 // GeminiBorgProvider implements ILLMProvider targeting Gemini (default) or OpenAI endpoints.
@@ -26,65 +21,60 @@ func NewGeminiBorgProvider() ILLMProvider {
 	if apiKey == "" {
 		apiKey = "dummy_for_compilation"
 	}
+	// We can use the OpenAI SDK struct with an alternative BaseURL for Gemini compatibility natively
 	config := openai.DefaultConfig(apiKey)
-	config.BaseURL = defaultGeminiBaseURL
+	config.BaseURL = "https://generativelanguage.googleapis.com/v1beta/"
 
 	baseLayer := &GeminiBorgProvider{
 		Client: openai.NewClientWithConfig(config),
-		Model:  defaultGeminiModel,
+		Model:  "gemini-1.5-pro",
 	}
 
+	// Progressive Disclosure: We proxy all requests mapping SQLite vectors natively.
 	return NewDisclosureProxy(baseLayer, baseLayer.FetchLegacyToolArray())
 }
 
 // FetchLegacyToolArray holds the actual 649+ internal commands securely blocked from the JSON request loop natively.
 func (p *GeminiBorgProvider) FetchLegacyToolArray() []Tool {
-	return append([]Tool(nil), defaultLegacyTools()...)
+	return []Tool{
+		{
+			Name:        "apply_search_replace",
+			Description: "Aider parity: Replace block of code matching existing state.",
+			Schema:      nil, // Stub mapping
+		},
+		{
+			Name:        "get_repo_map",
+			Description: "Opencode parity: Retrieve AST tokenized map of the repo.",
+			Schema:      nil,
+		},
+		{
+			Name:        "suggest_shell_command",
+			Description: "Copilot CLI parity: Generate bash/pwsh scripts.",
+			Schema:      nil,
+		},
+	}
 }
 
 func (p *GeminiBorgProvider) Chat(ctx context.Context, messages []Message, tools []Tool) (Message, error) {
-	if p == nil {
-		return Message{}, fmt.Errorf("provider is required")
+	prompt := ""
+	if len(messages) > 0 {
+		prompt = messages[len(messages)-1].Content
 	}
-	prompt := lastProviderMessageContent(messages)
 	execution := adapters.PrepareProviderExecution(adapters.ProviderExecutionRequest{Prompt: prompt, TaskType: "analysis", CostPreference: "quality"})
 	return Message{
 		Role:    RoleAssistant,
-		Content: fmt.Sprintf("[%s] Executing native REST API request. (Gemini Parity Engaged)\n> %s", p.GetModelName(), execution.ExecutionHint),
+		Content: fmt.Sprintf("[%s] Executing native REST API request. (Gemini Parity Engaged)\n> %s", p.Model, execution.ExecutionHint),
 	}, nil
 }
 
 func (p *GeminiBorgProvider) Stream(ctx context.Context, messages []Message, tools []Tool, chunkChan chan<- string) error {
-	if p == nil {
-		return fmt.Errorf("provider is required")
-	}
-	if chunkChan == nil {
-		return fmt.Errorf("chunkChan is required")
-	}
 	defer close(chunkChan)
+	// Example bypass
 	chunkChan <- "Stream initialized... "
-	chunkChan <- fmt.Sprintf("[%s] Ready.", p.GetModelName())
+	chunkChan <- fmt.Sprintf("[%s] Ready.", p.Model)
 	return nil
 }
 
 func (p *GeminiBorgProvider) GetModelName() string {
-	if p == nil || p.Model == "" {
-		return defaultGeminiModel
-	}
 	return p.Model
-}
-
-func defaultLegacyTools() []Tool {
-	return []Tool{
-		{Name: "apply_search_replace", Description: "Aider parity: Replace block of code matching existing state.", Schema: nil},
-		{Name: "get_repo_map", Description: "Opencode parity: Retrieve AST tokenized map of the repo.", Schema: nil},
-		{Name: "suggest_shell_command", Description: "Copilot CLI parity: Generate bash/pwsh scripts.", Schema: nil},
-	}
-}
-
-func lastProviderMessageContent(messages []Message) string {
-	if len(messages) == 0 {
-		return ""
-	}
-	return messages[len(messages)-1].Content
 }
