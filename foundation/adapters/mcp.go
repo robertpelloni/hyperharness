@@ -7,7 +7,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/robertpelloni/hyperharness/borg"
+	"github.com/robertpelloni/hypercode/borg"
 )
 
 type MCPStatus struct {
@@ -57,22 +57,28 @@ func NewMCPAdapter(workingDir string) *MCPAdapter {
 }
 
 func (a *MCPAdapter) Status() MCPStatus {
-	homeDir := ""
-	if a != nil {
-		homeDir = a.homeDir
-	}
-	configPath, conf, err := ParseMCPConfig(homeDir)
+	configPath, conf, err := ParseMCPConfig(a.homeDir)
 	status := MCPStatus{ConfigPath: configPath}
-	if a == nil {
-		status.Warnings = append(status.Warnings, "mcp adapter is nil")
-	}
 	if err != nil {
 		status.Warnings = append(status.Warnings, err.Error())
 		return status
 	}
-	for _, name := range sortedMCPServerNames(conf) {
+	names := make([]string, 0, len(conf.MCPServers))
+	for name := range conf.MCPServers {
+		names = append(names, name)
+	}
+	sort.Strings(names)
+	for _, name := range names {
 		server := conf.MCPServers[name]
-		status.Servers = append(status.Servers, buildMCPServerStatus(a, name, server))
+		status.Servers = append(status.Servers, MCPServerStatus{
+			Name:       name,
+			Command:    server.Command,
+			Args:       append([]string(nil), server.Args...),
+			HasEnv:     len(server.Env) > 0,
+			ToolHints:  defaultToolHintsForServer(name, server),
+			RouteHint:  a.routeHint(name),
+			Executable: commandResolvable(server.Command),
+		})
 	}
 	return status
 }
@@ -124,11 +130,7 @@ func (a *MCPAdapter) CallTool(req MCPCallRequest) (MCPCallResult, error) {
 }
 
 func (a *MCPAdapter) LookupServer(name string) (MCPServerConfig, bool) {
-	homeDir := ""
-	if a != nil {
-		homeDir = a.homeDir
-	}
-	_, conf, err := ParseMCPConfig(homeDir)
+	_, conf, err := ParseMCPConfig(a.homeDir)
 	if err != nil {
 		return MCPServerConfig{}, false
 	}
@@ -141,55 +143,13 @@ func (a *MCPAdapter) StartConfiguredServer(name string) (*exec.Cmd, error) {
 	if !ok {
 		return nil, fmt.Errorf("unknown MCP server: %s", name)
 	}
-	return startMCPServer(server, name, mcpAdapterWorkingDir(a))
-}
-
-func sortedMCPServerNames(conf *MCPConfig) []string {
-	if conf == nil {
-		return nil
-	}
-	names := make([]string, 0, len(conf.MCPServers))
-	for name := range conf.MCPServers {
-		names = append(names, name)
-	}
-	sort.Strings(names)
-	return names
-}
-
-func buildMCPServerStatus(a *MCPAdapter, name string, server MCPServerConfig) MCPServerStatus {
-	return MCPServerStatus{
-		Name:       name,
-		Command:    server.Command,
-		Args:       append([]string(nil), server.Args...),
-		HasEnv:     len(server.Env) > 0,
-		ToolHints:  defaultToolHintsForServer(name, server),
-		RouteHint:  routeHintForAdapter(a, name),
-		Executable: commandResolvable(server.Command),
-	}
-}
-
-func routeHintForAdapter(a *MCPAdapter, name string) string {
-	if a == nil {
-		return name
-	}
-	return a.routeHint(name)
-}
-
-func mcpAdapterWorkingDir(a *MCPAdapter) string {
-	if a == nil {
-		return ""
-	}
-	return a.workingDir
-}
-
-func startMCPServer(server MCPServerConfig, name, workingDir string) (*exec.Cmd, error) {
 	if strings.TrimSpace(server.Command) == "" {
 		return nil, fmt.Errorf("MCP server %s has no command", name)
 	}
 	cmd := exec.Command(server.Command, server.Args...)
 	cmd.Env = server.FlattenEnv()
-	if strings.TrimSpace(workingDir) != "" {
-		cmd.Dir = workingDir
+	if a.workingDir != "" {
+		cmd.Dir = a.workingDir
 	}
 	if err := cmd.Start(); err != nil {
 		return nil, err

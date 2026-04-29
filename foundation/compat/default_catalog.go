@@ -57,7 +57,7 @@ func DefaultCatalog() *Catalog {
 		{
 			Source:            "pi",
 			Name:              "grep",
-			Description:       "Search file contents for patterns with optional glob filtering.",
+			Description:       "Search file contents for a pattern with file paths and line numbers. Respects .gitignore.",
 			Parameters:        json.RawMessage(`{"type":"object","required":["pattern"],"properties":{"pattern":{"type":"string"},"path":{"type":"string"},"glob":{"type":"string"},"ignoreCase":{"type":"boolean"},"literal":{"type":"boolean"},"context":{"type":"integer","minimum":0},"limit":{"type":"integer","minimum":1}},"additionalProperties":false}`),
 			Result:            ResultContract{Format: "tool-specific", Deterministic: false},
 			ExactName:         true,
@@ -69,7 +69,7 @@ func DefaultCatalog() *Catalog {
 		{
 			Source:            "pi",
 			Name:              "find",
-			Description:       "Find files by glob pattern.",
+			Description:       "Search for files by glob pattern. Respects .gitignore. Returns relative paths.",
 			Parameters:        json.RawMessage(`{"type":"object","required":["pattern"],"properties":{"pattern":{"type":"string"},"path":{"type":"string"},"limit":{"type":"integer","minimum":1}},"additionalProperties":false}`),
 			Result:            ResultContract{Format: "tool-specific", Deterministic: false},
 			ExactName:         true,
@@ -81,7 +81,7 @@ func DefaultCatalog() *Catalog {
 		{
 			Source:            "pi",
 			Name:              "ls",
-			Description:       "List directory contents.",
+			Description:       "List directory contents sorted alphabetically with / suffix for directories. Includes dotfiles.",
 			Parameters:        json.RawMessage(`{"type":"object","properties":{"path":{"type":"string"},"limit":{"type":"integer","minimum":1}},"additionalProperties":false}`),
 			Result:            ResultContract{Format: "tool-specific", Deterministic: false},
 			ExactName:         true,

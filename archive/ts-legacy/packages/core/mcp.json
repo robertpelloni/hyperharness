@@ -1,0 +1,16 @@
+{
+  "mcpServers": {},
+  "scripts": [
+    {
+      "name": "test_script",
+      "code": "console.log('hello')",
+      "description": "A test script"
+    },
+    {
+      "name": "test-script-1771457469383",
+      "description": "A test script",
+      "script": "console.log('hello')",
+      "uuid": "3f9e9220-5e9a-4014-b667-76f4fe0d2485"
+    }
+  ]
+}

@@ -15,18 +15,42 @@ import (
 	"strings"
 )
 
-// tools_extra.go provides ripgrep/fd fast-path implementations for grep/find/ls
-// that fall back to the native Go implementations in tools_native.go.
-// Ported from superai foundation/pi/tools_extra.go with hyperharness enhancements.
-
 const (
-	defaultGrepRLimit  = 100
-	defaultFindRLimit  = 1000
-	defaultLsRLimit    = 500
-	grepRMaxLineLength = 500
+	defaultGrepLimit  = 100
+	defaultFindLimit  = 1000
+	defaultLsLimit    = 500
+	grepMaxLineLength = 500
 )
 
-// executeGrepWithRipgrep uses ripgrep (rg) for high-performance grep.
+func executeGrepTool(ctx context.Context, cwd string, raw json.RawMessage) (*ToolResult, error) {
+	var input GrepToolInput
+	if err := json.Unmarshal(raw, &input); err != nil {
+		return &ToolResult{ToolName: "grep", Content: []any{TextContent{Type: "text", Text: fmt.Sprintf("invalid grep input: %v", err)}}, IsError: true}, nil
+	}
+	if strings.TrimSpace(input.Pattern) == "" {
+		return &ToolResult{ToolName: "grep", Content: []any{TextContent{Type: "text", Text: "pattern is required"}}, IsError: true}, nil
+	}
+
+	searchPath := cwd
+	if input.Path != "" {
+		searchPath = resolveOrDefault(cwd, input.Path)
+	}
+
+	effectiveLimit := input.Limit
+	if effectiveLimit <= 0 {
+		effectiveLimit = defaultGrepLimit
+	}
+
+	// Try ripgrep first
+	rgPath, err := exec.LookPath("rg")
+	if err == nil {
+		return executeGrepWithRipgrep(ctx, cwd, searchPath, rgPath, input, effectiveLimit)
+	}
+
+	// Fall back to native Go implementation
+	return executeGrepNative(ctx, cwd, searchPath, input, effectiveLimit)
+}
+
 func executeGrepWithRipgrep(ctx context.Context, cwd, searchPath, rgPath string, input GrepToolInput, effectiveLimit int) (*ToolResult, error) {
 	args := []string{"--json", "--line-number", "--color=never", "--hidden"}
 	if input.IgnoreCase {
@@ -47,13 +71,13 @@ func executeGrepWithRipgrep(ctx context.Context, cwd, searchPath, rgPath string,
 	cmd := exec.CommandContext(ctx, rgPath, args...)
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
-		return nil, fmt.Errorf("failed to run ripgrep: %w", err)
+		return &ToolResult{ToolName: "grep", Content: []any{TextContent{Type: "text", Text: fmt.Sprintf("failed to run ripgrep: %v", err)}}, IsError: true}, nil
 	}
 	stderrBuf := &bytes.Buffer{}
 	cmd.Stderr = stderrBuf
 
 	if err := cmd.Start(); err != nil {
-		return nil, fmt.Errorf("failed to run ripgrep: %w", err)
+		return &ToolResult{ToolName: "grep", Content: []any{TextContent{Type: "text", Text: fmt.Sprintf("failed to run ripgrep: %v", err)}}, IsError: true}, nil
 	}
 
 	searchInfo, _ := os.Stat(searchPath)
@@ -61,7 +85,7 @@ func executeGrepWithRipgrep(ctx context.Context, cwd, searchPath, rgPath string,
 
 	var outputLines []string
 	matchCount := 0
-	scanner := newLineScanner(stdout)
+	scanner := newScanner(stdout)
 	for scanner.Scan() {
 		line := scanner.Text()
 		if !strings.Contains(line, `"type"`) {
@@ -93,7 +117,7 @@ func executeGrepWithRipgrep(ctx context.Context, cwd, searchPath, rgPath string,
 
 			start := int(lineNum)
 			if input.Context > 0 {
-				for i := maxInt(1, start-input.Context); i <= minInt(len(lines), start+input.Context); i++ {
+				for i := max(1, start-input.Context); i <= min(len(lines), start+input.Context); i++ {
 					txt := strings.ReplaceAll(lines[i-1], "\r", "")
 					tc, _ := truncateLineStr(txt)
 					if i == start {
@@ -104,11 +128,14 @@ func executeGrepWithRipgrep(ctx context.Context, cwd, searchPath, rgPath string,
 				}
 			} else {
 				txt := strings.ReplaceAll(lines[start-1], "\r", "")
-				tc, _ := truncateLineStr(txt)
+				tc, wasTruncated := truncateLineStr(txt)
 				if !isDirSearch {
 					outputLines = append(outputLines, fmt.Sprintf("%s:%d: %s", filepath.Base(filePath), int(lineNum), tc))
 				} else {
 					outputLines = append(outputLines, fmt.Sprintf("%s:%d: %s", relPath, int(lineNum), tc))
+				}
+				if wasTruncated {
+					// line was truncated, noted implicitly
 				}
 			}
 
@@ -146,7 +173,6 @@ func executeGrepWithRipgrep(ctx context.Context, cwd, searchPath, rgPath string,
 	return &ToolResult{ToolName: "grep", Content: []any{TextContent{Type: "text", Text: output}}, Details: details}, nil
 }
 
-// executeGrepNative uses pure Go for grep when ripgrep is unavailable.
 func executeGrepNative(ctx context.Context, cwd, searchPath string, input GrepToolInput, effectiveLimit int) (*ToolResult, error) {
 	var pattern *regexp.Regexp
 	if input.Literal {
@@ -222,8 +248,8 @@ func executeGrepNative(ctx context.Context, cwd, searchPath string, input GrepTo
 				tc, _ := truncateLineStr(line)
 
 				if input.Context > 0 {
-					start := maxInt(1, i+1-input.Context)
-					end := minInt(len(lines), i+1+input.Context)
+					start := max(1, i+1-input.Context)
+					end := min(len(lines), i+1+input.Context)
 					for j := start; j <= end; j++ {
 						t, _ := truncateLineStr(strings.ReplaceAll(lines[j-1], "\r", ""))
 						if j == i+1 {
@@ -266,7 +292,34 @@ func executeGrepNative(ctx context.Context, cwd, searchPath string, input GrepTo
 	return &ToolResult{ToolName: "grep", Content: []any{TextContent{Type: "text", Text: output}}, Details: details}, nil
 }
 
-// executeFindWithFd uses fd for high-performance file finding.
+func executeFindTool(ctx context.Context, cwd string, raw json.RawMessage) (*ToolResult, error) {
+	var input FindToolInput
+	if err := json.Unmarshal(raw, &input); err != nil {
+		return &ToolResult{ToolName: "find", Content: []any{TextContent{Type: "text", Text: fmt.Sprintf("invalid find input: %v", err)}}, IsError: true}, nil
+	}
+	if strings.TrimSpace(input.Pattern) == "" {
+		return &ToolResult{ToolName: "find", Content: []any{TextContent{Type: "text", Text: "pattern is required"}}, IsError: true}, nil
+	}
+
+	searchPath := cwd
+	if input.Path != "" {
+		searchPath = resolveOrDefault(cwd, input.Path)
+	}
+
+	effectiveLimit := input.Limit
+	if effectiveLimit <= 0 {
+		effectiveLimit = defaultFindLimit
+	}
+
+	// Try fd first
+	fdPath, err := exec.LookPath("fd")
+	if err == nil {
+		return executeFindWithFd(ctx, searchPath, fdPath, input.Pattern, effectiveLimit)
+	}
+
+	return executeFindNative(ctx, searchPath, input.Pattern, effectiveLimit)
+}
+
 func executeFindWithFd(ctx context.Context, searchPath, fdPath, pattern string, effectiveLimit int) (*ToolResult, error) {
 	args := []string{"--glob", "--color=never", "--hidden", "--max-results", fmt.Sprintf("%d", effectiveLimit), pattern, searchPath}
 	cmd := exec.CommandContext(ctx, fdPath, args...)
@@ -297,7 +350,6 @@ func executeFindWithFd(ctx context.Context, searchPath, fdPath, pattern string, 
 	return formatFindResults(results, resultLimitReached || len(results) >= effectiveLimit, effectiveLimit)
 }
 
-// executeFindNative uses pure Go for file finding when fd is unavailable.
 func executeFindNative(ctx context.Context, searchPath, pattern string, effectiveLimit int) (*ToolResult, error) {
 	var results []string
 
@@ -334,7 +386,6 @@ func executeFindNative(ctx context.Context, searchPath, pattern string, effectiv
 	return formatFindResults(results, resultLimitReached || len(results) >= effectiveLimit, effectiveLimit)
 }
 
-// formatFindResults produces a standardized ToolResult for find operations.
 func formatFindResults(results []string, resultLimitReached bool, effectiveLimit int) (*ToolResult, error) {
 	if len(results) == 0 {
 		return &ToolResult{ToolName: "find", Content: []any{TextContent{Type: "text", Text: "No files found matching pattern"}}}, nil
@@ -363,8 +414,22 @@ func formatFindResults(results []string, resultLimitReached bool, effectiveLimit
 	return &ToolResult{ToolName: "find", Content: []any{TextContent{Type: "text", Text: outputText}}, Details: details}, nil
 }
 
-// executeLsWithNative performs ls with full details including dotfiles.
-func executeLsWithNative(dirPath string, effectiveLimit int) (*ToolResult, error) {
+func executeLsTool(ctx context.Context, cwd string, raw json.RawMessage) (*ToolResult, error) {
+	var input LsToolInput
+	if err := json.Unmarshal(raw, &input); err != nil {
+		return &ToolResult{ToolName: "ls", Content: []any{TextContent{Type: "text", Text: fmt.Sprintf("invalid ls input: %v", err)}}, IsError: true}, nil
+	}
+
+	dirPath := cwd
+	if input.Path != "" {
+		dirPath = resolveOrDefault(cwd, input.Path)
+	}
+
+	effectiveLimit := input.Limit
+	if effectiveLimit <= 0 {
+		effectiveLimit = defaultLsLimit
+	}
+
 	info, err := os.Stat(dirPath)
 	if err != nil {
 		return &ToolResult{ToolName: "ls", Content: []any{TextContent{Type: "text", Text: fmt.Sprintf("path not found: %s", dirPath)}}, IsError: true}, nil
@@ -423,100 +488,7 @@ func executeLsWithNative(dirPath string, effectiveLimit int) (*ToolResult, error
 	return &ToolResult{ToolName: "ls", Content: []any{TextContent{Type: "text", Text: output}}, Details: details}, nil
 }
 
-// EnhancedToolHandlers returns the default tool map with ripgrep/fd fast paths.
-func EnhancedToolHandlers() map[string]ToolHandler {
-	return map[string]ToolHandler{
-		"read":  executeReadTool,
-		"write": executeWriteTool,
-		"edit":  executeEditTool,
-		"bash":  executeBashTool,
-		"grep":  executeGrepEnhanced,
-		"find":  executeFindEnhanced,
-		"ls":    executeLsEnhanced,
-	}
-}
-
-// executeGrepEnhanced tries ripgrep first, falls back to native Go.
-func executeGrepEnhanced(ctx context.Context, cwd string, raw json.RawMessage) (*ToolResult, error) {
-	var input GrepToolInput
-	if err := json.Unmarshal(raw, &input); err != nil {
-		return &ToolResult{ToolName: "grep", Content: []any{TextContent{Type: "text", Text: fmt.Sprintf("invalid grep input: %v", err)}}, IsError: true}, nil
-	}
-	if strings.TrimSpace(input.Pattern) == "" {
-		return &ToolResult{ToolName: "grep", Content: []any{TextContent{Type: "text", Text: "pattern is required"}}, IsError: true}, nil
-	}
-
-	searchPath := cwd
-	if input.Path != "" {
-		searchPath = resolveOrDefaultPath(cwd, input.Path)
-	}
-
-	effectiveLimit := input.Limit
-	if effectiveLimit <= 0 {
-		effectiveLimit = defaultGrepLimit
-	}
-
-	// Try ripgrep first
-	rgPath, err := exec.LookPath("rg")
-	if err == nil {
-		return executeGrepWithRipgrep(ctx, cwd, searchPath, rgPath, input, effectiveLimit)
-	}
-
-	// Fall back to native Go implementation
-	return executeGrepNative(ctx, cwd, searchPath, input, effectiveLimit)
-}
-
-// executeFindEnhanced tries fd first, falls back to native Go.
-func executeFindEnhanced(ctx context.Context, cwd string, raw json.RawMessage) (*ToolResult, error) {
-	var input FindToolInput
-	if err := json.Unmarshal(raw, &input); err != nil {
-		return &ToolResult{ToolName: "find", Content: []any{TextContent{Type: "text", Text: fmt.Sprintf("invalid find input: %v", err)}}, IsError: true}, nil
-	}
-	if strings.TrimSpace(input.Pattern) == "" {
-		return &ToolResult{ToolName: "find", Content: []any{TextContent{Type: "text", Text: "pattern is required"}}, IsError: true}, nil
-	}
-
-	searchPath := cwd
-	if input.Path != "" {
-		searchPath = resolveOrDefaultPath(cwd, input.Path)
-	}
-
-	effectiveLimit := input.Limit
-	if effectiveLimit <= 0 {
-		effectiveLimit = defaultFindLimit
-	}
-
-	// Try fd first
-	fdPath, err := exec.LookPath("fd")
-	if err == nil {
-		return executeFindWithFd(ctx, searchPath, fdPath, input.Pattern, effectiveLimit)
-	}
-
-	return executeFindNative(ctx, searchPath, input.Pattern, effectiveLimit)
-}
-
-// executeLsEnhanced uses native Go with enhanced detail support.
-func executeLsEnhanced(ctx context.Context, cwd string, raw json.RawMessage) (*ToolResult, error) {
-	var input LSToolInput
-	if err := json.Unmarshal(raw, &input); err != nil {
-		return &ToolResult{ToolName: "ls", Content: []any{TextContent{Type: "text", Text: fmt.Sprintf("invalid ls input: %v", err)}}, IsError: true}, nil
-	}
-
-	dirPath := cwd
-	if input.Path != "" {
-		dirPath = resolveOrDefaultPath(cwd, input.Path)
-	}
-
-	effectiveLimit := input.Limit
-	if effectiveLimit <= 0 {
-		effectiveLimit = defaultLSLimit
-	}
-
-	return executeLsWithNative(dirPath, effectiveLimit)
-}
-
-// resolveOrDefaultPath resolves a path relative to cwd or returns cwd if empty.
-func resolveOrDefaultPath(cwd, p string) string {
+func resolveOrDefault(cwd, p string) string {
 	if p == "." {
 		return cwd
 	}
@@ -526,14 +498,36 @@ func resolveOrDefaultPath(cwd, p string) string {
 	return filepath.Clean(filepath.Join(cwd, p))
 }
 
-// lineScanner wraps bufio.Reader for line-by-line scanning.
+func relPathOrBase(path, base string) string {
+	if rel, err := filepath.Rel(base, path); err == nil && !strings.HasPrefix(rel, "..") {
+		return rel
+	}
+	return filepath.Base(path)
+}
+
+func readFileLines(path string) ([]string, error) {
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return nil, err
+	}
+	return strings.Split(strings.ReplaceAll(string(data), "\r\n", "\n"), "\n"), nil
+}
+
+func truncateLineStr(s string) (string, bool) {
+	runes := []rune(s)
+	if len(runes) > grepMaxLineLength {
+		return string(runes[:grepMaxLineLength]), true
+	}
+	return s, false
+}
+
 type lineScanner struct {
 	r    *bufio.Reader
 	line string
 	done bool
 }
 
-func newLineScanner(r io.Reader) *lineScanner {
+func newScanner(r io.Reader) *lineScanner {
 	return &lineScanner{r: bufio.NewReader(r)}
 }
 
@@ -553,17 +547,3 @@ func (s *lineScanner) Scan() bool {
 }
 
 func (s *lineScanner) Text() string { return s.line }
-
-func maxInt(a, b int) int {
-	if a > b {
-		return a
-	}
-	return b
-}
-
-func minInt(a, b int) int {
-	if a < b {
-		return a
-	}
-	return b
-}

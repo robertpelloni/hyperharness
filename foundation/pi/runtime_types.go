@@ -46,6 +46,34 @@ type BashToolInput struct {
 	Timeout float64 `json:"timeout,omitempty"`
 }
 
+type TruncationDetails struct {
+	Truncated          bool   `json:"truncated"`
+	TruncatedBy        string `json:"truncatedBy,omitempty"`
+	TotalLines         int    `json:"totalLines,omitempty"`
+	OutputLines        int    `json:"outputLines,omitempty"`
+	OutputBytes        int    `json:"outputBytes,omitempty"`
+	MaxLines           int    `json:"maxLines,omitempty"`
+	MaxBytes           int    `json:"maxBytes,omitempty"`
+	FirstLineExceeds   bool   `json:"firstLineExceedsLimit,omitempty"`
+	LastLinePartial    bool   `json:"lastLinePartial,omitempty"`
+	ContinuationOffset int    `json:"continuationOffset,omitempty"`
+	FullOutputPath     string `json:"fullOutputPath,omitempty"`
+}
+
+type ReadToolDetails struct {
+	Truncation *TruncationDetails `json:"truncation,omitempty"`
+}
+
+type EditToolDetails struct {
+	Diff             string `json:"diff,omitempty"`
+	FirstChangedLine int    `json:"firstChangedLine,omitempty"`
+}
+
+type BashToolDetails struct {
+	Truncation     *TruncationDetails `json:"truncation,omitempty"`
+	FullOutputPath string             `json:"fullOutputPath,omitempty"`
+}
+
 type GrepToolInput struct {
 	Pattern    string `json:"pattern"`
 	Path       string `json:"path,omitempty"`
@@ -73,7 +101,7 @@ type FindToolDetails struct {
 	ResultLimitReached int                `json:"resultLimitReached,omitempty"`
 }
 
-type LSToolInput struct {
+type LsToolInput struct {
 	Path  string `json:"path,omitempty"`
 	Limit int    `json:"limit,omitempty"`
 }
@@ -81,34 +109,6 @@ type LSToolInput struct {
 type LsToolDetails struct {
 	Truncation        *TruncationDetails `json:"truncation,omitempty"`
 	EntryLimitReached int                `json:"entryLimitReached,omitempty"`
-}
-
-type TruncationDetails struct {
-	Truncated          bool   `json:"truncated"`
-	TruncatedBy        string `json:"truncatedBy,omitempty"`
-	TotalLines         int    `json:"totalLines,omitempty"`
-	OutputLines        int    `json:"outputLines,omitempty"`
-	OutputBytes        int    `json:"outputBytes,omitempty"`
-	MaxLines           int    `json:"maxLines,omitempty"`
-	MaxBytes           int    `json:"maxBytes,omitempty"`
-	FirstLineExceeds   bool   `json:"firstLineExceedsLimit,omitempty"`
-	LastLinePartial    bool   `json:"lastLinePartial,omitempty"`
-	ContinuationOffset int    `json:"continuationOffset,omitempty"`
-	FullOutputPath     string `json:"fullOutputPath,omitempty"`
-}
-
-type ReadToolDetails struct {
-	Truncation *TruncationDetails `json:"truncation,omitempty"`
-}
-
-type EditToolDetails struct {
-	Diff             string `json:"diff,omitempty"`
-	FirstChangedLine int    `json:"firstChangedLine,omitempty"`
-}
-
-type BashToolDetails struct {
-	Truncation     *TruncationDetails `json:"truncation,omitempty"`
-	FullOutputPath string             `json:"fullOutputPath,omitempty"`
 }
 
 type ToolResult struct {

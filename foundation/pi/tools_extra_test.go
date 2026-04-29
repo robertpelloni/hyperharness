@@ -1,317 +1,221 @@
 package pi
 
 import (
-	"context"
-	"encoding/json"
-	"io"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 )
 
-// TestEnhancedGrepTool tests the ripgrep/native fallback grep implementation.
-func TestEnhancedGrepTool(t *testing.T) {
-	tmpDir := t.TempDir()
-	testFile := filepath.Join(tmpDir, "grep_test.txt")
-	os.WriteFile(testFile, []byte("hello world\nfoo bar\nhello foo\n"), 0o644)
+func TestGrepToolFindsPattern(t *testing.T) {
+	dir := t.TempDir()
+	runtime := NewRuntime(dir, DefaultSessionStore(dir))
 
-	handlers := EnhancedToolHandlers()
-	grepHandler, ok := handlers["grep"]
-	if !ok {
-		t.Fatal("enhanced grep handler not found")
-	}
+	mustExec(t, runtime, "write", WriteToolInput{Path: "a.txt", Content: "hello world\nhello pi\ngoodbye world\n"})
+	result := mustExecResult(t, runtime, "grep", GrepToolInput{Pattern: "hello"})
 
-	input := GrepToolInput{
-		Pattern: "hello",
-		Path:    tmpDir,
-		Limit:   10,
+	text := textFromResult(t, result)
+	if !strings.Contains(text, "a.txt") {
+		t.Fatalf("expected file path in grep output, got %q", text)
 	}
-	raw, _ := json.Marshal(input)
-
-	result, err := grepHandler(context.Background(), tmpDir, raw)
-	if err != nil {
-		t.Fatalf("enhanced grep failed: %v", err)
-	}
-
-	if result == nil {
-		t.Fatal("result is nil")
-	}
-
-	found := false
-	for _, block := range result.Content {
-		if tc, ok := block.(TextContent); ok {
-			if tc.Text != "" {
-				found = true
-				t.Logf("grep result: %s", tc.Text)
-			}
-		}
-	}
-	if !found {
-		t.Error("enhanced grep returned no content")
+	if !strings.Contains(text, "hello") {
+		t.Fatalf("expected pattern in grep output, got %q", text)
 	}
 }
 
-// TestEnhancedFindTool tests the fd/native fallback find implementation.
-func TestEnhancedFindTool(t *testing.T) {
-	tmpDir := t.TempDir()
-	os.WriteFile(filepath.Join(tmpDir, "test.go"), []byte("package test\n"), 0o644)
-	os.WriteFile(filepath.Join(tmpDir, "test.txt"), []byte("hello\n"), 0o644)
+func TestGrepToolContextLines(t *testing.T) {
+	dir := t.TempDir()
+	runtime := NewRuntime(dir, DefaultSessionStore(dir))
 
-	handlers := EnhancedToolHandlers()
-	findHandler, ok := handlers["find"]
-	if !ok {
-		t.Fatal("enhanced find handler not found")
+	content := ""
+	for i := 1; i <= 5; i++ {
+		content += "line " + string(rune('0'+i)) + "\n"
 	}
+	mustExec(t, runtime, "write", WriteToolInput{Path: "b.txt", Content: content})
 
-	input := FindToolInput{
-		Pattern: "*.go",
-		Path:    tmpDir,
-	}
-	raw, _ := json.Marshal(input)
-
-	result, err := findHandler(context.Background(), tmpDir, raw)
-	if err != nil {
-		t.Fatalf("enhanced find failed: %v", err)
-	}
-
-	if result == nil {
-		t.Fatal("result is nil")
-	}
-
-	found := false
-	for _, block := range result.Content {
-		if tc, ok := block.(TextContent); ok {
-			if tc.Text != "" {
-				found = true
-				if tc.Text == "No files found matching pattern" {
-					t.Errorf("find returned no results in %s", tmpDir)
-				} else {
-					t.Logf("find result: %s", tc.Text)
-				}
-			}
-		}
-	}
-	if !found {
-		t.Error("enhanced find returned no content")
+	result := mustExecResult(t, runtime, "grep", GrepToolInput{Pattern: `line 3`, Literal: true, Context: 1})
+	text := textFromResult(t, result)
+	if !strings.Contains(text, "line 3") {
+		t.Fatalf("expected match in context output, got %q", text)
 	}
 }
 
-// TestEnhancedLsTool tests the enhanced ls implementation.
-func TestEnhancedLsTool(t *testing.T) {
-	tmpDir := t.TempDir()
-	os.WriteFile(filepath.Join(tmpDir, "file1.txt"), []byte("a\n"), 0o644)
-	os.Mkdir(filepath.Join(tmpDir, "subdir"), 0o755)
+func TestGrepToolNoMatches(t *testing.T) {
+	dir := t.TempDir()
+	runtime := NewRuntime(dir, DefaultSessionStore(dir))
 
-	handlers := EnhancedToolHandlers()
-	lsHandler, ok := handlers["ls"]
-	if !ok {
-		t.Fatal("enhanced ls handler not found")
-	}
-
-	input := LSToolInput{
-		Path: tmpDir,
-	}
-	raw, _ := json.Marshal(input)
-
-	result, err := lsHandler(context.Background(), tmpDir, raw)
-	if err != nil {
-		t.Fatalf("enhanced ls failed: %v", err)
-	}
-
-	found := false
-	for _, block := range result.Content {
-		if tc, ok := block.(TextContent); ok {
-			if tc.Text != "" {
-				found = true
-				if !containsAll(tc.Text, "file1.txt", "subdir/") {
-					t.Errorf("ls missing expected entries: %s", tc.Text)
-				}
-			}
-		}
-	}
-	if !found {
-		t.Error("enhanced ls returned no content")
+	mustExec(t, runtime, "write", WriteToolInput{Path: "c.txt", Content: "nothing here\n"})
+	result := mustExecResult(t, runtime, "grep", GrepToolInput{Pattern: "zxcvzxcv"})
+	text := textFromResult(t, result)
+	if text != "No matches found" {
+		t.Fatalf("expected no matches message, got %q", text)
 	}
 }
 
-// TestResolveOrDefaultPath tests path resolution helper.
-func TestResolveOrDefaultPath(t *testing.T) {
-	tests := []struct {
-		cwd, path, expected string
-	}{
-		{"/home/user", ".", "/home/user"},
-		{"/home/user", "subdir", "/home/user/subdir"},
-		{"/home/user", "../parent", "/home/parent"},
-	}
+func TestFindToolFindsFiles(t *testing.T) {
+	dir := t.TempDir()
+	runtime := NewRuntime(dir, DefaultSessionStore(dir))
 
-	if filepath.IsAbs("/abs/path") {
-		tests = append(tests, struct{ cwd, path, expected string }{"/home/user", "/abs/path", "/abs/path"})
-	}
+	os.MkdirAll(filepath.Join(dir, "src"), 0o755)
+	os.WriteFile(filepath.Join(dir, "src", "main.go"), []byte("package main"), 0o644)
+	os.WriteFile(filepath.Join(dir, "src", "util.go"), []byte("package src"), 0o644)
+	os.WriteFile(filepath.Join(dir, "README.md"), []byte("# readme"), 0o644)
 
-	for _, tc := range tests {
-		result := filepath.ToSlash(resolveOrDefaultPath(tc.cwd, tc.path))
-		expected := filepath.ToSlash(filepath.Clean(tc.expected))
-		if result != expected {
-			t.Errorf("resolveOrDefaultPath(%q, %q) = %q, want %q", tc.cwd, tc.path, result, expected)
-		}
+	result := mustExecResult(t, runtime, "find", FindToolInput{Pattern: "*.go"})
+	text := textFromResult(t, result)
+	if !strings.Contains(text, ".go") {
+		t.Fatalf("expected .go files, got %q", text)
 	}
 }
 
-// TestLineScanner tests the line scanner utility.
-func TestLineScanner(t *testing.T) {
-	input := "line1\nline2\nline3\n"
-	scanner := newLineScanner(stringReader(input))
+func TestFindToolNoFiles(t *testing.T) {
+	dir := t.TempDir()
+	runtime := NewRuntime(dir, DefaultSessionStore(dir))
 
-	var lines []string
-	for scanner.Scan() {
-		lines = append(lines, scanner.Text())
-	}
-
-	if len(lines) != 3 {
-		t.Fatalf("expected 3 lines, got %d", len(lines))
-	}
-	if lines[0] != "line1" {
-		t.Errorf("line 0: got %q, want %q", lines[0], "line1")
-	}
-	if lines[2] != "line3" {
-		t.Errorf("line 2: got %q, want %q", lines[2], "line3")
+	os.WriteFile(filepath.Join(dir, "hello.txt"), []byte("hi"), 0o644)
+	result := mustExecResult(t, runtime, "find", FindToolInput{Pattern: "*.go"})
+	text := textFromResult(t, result)
+	if text != "No files found matching pattern" {
+		t.Fatalf("expected no files message, got %q", text)
 	}
 }
 
-// TestMaxMinInt tests the helper functions.
-func TestMaxMinInt(t *testing.T) {
-	if maxInt(1, 2) != 2 {
-		t.Error("maxInt(1,2) should be 2")
+func TestLsToolListsDirectory(t *testing.T) {
+	dir := t.TempDir()
+	runtime := NewRuntime(dir, DefaultSessionStore(dir))
+
+	os.MkdirAll(filepath.Join(dir, "subdir"), 0o755)
+	os.WriteFile(filepath.Join(dir, "a.txt"), []byte("a"), 0o644)
+	os.WriteFile(filepath.Join(dir, "b.go"), []byte("b"), 0o644)
+
+	result := mustExecResult(t, runtime, "ls", LsToolInput{})
+	text := textFromResult(t, result)
+
+	if !strings.Contains(text, "a.txt") {
+		t.Fatalf("expected a.txt in ls output, got %q", text)
 	}
-	if maxInt(3, 1) != 3 {
-		t.Error("maxInt(3,1) should be 3")
+	if !strings.Contains(text, "b.go") {
+		t.Fatalf("expected b.go in ls output, got %q", text)
 	}
-	if minInt(1, 2) != 1 {
-		t.Error("minInt(1,2) should be 1")
-	}
-	if minInt(3, 1) != 1 {
-		t.Error("minInt(3,1) should be 1")
+	if !strings.Contains(text, "subdir/") {
+		t.Fatalf("expected subdir/ with slash suffix, got %q", text)
 	}
 }
 
-// TestFormatFindResults tests the find results formatter.
-func TestFormatFindResults(t *testing.T) {
-	// Empty results
-	result, err := formatFindResults(nil, false, 100)
-	if err != nil {
-		t.Fatalf("formatFindResults failed: %v", err)
-	}
-	found := false
-	for _, block := range result.Content {
-		if tc, ok := block.(TextContent); ok {
-			if tc.Text == "No files found matching pattern" {
-				found = true
-			}
-		}
-	}
-	if !found {
-		t.Error("expected 'No files found' for empty results")
-	}
+func TestLsToolEmptyDirectory(t *testing.T) {
+	dir := t.TempDir()
+	runtime := NewRuntime(dir, DefaultSessionStore(dir))
 
-	// Non-empty results
-	result, err = formatFindResults([]string{"file1.go", "file2.go"}, false, 100)
-	if err != nil {
-		t.Fatalf("formatFindResults failed: %v", err)
-	}
-	found = false
-	for _, block := range result.Content {
-		if tc, ok := block.(TextContent); ok {
-			if tc.Text != "" && tc.Text != "No files found matching pattern" {
-				found = true
-			}
-		}
-	}
-	if !found {
-		t.Error("expected non-empty results")
+	subdir := filepath.Join(dir, "empty")
+	os.MkdirAll(subdir, 0o755)
+
+	result := mustExecResult(t, runtime, "ls", LsToolInput{Path: "empty"})
+	text := textFromResult(t, result)
+	if text != "(empty directory)" {
+		t.Fatalf("expected empty directory message, got %q", text)
 	}
 }
 
-// TestGrepNativeWithLiteral tests native grep with literal mode.
-func TestGrepNativeWithLiteral(t *testing.T) {
-	tmpDir := t.TempDir()
-	testFile := filepath.Join(tmpDir, "literal_test.txt")
-	os.WriteFile(testFile, []byte("func TestFoo(t *testing.T) {\nvar regex = \"(a|b)*\"\n"), 0o644)
+func TestLsToolNotFound(t *testing.T) {
+	dir := t.TempDir()
+	runtime := NewRuntime(dir, DefaultSessionStore(dir))
 
-	input := GrepToolInput{
-		Pattern: "(a|b)*",
-		Path:    testFile,
-		Literal: true,
-		Limit:   10,
-	}
-
-	result, err := executeGrepNative(context.Background(), tmpDir, testFile, input, 10)
-	if err != nil {
-		t.Fatalf("native grep with literal failed: %v", err)
-	}
-
-	found := false
-	for _, block := range result.Content {
-		if tc, ok := block.(TextContent); ok {
-			if tc.Text != "" && tc.Text != "No matches found" {
-				found = true
-			}
-		}
-	}
-	if !found {
-		t.Error("expected literal grep to find regex pattern")
+	result := mustExecResult(t, runtime, "ls", LsToolInput{Path: "nonexistent"})
+	text := textFromResult(t, result)
+	if !strings.Contains(text, "path not found") {
+		t.Fatalf("expected path not found error, got %q", text)
 	}
 }
 
-// TestLsWithNativeEmptyDir tests ls with an empty directory.
-func TestLsWithNativeEmptyDir(t *testing.T) {
-	tmpDir := t.TempDir()
+func TestGrepToolWithGlob(t *testing.T) {
+	dir := t.TempDir()
+	runtime := NewRuntime(dir, DefaultSessionStore(dir))
 
-	result, err := executeLsWithNative(tmpDir, 500)
-	if err != nil {
-		t.Fatalf("ls empty dir failed: %v", err)
-	}
+	os.MkdirAll(filepath.Join(dir, "src"), 0o755)
+	os.WriteFile(filepath.Join(dir, "src", "a.go"), []byte("hello world"), 0o644)
+	os.WriteFile(filepath.Join(dir, "src", "b.txt"), []byte("hello skip me"), 0o644)
 
-	found := false
-	for _, block := range result.Content {
-		if tc, ok := block.(TextContent); ok {
-			if tc.Text == "(empty directory)" {
-				found = true
-			}
-		}
+	result := mustExecResult(t, runtime, "grep", GrepToolInput{Pattern: "hello", Glob: "*.go"})
+	text := textFromResult(t, result)
+	if strings.Contains(text, "b.txt") {
+		t.Fatalf("expected only .go files, got %q", text)
 	}
-	if !found {
-		t.Error("expected empty directory message")
+	if !strings.Contains(text, "a.go") {
+		t.Fatalf("expected a.go match, got %q", text)
 	}
 }
 
-// Helper type for string-based io.Reader
-type stringReaderImpl struct {
-	data []byte
-	pos  int
-}
+func TestFindToolWithSubdir(t *testing.T) {
+	dir := t.TempDir()
+	runtime := NewRuntime(dir, DefaultSessionStore(dir))
 
-func (s *stringReaderImpl) Read(p []byte) (n int, err error) {
-	if s.pos >= len(s.data) {
-		return 0, io.EOF
+	os.MkdirAll(filepath.Join(dir, "src"), 0o755)
+	os.WriteFile(filepath.Join(dir, "src", "main.go"), []byte("package main"), 0o644)
+	os.WriteFile(filepath.Join(dir, "main.go"), []byte("package main2"), 0o644)
+
+	result := mustExecResult(t, runtime, "find", FindToolInput{Pattern: "*.go", Path: "src"})
+	text := textFromResult(t, result)
+	if text == "No files found matching pattern" {
+		t.Fatal("expected to find at least one .go file under src")
 	}
-	n = copy(p, s.data[s.pos:])
-	s.pos += n
-	return n, nil
 }
 
-func stringReader(str string) *stringReaderImpl {
-	return &stringReaderImpl{data: []byte(str)}
-}
+func TestLsToolLimit(t *testing.T) {
+	dir := t.TempDir()
+	runtime := NewRuntime(dir, DefaultSessionStore(dir))
 
-func containsAll(s string, substrs ...string) bool {
-	for _, sub := range substrs {
-		if !containsStr(s, sub) {
-			return false
-		}
+	for i := 0; i < 10; i++ {
+		fname := "file" + string(rune('0'+i)) + ".txt"
+		os.WriteFile(filepath.Join(dir, fname), []byte("x"), 0o644)
 	}
-	return true
+
+	result := mustExecResult(t, runtime, "ls", LsToolInput{Limit: 3})
+	details, ok := result.Details.(*LsToolDetails)
+	if !ok || details == nil {
+		t.Fatalf("expected ls details with limit info, got %#v", result.Details)
+	}
+	if details.EntryLimitReached != 3 {
+		t.Fatalf("expected entry limit 3, got %v", details.EntryLimitReached)
+	}
 }
 
-func containsStr(s, sub string) bool {
-	return len(s) >= len(sub) && (s == sub || len(s) > 0 && containsStr(s[1:], sub) || s[:len(sub)] == sub)
+func TestGrepToolLimit(t *testing.T) {
+	dir := t.TempDir()
+	runtime := NewRuntime(dir, DefaultSessionStore(dir))
+
+	content := ""
+	for i := 0; i < 10; i++ {
+		content += "line match\n"
+	}
+	mustExec(t, runtime, "write", WriteToolInput{Path: "many.txt", Content: content})
+
+	result := mustExecResult(t, runtime, "grep", GrepToolInput{Pattern: "match", Limit: 3})
+	details, ok := result.Details.(*GrepToolDetails)
+	if !ok || details == nil {
+		t.Fatalf("expected grep details with limit info, got %#v", result.Details)
+	}
+	if details.MatchLimitReached != 3 {
+		t.Fatalf("expected match limit 3, got %v", details.MatchLimitReached)
+	}
 }
+
+func TestFindToolResultLimit(t *testing.T) {
+	dir := t.TempDir()
+	runtime := NewRuntime(dir, DefaultSessionStore(dir))
+
+	for i := 0; i < 10; i++ {
+		fname := "f" + string(rune('0'+i)) + ".txt"
+		os.WriteFile(filepath.Join(dir, fname), []byte("x"), 0o644)
+	}
+
+	result := mustExecResult(t, runtime, "find", FindToolInput{Pattern: "*.txt", Limit: 3})
+	details, ok := result.Details.(*FindToolDetails)
+	if !ok || details == nil {
+		t.Fatalf("expected find details with limit info, got %#v", result.Details)
+	}
+	if details.ResultLimitReached != 3 {
+		t.Fatalf("expected result limit 3, got %v", details.ResultLimitReached)
+	}
+}
+
+// Helpers reused from runtime_test.go: mustExec, mustExecResult, textFromResult

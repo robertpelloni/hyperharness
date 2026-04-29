@@ -4,7 +4,7 @@
 Build a **Go-native harness core** that uses:
 - Go for runtime, orchestration, session control, and TUI integration.
 - exact tool-contract manifests for model-facing compatibility,
-- HyperCode/HyperCode as the default control-plane substrate,
+- HyperCode/Borg as the default control-plane substrate,
 - optional adapters for upstream-compatible behavior,
 - a modular architecture that allows truthfully staged parity.
 
@@ -106,10 +106,10 @@ Responsibilities:
 - reduce placeholder orchestration logic in higher-level packages
 
 ### 6. `foundation/adapters`
-Purpose: define and exercise the integration seam between the Go harness and HyperCode/HyperCode.
+Purpose: define and exercise the integration seam between the Go harness and HyperCode/Borg.
 
 Responsibilities:
-- expose HyperCode memory/context status cleanly to the harness
+- expose Borg memory/context status cleanly to the harness
 - expose provider configuration/status cleanly to the harness
 - expose early provider-route selection seams before full control-plane delegation
 - expose MCP configuration visibility without duplicating MCP control-plane logic
@@ -135,7 +135,7 @@ Responsibilities owned by the new harness:
 - agent loop behavior
 - session interaction model
 - coding-agent specialization
-- adapter consumption and presentation of HyperCode/HyperCode state
+- adapter consumption and presentation of HyperCode/Borg state
 - migration of top-level HTTP/CLI surfaces onto foundation-backed execution paths
 
 ## Key Design Principles
@@ -167,7 +167,7 @@ We should avoid creating a dependency graph where the new harness cannot stand w
 Define exact tool and event contracts before rewriting behavior.
 
 ### Phase B: bridged parity
-Route through HyperCode/HyperCode or local adapters where native parity is not ready.
+Route through HyperCode/Borg or local adapters where native parity is not ready.
 
 ### Phase C: native replacement
 Replace bridged implementations one capability family at a time.

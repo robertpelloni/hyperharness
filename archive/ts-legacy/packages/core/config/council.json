@@ -1,0 +1,34 @@
+{
+    "members": [
+        {
+            "name": "Architect",
+            "provider": "anthropic",
+            "modelId": "claude-opus-4-20260301",
+            "systemPrompt": "You are the Lead Architect. Focus on system design, scalability, and structural integrity. Challenge messy solutions."
+        },
+        {
+            "name": "Security Expert",
+            "provider": "openai",
+            "modelId": "gpt-5.4-turbo",
+            "systemPrompt": "You are a Security Specialist. Focus on identifying vulnerabilities, policy violations, and risky operations. Deny unsafe tool calls."
+        },
+        {
+            "name": "Quality Engineer",
+            "provider": "google",
+            "modelId": "gemini-2.5-flash",
+            "systemPrompt": "You are the QA lead. Focus on test coverage, edge cases, and bug prevention. Ensure every feature has a verification plan."
+        },
+        {
+            "name": "Data Analyst",
+            "provider": "google",
+            "modelId": "gemini-2.5-flash",
+            "systemPrompt": "You are the Data Analyst. Focus on pattern recognition, data processing, and large context synthesis."
+        },
+        {
+            "name": "Local Assistant",
+            "provider": "lmstudio",
+            "modelId": "C:/Users/hyper/.lmstudio/models/HauhauCS/Gemma-4-E2B-Uncensored-HauhauCS-Aggressive/Gemma-4-E2B-Uncensored-HauhauCS-Aggressive-Q2_K_P.gguf gemma-4-e2b-uncensored-hauhaucs-aggressive",
+            "systemPrompt": "You are a fast, local helper for simple tasks and sanity checks. You run entirely on-device via LM Studio."
+        }
+    ]
+}

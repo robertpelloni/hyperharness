@@ -6,11 +6,11 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/robertpelloni/hyperharness/foundation/adapters"
-	"github.com/robertpelloni/hyperharness/foundation/compat"
-	foundationorchestration "github.com/robertpelloni/hyperharness/foundation/orchestration"
-	foundationpi "github.com/robertpelloni/hyperharness/foundation/pi"
-	foundationrepomap "github.com/robertpelloni/hyperharness/foundation/repomap"
+	"github.com/robertpelloni/hypercode/foundation/adapters"
+	"github.com/robertpelloni/hypercode/foundation/compat"
+	foundationorchestration "github.com/robertpelloni/hypercode/foundation/orchestration"
+	foundationpi "github.com/robertpelloni/hypercode/foundation/pi"
+	foundationrepomap "github.com/robertpelloni/hypercode/foundation/repomap"
 )
 
 type foundationExecRequest struct {
@@ -36,17 +36,6 @@ type foundationSessionCreateRequest struct {
 type foundationSessionForkRequest struct {
 	Entry string `json:"entry,omitempty"`
 	Name  string `json:"name,omitempty"`
-}
-
-type foundationBranchSummaryRequest struct {
-	Session   string `json:"session"`
-	Target    string `json:"target"`
-	MaxTokens int    `json:"maxTokens,omitempty"`
-}
-
-type foundationCompactionRequest struct {
-	Session          string `json:"session"`
-	KeepRecentTokens int    `json:"keepRecentTokens,omitempty"`
 }
 
 type foundationMCPCallRequest struct {
@@ -179,56 +168,6 @@ func getFoundationSession(cwd, sessionID string) (*foundationpi.SessionFile, err
 func forkFoundationSession(cwd, sessionID string, body foundationSessionForkRequest) (*foundationpi.SessionFile, error) {
 	runtime := foundationpi.NewRuntime(cwd, nil)
 	return runtime.ForkSession(sessionID, body.Entry, body.Name)
-}
-
-func prepareFoundationBranchSummary(cwd string, body foundationBranchSummaryRequest) (*foundationpi.BranchSummaryPreparation, error) {
-	runtime := foundationpi.NewRuntime(cwd, nil)
-	if body.MaxTokens > 0 {
-		return runtime.PrepareBranchSummaryWithBudget(body.Session, body.Target, body.MaxTokens)
-	}
-	return runtime.PrepareBranchSummary(body.Session, body.Target)
-}
-
-func generateFoundationBranchSummary(cwd string, body foundationBranchSummaryRequest) (map[string]any, error) {
-	runtime := foundationpi.NewRuntime(cwd, nil)
-	prep, err := prepareFoundationBranchSummary(cwd, body)
-	if err != nil {
-		return nil, err
-	}
-	summary, err := runtime.GenerateBranchSummary(context.Background(), prep, nil)
-	if err != nil {
-		return nil, err
-	}
-	session, generated, err := runtime.BranchWithGeneratedSummary(context.Background(), body.Session, body.Target, body.MaxTokens, nil, map[string]any{"readFiles": prep.FileOps.ReadFiles, "modifiedFiles": prep.FileOps.ModifiedFiles})
-	if err != nil {
-		return nil, err
-	}
-	return map[string]any{"preparation": prep, "summary": summary, "generated": generated, "session": session}, nil
-}
-
-func prepareFoundationCompaction(cwd string, body foundationCompactionRequest) (*foundationpi.CompactionPreparation, error) {
-	runtime := foundationpi.NewRuntime(cwd, nil)
-	if body.KeepRecentTokens > 0 {
-		return runtime.PrepareCompactionWithBudget(body.Session, body.KeepRecentTokens)
-	}
-	return runtime.PrepareCompaction(body.Session)
-}
-
-func generateFoundationCompaction(cwd string, body foundationCompactionRequest) (map[string]any, error) {
-	runtime := foundationpi.NewRuntime(cwd, nil)
-	prep, err := prepareFoundationCompaction(cwd, body)
-	if err != nil {
-		return nil, err
-	}
-	summary, err := runtime.GenerateCompactionSummary(context.Background(), prep, nil)
-	if err != nil {
-		return nil, err
-	}
-	session, generated, err := runtime.CompactWithGeneratedSummary(context.Background(), body.Session, body.KeepRecentTokens, nil, map[string]any{"readFiles": prep.FileOps.ReadFiles, "modifiedFiles": prep.FileOps.ModifiedFiles})
-	if err != nil {
-		return nil, err
-	}
-	return map[string]any{"preparation": prep, "summary": summary, "generated": generated, "session": session}, nil
 }
 
 func encodeFoundationReadAsString(cwd, requestedPath string) (string, error) {

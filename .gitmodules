@@ -99,13 +99,13 @@
         url = https://github.com/BerriAI/litellm
 [submodule "external/claude-mem"]
 	path = archive/claude-mem
-	url = https://github.com/robertpelloni/claude-mem
+        url = https://github.com/robertpelloni/claude-mem
 [submodule "external/OmniRoute"]
 	path = archive/OmniRoute
-	url = https://github.com/diegosouzapw/OmniRoute
+        url = https://github.com/diegosouzapw/OmniRoute
 [submodule "packages/claude-mem"]
-	path = packages/claude-mem
-	url = https://github.com/robertpelloni/claude-mem
+        path = packages/claude-mem
+        url = https://github.com/robertpelloni/claude-mem
 [submodule "apps/maestro"]
 	path = apps/maestro
 	url = https://github.com/robertpelloni/Maestro

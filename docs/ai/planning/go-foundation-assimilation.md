@@ -1,7 +1,7 @@
 # Go Foundation Assimilation Plan
 
 ## Goal
-Deliver a Go-native harness that can truthfully grow from a Pi-derived foundation into a superior, assimilated coding platform integrated with HyperCode and HyperCode.
+Deliver a Go-native harness that can truthfully grow from a Pi-derived foundation into a superior, assimilated coding platform integrated with Borg and HyperCode.
 
 ## Workstreams
 
@@ -42,7 +42,7 @@ Deliver a Go-native harness that can truthfully grow from a Pi-derived foundatio
 - [ ] Structured plan/execution state
 
 ### Workstream 5: HyperCode integration
-- [x] Initial HyperCode/HyperCode adapter seam with status/config visibility
+- [x] Initial HyperCode/Borg adapter seam with status/config visibility
 - [x] Initial provider adapter seam with config/env visibility
 - [x] Initial provider-route selection seam
 - [x] Initial provider execution-preparation seam
@@ -101,7 +101,7 @@ Deliver a Go-native harness that can truthfully grow from a Pi-derived foundatio
 - [ ] verification-aware edit pipeline
 
 ### Milestone 3: HyperCode-native substrate
-- [x] first adapter seam for HyperCode memory/MCP config visibility
+- [x] first adapter seam for Borg memory/MCP config visibility
 - [x] first provider visibility seam
 - [x] first provider-route selection seam
 - [x] first MCP discovery/startup seam

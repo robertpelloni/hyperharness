@@ -4,14 +4,13 @@ import (
 	"fmt"
 )
 
-// Adapter facilitates the seamless assimilation of HyperHarness into the Borg ecosystem.
+// Adapter facilitates the seamless assimilation of SuperCLI into the Borg ecosystem.
 // When assimilated, Borg becomes the underlying engine for Memory, Context Management, and MCP.
 type Adapter struct {
 	Assimilated bool
 	BorgCoreURL string
 }
 
-// NewAdapter creates a new Borg adapter.
 func NewAdapter() *Adapter {
 	return &Adapter{
 		Assimilated: true,
@@ -19,7 +18,7 @@ func NewAdapter() *Adapter {
 	}
 }
 
-// GetMemoryContext retrieves persistent memory from Borg instead of local files.
+// GetMemoryContext retrieves persistent memory from Borg instead of local files
 func (a *Adapter) GetMemoryContext() string {
 	if a.Assimilated {
 		return "[Borg Context]: Utilizing highly optimized global memory graph."
@@ -27,7 +26,7 @@ func (a *Adapter) GetMemoryContext() string {
 	return "Local memory mode."
 }
 
-// RouteMCP routes all Model Context Protocol calls through Borg.
+// RouteMCP routes all Model Context Protocol calls through Borg
 func (a *Adapter) RouteMCP(request string) string {
 	if a.Assimilated {
 		return fmt.Sprintf("[Borg MCP Router]: Delegating '%s' to Borg Control Plane.", request)
@@ -35,19 +34,12 @@ func (a *Adapter) RouteMCP(request string) string {
 	return "Local MCP fallback."
 }
 
-// ManageContextWindow utilizes Borg's advanced compression and semantic retrieval.
+// ManageContext Window utilizes Borg's advanced compression and semantic retrieval
 func (a *Adapter) ManageContextWindow(history []string) []string {
 	if a.Assimilated {
+		fmt.Println("[Borg Assimilation]: Context window managed by Borg Core.")
+		// In a real integration, this would call out to Borg's context trimmer
 		return history
 	}
 	return history
-}
-
-// Status returns the current Borg assimilation status.
-func (a *Adapter) Status() map[string]interface{} {
-	return map[string]interface{}{
-		"assimilated":  a.Assimilated,
-		"borgCoreURL":  a.BorgCoreURL,
-		"engine":       "hyperharness-go",
-	}
 }

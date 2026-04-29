@@ -7,8 +7,9 @@ import (
 	"os"
 	"strings"
 
-	"github.com/robertpelloni/hyperharness/foundation/adapters"
-	"github.com/robertpelloni/hyperharness/tools"
+	"github.com/robertpelloni/hypercode/borg"
+	"github.com/robertpelloni/hypercode/foundation/adapters"
+	"github.com/robertpelloni/hypercode/tools"
 	"github.com/sashabaranov/go-openai"
 )
 
@@ -16,6 +17,7 @@ type Agent struct {
 	client       *openai.Client
 	messages     []openai.ChatCompletionMessage
 	tools        *tools.Registry
+	BorgAdapter  *borg.Adapter
 	HyperAdapter *adapters.HyperCodeAdapter
 }
 
@@ -26,9 +28,16 @@ func NewAgent() *Agent {
 	}
 
 	registry := tools.NewRegistry()
+	borgAdapter := borg.NewAdapter()
 	cwd, _ := os.Getwd()
 	hyperAdapter := adapters.NewHyperCodeAdapter(cwd)
-	systemPrompt := buildAgentSystemPrompt(hyperAdapter.BuildSystemContext())
+	systemPrompt := strings.Join([]string{
+		"You are Hypercode, a Go-native coding and terminal assistant integrated with Borg and HyperCode.",
+		"Prefer the exact-name Pi-compatible tools read, write, edit, and bash when solving coding tasks.",
+		"Use repomap for repository-wide context when a condensed map would help.",
+		"Additional legacy tools may exist for compatibility, but exact-contract tools are preferred.",
+		hyperAdapter.BuildSystemContext(),
+	}, "\n\n")
 
 	return &Agent{
 		client: openai.NewClient(apiKey),
@@ -39,6 +48,7 @@ func NewAgent() *Agent {
 			},
 		},
 		tools:        registry,
+		BorgAdapter:  borgAdapter,
 		HyperAdapter: hyperAdapter,
 	}
 }
@@ -59,16 +69,6 @@ func (a *Agent) buildOpenAITools() []openai.Tool {
 }
 
 func (a *Agent) Chat(input string) (string, error) {
-	if a == nil {
-		return "", fmt.Errorf("agent is required")
-	}
-	if a.client == nil {
-		return "", fmt.Errorf("openai client is required")
-	}
-	if a.tools == nil {
-		return "", fmt.Errorf("tool registry is required")
-	}
-
 	a.messages = append(a.messages, openai.ChatCompletionMessage{
 		Role:    openai.ChatMessageRoleUser,
 		Content: input,
@@ -85,10 +85,7 @@ func (a *Agent) Chat(input string) (string, error) {
 		return "", err
 	}
 
-	msg, err := firstChoiceMessage(resp)
-	if err != nil {
-		return "", err
-	}
+	msg := resp.Choices[0].Message
 	a.messages = append(a.messages, msg)
 
 	if len(msg.ToolCalls) > 0 {
@@ -99,26 +96,42 @@ func (a *Agent) Chat(input string) (string, error) {
 }
 
 func (a *Agent) handleToolCalls(toolCalls []openai.ToolCall) (string, error) {
-	if a == nil {
-		return "", fmt.Errorf("agent is required")
-	}
-	if a.client == nil {
-		return "", fmt.Errorf("openai client is required")
-	}
-	if a.tools == nil {
-		return "", fmt.Errorf("tool registry is required")
-	}
+	resultSummary := ""
 
-	var summary strings.Builder
 	for _, tc := range toolCalls {
-		toolResult := executeToolCall(a.tools, tc)
+		var args map[string]interface{}
+		_ = json.Unmarshal([]byte(tc.Function.Arguments), &args)
+
+		var toolResult string
+		found := false
+		for _, t := range a.tools.Tools {
+			if t.Name == tc.Function.Name {
+				found = true
+				out, err := t.Execute(args)
+				if err != nil {
+					if out != "" {
+						toolResult = out
+					} else {
+						toolResult = fmt.Sprintf("Error executing %s: %v", t.Name, err)
+					}
+				} else {
+					toolResult = out
+				}
+				break
+			}
+		}
+		if !found {
+			toolResult = fmt.Sprintf("Unknown tool: %s", tc.Function.Name)
+		}
+
 		a.messages = append(a.messages, openai.ChatCompletionMessage{
 			Role:       openai.ChatMessageRoleTool,
 			Content:    toolResult,
 			Name:       tc.Function.Name,
 			ToolCallID: tc.ID,
 		})
-		summary.WriteString(fmt.Sprintf("Executed tool %s\n", tc.Function.Name))
+
+		resultSummary += fmt.Sprintf("Executed tool %s\n", tc.Function.Name)
 	}
 
 	req := openai.ChatCompletionRequest{
@@ -129,54 +142,11 @@ func (a *Agent) handleToolCalls(toolCalls []openai.ToolCall) (string, error) {
 
 	resp, err := a.client.CreateChatCompletion(context.Background(), req)
 	if err != nil {
-		return summary.String(), err
+		return resultSummary, err
 	}
 
-	msg, err := firstChoiceMessage(resp)
-	if err != nil {
-		return summary.String(), err
-	}
+	msg := resp.Choices[0].Message
 	a.messages = append(a.messages, msg)
 
-	if summary.Len() == 0 {
-		return msg.Content, nil
-	}
-	return summary.String() + "\n" + msg.Content, nil
-}
-
-func buildAgentSystemPrompt(systemContext string) string {
-	return strings.Join([]string{
-		"You are Hypercode, a Go-native coding and terminal assistant integrated with Borg and HyperCode.",
-		"Prefer the exact-name Pi-compatible tools read, write, edit, and bash when solving coding tasks.",
-		"Use repomap for repository-wide context when a condensed map would help.",
-		"Additional legacy tools may exist for compatibility, but exact-contract tools are preferred.",
-		systemContext,
-	}, "\n\n")
-}
-
-func firstChoiceMessage(resp openai.ChatCompletionResponse) (openai.ChatCompletionMessage, error) {
-	if len(resp.Choices) == 0 {
-		return openai.ChatCompletionMessage{}, fmt.Errorf("no completion choices returned")
-	}
-	return resp.Choices[0].Message, nil
-}
-
-func executeToolCall(registry *tools.Registry, tc openai.ToolCall) string {
-	if registry == nil {
-		return fmt.Sprintf("Unknown tool: %s", tc.Function.Name)
-	}
-	var args map[string]interface{}
-	_ = json.Unmarshal([]byte(tc.Function.Arguments), &args)
-	tool, ok := registry.Find(tc.Function.Name)
-	if !ok {
-		return fmt.Sprintf("Unknown tool: %s", tc.Function.Name)
-	}
-	out, err := tool.Execute(args)
-	if err != nil {
-		if out != "" {
-			return out
-		}
-		return fmt.Sprintf("Error executing %s: %v", tool.Name, err)
-	}
-	return out
+	return resultSummary + "\n" + msg.Content, nil
 }

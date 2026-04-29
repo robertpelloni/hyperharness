@@ -1,0 +1,76 @@
+{
+    "manifest_version": 3,
+    "name": "hypercode Bridge",
+    "version": "0.1.0",
+    "description": "Connects web-based AI agents to your local hypercode Core.",
+    "permissions": [
+        "activeTab",
+        "scripting",
+        "storage",
+        "history",
+        "debugger"
+    ],
+    "host_permissions": [
+        "https://chatgpt.com/*",
+        "https://claude.ai/*",
+        "https://gemini.google.com/*",
+        "https://aistudio.google.com/*",
+        "https://perplexity.ai/*",
+        "https://www.perplexity.ai/*",
+        "https://grok.com/*",
+        "https://chat.deepseek.com/*",
+        "https://openrouter.ai/*",
+        "https://t3.chat/*",
+        "https://github.com/copilot*",
+        "https://chat.mistral.ai/*",
+        "https://kimi.com/*",
+        "https://chat.qwen.ai/*",
+        "https://chat.z.ai/*",
+        "http://localhost:3000/*",
+        "http://localhost:3001/*",
+        "http://127.0.0.1:3001/*"
+    ],
+    "background": {
+        "service_worker": "dist/background.js",
+        "scripts": [
+            "dist/background.js"
+        ]
+    },
+    "content_scripts": [
+        {
+            "matches": [
+                "https://chatgpt.com/*",
+                "https://claude.ai/*",
+                "https://gemini.google.com/*",
+                "https://aistudio.google.com/*",
+                "https://perplexity.ai/*",
+                "https://www.perplexity.ai/*",
+                "https://grok.com/*",
+                "https://chat.deepseek.com/*",
+                "https://openrouter.ai/*",
+                "https://t3.chat/*",
+                "https://github.com/copilot*",
+                "https://chat.mistral.ai/*",
+                "https://kimi.com/*",
+                "https://chat.qwen.ai/*",
+                "https://chat.z.ai/*"
+            ],
+            "js": [
+                "dist/content.js"
+            ],
+            "run_at": "document_end"
+        }
+    ],
+    "action": {
+        "default_popup": "popup.html"
+    },
+    "options_ui": {
+        "page": "options.html",
+        "open_in_tab": true
+    },
+    "icons": {
+        "16": "icons/icon16.png",
+        "48": "icons/icon48.png",
+        "128": "icons/icon128.png"
+    }
+}

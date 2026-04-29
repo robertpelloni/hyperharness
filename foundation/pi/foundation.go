@@ -3,7 +3,7 @@ package pi
 import (
 	"encoding/json"
 
-	"github.com/robertpelloni/hyperharness/foundation/compat"
+	"github.com/robertpelloni/hypercode/foundation/compat"
 )
 
 type ThinkingLevel string
@@ -104,7 +104,7 @@ type FoundationSpec struct {
 func DefaultFoundationSpec() FoundationSpec {
 	return FoundationSpec{
 		Name:       "pi-go-foundation",
-		Philosophy: "Minimal terminal coding harness with exact model-facing tool contracts, strong extension seams, and native integration points for HyperCode and HyperCode.",
+		Philosophy: "Minimal terminal coding harness with exact model-facing tool contracts, strong extension seams, and native integration points for HyperCode and Borg.",
 		Agent: AgentConfig{
 			InitialState: AgentState{
 				SystemPrompt:  "You are a helpful coding agent.",
@@ -178,17 +178,17 @@ func BuiltinTools() []ToolDescriptor {
 		},
 		{
 			Name:        "grep",
-			Description: "Search file contents for patterns with optional glob filtering.",
+			Description: "Search file contents for a pattern. Returns matching lines with file paths and line numbers. Respects .gitignore. Output is truncated to 100 matches or 50KB (whichever is hit first). Long lines are truncated to 500 chars.",
 			Parameters:  json.RawMessage(`{"type":"object","required":["pattern"],"properties":{"pattern":{"type":"string"},"path":{"type":"string"},"glob":{"type":"string"},"ignoreCase":{"type":"boolean"},"literal":{"type":"boolean"},"context":{"type":"integer","minimum":0},"limit":{"type":"integer","minimum":1}},"additionalProperties":false}`),
 		},
 		{
 			Name:        "find",
-			Description: "Find files by glob pattern.",
+			Description: "Search for files by glob pattern. Returns matching file paths relative to the search directory. Respects .gitignore. Output is truncated to 1000 results or 50KB (whichever is hit first).",
 			Parameters:  json.RawMessage(`{"type":"object","required":["pattern"],"properties":{"pattern":{"type":"string"},"path":{"type":"string"},"limit":{"type":"integer","minimum":1}},"additionalProperties":false}`),
 		},
 		{
 			Name:        "ls",
-			Description: "List directory contents.",
+			Description: "List directory contents. Returns entries sorted alphabetically, with '/' suffix for directories. Includes dotfiles. Output is truncated to 500 entries or 50KB (whichever is hit first).",
 			Parameters:  json.RawMessage(`{"type":"object","properties":{"path":{"type":"string"},"limit":{"type":"integer","minimum":1}},"additionalProperties":false}`),
 		},
 	}
