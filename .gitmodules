@@ -98,6 +98,7 @@
 	path = archive/submodules/litellm
         url = https://github.com/BerriAI/litellm
 [submodule "external/claude-mem"]
+<<<<<<< HEAD
 	path = archive/claude-mem
         url = https://github.com/robertpelloni/claude-mem
 [submodule "external/OmniRoute"]
@@ -121,3 +122,10 @@
 [submodule "submodules/borg"]
 	path = submodules/borg
 	url = https://github.com/robertpelloni/borg.git
+=======
+	path = external/claude-mem
+	url = https://github.com/robertpelloni/claude-mem
+[submodule "external/OmniRoute"]
+	path = external/OmniRoute
+	url = https://github.com/diegosouzapw/OmniRoute
+>>>>>>> origin/rewrite/main-sanitized
