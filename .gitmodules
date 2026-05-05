@@ -121,3 +121,6 @@
 [submodule "submodules/borg"]
 	path = submodules/borg
 	url = https://github.com/robertpelloni/borg.git
+[submodule "amazon-q-developer-cli"]
+	path = amazon-q-developer-cli
+	url = https://github.com/aws/amazon-q-developer-cli
