@@ -129,20 +129,10 @@ Deliverables officially achieved and stabilized in the `1.0.0-alpha.1` milestone
 - clearer isolation behavior
 - converge primary CLI harness support around first-class HyperCode identities, starting with `hypercode`
 
-<<<<<<< HEAD
 ### D. Provider routing polish
 - clearer fallback history
 - stronger quota truthfulness
 - more actionable auth-state and routing config
-=======
-The canonical consolidation map for post-1.0 capability planning now lives in `tasks/completed/015-ecosystem-assimilation-consolidation.md`, especially:
-
-- **Track C** — browser extension platform
-- **Track D** — IDE / CLI / hook-based memory capture
-- **Track E** — portable session fabric across tools and models
-
-### 1.5 target outcomes
->>>>>>> origin/rewrite/main-sanitized
 
 ### E. Architecture convergence
 - converge the repo toward the recommended HyperCode binary family without splitting everything at once
@@ -183,13 +173,7 @@ A credible `v1.0.0` should mean:
 - meaningful session and memory continuity
 - documentation that does not overclaim
 
-<<<<<<< HEAD
 ## Explicit de-scope until v1 ships
-=======
-The same consolidation brief maps 2.0 work primarily to **Track F — Advanced autonomy and marketplace**, with spillover from the more mature end of **Track E** once supervised sessions are trustworthy.
-
-### 2.0 target outcomes
->>>>>>> origin/rewrite/main-sanitized
 
 Do not prioritize these ahead of core convergence:
 - economy or payment ideas

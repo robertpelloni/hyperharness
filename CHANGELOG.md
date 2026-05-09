@@ -455,7 +455,6 @@ and this project adheres to [Semantic Versioning](https://sumver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-<<<<<<< HEAD
 ### Added
 - **Repo-wide HyperCode Rename**: Executed the broad "borg" → "hypercode" rename across the entire repository (200+ files), including Go module name, imports, environment variables, directories, and documentation.
 - **Go-Native Catalog Ingestion**: Ported the MCP catalog ingestion core and Glama adapter to Go, enabling native listing from external registries.
@@ -3254,8 +3253,6 @@ and this project adheres to [Semantic Versioning](https://sumver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-=======
->>>>>>> origin/rewrite/main-sanitized
 - changed(health): `/dashboard/health` now treats degraded `startupStatus` compat-fallback snapshots as a first-class state in the top-level MCP Router metric, showing degraded router telemetry instead of implying the router is merely still initializing.
 
 - changed(health): `/dashboard/health` now treats degraded `startupStatus` compat-fallback snapshots as a first-class state in the top-level Event Bus metric, showing degraded telemetry instead of implying the service is merely still starting.
@@ -3274,7 +3271,6 @@ and this project adheres to [Semantic Versioning](https://sumver.org/spec/v2.0.0
 
 - changed(dashboard): improved the `/dashboard` first-run zero-provider experience so the overview metric, provider panel, and fallback panel now tell operators to configure their first provider instead of showing passive empty-state copy.
 
-<<<<<<< HEAD
 - docs(readme): aligned `README.md` with the current local `pnpm run dev` readiness launcher, clarified that Docker still exposes the dashboard on `localhost:3001`, documented dynamic dashboard port fallback for local dev, and pointed the repo layout at `apps/hypercode-extension` as the official browser-extension workspace.
 
 - docs(deploy): aligned `DEPLOY.md` with the verified `0.9.0-beta` control-plane workflow, including the root `pnpm run dev` readiness launcher, dashboard port fallback behavior, core bridge probes on `3001`, and startup troubleshooting for dynamic dashboard ports.
@@ -3282,19 +3278,13 @@ and this project adheres to [Semantic Versioning](https://sumver.org/spec/v2.0.0
 - fix(startup): gate verbose `packages/core/src/MCPServer.ts` import/boot progress logs behind `HYPERCODE_MCP_SERVER_DEBUG=1` or `DEBUG=hypercode:mcp-server`, keeping normal `pnpm run dev` output quiet while preserving real errors and fallback warnings.
 
 - fix(startup): `pnpm run dev` now best-effort replaces a reused HyperCode core bridge that is healthy but serving an older `startupStatus` contract by stopping the stale owner via the HyperCode startup lock when available, or via the current port-3001 listener PID only when that listener's command line still looks HyperCode-owned, before launching a fresh CLI/core instance.
-=======
->>>>>>> origin/rewrite/main-sanitized
 - docs(readme): aligned `README.md` with the current local `pnpm run dev` readiness launcher, clarified that Docker still exposes the dashboard on `localhost:3001`, documented dynamic dashboard port fallback for local dev, and pointed the repo layout at `apps/borg-extension` as the official browser-extension workspace.
 
 - docs(deploy): aligned `DEPLOY.md` with the verified `0.9.0-beta` control-plane workflow, including the root `pnpm run dev` readiness launcher, dashboard port fallback behavior, core bridge probes on `3001`, and startup troubleshooting for dynamic dashboard ports.
 
 - fix(startup): gate verbose `packages/core/src/MCPServer.ts` import/boot progress logs behind `BORG_MCP_SERVER_DEBUG=1` or `DEBUG=borg:mcp-server`, keeping normal `pnpm run dev` output quiet while preserving real errors and fallback warnings.
 
-<<<<<<< HEAD
 - fix(startup): `pnpm run dev` now best-effort replaces a reused borg core bridge that is healthy but serving an older `startupStatus` contract by stopping the stale owner via the borg startup lock when available, or via the current port-3001 listener PID only when that listener's command line still looks borg-owned, before launching a fresh CLI/core instance.
-=======
-- fix(startup): `pnpm run dev` now best-effort replaces a reused Borg core bridge that is healthy but serving an older `startupStatus` contract by stopping the stale owner via the Borg startup lock when available, or via the current port-3001 listener PID only when that listener's command line still looks Borg-owned, before launching a fresh CLI/core instance.
->>>>>>> origin/rewrite/main-sanitized
 
 - fix(startup): `pnpm run dev` now requires the live `startupStatus` payload to expose the current readiness-contract fields before declaring the stack ready, so reusing an older core bridge no longer produces a false green boot summary and instead surfaces a specific startup-contract refresh warning.
 
@@ -3314,7 +3304,6 @@ and this project adheres to [Semantic Versioning](https://sumver.org/spec/v2.0.0
 - changed(memory): added a backend `getMemoryTimelineWindow` path plus a pure session-window helper so `/dashboard/memory` can show nearby same-session records around the selected memory anchor instead of relying only on generic related-record heuristics.
 - changed(memory): added a backend `searchMemoryPivot` path and service-level structured pivot matching for session/tool/concept/file metadata, then wired `/dashboard/memory` to use those backend results so inspector pivots return real related records instead of only steering local UI state.
 - changed(memory): added one-click inspector search pivots to `/dashboard/memory` so selected records can immediately re-query by session, tool, concept, or file metadata, and made `All Records` aggregate generic facts with observation/prompt/session-summary searches instead of only hitting the generic memory path.
-<<<<<<< HEAD
 - changed(memory): added related-record pivots to the `/dashboard/memory` inspector so selected observations, prompts, and session summaries can jump to correlated records from the same session, tool, source, concepts, or files without leaving the native HyperCode memory timeline.
 - changed(memory): turned `/dashboard/memory` search results into a structured timeline plus detail inspector, grouping records by day and rendering observation/prompt/session-summary sections so operators can drill into HyperCode-native memory provenance instead of scanning a flat blob list.
 - changed(memory): upgraded `/dashboard/memory` from a generic full-text list into a HyperCode-native record explorer with explicit search modes for facts, observations, prompts, and session summaries, added a visible memory-model explainer, and extracted tested helper logic for coherent record titles, previews, timestamps, and provenance tokens.
@@ -3347,18 +3336,6 @@ and this project adheres to [Semantic Versioning](https://sumver.org/spec/v2.0.0
 - changed(mcp): always-on downstream MCP servers now warm in the background from cached advertised inventory, keeping startup non-blocking while exposing live runtime state, warmup posture, and latest runtime errors more truthfully in the MCP dashboard and inspection panel.
 - fixed(startup): `startupStatus` now counts only actually connected downstream MCP servers as live, while separately surfacing warming and failed warmup counts so the dashboard no longer overstates live runtime readiness during non-blocking startup.
 - changed(startup): split borg startup readiness into cached MCP inventory vs live MCP runtime semantics, including advertised cached server/tool counts and always-on tool counts so operators can see what is available immediately while live connections continue warming.
-=======
-- changed(memory): added related-record pivots to the `/dashboard/memory` inspector so selected observations, prompts, and session summaries can jump to correlated records from the same session, tool, source, concepts, or files without leaving the native Borg memory timeline.
-- changed(memory): turned `/dashboard/memory` search results into a structured timeline plus detail inspector, grouping records by day and rendering observation/prompt/session-summary sections so operators can drill into Borg-native memory provenance instead of scanning a flat blob list.
-- changed(memory): upgraded `/dashboard/memory` from a generic full-text list into a Borg-native record explorer with explicit search modes for facts, observations, prompts, and session summaries, added a visible memory-model explainer, and extracted tested helper logic for coherent record titles, previews, timestamps, and provenance tokens.
-- changed(memory): aligned the primary memory dashboard and claude-mem parity surface around Borg's actual native memory model, including typed observations, captured prompts, session summaries, clearer provenance, and corrected tier/stat reporting instead of framing claude-mem as the whole runtime story.
-- docs(tasking): completed the ecosystem assimilation consolidation brief, promoted the memory-story follow-up into `tasks/active/`, and anchored the Borg-native Track A-F capability map in the roadmap, TODO, and handoff docs so future work references scoped Borg tracks instead of repo-wide parity demands.
-- fixed(startup): aligned the Tabby dev launcher waiting logic with resident/always-on MCP runtime semantics, so Borg no longer reports startup complete before resident servers warm or waits on the wrong live-runtime label.
-- changed(startup): Borg's stdio MCP entrypoint now best-effort boots the long-running Borg core as a detached background process when an MCP client launches the router before the control plane is already up, so the interactive MCP client can proceed while the dashboard/bridge warm in parallel.
-- changed(mcp): always-on downstream MCP servers now warm in the background from cached advertised inventory, keeping startup non-blocking while exposing live runtime state, warmup posture, and latest runtime errors more truthfully in the MCP dashboard and inspection panel.
-- fixed(startup): `startupStatus` now counts only actually connected downstream MCP servers as live, while separately surfacing warming and failed warmup counts so the dashboard no longer overstates live runtime readiness during non-blocking startup.
-- changed(startup): split Borg startup readiness into cached MCP inventory vs live MCP runtime semantics, including advertised cached server/tool counts and always-on tool counts so operators can see what is available immediately while live connections continue warming.
->>>>>>> origin/rewrite/main-sanitized
 - changed(dashboard): updated the home dashboard, MCP system status helpers, and launcher waiting labels to explain cached-vs-live MCP posture, memory/context readiness, and non-blocking warmup behavior more truthfully.
 - test(startup): added focused regression coverage for always-on cached tool advertisement, cached-vs-live startup checklist copy, system status rows, and launcher wait-label semantics.
 - fix(mcp): `discoverServerTools` now supports SSE and STREAMABLE_HTTP transports alongside STDIO, with a 30-second timeout to prevent hanging discoveries.
@@ -3366,19 +3343,11 @@ and this project adheres to [Semantic Versioning](https://sumver.org/spec/v2.0.0
 ## [0.9.0-beta] - 2026-03-11
 
 ### ✨ Features & Parity Updates
-<<<<<<< HEAD
 - **Health, Logs & Operator Surfaces**: Exposed real-time tRPC-driven dashboards under the "borg 1.0 Core" section.
   - `Health Dashboard`: Tracks system startup readiness, event bus/DB status, and instance-level MCP server crash counts/error states.
   - `Logs Dashboard`: Live searchable view of tool executions, error rates, average latency, and top requested tools.
   - `System Audit Dashboard`: Centralized timeline of security, configuration, and agent-driven events.
 - **Dashboard Honesty Pass**: Restructured application navigation (Top Nav & Sidebar) to clearly separate "borg 1.0 Core" features from "Labs & Experimental" pages.
-=======
-- **Health, Logs & Operator Surfaces**: Exposed real-time tRPC-driven dashboards under the "Borg 1.0 Core" section.
-  - `Health Dashboard`: Tracks system startup readiness, event bus/DB status, and instance-level MCP server crash counts/error states.
-  - `Logs Dashboard`: Live searchable view of tool executions, error rates, average latency, and top requested tools.
-  - `System Audit Dashboard`: Centralized timeline of security, configuration, and agent-driven events.
-- **Dashboard Honesty Pass**: Restructured application navigation (Top Nav & Sidebar) to clearly separate "Borg 1.0 Core" features from "Labs & Experimental" pages.
->>>>>>> origin/rewrite/main-sanitized
 - **Experimental Guardrails**: Added explicit "Labs" and "Beta" UI badges to developmental surfaces including the Director, Council, and Super Assistant dashboards.
 
 ### 🐛 Fixes & Polish
