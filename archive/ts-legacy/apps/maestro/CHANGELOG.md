@@ -1,6 +1,5 @@
 # Changelog
 
-<<<<<<< HEAD
 ## [0.15.7] - 2026-04-12
 
 ### Added
@@ -32,14 +31,6 @@
 ### Fixed
 
 - **Legacy IPC Hooks**: Eliminated the deprecated `runCommand` handlers across the frontend to reduce terminal noise.
-=======
-## [0.15.7] - 2026-04-10
-
-### Added
-
-- **Agent CLI Support**: Added support for Adrenaline CLI, Amazon Q CLI, Amazon Q Developer CLI, Amp Code CLI, Auggie CLI, Azure OpenAI CLI, Code CLI, Codebuff CLI, Codemachine CLI, Copilot CLI, Crush CLI, Factory CLI, Goose CLI, Grok CLI, Kilo Code CLI, Kimi CLI, Manus CLI, Mistral Vibe CLI, Ollama CLI, Open Interpreter CLI, Pi CLI, Rovo CLI, Trae CLI, and Warp CLI in Maestro.
-- **Go Support**: Ported the list of Agent IDs to Go types in `go/internal/types/agent_ids.go`.
->>>>>>> origin/jules-add-new-agents-535743983477155742
 
 ## [0.15.6] - 2026-04-01
 

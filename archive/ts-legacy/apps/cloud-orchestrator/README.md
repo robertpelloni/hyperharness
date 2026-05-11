@@ -1,16 +1,8 @@
-<<<<<<< HEAD
 # cloud-orchestrator (Lean Core)
-=======
-# Jules Autopilot (Go Primary Runtime)
->>>>>>> 276c1337b9222c9e448fecc479724cb628a6bdc9
 
 > **The ultra-fast cloud command center for remote agents, including Jules and adjacent cloud workflows.**
 
-<<<<<<< HEAD
 cloud-orchestrator is a high-performance, minimalist orchestration platform for remote-agent workflows, including Google Jules and adjacent cloud operators. It replaces slower fragmented interfaces with a unified, real-time dashboard and a keyboard-driven TUI, all powered by a single zero-dependency Bun binary.
-=======
-Jules Autopilot is a high-performance, minimalist orchestration platform for the Google Jules AI agent. It replaces slow official interfaces with a unified, real-time dashboard, powered by a robust Go backend runtime.
->>>>>>> 276c1337b9222c9e448fecc479724cb628a6bdc9
 
 ## 🚀 The Stack
 
@@ -67,15 +59,9 @@ You can run the entire stack via the Go backend (which serves the built frontend
                 │ API / WebSocket
                 ▼
 ┌──────────────────────────────────────────┐
-<<<<<<< HEAD
 │        Bun Daemon (Hono Server)          │
 │  • Centralized cloud-agent API Proxy     │
 │  • SQLite Task Queue (Background Nudges) │
-=======
-│          Go Runtime (Fiber)              │
-│  • Centralized Jules API Proxy           │
-│  • SQLite Task Queue & Scheduler         │
->>>>>>> 276c1337b9222c9e448fecc479724cb628a6bdc9
 │  • Local Filesystem Access               │
 │  • Multi-Agent Debate Engine             │
 │  • Static Asset Delivery (SPA fallback)  │
