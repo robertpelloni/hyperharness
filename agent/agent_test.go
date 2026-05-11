@@ -10,7 +10,7 @@ func TestBuildOpenAIToolsUsesExactSchemas(t *testing.T) {
 	if len(agent.messages) == 0 || agent.messages[0].Content == "" {
 		t.Fatal("expected system prompt")
 	}
-	tools := agent.buildOpenAITools()
+	tools := agent.buildOpenAITools("")
 	if len(tools) == 0 {
 		t.Fatal("expected tools")
 	}

@@ -10,14 +10,30 @@ import (
 	"runtime"
 	"strings"
 
-	"github.com/robertpelloni/hypercode/foundation/compat"
-	foundationpi "github.com/robertpelloni/hypercode/foundation/pi"
-	foundationrepomap "github.com/robertpelloni/hypercode/foundation/repomap"
+	"github.com/robertpelloni/hyperharness/foundation/compat"
+	foundationpi "github.com/robertpelloni/hyperharness/foundation/pi"
+	foundationrepomap "github.com/robertpelloni/hyperharness/foundation/repomap"
 )
 
 // Registry holds all available tools for the agent.
 type Registry struct {
 	Tools []Tool
+}
+
+func (r *Registry) Find(name string) (Tool, bool) {
+	if r == nil {
+		return Tool{}, false
+	}
+	name = strings.TrimSpace(name)
+	if name == "" {
+		return Tool{}, false
+	}
+	for _, tool := range r.Tools {
+		if tool.Name == name {
+			return tool, true
+		}
+	}
+	return Tool{}, false
 }
 
 // Tool describes a model-facing callable tool surface.
@@ -45,6 +61,10 @@ func NewRegistry() *Registry {
 	r.registerCloudOrchestratorTools()
 	r.registerSystemTools()
 	r.registerLlamafileTools()
+	r.registerClaudeCodeTools()
+	r.registerComputerUseTools()
+	r.registerAiderTools()
+	registerAllParityTools(r)
 	return r
 }
 
@@ -56,27 +76,31 @@ func (r *Registry) registerFoundationTools() {
 	runtime := foundationpi.NewRuntime(cwd, nil)
 	catalog := compat.DefaultCatalog()
 	for _, contract := range catalog.ContractsBySource("pi") {
-		contract := contract
-		r.Tools = append(r.Tools, Tool{
-			Name:        contract.Name,
-			Description: contract.Description,
-			Parameters:  append(json.RawMessage(nil), contract.Parameters...),
-			Execute: func(args map[string]interface{}) (string, error) {
-				raw, err := json.Marshal(args)
-				if err != nil {
-					return "", fmt.Errorf("marshal args for %s: %w", contract.Name, err)
+		r.Tools = append(r.Tools, newFoundationTool(runtime, contract))
+	}
+}
+
+func newFoundationTool(runtime *foundationpi.Runtime, contract compat.ToolContract) Tool {
+	contract = contract.Clone()
+	return Tool{
+		Name:        contract.Name,
+		Description: contract.Description,
+		Parameters:  append(json.RawMessage(nil), contract.Parameters...),
+		Execute: func(args map[string]interface{}) (string, error) {
+			raw, err := json.Marshal(args)
+			if err != nil {
+				return "", fmt.Errorf("marshal args for %s: %w", contract.Name, err)
+			}
+			result, execErr := runtime.ExecuteTool(context.Background(), "", contract.Name, raw, nil)
+			formatted := formatFoundationToolResult(result)
+			if execErr != nil {
+				if formatted != "" {
+					return formatted, execErr
 				}
-				result, execErr := runtime.ExecuteTool(context.Background(), "", contract.Name, raw, nil)
-				formatted := formatFoundationToolResult(result)
-				if execErr != nil {
-					if formatted != "" {
-						return formatted, execErr
-					}
-					return "", execErr
-				}
-				return formatted, nil
-			},
-		})
+				return "", execErr
+			}
+			return formatted, nil
+		},
 	}
 }
 
@@ -138,10 +162,10 @@ func (r *Registry) registerRepoMapTools() {
 			}
 			result, err := foundationrepomap.Generate(foundationrepomap.Options{
 				BaseDir:         baseDir,
-				MentionedFiles:  toStringSlice(args["mention_file"]),
-				MentionedIdents: toStringSlice(args["mention_ident"]),
-				MaxFiles:        toInt(args["max_files"], 40),
-				IncludeTests:    toBool(args["include_tests"]),
+				MentionedFiles:  GetStringSlice(args, "mention_file"),
+				MentionedIdents: GetStringSlice(args, "mention_ident"),
+				MaxFiles:        GetIntDef(args["max_files"], 40),
+				IncludeTests:    GetBool(args, "include_tests"),
 			})
 			if err != nil {
 				return "", err
@@ -188,37 +212,5 @@ func shellCommand(command string) *exec.Cmd {
 	return exec.Command("sh", "-lc", command)
 }
 
-func toStringSlice(value interface{}) []string {
-	switch typed := value.(type) {
-	case []string:
-		return append([]string(nil), typed...)
-	case []interface{}:
-		out := make([]string, 0, len(typed))
-		for _, item := range typed {
-			if str, ok := item.(string); ok && strings.TrimSpace(str) != "" {
-				out = append(out, str)
-			}
-		}
-		return out
-	default:
-		return nil
-	}
-}
 
-func toInt(value interface{}, fallback int) int {
-	switch typed := value.(type) {
-	case int:
-		return typed
-	case float64:
-		return int(typed)
-	default:
-		return fallback
-	}
-}
 
-func toBool(value interface{}) bool {
-	if typed, ok := value.(bool); ok {
-		return typed
-	}
-	return false
-}
