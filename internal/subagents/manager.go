@@ -1,0 +1,83 @@
+// Package subagents provides subagent management.
+package subagents
+
+import (
+	"context"
+	"fmt"
+	"sync"
+	"time"
+)
+
+// Task represents a subagent task.
+type Task struct {
+	ID       string
+	Type     SubagentType
+	Prompt   string
+	Input    string
+	Output   string
+	Status   string
+	Error    error
+	Done     chan struct{}
+	CreatedAt time.Time
+}
+
+// Manager manages subagents.
+type Manager struct {
+	mu    sync.RWMutex
+	tasks map[string]*Task
+}
+
+// NewManager creates a new subagent manager.
+func NewManager() *Manager {
+	return &Manager{
+		tasks: make(map[string]*Task),
+	}
+}
+
+// CreateTask creates a new subagent task.
+func (m *Manager) CreateTask(t SubagentType, prompt, input, context string) *Task {
+	task := &Task{
+		ID:        fmt.Sprintf("task-%d", time.Now().UnixNano()),
+		Type:      t,
+		Prompt:    prompt,
+		Input:     input,
+		Status:    "created",
+		Done:      make(chan struct{}),
+		CreatedAt: time.Now().UTC(),
+	}
+	m.mu.Lock()
+	m.tasks[task.ID] = task
+	m.mu.Unlock()
+	return task
+}
+
+// ExecuteTask executes a subagent task.
+func (m *Manager) ExecuteTask(ctx context.Context, task *Task) (string, error) {
+	if task == nil {
+		return "", fmt.Errorf("nil task")
+	}
+	task.Status = "running"
+	// Stub: in a real implementation, this would dispatch to a subagent
+	select {
+	case <-ctx.Done():
+		task.Status = "cancelled"
+		return "", ctx.Err()
+	case <-task.Done:
+		task.Status = "completed"
+		return task.Output, task.Error
+	case <-time.After(30 * time.Second):
+		task.Status = "timeout"
+		return task.Output, fmt.Errorf("task timeout")
+	}
+}
+
+// ListTasks returns all tasks.
+func (m *Manager) ListTasks() []*Task {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+	var list []*Task
+	for _, t := range m.tasks {
+		list = append(list, t)
+	}
+	return list
+}

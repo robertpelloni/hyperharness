@@ -548,7 +548,7 @@ func (r *Registry) registerHypercodeTools() {
 				if content == "" {
 					return "", fmt.Errorf("content is required for inject action")
 				}
-				ctxMgr.Inject(content)
+				ctxMgr.Inject("injected", content)
 				return fmt.Sprintf("Injected context: %d chars", len(content)), nil
 			case "status":
 				status := ctxMgr.Status()
@@ -564,7 +564,7 @@ func (r *Registry) registerHypercodeTools() {
 						memStatsStr = fmt.Sprintf("Memory stats: %v", stats)
 					}
 				}
-				return fmt.Sprintf("Context manager: active\nMessages: %d/%d\nTokens: %d/%d (%.1f%%)\nInjected contexts: %d\n%s", status.TotalMessages, status.MaxMessages, status.TotalTokens, status.MaxTokens, status.UtilizationPct, len(status.InjectedContext), memStatsStr), nil
+				return fmt.Sprintf("Context manager: active\nMessages: %d/%d\nTokens: %d/%d (%.1f%%)\nInjected contexts: %d\n%s", status.TotalMessages, status.MaxMessages, status.TotalTokens, status.MaxTokens, status.UtilizationPct, status.InjectedContext, memStatsStr), nil
 			default:
 				return "Context manager actions: compact, inject, status", nil
 			}

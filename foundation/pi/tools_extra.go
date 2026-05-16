@@ -570,3 +570,24 @@ func minInt(a, b int) int {
 	}
 	return b
 }
+
+// Default limits
+const (
+	defaultFindLimit = 1000
+	defaultLSLimit  = 100
+)
+
+// executeGrepTool delegates to the enhanced grep implementation.
+func executeGrepTool(ctx context.Context, cwd string, raw json.RawMessage) (*ToolResult, error) {
+	return executeGrepEnhanced(ctx, cwd, raw)
+}
+
+// executeFindTool delegates to the enhanced find implementation.
+func executeFindTool(ctx context.Context, cwd string, raw json.RawMessage) (*ToolResult, error) {
+	return executeFindEnhanced(ctx, cwd, raw)
+}
+
+// executeLsTool delegates to the enhanced ls implementation.
+func executeLsTool(ctx context.Context, cwd string, raw json.RawMessage) (*ToolResult, error) {
+	return executeLsEnhanced(ctx, cwd, raw)
+}

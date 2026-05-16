@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	foundationorchestration "github.com/robertpelloni/hypercode/foundation/orchestration"
+	foundationorchestration "github.com/robertpelloni/hyperharness/foundation/orchestration"
 )
 
 type WebhookPayload struct {

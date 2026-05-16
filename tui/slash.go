@@ -421,8 +421,8 @@ func handleTreePane(m *model) (tea.Model, tea.Cmd) {
 		m.history = append(m.history, "[Foundation Tree Pane] hidden")
 		return *m, nil
 	}
-	if err := pinFoundationTreeBrowser(m); err != nil {
-		m.history = append(m.history, fmt.Sprintf("[Error] tree pane failed: %v", err))
+	if !pinFoundationTreeBrowser(m) {
+		m.history = append(m.history, "[Error] tree pane failed")
 		return *m, nil
 	}
 	m.history = append(m.history, "[Foundation Tree Pane] pinned")
@@ -435,8 +435,8 @@ func handleTreePaneShow(m *model) (tea.Model, tea.Cmd) {
 		m.history = append(m.history, "[Foundation Tree Pane] already visible")
 		return *m, nil
 	}
-	if err := pinFoundationTreeBrowser(m); err != nil {
-		m.history = append(m.history, fmt.Sprintf("[Error] tree pane failed: %v", err))
+	if !pinFoundationTreeBrowser(m) {
+		m.history = append(m.history, "[Error] tree pane failed")
 		return *m, nil
 	}
 	m.history = append(m.history, "[Foundation Tree Pane] shown")

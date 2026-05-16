@@ -129,7 +129,7 @@ func callExa(ctx context.Context, req exaRequest) (string, error) {
 	httpReq.Header.Set("Content-Type", "application/json")
 	httpReq.Header.Set("Accept", "application/json, text/event-stream")
 
-	resp, err := httpClient.Do(httpReq)
+	resp, err := http.DefaultClient.Do(httpReq)
 	if err != nil {
 		return "", fmt.Errorf("exa request failed: %w", err)
 	}

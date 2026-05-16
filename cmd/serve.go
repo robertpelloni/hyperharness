@@ -8,9 +8,9 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/websocket/v2"
-	foundationrepomap "github.com/robertpelloni/hypercode/foundation/repomap"
-	"github.com/robertpelloni/hypercode/mcp"
-	"github.com/robertpelloni/hypercode/orchestrator"
+	foundationrepomap "github.com/robertpelloni/hyperharness/foundation/repomap"
+	"github.com/robertpelloni/hyperharness/mcp"
+	"github.com/robertpelloni/hyperharness/orchestrator"
 	"github.com/spf13/cobra"
 )
 

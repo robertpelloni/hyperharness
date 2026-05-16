@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/robertpelloni/hypercode/foundation/adapters"
+	"github.com/robertpelloni/hyperharness/foundation/adapters"
 )
 
 // DefaultProvider simulates the LLM locally.

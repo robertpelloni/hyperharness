@@ -127,3 +127,6 @@ type RunEvent struct {
 	Result    *ToolResult     `json:"result,omitempty"`
 	Error     string          `json:"error,omitempty"`
 }
+
+// LSToolInput is an alias for backwards compatibility.
+type LSToolInput = LsToolInput

@@ -6,8 +6,8 @@ import (
 	"os"
 	"strings"
 
-	"github.com/robertpelloni/hypercode/foundation/adapters"
-	foundationorchestration "github.com/robertpelloni/hypercode/foundation/orchestration"
+	"github.com/robertpelloni/hyperharness/foundation/adapters"
+	foundationorchestration "github.com/robertpelloni/hyperharness/foundation/orchestration"
 )
 
 // Director Agent translates the TS core Director orchestrator.

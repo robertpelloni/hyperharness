@@ -11,6 +11,7 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/robertpelloni/hyperharness/foundation/adapters"
 	"github.com/robertpelloni/hyperharness/tools"
@@ -240,7 +241,7 @@ func executeToolCall(registry *tools.Registry, tc openai.ToolCall, toolCache *ca
 	}
 	
 	if isCacheable && toolCache != nil {
-		toolCache.Set(cacheKey, out)
+		toolCache.Set(cacheKey, out, 5*time.Minute)
 	}
 	
 	return out

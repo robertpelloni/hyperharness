@@ -7,7 +7,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/robertpelloni/hypercode/borg"
+	"github.com/robertpelloni/hyperharness/borg"
 )
 
 type HyperCodeStatus struct {

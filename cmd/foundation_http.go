@@ -6,11 +6,11 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/robertpelloni/hypercode/foundation/adapters"
-	"github.com/robertpelloni/hypercode/foundation/compat"
-	foundationorchestration "github.com/robertpelloni/hypercode/foundation/orchestration"
-	foundationpi "github.com/robertpelloni/hypercode/foundation/pi"
-	foundationrepomap "github.com/robertpelloni/hypercode/foundation/repomap"
+	"github.com/robertpelloni/hyperharness/foundation/adapters"
+	"github.com/robertpelloni/hyperharness/foundation/compat"
+	foundationorchestration "github.com/robertpelloni/hyperharness/foundation/orchestration"
+	foundationpi "github.com/robertpelloni/hyperharness/foundation/pi"
+	foundationrepomap "github.com/robertpelloni/hyperharness/foundation/repomap"
 )
 
 type foundationExecRequest struct {
