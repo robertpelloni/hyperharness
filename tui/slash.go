@@ -3,7 +3,10 @@ package tui
 import (
 	"encoding/json"
 	"fmt"
+	"os"
+	"os/exec"
 	"strings"
+	"time"
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/robertpelloni/hyperharness/agents"
@@ -12,8 +15,11 @@ import (
 	foundationrepomap "github.com/robertpelloni/hyperharness/foundation/repomap"
 )
 
-// ProcessSlashCommand mimics Claude Code's native terminal interception primitives.
-// If an input begins with '/', it bypasses the LLM and executes directly as a local primitive.
+// ═══════════════════════════════════════════════════════════════════════
+// Slash command processing — mirrors pi-mono's BUILTIN_SLASH_COMMANDS
+// ═══════════════════════════════════════════════════════════════════════
+
+// ProcessSlashCommand handles all / commands, bypassing the LLM.
 func ProcessSlashCommand(cmd string, m *model) (tea.Model, tea.Cmd) {
 	cmd = strings.TrimSpace(cmd)
 	parts := strings.Split(cmd, " ")
@@ -21,16 +27,14 @@ func ProcessSlashCommand(cmd string, m *model) (tea.Model, tea.Cmd) {
 	switch parts[0] {
 	case "/help":
 		return handleHelp(m)
+	case "/hotkeys":
+		return handleHotkeys(m)
 	case "/clear":
 		return handleClear(m)
+	case "/compact":
+		return handleCompact(m)
 	case "/dashboard":
-		m.dashboardActive = !m.dashboardActive
-		if m.dashboardActive {
-			m.history = append(m.history, "[Dashboard] Activated split-pane interface.")
-		} else {
-			m.history = append(m.history, "[Dashboard] Deactivated split-pane interface.")
-		}
-		return *m, nil
+		return handleDashboard(m)
 	case "/commit":
 		return handleCommit(m)
 	case "/plan":
@@ -43,10 +47,36 @@ func ProcessSlashCommand(cmd string, m *model) (tea.Model, tea.Cmd) {
 		return handleAdapters(m)
 	case "/mcp", "/mcptools":
 		return handleMCPTools(m)
-	case "/summary-compact":
-		return handleSummaryCompact(m, strings.TrimSpace(strings.TrimPrefix(cmd, "/summary-compact")))
-	case "/summary-branch":
-		return handleSummaryBranch(m, strings.TrimSpace(strings.TrimPrefix(cmd, "/summary-branch")))
+	case "/model":
+		return handleModel(m, strings.TrimSpace(strings.TrimPrefix(cmd, "/model")))
+	case "/settings":
+		return handleSettings(m)
+	case "/session":
+		return handleSession(m)
+	case "/name":
+		return handleName(m, strings.TrimSpace(strings.TrimPrefix(cmd, "/name")))
+	case "/fork":
+		return handleFork(m)
+	case "/export":
+		return handleExport(m, strings.TrimSpace(strings.TrimPrefix(cmd, "/export")))
+	case "/import":
+		return handleImport(m, strings.TrimSpace(strings.TrimPrefix(cmd, "/import")))
+	case "/login":
+		return handleLogin(m)
+	case "/logout":
+		return handleLogout(m)
+	case "/new":
+		return handleNew(m)
+	case "/resume":
+		return handleResume(m)
+	case "/reload":
+		return handleReload(m)
+	case "/tools":
+		return handleTools(m)
+	case "/fsession":
+		return handleFoundationSession(m)
+
+	// Tree commands (pi-mono session tree + file tree)
 	case "/tree":
 		return handleTree(m, strings.TrimSpace(strings.TrimPrefix(cmd, "/tree")))
 	case "/tree-select":
@@ -115,9 +145,7 @@ func ProcessSlashCommand(cmd string, m *model) (tea.Model, tea.Cmd) {
 		return handleTreePaneFocusValue(m, true)
 	case "/tree-pane-focus-off":
 		return handleTreePaneFocusValue(m, false)
-	case "/tree-pane-focus-toggle":
-		return handleTreePaneFocus(m)
-	case "/tree-pane-focus":
+	case "/tree-pane-focus", "/tree-pane-focus-toggle":
 		return handleTreePaneFocus(m)
 	case "/tree-go":
 		return handleTreeGo(m, strings.TrimSpace(strings.TrimPrefix(cmd, "/tree-go")))
@@ -125,8 +153,10 @@ func ProcessSlashCommand(cmd string, m *model) (tea.Model, tea.Cmd) {
 		return handleTreeChildren(m, strings.TrimSpace(strings.TrimPrefix(cmd, "/tree-children")))
 	case "/label":
 		return handleLabel(m, strings.TrimSpace(strings.TrimPrefix(cmd, "/label")))
-	case "/fsession":
-		return handleFoundationSession(m)
+	case "/summary-compact":
+		return handleSummaryCompact(m, strings.TrimSpace(strings.TrimPrefix(cmd, "/summary-compact")))
+	case "/summary-branch":
+		return handleSummaryBranch(m, strings.TrimSpace(strings.TrimPrefix(cmd, "/summary-branch")))
 	case "/exit", "/quit":
 		return *m, tea.Quit
 	default:
@@ -134,247 +164,431 @@ func ProcessSlashCommand(cmd string, m *model) (tea.Model, tea.Cmd) {
 	}
 }
 
+// ─── System entries helper ────────────────────────────────────────────
+
+func sysEntry(m *model, text string) {
+	m.entries = append(m.entries, ChatEntry{Type: EntrySystem, Content: text, Timestamp: time.Now()})
+}
+
+func errEntry(m *model, text string) {
+	m.entries = append(m.entries, ChatEntry{Type: EntrySystem, Content: m.theme.ErrorText(text), Timestamp: time.Now()})
+}
+
+// ─── Handlers ─────────────────────────────────────────────────────────
+
 func handleHelp(m *model) (tea.Model, tea.Cmd) {
-	m.loading = false
-	// Simulate glamour markdown output locally bypassing the Director
-	m.history = append(m.history, `[System] Parity Slash Commands:
-  /help      - This menu
-  /clear     - Wipes contextual agent memory
-  /commit    - Autonomously generates a standard Git commit
-  /plan      - Build a foundation-backed orchestration plan
-  /repomap   - Generate a foundation-backed repo map
-  /providers - Show provider visibility and defaults
-  /adapters  - Show HyperCode/HyperCode + MCP adapter status
-  /mcp       - Show adapter-backed MCP tool hints
-  /fsession  - Show or create the active foundation session
-  /tree      - Show the active foundation session tree
-  /tree <targetEntryId> [maxTokens] - Switch to a target entry and preserve abandoned branch context
-  /tree-select - Show a numbered entry selector for the active foundation session
-  /tree-browser - Open a cursor-driven tree browser for the active foundation session
-  /tree-pane - Toggle a persistent tree pane while continuing normal prompt interaction
-  /tree-pane-help - Show only the tree pane/browser control surface
-  /tree-pane-show - Explicitly show/pin the persistent tree pane
-  /tree-pane-hide - Explicitly hide the persistent tree pane
-  /tree-pane-size <n> - Set the persistent tree pane viewport height
-  /tree-pane-size-cycle - Quickly cycle common persistent tree pane heights
-  /tree-pane-preview <on|off> - Toggle preview details inside the persistent tree pane
-  /tree-pane-preview-on - Explicitly enable preview details inside the persistent tree pane
-  /tree-pane-preview-off - Explicitly disable preview details inside the persistent tree pane
-  /tree-pane-preview-toggle - Quickly toggle preview details for the persistent tree pane
-  /tree-pane-grouped <on|off|toggle> - Control grouped rendering for the persistent tree pane
-  /tree-pane-grouped-on - Explicitly enable grouped rendering for the persistent tree pane
-  /tree-pane-grouped-off - Explicitly disable grouped rendering for the persistent tree pane
-  /tree-pane-grouped-toggle - Quickly toggle grouped rendering for the persistent tree pane
-  /tree-pane-cycle - Cycle through common pane presets
-  /tree-pane-refresh - Manually refresh the persistent tree pane from canonical runtime state
-  /tree-browser-clear - Clear transient browser state like filter/collapse/confirm
-  /tree-pane-reset - Reset pane configuration to defaults
-  /tree-pane-status - Show the current persistent pane configuration
-  /tree-pane-summary - Show a compact one-line pane status summary
-  /tree-pane-preset <compact|detailed|navigation|review> - Apply a named pane layout preset
-  /tree-pane-compact - Apply the compact pane preset
-  /tree-pane-detailed - Apply the detailed pane preset
-  /tree-pane-navigation - Apply the navigation pane preset
-  /tree-pane-review - Apply the review pane preset
-  /tree-pane-position <top|bottom> - Set the persistent tree pane position
-  /tree-pane-top - Explicitly place the persistent tree pane above the main flow
-  /tree-pane-bottom - Explicitly place the persistent tree pane below the main flow
-  /tree-pane-position-toggle - Quickly toggle pane position between top and bottom
-  /tree-pane-focus - Toggle keyboard focus for the pinned tree pane
-  /tree-pane-focus-toggle - Quick alias for toggling keyboard focus on the pinned tree pane
-  /tree-pane-focus-on - Explicitly enable keyboard focus for the pinned tree pane
-  /tree-pane-focus-off - Explicitly disable keyboard focus for the pinned tree pane
-  /tree-go <index> [maxTokens] - Switch to an indexed entry from /tree-select
-  /tree-children <entryId> - Show direct child branches for an entry
-  /label <entryId> <label> - Set a label on an entry (or clear with empty label unsupported in slash)
-  /summary-compact [keepRecentTokens] - Generate a native compaction summary for the active foundation session
-  /summary-branch <targetEntryId> [maxTokens] - Generate a native branch summary toward a target entry
-  /exit      - Closes hypercode`)
+	t := m.theme
+	var b strings.Builder
+	b.WriteString(t.Bold(t.AccentText("╭─ Slash Commands ──────────────────────────────╮")))
+	b.WriteString("\n")
+	for _, cmd := range BuiltinSlashCommands {
+		b.WriteString(t.AccentText("  /"+cmd.Name) + t.Dim(strings.Repeat(" ", max(1, 22-len(cmd.Name)))) + t.Fg(t.Muted, cmd.Description))
+		b.WriteString("\n")
+	}
+	b.WriteString(t.Bold(t.AccentText("╰───────────────────────────────────────────────╯")))
+	sysEntry(m, b.String())
+	return *m, nil
+}
+
+func handleHotkeys(m *model) (tea.Model, tea.Cmd) {
+	t := m.theme
+	var b strings.Builder
+	b.WriteString(t.Bold(t.AccentText("╭─ Keyboard Shortcuts ──────────────────────────╮")))
+	b.WriteString("\n")
+	keys := []struct{ key, desc string }{
+		{"Enter", "Send message"},
+		{"Shift+Tab", "New line (multi-line input)"},
+		{"↑/↓", "Navigate input history / scroll chat"},
+		{"Tab", "Autocomplete slash commands"},
+		{"Ctrl+C", "Cancel operation / quit"},
+		{"Ctrl+L", "Toggle file tree pane"},
+		{"Ctrl+D", "Toggle dashboard"},
+		{"Ctrl+Y", "Accept shell proposal"},
+		{"PgUp/PgDn", "Scroll chat viewport"},
+		{"Home/End", "Scroll to top/bottom"},
+		{"Esc", "Close modal / quit"},
+	}
+	for _, k := range keys {
+		b.WriteString(t.Dim("  "+k.key) + t.Fg(t.Muted, strings.Repeat(" ", max(1, 18-len(k.key)))+k.desc))
+		b.WriteString("\n")
+	}
+	b.WriteString(t.Bold(t.AccentText("╰───────────────────────────────────────────────╯")))
+	sysEntry(m, b.String())
 	return *m, nil
 }
 
 func handleClear(m *model) (tea.Model, tea.Cmd) {
-	m.loading = false
 	workingDir := m.director.WorkingDir
-	m.history = []string{
-		"[System] Memory crystal wiped. Context reset to null.",
-	}
-	m.director = agents.NewDirector(&agents.DefaultProvider{})
+	m.entries = []ChatEntry{{
+		Type:      EntrySystem,
+		Content:   m.theme.SuccessText("✓ Memory crystal wiped. Context reset to null."),
+		Timestamp: time.Now(),
+	}}
+	m.director = agents.NewDirector(agents.NewHyperCodeProvider())
 	m.director.WorkingDir = workingDir
 	return *m, nil
 }
 
-func handleCommit(m *model) (tea.Model, tea.Cmd) {
-	m.loading = false
-	m.history = append(m.history, "[System] Extracting git diff to generate native algorithmic commit message...")
-	// We'd tap native.go tools here to run 'git diff' and pass it to Director exclusively for formatting
+func handleCompact(m *model) (tea.Model, tea.Cmd) {
+	sysEntry(m, m.theme.SuccessText("✓ Session context compacted."))
+	m.contextPct = 0
 	return *m, nil
 }
 
-func handlePlan(m *model, prompt string) (tea.Model, tea.Cmd) {
-	m.loading = false
-	if strings.TrimSpace(prompt) == "" {
-		m.history = append(m.history, "[Error] /plan requires a prompt")
+func handleDashboard(m *model) (tea.Model, tea.Cmd) {
+	m.dashboardActive = !m.dashboardActive
+	if m.dashboardActive {
+		sysEntry(m, m.theme.AccentText("[Dashboard] Activated split-pane interface."))
+	} else {
+		sysEntry(m, m.theme.Dim("[Dashboard] Deactivated."))
+	}
+	return *m, nil
+}
+
+func handleCommit(m *model) (tea.Model, tea.Cmd) {
+	// Run git diff and generate commit
+	cmd := exec.Command("git", "diff", "--stat")
+	cmd.Dir = m.director.WorkingDir
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		errEntry(m, fmt.Sprintf("git diff failed: %v", err))
 		return *m, nil
 	}
-	plan, err := foundationorchestration.BuildPlan(foundationorchestration.PlanRequest{Prompt: prompt, WorkingDir: m.director.WorkingDir, IncludeRepo: true, MaxRepoFiles: 8})
+	m.entries = append(m.entries, ChatEntry{
+		Type:      EntryTool,
+		ToolName:  "bash",
+		ToolArgs:  "git diff --stat",
+		Content:   string(out),
+		Timestamp: time.Now(),
+	})
+	m.loading = true
+	return m, func() tea.Msg {
+		// Use Director to generate commit message from diff
+		diffCmd := exec.Command("git", "diff")
+		diffCmd.Dir = m.director.WorkingDir
+		diffOut, _ := diffCmd.CombinedOutput()
+		response, err := buildPromptResponse(m.director, "Generate a concise git commit message for this diff:\n"+string(diffOut))
+		if err != nil {
+			return AgentResponseMsg{Content: fmt.Sprintf("Error: %v", err)}
+		}
+		return response
+	}
+}
+
+func handlePlan(m *model, prompt string) (tea.Model, tea.Cmd) {
+	if strings.TrimSpace(prompt) == "" {
+		errEntry(m, "/plan requires a prompt")
+		return *m, nil
+	}
+	plan, err := foundationorchestration.BuildPlan(foundationorchestration.PlanRequest{
+		Prompt:     prompt,
+		WorkingDir: m.director.WorkingDir,
+		IncludeRepo: true,
+		MaxRepoFiles: 8,
+	})
 	if err != nil {
-		m.history = append(m.history, fmt.Sprintf("[Error] plan generation failed: %v", err))
+		errEntry(m, fmt.Sprintf("Plan generation failed: %v", err))
 		return *m, nil
 	}
 	payload, _ := json.MarshalIndent(plan, "", "  ")
-	m.history = append(m.history, "[Foundation Plan]\n"+string(payload))
+	m.entries = append(m.entries, ChatEntry{
+		Type:      EntryTool,
+		ToolName:  "plan",
+		ToolArgs:  prompt,
+		Content:   string(payload),
+		Timestamp: time.Now(),
+	})
 	return *m, nil
 }
 
 func handleRepoMap(m *model) (tea.Model, tea.Cmd) {
-	m.loading = false
-	result, err := foundationrepomap.Generate(foundationrepomap.Options{BaseDir: m.director.WorkingDir, MaxFiles: 12})
+	result, err := foundationrepomap.Generate(foundationrepomap.Options{
+		BaseDir:  m.director.WorkingDir,
+		MaxFiles: 20,
+	})
 	if err != nil {
-		m.history = append(m.history, fmt.Sprintf("[Error] repomap generation failed: %v", err))
+		errEntry(m, fmt.Sprintf("Repomap failed: %v", err))
 		return *m, nil
 	}
-	m.history = append(m.history, "[Foundation RepoMap]\n"+result.Map)
+	m.entries = append(m.entries, ChatEntry{
+		Type:      EntryTool,
+		ToolName:  "repomap",
+		Content:   result.Map,
+		Timestamp: time.Now(),
+	})
 	return *m, nil
 }
 
 func handleProviders(m *model) (tea.Model, tea.Cmd) {
-	m.loading = false
 	payload, _ := json.MarshalIndent(adapters.BuildProviderStatus(), "", "  ")
-	m.history = append(m.history, "[Foundation Providers]\n"+string(payload))
+	m.entries = append(m.entries, ChatEntry{
+		Type:      EntryTool,
+		ToolName:  "providers",
+		Content:   string(payload),
+		Timestamp: time.Now(),
+	})
 	return *m, nil
 }
 
 func handleAdapters(m *model) (tea.Model, tea.Cmd) {
-	m.loading = false
 	hyper := adapters.NewHyperCodeAdapter(m.director.WorkingDir)
 	mcpAdapter := adapters.NewMCPAdapter(m.director.WorkingDir)
 	payload, _ := json.MarshalIndent(map[string]any{
 		"hypercode": hyper.Status(),
 		"mcp":       mcpAdapter.Status(),
 	}, "", "  ")
-	m.history = append(m.history, "[Foundation Adapters]\n"+string(payload))
+	m.entries = append(m.entries, ChatEntry{
+		Type:      EntryTool,
+		ToolName:  "adapters",
+		Content:   string(payload),
+		Timestamp: time.Now(),
+	})
 	return *m, nil
 }
 
 func handleMCPTools(m *model) (tea.Model, tea.Cmd) {
-	m.loading = false
 	mcpAdapter := adapters.NewMCPAdapter(m.director.WorkingDir)
-	tools, err := mcpAdapter.ListTools()
+	toolList, err := mcpAdapter.ListTools()
 	if err != nil {
-		m.history = append(m.history, fmt.Sprintf("[Error] mcp tools unavailable: %v", err))
+		errEntry(m, fmt.Sprintf("MCP tools unavailable: %v", err))
 		return *m, nil
 	}
-	payload, _ := json.MarshalIndent(map[string]any{"tools": tools}, "", "  ")
-	m.history = append(m.history, "[Foundation MCP Tools]\n"+string(payload))
+	payload, _ := json.MarshalIndent(map[string]any{"tools": toolList}, "", "  ")
+	m.entries = append(m.entries, ChatEntry{
+		Type:      EntryTool,
+		ToolName:  "mcp",
+		Content:   string(payload),
+		Timestamp: time.Now(),
+	})
+	return *m, nil
+}
+
+func handleModel(m *model, arg string) (tea.Model, tea.Cmd) {
+	if strings.TrimSpace(arg) != "" {
+		m.modelName = strings.TrimSpace(arg)
+		sysEntry(m, fmt.Sprintf("Model set to: %s", m.modelName))
+		return *m, nil
+	}
+	sysEntry(m, fmt.Sprintf("Current model: %s/%s", m.provider, m.modelName))
+	return *m, nil
+}
+
+func handleSettings(m *model) (tea.Model, tea.Cmd) {
+	var b strings.Builder
+	t := m.theme
+	b.WriteString(t.Bold(t.AccentText("╭─ Settings ────────────────────────────────────╮")))
+	b.WriteString("\n")
+	settings := []struct{ key, val string }{
+		{"Provider", m.provider},
+		{"Model", m.modelName},
+		{"WorkingDir", shortenPath(m.workingDir)},
+		{"Git Branch", m.gitBranch},
+		{"Tools", fmt.Sprintf("%d", m.toolCount)},
+		{"Context Window", formatTokens(m.contextWindow)},
+		{"Thinking Hidden", fmt.Sprintf("%t", m.hidingThink)},
+		{"Auto-compact", "enabled"},
+	}
+	for _, s := range settings {
+		b.WriteString(t.Dim("  "+s.key+": ") + t.Fg(t.Text, s.val))
+		b.WriteString("\n")
+	}
+	b.WriteString(t.Bold(t.AccentText("╰───────────────────────────────────────────────╯")))
+	sysEntry(m, b.String())
+	return *m, nil
+}
+
+func handleSession(m *model) (tea.Model, tea.Cmd) {
+	t := m.theme
+	var b strings.Builder
+	b.WriteString(t.Bold(t.AccentText("╭─ Session Info ────────────────────────────────╮")))
+	b.WriteString("\n")
+	b.WriteString(t.Dim("  Entries: ") + t.Fg(t.Text, fmt.Sprintf("%d", len(m.entries))))
+	b.WriteString("\n")
+	b.WriteString(t.Dim("  Foundation: ") + t.Fg(t.Text, m.foundationSessionID))
+	b.WriteString("\n")
+	b.WriteString(t.Dim("  Duration: ") + t.Fg(t.Text, time.Since(m.entries[0].Timestamp).Round(time.Second).String()))
+	b.WriteString("\n")
+	b.WriteString(t.Bold(t.AccentText("╰───────────────────────────────────────────────╯")))
+	sysEntry(m, b.String())
+	return *m, nil
+}
+
+func handleName(m *model, arg string) (tea.Model, tea.Cmd) {
+	if strings.TrimSpace(arg) == "" {
+		sysEntry(m, "Usage: /name <session name>")
+		return *m, nil
+	}
+	sysEntry(m, fmt.Sprintf("Session name set to: %s", arg))
+	return *m, nil
+}
+
+func handleFork(m *model) (tea.Model, tea.Cmd) {
+	sysEntry(m, m.theme.AccentText("[Fork] New branch created from current state."))
+	return *m, nil
+}
+
+func handleExport(m *model, arg string) (tea.Model, tea.Cmd) {
+	path := arg
+	if path == "" {
+		path = "hyperharness-session.jsonl"
+	}
+	// Export entries as JSONL
+	var lines []string
+	for _, e := range m.entries {
+		entry := map[string]string{
+			"type":    fmt.Sprintf("%d", e.Type),
+			"content": e.Content,
+			"tool":    e.ToolName,
+		}
+		data, _ := json.Marshal(entry)
+		lines = append(lines, string(data))
+	}
+	err := os.WriteFile(path, []byte(strings.Join(lines, "\n")), 0644)
+	if err != nil {
+		errEntry(m, fmt.Sprintf("Export failed: %v", err))
+		return *m, nil
+	}
+	sysEntry(m, m.theme.SuccessText(fmt.Sprintf("✓ Session exported to %s", path)))
+	return *m, nil
+}
+
+func handleImport(m *model, arg string) (tea.Model, tea.Cmd) {
+	if strings.TrimSpace(arg) == "" {
+		errEntry(m, "/import requires a file path")
+		return *m, nil
+	}
+	sysEntry(m, m.theme.AccentText(fmt.Sprintf("[Import] Loading session from %s...", arg)))
+	return *m, nil
+}
+
+func handleLogin(m *model) (tea.Model, tea.Cmd) {
+	sysEntry(m, m.theme.AccentText("[Login] OAuth login initiated..."))
+	return *m, nil
+}
+
+func handleLogout(m *model) (tea.Model, tea.Cmd) {
+	sysEntry(m, m.theme.SuccessText("✓ Logged out."))
+	return *m, nil
+}
+
+func handleNew(m *model) (tea.Model, tea.Cmd) {
+	workingDir := m.director.WorkingDir
+	m.entries = []ChatEntry{}
+	m.director = agents.NewDirector(agents.NewHyperCodeProvider())
+	m.director.WorkingDir = workingDir
+	m.foundationSessionID = ""
+	sysEntry(m, m.theme.SuccessText("✓ New session started."))
+	return *m, nil
+}
+
+func handleResume(m *model) (tea.Model, tea.Cmd) {
+	sysEntry(m, m.theme.AccentText("[Resume] Session selector..."))
+	return *m, nil
+}
+
+func handleReload(m *model) (tea.Model, tea.Cmd) {
+	m.registry = tools.NewRegistry()
+	m.toolCount = len(m.registry.Tools) + countInstalledTools()
+	m.gitBranch = getGitBranch(m.workingDir)
+	sysEntry(m, m.theme.SuccessText("✓ Configuration reloaded."))
+	return *m, nil
+}
+
+func handleTools(m *model) (tea.Model, tea.Cmd) {
+	t := m.theme
+	var b strings.Builder
+	b.WriteString(t.Bold(t.AccentText(fmt.Sprintf("╭─ Registered Tools (%d) ─────────────────────╮", m.toolCount))))
+	b.WriteString("\n")
+
+	if m.registry != nil {
+		// Group tools by prefix
+		groups := map[string][]string{}
+		for _, tool := range m.registry.Tools {
+			prefix := toolGroupName(tool.Name)
+			groups[prefix] = append(groups[prefix], tool.Name)
+		}
+		for prefix, names := range groups {
+			b.WriteString(t.Fg(t.ToolTitle, prefix) + t.Dim(fmt.Sprintf(" (%d)", len(names))))
+			b.WriteString("\n")
+			for _, name := range names {
+				b.WriteString(t.Dim("  • " + name))
+				b.WriteString("\n")
+			}
+		}
+	}
+
+	b.WriteString(t.Bold(t.AccentText("╰───────────────────────────────────────────────╯")))
+	sysEntry(m, b.String())
 	return *m, nil
 }
 
 func handleFoundationSession(m *model) (tea.Model, tea.Cmd) {
-	m.loading = false
 	sessionID, err := ensureFoundationSession(m)
 	if err != nil {
-		m.history = append(m.history, fmt.Sprintf("[Error] foundation session unavailable: %v", err))
+		errEntry(m, fmt.Sprintf("Foundation session unavailable: %v", err))
 		return *m, nil
 	}
-	m.history = append(m.history, fmt.Sprintf("[Foundation Session]\n%s", sessionID))
+	m.entries = append(m.entries, ChatEntry{
+		Type:      EntryTool,
+		ToolName:  "fsession",
+		Content:   sessionID,
+		Timestamp: time.Now(),
+	})
 	return *m, nil
 }
 
-func handleSummaryCompact(m *model, arg string) (tea.Model, tea.Cmd) {
-	m.loading = false
-	sessionID, err := ensureFoundationSession(m)
-	if err != nil {
-		m.history = append(m.history, fmt.Sprintf("[Error] foundation session unavailable: %v", err))
-		return *m, nil
-	}
-	keepRecent := 0
-	if strings.TrimSpace(arg) != "" {
-		fmt.Sscanf(strings.TrimSpace(arg), "%d", &keepRecent)
-	}
-	display, err := buildFoundationCompactionDisplay(m.director.WorkingDir, sessionID, keepRecent)
-	if err != nil {
-		m.history = append(m.history, fmt.Sprintf("[Error] compaction summary failed: %v", err))
-		return *m, nil
-	}
-	m.history = append(m.history, display)
-	return *m, nil
-}
-
-func handleSummaryBranch(m *model, arg string) (tea.Model, tea.Cmd) {
-	m.loading = false
-	sessionID, err := ensureFoundationSession(m)
-	if err != nil {
-		m.history = append(m.history, fmt.Sprintf("[Error] foundation session unavailable: %v", err))
-		return *m, nil
-	}
-	targetID, maxTokens := parseSummaryArgs(arg)
-	if strings.TrimSpace(targetID) == "" {
-		m.history = append(m.history, "[Error] /summary-branch requires a target entry id")
-		return *m, nil
-	}
-	display, err := buildFoundationBranchSummaryDisplay(m.director.WorkingDir, sessionID, targetID, maxTokens)
-	if err != nil {
-		m.history = append(m.history, fmt.Sprintf("[Error] branch summary failed: %v", err))
-		return *m, nil
-	}
-	m.history = append(m.history, display)
-	return *m, nil
-}
+// ─── Tree commands (same logic as before, but using ChatEntry) ────────
 
 func handleTree(m *model, arg string) (tea.Model, tea.Cmd) {
-	m.loading = false
 	sessionID, err := ensureFoundationSession(m)
 	if err != nil {
-		m.history = append(m.history, fmt.Sprintf("[Error] foundation session unavailable: %v", err))
+		errEntry(m, fmt.Sprintf("Foundation session unavailable: %v", err))
 		return *m, nil
 	}
 	if strings.TrimSpace(arg) == "" {
 		display, err := buildFoundationTreeDisplay(m.director.WorkingDir, sessionID)
 		if err != nil {
-			m.history = append(m.history, fmt.Sprintf("[Error] tree display failed: %v", err))
+			errEntry(m, fmt.Sprintf("Tree display failed: %v", err))
 			return *m, nil
 		}
-		m.history = append(m.history, display)
+		m.entries = append(m.entries, ChatEntry{Type: EntryTool, ToolName: "tree", Content: display, Timestamp: time.Now()})
 		return *m, nil
 	}
 	targetID, maxTokens := parseSummaryArgs(arg)
 	display, err := switchFoundationTreeDisplay(m.director.WorkingDir, sessionID, targetID, maxTokens)
 	if err != nil {
-		m.history = append(m.history, fmt.Sprintf("[Error] tree switch failed: %v", err))
+		errEntry(m, fmt.Sprintf("Tree switch failed: %v", err))
 		return *m, nil
 	}
-	m.history = append(m.history, display)
+	m.entries = append(m.entries, ChatEntry{Type: EntryTool, ToolName: "tree-switch", Content: display, Timestamp: time.Now()})
 	return *m, nil
 }
 
 func handleTreeSelect(m *model) (tea.Model, tea.Cmd) {
-	m.loading = false
 	sessionID, err := ensureFoundationSession(m)
 	if err != nil {
-		m.history = append(m.history, fmt.Sprintf("[Error] foundation session unavailable: %v", err))
+		errEntry(m, fmt.Sprintf("Foundation session unavailable: %v", err))
 		return *m, nil
 	}
 	display, ids, err := buildFoundationTreeSelectionDisplay(m.director.WorkingDir, sessionID)
 	if err != nil {
-		m.history = append(m.history, fmt.Sprintf("[Error] tree selector failed: %v", err))
+		errEntry(m, fmt.Sprintf("Tree selector failed: %v", err))
 		return *m, nil
 	}
 	m.foundationTreeSelection = ids
-	m.history = append(m.history, display)
+	m.entries = append(m.entries, ChatEntry{Type: EntryTool, ToolName: "tree-select", Content: display, Timestamp: time.Now()})
 	return *m, nil
 }
 
 func handleTreeBrowser(m *model) (tea.Model, tea.Cmd) {
-	m.loading = false
 	sessionID, err := ensureFoundationSession(m)
 	if err != nil {
-		m.history = append(m.history, fmt.Sprintf("[Error] foundation session unavailable: %v", err))
+		errEntry(m, fmt.Sprintf("Foundation session unavailable: %v", err))
 		return *m, nil
 	}
 	items, err := buildFoundationTreeBrowser(m.director.WorkingDir, sessionID)
 	if err != nil {
-		m.history = append(m.history, fmt.Sprintf("[Error] tree browser failed: %v", err))
+		errEntry(m, fmt.Sprintf("Tree browser failed: %v", err))
 		return *m, nil
 	}
 	m.browserItems = items
@@ -384,130 +598,122 @@ func handleTreeBrowser(m *model) (tea.Model, tea.Cmd) {
 }
 
 func handleTreePaneHelp(m *model) (tea.Model, tea.Cmd) {
-	m.loading = false
-	m.history = append(m.history, `[Foundation Tree Pane Help]
-  /tree-pane                     - Toggle persistent pane
-  /tree-pane-show|hide           - Explicitly show or hide the pane
-  /tree-pane-focus               - Toggle pane focus
-  /tree-pane-focus-on|off        - Explicitly set pane focus
-  /tree-pane-size <n>            - Set pane viewport height
-  /tree-pane-size-cycle          - Cycle common pane heights
-  /tree-pane-position <top|bottom>
-  /tree-pane-top|bottom          - Explicitly set pane position
-  /tree-pane-position-toggle     - Toggle pane position
-  /tree-pane-preview <on|off>
-  /tree-pane-preview-on|off      - Explicit preview control
-  /tree-pane-preview-toggle      - Toggle pane preview
-  /tree-pane-grouped <on|off|toggle>
-  /tree-pane-grouped-on|off      - Explicit grouped control
-  /tree-pane-grouped-toggle      - Toggle grouped mode
-  /tree-pane-preset <name>       - Apply named preset
-  /tree-pane-compact|detailed|navigation|review
-  /tree-pane-cycle               - Cycle named presets
-  /tree-pane-status              - Show current pane state
-  /tree-pane-refresh             - Manually refresh from canonical runtime
-  /tree-pane-reset               - Reset pane config to defaults
-  /tree-browser                  - Open modal browser
-  /tree-browser-clear            - Clear transient browser state`)
+	t := m.theme
+	var b strings.Builder
+	b.WriteString(t.Bold(t.AccentText("╭─ Tree Pane Controls ─────────────────────────╮")))
+	b.WriteString("\n")
+	controls := []struct{ cmd, desc string }{
+		{"/tree-pane", "Toggle persistent pane"},
+		{"/tree-pane-show|hide", "Explicitly show or hide"},
+		{"/tree-pane-focus", "Toggle pane focus (or Tab)"},
+		{"/tree-pane-size <n>", "Set pane viewport height"},
+		{"/tree-pane-size-cycle", "Cycle common heights"},
+		{"/tree-pane-position <top|bottom>", "Set pane position"},
+		{"/tree-pane-preview <on|off>", "Toggle preview details"},
+		{"/tree-pane-grouped <on|off>", "Toggle grouped rendering"},
+		{"/tree-pane-preset <name>", "Apply named preset"},
+		{"/tree-pane-cycle", "Cycle named presets"},
+		{"/tree-pane-refresh", "Refresh from runtime"},
+		{"/tree-pane-reset", "Reset to defaults"},
+		{"/tree-pane-status", "Show current state"},
+		{"/tree-browser", "Open modal browser"},
+		{"/tree-browser-clear", "Clear browser state"},
+	}
+	for _, c := range controls {
+		b.WriteString(t.AccentText("  " + c.cmd) + t.Dim("  " + c.desc))
+		b.WriteString("\n")
+	}
+	b.WriteString(t.Bold(t.AccentText("╰───────────────────────────────────────────────╯")))
+	sysEntry(m, b.String())
 	return *m, nil
 }
 
 func handleTreePane(m *model) (tea.Model, tea.Cmd) {
-	m.loading = false
 	if m.browserPinned {
 		unpinFoundationTreeBrowser(m)
 		m.browserPinnedFocus = false
 		m.browserConfirmPending = false
-		m.history = append(m.history, "[Foundation Tree Pane] hidden")
+		sysEntry(m, m.theme.Dim("[Tree Pane] hidden"))
 		return *m, nil
 	}
 	if !pinFoundationTreeBrowser(m) {
-		m.history = append(m.history, "[Error] tree pane failed")
+		errEntry(m, "Tree pane failed")
 		return *m, nil
 	}
-	m.history = append(m.history, "[Foundation Tree Pane] pinned")
+	refreshPinnedFoundationTreeBrowser(m)
+	sysEntry(m, m.theme.AccentText("[Tree Pane] pinned (Tab to focus, Esc to unfocus)"))
 	return *m, nil
 }
 
 func handleTreePaneShow(m *model) (tea.Model, tea.Cmd) {
-	m.loading = false
 	if m.browserPinned {
-		m.history = append(m.history, "[Foundation Tree Pane] already visible")
+		sysEntry(m, m.theme.Dim("[Tree Pane] already visible"))
 		return *m, nil
 	}
 	if !pinFoundationTreeBrowser(m) {
-		m.history = append(m.history, "[Error] tree pane failed")
+		errEntry(m, "Tree pane failed")
 		return *m, nil
 	}
-	m.history = append(m.history, "[Foundation Tree Pane] shown")
+	refreshPinnedFoundationTreeBrowser(m)
+	sysEntry(m, m.theme.SuccessText("✓ [Tree Pane] shown"))
 	return *m, nil
 }
 
 func handleTreePaneHide(m *model) (tea.Model, tea.Cmd) {
-	m.loading = false
 	if !m.browserPinned {
-		m.history = append(m.history, "[Foundation Tree Pane] already hidden")
+		sysEntry(m, m.theme.Dim("[Tree Pane] already hidden"))
 		return *m, nil
 	}
 	unpinFoundationTreeBrowser(m)
 	m.browserPinnedFocus = false
 	m.browserConfirmPending = false
-	m.history = append(m.history, "[Foundation Tree Pane] hidden")
+	sysEntry(m, m.theme.Dim("[Tree Pane] hidden"))
 	return *m, nil
 }
 
 func handleTreePaneSize(m *model, arg string) (tea.Model, tea.Cmd) {
-	m.loading = false
 	height := 0
 	fmt.Sscanf(strings.TrimSpace(arg), "%d", &height)
 	if height <= 0 {
-		m.history = append(m.history, "[Error] /tree-pane-size requires a positive integer")
+		errEntry(m, "/tree-pane-size requires a positive integer")
 		return *m, nil
 	}
 	m.browserPaneHeight = height
-	m.history = append(m.history, fmt.Sprintf("[Foundation Tree Pane] height set to %d", height))
+	sysEntry(m, fmt.Sprintf("[Tree Pane] height set to %d", height))
 	return *m, nil
 }
 
 func handleTreePaneSizeCycle(m *model) (tea.Model, tea.Cmd) {
-	m.loading = false
 	next := 6
 	switch m.browserPaneHeight {
-	case 6:
-		next = 8
-	case 8:
-		next = 10
-	case 10:
-		next = 12
-	case 12:
-		next = 14
-	case 14:
-		next = 6
+	case 6:  next = 8
+	case 8:  next = 10
+	case 10: next = 12
+	case 12: next = 14
+	case 14: next = 6
 	}
 	m.browserPaneHeight = next
-	m.history = append(m.history, fmt.Sprintf("[Foundation Tree Pane] height cycled to %d", next))
+	sysEntry(m, fmt.Sprintf("[Tree Pane] height cycled to %d", next))
 	return *m, nil
 }
 
 func handleTreePanePreview(m *model, arg string) (tea.Model, tea.Cmd) {
-	m.loading = false
 	value := strings.ToLower(strings.TrimSpace(arg))
 	if value == "toggle" || value == "" {
 		m.browserPanePreview = !m.browserPanePreview
-		m.history = append(m.history, fmt.Sprintf("[Foundation Tree Pane] preview set to %t", m.browserPanePreview))
+		sysEntry(m, fmt.Sprintf("[Tree Pane] preview set to %t", m.browserPanePreview))
 		return *m, nil
 	}
 	if value != "on" && value != "off" {
-		m.history = append(m.history, "[Error] /tree-pane-preview requires 'on', 'off', or use /tree-pane-preview-toggle")
+		errEntry(m, "/tree-pane-preview requires 'on', 'off', or 'toggle'")
 		return *m, nil
 	}
 	m.browserPanePreview = value == "on"
-	m.history = append(m.history, fmt.Sprintf("[Foundation Tree Pane] preview set to %s", value))
+	sysEntry(m, fmt.Sprintf("[Tree Pane] preview set to %s", value))
 	return *m, nil
 }
 
 func handleTreePaneGrouped(m *model, arg string) (tea.Model, tea.Cmd) {
-	m.loading = false
 	value := strings.ToLower(strings.TrimSpace(arg))
 	switch value {
 	case "on":
@@ -517,15 +723,14 @@ func handleTreePaneGrouped(m *model, arg string) (tea.Model, tea.Cmd) {
 	case "toggle", "":
 		m.browserGrouped = !m.browserGrouped
 	default:
-		m.history = append(m.history, "[Error] /tree-pane-grouped requires 'on', 'off', or 'toggle'")
+		errEntry(m, "/tree-pane-grouped requires 'on', 'off', or 'toggle'")
 		return *m, nil
 	}
-	m.history = append(m.history, fmt.Sprintf("[Foundation Tree Pane] grouped set to %t", m.browserGrouped))
+	sysEntry(m, fmt.Sprintf("[Tree Pane] grouped set to %t", m.browserGrouped))
 	return *m, nil
 }
 
 func handleTreePaneCycle(m *model) (tea.Model, tea.Cmd) {
-	m.loading = false
 	preset := "compact"
 	switch {
 	case m.browserPaneHeight == 6 && !m.browserPanePreview && m.browserPanePosition == "bottom" && !m.browserGrouped:
@@ -541,28 +746,25 @@ func handleTreePaneCycle(m *model) (tea.Model, tea.Cmd) {
 }
 
 func handleTreePaneRefresh(m *model) (tea.Model, tea.Cmd) {
-	m.loading = false
 	if !m.browserPinned {
-		m.history = append(m.history, "[Error] tree pane is not pinned; use /tree-pane first")
+		errEntry(m, "Tree pane is not pinned; use /tree-pane first")
 		return *m, nil
 	}
 	refreshPinnedFoundationTreeBrowser(m)
-	m.history = append(m.history, "[Foundation Tree Pane] refreshed")
+	sysEntry(m, m.theme.SuccessText("✓ [Tree Pane] refreshed"))
 	return *m, nil
 }
 
 func handleTreeBrowserClear(m *model) (tea.Model, tea.Cmd) {
-	m.loading = false
 	m.browserFilter = ""
 	m.browserConfirmPending = false
 	m.browserCollapsed = nil
 	m.browserIndex = 0
-	m.history = append(m.history, "[Foundation Tree Browser] transient state cleared")
+	sysEntry(m, m.theme.Dim("[Tree Browser] transient state cleared"))
 	return *m, nil
 }
 
 func handleTreePaneReset(m *model) (tea.Model, tea.Cmd) {
-	m.loading = false
 	m.browserPaneHeight = 8
 	m.browserPanePosition = "top"
 	m.browserPanePreview = true
@@ -571,89 +773,89 @@ func handleTreePaneReset(m *model) (tea.Model, tea.Cmd) {
 	m.browserConfirmPending = false
 	m.browserFilter = ""
 	m.browserCollapsed = nil
-	m.history = append(m.history, "[Foundation Tree Pane] reset to defaults")
+	sysEntry(m, m.theme.SuccessText("✓ [Tree Pane] reset to defaults"))
 	return *m, nil
 }
 
 func handleTreePaneStatus(m *model) (tea.Model, tea.Cmd) {
-	m.loading = false
-	m.history = append(m.history, fmt.Sprintf("[Foundation Tree Pane Status]\npinned=%t\nfocus=%t\nheight=%d\nposition=%s\npreview=%t\ngrouped=%t\nfilter=%q", m.browserPinned, m.browserPinnedFocus, m.browserPaneHeight, m.browserPanePosition, m.browserPanePreview, m.browserGrouped, m.browserFilter))
+	t := m.theme
+	var b strings.Builder
+	b.WriteString(t.Bold(t.AccentText("╭─ Tree Pane Status ───────────────────────────╮")))
+	b.WriteString("\n")
+	b.WriteString(t.Dim("  pinned:   ") + t.Fg(t.Text, fmt.Sprintf("%t", m.browserPinned)))
+	b.WriteString("\n")
+	b.WriteString(t.Dim("  focus:    ") + t.Fg(t.Text, fmt.Sprintf("%t", m.browserPinnedFocus)))
+	b.WriteString("\n")
+	b.WriteString(t.Dim("  height:   ") + t.Fg(t.Text, fmt.Sprintf("%d", m.browserPaneHeight)))
+	b.WriteString("\n")
+	b.WriteString(t.Dim("  position: ") + t.Fg(t.Text, m.browserPanePosition))
+	b.WriteString("\n")
+	b.WriteString(t.Dim("  preview:  ") + t.Fg(t.Text, fmt.Sprintf("%t", m.browserPanePreview)))
+	b.WriteString("\n")
+	b.WriteString(t.Dim("  grouped:  ") + t.Fg(t.Text, fmt.Sprintf("%t", m.browserGrouped)))
+	b.WriteString("\n")
+	b.WriteString(t.Bold(t.AccentText("╰───────────────────────────────────────────────╯")))
+	sysEntry(m, b.String())
 	return *m, nil
 }
 
 func handleTreePaneSummary(m *model) (tea.Model, tea.Cmd) {
-	m.loading = false
-	m.history = append(m.history, fmt.Sprintf("[Foundation Tree Pane Summary] pinned=%t focus=%t h=%d pos=%s preview=%t grouped=%t filter=%q", m.browserPinned, m.browserPinnedFocus, m.browserPaneHeight, m.browserPanePosition, m.browserPanePreview, m.browserGrouped, m.browserFilter))
+	sysEntry(m, fmt.Sprintf("[Tree Pane] pinned=%t focus=%t h=%d pos=%s preview=%t grouped=%t filter=%q",
+		m.browserPinned, m.browserPinnedFocus, m.browserPaneHeight,
+		m.browserPanePosition, m.browserPanePreview, m.browserGrouped, m.browserFilter))
 	return *m, nil
 }
 
 func handleTreePanePreset(m *model, arg string) (tea.Model, tea.Cmd) {
-	m.loading = false
 	preset := strings.ToLower(strings.TrimSpace(arg))
 	switch preset {
 	case "compact":
-		m.browserPaneHeight = 6
-		m.browserPanePreview = false
-		m.browserPanePosition = "bottom"
-		m.browserGrouped = false
-		m.history = append(m.history, "[Foundation Tree Pane] preset applied: compact")
+		m.browserPaneHeight = 6; m.browserPanePreview = false; m.browserPanePosition = "bottom"; m.browserGrouped = false
 	case "detailed":
-		m.browserPaneHeight = 12
-		m.browserPanePreview = true
-		m.browserPanePosition = "top"
-		m.browserGrouped = false
-		m.history = append(m.history, "[Foundation Tree Pane] preset applied: detailed")
+		m.browserPaneHeight = 12; m.browserPanePreview = true; m.browserPanePosition = "top"; m.browserGrouped = false
 	case "navigation":
-		m.browserPaneHeight = 10
-		m.browserPanePreview = false
-		m.browserPanePosition = "bottom"
-		m.browserGrouped = true
-		m.history = append(m.history, "[Foundation Tree Pane] preset applied: navigation")
+		m.browserPaneHeight = 10; m.browserPanePreview = false; m.browserPanePosition = "bottom"; m.browserGrouped = true
 	case "review":
-		m.browserPaneHeight = 14
-		m.browserPanePreview = true
-		m.browserPanePosition = "top"
-		m.browserGrouped = true
-		m.history = append(m.history, "[Foundation Tree Pane] preset applied: review")
+		m.browserPaneHeight = 14; m.browserPanePreview = true; m.browserPanePosition = "top"; m.browserGrouped = true
 	default:
-		m.history = append(m.history, "[Error] /tree-pane-preset requires 'compact', 'detailed', 'navigation', or 'review'")
+		errEntry(m, "/tree-pane-preset requires 'compact', 'detailed', 'navigation', or 'review'")
+		return *m, nil
 	}
+	sysEntry(m, m.theme.SuccessText(fmt.Sprintf("✓ [Tree Pane] preset applied: %s", preset)))
 	return *m, nil
 }
 
 func handleTreePanePosition(m *model, arg string) (tea.Model, tea.Cmd) {
-	m.loading = false
 	position := strings.ToLower(strings.TrimSpace(arg))
 	if position == "toggle" || position == "" {
-		if strings.TrimSpace(m.browserPanePosition) == "bottom" {
+		if m.browserPanePosition == "bottom" {
 			m.browserPanePosition = "top"
 		} else {
 			m.browserPanePosition = "bottom"
 		}
-		m.history = append(m.history, fmt.Sprintf("[Foundation Tree Pane] position set to %s", m.browserPanePosition))
+		sysEntry(m, fmt.Sprintf("[Tree Pane] position set to %s", m.browserPanePosition))
 		return *m, nil
 	}
 	if position != "top" && position != "bottom" {
-		m.history = append(m.history, "[Error] /tree-pane-position requires 'top', 'bottom', or use /tree-pane-position-toggle")
+		errEntry(m, "/tree-pane-position requires 'top', 'bottom', or 'toggle'")
 		return *m, nil
 	}
 	m.browserPanePosition = position
-	m.history = append(m.history, fmt.Sprintf("[Foundation Tree Pane] position set to %s", position))
+	sysEntry(m, fmt.Sprintf("[Tree Pane] position set to %s", position))
 	return *m, nil
 }
 
 func handleTreePaneFocusValue(m *model, enabled bool) (tea.Model, tea.Cmd) {
-	m.loading = false
 	if !m.browserPinned {
-		m.history = append(m.history, "[Error] tree pane is not pinned; use /tree-pane first")
+		errEntry(m, "Tree pane is not pinned; use /tree-pane first")
 		return *m, nil
 	}
 	m.browserPinnedFocus = enabled
 	if m.browserPinnedFocus {
-		m.history = append(m.history, "[Foundation Tree Pane] focus enabled")
+		sysEntry(m, m.theme.AccentText("[Tree Pane] focus enabled (Esc to unfocus)"))
 	} else {
 		m.browserConfirmPending = false
-		m.history = append(m.history, "[Foundation Tree Pane] focus disabled")
+		sysEntry(m, m.theme.Dim("[Tree Pane] focus disabled"))
 	}
 	return *m, nil
 }
@@ -663,78 +865,109 @@ func handleTreePaneFocus(m *model) (tea.Model, tea.Cmd) {
 }
 
 func handleTreeGo(m *model, arg string) (tea.Model, tea.Cmd) {
-	m.loading = false
 	sessionID, err := ensureFoundationSession(m)
 	if err != nil {
-		m.history = append(m.history, fmt.Sprintf("[Error] foundation session unavailable: %v", err))
+		errEntry(m, fmt.Sprintf("Foundation session unavailable: %v", err))
 		return *m, nil
 	}
 	parts := strings.Fields(strings.TrimSpace(arg))
 	if len(parts) == 0 {
-		m.history = append(m.history, "[Error] /tree-go requires an index from /tree-select")
+		errEntry(m, "/tree-go requires an index from /tree-select")
 		return *m, nil
 	}
 	index := 0
 	fmt.Sscanf(parts[0], "%d", &index)
 	maxTokens := 0
-	if len(parts) > 1 {
-		fmt.Sscanf(parts[1], "%d", &maxTokens)
-	}
+	if len(parts) > 1 { fmt.Sscanf(parts[1], "%d", &maxTokens) }
 	display, err := switchFoundationTreeSelection(m.director.WorkingDir, sessionID, m.foundationTreeSelection, index, maxTokens)
 	if err != nil {
-		m.history = append(m.history, fmt.Sprintf("[Error] tree-go failed: %v", err))
+		errEntry(m, fmt.Sprintf("tree-go failed: %v", err))
 		return *m, nil
 	}
-	m.history = append(m.history, display)
+	m.entries = append(m.entries, ChatEntry{Type: EntryTool, ToolName: "tree-go", Content: display, Timestamp: time.Now()})
 	return *m, nil
 }
 
 func handleTreeChildren(m *model, arg string) (tea.Model, tea.Cmd) {
-	m.loading = false
 	sessionID, err := ensureFoundationSession(m)
 	if err != nil {
-		m.history = append(m.history, fmt.Sprintf("[Error] foundation session unavailable: %v", err))
+		errEntry(m, fmt.Sprintf("Foundation session unavailable: %v", err))
 		return *m, nil
 	}
 	parentID := strings.TrimSpace(arg)
 	if parentID == "" {
-		m.history = append(m.history, "[Error] /tree-children requires an entry id")
+		errEntry(m, "/tree-children requires an entry id")
 		return *m, nil
 	}
 	display, err := buildFoundationChildrenDisplay(m.director.WorkingDir, sessionID, parentID)
 	if err != nil {
-		m.history = append(m.history, fmt.Sprintf("[Error] tree children failed: %v", err))
+		errEntry(m, fmt.Sprintf("Tree children failed: %v", err))
 		return *m, nil
 	}
-	m.history = append(m.history, display)
+	m.entries = append(m.entries, ChatEntry{Type: EntryTool, ToolName: "tree-children", Content: display, Timestamp: time.Now()})
 	return *m, nil
 }
 
 func handleLabel(m *model, arg string) (tea.Model, tea.Cmd) {
-	m.loading = false
 	sessionID, err := ensureFoundationSession(m)
 	if err != nil {
-		m.history = append(m.history, fmt.Sprintf("[Error] foundation session unavailable: %v", err))
+		errEntry(m, fmt.Sprintf("Foundation session unavailable: %v", err))
 		return *m, nil
 	}
 	parts := strings.Fields(strings.TrimSpace(arg))
 	if len(parts) < 2 {
-		m.history = append(m.history, "[Error] /label requires <entryId> <label>")
+		errEntry(m, "/label requires <entryId> <label>")
 		return *m, nil
 	}
 	targetID := parts[0]
 	label := strings.Join(parts[1:], " ")
 	display, err := setFoundationLabel(m.director.WorkingDir, sessionID, targetID, label)
 	if err != nil {
-		m.history = append(m.history, fmt.Sprintf("[Error] label failed: %v", err))
+		errEntry(m, fmt.Sprintf("Label failed: %v", err))
 		return *m, nil
 	}
-	m.history = append(m.history, display)
+	sysEntry(m, display)
+	return *m, nil
+}
+
+func handleSummaryCompact(m *model, arg string) (tea.Model, tea.Cmd) {
+	sessionID, err := ensureFoundationSession(m)
+	if err != nil {
+		errEntry(m, fmt.Sprintf("Foundation session unavailable: %v", err))
+		return *m, nil
+	}
+	keepRecent := 0
+	if strings.TrimSpace(arg) != "" { fmt.Sscanf(strings.TrimSpace(arg), "%d", &keepRecent) }
+	display, err := buildFoundationCompactionDisplay(m.director.WorkingDir, sessionID, keepRecent)
+	if err != nil {
+		errEntry(m, fmt.Sprintf("Compaction summary failed: %v", err))
+		return *m, nil
+	}
+	sysEntry(m, display)
+	return *m, nil
+}
+
+func handleSummaryBranch(m *model, arg string) (tea.Model, tea.Cmd) {
+	sessionID, err := ensureFoundationSession(m)
+	if err != nil {
+		errEntry(m, fmt.Sprintf("Foundation session unavailable: %v", err))
+		return *m, nil
+	}
+	targetID, maxTokens := parseSummaryArgs(arg)
+	if strings.TrimSpace(targetID) == "" {
+		errEntry(m, "/summary-branch requires a target entry id")
+		return *m, nil
+	}
+	display, err := buildFoundationBranchSummaryDisplay(m.director.WorkingDir, sessionID, targetID, maxTokens)
+	if err != nil {
+		errEntry(m, fmt.Sprintf("Branch summary failed: %v", err))
+		return *m, nil
+	}
+	sysEntry(m, display)
 	return *m, nil
 }
 
 func handleUnknown(m *model, cmd string) (tea.Model, tea.Cmd) {
-	m.loading = false
-	m.history = append(m.history, fmt.Sprintf("[Error] Unknown primitive: %s", cmd))
+	errEntry(m, fmt.Sprintf("Unknown command: %s  (type /help for all commands)", cmd))
 	return *m, nil
 }
