@@ -1,69 +1,139 @@
 @echo off
-setlocal EnableDelayedExpansion
-echo Starting HyperCode 1.0.0-alpha.32 (Go Native Core)...
+setlocal enabledelayedexpansion
 
-cd go
-where go >nul 2>nul
+:: ═══════════════════════════════════════════════════════════════
+:: HyperHarness — AI Coding Agent (Start Script)
+:: ═══════════════════════════════════════════════════════════════
+
+echo.
+echo   ╔══════════════════════════════════════════════════════╗
+echo   ║          🧠  HyperHarness  —  AI Control Plane      ║
+echo   ╚══════════════════════════════════════════════════════╝
+echo.
+
+:: ─── Configuration ──────────────────────────────────────────
+set "BINARY=hyperharness.exe"
+set "PORT=8080"
+
+:: ─── Check for existing binary ──────────────────────────────
+if not exist "%BINARY%" (
+    echo   [Build] Binary not found. Building HyperHarness...
+    echo.
+    go build -buildvcs=false -o %BINARY% .
+    if errorlevel 1 (
+        echo.
+        echo   [Error] Build failed! Check the errors above.
+        pause
+        exit /b 1
+    )
+    echo.
+    echo   [Build] Build successful!
+    echo.
+)
+
+:: ─── Kill old processes on port ─────────────────────────────
+echo   [Port] Checking port %PORT%...
+for /f "tokens=5" %%a in ('netstat -ano ^| findstr ":%PORT% " ^| findstr "LISTENING"') do (
+    echo   [Port] Killing old server PID %%a on port %PORT%...
+    taskkill /PID %%a /F >nul 2>&1
+    timeout /t 1 /nobreak >nul
+)
+
+:: ─── Parse command ──────────────────────────────────────────
+set "CMD=%1"
+if "%CMD%"=="" set "CMD=tui"
+
+if "%CMD%"=="tui" goto :run_tui
+if "%CMD%"=="serve" goto :run_serve
+if "%CMD%"=="pipe" goto :run_pipe
+if "%CMD%"=="build" goto :run_build
+if "%CMD%"=="test" goto :run_test
+if "%CMD%"=="clean" goto :run_clean
+if "%CMD%"=="help" goto :show_help
+
+echo   Unknown command: %CMD%
+goto :show_help
+
+:: ─── TUI Mode ──────────────────────────────────────────────
+:run_tui
+echo   [Mode] Interactive TUI
+echo.
+%BINARY%
+goto :end
+
+:: ─── Serve Mode ─────────────────────────────────────────────
+:run_serve
+echo   [Mode] API Server on port %PORT%
+echo.
+%BINARY% serve
+goto :end
+
+:: ─── Pipe Mode ──────────────────────────────────────────────
+:run_pipe
+set "QUERY=%2"
+if "%QUERY%"=="" (
+    echo   [Error] Pipe mode requires a query. Usage: start.bat pipe "your query"
+    goto :end
+)
+echo   [Mode] Pipe: %QUERY%
+echo.
+echo %QUERY% | %BINARY% pipe
+goto :end
+
+:: ─── Build ──────────────────────────────────────────────────
+:run_build
+echo   [Mode] Rebuilding...
+echo.
+go build -buildvcs=false -o %BINARY% .
 if errorlevel 1 (
-    echo Go could not be found. Please install Go 1.22+.
+    echo   [Error] Build failed!
+    pause
     exit /b 1
 )
+echo.
+echo   [Build] Successful!
+goto :end
 
-set VER=1.0.0-alpha.32
-echo Building HyperCode Go Control Plane...
-go build -ldflags "-X internal/buildinfo.Version=%VER%" -buildvcs=false -o ../bin/hypercode.exe ./cmd/hypercode
-if errorlevel 1 (
-    echo Go build failed.
-    exit /b 1
-)
+:: ─── Test ───────────────────────────────────────────────────
+:run_test
+echo   [Mode] Running tests...
+echo.
+go test ./... 2>&1 | findstr /V "no test files"
+goto :end
 
-cd ..
-echo Launching HyperCode...
-bin\hypercode.exe %*
-echo Starting borg...
+:: ─── Clean ──────────────────────────────────────────────────
+:run_clean
+echo   [Mode] Cleaning...
+del /q %BINARY% 2>nul
+go clean
+echo   [Clean] Done.
+goto :end
 
-where pnpm >nul 2>nul
-if errorlevel 1 (
-    echo pnpm could not be found. Installing...
-    call npm install -g pnpm
-)
+:: ─── Help ───────────────────────────────────────────────────
+:show_help
+echo.
+echo   Usage: start.bat [command]
+echo.
+echo   Commands:
+echo     tui     Start interactive TUI (default)
+echo     serve   Start API server on port %PORT%
+echo     pipe    One-shot pipe mode (start.bat pipe "query")
+echo     build   Rebuild the binary
+echo     test    Run all tests
+echo     clean   Remove build artifacts
+echo     help    Show this help message
+echo.
+echo   Keyboard Shortcuts (TUI):
+echo     Enter       Send message
+echo     Tab         Autocomplete slash commands
+echo     Ctrl+C      Cancel / quit
+echo     Ctrl+L      Toggle file tree pane
+echo     Ctrl+D      Toggle dashboard
+echo     Ctrl+Y      Accept shell proposal
+echo     /help       Show all slash commands
+echo     /hotkeys    Show all keybindings
+echo     ??query     Shell command proposal
+echo.
 
-set SKIP_INSTALL=0
-if /I "%BORG_SKIP_INSTALL%"=="1" set SKIP_INSTALL=1
-
-if "%SKIP_INSTALL%"=="1" (
-    echo Skipping dependency install ^(BORG_SKIP_INSTALL=1^)...
-) else (
-    echo Installing dependencies...
-    call pnpm install
-    if errorlevel 1 exit /b 1
-)
-
-set SKIP_NATIVE_PREFLIGHT=0
-if /I "%BORG_SKIP_NATIVE_PREFLIGHT%"=="1" set SKIP_NATIVE_PREFLIGHT=1
-
-if "%SKIP_NATIVE_PREFLIGHT%"=="1" (
-    echo Skipping native runtime preflight ^(BORG_SKIP_NATIVE_PREFLIGHT=1^)...
-) else (
-    echo Checking native runtime prerequisites...
-    call node scripts\ensure_native_runtime.mjs
-    if errorlevel 1 exit /b 1
-)
-
-set BUILD_TARGET=build:workspace
-if /I "%BORG_FULL_BUILD%"=="1" set BUILD_TARGET=build
-set SKIP_BUILD=0
-if /I "%BORG_SKIP_BUILD%"=="1" set SKIP_BUILD=1
-
-if "%SKIP_BUILD%"=="1" (
-    echo Skipping build step ^(BORG_SKIP_BUILD=1^)...
-) else (
-    echo Building ^(%BUILD_TARGET%^)...
-    call pnpm run %BUILD_TARGET%
-    if errorlevel 1 exit /b 1
-)
-
-echo Starting Hub...
-echo Maestro is now launched separately. Use "pnpm -C apps/maestro start" when needed.
-pnpm start
-exit /b %errorlevel%
+:end
+endlocal

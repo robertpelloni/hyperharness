@@ -8,6 +8,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/robertpelloni/hyperharness/tools"
+
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/robertpelloni/hyperharness/agents"
 	"github.com/robertpelloni/hyperharness/foundation/adapters"
@@ -389,7 +391,7 @@ func handleSettings(m *model) (tea.Model, tea.Cmd) {
 		{"Auto-compact", "enabled"},
 	}
 	for _, s := range settings {
-		b.WriteString(t.Dim("  "+s.key+": ") + t.Fg(t.Text, s.val))
+		b.WriteString(t.Dim("  "+s.key+": ") + t.Fg(t.TextColor, s.val))
 		b.WriteString("\n")
 	}
 	b.WriteString(t.Bold(t.AccentText("╰───────────────────────────────────────────────╯")))
@@ -402,11 +404,11 @@ func handleSession(m *model) (tea.Model, tea.Cmd) {
 	var b strings.Builder
 	b.WriteString(t.Bold(t.AccentText("╭─ Session Info ────────────────────────────────╮")))
 	b.WriteString("\n")
-	b.WriteString(t.Dim("  Entries: ") + t.Fg(t.Text, fmt.Sprintf("%d", len(m.entries))))
+	b.WriteString(t.Dim("  Entries: ") + t.Fg(t.TextColor, fmt.Sprintf("%d", len(m.entries))))
 	b.WriteString("\n")
-	b.WriteString(t.Dim("  Foundation: ") + t.Fg(t.Text, m.foundationSessionID))
+	b.WriteString(t.Dim("  Foundation: ") + t.Fg(t.TextColor, m.foundationSessionID))
 	b.WriteString("\n")
-	b.WriteString(t.Dim("  Duration: ") + t.Fg(t.Text, time.Since(m.entries[0].Timestamp).Round(time.Second).String()))
+	b.WriteString(t.Dim("  Duration: ") + t.Fg(t.TextColor, time.Since(m.entries[0].Timestamp).Round(time.Second).String()))
 	b.WriteString("\n")
 	b.WriteString(t.Bold(t.AccentText("╰───────────────────────────────────────────────╯")))
 	sysEntry(m, b.String())
@@ -782,17 +784,17 @@ func handleTreePaneStatus(m *model) (tea.Model, tea.Cmd) {
 	var b strings.Builder
 	b.WriteString(t.Bold(t.AccentText("╭─ Tree Pane Status ───────────────────────────╮")))
 	b.WriteString("\n")
-	b.WriteString(t.Dim("  pinned:   ") + t.Fg(t.Text, fmt.Sprintf("%t", m.browserPinned)))
+	b.WriteString(t.Dim("  pinned:   ") + t.Fg(t.TextColor, fmt.Sprintf("%t", m.browserPinned)))
 	b.WriteString("\n")
-	b.WriteString(t.Dim("  focus:    ") + t.Fg(t.Text, fmt.Sprintf("%t", m.browserPinnedFocus)))
+	b.WriteString(t.Dim("  focus:    ") + t.Fg(t.TextColor, fmt.Sprintf("%t", m.browserPinnedFocus)))
 	b.WriteString("\n")
-	b.WriteString(t.Dim("  height:   ") + t.Fg(t.Text, fmt.Sprintf("%d", m.browserPaneHeight)))
+	b.WriteString(t.Dim("  height:   ") + t.Fg(t.TextColor, fmt.Sprintf("%d", m.browserPaneHeight)))
 	b.WriteString("\n")
-	b.WriteString(t.Dim("  position: ") + t.Fg(t.Text, m.browserPanePosition))
+	b.WriteString(t.Dim("  position: ") + t.Fg(t.TextColor, m.browserPanePosition))
 	b.WriteString("\n")
-	b.WriteString(t.Dim("  preview:  ") + t.Fg(t.Text, fmt.Sprintf("%t", m.browserPanePreview)))
+	b.WriteString(t.Dim("  preview:  ") + t.Fg(t.TextColor, fmt.Sprintf("%t", m.browserPanePreview)))
 	b.WriteString("\n")
-	b.WriteString(t.Dim("  grouped:  ") + t.Fg(t.Text, fmt.Sprintf("%t", m.browserGrouped)))
+	b.WriteString(t.Dim("  grouped:  ") + t.Fg(t.TextColor, fmt.Sprintf("%t", m.browserGrouped)))
 	b.WriteString("\n")
 	b.WriteString(t.Bold(t.AccentText("╰───────────────────────────────────────────────╯")))
 	sysEntry(m, b.String())

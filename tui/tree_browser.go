@@ -130,7 +130,7 @@ func renderTreeBrowser(items []TreeBrowserItem, index int, filter string, confir
 
 	// Filter bar
 	if filter != "" {
-		lines = append(lines, t.Dim("  filter: ")+t.Fg(t.Text, filter))
+		lines = append(lines, t.Dim("  filter: ")+t.Fg(t.TextColor, filter))
 	}
 
 	// Items
@@ -155,7 +155,7 @@ func renderTreeBrowser(items []TreeBrowserItem, index int, filter string, confir
 		sel := ""
 		if i == index {
 			prefix = " ▶"
-			sel = " " + t.Fg(t.Text, item.Name)
+			sel = " " + t.Fg(t.TextColor, item.Name)
 		}
 
 		childInfo := ""
@@ -169,7 +169,7 @@ func renderTreeBrowser(items []TreeBrowserItem, index int, filter string, confir
 		}
 
 		if i == index {
-			lines = append(lines, t.AccentText(prefix)+icon+" "+t.Bold(t.Fg(t.Text, item.Name))+childInfo)
+			lines = append(lines, t.AccentText(prefix)+icon+" "+t.Bold(t.Fg(t.TextColor, item.Name))+childInfo)
 		} else {
 			lines = append(lines, t.Dim(prefix)+t.Dim(icon)+" "+t.Fg(t.Muted, item.Name)+childInfo)
 		}
@@ -187,7 +187,7 @@ func renderTreeBrowser(items []TreeBrowserItem, index int, filter string, confir
 				lines = append(lines, t.Dim("  ┌─ preview ──────────────────"))
 				for _, line := range strings.Split(preview, "\n") {
 					if len(lines) > startIdx+paneHeight+5 { break }
-					lines = append(lines, t.Dim("  │ ")+t.Fg(t.Dim, line))
+					lines = append(lines, t.Dim("  │ ")+t.Fg(t.DimColor, line))
 				}
 				lines = append(lines, t.Dim("  └────────────────────────────"))
 			}

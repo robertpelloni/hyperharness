@@ -24,7 +24,7 @@ var (
 			Padding(0, 1)
 
 	footerDashStyle = lipgloss.NewStyle().
-				Foreground(lipgloss.Color(DefaultTheme.Dim)).
+				Foreground(lipgloss.Color(DefaultTheme.DimColor)).
 				Background(lipgloss.Color("#1F2937")).
 				Padding(0, 1).
 				MarginTop(1)

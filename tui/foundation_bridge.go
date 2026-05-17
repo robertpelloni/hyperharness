@@ -12,10 +12,7 @@ import (
 	foundationorchestration "github.com/robertpelloni/hyperharness/foundation/orchestration"
 )
 
-type PromptDisplayMsg struct {
-	Display string
-}
-
+// buildPromptResponse calls the Director's HandleInput and returns a PromptDisplayMsg.
 func buildPromptResponse(director *agents.Director, input string) (PromptDisplayMsg, error) {
 	response, err := director.HandleInput(context.Background(), input)
 	if err != nil {
@@ -27,6 +24,7 @@ func buildPromptResponse(director *agents.Director, input string) (PromptDisplay
 	return PromptDisplayMsg{Display: response}, nil
 }
 
+// buildShellProposal generates a shell command proposal from a natural language query.
 func buildShellProposal(director *agents.Director, query string) (ShellProposalMsg, error) {
 	execution := adapters.PrepareProviderExecution(adapters.ProviderExecutionRequest{Prompt: query, TaskType: "analysis", CostPreference: "budget"})
 	assistant := agents.NewShellTranslator(director.Provider)
@@ -37,6 +35,7 @@ func buildShellProposal(director *agents.Director, query string) (ShellProposalM
 	return ShellProposalMsg{Command: response, Explanation: execution.ExecutionHint}, nil
 }
 
+// ensureFoundationSession creates or returns a session ID for the current working directory.
 func ensureFoundationSession(m *model) (string, error) {
 	if m == nil {
 		return "", fmt.Errorf("nil model")
@@ -48,38 +47,10 @@ func ensureFoundationSession(m *model) (string, error) {
 	return fmt.Sprintf("session-%s-%d", filepath.Base(wd), os.Getpid()), nil
 }
 
-func appendFoundationUserText(workingDir, sessionID, text string) bool {
-	return true
-}
+func appendFoundationUserText(workingDir, sessionID, text string) bool  { return true }
+func appendFoundationAssistantText(workingDir, sessionID, text string) bool { return true }
 
-func appendFoundationAssistantText(workingDir, sessionID, text string) bool {
-	return true
-}
-
-func renderTreeBrowser(browserItems []TreeBrowserItem, browserIndex int, filter string, confirmPending bool, collapsed map[string]bool, grouped bool, paneHeight int, title string, preview bool) string {
-	items := visibleTreeBrowserItems(browserItems, filter, collapsed)
-	var lines []string
-	if title != "" {
-		lines = append(lines, title)
-	}
-	idx := 0
-	for _, item := range items {
-		icon := "📄"
-		if item.IsDir {
-			icon = "📁"
-		}
-		sel := ""
-		if idx == browserIndex {
-			sel = " ▶"
-		}
-		lines = append(lines, fmt.Sprintf("  %s %s%s", icon, item.Name, sel))
-		idx++
-	}
-	if confirmPending {
-		lines = append(lines, "  [Confirm Y/N]")
-	}
-	return strings.Join(lines, "\n")
-}
+// ─── Foundation tree helpers ──────────────────────────────────────────
 
 func buildFoundationCompactionDisplay(workingDir, sessionID string, keepRecent int) (string, error) {
 	return fmt.Sprintf("[Compaction] Session: %s", sessionID), nil
@@ -109,9 +80,7 @@ func buildFoundationTreeDisplay(workingDir, sessionID string) (string, error) {
 	var lines []string
 	for _, item := range items {
 		icon := "📄"
-		if item.IsDir {
-			icon = "📁"
-		}
+		if item.IsDir { icon = "📁" }
 		lines = append(lines, fmt.Sprintf("%s %s", icon, item.Name))
 	}
 	return strings.Join(lines, "\n"), nil
@@ -163,7 +132,7 @@ func buildFoundationChildrenDisplay(parentPath, sessionID, parentID string) (str
 	items, _ := buildTreeItems(parentPath)
 	var lines []string
 	for _, item := range items {
-		lines = append(lines, fmt.Sprintf("  %s", item.Name))
+		lines = append(lines, fmt.Sprintf(" %s", item.Name))
 	}
 	return strings.Join(lines, "\n"), nil
 }

@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
-	"path/filepath"
 	"runtime"
 	"strings"
 	"sync"
@@ -18,6 +17,7 @@ import (
 	"github.com/robertpelloni/hyperharness/foundation/adapters"
 	foundationorchestration "github.com/robertpelloni/hyperharness/foundation/orchestration"
 	"github.com/robertpelloni/hyperharness/internal/controlplane"
+	"context"
 	"github.com/robertpelloni/hyperharness/tools"
 )
 
@@ -33,23 +33,23 @@ type Theme struct {
 	Error        string
 	Warning      string
 	Muted        string
-	Dim          string
-	Text         string
-	Thinking     string
+	DimColor     string
+	TextColor    string
+	ThinkingCol  string
 
-	UserMsgBg   string
-	UserMsgText string
-	ToolPending string
-	ToolSuccess string
-	ToolError   string
-	ToolTitle   string
-	ToolOutput  string
+	UserMsgBg    string
+	UserMsgText  string
+	ToolPending  string
+	ToolSuccess  string
+	ToolError    string
+	ToolTitle    string
+	ToolOutput   string
 
-	MDHeading   string
-	MDLink      string
-	MDCode      string
-	MDCodeBlock string
-	MDQuote     string
+	MDHeading    string
+	MDLink       string
+	MDCode       string
+	MDCodeBlock  string
+	MDQuote      string
 }
 
 var DefaultTheme = Theme{
@@ -60,9 +60,9 @@ var DefaultTheme = Theme{
 	Error:        "#EF4444",
 	Warning:      "#F59E0B",
 	Muted:        "#9CA3AF",
-	Dim:          "#6B7280",
-	Text:         "#F9FAFB",
-	Thinking:     "#8B5CF6",
+	DimColor:     "#6B7280",
+	TextColor:    "#F9FAFB",
+	ThinkingCol:  "#8B5CF6",
 
 	UserMsgBg:   "#1E293B",
 	UserMsgText: "#93C5FD",
@@ -96,7 +96,7 @@ func (t Theme) Italic(text string) string {
 }
 
 func (t Theme) Dim(text string) string {
-	return t.Fg(t.Dim, text)
+	return t.Fg(t.DimColor, text)
 }
 
 func (t Theme) AccentText(text string) string {
@@ -322,8 +322,8 @@ func getWorkingDir() string {
 }
 
 func countInstalledTools() int {
-	detector := controlplane.NewToolDetector(30*time.Second, 10*time.Minute)
-	detected := detector.Detect()
+	detector := controlplane.NewDetector(30*time.Second, 10*time.Minute)
+	detected, _ := detector.DetectAll(context.Background())
 	return len(detected)
 }
 
@@ -413,14 +413,14 @@ func (m model) renderWelcome() string {
 		regCount = len(m.registry.Tools)
 	}
 
-	b.WriteString(t.Dim("  cwd   ") + t.Fg(t.Text, shortenPath(m.workingDir)))
+	b.WriteString(t.Dim("  cwd   ") + t.Fg(t.TextColor, shortenPath(m.workingDir)))
 	if m.gitBranch != "" {
 		b.WriteString(t.Dim(" (") + t.Fg(t.Muted, m.gitBranch) + t.Dim(")"))
 	}
 	b.WriteString("\n")
-	b.WriteString(t.Dim("  tools ") + t.Fg(t.Text, fmt.Sprintf("%d registered + %d CLI detected", regCount, m.toolCount-regCount)))
+	b.WriteString(t.Dim("  tools ") + t.Fg(t.TextColor, fmt.Sprintf("%d registered + %d CLI detected", regCount, m.toolCount-regCount)))
 	b.WriteString("\n")
-	b.WriteString(t.Dim("  model ") + t.Fg(t.Text, m.provider+"/"+m.modelName))
+	b.WriteString(t.Dim("  model ") + t.Fg(t.TextColor, m.provider+"/"+m.modelName))
 	b.WriteString("\n\n")
 
 	b.WriteString(t.Dim("  ─── Key Bindings ────────────────────────────────────────"))
@@ -1074,7 +1074,7 @@ func (m model) renderEntries() string {
 		case EntrySystem:
 			lines = append(lines, entry.Content)
 		case EntryThinking:
-			lines = append(lines, m.theme.Italic(m.theme.Fg(m.theme.Thinking, entry.Content)))
+			lines = append(lines, m.theme.Italic(m.theme.Fg(m.theme.ThinkingCol, entry.Content)))
 		case EntryShellProposal:
 			lines = append(lines, m.renderShellProposal(entry))
 		case EntryDiff:
@@ -1087,7 +1087,7 @@ func (m model) renderEntries() string {
 	if m.loading && m.streaming && m.streamContent != "" {
 		lines = append(lines, m.theme.Fg(m.theme.Accent, "┃ ")+m.streamContent)
 	} else if m.loading {
-		lines = append(lines, m.theme.Fg(m.theme.Thinking, m.theme.Italic(m.thinkingLabel))+" "+m.spinner.View())
+		lines = append(lines, m.theme.Fg(m.theme.ThinkingCol, m.theme.Italic(m.thinkingLabel))+" "+m.spinner.View())
 	}
 
 	return strings.Join(lines, "\n")
@@ -1114,7 +1114,7 @@ func (m model) renderAssistantEntry(e ChatEntry) string {
 		}
 		header = t.Dim("  "+modelStr) + "\n"
 	}
-	content := t.Fg(t.Text, e.Content)
+	content := t.Fg(t.TextColor, e.Content)
 	// Simple markdown-like rendering
 	content = m.renderSimpleMarkdown(content)
 	return header + content
@@ -1173,7 +1173,7 @@ func (m model) renderShellProposal(e ChatEntry) string {
 	var b strings.Builder
 	b.WriteString(t.Fg(t.ToolTitle, "⌘ Shell Proposal"))
 	b.WriteString("\n")
-	b.WriteString(t.Fg(t.Text, "  $ "+e.Content))
+	b.WriteString(t.Fg(t.TextColor, "  $ "+e.Content))
 	if e.ToolArgs != "" {
 		b.WriteString("\n" + t.Dim("  "+e.ToolArgs))
 	}
@@ -1193,7 +1193,7 @@ func (m model) renderDiffEntry(e ChatEntry) string {
 		} else if strings.HasPrefix(line, "@@") {
 			rendered = append(rendered, t.Fg(t.Muted, line))
 		} else {
-			rendered = append(rendered, t.Fg(t.Dim, line))
+			rendered = append(rendered, t.Fg(t.DimColor, line))
 		}
 	}
 	return strings.Join(rendered, "\n")
@@ -1209,9 +1209,9 @@ func (m model) renderSimpleMarkdown(text string) string {
 		if strings.HasPrefix(line, "```") {
 			inCodeBlock = !inCodeBlock
 			if inCodeBlock {
-				result = append(result, m.theme.Fg(m.theme.Dim, line))
+				result = append(result, m.theme.Fg(m.theme.DimColor, line))
 			} else {
-				result = append(result, m.theme.Fg(m.theme.Dim, "```"))
+				result = append(result, m.theme.Fg(m.theme.DimColor, "```"))
 			}
 			continue
 		}
@@ -1234,7 +1234,7 @@ func (m model) renderSimpleMarkdown(text string) string {
 		}
 		// List items
 		if strings.HasPrefix(line, "- ") || strings.HasPrefix(line, "* ") {
-			result = append(result, m.theme.Fg(m.theme.Dim, line[:2])+m.theme.Fg(m.theme.Text, line[2:]))
+			result = append(result, m.theme.Fg(m.theme.DimColor, line[:2])+m.theme.Fg(m.theme.TextColor, line[2:]))
 			continue
 		}
 		// Quote
@@ -1298,11 +1298,10 @@ func (m model) renderFooter() string {
 	// Extension/MCP status line
 	var extStatus string
 	adapter := adapters.NewMCPAdapter(m.workingDir)
-	if status := adapter.Status(); status != nil {
-		if count, ok := status["tool_count"].(int); ok && count > 0 {
-			extStatus = t.Dim(fmt.Sprintf("  mcp: %d tools", count))
+	status := adapter.Status()
+		if len(status.Servers) > 0 {
+			extStatus = t.Dim(fmt.Sprintf("  mcp: %d servers", len(status.Servers)))
 		}
-	}
 
 	result := pwdLine + "\n" + statsLine
 	if extStatus != "" {
@@ -1319,9 +1318,9 @@ func (m model) renderInputBar() string {
 
 	var inputDisplay string
 	if m.loading {
-		inputDisplay = t.Fg(t.Thinking, t.Italic(m.thinkingLabel)) + " " + m.spinner.View()
+		inputDisplay = t.Fg(t.ThinkingCol, t.Italic(m.thinkingLabel)) + " " + m.spinner.View()
 	} else {
-		inputDisplay = t.Fg(t.Text, m.input) + "▎"
+		inputDisplay = t.Fg(t.TextColor, m.input) + "▎"
 	}
 
 	// Autocomplete dropdown
@@ -1384,11 +1383,10 @@ func (m model) renderToolSidebar() string {
 
 	// MCP tools
 	adapter := adapters.NewMCPAdapter(m.workingDir)
-	if status := adapter.Status(); status != nil {
-		if count, ok := status["tool_count"].(int); ok && count > 0 {
-			lines = append(lines, t.Fg(t.ToolTitle, "mcp")+t.Dim(fmt.Sprintf(" (%d)", count)))
+	status := adapter.Status()
+		if len(status.Servers) > 0 {
+			lines = append(lines, t.Fg(t.ToolTitle, "mcp")+t.Dim(fmt.Sprintf(" (%d)", len(status.Servers))))
 		}
-	}
 
 	// Recent tool executions
 	m.toolMu.Lock()
@@ -1421,7 +1419,6 @@ func toolGroupName(name string) string {
 // ─── Metrics line ─────────────────────────────────────────────────────
 
 func (m model) renderMetrics() string {
-	t := m.theme
 	return fmt.Sprintf("Tokens: %s in / %s out │ Cost: $%.3f │ Scope: Project │ Tools: %d",
 		formatTokens(m.totalInputTok), formatTokens(m.totalOutTok), m.totalCost, m.toolCount)
 }
