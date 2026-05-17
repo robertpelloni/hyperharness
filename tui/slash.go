@@ -22,6 +22,13 @@ import (
 // ═══════════════════════════════════════════════════════════════════════
 
 // ProcessSlashCommand handles all / commands, bypassing the LLM.
+func sessionDuration(m *model) string {
+	if len(m.entries) == 0 {
+		return "0s"
+	}
+	return time.Since(m.entries[0].Timestamp).Round(time.Second).String()
+}
+
 func ProcessSlashCommand(cmd string, m *model) (tea.Model, tea.Cmd) {
 	cmd = strings.TrimSpace(cmd)
 	parts := strings.Split(cmd, " ")
@@ -408,7 +415,7 @@ func handleSession(m *model) (tea.Model, tea.Cmd) {
 	b.WriteString("\n")
 	b.WriteString(t.Dim("  Foundation: ") + t.Fg(t.TextColor, m.foundationSessionID))
 	b.WriteString("\n")
-	b.WriteString(t.Dim("  Duration: ") + t.Fg(t.TextColor, time.Since(m.entries[0].Timestamp).Round(time.Second).String()))
+	b.WriteString(t.Dim(" Duration: ") + t.Fg(t.TextColor, sessionDuration(m)))
 	b.WriteString("\n")
 	b.WriteString(t.Bold(t.AccentText("╰───────────────────────────────────────────────╯")))
 	sysEntry(m, b.String())

@@ -215,7 +215,7 @@ func TestProcessSlashCommandTreePaneStatus(t *testing.T) {
 	mdl, _ := ProcessSlashCommand("/tree-pane-status", m)
 	updated := mdl.(model)
 	status := lastEntryContent(&updated)
-	for _, needle := range []string{"pinned=true", "focus=true", "height=10", "position=bottom"} {
+	for _, needle := range []string{"pinned:   true", "focus:    true", "height:   10", "position: bottom"} {
 		if !strings.Contains(status, needle) {
 			t.Fatalf("expected status to contain %q, got %s", needle, status)
 		}
