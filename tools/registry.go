@@ -211,35 +211,3 @@ func shellCommand(command string) *exec.Cmd {
 	}
 	return exec.Command("sh", "-lc", command)
 }
-
-
-
-
-// AgentToolAdapter wraps a Registry to satisfy the agents.ToolExecutor interface
-type AgentToolAdapter struct {
-	Reg *Registry
-}
-
-func (a *AgentToolAdapter) Find(name string) (agents.ToolInfo, bool) {
-	t, ok := a.Reg.Find(name)
-	if !ok {
-		return agents.ToolInfo{}, false
-	}
-	return agents.ToolInfo{
-		Name:        t.Name,
-		Description: t.Description,
-		Execute:     t.Execute,
-	}, true
-}
-
-func (a *AgentToolAdapter) ListTools() []agents.ToolInfo {
-	result := make([]agents.ToolInfo, 0, len(a.Reg.Tools))
-	for _, t := range a.Reg.Tools {
-		result = append(result, agents.ToolInfo{
-			Name:        t.Name,
-			Description: t.Description,
-			Execute:     t.Execute,
-		})
-	}
-	return result
-}

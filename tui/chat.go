@@ -2,7 +2,11 @@ package tui
 
 // ═══════════════════════════════════════════════════════════════════════
 // chat.go — TUI model, update loop, and view composition
-// Mirrors pi-mono's InteractiveMode class
+// Mirrors pi-mono's InteractiveMode class with all features from:
+//   - pi-mono: double-escape, model cycling, follow-up queuing, suspend
+//   - goose: permission dialog, ACP streaming, paste mode
+//   - opencode: command palette, theme selector, session list
+//   - claude-code: /cost, /diff, /rewind, /doctor, /memory, /vim
 // ═══════════════════════════════════════════════════════════════════════
 
 import (
@@ -10,7 +14,9 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"os/signal"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"sync"
 	"time"
@@ -49,9 +55,8 @@ type AgentResponseMsg struct {
 	Model    string
 	Plan     *foundationorchestration.PlanResult
 }
-type GitBranchMsg struct {
-	Branch string
-}
+type GitBranchMsg struct{ Branch string }
+type StreamChunkMsg struct{ Chunk string }
 
 // ═══════════════════════════════════════════════════════════════════════
 // Model — the central TUI state (mirrors pi-mono's InteractiveMode fields)
@@ -60,7 +65,9 @@ type GitBranchMsg struct {
 type model struct {
 	// Core
 	director *agents.Director
+	session  *agents.AgentSession
 	theme    Theme
+	themeName string
 
 	// Chat history (structured entries, not plain strings)
 	entries []ChatEntry
@@ -106,6 +113,17 @@ type model struct {
 	autocompleteIndex  int
 	autocompleteMaxVis int
 
+	// Model selector (pi-mono/opencode style)
+	showModelSelector   bool
+	modelSelectorIdx    int
+	modelSelectorFilter string
+	availableModels     []string
+
+	// Command palette (opencode style)
+	showCommandPalette  bool
+	commandPaletteIdx   int
+	commandPaletteFilter string
+
 	// Footer data
 	workingDir    string
 	gitBranch     string
@@ -122,12 +140,19 @@ type model struct {
 	inputHistory []string
 	historyIdx   int
 
+	// Follow-up queue (pi-mono: Ctrl+F queues messages during streaming)
+	followUpQueue []string
+
+	// Double-escape (pi-mono: Esc Esc triggers tree/fork selector)
+	lastEscapeTime int64
+	doubleEscAction string // "tree" or "fork" (mirrors pi-mono's doubleEscapeAction setting)
+
 	// Thinking
 	thinkingLevel string
 	hidingThink   bool
 	thinkingLabel string
 
-	// Tool output expand/collapse (Ctrl+O)
+	// Tool output expand/collapse (pi-mono: Ctrl+O)
 	toolOutputExpanded bool
 
 	// Tool registry
@@ -143,6 +168,20 @@ type model struct {
 
 	// Bash mode (! prefix)
 	bashMode bool
+
+	// Permission dialog (goose-style)
+	showPermission    bool
+	permissionEntry   *ChatEntry
+
+	// Paste mode (goose-style: large paste gets special handling)
+	pasteMode    bool
+	pasteContent string
+
+	// Debug mode (pi-mono)
+	debugMode bool
+
+	// Vim keybindings (claude-code)
+	vimMode bool
 }
 
 // ═══════════════════════════════════════════════════════════════════════
@@ -151,9 +190,7 @@ type model struct {
 
 func getWorkingDir() string {
 	wd, err := os.Getwd()
-	if err != nil {
-		return "."
-	}
+	if err != nil { return "." }
 	return wd
 }
 
@@ -167,9 +204,7 @@ func getGitBranch(wd string) string {
 	cmd := exec.Command("git", "rev-parse", "--abbrev-ref", "HEAD")
 	cmd.Dir = wd
 	out, err := cmd.Output()
-	if err != nil {
-		return ""
-	}
+	if err != nil { return "" }
 	return strings.TrimSpace(string(out))
 }
 
@@ -196,30 +231,44 @@ func initialModel() model {
 	cliToolCount := countInstalledTools()
 	gitBranch := getGitBranch(wd)
 
+	// Create AgentSession with tool adapter
+	adapter := NewRegistryAdapter(reg)
+	session := agents.NewAgentSession(director, adapter, filepath.Join(wd, ".hyperharness", "sessions"))
+
 	m := model{
-		director:            director,
-		theme:               DefaultTheme,
-		input:               "",
-		entries:             []ChatEntry{},
-		loading:             false,
-		spinner:             s,
-		viewport:            viewport.New(80, 20),
+		director:         director,
+		session:          session,
+		theme:            DefaultTheme,
+		themeName:        "default",
+		input:            "",
+		entries:          []ChatEntry{},
+		loading:          false,
+		spinner:          s,
+		viewport:         viewport.New(80, 20),
 		browserPaneHeight:   8,
 		browserPanePosition: "top",
 		browserPanePreview:  true,
-		workingDir:          wd,
-		gitBranch:           gitBranch,
-		provider:            "hypercode",
-		modelName:           "auto",
-		toolCount:           regCount + cliToolCount,
-		registry:            reg,
+		workingDir:       wd,
+		gitBranch:        gitBranch,
+		provider:         "hypercode",
+		modelName:        "auto",
+		toolCount:        regCount + cliToolCount,
+		registry:         reg,
 		autocompleteItems:   BuiltinSlashCommands,
 		autocompleteMaxVis:  8,
 		hidingThink:         true,
 		thinkingLabel:       "Thinking...",
 		thinkingLevel:       "off",
 		contextWindow:       200000,
+		doubleEscAction:     "tree", // pi-mono default
+		availableModels:     []string{"auto", "gemini-1.5-pro", "gpt-4", "claude-3-5-sonnet", "claude-3-opus", "llama-3", "local"},
 	}
+
+	// Subscribe to session events for real-time tool/streaming display
+	session.Subscribe(func(event agents.SessionEvent) {
+		// Events are handled in the agent loop; this subscription
+		// enables future wiring to bubbletea commands
+	})
 
 	// Welcome banner
 	m.entries = append(m.entries, ChatEntry{
@@ -240,9 +289,7 @@ func (m model) Init() tea.Cmd {
 }
 
 func fetchGitBranch(wd string) tea.Cmd {
-	return func() tea.Msg {
-		return GitBranchMsg{Branch: getGitBranch(wd)}
-	}
+	return func() tea.Msg { return GitBranchMsg{Branch: getGitBranch(wd)} }
 }
 
 // ═══════════════════════════════════════════════════════════════════════
@@ -275,15 +322,33 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	// ─── Keyboard ─────────────────────────────────────────
 	case tea.KeyMsg:
+
+		// Permission dialog (goose-style: ↑↓ navigate, Enter confirm, Esc cancel)
+		if m.showPermission && m.permissionEntry != nil {
+			return m.updatePermissionDialog(msg)
+		}
+
+		// Model selector (pi-mono/opencode: ↑↓ navigate, Enter select, Esc cancel)
+		if m.showModelSelector {
+			return m.updateModelSelector(msg)
+		}
+
+		// Command palette (opencode: ↑↓ navigate, Enter select, Esc cancel)
+		if m.showCommandPalette {
+			return m.updateCommandPalette(msg)
+		}
+
 		// Tree browser modal
 		if m.browserActive {
 			return m.updateTreeBrowser(msg)
 		}
+
 		// Pinned pane focus
 		if m.browserPinned && m.browserPinnedFocus {
 			return m.updatePinnedPane(msg)
 		}
-		// Autocomplete navigation
+
+		// Autocomplete navigation (pi-mono style)
 		if m.showAutocomplete {
 			switch msg.Type {
 			case tea.KeyUp:
@@ -292,14 +357,13 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			case tea.KeyDown:
 				if m.autocompleteIndex < len(m.filteredAutocomplete())-1 { m.autocompleteIndex++ }
 				return m, nil
-			case tea.KeyTab, tea.KeyEnter:
+			case tea.KeyTab:
 				items := m.filteredAutocomplete()
 				if m.autocompleteIndex >= 0 && m.autocompleteIndex < len(items) {
 					parts := strings.SplitN(m.input, " ", 2)
 					m.input = "/" + items[m.autocompleteIndex].Name
 					if len(parts) > 1 { m.input += " " + parts[1] }
 					m.showAutocomplete = false
-					if msg.Type == tea.KeyEnter { return m.handleEnter() }
 				}
 				m.showAutocomplete = false
 				return m, nil
@@ -310,10 +374,13 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 
 		switch msg.Type {
+
+		// ── Ctrl+C: interrupt or quit (pi-mono: app.clear/app.interrupt) ──
 		case tea.KeyCtrlC:
 			if m.loading {
 				m.loading = false
 				m.streaming = false
+				if m.session != nil { m.session.Abort() }
 				m.entries = append(m.entries, ChatEntry{
 					Type:      EntrySystem,
 					Content:   m.theme.WarningText("⏹ Operation cancelled"),
@@ -322,8 +389,14 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.syncViewport()
 				return m, nil
 			}
+			// First Ctrl+C clears input (pi-mono: app.clear)
+			if m.input != "" {
+				m.input = ""
+				return m, nil
+			}
 			return m, tea.Quit
 
+		// ── Esc: multi-purpose (pi-mono's onEscape chain) ──
 		case tea.KeyEsc:
 			if m.showAutocomplete { m.showAutocomplete = false; return m, nil }
 			if m.dashboardActive {
@@ -332,19 +405,61 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.syncViewport()
 				return m, nil
 			}
-			return m, tea.Quit
+			if m.bashMode {
+				m.input = ""
+				m.bashMode = false
+				return m, nil
+			}
+			if m.pasteMode {
+				m.pasteMode = false
+				m.pasteContent = ""
+				return m, nil
+			}
+			// Double-escape with empty editor (pi-mono: triggers tree/fork)
+			if m.input == "" {
+				now := time.Now().UnixMilli()
+				if now-m.lastEscapeTime < 500 {
+					// Double-escape triggered!
+					m.lastEscapeTime = 0
+					if m.doubleEscAction == "tree" {
+						return m.handleSlashCmd("/tree-browser")
+					} else if m.doubleEscAction == "fork" {
+						return m.handleSlashCmd("/fork")
+					}
+				} else {
+					m.lastEscapeTime = now
+				}
+				return m, nil
+			}
+			// Single escape clears input
+			m.input = ""
+			return m, nil
 
+		// ── Ctrl+D: exit/quit (pi-mono: handleCtrlD) ──
+		case tea.KeyCtrlD:
+			if m.input == "" {
+				return m, tea.Quit
+			}
+			return m, nil
+
+		// ── Ctrl+Z: suspend to shell (pi-mono: handleCtrlZ) ──
+		case tea.KeyCtrlZ:
+			return m, m.suspendToShell()
+
+		// ── Ctrl+L: tree browser ──
 		case tea.KeyCtrlL:
 			return m.handleSlashCmd("/tree-pane")
 
-		case tea.KeyCtrlD:
-			return m.handleSlashCmd("/dashboard")
+		// ── Ctrl+D when not empty: dashboard toggle ──
+		// (handled above for empty input — quit)
+		// With input: we use Ctrl+Shift+D for dashboard
 
+		// ── Ctrl+Y: accept shell proposal / commit ──
 		case tea.KeyCtrlY:
 			return m.handleSlashCmd("/commit")
 
+		// ── Ctrl+O: toggle tool output expansion (pi-mono: app.tools.expand) ──
 		case tea.KeyCtrlO:
-			// Toggle tool output expansion (pi-mono feature)
 			m.toolOutputExpanded = !m.toolOutputExpanded
 			for i := range m.entries {
 				if m.entries[i].Type == EntryTool {
@@ -354,13 +469,18 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.syncViewport()
 			return m, nil
 
+		// ── Ctrl+P: cycle thinking levels (pi-mono: app.thinking.cycle) ──
 		case tea.KeyCtrlP:
-			// Cycle thinking levels (pi-mono feature)
-			levels := []string{"off", "minimal", "low", "medium", "high", "xhigh"}
-			for i, l := range levels {
-				if l == m.thinkingLevel {
-					m.thinkingLevel = levels[(i+1)%len(levels)]
-					break
+			if m.session != nil {
+				newLevel := m.session.CycleThinkingLevel()
+				m.thinkingLevel = string(newLevel)
+			} else {
+				levels := []string{"off", "minimal", "low", "medium", "high", "xhigh"}
+				for i, l := range levels {
+					if l == m.thinkingLevel {
+						m.thinkingLevel = levels[(i+1)%len(levels)]
+						break
+					}
 				}
 			}
 			m.entries = append(m.entries, ChatEntry{
@@ -372,8 +492,53 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.syncViewport()
 			return m, nil
 
+		// ── Ctrl+N: cycle model forward (pi-mono: app.model.cycleForward) ──
+		case tea.KeyCtrlN:
+			if m.session != nil {
+				prov, mdl := m.session.CycleModel("forward")
+				m.provider = prov
+				m.modelName = mdl
+			} else {
+				idx := 0
+				for i, m2 := range m.availableModels {
+					if m2 == m.modelName { idx = i; break }
+				}
+				idx = (idx + 1) % len(m.availableModels)
+				m.modelName = m.availableModels[idx]
+			}
+			m.entries = append(m.entries, ChatEntry{
+				Type:      EntrySystem,
+				Content:   m.theme.AccentText(fmt.Sprintf("[Model] switched to %s/%s", m.provider, m.modelName)),
+				Timestamp: time.Now(),
+			})
+			m.syncViewport()
+			return m, nil
+
+		// ── Ctrl+R: cycle model backward (pi-mono: app.model.cycleBackward)
+		// Note: Ctrl+M = Enter in terminals, so we remap to Ctrl+R
+		case tea.KeyCtrlR:
+			if m.session != nil {
+				prov, mdl := m.session.CycleModel("backward")
+				m.provider = prov
+				m.modelName = mdl
+			} else {
+				idx := 0
+				for i, m2 := range m.availableModels {
+					if m2 == m.modelName { idx = i; break }
+				}
+				idx = (idx - 1 + len(m.availableModels)) % len(m.availableModels)
+				m.modelName = m.availableModels[idx]
+			}
+			m.entries = append(m.entries, ChatEntry{
+				Type:      EntrySystem,
+				Content:   m.theme.AccentText(fmt.Sprintf("[Model] switched to %s/%s", m.provider, m.modelName)),
+				Timestamp: time.Now(),
+			})
+			m.syncViewport()
+			return m, nil
+
+		// ── Ctrl+E: external editor (pi-mono: app.editor.external) ──
 		case tea.KeyCtrlE:
-			// External editor (pi-mono feature) — open $EDITOR
 			if m.input != "" {
 				editor := os.Getenv("EDITOR")
 				if editor == "" { editor = "vim" }
@@ -391,11 +556,81 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 			return m, nil
 
+		// ── Ctrl+F: follow-up / queue message (pi-mono: app.message.followUp) ──
+		case tea.KeyCtrlF:
+			if m.loading && m.input != "" {
+				m.followUpQueue = append(m.followUpQueue, m.input)
+				m.entries = append(m.entries, ChatEntry{
+					Type:          EntryQueue,
+					Content:       m.input,
+					QueuePosition: len(m.followUpQueue),
+					Timestamp:     time.Now(),
+				})
+				m.input = ""
+				m.syncViewport()
+				return m, nil
+			}
+			return m, nil
+
+		// ── Ctrl+G: dequeue/flush queued messages (pi-mono: app.message.dequeue) ──
+		case tea.KeyCtrlG:
+			if len(m.followUpQueue) > 0 {
+				m.entries = append(m.entries, ChatEntry{
+					Type:      EntrySystem,
+					Content:   m.theme.Dim(fmt.Sprintf("[Queue] %d messages dequeued", len(m.followUpQueue))),
+					Timestamp: time.Now(),
+				})
+				m.followUpQueue = nil
+				m.syncViewport()
+			}
+			return m, nil
+
+		// ── Ctrl+V: clipboard image paste (pi-mono: app.clipboard.pasteImage) ──
+		case tea.KeyCtrlV:
+			// Read clipboard content — if it's a file path, insert it
+			if m.input == "" {
+				clipboard, err := exec.Command("powershell", "-command", "Get-Clipboard").Output()
+				if err == nil && len(clipboard) > 0 {
+					text := strings.TrimSpace(string(clipboard))
+					// Check if it looks like an image path
+					if strings.HasSuffix(strings.ToLower(text), ".png") ||
+						strings.HasSuffix(strings.ToLower(text), ".jpg") ||
+						strings.HasSuffix(strings.ToLower(text), ".gif") ||
+						strings.HasSuffix(strings.ToLower(text), ".webp") {
+						m.entries = append(m.entries, ChatEntry{
+							Type:      EntryImage,
+							ImagePath: text,
+							ImageMime: "image/" + filepath.Ext(text)[1:],
+							Timestamp: time.Now(),
+						})
+						m.syncViewport()
+						return m, nil
+					}
+					m.input = text
+				}
+			}
+			return m, nil
+
+		// ── Tab: autocomplete / pane focus (pi-mono/opencode) ──
 		case tea.KeyTab:
 			if m.isSlashContext() {
 				m.showAutocomplete = !m.showAutocomplete
 				m.autocompleteIndex = 0
 				return m, nil
+			}
+			// Tab toggles tool expansion in goose-style (when viewing a turn with tools)
+			if !m.loading && len(m.entries) > 0 {
+				lastEntry := m.entries[len(m.entries)-1]
+				if lastEntry.Type == EntryTool {
+					m.toolOutputExpanded = !m.toolOutputExpanded
+					for i := range m.entries {
+						if m.entries[i].Type == EntryTool {
+							m.entries[i].Expanded = m.toolOutputExpanded
+						}
+					}
+					m.syncViewport()
+					return m, nil
+				}
 			}
 			if m.browserPinned {
 				m.browserPinnedFocus = !m.browserPinnedFocus
@@ -403,9 +638,32 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 			return m, nil
 
+		// ── Shift+Tab: open command palette (opencode style) ──
+		// Note: bubbletea doesn't distinguish Shift+Tab easily,
+		// so Ctrl+K opens the command palette instead
+
+		// ── Ctrl+K: command palette (opencode style) ──
+		case tea.KeyCtrlK:
+			m.showCommandPalette = true
+			m.commandPaletteIdx = 0
+			m.commandPaletteFilter = ""
+			return m, nil
+
+		// ── Enter ──
 		case tea.KeyEnter:
+			// Autocomplete: complete and send
+			if m.showAutocomplete {
+				items := m.filteredAutocomplete()
+				if m.autocompleteIndex >= 0 && m.autocompleteIndex < len(items) {
+					parts := strings.SplitN(m.input, " ", 2)
+					m.input = "/" + items[m.autocompleteIndex].Name
+					if len(parts) > 1 { m.input += " " + parts[1] }
+				}
+				m.showAutocomplete = false
+			}
 			return m.handleEnter()
 
+		// ── Up arrow: scroll or history ──
 		case tea.KeyUp:
 			if m.input == "" && len(m.inputHistory) > 0 {
 				if m.historyIdx < len(m.inputHistory)-1 {
@@ -416,6 +674,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.viewport.LineUp(1)
 			}
 
+		// ── Down arrow: scroll or history ──
 		case tea.KeyDown:
 			if m.input == "" && m.historyIdx > 0 {
 				m.historyIdx--
@@ -424,31 +683,46 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.viewport.LineDown(1)
 			}
 
+		// ── PgUp/PgDn/Home/End: viewport scrolling ──
 		case tea.KeyPgUp:
 			if m.ready { m.viewport.HalfViewUp() }
-
 		case tea.KeyPgDown:
 			if m.ready { m.viewport.HalfViewDown() }
-
 		case tea.KeyHome:
 			if m.ready { m.viewport.GotoTop() }
-
 		case tea.KeyEnd:
 			if m.ready { m.viewport.GotoBottom() }
 
+		// ── Backspace ──
 		case tea.KeyBackspace:
 			if len(m.input) > 0 {
 				m.input = m.input[:len(m.input)-1]
 				m.updateAutocomplete()
 			}
 
+		// ── Delete ──
 		case tea.KeyDelete:
 			if len(m.input) > 0 { m.input = m.input[:len(m.input)-1] }
 
+		// ── Regular key input ──
 		case tea.KeyRunes, tea.KeySpace:
-			m.input += msg.String()
+			runeStr := msg.String()
+			m.input += runeStr
 			m.updateAutocomplete()
 			m.historyIdx = 0
+
+			// Detect paste (goose-style: if delta > threshold, enter paste mode)
+			if len(runeStr) > 100 {
+				m.pasteMode = true
+				m.pasteContent = runeStr
+			}
+
+			// Detect bash mode transition (pi-mono: onChange handler)
+			wasBash := m.bashMode
+			m.bashMode = strings.HasPrefix(strings.TrimSpace(m.input), "!")
+			if wasBash != m.bashMode {
+				// Border color change is visual-only in View()
+			}
 		}
 
 	// ─── Async responses ─────────────────────────────────
@@ -468,7 +742,18 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 		m.entries = append(m.entries, entry)
 		m.syncViewport()
+		// Process follow-up queue (pi-mono: after agent_end, send queued messages)
+		if len(m.followUpQueue) > 0 {
+			next := m.followUpQueue[0]
+			m.followUpQueue = m.followUpQueue[1:]
+			m.input = next
+			cmds = append(cmds, func() tea.Msg { return tea.KeyMsg{Type: tea.KeyEnter} })
+		}
 		cmds = append(cmds, fetchGitBranch(m.workingDir))
+
+	case StreamChunkMsg:
+		m.streamContent += msg.Chunk
+		m.syncViewport()
 
 	case string:
 		m.loading = false
@@ -513,6 +798,8 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			ToolArgs:  msg.Args,
 			ToolDur:   msg.Duration,
 			ToolErr:   msg.IsError,
+			ToolKind:  DetectToolKind(msg.ToolName),
+			ToolStatus: "completed",
 			Expanded:  m.toolOutputExpanded,
 			Timestamp: time.Now(),
 		})
@@ -531,9 +818,30 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 func (m model) handleEnter() (tea.Model, tea.Cmd) {
 	m.showAutocomplete = false
-	if strings.TrimSpace(m.input) == "" {
-		return m, nil
+
+	// Paste mode: send full paste content (goose-style)
+	if m.pasteMode {
+		m.pasteMode = false
+		content := m.pasteContent
+		m.pasteContent = ""
+		m.input = ""
+		m.entries = append(m.entries, ChatEntry{
+			Type:      EntryUser,
+			Content:   content,
+			Timestamp: time.Now(),
+		})
+		m.loading = true
+		m.syncViewport()
+		return m, func() tea.Msg {
+			response, err := buildPromptResponse(m.director, content)
+			if err != nil {
+				return AgentResponseMsg{Content: fmt.Sprintf("Error: %v", err), Provider: m.provider, Model: m.modelName}
+			}
+			return AgentResponseMsg{Content: response.Display, Provider: m.provider, Model: m.modelName}
+		}
 	}
+
+	if strings.TrimSpace(m.input) == "" { return m, nil }
 
 	req := strings.TrimSpace(m.input)
 
@@ -545,54 +853,36 @@ func (m model) handleEnter() (tea.Model, tea.Cmd) {
 	// Bash mode: ! prefix runs shell directly (pi-mono feature)
 	if strings.HasPrefix(req, "!!") {
 		cmd := strings.TrimSpace(strings.TrimPrefix(req, "!!"))
-		m.entries = append(m.entries, ChatEntry{
-			Type:      EntryBashMode,
-			Content:   cmd,
-			Timestamp: time.Now(),
-		})
-		m.loading = true
-		m.syncViewport()
-		return m, func() tea.Msg {
-			out, err := exec.Command("sh", "-c", cmd).CombinedOutput()
-			if err != nil {
-				return ToolExecMsg{ToolName: "bash", Args: cmd, Output: string(out), IsError: true, Duration: 0}
-			}
-			return ToolExecMsg{ToolName: "bash", Args: cmd, Output: string(out), IsError: false, Duration: 0}
-		}
-	}
-	if strings.HasPrefix(req, "!") && !strings.HasPrefix(req, "!!") {
-		cmd := strings.TrimSpace(strings.TrimPrefix(req, "!"))
-		m.entries = append(m.entries, ChatEntry{
-			Type:      EntryBashMode,
-			Content:   cmd,
-			Timestamp: time.Now(),
-		})
+		m.entries = append(m.entries, ChatEntry{Type: EntryBashMode, Content: cmd, Timestamp: time.Now()})
 		m.loading = true
 		m.syncViewport()
 		return m, func() tea.Msg {
 			start := time.Now()
 			out, err := exec.Command("sh", "-c", cmd).CombinedOutput()
 			dur := time.Since(start)
-			if err != nil {
-				return ToolExecMsg{ToolName: "bash", Args: cmd, Output: string(out), IsError: true, Duration: dur}
-			}
-			return ToolExecMsg{ToolName: "bash", Args: cmd, Output: string(out), IsError: false, Duration: dur}
+			return ToolExecMsg{ToolName: "bash", Args: cmd, Output: string(out), IsError: err != nil, Duration: dur}
+		}
+	}
+	if strings.HasPrefix(req, "!") && !strings.HasPrefix(req, "!!") {
+		cmd := strings.TrimSpace(strings.TrimPrefix(req, "!"))
+		m.entries = append(m.entries, ChatEntry{Type: EntryBashMode, Content: cmd, Timestamp: time.Now()})
+		m.loading = true
+		m.syncViewport()
+		return m, func() tea.Msg {
+			start := time.Now()
+			out, err := exec.Command("sh", "-c", cmd).CombinedOutput()
+			dur := time.Since(start)
+			return ToolExecMsg{ToolName: "bash", Args: cmd, Output: string(out), IsError: err != nil, Duration: dur}
 		}
 	}
 
 	// Slash command
-	if strings.HasPrefix(req, "/") {
-		return m.handleSlashCmd(req)
-	}
+	if strings.HasPrefix(req, "/") { return m.handleSlashCmd(req) }
 
-	// Shell proposal
+	// Shell proposal (pi-mono: ?? prefix)
 	if strings.HasPrefix(req, "??") {
 		query := strings.TrimSpace(strings.TrimPrefix(req, "??"))
-		m.entries = append(m.entries, ChatEntry{
-			Type:      EntryUser,
-			Content:   "?? " + query,
-			Timestamp: time.Now(),
-		})
+		m.entries = append(m.entries, ChatEntry{Type: EntryUser, Content: "?? " + query, Timestamp: time.Now()})
 		m.loading = true
 		m.syncViewport()
 		return m, func() tea.Msg {
@@ -603,11 +893,7 @@ func (m model) handleEnter() (tea.Model, tea.Cmd) {
 	}
 
 	// Regular user message
-	m.entries = append(m.entries, ChatEntry{
-		Type:      EntryUser,
-		Content:   req,
-		Timestamp: time.Now(),
-	})
+	m.entries = append(m.entries, ChatEntry{Type: EntryUser, Content: req, Timestamp: time.Now()})
 	m.loading = true
 	m.syncViewport()
 
@@ -637,6 +923,183 @@ func (m model) handleSlashCmd(req string) (tea.Model, tea.Cmd) {
 	m.syncViewport()
 	return m, cmd
 }
+
+// ─── Permission dialog (goose-style) ──────────────────────────────────
+
+func (m model) updatePermissionDialog(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
+	if m.permissionEntry == nil {
+		m.showPermission = false
+		return m, nil
+	}
+	opts := m.permissionEntry.PermissionOptions
+	switch msg.Type {
+	case tea.KeyUp:
+		if m.permissionEntry.PermissionIdx > 0 { m.permissionEntry.PermissionIdx-- }
+		return m, nil
+	case tea.KeyDown:
+		if m.permissionEntry.PermissionIdx < len(opts)-1 { m.permissionEntry.PermissionIdx++ }
+		return m, nil
+	case tea.KeyEnter:
+		if m.permissionEntry.PermissionIdx < len(opts) {
+			selected := opts[m.permissionEntry.PermissionIdx]
+			m.permissionEntry.PermissionResolved = true
+			m.entries = append(m.entries, ChatEntry{
+				Type:      EntrySystem,
+				Content:   m.theme.AccentText(fmt.Sprintf("[Permission] %s: %s", selected.Kind, selected.Name)),
+				Timestamp: time.Now(),
+			})
+		}
+		m.showPermission = false
+		m.permissionEntry = nil
+		m.syncViewport()
+		return m, nil
+	case tea.KeyEsc:
+		m.showPermission = false
+		m.permissionEntry = nil
+		m.syncViewport()
+		return m, nil
+	default:
+		// Keyboard shortcuts (goose-style: y=allow_once, a=allow_always, n=reject_once, N=reject_always)
+		keyMap := map[string]string{"y": "allow_once", "a": "allow_always", "n": "reject_once", "N": "reject_always"}
+		if kind, ok := keyMap[msg.String()]; ok {
+			for _, opt := range opts {
+				if opt.Kind == kind {
+					m.permissionEntry.PermissionResolved = true
+					m.entries = append(m.entries, ChatEntry{
+						Type:      EntrySystem,
+						Content:   m.theme.AccentText(fmt.Sprintf("[Permission] %s: %s", opt.Kind, opt.Name)),
+						Timestamp: time.Now(),
+					})
+					break
+				}
+			}
+			m.showPermission = false
+			m.permissionEntry = nil
+			m.syncViewport()
+			return m, nil
+		}
+	}
+	return m, nil
+}
+
+// ─── Model selector (pi-mono/opencode style) ──────────────────────────
+
+func (m model) updateModelSelector(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
+	switch msg.Type {
+	case tea.KeyUp:
+		if m.modelSelectorIdx > 0 { m.modelSelectorIdx-- }
+		return m, nil
+	case tea.KeyDown:
+		if m.modelSelectorIdx < len(m.availableModels)-1 { m.modelSelectorIdx++ }
+		return m, nil
+	case tea.KeyEnter:
+		if m.modelSelectorIdx >= 0 && m.modelSelectorIdx < len(m.availableModels) {
+			m.modelName = m.availableModels[m.modelSelectorIdx]
+			if m.session != nil { m.session.SetModel(m.modelName) }
+			m.entries = append(m.entries, ChatEntry{
+				Type:      EntrySystem,
+				Content:   m.theme.AccentText(fmt.Sprintf("[Model] set to %s/%s", m.provider, m.modelName)),
+				Timestamp: time.Now(),
+			})
+		}
+		m.showModelSelector = false
+		m.syncViewport()
+		return m, nil
+	case tea.KeyEsc:
+		m.showModelSelector = false
+		return m, nil
+	default:
+		// Filter by typing
+		if msg.Type == tea.KeyRunes || msg.Type == tea.KeySpace {
+			m.modelSelectorFilter += msg.String()
+			m.modelSelectorIdx = 0
+		}
+		if msg.Type == tea.KeyBackspace && len(m.modelSelectorFilter) > 0 {
+			m.modelSelectorFilter = m.modelSelectorFilter[:len(m.modelSelectorFilter)-1]
+			m.modelSelectorIdx = 0
+		}
+		return m, nil
+	}
+}
+
+// ─── Command palette (opencode style) ─────────────────────────────────
+
+func (m model) updateCommandPalette(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
+	filtered := m.filteredCommands()
+	switch msg.Type {
+	case tea.KeyUp:
+		if m.commandPaletteIdx > 0 { m.commandPaletteIdx-- }
+		return m, nil
+	case tea.KeyDown:
+		if m.commandPaletteIdx < len(filtered)-1 { m.commandPaletteIdx++ }
+		return m, nil
+	case tea.KeyEnter:
+		if m.commandPaletteIdx >= 0 && m.commandPaletteIdx < len(filtered) {
+			cmd := "/" + filtered[m.commandPaletteIdx].Name
+			m.showCommandPalette = false
+			m.commandPaletteFilter = ""
+			return m.handleSlashCmd(cmd)
+		}
+		m.showCommandPalette = false
+		return m, nil
+	case tea.KeyEsc:
+		m.showCommandPalette = false
+		m.commandPaletteFilter = ""
+		return m, nil
+	default:
+		if msg.Type == tea.KeyRunes || msg.Type == tea.KeySpace {
+			m.commandPaletteFilter += msg.String()
+			m.commandPaletteIdx = 0
+		}
+		if msg.Type == tea.KeyBackspace && len(m.commandPaletteFilter) > 0 {
+			m.commandPaletteFilter = m.commandPaletteFilter[:len(m.commandPaletteFilter)-1]
+			m.commandPaletteIdx = 0
+		}
+		return m, nil
+	}
+}
+
+func (m model) filteredCommands() []SlashCommand {
+	if m.commandPaletteFilter == "" { return BuiltinSlashCommands }
+	prefix := strings.ToLower(m.commandPaletteFilter)
+	var filtered []SlashCommand
+	for _, cmd := range BuiltinSlashCommands {
+		if strings.Contains(strings.ToLower(cmd.Name), prefix) || strings.Contains(strings.ToLower(cmd.Description), prefix) {
+			filtered = append(filtered, cmd)
+		}
+	}
+	return filtered
+}
+
+// ─── Suspend to shell (pi-mono: handleCtrlZ) ─────────────────────────
+
+func (m model) suspendToShell() tea.Cmd {
+	return func() tea.Msg {
+		// Save TUI state, suspend, open subshell
+		shell := os.Getenv("SHELL")
+		if shell == "" {
+			if runtime.GOOS == "windows" {
+				shell = "cmd.exe"
+			} else {
+				shell = "/bin/sh"
+			}
+		}
+		cmd := exec.Command(shell)
+		cmd.Stdin = os.Stdin
+		cmd.Stdout = os.Stdout
+		cmd.Stderr = os.Stderr
+
+		// Temporarily restore terminal state
+		sigChan := make(chan os.Signal, 1)
+		signal.Notify(sigChan)
+		defer signal.Reset()
+
+		cmd.Run()
+		return ChatEntry{Type: EntrySystem, Content: DefaultTheme.Dim("[Suspend] returned from shell"), Timestamp: time.Now()}
+	}
+}
+
+// ─── Autocomplete helpers ─────────────────────────────────────────────
 
 func (m *model) updateAutocomplete() {
 	if m.isSlashContext() {
@@ -669,9 +1132,7 @@ func (m model) updateTreeBrowser(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	switch msg.Type {
 	case tea.KeyEsc:
 		if m.browserConfirmPending { m.browserConfirmPending = false; return m, nil }
-		m.browserActive = false
-		m.browserFilter = ""
-		m.browserConfirmPending = false
+		m.browserActive = false; m.browserFilter = ""; m.browserConfirmPending = false
 		m.entries = append(m.entries, ChatEntry{Type: EntrySystem, Content: m.theme.Dim("[Tree Browser] closed"), Timestamp: time.Now()})
 		m.syncViewport()
 		return m, nil
@@ -768,6 +1229,28 @@ func (m model) updatePinnedPane(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 func (m model) View() string {
 	if m.quitting { return m.theme.Dim("Goodbye.\n") }
 
+	// Permission dialog overlay (goose-style)
+	if m.showPermission && m.permissionEntry != nil {
+		overlay := RenderEntry(*m.permissionEntry, m.theme)
+		chatView := m.renderChatArea()
+		return chatView + "\n" + overlay + "\n" + m.renderInputBar()
+	}
+
+	// Model selector overlay (pi-mono/opencode style)
+	if m.showModelSelector {
+		overlay := RenderModelSelector(m.modelName, m.availableModels, m.theme)
+		chatView := m.renderChatArea()
+		return chatView + "\n" + overlay + "\n" + m.renderInputBar()
+	}
+
+	// Command palette overlay (opencode style)
+	if m.showCommandPalette {
+		filtered := m.filteredCommands()
+		overlay := RenderAutocomplete(filtered, m.commandPaletteIdx, 10, m.theme)
+		chatView := m.renderChatArea()
+		return chatView + "\n" + overlay + "\n" + m.renderInputBar()
+	}
+
 	// Dashboard mode
 	if m.dashboardActive {
 		chatContent := m.renderAllEntries()
@@ -831,7 +1314,12 @@ func (m model) renderAllEntries() string {
 	if m.loading && m.streaming && m.streamContent != "" {
 		lines = append(lines, m.theme.Fg(m.theme.Accent, "┃ ")+m.streamContent)
 	} else if m.loading {
-		lines = append(lines, m.theme.Fg(m.theme.ThinkingCol, m.theme.Italic(m.thinkingLabel))+" "+m.spinner.View())
+		msg := m.thinkingLabel
+		if len(m.followUpQueue) > 0 {
+			msg += fmt.Sprintf(" (%d queued)", len(m.followUpQueue))
+		}
+		msg += fmt.Sprintf(" (%s to interrupt)", m.theme.KeyHint("Ctrl+C", ""))
+		lines = append(lines, m.theme.Fg(m.theme.ThinkingCol, m.theme.Italic(msg))+" "+m.spinner.View())
 	}
 
 	return strings.Join(lines, "\n")
@@ -853,7 +1341,18 @@ func (m model) renderInputBar() string {
 
 	if m.loading {
 		prompt = t.Bold(t.Fg(t.ThinkingCol, "… "))
-		inputDisplay = t.Fg(t.ThinkingCol, t.Italic(m.thinkingLabel)) + " " + m.spinner.View()
+		inputDisplay = t.Fg(t.ThinkingCol, t.Italic(m.thinkingLabel))
+		if len(m.followUpQueue) > 0 {
+			inputDisplay += t.Fg(t.Gold, t.Italic(fmt.Sprintf(" [%d queued]", len(m.followUpQueue))))
+		}
+		inputDisplay += " " + m.spinner.View()
+	} else if m.pasteMode {
+		prompt = t.Bold(t.Fg(t.BashModeCol, "📋 "))
+		preview := m.pasteContent
+		if len(preview) > 60 { preview = preview[:57] + "…" }
+		charCount := len(m.pasteContent)
+		inputDisplay = t.Fg(t.TextColor, preview) + t.Dim(fmt.Sprintf(" (%d chars)", charCount))
+		inputDisplay += "\n" + t.Dim(t.Italic("enter to send · esc to clear"))
 	} else if m.bashMode || strings.HasPrefix(m.input, "!") {
 		prompt = t.Bold(t.Fg(t.BashModeCol, "⚡ "))
 		inputDisplay = t.Fg(t.TextColor, m.input) + "▎"
@@ -862,13 +1361,19 @@ func (m model) renderInputBar() string {
 		inputDisplay = t.Fg(t.TextColor, m.input) + "▎"
 	}
 
+	// Queue indicator (goose-style: "message queued — will send when finished")
+	queueHint := ""
+	if m.loading && len(m.followUpQueue) > 0 {
+		queueHint = "\n" + t.Fg(t.Gold, t.Italic("message queued — will send when agent finishes"))
+	}
+
 	// Autocomplete dropdown
 	autocomplete := ""
 	if m.showAutocomplete && m.isSlashContext() {
 		autocomplete = "\n" + RenderAutocomplete(m.filteredAutocomplete(), m.autocompleteIndex, m.autocompleteMaxVis, t)
 	}
 
-	return prompt + inputDisplay + autocomplete
+	return prompt + inputDisplay + queueHint + autocomplete
 }
 
 // ─── Tool sidebar (dashboard mode) ────────────────────────────────────
@@ -885,7 +1390,8 @@ func (m model) renderToolSidebar() string {
 			groups[toolGroupName(tool.Name)]++
 		}
 		for name, count := range groups {
-			lines = append(lines, t.Fg(t.ToolTitle, name)+t.Dim(fmt.Sprintf(" (%d)", count)))
+			kindIcon := ToolKindIcon(DetectToolKind(name))
+			lines = append(lines, kindIcon+" "+t.Fg(t.ToolTitle, name)+t.Dim(fmt.Sprintf(" (%d)", count)))
 		}
 	}
 
@@ -907,7 +1413,8 @@ func (m model) renderToolSidebar() string {
 		for _, run := range recent {
 			icon := t.SuccessText("✓")
 			if run.IsError { icon = t.ErrorText("✗") }
-			lines = append(lines, icon+" "+t.Fg(t.ToolTitle, run.ToolName)+t.Dim(fmt.Sprintf(" (%v)", run.Duration)))
+			kindIcon := ToolKindIcon(DetectToolKind(run.ToolName))
+			lines = append(lines, icon+" "+kindIcon+" "+t.Fg(t.ToolTitle, run.ToolName)+t.Dim(fmt.Sprintf(" (%v)", run.Duration.Round(time.Millisecond))))
 		}
 	}
 

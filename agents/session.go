@@ -35,19 +35,19 @@ var AllThinkingLevels = []ThinkingLevel{ThinkingOff, ThinkingMinimal, ThinkingLo
 type SessionEventType string
 
 const (
-	EventAgentStart       SessionEventType = "agent_start"
-	EventMessageStart     SessionEventType = "message_start"
-	EventMessageUpdate    SessionEventType = "message_update"
-	EventMessageEnd       SessionEventType = "message_end"
-	EventToolExecStart    SessionEventType = "tool_execution_start"
-	EventToolExecUpdate   SessionEventType = "tool_execution_update"
-	EventToolExecEnd      SessionEventType = "tool_execution_end"
-	EventAgentEnd         SessionEventType = "agent_end"
-	EventCompactionStart  SessionEventType = "compaction_start"
-	EventCompactionEnd    SessionEventType = "compaction_end"
-	EventAutoRetryStart   SessionEventType = "auto_retry_start"
-	EventAutoRetryEnd     SessionEventType = "auto_retry_end"
-	EventQueueUpdate      SessionEventType = "queue_update"
+	EventAgentStart     SessionEventType = "agent_start"
+	EventMessageStart   SessionEventType = "message_start"
+	EventMessageUpdate  SessionEventType = "message_update"
+	EventMessageEnd     SessionEventType = "message_end"
+	EventToolExecStart  SessionEventType = "tool_execution_start"
+	EventToolExecUpdate SessionEventType = "tool_execution_update"
+	EventToolExecEnd    SessionEventType = "tool_execution_end"
+	EventAgentEnd       SessionEventType = "agent_end"
+	EventCompactionStart SessionEventType = "compaction_start"
+	EventCompactionEnd  SessionEventType = "compaction_end"
+	EventAutoRetryStart SessionEventType = "auto_retry_start"
+	EventAutoRetryEnd   SessionEventType = "auto_retry_end"
+	EventQueueUpdate    SessionEventType = "queue_update"
 )
 
 // SessionEvent mirrors pi-mono's AgentSessionEvent
@@ -71,44 +71,6 @@ type SessionEvent struct {
 // SessionEventListener receives session events
 type SessionEventListener func(event SessionEvent)
 
-// AgentSession mirrors pi-mono's AgentSession
-type AgentSession struct {
-	director      *Director
-	registry      ToolExecutor
-	sessionDir    string
-	workingDir     string
-	model          string
-	provider       string
-	thinkingLevel  ThinkingLevel
-	maxIterations  int
-	isStreaming     bool
-	isCompacting   bool
-	isAborted      bool
-
-	mu             sync.Mutex
-	listeners      []SessionListener
-	entries        []SessionEntry
-	pendingTools   map[string]*ToolExecution
-
-	// Auto-compaction
-	autoCompact    bool
-	contextWindow  int
-	contextUsed    int
-
-	// Auto-retry
-	autoRetry      bool
-	maxRetries     int
-	retryAttempt   int
-
-	// Session metadata
-	sessionID      string
-	sessionName    string
-	createdAt      time.Time
-	totalInputTok  int
-	totalOutputTok int
-	totalCost      float64
-}
-
 // ToolExecutor is an interface for tool execution (breaks import cycle with tools package)
 type ToolExecutor interface {
 	Find(name string) (ToolInfo, bool)
@@ -121,8 +83,11 @@ type ToolInfo struct {
 	Description string
 	Execute     func(args map[string]interface{}) (string, error)
 }
-	ID   int
-	Fn   SessionEventListener
+
+// SessionListener wraps a callback for event subscription
+type SessionListener struct {
+	ID int
+	Fn SessionEventListener
 }
 
 // SessionEntry is a persistent session record
@@ -145,6 +110,44 @@ type ToolExecution struct {
 	Output   string
 	IsError  bool
 	Done     bool
+}
+
+// AgentSession mirrors pi-mono's AgentSession
+type AgentSession struct {
+	director      *Director
+	registry      ToolExecutor
+	sessionDir    string
+	workingDir    string
+	model         string
+	provider      string
+	thinkingLevel ThinkingLevel
+	maxIterations int
+	isStreaming   bool
+	isCompacting  bool
+	isAborted     bool
+
+	mu           sync.Mutex
+	listeners    []SessionListener
+	entries      []SessionEntry
+	pendingTools map[string]*ToolExecution
+
+	// Auto-compaction
+	autoCompact   bool
+	contextWindow int
+	contextUsed   int
+
+	// Auto-retry
+	autoRetry    bool
+	maxRetries   int
+	retryAttempt int
+
+	// Session metadata
+	sessionID    string
+	sessionName  string
+	createdAt    time.Time
+	totalInputTok  int
+	totalOutputTok int
+	totalCost    float64
 }
 
 // NewAgentSession creates a new agent session (mirrors pi-mono's AgentSession constructor)
@@ -197,7 +200,6 @@ func (s *AgentSession) emit(event SessionEvent) {
 		listeners = append(listeners, l.Fn)
 	}
 	s.mu.Unlock()
-
 	for _, fn := range listeners {
 		fn(event)
 	}
@@ -208,16 +210,13 @@ func (s *AgentSession) Prompt(ctx context.Context, text string) error {
 	s.isStreaming = true
 	s.isAborted = false
 
-	// Add user message to history
 	s.entries = append(s.entries, SessionEntry{
 		Role:      "user",
 		Content:   text,
 		Timestamp: time.Now(),
 	})
-
 	s.emit(SessionEvent{Type: EventAgentStart})
 
-	// Add to director history
 	if s.director != nil {
 		s.director.History = append(s.director.History, Message{
 			Role:    RoleUser,
@@ -225,7 +224,6 @@ func (s *AgentSession) Prompt(ctx context.Context, text string) error {
 		})
 	}
 
-	// Run agent loop with tool execution
 	for i := 0; i < s.maxIterations; i++ {
 		if s.isAborted {
 			s.emit(SessionEvent{Type: EventAgentEnd, Err: fmt.Errorf("aborted")})
@@ -233,36 +231,19 @@ func (s *AgentSession) Prompt(ctx context.Context, text string) error {
 			return fmt.Errorf("aborted")
 		}
 
-		// Get LLM response
-		s.emit(SessionEvent{
-			Type:    EventMessageStart,
-			Message: Message{Role: RoleAssistant, Content: ""},
-		})
+		s.emit(SessionEvent{Type: EventMessageStart, Message: Message{Role: RoleAssistant}})
 
 		if s.director == nil || s.director.Provider == nil {
-			s.emit(SessionEvent{
-				Type:    EventMessageEnd,
-				Message: Message{Role: RoleAssistant, Content: "No provider configured"},
-			})
+			s.emit(SessionEvent{Type: EventMessageEnd, Message: Message{Role: RoleAssistant, Content: "No provider configured"}})
 			break
 		}
 
 		responseMsg, err := s.director.Provider.Chat(ctx, s.director.History, s.buildToolSchemas())
 		if err != nil {
-			s.emit(SessionEvent{
-				Type:    EventMessageEnd,
-				Message: Message{Role: RoleAssistant, Content: fmt.Sprintf("Error: %v", err)},
-				Err:     err,
-			})
-			// Auto-retry on error
+			s.emit(SessionEvent{Type: EventMessageEnd, Message: Message{Role: RoleAssistant, Content: fmt.Sprintf("Error: %v", err)}, Err: err})
 			if s.autoRetry && s.retryAttempt < s.maxRetries {
 				s.retryAttempt++
-				s.emit(SessionEvent{
-					Type:       EventAutoRetryStart,
-					Attempt:    s.retryAttempt,
-					MaxAttempt: s.maxRetries,
-					DelayMs:    2000,
-				})
+				s.emit(SessionEvent{Type: EventAutoRetryStart, Attempt: s.retryAttempt, MaxAttempt: s.maxRetries, DelayMs: 2000})
 				select {
 				case <-time.After(2 * time.Second):
 				case <-ctx.Done():
@@ -276,62 +257,31 @@ func (s *AgentSession) Prompt(ctx context.Context, text string) error {
 		}
 
 		s.director.History = append(s.director.History, responseMsg)
-		s.entries = append(s.entries, SessionEntry{
-			Role:      "assistant",
-			Content:   responseMsg.Content,
-			Timestamp: time.Now(),
-		})
+		s.entries = append(s.entries, SessionEntry{Role: "assistant", Content: responseMsg.Content, Timestamp: time.Now()})
+		s.emit(SessionEvent{Type: EventMessageUpdate, Message: responseMsg})
 
-		s.emit(SessionEvent{
-			Type:    EventMessageUpdate,
-			Message: responseMsg,
-		})
-
-		// Execute tool calls if any
 		if len(responseMsg.ToolCalls) == 0 {
 			s.emit(SessionEvent{Type: EventMessageEnd, Message: responseMsg})
 			break
 		}
 
-		// Process each tool call
 		for _, tc := range responseMsg.ToolCalls {
 			callID := tc.ID
 			if callID == "" {
 				callID = fmt.Sprintf("tc-%d", time.Now().UnixNano())
 			}
-
-			s.emit(SessionEvent{
-				Type:       EventToolExecStart,
-				ToolCallID: callID,
-				ToolName:   tc.Name,
-				ToolArgs:   tc.Args,
-			})
-
+			s.emit(SessionEvent{Type: EventToolExecStart, ToolCallID: callID, ToolName: tc.Name, ToolArgs: tc.Args})
 			output, dur, toolErr := s.executeTool(ctx, tc.Name, tc.Args)
-
-			s.director.History = append(s.director.History, Message{
-				Role:      RoleTool,
-				ToolCallID: callID,
-				Name:      tc.Name,
-				Content:   output,
-			})
-
-			s.emit(SessionEvent{
-				Type:       EventToolExecEnd,
-				ToolCallID: callID,
-				ToolName:   tc.Name,
-				ToolOutput: output,
-				ToolIsErr:  toolErr != nil,
-				ToolDur:    dur,
-			})
+			s.director.History = append(s.director.History, Message{Role: RoleTool, ToolCallID: callID, Name: tc.Name, Content: output})
+			s.entries = append(s.entries, SessionEntry{Role: "tool", Content: output, ToolName: tc.Name, ToolArgs: tc.Args, ToolOut: output, Timestamp: time.Now()})
+			s.emit(SessionEvent{Type: EventToolExecEnd, ToolCallID: callID, ToolName: tc.Name, ToolOutput: output, ToolIsErr: toolErr != nil, ToolDur: dur})
 		}
 
-		// Check context overflow for auto-compaction
 		s.contextUsed += len(responseMsg.Content)
 		if s.autoCompact && s.contextUsed > s.contextWindow {
 			s.emit(SessionEvent{Type: EventCompactionStart, Reason: "overflow"})
 			s.contextUsed = s.contextUsed / 2
-			s.emit(SessionEvent{Type: EventCompactionEnd, Aborted: false})
+			s.emit(SessionEvent{Type: EventCompactionEnd})
 		}
 	}
 
@@ -344,29 +294,20 @@ func (s *AgentSession) Prompt(ctx context.Context, text string) error {
 // executeTool finds and runs a tool from the registry
 func (s *AgentSession) executeTool(ctx context.Context, name, argsStr string) (string, time.Duration, error) {
 	start := time.Now()
-
 	if s.registry == nil {
 		return "no tool registry", 0, fmt.Errorf("no registry")
 	}
-
 	tool, found := s.registry.Find(name)
 	if !found {
 		return fmt.Sprintf("tool %q not found", name), time.Since(start), fmt.Errorf("not found")
 	}
-
-	// Parse args
 	var args map[string]interface{}
 	if err := json.Unmarshal([]byte(argsStr), &args); err != nil {
-		// Try as simple command arg
 		args = map[string]interface{}{"command": argsStr, "query": argsStr, "path": argsStr, "content": argsStr}
 	}
-
 	result, err := tool.Execute(args)
 	dur := time.Since(start)
-	if err != nil {
-		return result, dur, err
-	}
-	return result, dur, nil
+	return result, dur, err
 }
 
 // buildToolSchemas converts registry tools to the ILLMProvider Tool format
@@ -376,13 +317,8 @@ func (s *AgentSession) buildToolSchemas() []Tool {
 	}
 	var result []Tool
 	for _, t := range s.registry.ListTools() {
-		result = append(result, Tool{
-			Name:        t.Name,
-			Description: t.Description,
-			Schema:      nil, // Would need to parse t.Parameters into map[string]interface{}
-		})
+		result = append(result, Tool{Name: t.Name, Description: t.Description})
 	}
-	// Limit to avoid overwhelming the LLM
 	if len(result) > 100 {
 		result = result[:100]
 	}
@@ -390,20 +326,14 @@ func (s *AgentSession) buildToolSchemas() []Tool {
 }
 
 // Abort cancels the current operation (mirrors pi-mono's abort)
-func (s *AgentSession) Abort() {
-	s.isAborted = true
-	s.isStreaming = false
-}
+func (s *AgentSession) Abort() { s.isAborted = true; s.isStreaming = false }
 
 // CycleModel cycles through available models (mirrors pi-mono's cycleModel)
 func (s *AgentSession) CycleModel(direction string) (string, string) {
 	models := []string{"auto", "gemini-1.5-pro", "gpt-4", "claude-3-5-sonnet", "local"}
 	idx := 0
 	for i, m := range models {
-		if m == s.model {
-			idx = i
-			break
-		}
+		if m == s.model { idx = i; break }
 	}
 	if direction == "backward" {
 		idx = (idx - 1 + len(models)) % len(models)
@@ -429,114 +359,63 @@ func (s *AgentSession) CycleThinkingLevel() ThinkingLevel {
 // Compact runs context compaction (mirrors pi-mono's compact)
 func (s *AgentSession) Compact() {
 	s.emit(SessionEvent{Type: EventCompactionStart, Reason: "manual"})
-	// Truncate early history, keep last N entries
 	if len(s.entries) > 20 {
 		s.entries = s.entries[len(s.entries)-20:]
 	}
 	if s.director != nil && len(s.director.History) > 10 {
-		// Keep system prompt + recent history
 		sys := s.director.History[0]
 		recent := s.director.History[len(s.director.History)-9:]
 		s.director.History = append([]Message{sys}, recent...)
 	}
 	s.contextUsed = s.contextUsed / 2
-	s.emit(SessionEvent{Type: EventCompactionEnd, Aborted: false})
-}
-
-// GetState returns session state for display
-func (s *AgentSession) GetState() map[string]interface{} {
-	return map[string]interface{}{
-		"model":          s.model,
-		"provider":       s.provider,
-		"thinkingLevel":  string(s.thinkingLevel),
-		"isStreaming":     s.isStreaming,
-		"isCompacting":   s.isCompacting,
-		"entryCount":     len(s.entries),
-		"contextUsed":    s.contextUsed,
-		"contextWindow":  s.contextWindow,
-		"autoCompact":    s.autoCompact,
-		"sessionID":      s.sessionID,
-		"sessionName":    s.sessionName,
-		"totalInputTok":  s.totalInputTok,
-		"totalOutputTok": s.totalOutputTok,
-		"totalCost":      s.totalCost,
-	}
+	s.emit(SessionEvent{Type: EventCompactionEnd})
 }
 
 // Save persists session to disk
 func (s *AgentSession) Save() error {
-	if s.sessionDir == "" {
-		return nil
-	}
+	if s.sessionDir == "" { return nil }
 	os.MkdirAll(s.sessionDir, 0755)
 	data, err := json.MarshalIndent(s.entries, "", "  ")
-	if err != nil {
-		return err
-	}
+	if err != nil { return err }
 	return os.WriteFile(filepath.Join(s.sessionDir, s.sessionID+".jsonl"), data, 0644)
 }
 
 // Load restores session from disk
 func (s *AgentSession) Load(sessionID string) error {
-	if s.sessionDir == "" {
-		return fmt.Errorf("no session dir")
-	}
+	if s.sessionDir == "" { return fmt.Errorf("no session dir") }
 	data, err := os.ReadFile(filepath.Join(s.sessionDir, sessionID+".jsonl"))
-	if err != nil {
-		return err
-	}
+	if err != nil { return err }
 	return json.Unmarshal(data, &s.entries)
 }
 
-// SetModel sets the model
-func (s *AgentSession) SetModel(model string) {
-	s.model = model
+// GetState returns session state for display
+func (s *AgentSession) GetState() map[string]interface{} {
+	return map[string]interface{}{
+		"model":         s.model,
+		"provider":      s.provider,
+		"thinkingLevel": string(s.thinkingLevel),
+		"isStreaming":    s.isStreaming,
+		"entryCount":    len(s.entries),
+		"contextUsed":   s.contextUsed,
+		"contextWindow": s.contextWindow,
+		"autoCompact":   s.autoCompact,
+		"sessionID":     s.sessionID,
+		"sessionName":   s.sessionName,
+	}
 }
 
-// SetProvider sets the provider
-func (s *AgentSession) SetProvider(provider string) {
-	s.provider = provider
-}
-
-// SetThinkingLevel sets the thinking level
-func (s *AgentSession) SetThinkingLevel(level ThinkingLevel) {
-	s.thinkingLevel = level
-}
-
-// SetSessionName sets the display name
-func (s *AgentSession) SetSessionName(name string) {
-	s.sessionName = name
-}
-
-// IsStreaming returns whether the agent is currently processing
-func (s *AgentSession) IsStreaming() bool {
-	return s.isStreaming
-}
-
-// GetModel returns the current model
-func (s *AgentSession) GetModel() string {
-	return s.model
-}
-
-// GetProvider returns the current provider
-func (s *AgentSession) GetProvider() string {
-	return s.provider
-}
-
-// GetThinkingLevel returns the current thinking level
-func (s *AgentSession) GetThinkingLevel() ThinkingLevel {
-	return s.thinkingLevel
-}
-
-// GetEntries returns all session entries
-func (s *AgentSession) GetEntries() []SessionEntry {
-	return s.entries
-}
-
-// GetContextUsage returns context usage info
-func (s *AgentSession) GetContextUsage() (used, window int, pct float64) {
+// Accessors
+func (s *AgentSession) SetModel(m string)            { s.model = m }
+func (s *AgentSession) SetProvider(p string)          { s.provider = p }
+func (s *AgentSession) SetThinkingLevel(l ThinkingLevel) { s.thinkingLevel = l }
+func (s *AgentSession) SetSessionName(n string)       { s.sessionName = n }
+func (s *AgentSession) IsStreaming() bool             { return s.isStreaming }
+func (s *AgentSession) GetModel() string              { return s.model }
+func (s *AgentSession) GetProvider() string            { return s.provider }
+func (s *AgentSession) GetThinkingLevel() ThinkingLevel { return s.thinkingLevel }
+func (s *AgentSession) GetEntries() []SessionEntry     { return s.entries }
+func (s *AgentSession) GetContextUsage() (int, int, float64) {
 	return s.contextUsed, s.contextWindow, float64(s.contextUsed) / float64(s.contextWindow) * 100
 }
 
-// silence unused import
-var _ = log.Println
+var _ = log.Println // silence unused

@@ -32,6 +32,10 @@ func sessionDuration(m *model) string {
 func ProcessSlashCommand(cmd string, m *model) (tea.Model, tea.Cmd) {
 	cmd = strings.TrimSpace(cmd)
 	parts := strings.Split(cmd, " ")
+	arg := ""
+	if len(parts) > 1 {
+		arg = strings.Join(parts[1:], " ")
+	}
 
 	switch parts[0] {
 	case "/help":
@@ -168,6 +172,57 @@ func ProcessSlashCommand(cmd string, m *model) (tea.Model, tea.Cmd) {
 		return handleSummaryBranch(m, strings.TrimSpace(strings.TrimPrefix(cmd, "/summary-branch")))
 	case "/exit", "/quit":
 		return *m, tea.Quit
+
+	// ── Claude-code commands ──
+	case "/share":
+		return handleShare(m, arg)
+	case "/copy":
+		return handleCopy(m, arg)
+	case "/rewind":
+		return handleRewind(m, arg)
+	case "/diff":
+		return handleDiff(m, arg)
+	case "/permissions":
+		return handlePermissions(m, arg)
+	case "/memory":
+		return handleMemory(m, arg)
+	case "/cost":
+		return handleCost(m, arg)
+	case "/stats":
+		return handleStats(m, arg)
+	case "/doctor":
+		return handleDoctor(m, arg)
+	case "/thinkback":
+		return handleThinkback(m, arg)
+	case "/effort":
+		return handleEffort(m, arg)
+	case "/tag":
+		return handleTag(m, arg)
+	case "/tasks":
+		return handleTasks(m, arg)
+
+	// ── OpenCode commands ──
+	case "/status":
+		return handleStatus(m, arg)
+	case "/theme":
+		return handleTheme(m, arg)
+	case "/config":
+		return handleConfig(m, arg)
+	case "/env":
+		return handleEnv(m, arg)
+	case "/vim":
+		return handleVim(m, arg)
+	case "/color":
+		return handleColor(m, arg)
+	case "/output-style":
+		return handleOutputStyle(m, arg)
+	case "/debug":
+		return handleDebug(m, arg)
+	case "/scoped-models":
+		return handleScopedModels(m, arg)
+	case "/release-notes":
+		return handleReleaseNotes(m, arg)
+
 	default:
 		return handleUnknown(m, parts[0])
 	}

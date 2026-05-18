@@ -1,506 +1,653 @@
 package tui
 
 // ═══════════════════════════════════════════════════════════════════════
-// Renderer — renders ChatEntry objects into styled terminal output
-// Mirrors pi-mono's component rendering system
+// renderer.go — Full entry rendering
+// Unifies pi-mono's component rendering, goose's tool call panels,
+// opencode's markdown rendering, and claude-code's diff/thinkback display
 // ═══════════════════════════════════════════════════════════════════════
 
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/charmbracelet/lipgloss"
 )
 
-// RenderEntry renders a single ChatEntry with pi-mono-style theming
-func RenderEntry(e ChatEntry, t Theme) string {
-	switch e.Type {
+// RenderEntry dispatches to the correct renderer based on entry type
+func RenderEntry(entry ChatEntry, t Theme) string {
+	switch entry.Type {
 	case EntryUser:
-		return renderUserEntry(e, t)
+		return renderUserEntry(entry, t)
 	case EntryAssistant:
-		return renderAssistantEntry(e, t)
+		return renderAssistantEntry(entry, t)
 	case EntryTool:
-		return renderToolEntry(e, t)
+		return renderToolEntry(entry, t)
 	case EntrySystem:
-		return e.Content
+		return renderSystemEntry(entry, t)
 	case EntryThinking:
-		return renderThinkingEntry(e, t)
+		return renderThinkingEntry(entry, t)
 	case EntryShellProposal:
-		return renderShellProposal(e, t)
+		return renderShellProposalEntry(entry, t)
 	case EntryDiff:
-		return renderDiffEntry(e, t)
+		return renderDiffEntry(entry, t)
 	case EntryCompactionSummary:
-		return renderCompactionSummary(e, t)
+		return renderCompactionSummaryEntry(entry, t)
 	case EntryBashMode:
-		return renderBashModeEntry(e, t)
+		return renderBashModeEntry(entry, t)
+	case EntryPermission:
+		return renderPermissionEntry(entry, t)
+	case EntryImage:
+		return renderImageEntry(entry, t)
+	case EntryCustom:
+		return renderCustomEntry(entry, t)
+	case EntryError:
+		return renderErrorEntry(entry, t)
+	case EntryQueue:
+		return renderQueueEntry(entry, t)
 	default:
-		return e.Content
+		return t.Dim(fmt.Sprintf("[unknown entry type %d]", entry.Type))
 	}
 }
 
-// ─── User message ─────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════════
+// User entry — pi-mono's UserMessageComponent
+// ═══════════════════════════════════════════════════════════════════════
 
 func renderUserEntry(e ChatEntry, t Theme) string {
 	style := lipgloss.NewStyle().
-		Foreground(lipgloss.Color(t.UserMsgText)).
-		Background(lipgloss.Color(t.UserMsgBg)).
+		Foreground(lipgloss.Color(t.UserMessageText)).
+		Background(lipgloss.Color(t.UserMessageBg)).
 		Padding(0, 1)
-	return style.Render(t.Bold(t.AccentText("> ")) + t.Fg(t.UserMsgText, e.Content))
+	return t.Bold(t.Fg(t.Accent, "> ")) + style.Render(e.Content)
 }
 
-// ─── Assistant message ────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════════
+// Assistant entry — pi-mono's AssistantMessageComponent with markdown
+// ═══════════════════════════════════════════════════════════════════════
 
 func renderAssistantEntry(e ChatEntry, t Theme) string {
-	var header string
+	var parts []string
 	if e.Provider != "" || e.Model != "" {
-		modelStr := e.Provider
-		if e.Model != "" {
-			modelStr += "/" + e.Model
-		}
-		header = t.Dim("  "+modelStr) + "\n"
+		label := ""
+		if e.Provider != "" { label += e.Provider }
+		if e.Model != "" { label += "/" + e.Model }
+		parts = append(parts, t.Dim("┃ "+label))
 	}
-	content := t.Fg(t.TextColor, e.Content)
-	content = RenderSimpleMarkdown(content, t)
-	return header + content
+	md := RenderSimpleMarkdown(e.Content, t)
+	parts = append(parts, md)
+	return strings.Join(parts, "\n")
 }
 
-// ─── Tool execution ───────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════════
+// Tool entry — unified pi-mono bordered panel + goose status/kind icons
+// ═══════════════════════════════════════════════════════════════════════
 
 func renderToolEntry(e ChatEntry, t Theme) string {
-	var statusIcon string
-	if e.ToolErr {
-		statusIcon = t.ErrorText("✗")
-	} else if e.Streaming {
-		statusIcon = t.WarningText("⟳")
-	} else {
-		statusIcon = t.SuccessText("✓")
+	// Status icon (goose-style: ○ pending, ◑ in_progress, ● completed, ✗ failed)
+	statusIcon := t.StatusIcon(e.ToolStatus)
+	if e.ToolStatus == "" {
+		if e.ToolErr {
+			statusIcon = t.ErrorText("✗")
+		} else {
+			statusIcon = t.SuccessText("✓")
+		}
 	}
 
-	borderColor := t.Warning
-	if e.ToolErr {
-		borderColor = t.Error
-	} else if e.Streaming {
-		borderColor = t.Accent
+	// Kind icon (goose-style: 📖 read, ✏️ edit, 🔍 search, ▶ execute)
+	kind := e.ToolKind
+	if kind == "" { kind = DetectToolKind(e.ToolName) }
+	kindIcon := ToolKindIcon(kind)
+
+	// Duration
+	durStr := ""
+	if e.ToolDur > 0 {
+		durStr = t.Dim(fmt.Sprintf(" (%v)", e.ToolDur.Round(time.Millisecond)))
 	}
 
-	borderStyle := lipgloss.NewStyle().
+	// Title line
+	titleLine := statusIcon + " " + kindIcon + " " + t.ToolTitleStyled(e.ToolName) + durStr
+
+	// Args preview
+	argsLine := ""
+	if e.ToolArgs != "" {
+		preview := e.ToolArgs
+		if len(preview) > 80 { preview = preview[:77] + "…" }
+		argsLine = t.Dim("  ▸ in: " + preview)
+	}
+
+	// Locations (goose-style: 📁 path:line)
+	locLines := ""
+	for _, loc := range e.ToolLocations {
+		locStr := loc.Path
+		if loc.Line > 0 { locStr += fmt.Sprintf(":%d", loc.Line) }
+		locLines += "\n" + t.Dim("  📁 "+locStr)
+	}
+
+	// Output
+	outputLine := ""
+	if e.Expanded && e.Content != "" {
+		output := e.Content
+		if len(output) > 500 { output = output[:497] + "…" }
+		outputLine = "\n" + t.Fg(t.ToolOutput, "  ▸ out: "+output)
+	} else if e.Content != "" && !e.Expanded {
+		preview := e.Content
+		if len(preview) > 60 { preview = preview[:57] + "…" }
+		outputLine = "\n" + t.Dim("  ▸ "+preview+" "+t.KeyHint("Ctrl+O", "expand"))
+	}
+
+	// Border (goose-style: ╭─╮ │ │ ╰─╯, colored by status)
+	borderColor := t.Border
+	if e.ToolErr || e.ToolStatus == "failed" { borderColor = t.Cranberry }
+
+	// Combine in bordered panel
+	content := titleLine
+	if argsLine != "" { content += "\n" + argsLine }
+	content += locLines
+	if outputLine != "" { content += outputLine }
+
+	panel := lipgloss.NewStyle().
 		Border(lipgloss.RoundedBorder()).
 		BorderForeground(lipgloss.Color(borderColor)).
-		Padding(0, 1)
+		Padding(0, 1).
+		Render(content)
 
-	var b strings.Builder
-	b.WriteString(fmt.Sprintf(" %s %s ", statusIcon, t.Bold(t.Fg(t.ToolTitle, e.ToolName))))
-
-	if e.ToolDur > 0 {
-		b.WriteString(t.Dim(fmt.Sprintf(" (%v)", e.ToolDur)))
-	}
-
-	if e.ToolArgs != "" {
-		argDisplay := e.ToolArgs
-		if len(argDisplay) > 80 {
-			argDisplay = argDisplay[:80] + "…"
-		}
-		b.WriteString("\n  " + t.Dim(argDisplay))
-	}
-
-	body := e.Content
-	if body != "" {
-		if e.Expanded || e.ToolErr {
-			if len(body) > 800 && !e.Expanded {
-				body = body[:800] + "\n" + t.Dim("  … (truncated, Ctrl+O to expand)")
-			}
-			b.WriteString("\n" + t.Fg(t.ToolOutput, body))
-		} else {
-			lines := strings.SplitN(body, "\n", 2)
-			preview := lines[0]
-			if len(preview) > 120 {
-				preview = preview[:120] + "…"
-			}
-			b.WriteString("\n" + t.Dim(preview))
-		}
-	}
-
-	return borderStyle.Render(b.String())
+	return panel
 }
 
-// ─── Thinking block ───────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════════
+// System entry
+// ═══════════════════════════════════════════════════════════════════════
+
+func renderSystemEntry(e ChatEntry, t Theme) string {
+	return t.Dim("  " + e.Content)
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// Thinking entry — pi-mono's collapsible thinking with level-colored border
+// ═══════════════════════════════════════════════════════════════════════
 
 func renderThinkingEntry(e ChatEntry, t Theme) string {
-	levelColor := ThinkingLevelColors[e.ThinkingLevel]
-	if levelColor == "" {
-		levelColor = t.ThinkingCol
+	level := e.ThinkingLevel
+	if level == "" { level = "off" }
+	borderColor := t.ThinkingBorder(level)
+
+	if e.Hidden || level == "off" {
+		label := t.Fg(borderColor, "💭 Thinking")+t.Dim(" ["+level+"]")
+		return label
 	}
 
-	if e.Hidden {
-		return t.Italic(t.Fg(t.ThinkingCol, e.Content))
-	}
-
-	borderStyle := lipgloss.NewStyle().
+	panel := lipgloss.NewStyle().
 		Border(lipgloss.RoundedBorder()).
-		BorderForeground(lipgloss.Color(levelColor)).
-		Padding(0, 1)
+		BorderForeground(lipgloss.Color(borderColor)).
+		Padding(0, 1).
+		Render(t.Fg(t.ThinkingCol, e.Content))
 
-	return borderStyle.Render(t.Italic(t.Fg(t.ThinkingCol, e.Content)))
+	return t.Fg(borderColor, "💭 Thinking ["+level+"]") + "\n" + panel
 }
 
-// ─── Shell proposal ───────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════════
+// Shell proposal — pi-mono's ShellProposalComponent
+// ═══════════════════════════════════════════════════════════════════════
 
-func renderShellProposal(e ChatEntry, t Theme) string {
-	var b strings.Builder
-	b.WriteString(t.Fg(t.ToolTitle, "⌘ Shell Proposal"))
-	b.WriteString("\n")
-	b.WriteString(t.Fg(t.TextColor, "  $ "+e.Content))
+func renderShellProposalEntry(e ChatEntry, t Theme) string {
+	cmdLine := t.Fg(t.BashModeCol, "$ ") + t.Bold(t.Fg(t.TextColor, e.Content))
 	if e.ToolArgs != "" {
-		b.WriteString("\n" + t.Dim("  " + e.ToolArgs))
+		cmdLine += "\n" + t.Dim("  "+e.ToolArgs)
 	}
-	b.WriteString("\n" + t.WarningText("  Execute? [Y/n] Ctrl+Y to accept"))
-	return b.String()
+	hint := t.KeyHint("Ctrl+Y", "accept")
+	panel := lipgloss.NewStyle().
+		Border(lipgloss.RoundedBorder()).
+		BorderForeground(lipgloss.Color(t.BashModeCol)).
+		Padding(0, 1).
+		Render("⌘ Shell Proposal\n" + cmdLine + "\n" + hint)
+	return panel
 }
 
-// ─── Diff rendering ───────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════════
+// Diff entry — claude-code style with colored +/- lines
+// ═══════════════════════════════════════════════════════════════════════
 
 func renderDiffEntry(e ChatEntry, t Theme) string {
 	lines := strings.Split(e.Content, "\n")
 	var rendered []string
 	for _, line := range lines {
-		trimmed := strings.TrimSpace(line)
-		if strings.HasPrefix(trimmed, "+") || strings.HasPrefix(trimmed, "→") {
-			rendered = append(rendered, t.Fg(t.DiffAdded, line))
-		} else if strings.HasPrefix(trimmed, "-") || strings.HasPrefix(trimmed, "✗") {
-			rendered = append(rendered, t.Fg(t.DiffRemoved, line))
-		} else if strings.HasPrefix(trimmed, "@@") {
-			rendered = append(rendered, t.Fg(t.DiffContext, line))
-		} else {
-			rendered = append(rendered, t.Dim(line))
+		switch {
+		case strings.HasPrefix(line, "+") && !strings.HasPrefix(line, "+++"):
+			rendered = append(rendered, t.Fg(t.ToolDiffAdded, line))
+		case strings.HasPrefix(line, "-") && !strings.HasPrefix(line, "---"):
+			rendered = append(rendered, t.Fg(t.ToolDiffRemoved, line))
+		case strings.HasPrefix(line, "@@"):
+			rendered = append(rendered, t.Fg(t.ToolDiffContext, line))
+		default:
+			rendered = append(rendered, t.Fg(t.TextColor, line))
 		}
 	}
-
-	borderStyle := lipgloss.NewStyle().
+	panel := lipgloss.NewStyle().
 		Border(lipgloss.RoundedBorder()).
-		BorderForeground(lipgloss.Color(t.Accent)).
-		Padding(0, 1)
-
-	return borderStyle.Render(strings.Join(rendered, "\n"))
+		BorderForeground(lipgloss.Color(t.MdCodeBlockBorder)).
+		Padding(0, 1).
+		Render(strings.Join(rendered, "\n"))
+	return panel
 }
 
-// ─── Compaction summary ───────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════════
+// Compaction summary — pi-mono's CompactionSummaryComponent
+// ═══════════════════════════════════════════════════════════════════════
 
-func renderCompactionSummary(e ChatEntry, t Theme) string {
-	var b strings.Builder
-	b.WriteString(t.Bold(t.AccentText("╭─ Compaction Summary ────────────────────────╮")))
-	b.WriteString("\n")
-	b.WriteString(t.Dim("  Tokens before: ") + t.Fg(t.TextColor, fmt.Sprintf("%d", e.TokensBefore)))
-	b.WriteString("\n")
-	b.WriteString(t.Dim("  Tokens after:  ") + t.Fg(t.TextColor, fmt.Sprintf("%d", e.TokensAfter)))
-	b.WriteString("\n")
-	if e.Content != "" {
-		b.WriteString(t.Dim("  Summary:       ") + t.Fg(t.Muted, e.Content))
-		b.WriteString("\n")
+func renderCompactionSummaryEntry(e ChatEntry, t Theme) string {
+	line := t.Dim("📋 Compacted")
+	if e.TokensBefore > 0 || e.TokensAfter > 0 {
+		line += t.Dim(fmt.Sprintf(" %d → %d tokens", e.TokensBefore, e.TokensAfter))
 	}
-	b.WriteString(t.Bold(t.AccentText("╰───────────────────────────────────────────────╯")))
-	return b.String()
+	return line
 }
 
-// ─── Bash mode (! prefix) ─────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════════
+// Bash mode — goose-style with ⚡ indicator
+// ═══════════════════════════════════════════════════════════════════════
 
 func renderBashModeEntry(e ChatEntry, t Theme) string {
-	var b strings.Builder
-	b.WriteString(t.Fg(t.BashModeCol, "⚡ Bash Mode"))
-	b.WriteString("\n")
-	b.WriteString(t.Fg(t.TextColor, "  $ "+e.Content))
-	return b.String()
+	return t.Fg(t.BashModeCol, "⚡ ") + t.Fg(t.TextColor, e.Content)
 }
 
-// ─── Simple markdown renderer ─────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════════
+// Permission entry — goose-style bordered permission dialog
+// ═══════════════════════════════════════════════════════════════════════
+
+func renderPermissionEntry(e ChatEntry, t Theme) string {
+	pc := t.PermissionColor()
+	hRule := strings.Repeat("─", 56)
+
+	var lines []string
+	lines = append(lines, t.Fg(pc, "╭"+hRule+"╮"))
+	lines = append(lines, t.Fg(pc, "│ ") + t.Bold(t.Fg(pc, "🔒 Permission required")) + t.Fg(pc, " │"))
+	lines = append(lines, t.Fg(pc, "│ ") + " " + t.Fg(pc, " │"))
+	lines = append(lines, t.Fg(pc, "│ ") + t.Fg(t.TextColor, e.Content) + t.Fg(pc, " │"))
+	lines = append(lines, t.Fg(pc, "│ ") + " " + t.Fg(pc, " │"))
+
+	for i, opt := range e.PermissionOptions {
+		icon := " "
+		if i == e.PermissionIdx { icon = "▸" }
+		color := t.DimColor
+		if i == e.PermissionIdx { color = t.TextColor }
+		keyHint := ""
+		switch opt.Kind {
+		case "allow_once": keyHint = "y"
+		case "allow_always": keyHint = "a"
+		case "reject_once": keyHint = "n"
+		case "reject_always": keyHint = "N"
+		}
+		lines = append(lines, t.Fg(pc, "│ ") + t.Fg(color, icon+" ["+keyHint+"] "+opt.Name) + t.Fg(pc, " │"))
+	}
+
+	lines = append(lines, t.Fg(pc, "│ ") + " " + t.Fg(pc, " │"))
+	lines = append(lines, t.Fg(pc, "│ ") + t.Dim("↑↓ select · enter confirm · esc cancel") + t.Fg(pc, " │"))
+	lines = append(lines, t.Fg(pc, "╰"+hRule+"╯"))
+
+	return strings.Join(lines, "\n")
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// Image entry — pi-mono's clipboard image paste
+// ═══════════════════════════════════════════════════════════════════════
+
+func renderImageEntry(e ChatEntry, t Theme) string {
+	return t.Fg(t.Accent, "🖼 ") + t.Fg(t.TextColor, e.ImagePath) + t.Dim(" ("+e.ImageMime+")")
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// Custom/extension entry — pi-mono's custom messages
+// ═══════════════════════════════════════════════════════════════════════
+
+func renderCustomEntry(e ChatEntry, t Theme) string {
+	label := e.CustomLabel
+	if label == "" { label = "custom" }
+	bg := e.CustomBg
+	if bg == "" { bg = t.CustomMessageBg }
+	fg := t.CustomMessageText
+	labelColor := t.CustomMessageLabel
+
+	style := lipgloss.NewStyle().
+		Foreground(lipgloss.Color(fg)).
+		Background(lipgloss.Color(bg)).
+		Padding(0, 1)
+
+	return t.Fg(labelColor, "["+label+"] ") + style.Render(e.Content)
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// Error entry — goose-style error display
+// ═══════════════════════════════════════════════════════════════════════
+
+func renderErrorEntry(e ChatEntry, t Theme) string {
+	msg := e.ErrorMessage
+	if msg == "" { msg = e.Content }
+	return t.ErrorText("⚠ Error: ") + t.ErrorText(msg)
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// Queue entry — goose-style queued message indicator
+// ═══════════════════════════════════════════════════════════════════════
+
+func renderQueueEntry(e ChatEntry, t Theme) string {
+	return t.Fg(t.DimColor, "> ") + t.Dim(e.Content) + t.Fg(t.Gold, " (queued)")
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// Markdown rendering — pi-mono's MarkdownComponent
+// ═══════════════════════════════════════════════════════════════════════
 
 func RenderSimpleMarkdown(text string, t Theme) string {
+	if text == "" { return "" }
 	lines := strings.Split(text, "\n")
-	var result []string
+	var rendered []string
 	inCodeBlock := false
 
 	for _, line := range lines {
+		// Code block toggle
 		if strings.HasPrefix(line, "```") {
 			inCodeBlock = !inCodeBlock
 			if inCodeBlock {
 				lang := strings.TrimPrefix(line, "```")
 				if lang != "" {
-					result = append(result, t.Dim("```"+lang))
-				} else {
-					result = append(result, t.Dim("```"))
+					rendered = append(rendered, t.Fg(t.MdCodeBlockBorder, "─ "+lang+" ─"))
 				}
-			} else {
-				result = append(result, t.Dim("```"))
 			}
 			continue
 		}
 		if inCodeBlock {
-			result = append(result, t.Fg(t.MDCodeBlock, line))
+			rendered = append(rendered, t.Fg(t.MdCode, line))
 			continue
 		}
+
 		// Headings
 		if strings.HasPrefix(line, "### ") {
-			result = append(result, t.Bold(t.Fg(t.MDHeading, line)))
-			continue
+			rendered = append(rendered, t.Fg(t.MdHeading, t.Bold("   "+line[4:])))
+		} else if strings.HasPrefix(line, "## ") {
+			rendered = append(rendered, t.Fg(t.MdHeading, t.Bold("  "+line[3:])))
+		} else if strings.HasPrefix(line, "# ") {
+			rendered = append(rendered, t.Fg(t.MdHeading, t.Bold(line[2:])))
+		} else if strings.HasPrefix(line, "> ") {
+			rendered = append(rendered, t.Fg(t.MdQuoteBorder, "│ ")+t.Fg(t.MdQuote, line[2:]))
+		} else if strings.HasPrefix(line, "- ") || strings.HasPrefix(line, "* ") {
+			rendered = append(rendered, t.Fg(t.MdListBullet, "  • ")+t.Fg(t.TextColor, line[2:]))
+		} else if strings.HasPrefix(line, "---") || strings.HasPrefix(line, "***") {
+			rendered = append(rendered, t.Fg(t.MdHr, strings.Repeat("─", 60)))
+		} else {
+			// Inline formatting
+			l := line
+			l = renderInlineCode(l, t)
+			l = renderInlineBold(l, t)
+			l = renderInlineLinks(l, t)
+			rendered = append(rendered, t.Fg(t.TextColor, l))
 		}
-		if strings.HasPrefix(line, "## ") {
-			result = append(result, t.Bold(t.Fg(t.MDHeading, line)))
-			continue
-		}
-		if strings.HasPrefix(line, "# ") {
-			result = append(result, t.Bold(t.Fg(t.MDHeading, line)))
-			continue
-		}
-		// List items
-		if strings.HasPrefix(line, "- ") || strings.HasPrefix(line, "* ") {
-			bullet := t.Fg(t.MDListBullet, line[:2])
-			result = append(result, bullet+t.Fg(t.TextColor, line[2:]))
-			continue
-		}
-		// Numbered lists
-		if len(line) > 2 && line[0] >= '1' && line[0] <= '9' && line[1] == '.' && line[2] == ' ' {
-			bullet := t.Fg(t.MDListBullet, line[:3])
-			result = append(result, bullet+t.Fg(t.TextColor, line[3:]))
-			continue
-		}
-		// Quote
-		if strings.HasPrefix(line, "> ") {
-			result = append(result, t.Fg(t.MDQuote, line))
-			continue
-		}
-		// Horizontal rule
-		if strings.TrimSpace(line) == "---" || strings.TrimSpace(line) == "***" {
-			result = append(result, t.Dim("────────────────────────────────────────"))
-			continue
-		}
-
-		// Inline formatting: `code`, **bold**, *italic*, [link](url)
-		line = renderInlineFormatting(line, t)
-		result = append(result, line)
 	}
-	return strings.Join(result, "\n")
+	return strings.Join(rendered, "\n")
 }
 
-func renderInlineFormatting(line string, t Theme) string {
-	// Inline code: `text`
-	for {
-		start := strings.Index(line, "`")
-		if start == -1 {
-			break
+func renderInlineCode(text string, t Theme) string {
+	var result strings.Builder
+	parts := strings.Split(text, "`")
+	for i, part := range parts {
+		if i%2 == 1 {
+			result.WriteString(t.Fg(t.MdCode, part))
+		} else {
+			result.WriteString(part)
 		}
-		end := strings.Index(line[start+1:], "`")
-		if end == -1 {
-			break
-		}
-		codeContent := line[start+1 : start+1+end]
-		replacement := t.Fg(t.MDCode, codeContent)
-		line = line[:start] + replacement + line[start+1+end+1:]
 	}
-
-	// Bold: **text**
-	for {
-		start := strings.Index(line, "**")
-		if start == -1 {
-			break
-		}
-		end := strings.Index(line[start+2:], "**")
-		if end == -1 {
-			break
-		}
-		boldContent := line[start+2 : start+2+end]
-		replacement := t.Bold(t.Fg(t.TextColor, boldContent))
-		line = line[:start] + replacement + line[start+2+end+2:]
-	}
-
-	// Links: [text](url)
-	for {
-		start := strings.Index(line, "[")
-		if start == -1 {
-			break
-		}
-		end := strings.Index(line[start:], "](")
-		if end == -1 {
-			break
-		}
-		urlStart := start + end + 2
-		urlEnd := strings.Index(line[urlStart:], ")")
-		if urlEnd == -1 {
-			break
-		}
-		linkText := line[start+1 : start+end]
-		url := line[urlStart : urlStart+urlEnd]
-		replacement := t.Fg(t.MDLink, linkText) + t.Dim("("+url+")")
-		line = line[:start] + replacement + line[urlStart+urlEnd+1:]
-	}
-
-	return line
+	return result.String()
 }
 
-// ─── Welcome banner ───────────────────────────────────────────────────
+func renderInlineBold(text string, t Theme) string {
+	var result strings.Builder
+	i := 0
+	for i < len(text) {
+		if i+1 < len(text) && text[i] == '*' && text[i+1] == '*' {
+			end := strings.Index(text[i+2:], "**")
+			if end >= 0 {
+				result.WriteString(t.Bold(text[i+2 : i+2+end]))
+				i = i + 2 + end + 2
+				continue
+			}
+		}
+		result.WriteByte(text[i])
+		i++
+	}
+	return result.String()
+}
 
-func RenderWelcome(workingDir, gitBranch, provider, modelName string, toolCount, regCount int, t Theme) string {
+func renderInlineLinks(text string, t Theme) string {
+	// Simple [text](url) rendering
+	for {
+		idx := strings.Index(text, "](")
+		if idx < 0 { break }
+		start := strings.LastIndex(text[:idx], "[")
+		if start < 0 { break }
+		end := strings.Index(text[idx+2:], ")")
+		if end < 0 { break }
+		label := text[start+1 : idx]
+		url := text[idx+2 : idx+2+end]
+		text = text[:start] + t.Fg(t.MdLink, label) + t.Dim(" ("+url+")") + text[idx+2+end+1:]
+	}
+	return text
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// Welcome banner — pi-mono startup display
+// ═══════════════════════════════════════════════════════════════════════
+
+func RenderWelcome(cwd, gitBranch, provider, model string, toolCount, regCount int, t Theme) string {
 	var b strings.Builder
 
-	// Logo
-	b.WriteString(t.Bold(t.AccentText("╭─────────────────────────────────────────────────────╮")))
+	// ASCII logo
+	b.WriteString(t.AccentText("  ╦ ╦┌─┐┌─┐┌┐ ┬┌─┐┬ ┬┌┬┐  ╔╗╔┌─┐─┐ ┬┬ ┬┌┬┐\n"))
+	b.WriteString(t.AccentText("  ║║║├┤ ├─┤├┴┐│├┤ └┬┘│││  ║║║├┤ ┌─┐│ │ │││\n"))
+	b.WriteString(t.AccentText("  ╚╩╝└─┘┴ ┴└─┘┴└   ┴ ┴ ┴  ╝╚╝└─┘└─┘└─┘─┴┘\n"))
 	b.WriteString("\n")
-	b.WriteString(t.Bold(t.AccentText("│         🧠  HyperHarness — AI Coding Agent          │")))
-	b.WriteString("\n")
-	b.WriteString(t.Bold(t.AccentText("╰─────────────────────────────────────────────────────╯")))
-	b.WriteString("\n\n")
 
 	// Status line
-	b.WriteString(t.Dim("  cwd   ") + t.Fg(t.TextColor, shortenPath(workingDir)))
+	b.WriteString(t.Dim("  cwd:   ") + t.Fg(t.TextColor, cwd) + "\n")
 	if gitBranch != "" {
-		b.WriteString(t.Dim(" (") + t.Fg(t.Muted, gitBranch) + t.Dim(")"))
+		b.WriteString(t.Dim("  git:   ") + t.Fg(t.Accent, "⎇ "+gitBranch) + "\n")
 	}
+	b.WriteString(t.Dim("  tools: ") + t.Fg(t.Success, fmt.Sprintf("%d registered", regCount)) + t.Dim(" + ") + t.Fg(t.Success, fmt.Sprintf("%d CLI detected", toolCount-regCount)) + "\n")
+	b.WriteString(t.Dim("  model: ") + t.Fg(t.TextColor, provider+"/"+model) + "\n")
 	b.WriteString("\n")
-	b.WriteString(t.Dim("  tools ") + t.Fg(t.TextColor, fmt.Sprintf("%d registered + %d CLI detected", regCount, toolCount-regCount)))
-	b.WriteString("\n")
-	b.WriteString(t.Dim("  model ") + t.Fg(t.TextColor, provider+"/"+modelName))
-	b.WriteString("\n\n")
 
 	// Key bindings (pi-mono style)
-	b.WriteString(t.Dim("  ─── Key Bindings ────────────────────────────────────────"))
+	b.WriteString(t.Dim("  Key bindings:\n"))
+	b.WriteString("  " + t.KeyHint("Enter", "send") + "  ")
+	b.WriteString(t.KeyHint("Ctrl+C", "interrupt") + "  ")
+	b.WriteString(t.KeyHint("Esc Esc", "tree/fork") + "\n")
+	b.WriteString("  " + t.KeyHint("Ctrl+L", "tree pane") + "  ")
+	b.WriteString(t.KeyHint("Ctrl+D", "dashboard") + "  ")
+	b.WriteString(t.KeyHint("Ctrl+O", "expand tools") + "\n")
+	b.WriteString("  " + t.KeyHint("Ctrl+P", "thinking") + "  ")
+	b.WriteString(t.KeyHint("Ctrl+E", "editor") + "  ")
+	b.WriteString(t.KeyHint("Ctrl+F", "follow-up") + "\n")
+	b.WriteString("  " + t.KeyHint("Ctrl+N", "model→") + "  ")
+	b.WriteString(t.KeyHint("Ctrl+M", "model←") + "  ")
+	b.WriteString(t.KeyHint("Tab", "autocomplete") + "\n")
+	b.WriteString("  " + t.KeyHint("↑↓", "history") + "  ")
+	b.WriteString(t.KeyHint("PgUp/Dn", "scroll") + "  ")
+	b.WriteString(t.KeyHint("!", "bash mode") + "\n")
 	b.WriteString("\n")
-	keys := []struct{ k, d string }{
-		{"Enter", "Send message"},
-		{"Esc×2", "Quit"},
-		{"↑/↓", "Input history / scroll chat"},
-		{"Tab", "Autocomplete commands"},
-		{"Ctrl+C", "Interrupt agent / quit"},
-		{"Ctrl+O", "Expand/collapse tool output"},
-		{"Ctrl+P", "Cycle models"},
-		{"Ctrl+L", "Toggle file tree pane"},
-		{"Ctrl+D", "Toggle dashboard"},
-		{"Ctrl+Y", "Accept shell proposal"},
-		{"Ctrl+E", "Open external editor"},
-		{"!", "Bash mode (direct shell)"},
-		{"!!", "Bash mode (no context)"},
-		{"/", "Slash commands"},
-		{"??", "Shell command proposal"},
-	}
-	for _, k := range keys {
-		b.WriteString("  " + t.KeyHint(k.k, k.d))
-		b.WriteString("\n")
-	}
 
-	b.WriteString("\n")
-	b.WriteString(t.Dim("  ─── Slash Commands ──────────────────────────────────────"))
-	b.WriteString("\n")
-	quick := []struct{ cmd, desc string }{
-		{"/help", "All commands"},
-		{"/tree-browser", "File explorer (modal)"},
-		{"/tree-pane", "Persistent file pane"},
-		{"/repomap", "Repository map"},
-		{"/providers", "LLM provider status"},
-		{"/mcp", "MCP tool listing"},
-		{"/tools", "All registered tools"},
-		{"/plan <prompt>", "Orchestration plan"},
-		{"/model", "Select model"},
-		{"/settings", "Settings menu"},
-		{"/compact", "Compact context"},
-		{"/hotkeys", "All keybindings"},
-		{"/changelog", "Show changelog"},
-		{"/quit", "Quit HyperHarness"},
+	// Quick commands
+	b.WriteString(t.Dim("  Quick commands: "))
+	commands := []string{"/help", "/model", "/tools", "/compact", "/commit", "/tree"}
+	for i, cmd := range commands {
+		if i > 0 { b.WriteString(t.Dim(" · ")) }
+		b.WriteString(t.Fg(t.Accent, cmd))
 	}
-	for _, q := range quick {
-		b.WriteString("  " + t.AccentText(q.cmd) + t.Dim("  "+q.desc))
-		b.WriteString("\n")
-	}
-
-	b.WriteString("\n")
-	b.WriteString(t.Dim("  ─────────────────────────────────────────────────────────"))
-	b.WriteString("\n")
-	b.WriteString(t.Dim("  Ask HyperHarness to explain its own features."))
 	b.WriteString("\n")
 
 	return b.String()
 }
 
-// ─── Footer rendering ─────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════════
+// Footer — pi-mono's 2-line footer with all stats
+// ═══════════════════════════════════════════════════════════════════════
 
-func RenderFooter(workingDir, gitBranch, provider, modelName string, toolCount, totalInputTok, totalOutTok int, totalCost, contextPct float64, contextWindow int, thinkingLevel string, t Theme, width int) string {
-	// Line 1: pwd + git branch
-	pwd := shortenPath(workingDir)
-	if gitBranch != "" {
-		pwd += " (" + gitBranch + ")"
+func RenderFooter(cwd, gitBranch, provider, model string, toolCount, inputTok, outTok int, cost float64, contextPct float64, contextWindow int, thinkingLevel string, t Theme, width int) string {
+	if width <= 0 { width = 80 }
+
+	// Line 1: pwd + git + tokens
+	pwd := shortenPath(cwd)
+	line1 := t.Dim(" " + pwd)
+	if gitBranch != "" { line1 += t.Dim(" ⎇ ") + t.Fg(t.Accent, gitBranch) }
+	line1 += t.Dim(" │ ")
+	line1 += t.Dim("↑") + t.Fg(t.TextColor, formatTokens(inputTok)) + t.Dim("/↓") + t.Fg(t.TextColor, formatTokens(outTok))
+	line1 += t.Dim(" │ $") + t.Fg(t.TextColor, fmt.Sprintf("%.3f", cost))
+
+	// Context percentage (color-coded)
+	ctxColor := t.DimColor
+	if contextPct > 90 { ctxColor = t.Error } else if contextPct > 70 { ctxColor = t.Warning }
+	line1 += t.Dim(" │ ctx ") + t.Fg(ctxColor, fmt.Sprintf("%.0f%%", contextPct))
+
+	// Truncate if too wide
+	if len(line1) > width {
+		line1 = line1[:width]
 	}
 
-	// Line 2: token stats + context + model
-	var stats []string
-	if totalInputTok > 0 {
-		stats = append(stats, fmt.Sprintf("↑%s", formatTokens(totalInputTok)))
-	}
-	if totalOutTok > 0 {
-		stats = append(stats, fmt.Sprintf("↓%s", formatTokens(totalOutTok)))
-	}
-	if totalCost > 0 {
-		stats = append(stats, fmt.Sprintf("$%.3f", totalCost))
-	}
-
-	contextStr := fmt.Sprintf("%.0f%%/%s", contextPct, formatTokens(contextWindow))
-	if contextPct > 90 {
-		contextStr = t.ErrorText(contextStr)
-	} else if contextPct > 70 {
-		contextStr = t.WarningText(contextStr)
-	}
-	stats = append(stats, contextStr)
-
-	// Thinking level indicator
+	// Line 2: model + thinking + tools
+	line2 := t.Dim(" ") + t.Fg(t.Accent, provider) + t.Dim("/") + t.Fg(t.TextColor, model)
 	if thinkingLevel != "" && thinkingLevel != "off" {
-		levelColor := ThinkingLevelColors[thinkingLevel]
-		if levelColor == "" {
-			levelColor = t.ThinkingCol
-		}
-		stats = append(stats, t.Fg(levelColor, "think:"+thinkingLevel))
+		line2 += t.Dim(" │ 💭 ") + t.Fg(t.ThinkingBorder(thinkingLevel), thinkingLevel)
+	}
+	line2 += t.Dim(" │ tools ") + t.Fg(t.TextColor, fmt.Sprintf("%d", toolCount))
+	line2 += t.Dim(" │ " + t.KeyHint("Ctrl+C", "int"))
+
+	if len(line2) > width {
+		line2 = line2[:width]
 	}
 
-	statsLeft := strings.Join(stats, " ")
-
-	modelStr := modelName
-	if provider != "" && provider != "hypercode" {
-		modelStr = "(" + provider + ") " + modelName
-	}
-
-	pwdLine := t.Dim(pwd)
-	if len(pwdLine) > width {
-		pwdLine = pwdLine[:width]
-	}
-
-	rightWidth := len(modelStr)
-	leftWidth := len(statsLeft)
-	gap := max(0, width-leftWidth-rightWidth-2)
-	statsLine := t.Dim(statsLeft) + strings.Repeat(" ", gap) + t.Dim(modelStr)
-
-	return pwdLine + "\n" + statsLine
+	return t.Dim("─"+strings.Repeat("─", max(width-1, 0))) + "\n" + line1 + "\n" + line2
 }
 
-// ─── Autocomplete rendering ───────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════════
+// Autocomplete dropdown — pi-mono's slash command autocomplete
+// ═══════════════════════════════════════════════════════════════════════
 
-func RenderAutocomplete(items []SlashCommand, index, maxVis int, t Theme) string {
-	if len(items) == 0 {
-		return t.Dim("  No matching commands")
+func RenderAutocomplete(items []SlashCommand, selected, maxVisible int, t Theme) string {
+	if len(items) == 0 { return "" }
+	if maxVisible <= 0 { maxVisible = 8 }
+
+	start := 0
+	if selected >= maxVisible {
+		start = selected - maxVisible + 1
 	}
+	end := min(len(items), start+maxVisible)
 
 	var lines []string
-	start := 0
-	if index >= maxVis {
-		start = index - maxVis + 1
-	}
-	end := min(len(items), start+maxVis)
-
+	lines = append(lines, t.Dim("  ╭─ commands ─╮"))
 	for i := start; i < end; i++ {
-		item := items[i]
-		if i == index {
-			lines = append(lines, t.Bold(t.AccentText("  ▶ /"+item.Name))+t.Dim("  "+item.Description))
+		cmd := items[i]
+		prefix := "  │ "
+		if i == selected {
+			prefix = t.Fg(t.Accent, "  ▸ ")
+			lines = append(lines, prefix+t.Bold(t.Fg(t.Accent, "/"+cmd.Name))+t.Dim(" — "+cmd.Description))
 		} else {
-			lines = append(lines, t.Dim("    /"+item.Name)+"  "+t.Dim(item.Description))
+			lines = append(lines, prefix+t.Fg(t.TextColor, "/"+cmd.Name)+t.Dim(" — "+cmd.Description))
 		}
 	}
-
-	if len(items) > maxVis {
-		lines = append(lines, t.Dim(fmt.Sprintf("  ↑↓ scroll  (%d/%d)", index+1, len(items))))
-	}
+	lines = append(lines, t.Dim("  ╰────────────╯"))
 
 	return strings.Join(lines, "\n")
 }
+
+// ═══════════════════════════════════════════════════════════════════════
+// Dashboard — split-pane view (pi-mono + opencode)
+// ═══════════════════════════════════════════════════════════════════════
+
+func RenderDashboard(chatContent, toolSidebar, metrics string) string {
+	width := 80
+	leftW := width * 2 / 3
+	rightW := width - leftW - 1
+
+	chatLines := strings.Split(chatContent, "\n")
+	toolLines := strings.Split(toolSidebar, "\n")
+	maxLines := max(len(chatLines), len(toolLines))
+
+	var b strings.Builder
+	for i := 0; i < maxLines; i++ {
+		left := ""
+		if i < len(chatLines) { left = chatLines[i] }
+		right := ""
+		if i < len(toolLines) { right = toolLines[i] }
+		// Pad left to leftW
+		if len(left) < leftW {
+			left += strings.Repeat(" ", leftW-len(left))
+		} else if len(left) > leftW {
+			left = left[:leftW]
+		}
+		if len(right) > rightW { right = right[:rightW] }
+		b.WriteString(left + "│" + right + "\n")
+	}
+	b.WriteString(strings.Repeat("─", leftW) + "│" + strings.Repeat("─", rightW) + "\n")
+	b.WriteString(metrics)
+
+	return b.String()
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// Hotkeys display — pi-mono's /hotkeys command
+// ═══════════════════════════════════════════════════════════════════════
+
+func RenderHotkeys(t Theme) string {
+	var b strings.Builder
+	b.WriteString(t.Bold(t.AccentText("⌨  Keyboard Shortcuts\n\n")))
+	b.WriteString(t.Dim("── Editing ──────────────────────────────────\n"))
+	b.WriteString("  " + t.KeyHint("Enter", "send message") + "\n")
+	b.WriteString("  " + t.KeyHint("Ctrl+E", "external editor") + "\n")
+	b.WriteString("  " + t.KeyHint("Ctrl+C", "interrupt / quit") + "\n")
+	b.WriteString("  " + t.KeyHint("Ctrl+D", "dashboard toggle") + "\n")
+	b.WriteString("  " + t.KeyHint("Esc Esc", "tree/fork selector") + "\n")
+	b.WriteString("  " + t.KeyHint("Ctrl+Z", "suspend to shell") + "\n")
+	b.WriteString("\n")
+	b.WriteString(t.Dim("── Agent ─────────────────────────────────────\n"))
+	b.WriteString("  " + t.KeyHint("Ctrl+P", "cycle thinking level") + "\n")
+	b.WriteString("  " + t.KeyHint("Ctrl+N", "cycle model forward") + "\n")
+	b.WriteString("  " + t.KeyHint("Ctrl+M", "cycle model backward") + "\n")
+	b.WriteString("  " + t.KeyHint("Ctrl+O", "toggle tool expansion") + "\n")
+	b.WriteString("  " + t.KeyHint("Ctrl+Y", "accept shell proposal") + "\n")
+	b.WriteString("  " + t.KeyHint("Ctrl+F", "queue follow-up message") + "\n")
+	b.WriteString("\n")
+	b.WriteString(t.Dim("── Navigation ────────────────────────────────\n"))
+	b.WriteString("  " + t.KeyHint("↑↓", "scroll / input history") + "\n")
+	b.WriteString("  " + t.KeyHint("PgUp/PgDn", "scroll half page") + "\n")
+	b.WriteString("  " + t.KeyHint("Home/End", "scroll to top/bottom") + "\n")
+	b.WriteString("  " + t.KeyHint("Ctrl+L", "tree browser") + "\n")
+	b.WriteString("  " + t.KeyHint("Tab", "autocomplete / pane focus") + "\n")
+	b.WriteString("\n")
+	b.WriteString(t.Dim("── Bash Mode ─────────────────────────────────\n"))
+	b.WriteString("  " + t.KeyHint("!", "shell command (in context)") + "\n")
+	b.WriteString("  " + t.KeyHint("!!", "shell command (excluded from context)") + "\n")
+	b.WriteString("  " + t.KeyHint("??", "natural language → shell command") + "\n")
+	return b.String()
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// Model selector — pi-mono/opencode style
+// ═══════════════════════════════════════════════════════════════════════
+
+func RenderModelSelector(current string, models []string, t Theme) string {
+	var b strings.Builder
+	b.WriteString(t.Bold(t.AccentText("🤖 Model Selector\n\n")))
+	for _, m := range models {
+		icon := "  "
+		if m == current { icon = t.SuccessText("▸ ") }
+		b.WriteString(icon + t.Fg(t.TextColor, m))
+		if m == current { b.WriteString(t.Dim(" (active)")) }
+		b.WriteString("\n")
+	}
+	b.WriteString("\n" + t.Dim("Ctrl+N / Ctrl+M to cycle, /model <name> to set"))
+	return b.String()
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// Helpers
+// ═══════════════════════════════════════════════════════════════════════
+
+// formatTokens, max, min are defined in chat.go
