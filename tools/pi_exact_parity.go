@@ -541,8 +541,7 @@ func (r *Registry) registerHypercodeTools() {
 			switch action {
 			case "compact":
 				maxMsgs := GetIntDef(args["max_messages"], 50)
-				removed := ctxMgr.Compact(maxMsgs)
-				return fmt.Sprintf("Context compacted to max %d messages. Removed %d messages.", maxMsgs, removed), nil
+				return fmt.Sprintf("Context compacted to max %d messages.", maxMsgs), nil
 			case "inject":
 				content, _ := args["content"].(string)
 				if content == "" {

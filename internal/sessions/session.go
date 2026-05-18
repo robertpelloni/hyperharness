@@ -10,8 +10,6 @@
 package sessions
 
 import (
-	"bytes"
-	"syscall"
 	"bufio"
 	"crypto/rand"
 	"encoding/hex"
