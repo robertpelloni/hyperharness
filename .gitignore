@@ -56,3 +56,6 @@ tools/tmp/test
 tools/000p/test
 
 tools/v/test
+
+# Jules AI session logs (auto-generated, not needed in repo)
+.jules/sessions/
