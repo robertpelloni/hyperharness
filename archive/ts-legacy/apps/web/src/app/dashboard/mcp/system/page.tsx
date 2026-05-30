@@ -1,12 +1,7 @@
 "use client";
 
-<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/mcp/system/page.tsx
 import { Card, CardContent } from "@hypercode/ui";
 import { Button } from "@hypercode/ui";
-=======
-import { Card, CardContent } from "@borg/ui";
-import { Button } from "@borg/ui";
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/mcp/system/page.tsx
 import { Activity, Server, Cpu, HardDrive, Network, Globe, Radio, Puzzle } from "lucide-react";
 import { useEffect, useState } from 'react';
 import { trpc } from '@/utils/trpc';
@@ -27,7 +22,6 @@ function getStatusCardColor(status: string): string {
     return 'text-yellow-500';
 }
 
-<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/mcp/system/page.tsx
 function getStartupModeRows(startupStatus?: DashboardStartupStatus): Array<{ label: string; value: string; detail?: string }> {
     const startupMode = startupStatus?.startupMode;
     if (!startupMode) {
@@ -67,39 +61,6 @@ function getStartupModeRows(startupStatus?: DashboardStartupStatus): Array<{ lab
     ];
 }
 
-=======
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/mcp/system/page.tsx
-export default function SystemStatusDashboard() {
-    const [dashboardPort, setDashboardPort] = useState<number | null>(null);
-    const { data: status, error: statusError, refetch } = trpc.mcp.getStatus.useQuery();
-    const toolsClient = trpc.tools as any;
-    const { data: startupStatus, refetch: refetchStartup } = trpc.startupStatus.useQuery(undefined, { refetchInterval: 5000 });
-    const { data: browserStatus, refetch: refetchBrowser } = trpc.browser.status.useQuery(undefined, { refetchInterval: 5000 });
-    const installArtifactsQuery = toolsClient?.detectInstallSurfaces?.useQuery
-        ? toolsClient.detectInstallSurfaces.useQuery(undefined, { refetchInterval: 10000 })
-        : ({ data: null, refetch: async () => undefined } as { data: null; refetch: () => Promise<unknown> });
-
-    const closeAllPages = trpc.browser.closeAll.useMutation({
-        onSuccess: () => {
-            toast.success('Closed all browser pages.');
-            void refetchBrowser();
-        },
-        onError: (err) => toast.error(`Failed to close pages: ${err.message}`),
-    });
-
-    const handleRefresh = () => {
-        void refetch();
-        void refetchStartup();
-        void refetchBrowser();
-        void installArtifactsQuery.refetch();
-    };
-
-    const startupSnapshot = startupStatus as DashboardStartupStatus | undefined;
-<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/mcp/system/page.tsx
-    const startupModeRows = getStartupModeRows(startupSnapshot);
-    const startupModeUpdatedAt = startupSnapshot?.startupMode?.updatedAt ? Date.parse(startupSnapshot.startupMode.updatedAt) : Number.NaN;
-=======
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/mcp/system/page.tsx
     const startupChecks = startupSnapshot ? buildSystemStartupChecks(startupSnapshot, installArtifactsQuery.data) : [];
     const componentHealthRows = buildSystemComponentHealthRows(startupSnapshot, browserStatus ?? undefined, installArtifactsQuery.data);
     const environmentRows = buildSystemEnvironmentRows(startupSnapshot);
@@ -258,11 +219,7 @@ export default function SystemStatusDashboard() {
                         <div className="space-y-4">
                             {startupChecks.length === 0 ? (
                                 <div className="rounded border border-zinc-800 bg-zinc-950 p-4 text-sm text-zinc-500">
-<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/mcp/system/page.tsx
                                     Connecting to live startup telemetry from HyperCode Core…
-=======
-                                    Connecting to live startup telemetry from borg Core…
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/mcp/system/page.tsx
                                 </div>
                             ) : startupChecks.map((check) => (
                                 <HealthRow key={check.name} name={check.name} status={check.status} latency={check.latency} detail={check.detail} />
@@ -287,36 +244,6 @@ export default function SystemStatusDashboard() {
                         </div>
                     </CardContent>
                 </Card>
-<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/mcp/system/page.tsx
-
-                {startupModeRows.length > 0 ? (
-                    <Card className="bg-zinc-900 border-zinc-800">
-                        <CardContent className="p-6 space-y-4">
-                            <div className="flex items-start justify-between gap-3">
-                                <div>
-                                    <h3 className="text-lg font-medium text-white">Startup mode</h3>
-                                    <p className="text-xs text-zinc-500 mt-1">Persisted runtime provenance from the latest startup handoff.</p>
-                                </div>
-                                {Number.isFinite(startupModeUpdatedAt) ? (
-                                    <span className="rounded-full border border-zinc-700 bg-zinc-900 px-2.5 py-1 text-xs text-zinc-300">
-                                        Updated {Math.max(0, Math.floor((Date.now() - startupModeUpdatedAt) / 60000)) < 1 ? 'just now' : `${Math.max(1, Math.floor((Date.now() - startupModeUpdatedAt) / 60000))}m ago`}
-                                    </span>
-                                ) : null}
-                            </div>
-                            <div className="space-y-3">
-                                {startupModeRows.map((row) => (
-                                    <div key={row.label} className="rounded border border-zinc-800 bg-zinc-950/50 p-3">
-                                        <div className="text-[10px] uppercase tracking-wide text-zinc-500">{row.label}</div>
-                                        <div className="mt-1 text-sm font-medium text-white">{row.value}</div>
-                                        {row.detail ? <div className="mt-1 text-xs text-zinc-400">{row.detail}</div> : null}
-                                    </div>
-                                ))}
-                            </div>
-                        </CardContent>
-                    </Card>
-                ) : null}
-=======
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/mcp/system/page.tsx
             </div>
         </div>
     );

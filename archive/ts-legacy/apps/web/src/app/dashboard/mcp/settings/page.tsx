@@ -1,13 +1,8 @@
 "use client";
 
 import { useState } from 'react';
-<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/mcp/settings/page.tsx
 import { Card, CardHeader, CardTitle, CardContent } from "@hypercode/ui";
 import { Button } from "@hypercode/ui";
-=======
-import { Card, CardHeader, CardTitle, CardContent } from "@borg/ui";
-import { Button } from "@borg/ui";
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/mcp/settings/page.tsx
 import { CheckCircle2, Download, FileJson, Loader2, RefreshCcw, Save, RotateCcw } from "lucide-react";
 import { trpc } from '@/utils/trpc';
 import { toast } from 'sonner';
@@ -33,73 +28,14 @@ type ClientConfigSyncResult = ClientConfigPreview & {
     written: boolean;
 };
 
-<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/mcp/settings/page.tsx
 type ClientConfigSyncSummary = {
     client: SupportedClient;
     targetPath: string;
 };
 
-=======
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/mcp/settings/page.tsx
-const CLIENT_LABELS: Record<SupportedClient, string> = {
-    'claude-desktop': 'Claude Desktop',
-    'cursor': 'Cursor',
-    'vscode': 'VS Code',
-};
-
-export default function MCPSettings() {
-    const mcpServersClient = trpc.mcpServers as any;
-    const configQuery = trpc.config.list.useQuery();
-    const { data: rawConfig, isLoading, refetch } = configQuery;
-    const {
-        data: rawSyncTargets,
-        isLoading: areTargetsLoading,
-        refetch: refetchTargets,
-        error: syncTargetsError,
-    } = mcpServersClient.syncTargets.useQuery();
-    const config = normalizeConfigItems(rawConfig);
-    const syncTargets = normalizeSyncTargets(rawSyncTargets);
-<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/mcp/settings/page.tsx
-    const configUnavailable = configQuery.isError || (rawConfig != null && !Array.isArray(rawConfig));
-    const syncTargetsUnavailable = Boolean(syncTargetsError) || (rawSyncTargets != null && !Array.isArray(rawSyncTargets));
-=======
->>>>>>> origin/rewrite/main-sanitized:apps/web/src/app/dashboard/mcp/settings/page.tsx
     const [editing, setEditing] = useState<Record<string, string>>({});
     const [selectedClient, setSelectedClient] = useState<SupportedClient>('claude-desktop');
-<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/mcp/settings/page.tsx
     const [lastSyncResult, setLastSyncResult] = useState<ClientConfigSyncSummary | null>(null);
-=======
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/mcp/settings/page.tsx
-
-    const previewQuery = mcpServersClient.exportClientConfig.useQuery(
-        { client: selectedClient },
-        {
-            enabled: true,
-        },
-    ) as {
-        data?: ClientConfigPreview;
-        isLoading: boolean;
-        isRefetching: boolean;
-        refetch: () => Promise<unknown>;
-    };
-
-    const updateMutation = trpc.config.update.useMutation({
-        onSuccess: () => {
-            toast.success("Configuration updated");
-            setEditing({});
-            refetch();
-        },
-        onError: (err) => {
-            toast.error(`Update failed: ${err.message}`);
-        }
-    });
-
-    const syncMutation = mcpServersClient.syncClientConfig.useMutation({
-        onSuccess: (result: ClientConfigSyncResult) => {
-<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/mcp/settings/page.tsx
-            setLastSyncResult({ client: result.client, targetPath: result.targetPath });
-=======
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/mcp/settings/page.tsx
             toast.success(`Synced ${CLIENT_LABELS[result.client]} config to ${result.targetPath}`);
             void refetchTargets();
             void previewQuery.refetch();
@@ -151,7 +87,6 @@ export default function MCPSettings() {
                 </div>
             </div>
 
-<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/mcp/settings/page.tsx
             {lastSyncResult ? (
                 <Card className="bg-zinc-900 border-zinc-800">
                     <CardHeader>
@@ -165,57 +100,6 @@ export default function MCPSettings() {
                 </Card>
             ) : null}
 
-=======
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/mcp/settings/page.tsx
-            <Card className="bg-zinc-900 border-zinc-800">
-                <CardHeader>
-                    <CardTitle className="text-lg font-medium text-zinc-200">Client Config Sync</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                    <div className="grid gap-3 md:grid-cols-3">
-                        {syncTargets.map((target) => {
-                            const isSelected = target.client === selectedClient;
-
-                            return (
-                                <button
-                                    key={target.client}
-                                    type="button"
-                                    onClick={() => setSelectedClient(target.client as SupportedClient)}
-                                    className={`rounded-lg border p-4 text-left transition ${isSelected
-                                        ? 'border-blue-500 bg-blue-500/10'
-                                        : 'border-zinc-800 bg-zinc-950 hover:border-zinc-700'
-                                        }`}
-                                >
-                                    <div className="flex items-center justify-between gap-3">
-                                        <div>
-                                            <div className="font-medium text-white">{CLIENT_LABELS[target.client as SupportedClient]}</div>
-                                            <div className="mt-1 text-xs text-zinc-500">
-                                                {target.exists ? 'Existing config detected' : 'Will create a new config file'}
-                                            </div>
-                                        </div>
-                                        {target.exists ? (
-                                            <CheckCircle2 className="h-4 w-4 text-emerald-400" />
-                                        ) : (
-                                            <FileJson className="h-4 w-4 text-zinc-500" />
-                                        )}
-                                    </div>
-                                    <div className="mt-3 break-all font-mono text-xs text-zinc-400">{target.path}</div>
-                                </button>
-                            );
-                        })}
-                    </div>
-
-                    {areTargetsLoading ? (
-                        <div className="flex justify-center p-8">
-                            <Loader2 className="h-6 w-6 animate-spin text-zinc-500" />
-                        </div>
-<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/mcp/settings/page.tsx
-                    ) : syncTargetsUnavailable ? (
-                        <div className="rounded-lg border border-red-900/40 bg-red-950/20 p-4 text-sm text-red-300">
-                            Sync targets unavailable{syncTargetsError ? `: ${syncTargetsError.message}` : ' due to malformed data'}.
-                        </div>
-=======
->>>>>>> origin/rewrite/main-sanitized:apps/web/src/app/dashboard/mcp/settings/page.tsx
                     ) : syncTargets.length === 0 ? (
                         <div className="rounded-lg border border-zinc-800 bg-zinc-950 p-4 text-sm text-zinc-500">
                             No supported MCP client targets were detected.
@@ -226,11 +110,7 @@ export default function MCPSettings() {
                                 <div>
                                     <div className="text-sm font-medium text-white">{CLIENT_LABELS[selectedClient]}</div>
                                     <div className="mt-1 text-xs text-zinc-500">
-<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/mcp/settings/page.tsx
                                         HyperCode will merge the current MCP server registry into this client config without discarding unrelated settings.
-=======
-                                        borg will merge the current MCP server registry into this client config without discarding unrelated settings.
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/mcp/settings/page.tsx
                                     </div>
                                 </div>
 
@@ -279,11 +159,7 @@ export default function MCPSettings() {
                                     <div>
                                         <div className="text-sm font-medium text-white">Generated preview</div>
                                         <div className="text-xs text-zinc-500">
-<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/mcp/settings/page.tsx
                                             This is the exact JSON HyperCode will write for {CLIENT_LABELS[selectedClient]}.
-=======
-                                            This is the exact JSON borg will write for {CLIENT_LABELS[selectedClient]}.
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/mcp/settings/page.tsx
                                         </div>
                                     </div>
                                     {previewDocument?.existed ? (
@@ -329,13 +205,6 @@ export default function MCPSettings() {
                         <div className="flex justify-center p-12">
                             <Loader2 className="h-8 w-8 animate-spin text-zinc-500" />
                         </div>
-<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/mcp/settings/page.tsx
-                    ) : configUnavailable ? (
-                        <div className="text-center p-8 text-red-300 bg-red-950/20 rounded-lg border border-red-900/40">
-                            Configuration inventory unavailable{configQuery.isError ? `: ${configQuery.error.message}` : ' due to malformed data'}.
-                        </div>
-=======
->>>>>>> origin/rewrite/main-sanitized:apps/web/src/app/dashboard/mcp/settings/page.tsx
                     ) : config.length === 0 ? (
                         <div className="text-center p-8 text-zinc-500">
                             No configuration parameters defined.

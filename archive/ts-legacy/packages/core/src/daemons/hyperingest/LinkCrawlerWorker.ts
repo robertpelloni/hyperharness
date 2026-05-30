@@ -2,12 +2,8 @@ import { JSDOM } from 'jsdom';
 import { db } from '../../db/index.js';
 import { linksBacklogTable } from '../../db/metamcp-schema.js';
 import { eq, asc } from 'drizzle-orm';
-<<<<<<< HEAD:archive/ts-legacy/packages/core/src/daemons/hyperingest/LinkCrawlerWorker.ts
 import { DEFAULT_OPENROUTER_FREE_MODEL, LLMService } from '@hypercode/ai';
 import { formatOptionalSqliteFailure, isSqliteUnavailableError } from '../../db/sqliteAvailability.js';
-=======
-import { LLMService } from '@borg/ai';
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/daemons/hyperingest/LinkCrawlerWorker.ts
 
 export class LinkCrawlerWorker {
     private isRunning = false;
@@ -147,7 +143,6 @@ export class LinkCrawlerWorker {
                 }
             }
         } catch (error) {
-<<<<<<< HEAD:archive/ts-legacy/packages/core/src/daemons/hyperingest/LinkCrawlerWorker.ts
             if (isSqliteUnavailableError(error)) {
                 if (!this.sqliteUnavailableLogged) {
                     console.warn(formatOptionalSqliteFailure(
@@ -159,9 +154,6 @@ export class LinkCrawlerWorker {
             } else {
                 console.error('[HyperIngest] Error in LinkCrawlerWorker:', error);
             }
-=======
-            console.error('[borgingest] Error in LinkCrawlerWorker:', error);
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/daemons/hyperingest/LinkCrawlerWorker.ts
         } finally {
             this.isProcessing = false;
         }

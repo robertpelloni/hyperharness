@@ -19,11 +19,7 @@ import {
     SelectValue,
     Switch,
     Textarea,
-<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/session/session-create-dialog.tsx
 } from '@hypercode/ui';
-=======
-} from '@borg/ui';
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/session/session-create-dialog.tsx
 import { Loader2, Plus } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -57,15 +53,6 @@ const EXECUTION_PROFILE_OPTIONS = [
     {
         value: 'auto',
         label: 'Auto',
-<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/session/session-create-dialog.tsx
-<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/session/session-create-dialog.tsx
-        description: 'Prefer HyperCode\'s default verified shell for this host.',
-=======
-        description: 'Prefer borg\'s default verified shell for this host.',
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/session/session-create-dialog.tsx
-=======
-        description: 'Prefer Borg\'s default verified shell for this host.',
->>>>>>> origin/rewrite/main-sanitized:apps/web/src/app/dashboard/session/session-create-dialog.tsx
     },
     {
         value: 'powershell',
@@ -80,15 +67,6 @@ const EXECUTION_PROFILE_OPTIONS = [
     {
         value: 'compatibility',
         label: 'Compatibility-first',
-<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/session/session-create-dialog.tsx
-<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/session/session-create-dialog.tsx
-        description: 'Use the most conservative shell posture HyperCode can verify on this host.',
-=======
-        description: 'Use the most conservative shell posture borg can verify on this host.',
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/session/session-create-dialog.tsx
-=======
-        description: 'Use the most conservative shell posture Borg can verify on this host.',
->>>>>>> origin/rewrite/main-sanitized:apps/web/src/app/dashboard/session/session-create-dialog.tsx
     },
 ] as const;
 
@@ -159,11 +137,7 @@ export function SessionCreateDialog({ catalog, onCreated }: SessionCreateDialogP
                 <DialogHeader>
                     <DialogTitle>Create supervised session</DialogTitle>
                     <DialogDescription className="text-zinc-400">
-<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/session/session-create-dialog.tsx
                         Spawn a CLI harness under HyperCode supervision with auto-restart and optional worktree isolation.
-=======
-                        Spawn a CLI harness under borg supervision with auto-restart and optional worktree isolation.
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/session/session-create-dialog.tsx
                     </DialogDescription>
                 </DialogHeader>
 
@@ -236,11 +210,7 @@ export function SessionCreateDialog({ catalog, onCreated }: SessionCreateDialogP
                             id="session-working-directory"
                             value={workingDirectory}
                             onChange={(event) => setWorkingDirectory(event.target.value)}
-<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/session/session-create-dialog.tsx
                             placeholder="C:\\Users\\hyper\\workspace\\hypercode"
-=======
-                            placeholder="C:\\Users\\hyper\\workspace\\borg"
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/session/session-create-dialog.tsx
                             className="bg-zinc-900 border-white/10 text-white"
                         />
                     </div>
@@ -263,11 +233,7 @@ export function SessionCreateDialog({ catalog, onCreated }: SessionCreateDialogP
                                 id="session-env"
                                 value={envInput}
                                 onChange={(event) => setEnvInput(event.target.value)}
-<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/session/session-create-dialog.tsx
                                 placeholder="OPENAI_API_KEY=...\nHYPERCODE_PROFILE=autopilot"
-=======
-                                placeholder="OPENAI_API_KEY=...\nBORG_PROFILE=autopilot"
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/session/session-create-dialog.tsx
                                 className="min-h-[120px] bg-zinc-900 border-white/10 text-white"
                             />
                             <p className="text-xs text-zinc-500">Use KEY=VALUE pairs. Invalid lines are ignored.</p>

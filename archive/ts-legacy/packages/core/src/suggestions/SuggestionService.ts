@@ -1,10 +1,6 @@
 
 import { v4 as uuidv4 } from 'uuid';
-<<<<<<< HEAD:archive/ts-legacy/packages/core/src/suggestions/SuggestionService.ts
 import { DEFAULT_OPENROUTER_FREE_MODEL, LLMService } from '@hypercode/ai';
-=======
-import { LLMService } from '@borg/ai';
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/suggestions/SuggestionService.ts
 import fs from 'fs';
 import path from 'path';
 
@@ -19,11 +15,7 @@ export interface Suggestion {
     status: 'PENDING' | 'APPROVED' | 'REJECTED';
 }
 
-<<<<<<< HEAD:archive/ts-legacy/packages/core/src/suggestions/SuggestionService.ts
 import { Director } from '@hypercode/agents';
-=======
-import { Director } from '@borg/agents';
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/suggestions/SuggestionService.ts
 
 interface LlmTextResponse {
     text?: string;
@@ -167,13 +159,8 @@ export class SuggestionService {
             `;
 
             const response = await this.llmService.generateText(
-<<<<<<< HEAD:archive/ts-legacy/packages/core/src/suggestions/SuggestionService.ts
                 'openrouter',
                 DEFAULT_OPENROUTER_FREE_MODEL,
-=======
-                'openai',
-                'gpt-4o-mini',
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/suggestions/SuggestionService.ts
                 'You are a predictive intelligence agent.',
                 prompt,
                 { routingStrategy: 'cheapest' }
@@ -235,13 +222,8 @@ export class SuggestionService {
 
             // Simplified LLM call using defaults
             const response = await this.llmService.generateText(
-<<<<<<< HEAD:archive/ts-legacy/packages/core/src/suggestions/SuggestionService.ts
                 'openrouter',
                 DEFAULT_OPENROUTER_FREE_MODEL,
-=======
-                'openai',
-                'gpt-4o',
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/suggestions/SuggestionService.ts
                 'You are an expert pair programmer analyzing code context.',
                 prompt
             );

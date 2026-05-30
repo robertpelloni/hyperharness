@@ -9,11 +9,7 @@ import {
     SheetDescription,
     Badge,
     Progress
-<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/billing/ProviderDetailPanel.tsx
 } from '@hypercode/ui';
-=======
-} from '@borg/ui';
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/billing/ProviderDetailPanel.tsx
 import { 
     AlertCircle, 
     Calendar, 

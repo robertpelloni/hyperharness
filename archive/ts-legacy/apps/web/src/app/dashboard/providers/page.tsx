@@ -13,11 +13,7 @@
  *  4. Cloud coding tool dashboards – direct links to Cloud Orchestrator, Copilot Workspace,
  *     Claude for cloud, OpenAI Codex Cloud, Devin, Blocks, Cursor, etc.
  *
-<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/providers/page.tsx
  * Auth status is pulled from the HyperCode billing router (`getProviderQuotas`)
-=======
- * Auth status is pulled from the borg billing router (`getProviderQuotas`)
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/providers/page.tsx
  * so the page reflects real configuration state rather than hardcoded data.
  */
 
@@ -448,11 +444,7 @@ export default function ProvidersHubPage() {
                 <PageStatusBanner
                     status="experimental"
                     message="AI Providers Hub"
-<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/providers/page.tsx
                     note="Provider auth status is live via the HyperCode billing router. All external links open the provider's own portal in a new tab."
-=======
-                    note="Provider auth status is live via the borg billing router. All external links open the provider's own portal in a new tab."
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/providers/page.tsx
                 />
             </div>
 

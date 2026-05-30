@@ -9,7 +9,6 @@ import {
     acquireSingleInstanceLock,
     createLockLifecycleHandlers,
     isAddrInUseError,
-<<<<<<< HEAD:archive/ts-legacy/packages/cli/src/commands/start.test.ts
     isHypercodeServer,
     attachDashboardToRunningControlPlane,
     pickAvailableControlPlaneFallbackPort,
@@ -28,15 +27,6 @@ import {
     syncLockHandlePort,
     startCoreRuntime,
     waitForHypercodeServer,
-=======
-    pickAvailableControlPlaneFallbackPort,
-    pickDashboardPort,
-    resolveControlPlaneFallbackPort,
-    resolveDashboardUrl,
-    resolveDataDir,
-    syncLockHandlePort,
-    startCoreRuntime,
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/cli/src/commands/start.test.ts
 } from './start.js';
 
 const tempDirs: string[] = [];
@@ -51,11 +41,7 @@ afterEach(() => {
 });
 
 function createTempDir(): string {
-<<<<<<< HEAD:archive/ts-legacy/packages/cli/src/commands/start.test.ts
     const dir = mkdtempSync(join(tmpdir(), 'hypercode-start-lock-'));
-=======
-    const dir = mkdtempSync(join(tmpdir(), 'borg-start-lock-'));
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/cli/src/commands/start.test.ts
     tempDirs.push(dir);
     return dir;
 }
@@ -162,11 +148,7 @@ describe('acquireSingleInstanceLock', () => {
         const dataDir = createTempDir();
         const stalePort = await getFreePort();
         writeFileSync(join(dataDir, 'lock'), JSON.stringify({
-<<<<<<< HEAD:archive/ts-legacy/packages/cli/src/commands/start.test.ts
             instanceId: 'hypercode-stale',
-=======
-            instanceId: 'borg-stale',
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/cli/src/commands/start.test.ts
             pid: 999999,
             port: stalePort,
             host: '127.0.0.1',
@@ -191,11 +173,7 @@ describe('acquireSingleInstanceLock', () => {
         const dataDir = createTempDir();
         const stalePort = await getFreePort();
         writeFileSync(join(dataDir, 'lock'), JSON.stringify({
-<<<<<<< HEAD:archive/ts-legacy/packages/cli/src/commands/start.test.ts
             instanceId: 'hypercode-stale',
-=======
-            instanceId: 'borg-stale',
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/cli/src/commands/start.test.ts
             pid: 999999,
             port: stalePort,
             host: '127.0.0.1',
@@ -219,11 +197,7 @@ describe('acquireSingleInstanceLock', () => {
     it('blocks startup when the lock belongs to a still-running process', async () => {
         const dataDir = createTempDir();
         writeFileSync(join(dataDir, 'lock'), JSON.stringify({
-<<<<<<< HEAD:archive/ts-legacy/packages/cli/src/commands/start.test.ts
             instanceId: 'hypercode-live',
-=======
-            instanceId: 'borg-live',
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/cli/src/commands/start.test.ts
             pid: process.pid,
             port: 4000,
             host: '127.0.0.1',
@@ -238,11 +212,7 @@ describe('acquireSingleInstanceLock', () => {
         }, {
             isProcessRunning: () => true,
             isPortFree: async () => false,
-<<<<<<< HEAD:archive/ts-legacy/packages/cli/src/commands/start.test.ts
         })).rejects.toThrow('HyperCode is already running');
-=======
-        })).rejects.toThrow('borg is already running');
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/cli/src/commands/start.test.ts
     });
 
     it('fails clearly when the requested port is already occupied by another process', async () => {
@@ -255,7 +225,6 @@ describe('acquireSingleInstanceLock', () => {
             host: '127.0.0.1',
         }, {
             isPortFree: async () => false,
-<<<<<<< HEAD:archive/ts-legacy/packages/cli/src/commands/start.test.ts
             isExistingHypercode: async () => false,
         })).rejects.toThrow('Port 4000 is already in use by another process');
     });
@@ -295,11 +264,6 @@ describe('acquireSingleInstanceLock', () => {
         handle.releaseSync();
     });
 
-=======
-        })).rejects.toThrow('Port 4000 is already in use by another process');
-    });
-
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/cli/src/commands/start.test.ts
     it('updates the lock record port when the active control-plane port changes', async () => {
         const dataDir = createTempDir();
         const handle = await acquireSingleInstanceLock({
@@ -392,7 +356,6 @@ describe('acquireSingleInstanceLock', () => {
 
 describe('resolveDataDir', () => {
     it('expands the home-directory shorthand', () => {
-<<<<<<< HEAD:archive/ts-legacy/packages/cli/src/commands/start.test.ts
         const resolved = resolveDataDir('~/.hypercode', 'C:/tmp/home');
         expect(resolved.replaceAll('\\', '/')).toBe('C:/tmp/home/.hypercode');
     });
@@ -483,10 +446,6 @@ describe('runtime selection helpers', () => {
             'Supervisor startup: disabled for this run.',
             'Auto-Drive startup: disabled for this run.',
         ]);
-=======
-        const resolved = resolveDataDir('~/.borg', 'C:/tmp/home');
-        expect(resolved.replaceAll('\\', '/')).toBe('C:/tmp/home/.borg');
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/cli/src/commands/start.test.ts
     });
 });
 
@@ -496,7 +455,6 @@ describe('dashboard startup helpers', () => {
         expect(resolveDashboardUrl('127.0.0.1', 3010)).toBe('http://127.0.0.1:3010/dashboard');
     });
 
-<<<<<<< HEAD:archive/ts-legacy/packages/cli/src/commands/start.test.ts
     it('waits for a HyperCode server health endpoint to become ready', async () => {
         const fetchImpl = vi
             .fn()
@@ -553,172 +511,6 @@ describe('dashboard startup helpers', () => {
         await expect(isHypercodeServer('127.0.0.1', 4000, fetchImpl as any)).resolves.toBe(false);
     });
 
-=======
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/cli/src/commands/start.test.ts
-    it('reuses an already-running dashboard on the requested port', async () => {
-        const fetchImpl = vi.fn().mockResolvedValue({ ok: true });
-
-        await expect(pickDashboardPort(
-            3000,
-            false,
-            '127.0.0.1',
-            {
-                fetchImpl: fetchImpl as any,
-                isPortFree: async () => false,
-            },
-        )).resolves.toEqual({
-            port: 3000,
-            reusedExisting: true,
-        });
-    });
-
-    it('falls back to the next free dashboard port when the default port is busy', async () => {
-        const fetchImpl = vi.fn().mockResolvedValue({ ok: false });
-
-        await expect(pickDashboardPort(
-            3000,
-            false,
-            '127.0.0.1',
-            {
-                fetchImpl: fetchImpl as any,
-                isPortFree: async (port) => port === 3010,
-            },
-        )).resolves.toEqual({
-            port: 3010,
-            reusedExisting: false,
-        });
-    });
-
-    it('does not reuse an existing dashboard when the core had to fall back ports', async () => {
-        const fetchImpl = vi.fn().mockResolvedValue({ ok: true });
-
-        await expect(pickDashboardPort(
-            3000,
-            false,
-            '127.0.0.1',
-            {
-                allowReuseExisting: false,
-                fetchImpl: fetchImpl as any,
-                isPortFree: async (port) => port === 3010,
-            },
-        )).resolves.toEqual({
-            port: 3010,
-            reusedExisting: false,
-        });
-    });
-<<<<<<< HEAD:archive/ts-legacy/packages/cli/src/commands/start.test.ts
-
-    it('reuses an already-running dashboard when reusing an existing control plane', async () => {
-        await expect(resolveAlreadyRunningDashboardReuse({
-            dashboardRequested: true,
-            requestedDashboardPort: 3000,
-            explicitDashboardPort: false,
-            host: '127.0.0.1',
-            shouldOpenDashboard: true,
-        }, {
-            pickDashboardPortFn: vi.fn().mockResolvedValue({ port: 3010, reusedExisting: true }) as any,
-        })).resolves.toEqual({
-            dashboardMode: 'reused existing dashboard runtime',
-            dashboardUrl: 'http://127.0.0.1:3010/dashboard',
-            dashboardPort: 3010,
-            reusedExisting: true,
-            shouldOpenDashboard: true,
-        });
-    });
-
-    it('reports when no existing dashboard runtime is detected while reusing an existing control plane', async () => {
-        await expect(resolveAlreadyRunningDashboardReuse({
-            dashboardRequested: true,
-            requestedDashboardPort: 3000,
-            explicitDashboardPort: true,
-            host: '127.0.0.1',
-            shouldOpenDashboard: true,
-        }, {
-            pickDashboardPortFn: vi.fn().mockResolvedValue({ port: 3000, reusedExisting: false }) as any,
-        })).resolves.toEqual({
-            dashboardMode: 'requested dashboard runtime not detected',
-            dashboardUrl: 'http://127.0.0.1:3000/dashboard',
-            dashboardPort: 3000,
-            reusedExisting: false,
-            shouldOpenDashboard: false,
-        });
-    });
-
-    it('starts a dashboard runtime attached to an existing control plane when none is already running', async () => {
-        const onceHandlers: Record<string, (...args: unknown[]) => void> = {};
-        const unref = vi.fn();
-        const spawnImpl = vi.fn().mockReturnValue({
-            once: (event: string, handler: (...args: unknown[]) => void) => {
-                onceHandlers[event] = handler;
-                return undefined;
-            },
-            unref,
-        });
-        const pickDashboardPortFn = vi.fn();
-
-        await expect(attachDashboardToRunningControlPlane({
-            requestedDashboardPort: 3000,
-            explicitDashboardPort: false,
-            host: '127.0.0.1',
-            shouldOpenDashboard: true,
-            controlPlaneBaseUrl: 'http://127.0.0.1:4000',
-            webRoot: 'C:/repo/apps/web',
-            repoRoot: 'C:/repo',
-            dashboardPort: 3010,
-            dashboardUrl: 'http://127.0.0.1:3010/dashboard',
-        }, {
-            pickDashboardPortFn: pickDashboardPortFn as any,
-            spawnImpl: spawnImpl as any,
-            waitForHttpReadyFn: vi.fn().mockResolvedValue(true) as any,
-        })).resolves.toEqual({
-            dashboardMode: 'started dashboard runtime attached to existing control plane',
-            dashboardUrl: 'http://127.0.0.1:3010/dashboard',
-            dashboardPort: 3010,
-            reusedExisting: false,
-            shouldOpenDashboard: true,
-        });
-
-        expect(pickDashboardPortFn).not.toHaveBeenCalled();
-        expect(spawnImpl).toHaveBeenCalled();
-        expect(unref).toHaveBeenCalled();
-        expect(Object.keys(onceHandlers)).toEqual(expect.arrayContaining(['exit', 'error']));
-    });
-
-    it('returns detailed dashboard attach failure information', async () => {
-        const spawnImpl = vi.fn().mockReturnValue({
-            once: (event: string, handler: (...args: unknown[]) => void) => {
-                if (event === 'error') {
-                    handler(new Error('next missing'));
-                }
-                return undefined;
-            },
-            unref: vi.fn(),
-        });
-
-        await expect(attachDashboardToRunningControlPlane({
-            requestedDashboardPort: 3000,
-            explicitDashboardPort: true,
-            host: '127.0.0.1',
-            shouldOpenDashboard: true,
-            controlPlaneBaseUrl: 'http://127.0.0.1:4000',
-            webRoot: 'C:/repo/apps/web',
-            repoRoot: 'C:/repo',
-            dashboardPort: 3000,
-            dashboardUrl: 'http://127.0.0.1:3000/dashboard',
-        }, {
-            spawnImpl: spawnImpl as any,
-            waitForHttpReadyFn: vi.fn().mockResolvedValue(false) as any,
-        })).resolves.toEqual({
-            dashboardMode: 'dashboard launch attempted but failed',
-            dashboardUrl: 'http://127.0.0.1:3000/dashboard',
-            dashboardPort: 3000,
-            reusedExisting: false,
-            shouldOpenDashboard: false,
-            detail: 'next missing',
-        });
-    });
-=======
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/cli/src/commands/start.test.ts
 });
 
 describe('control-plane fallback helpers', () => {
@@ -794,65 +586,9 @@ describe('control-plane fallback helpers', () => {
         })).resolves.toBe(4003);
     });
 
-<<<<<<< HEAD:archive/ts-legacy/packages/cli/src/commands/start.test.ts
     it('can fall forward beyond the old narrow control-plane scan window', async () => {
         await expect(pickAvailableControlPlaneFallbackPort(4001, {
             isPortFree: async (port) => port === 4012,
         })).resolves.toBe(4012);
     });
 
-=======
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/cli/src/commands/start.test.ts
-    it('returns null when no fallback port is available in the scan window', async () => {
-        await expect(pickAvailableControlPlaneFallbackPort(4001, {
-            isPortFree: async () => false,
-        })).resolves.toBeNull();
-    });
-});
-<<<<<<< HEAD:archive/ts-legacy/packages/cli/src/commands/start.test.ts
-
-describe('readMatchingStartupProvenanceFromLock', () => {
-    it('returns null if the lock file does not exist', () => {
-        const dataDir = createTempDir();
-        expect(readMatchingStartupProvenanceFromLock(dataDir, 4000)).toBeNull();
-    });
-
-    it('returns null if the lock file exists but the port does not match', () => {
-        const dataDir = createTempDir();
-        writeFileSync(join(dataDir, 'lock'), JSON.stringify({
-            instanceId: 'hypercode-stale',
-            pid: 1234,
-            port: 4000,
-            host: '127.0.0.1',
-            createdAt: '2026-04-06T00:00:00.000Z',
-            startup: {
-                activeRuntime: 'go',
-            }
-        }), 'utf8');
-
-        expect(readMatchingStartupProvenanceFromLock(dataDir, 4001)).toBeNull();
-    });
-
-    it('returns normalized startup provenance if the lock file matches the port', () => {
-        const dataDir = createTempDir();
-        writeFileSync(join(dataDir, 'lock'), JSON.stringify({
-            instanceId: 'hypercode-live',
-            pid: 1234,
-            port: 4000,
-            host: '127.0.0.1',
-            createdAt: '2026-04-06T00:00:00.000Z',
-            startup: {
-                activeRuntime: 'go',
-                launchMode: 'prebuilt Go binary',
-            }
-        }), 'utf8');
-
-        const prov = readMatchingStartupProvenanceFromLock(dataDir, 4000);
-        expect(prov).not.toBeNull();
-        expect(prov?.activeRuntime).toBe('go');
-        expect(prov?.launchMode).toBe('prebuilt Go binary');
-        expect(prov?.portDecision).toBe('derived from lock record');
-    });
-});
-=======
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/cli/src/commands/start.test.ts

@@ -2,13 +2,8 @@
 
 import React from 'react';
 import { trpc } from '@/utils/trpc';
-<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/events/page.tsx
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@hypercode/ui';
 import { Badge } from "@hypercode/ui";
-=======
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@borg/ui';
-import { Badge } from "@borg/ui";
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/events/page.tsx
 import { Activity, File, Terminal, Zap, Cpu, Clock } from 'lucide-react';
 import { normalizeDashboardEvents, normalizeDashboardSystemStatus } from './events-page-normalizers';
 
@@ -21,7 +16,6 @@ export default function EventsPage() {
     const systemStatusQuery = trpc.pulse.getSystemStatus.useQuery(undefined, {
         refetchInterval: 5000,
     });
-<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/events/page.tsx
     const normalizedEventsResult = React.useMemo(() => normalizeDashboardEvents(eventsQuery.data), [eventsQuery.data]);
     const normalizedSystemStatusResult = React.useMemo(() => normalizeDashboardSystemStatus(systemStatusQuery.data), [systemStatusQuery.data]);
     const normalizedEvents = normalizedEventsResult.data;
@@ -29,10 +23,6 @@ export default function EventsPage() {
     const eventsUnavailable = eventsQuery.isError || normalizedEventsResult.invalid;
     const systemStatusUnavailable = systemStatusQuery.isError || normalizedSystemStatusResult.invalid;
     const pulseOffline = !systemStatusUnavailable && normalizedSystemStatus.status !== 'online';
-=======
-    const normalizedEvents = React.useMemo(() => normalizeDashboardEvents(events), [events]);
-    const normalizedSystemStatus = React.useMemo(() => normalizeDashboardSystemStatus(systemStatus), [systemStatus]);
->>>>>>> origin/rewrite/main-sanitized:apps/web/src/app/dashboard/events/page.tsx
 
     // Categorize events by type
     const eventTypeColors: Record<string, string> = {
@@ -69,13 +59,8 @@ export default function EventsPage() {
                             {Math.round(normalizedSystemStatus.uptime)}s uptime
                         </Badge>
                     )}
-<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/events/page.tsx
                     <Badge variant="outline" className={eventsUnavailable || systemStatusUnavailable ? "text-red-300 border-red-900 bg-red-950/30" : normalizedEvents.length > 0 ? "text-green-400 border-green-900 bg-green-950/30 animate-pulse" : pulseOffline ? "text-rose-300 border-rose-900 bg-rose-950/30" : "text-zinc-500 border-zinc-700"}>
                         <Activity className="w-3 h-3 mr-2" /> {eventsUnavailable || systemStatusUnavailable ? 'Unavailable' : normalizedEvents.length > 0 ? 'Live' : pulseOffline ? 'Offline' : 'Idle'}
-=======
-                    <Badge variant="outline" className={normalizedEvents.length > 0 ? "text-green-400 border-green-900 bg-green-950/30 animate-pulse" : "text-zinc-500 border-zinc-700"}>
-                        <Activity className="w-3 h-3 mr-2" /> {normalizedEvents.length > 0 ? 'Live' : 'Idle'}
->>>>>>> origin/rewrite/main-sanitized:apps/web/src/app/dashboard/events/page.tsx
                     </Badge>
                 </div>
             </div>
@@ -84,22 +69,14 @@ export default function EventsPage() {
             <div className="grid grid-cols-4 gap-4">
                 <Card className="border-zinc-800 bg-zinc-950/50">
                     <CardContent className="pt-4 text-center">
-<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/events/page.tsx
                         <div className="text-2xl font-bold text-white">{eventsUnavailable ? '—' : normalizedEvents.length}</div>
-=======
-                        <div className="text-2xl font-bold text-white">{normalizedEvents.length}</div>
->>>>>>> origin/rewrite/main-sanitized:apps/web/src/app/dashboard/events/page.tsx
                         <div className="text-xs text-muted-foreground">Total Events</div>
                     </CardContent>
                 </Card>
                 <Card className="border-zinc-800 bg-zinc-950/50">
                     <CardContent className="pt-4 text-center">
                         <div className="text-2xl font-bold text-blue-400">
-<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/events/page.tsx
                             {eventsUnavailable ? '—' : normalizedEvents.filter((e) => e.type.startsWith('file:')).length}
-=======
-                            {normalizedEvents.filter((e) => e.type.startsWith('file:')).length}
->>>>>>> origin/rewrite/main-sanitized:apps/web/src/app/dashboard/events/page.tsx
                         </div>
                         <div className="text-xs text-muted-foreground">File Events</div>
                     </CardContent>
@@ -107,11 +84,7 @@ export default function EventsPage() {
                 <Card className="border-zinc-800 bg-zinc-950/50">
                     <CardContent className="pt-4 text-center">
                         <div className="text-2xl font-bold text-purple-400">
-<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/events/page.tsx
                             {eventsUnavailable ? '—' : normalizedEvents.filter((e) => e.type.startsWith('agent:')).length}
-=======
-                            {normalizedEvents.filter((e) => e.type.startsWith('agent:')).length}
->>>>>>> origin/rewrite/main-sanitized:apps/web/src/app/dashboard/events/page.tsx
                         </div>
                         <div className="text-xs text-muted-foreground">Agent Events</div>
                     </CardContent>
@@ -119,11 +92,7 @@ export default function EventsPage() {
                 <Card className="border-zinc-800 bg-zinc-950/50">
                     <CardContent className="pt-4 text-center">
                         <div className="text-2xl font-bold text-green-400">
-<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/events/page.tsx
                             {systemStatusUnavailable ? '—' : normalizedSystemStatus.agents.length}
-=======
-                            {normalizedSystemStatus.agents.length}
->>>>>>> origin/rewrite/main-sanitized:apps/web/src/app/dashboard/events/page.tsx
                         </div>
                         <div className="text-xs text-muted-foreground">Active Agents</div>
                     </CardContent>
@@ -140,19 +109,10 @@ export default function EventsPage() {
                         <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2">
                                 <Cpu className="w-5 h-5 text-green-400" />
-<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/events/page.tsx
                                 <span>HyperCode Core</span>
-=======
-                                <span>borg Core</span>
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/events/page.tsx
                             </div>
-<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/events/page.tsx
                             <Badge className={systemStatusUnavailable ? "bg-red-700" : normalizedSystemStatus.status === 'online' ? "bg-green-600" : "bg-red-600"}>
                                 {systemStatusUnavailable ? 'Unavailable' : normalizedSystemStatus.status === 'online' ? 'Online' : 'Offline'}
-=======
-                            <Badge className={normalizedSystemStatus.status === 'online' ? "bg-green-600" : "bg-red-600"}>
-                                {normalizedSystemStatus.status === 'online' ? 'Online' : 'Offline'}
->>>>>>> origin/rewrite/main-sanitized:apps/web/src/app/dashboard/events/page.tsx
                             </Badge>
                         </div>
                         <div className="flex items-center justify-between">
@@ -171,11 +131,7 @@ export default function EventsPage() {
                         </div>
 
                         {/* Active Agents */}
-<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/events/page.tsx
                         {!systemStatusUnavailable && normalizedSystemStatus.agents.length > 0 && (
-=======
-                        {normalizedSystemStatus.agents.length > 0 && (
->>>>>>> origin/rewrite/main-sanitized:apps/web/src/app/dashboard/events/page.tsx
                             <div className="mt-4 pt-4 border-t border-zinc-800">
                                 <div className="text-xs text-muted-foreground mb-2 uppercase">Active Agents</div>
                                 {normalizedSystemStatus.agents.map((agent, i: number) => (
@@ -196,7 +152,6 @@ export default function EventsPage() {
                         <div className="h-[500px] overflow-y-auto pr-4 space-y-2">
                             {eventsQuery.isLoading ? (
                                 <div className="text-zinc-500 text-center py-10">Loading events...</div>
-<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/events/page.tsx
                             ) : eventsUnavailable || systemStatusUnavailable ? (
                                 <div className="text-center py-10 italic text-red-300">
                                     Event telemetry unavailable{eventsQuery.isError ? `: ${eventsQuery.error.message}` : systemStatusQuery.isError ? `: ${systemStatusQuery.error.message}` : ' due to malformed data'}.
@@ -206,11 +161,6 @@ export default function EventsPage() {
                                     {pulseOffline
                                         ? 'Pulse runtime is offline. Event history is unavailable until the runtime reconnects.'
                                         : 'No events recorded yet. Events will appear as the system operates.'}
-=======
-                            ) : normalizedEvents.length === 0 ? (
-                                <div className="text-zinc-500 text-center py-10 italic">
-                                    No events recorded yet. Events will appear as the system operates.
->>>>>>> origin/rewrite/main-sanitized:apps/web/src/app/dashboard/events/page.tsx
                                 </div>
                             ) : (
                                 normalizedEvents.slice().reverse().map((event, i: number) => (

@@ -507,51 +507,7 @@ export class McpServersRepository {
                     alwaysOn: server.always_on ?? false,
                     tools,
                 });
-<<<<<<< HEAD:archive/ts-legacy/packages/core/src/db/repositories/mcp-servers.repo.ts
                 
-=======
->>>>>>> origin/rewrite/main-sanitized:packages/core/src/db/repositories/mcp-servers.repo.ts
-                const metadata = overrideMetadata ?? {
-                    ...(existingServerConfig?._meta ?? {}),
-                    ...buildBaseServerMetadata(server),
-                    status: tools.length > 0
-                        ? 'ready'
-                        : existingServerConfig?._meta?.status ?? 'pending',
-                    metadataVersion: existingServerConfig?._meta?.metadataVersion ?? 2,
-                    metadataSource: existingServerConfig?._meta?.metadataSource ?? (tools.length > 0 ? 'derived' : undefined),
-                    discoveredAt: existingServerConfig?._meta?.discoveredAt,
-                    lastAttemptedBinaryLoadAt: existingServerConfig?._meta?.lastAttemptedBinaryLoadAt,
-                    lastSuccessfulBinaryLoadAt: existingServerConfig?._meta?.lastSuccessfulBinaryLoadAt,
-                    cacheHydratedAt: existingServerConfig?._meta?.cacheHydratedAt,
-                    error: existingServerConfig?._meta?.error,
-                    reloadableFromCache: existingServerConfig?._meta?.reloadableFromCache ?? tools.length > 0,
-                    displayName: derivedCatalog.serverDisplayName,
-                    description: server.description ?? null,
-                    serverTags: derivedCatalog.serverTags,
-                    alwaysOn: server.always_on ?? false,
-                    toolCount: derivedCatalog.tools.length,
-                    tools: derivedCatalog.tools,
-                };
-
-                if (overrideMetadata && overrideMetadata.tools.length === 0 && tools.length > 0) {
-                    metadata.tools = derivedCatalog.tools;
-                    metadata.toolCount = derivedCatalog.tools.length;
-<<<<<<< HEAD:archive/ts-legacy/packages/core/src/db/repositories/mcp-servers.repo.ts
-                }
-
-                // Create a synthetic server entry for DB servers not in mcp.jsonc
-                const config: any = existingServerConfig ? { ...existingServerConfig } : {
-                    command: server.command,
-                    args: server.args,
-                    env: server.env,
-                    type: server.type,
-                    description: server.description
-                };
-
-                if (server.type !== 'STDIO' && server.url) {
-                    config.url = server.url;
-=======
->>>>>>> origin/rewrite/main-sanitized:packages/core/src/db/repositories/mcp-servers.repo.ts
                 }
 
                 config._meta = metadata;

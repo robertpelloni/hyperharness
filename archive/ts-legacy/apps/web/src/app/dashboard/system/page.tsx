@@ -1,20 +1,13 @@
 "use client";
 
 import Link from 'next/link';
-<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/system/page.tsx
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@hypercode/ui";
 import { Badge } from "@hypercode/ui";
 import { Button } from "@hypercode/ui";
-=======
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@borg/ui";
-import { Badge } from "@borg/ui";
-import { Button } from "@borg/ui";
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/system/page.tsx
 import { Activity, FileText, Shield, Server, Clock, CheckCircle2, AlertCircle, Loader2 } from "lucide-react";
 import { trpc } from '@/utils/trpc';
 import { PageStatusBanner } from '@/components/PageStatusBanner';
 
-<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/system/page.tsx
 type SystemStartupMode = {
     requestedRuntime?: string;
     activeRuntime?: string;
@@ -31,16 +24,6 @@ type SystemStartupMode = {
     updatedAt?: string;
 };
 
-=======
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/system/page.tsx
-function isStartupStatusPayload(value: unknown): value is {
-    ready?: boolean;
-    uptime?: number;
-    runtime?: { version?: string };
-<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/system/page.tsx
-    startupMode?: SystemStartupMode | null;
-=======
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/system/page.tsx
     checks?: {
         mcpAggregator?: { liveReady?: boolean };
         configSync?: { ready?: boolean };
@@ -56,38 +39,7 @@ function isStartupStatusPayload(value: unknown): value is {
         ready?: unknown;
         uptime?: unknown;
         runtime?: unknown;
-<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/system/page.tsx
         startupMode?: unknown;
-=======
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/system/page.tsx
-        checks?: unknown;
-        blockingReasons?: unknown;
-    };
-
-    const runtime = candidate?.runtime as { version?: unknown } | undefined;
-    const checks = candidate?.checks as {
-        mcpAggregator?: { liveReady?: unknown };
-        configSync?: { ready?: unknown };
-        memory?: { ready?: unknown };
-        browser?: { ready?: unknown };
-        sessionSupervisor?: { ready?: unknown };
-        extensionBridge?: { ready?: unknown };
-        executionEnvironment?: { ready?: unknown };
-    } | undefined;
-
-    return typeof value === 'object'
-        && value !== null
-        && (candidate.ready === undefined || typeof candidate.ready === 'boolean')
-        && (candidate.uptime === undefined || typeof candidate.uptime === 'number')
-        && (candidate.runtime === undefined || (
-            typeof candidate.runtime === 'object'
-            && candidate.runtime !== null
-            && (runtime?.version === undefined || typeof runtime.version === 'string')
-        ))
-<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/system/page.tsx
-        && (candidate.startupMode === undefined || candidate.startupMode === null || typeof candidate.startupMode === 'object')
-=======
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/system/page.tsx
         && (candidate.checks === undefined || (
             typeof candidate.checks === 'object'
             && candidate.checks !== null
@@ -121,7 +73,6 @@ function formatUptime(seconds: number): string {
     return `${h}h ${m}m`;
 }
 
-<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/system/page.tsx
 function getStartupModeRows(startupMode: SystemStartupMode | null | undefined): Array<{ label: string; value: string; detail?: string }> {
     if (!startupMode) {
         return [];
@@ -160,20 +111,6 @@ function getStartupModeRows(startupMode: SystemStartupMode | null | undefined): 
     ];
 }
 
-=======
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/system/page.tsx
-export default function SystemOverview() {
-    const { data: startupStatus, isLoading } = trpc.startupStatus.useQuery(undefined, { refetchInterval: 10000 });
-    const startupStatusUnavailable = startupStatus !== undefined && !isStartupStatusPayload(startupStatus);
-    const statusData = !startupStatusUnavailable && isStartupStatusPayload(startupStatus) ? startupStatus : undefined;
-
-    const checks = statusData?.checks;
-<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/system/page.tsx
-    const startupMode = (statusData?.startupMode ?? null) as SystemStartupMode | null;
-    const startupModeRows = getStartupModeRows(startupMode);
-    const startupModeUpdatedAt = startupMode?.updatedAt ? Date.parse(startupMode.updatedAt) : Number.NaN;
-=======
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/system/page.tsx
     const subsystems: { label: string; ready: boolean | undefined }[] = [
         { label: 'MCP Aggregator', ready: checks?.mcpAggregator?.liveReady },
         { label: 'Config Sync', ready: checks?.configSync?.ready },
@@ -198,11 +135,7 @@ export default function SystemOverview() {
                         System Overview
                     </h1>
                     <p className="text-zinc-500 mt-1">
-<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/system/page.tsx
                         HyperCode operator console — subsystem health, uptime, and quick navigation.
-=======
-                        borg operator console — subsystem health, uptime, and quick navigation.
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/system/page.tsx
                     </p>
                 </div>
                 {statusData ? (
@@ -255,34 +188,6 @@ export default function SystemOverview() {
                 </div>
             ) : null}
 
-<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/system/page.tsx
-            {startupModeRows.length > 0 ? (
-                <Card className="bg-zinc-900 border-zinc-800">
-                    <CardHeader>
-                        <CardTitle className="text-white text-lg">Startup mode</CardTitle>
-                        <CardDescription>Persisted runtime provenance from the latest HyperCode startup handoff.</CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                        {Number.isFinite(startupModeUpdatedAt) ? (
-                            <div className="inline-flex rounded-full border border-zinc-700 bg-zinc-900 px-3 py-1 text-xs text-zinc-300">
-                                Updated {Math.max(0, Math.floor((Date.now() - startupModeUpdatedAt) / 60000)) < 1 ? 'just now' : `${Math.max(1, Math.floor((Date.now() - startupModeUpdatedAt) / 60000))}m ago`}
-                            </div>
-                        ) : null}
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                            {startupModeRows.map((row) => (
-                                <div key={row.label} className="rounded-lg border border-zinc-800 bg-zinc-950/50 p-3">
-                                    <div className="text-[10px] uppercase tracking-wide text-zinc-500">{row.label}</div>
-                                    <div className="mt-1 text-sm font-medium text-white">{row.value}</div>
-                                    {row.detail ? <div className="mt-1 text-xs text-zinc-400">{row.detail}</div> : null}
-                                </div>
-                            ))}
-                        </div>
-                    </CardContent>
-                </Card>
-            ) : null}
-
-=======
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/system/page.tsx
             {/* Subsystem checks */}
             <Card className="bg-zinc-900 border-zinc-800">
                 <CardHeader>

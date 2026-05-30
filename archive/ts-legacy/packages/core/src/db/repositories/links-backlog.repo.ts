@@ -144,19 +144,6 @@ export class LinksBacklogRepository {
         return row;
     }
 
-<<<<<<< HEAD:archive/ts-legacy/packages/core/src/db/repositories/links-backlog.repo.ts
-    async updateLinkStatus(uuid: string, status: string, score: number = 0): Promise<void> {
-        await db
-            .update(linksBacklogTable)
-            .set({
-                research_status: status as any,
-                updated_at: new Date(),
-            })
-            .where(eq(linksBacklogTable.uuid, uuid));
-    }
-
-=======
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/db/repositories/links-backlog.repo.ts
     async upsertLink(input: UpsertLinkBacklogInput): Promise<LinkBacklogItem> {
         const now = new Date();
         const payload = {

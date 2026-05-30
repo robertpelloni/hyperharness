@@ -1,17 +1,9 @@
 {
-<<<<<<< HEAD:archive/ts-legacy/packages/vscode/package.json
     "name": "hypercode-vscode-extension",
     "displayName": "HyperCode Plugin",
     "version": "1.0.0-alpha.32",
     "description": "Connect VS Code to HyperCode Hub for AI agent orchestration, memory management, and tool invocation",
     "publisher": "hypercode",
-=======
-    "name": "borg-vscode-extension",
-    "displayName": "borg Plugin",
-    "version": "1.0.0-alpha.1",
-    "description": "Connect VS Code to borg Hub for AI agent orchestration, memory management, and tool invocation",
-    "publisher": "borg",
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/vscode/package.json
     "engines": {
         "vscode": "^1.85.0"
     },
@@ -103,15 +95,9 @@
         "viewsContainers": {
             "activitybar": [
                 {
-<<<<<<< HEAD:archive/ts-legacy/packages/vscode/package.json
                     "id": "HyperCodeSidebar",
                     "title": "HyperCode",
                     "icon": "resources/hypercode.svg"
-=======
-                    "id": "BorgSidebar",
-                    "title": "borg",
-                    "icon": "resources/borg.svg"
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/vscode/package.json
                 }
             ]
         },

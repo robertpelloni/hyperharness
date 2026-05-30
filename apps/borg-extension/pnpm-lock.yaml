@@ -2955,19 +2955,6 @@ packages:
   electron-to-chromium@1.5.128:
     resolution: {integrity: sha512-bo1A4HH/NS522Ws0QNFIzyPcyUUNV/yyy70Ho1xqfGYzPUme2F/xr4tlEOuM6/A538U1vDA7a4XfCd1CKRegKQ==}
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-  electron-to-chromium@1.5.331:
-    resolution: {integrity: sha512-IbxXrsTlD3hRodkLnbxAPP4OuJYdWCeM3IOdT+CpcMoIwIoDfCmRpEtSPfwBXxVkg9xmBeY7Lz2Eo2TDn/HC3Q==}
-=======
-  electron-to-chromium@1.5.332:
-    resolution: {integrity: sha512-7OOtytmh/rINMLwaFTbcMVvYXO3AUm029X0LcyfYk0B557RlPkdpTpnH9+htMlfu5dKwOmT0+Zs2Aw+lnn6TeQ==}
->>>>>>> origin/dependabot/npm_and_yarn/apps/borg-extension/npm_and_yarn-8e1218ce9b
-=======
-  electron-to-chromium@1.5.332:
-    resolution: {integrity: sha512-7OOtytmh/rINMLwaFTbcMVvYXO3AUm029X0LcyfYk0B557RlPkdpTpnH9+htMlfu5dKwOmT0+Zs2Aw+lnn6TeQ==}
->>>>>>> origin/dependabot/npm_and_yarn/apps/borg-extension/npm_and_yarn-9def124d29
 =======
   electron-to-chromium@1.5.332:
     resolution: {integrity: sha512-7OOtytmh/rINMLwaFTbcMVvYXO3AUm029X0LcyfYk0B557RlPkdpTpnH9+htMlfu5dKwOmT0+Zs2Aw+lnn6TeQ==}
@@ -3313,26 +3300,6 @@ packages:
   fast-uri@3.1.0:
     resolution: {integrity: sha512-iPeeDKJSWf4IEOasVVrknXpaBV0IApz/gp7S2bb7Z4Lljbl2MGJRqInZiUrQwV16cpzw/D3S5j5Julj/gT52AA==}
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> origin/dependabot/npm_and_yarn/apps/borg-extension/npm_and_yarn-9def124d29
-=======
->>>>>>> origin/dependabot/npm_and_yarn/apps/borg-extension/npm_and_yarn-afabecb434
-  fast-xml-builder@1.1.4:
-    resolution: {integrity: sha512-f2jhpN4Eccy0/Uz9csxh3Nu6q4ErKxf0XIsasomfOihuSUa3/xw6w8dnOtCDgEItQFJG8KyXPzQXzcODDrrbOg==}
-
-  fast-xml-parser@5.5.7:
-    resolution: {integrity: sha512-LteOsISQ2GEiDHZch6L9hB0+MLoYVLToR7xotrzU0opCICBkxOPgHAy1HxAvtxfJNXDJpgAsQN30mkrfpO2Prg==}
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
-  fast-xml-parser@5.0.9:
-    resolution: {integrity: sha512-2mBwCiuW3ycKQQ6SOesSB8WeF+fIGb6I/GG5vU5/XEptwFFhp9PE8b9O7fbs2dpq9fXn4ULR3UsfydNUCntf5A==}
->>>>>>> origin/dependabot/npm_and_yarn/apps/borg-extension/npm_and_yarn-8e1218ce9b
-=======
->>>>>>> origin/dependabot/npm_and_yarn/apps/borg-extension/npm_and_yarn-9def124d29
 =======
 >>>>>>> origin/dependabot/npm_and_yarn/apps/borg-extension/npm_and_yarn-afabecb434
     hasBin: true
@@ -4254,18 +4221,6 @@ packages:
     resolution: {integrity: sha512-ak9Qy5Q7jYb2Wwcey5Fpvg2KoAc/ZIhLSLOSBmRmygPsGwkVVt0fZa0qrtMz+m6tJTAHfZQ8FnmB4MG4LWy7/w==}
     engines: {node: '>=8'}
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-  path-expression-matcher@1.2.1:
-    resolution: {integrity: sha512-d7gQQmLvAKXKXE2GeP9apIGbMYKz88zWdsn/BN2HRWVQsDFdUY36WSLTY0Jvd4HWi7Fb30gQ62oAOzdgJA6fZw==}
-=======
-  path-expression-matcher@1.4.0:
-    resolution: {integrity: sha512-s4DQMxIdhj3jLFWd9LxHOplj4p9yQ4ffMGowFf3cpEgrrJjEhN0V5nxw4Ye1EViAGDoL4/1AeO6qHpqYPOzE4Q==}
->>>>>>> origin/dependabot/npm_and_yarn/apps/borg-extension/npm_and_yarn-9def124d29
-=======
-  path-expression-matcher@1.4.0:
-    resolution: {integrity: sha512-s4DQMxIdhj3jLFWd9LxHOplj4p9yQ4ffMGowFf3cpEgrrJjEhN0V5nxw4Ye1EViAGDoL4/1AeO6qHpqYPOzE4Q==}
->>>>>>> origin/dependabot/npm_and_yarn/apps/borg-extension/npm_and_yarn-afabecb434
     engines: {node: '>=14.0.0'}
 
   path-key@3.1.1:
@@ -4889,18 +4844,6 @@ packages:
     resolution: {integrity: sha512-6fPc+R4ihwqP6N/aIv2f1gMH8lOVtWQHoqC4yK6oSDVVocumAsfCqjkXnqiYMhmMwS/mEHLp7Vehlt3ql6lEig==}
     engines: {node: '>=8'}
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-  strnum@2.2.2:
-    resolution: {integrity: sha512-DnR90I+jtXNSTXWdwrEy9FakW7UX+qUZg28gj5fk2vxxl7uS/3bpI4fjFYVmdK9etptYBPNkpahuQnEwhwECqA==}
-=======
-  strnum@2.2.3:
-    resolution: {integrity: sha512-oKx6RUCuHfT3oyVjtnrmn19H1SiCqgJSg+54XqURKp5aCMbrXrhLjRN9TjuwMjiYstZ0MzDrHqkGZ5dFTKd+zg==}
->>>>>>> origin/dependabot/npm_and_yarn/apps/borg-extension/npm_and_yarn-9def124d29
-=======
-  strnum@2.2.3:
-    resolution: {integrity: sha512-oKx6RUCuHfT3oyVjtnrmn19H1SiCqgJSg+54XqURKp5aCMbrXrhLjRN9TjuwMjiYstZ0MzDrHqkGZ5dFTKd+zg==}
->>>>>>> origin/dependabot/npm_and_yarn/apps/borg-extension/npm_and_yarn-afabecb434
 
   sucrase@3.35.0:
     resolution: {integrity: sha512-8EbVDiu9iN/nESwxeSxDKe0dunta1GOlHufmSSXxMD2z2/tMZpDMpvXQGsc+ajGo8y2uYUmixaSRUc/QPoQ0GA==}
@@ -7554,16 +7497,6 @@ snapshots:
     dependencies:
       baseline-browser-mapping: 2.10.16
       caniuse-lite: 1.0.30001786
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-      electron-to-chromium: 1.5.331
-=======
-      electron-to-chromium: 1.5.332
->>>>>>> origin/dependabot/npm_and_yarn/apps/borg-extension/npm_and_yarn-8e1218ce9b
-=======
-      electron-to-chromium: 1.5.332
->>>>>>> origin/dependabot/npm_and_yarn/apps/borg-extension/npm_and_yarn-9def124d29
 =======
       electron-to-chromium: 1.5.332
 >>>>>>> origin/dependabot/npm_and_yarn/apps/borg-extension/npm_and_yarn-afabecb434
@@ -7979,16 +7912,6 @@ snapshots:
 
   electron-to-chromium@1.5.128: {}
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-  electron-to-chromium@1.5.331: {}
-=======
-  electron-to-chromium@1.5.332: {}
->>>>>>> origin/dependabot/npm_and_yarn/apps/borg-extension/npm_and_yarn-8e1218ce9b
-=======
-  electron-to-chromium@1.5.332: {}
->>>>>>> origin/dependabot/npm_and_yarn/apps/borg-extension/npm_and_yarn-9def124d29
 =======
   electron-to-chromium@1.5.332: {}
 >>>>>>> origin/dependabot/npm_and_yarn/apps/borg-extension/npm_and_yarn-afabecb434
@@ -8554,20 +8477,6 @@ snapshots:
 
   fast-uri@3.1.0: {}
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-  fast-xml-builder@1.1.4:
-=======
-  fast-xml-parser@5.0.9:
->>>>>>> origin/dependabot/npm_and_yarn/apps/borg-extension/npm_and_yarn-8e1218ce9b
-    dependencies:
-      path-expression-matcher: 1.2.1
-=======
-  fast-xml-builder@1.1.4:
-    dependencies:
-      path-expression-matcher: 1.4.0
->>>>>>> origin/dependabot/npm_and_yarn/apps/borg-extension/npm_and_yarn-9def124d29
 =======
   fast-xml-builder@1.1.4:
     dependencies:
@@ -8577,18 +8486,6 @@ snapshots:
   fast-xml-parser@5.5.7:
     dependencies:
       fast-xml-builder: 1.1.4
-<<<<<<< HEAD
-<<<<<<< HEAD
-      path-expression-matcher: 1.2.1
-      strnum: 2.2.2
-=======
-      path-expression-matcher: 1.4.0
-      strnum: 2.2.3
->>>>>>> origin/dependabot/npm_and_yarn/apps/borg-extension/npm_and_yarn-9def124d29
-=======
-      path-expression-matcher: 1.4.0
-      strnum: 2.2.3
->>>>>>> origin/dependabot/npm_and_yarn/apps/borg-extension/npm_and_yarn-afabecb434
 
   fastq@1.19.1:
     dependencies:
@@ -9544,15 +9441,6 @@ snapshots:
 
   path-exists@4.0.0: {}
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-  path-expression-matcher@1.2.1: {}
-=======
-  path-expression-matcher@1.4.0: {}
->>>>>>> origin/dependabot/npm_and_yarn/apps/borg-extension/npm_and_yarn-9def124d29
-=======
-  path-expression-matcher@1.4.0: {}
->>>>>>> origin/dependabot/npm_and_yarn/apps/borg-extension/npm_and_yarn-afabecb434
 
   path-key@3.1.1: {}
 
@@ -10270,15 +10158,6 @@ snapshots:
 
   strip-json-comments@3.1.1: {}
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-  strnum@2.2.2: {}
-=======
-  strnum@2.2.3: {}
->>>>>>> origin/dependabot/npm_and_yarn/apps/borg-extension/npm_and_yarn-9def124d29
-=======
-  strnum@2.2.3: {}
->>>>>>> origin/dependabot/npm_and_yarn/apps/borg-extension/npm_and_yarn-afabecb434
 
   sucrase@3.35.0:
     dependencies:
@@ -10416,18 +10295,6 @@ snapshots:
     dependencies:
       fdir: 6.5.0(picomatch@4.0.4)
       picomatch: 4.0.4
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
-
-  tinyglobby@0.2.16:
-    dependencies:
-      fdir: 6.5.0(picomatch@4.0.4)
-      picomatch: 4.0.4
->>>>>>> origin/dependabot/npm_and_yarn/apps/borg-extension/npm_and_yarn-8e1218ce9b
-=======
->>>>>>> origin/dependabot/npm_and_yarn/apps/borg-extension/npm_and_yarn-9def124d29
 =======
 >>>>>>> origin/dependabot/npm_and_yarn/apps/borg-extension/npm_and_yarn-afabecb434
 
@@ -10735,16 +10602,6 @@ snapshots:
       picomatch: 4.0.4
       postcss: 8.5.3
       rollup: 4.60.1
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-      tinyglobby: 0.2.15
-=======
-      tinyglobby: 0.2.16
->>>>>>> origin/dependabot/npm_and_yarn/apps/borg-extension/npm_and_yarn-8e1218ce9b
-=======
-      tinyglobby: 0.2.15
->>>>>>> origin/dependabot/npm_and_yarn/apps/borg-extension/npm_and_yarn-9def124d29
 =======
       tinyglobby: 0.2.15
 >>>>>>> origin/dependabot/npm_and_yarn/apps/borg-extension/npm_and_yarn-afabecb434
@@ -10763,16 +10620,6 @@ snapshots:
       picomatch: 4.0.4
       postcss: 8.5.3
       rollup: 4.60.1
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-      tinyglobby: 0.2.15
-=======
-      tinyglobby: 0.2.16
->>>>>>> origin/dependabot/npm_and_yarn/apps/borg-extension/npm_and_yarn-8e1218ce9b
-=======
-      tinyglobby: 0.2.15
->>>>>>> origin/dependabot/npm_and_yarn/apps/borg-extension/npm_and_yarn-9def124d29
 =======
       tinyglobby: 0.2.15
 >>>>>>> origin/dependabot/npm_and_yarn/apps/borg-extension/npm_and_yarn-afabecb434

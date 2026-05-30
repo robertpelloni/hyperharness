@@ -15,11 +15,7 @@ import {
     TabsContent,
     TabsList,
     TabsTrigger,
-<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/session/session-details-dialog.tsx
 } from '@hypercode/ui';
-=======
-} from '@borg/ui';
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/session/session-details-dialog.tsx
 import { ActivitySquare, Check, Copy, Loader2, TerminalSquare } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -330,62 +326,7 @@ export function SessionDetailsDialog({ session, currentTimestamp }: SessionDetai
                                 <div className="space-y-2">
                                     <p>Status: <span className="text-white">{session.status ?? 'unknown'}</span></p>
                                     <p>Restart policy: <span className="text-white">{session.autoRestart === false ? 'Manual only' : 'Automatic'}</span></p>
-<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/session/session-details-dialog.tsx
                                     <p>Worktree isolation: <span className="text-white">{session.isolateWorktree ? 'Enabled' : 'Disabled'}</span></p>
-=======
->>>>>>> origin/rewrite/main-sanitized:apps/web/src/app/dashboard/session/session-details-dialog.tsx
-                                    <p>Execution profile: <span className="text-white">{session.executionProfile ?? 'auto'}</span></p>
-                                    {session.executionPolicy?.shellLabel ? (
-                                        <p>Selected shell: <span className="text-white">{session.executionPolicy.shellLabel}</span></p>
-                                    ) : null}
-                                    {session.executionPolicy?.reason ? (
-                                        <p className="text-zinc-400">Policy: {session.executionPolicy.reason}</p>
-                                    ) : null}
-                                    <p>Last activity: <span className="text-white">{session.lastActivityAt ? formatRelativeTimestamp(session.lastActivityAt, currentTimestamp) : 'unknown'}</span></p>
-                                    <p>Restarts: <span className="text-white">{session.restartCount ?? 0}/{session.maxRestartAttempts ?? 0}</span></p>
-                                    {typeof session.lastExitCode === 'number' || session.lastExitSignal ? (
-                                        <p>
-                                            Last exit: <span className="text-white">{typeof session.lastExitCode === 'number' ? `code ${session.lastExitCode}` : 'code unknown'}</span>
-                                            {session.lastExitSignal ? <span className="text-zinc-400"> ({session.lastExitSignal})</span> : null}
-                                        </p>
-                                    ) : null}
-                                    {session.scheduledRestartAt ? (
-                                        <p>Queued restart: <span className="text-amber-300">{formatRestartCountdown(session.scheduledRestartAt, currentTimestamp)}</span></p>
-                                    ) : null}
-                                    <p className="break-all">Workspace: <span className="font-mono text-xs text-zinc-400">{session.worktreePath ?? session.workingDirectory ?? 'unknown'}</span></p>
-                                    {session.lastError ? (
-                                        <p className="text-red-300">Last error: {session.lastError}</p>
-                                    ) : null}
-                                </div>
-                            </div>
-                        </div>
-
-                        {session.metadata?.memoryBootstrap?.prompt ? (
-                            <div className="rounded-xl border border-indigo-500/20 bg-indigo-500/5 p-4 text-sm text-zinc-300">
-                                <div className="mb-2 flex flex-wrap items-center gap-2">
-                                    <span className="text-sm font-semibold text-indigo-300">Session-start memory bootstrap</span>
-                                    {typeof session.metadata.memoryBootstrap.summaryCount === 'number' ? (
-                                        <Badge variant="outline" className="border-indigo-500/30 text-indigo-200">
-                                            {session.metadata.memoryBootstrap.summaryCount} summaries
-                                        </Badge>
-                                    ) : null}
-                                    {typeof session.metadata.memoryBootstrap.observationCount === 'number' ? (
-                                        <Badge variant="outline" className="border-indigo-500/30 text-indigo-200">
-                                            {session.metadata.memoryBootstrap.observationCount} observations
-                                        </Badge>
-                                    ) : null}
-                                    {session.metadata.memoryBootstrapGeneratedAt ? (
-                                        <span className="text-xs text-zinc-500">
-                                            Generated {formatRelativeTimestamp(session.metadata.memoryBootstrapGeneratedAt, currentTimestamp)}
-                                        </span>
-                                    ) : null}
-                                </div>
-                                <p className="mb-3 text-xs text-zinc-500">
-<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/session/session-details-dialog.tsx
-                                    This is the compact context HyperCode prepared when the session started, using recent summaries and observations from the native memory pipeline.
-=======
-                                    This is the compact context borg prepared when the session started, using recent summaries and observations from the native memory pipeline.
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/session/session-details-dialog.tsx
                                 </p>
                                 <pre className="whitespace-pre-wrap break-words rounded-lg border border-white/5 bg-black/30 p-3 font-mono text-xs text-zinc-200">
                                     {session.metadata.memoryBootstrap.prompt}
@@ -403,11 +344,7 @@ export function SessionDetailsDialog({ session, currentTimestamp }: SessionDetai
                                         </Badge>
                                     </div>
                                     <p className="mt-1 text-xs text-zinc-500">
-<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/session/session-details-dialog.tsx
                                         HyperCode records structured observations after tool execution; this view shows the latest memory events from that native runtime pipeline.
-=======
-                                        borg records structured observations after tool execution; this view shows the latest memory events from that native runtime pipeline.
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/session/session-details-dialog.tsx
                                     </p>
                                 </div>
                                 {observationsQuery.isFetching ? <Loader2 className="h-4 w-4 animate-spin text-zinc-500" /> : null}
@@ -553,41 +490,7 @@ export function SessionDetailsDialog({ session, currentTimestamp }: SessionDetai
                                         </div>
                                     ) : null}
 
-<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/session/session-details-dialog.tsx
                                     {(attachInfo.attachReadiness === 'ready') && (
-=======
->>>>>>> origin/rewrite/main-sanitized:apps/web/src/app/dashboard/session/session-details-dialog.tsx
-                                    <div className="rounded-lg border border-zinc-800 bg-zinc-950/80 p-3">
-                                        <div className="mb-2 flex items-center justify-between gap-3">
-                                            <span className="text-xs uppercase tracking-[0.18em] text-zinc-500">Run one-shot shell command</span>
-                                            {session.executionPolicy?.shellLabel ? (
-                                                <Badge variant="outline" className="border-cyan-500/30 text-cyan-200">
-                                                    {session.executionPolicy.shellLabel}
-                                                </Badge>
-                                            ) : null}
-                                        </div>
-                                        <div className="flex gap-2">
-                                            <Input
-                                                value={shellCommand}
-                                                onChange={(event) => setShellCommand(event.target.value)}
-                                                placeholder="pwd"
-                                                className="bg-zinc-900 border-white/10 text-white"
-                                            />
-                                            <Button
-                                                onClick={() => executeShellMutation.mutate({ id: sessionId, command: shellCommand.trim() })}
-                                                disabled={!shellCommand.trim() || executeShellMutation.isPending || !sessionId}
-                                                className="bg-cyan-600 hover:bg-cyan-500 text-white"
-                                            >
-                                                {executeShellMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Run'}
-                                            </Button>
-                                        </div>
-                                        <p className="mt-2 text-xs text-zinc-500">
-<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/session/session-details-dialog.tsx
-<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/session/session-details-dialog.tsx
-                                            Runs inside the session workspace using the selected HyperCode execution policy.
-=======
-                                            Runs inside the session workspace using the selected borg execution policy.
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/session/session-details-dialog.tsx
 =======
                                             Runs inside the session workspace using the selected Borg execution policy.
 >>>>>>> origin/rewrite/main-sanitized:apps/web/src/app/dashboard/session/session-details-dialog.tsx
@@ -605,10 +508,6 @@ export function SessionDetailsDialog({ session, currentTimestamp }: SessionDetai
                                             </div>
                                         ) : null}
                                     </div>
-<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/session/session-details-dialog.tsx
-                                    )}
-=======
->>>>>>> origin/rewrite/main-sanitized:apps/web/src/app/dashboard/session/session-details-dialog.tsx
                                 </div>
                             ) : (
                                 <p className="text-sm text-zinc-500">Attach information is unavailable for this session.</p>

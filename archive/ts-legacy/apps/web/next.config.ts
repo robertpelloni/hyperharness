@@ -34,11 +34,7 @@ const nextConfig: NextConfig = {
   turbopack: {
     root: repoRoot,
   },
-<<<<<<< HEAD:archive/ts-legacy/apps/web/next.config.ts
   transpilePackages: ["@hypercode/ui"],
-=======
-  transpilePackages: ["@borg/ui"],
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/next.config.ts
   webpack: (config) => {
     config.resolve ??= {};
     config.resolve.alias = {

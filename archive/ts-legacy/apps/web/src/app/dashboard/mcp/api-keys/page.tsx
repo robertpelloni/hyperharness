@@ -1,13 +1,8 @@
 "use client";
 
 import { useState } from 'react';
-<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/mcp/api-keys/page.tsx
 import { Card, CardHeader, CardTitle, CardContent } from "@hypercode/ui";
 import { Button } from "@hypercode/ui";
-=======
-import { Card, CardHeader, CardTitle, CardContent } from "@borg/ui";
-import { Button } from "@borg/ui";
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/mcp/api-keys/page.tsx
 import { Loader2, Plus, Key, Trash2, Copy, Check } from "lucide-react";
 import { trpc } from '@/utils/trpc';
 import { toast } from 'sonner';
@@ -18,22 +13,7 @@ export default function ApiKeysDashboard() {
     const { data: apiKeys, isLoading, refetch } = apiKeysQuery;
     const [isCreateOpen, setIsCreateOpen] = useState(false);
     const normalizedApiKeys = normalizeApiKeyList(apiKeys);
-<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/mcp/api-keys/page.tsx
     const apiKeysUnavailable = apiKeysQuery.isError || (apiKeys != null && !Array.isArray(apiKeys));
-=======
->>>>>>> origin/rewrite/main-sanitized:apps/web/src/app/dashboard/mcp/api-keys/page.tsx
-
-    return (
-        <div className="p-8 space-y-8">
-            <div className="flex justify-between items-center">
-                <div>
-                    <h1 className="text-3xl font-bold tracking-tight text-white">API Keys</h1>
-                    <p className="text-zinc-500">
-<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/mcp/api-keys/page.tsx
-                        Manage authentication keys for accessing HyperCode-managed MCP traffic
-=======
-                        Manage authentication keys for accessing borg-managed MCP traffic
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/mcp/api-keys/page.tsx
                     </p>
                 </div>
                 <div className="flex gap-2">
@@ -52,52 +32,12 @@ export default function ApiKeysDashboard() {
                     <div className="col-span-3 flex justify-center p-12">
                         <Loader2 className="h-8 w-8 animate-spin text-zinc-500" />
                     </div>
-<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/mcp/api-keys/page.tsx
                 ) : apiKeysUnavailable ? (
                     <div className="col-span-3 text-center p-12 text-red-300 bg-red-950/20 rounded-lg border border-red-900/40">
                         <Key className="h-12 w-12 mx-auto mb-4 opacity-60" />
                         <p className="text-lg font-medium">API key inventory unavailable</p>
                         <p className="text-sm mt-1">{apiKeysQuery.isError ? apiKeysQuery.error.message : 'Malformed API key payload.'}</p>
                     </div>
-=======
->>>>>>> origin/rewrite/main-sanitized:apps/web/src/app/dashboard/mcp/api-keys/page.tsx
-                ) : normalizedApiKeys.length === 0 ? (
-                    <div className="col-span-3 text-center p-12 text-zinc-500 bg-zinc-900/50 rounded-lg border border-zinc-800 border-dashed">
-                        <Key className="h-12 w-12 mx-auto mb-4 opacity-30" />
-                        <p className="text-lg font-medium">No API Keys Found</p>
-                        <p className="text-sm mt-1">Generate a key to authenticate external requests.</p>
-                    </div>
-                ) : normalizedApiKeys.map((key) => (
-                    <ApiKeyCard key={key.uuid} apiKey={key} onUpdate={refetch} />
-                ))}
-            </div>
-        </div>
-    );
-}
-
-function ApiKeyCard({ apiKey, onUpdate }: { apiKey: any; onUpdate: () => void }) {
-    const deleteMutation = trpc.apiKeys.delete.useMutation({
-        onSuccess: () => {
-            toast.success("API Key revoked");
-            onUpdate();
-        },
-        onError: (err) => {
-            toast.error(`Failed to revoke: ${err.message}`);
-        }
-    });
-
-    const [copied, setCopied] = useState(false);
-
-    const copyToClipboard = () => {
-        navigator.clipboard.writeText(apiKey.key || "****************"); // In real app, key is only shown once usually. Assuming full key might not be available here, handling mostly metadata.
-        // If the key IS available (e.g. for display purposes in this internal dashboard), we copy it.
-        // Usually we only show it on creation. 
-        // For now, let's assume we copy the ID or a placeholder if actual key isn't stored in plain text (it shouldn't be).
-<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/mcp/api-keys/page.tsx
-        // HyperCode stores API key metadata for dashboard display; the raw secret should only be
-=======
-        // borg stores API key metadata for dashboard display; the raw secret should only be
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/mcp/api-keys/page.tsx
         // available at creation time. This view mostly copies the visible identifier/prefix.
         // Checked api-keys.repo.ts -> findPublicApiKeys.
         // If it returns full key, that's a security risk, but for MVP/Internal usage might be acceptable or it returns a masked version.

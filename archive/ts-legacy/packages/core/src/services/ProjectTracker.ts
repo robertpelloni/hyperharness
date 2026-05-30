@@ -11,11 +11,7 @@
  * - Can mark tasks as started (`[/]`) or completed (`[x]`) by rewriting the source file
  *
  * State Persistence (Phase 62-8 Hardening):
-<<<<<<< HEAD:archive/ts-legacy/packages/core/src/services/ProjectTracker.ts
  * - Maintains a JSON history file (`.hypercode/tracker_history.json`) for durable state
-=======
- * - Maintains a JSON history file (`.borg/tracker_history.json`) for durable state
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/services/ProjectTracker.ts
  * - Records completed tasks with timestamps for audit trail
  * - History survives markdown file rewrites and provides historical context
  *
@@ -75,13 +71,8 @@ export class ProjectTracker {
 
     constructor(rootDir: string) {
         this.rootDir = rootDir;
-<<<<<<< HEAD:archive/ts-legacy/packages/core/src/services/ProjectTracker.ts
         // Store history in .hypercode directory to keep project root clean
         this.historyPath = path.join(rootDir, '.hypercode', 'tracker_history.json');
-=======
-        // Store history in .borg directory to keep project root clean
-        this.historyPath = path.join(rootDir, '.borg', 'tracker_history.json');
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/services/ProjectTracker.ts
     }
 
     /**
@@ -156,11 +147,7 @@ export class ProjectTracker {
 
     /**
      * Appends a completed task to the persistent history file.
-<<<<<<< HEAD:archive/ts-legacy/packages/core/src/services/ProjectTracker.ts
      * Creates the .hypercode directory if it doesn't exist.
-=======
-     * Creates the .borg directory if it doesn't exist.
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/services/ProjectTracker.ts
      */
     private appendToHistory(task: ProjectTask): void {
         try {
@@ -172,11 +159,7 @@ export class ProjectTracker {
                 sourceFile: task.sourceFile,
             });
 
-<<<<<<< HEAD:archive/ts-legacy/packages/core/src/services/ProjectTracker.ts
             // Ensure .hypercode directory exists
-=======
-            // Ensure .borg directory exists
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/services/ProjectTracker.ts
             const dir = path.dirname(this.historyPath);
             if (!fs.existsSync(dir)) {
                 fs.mkdirSync(dir, { recursive: true });

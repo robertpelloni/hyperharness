@@ -1,10 +1,6 @@
 import { z } from 'zod';
 import { t, getMcpServer } from '../lib/trpc-core.js';
-<<<<<<< HEAD:archive/ts-legacy/packages/core/src/routers/supervisorRouter.ts
 import { resolveOrchestratorBase } from '../lib/hypercode-orchestrator.js';
-=======
-import { resolveOrchestratorBase } from '../lib/borg-orchestrator.js';
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/routers/supervisorRouter.ts
 
 interface SupervisorTaskRuntime {
     status?: 'pending' | 'active' | 'completed' | 'failed' | string;
@@ -43,19 +39,11 @@ export const supervisorRouter = t.router({
                     return {
                         success: true,
                         sessionId: sessionData.id,
-<<<<<<< HEAD:archive/ts-legacy/packages/core/src/routers/supervisorRouter.ts
                         message: "Goal successfully delegated to HyperCode Orchestrator."
                     };
                 }
             } catch (e: any) {
                 console.warn(`[Supervisor] HyperCode Orchestrator unavailable (${e.message}). Falling back to native supervisor.`);
-=======
-                        message: "Goal successfully delegated to borg Orchestrator."
-                    };
-                }
-            } catch (e: any) {
-                console.warn(`[Supervisor] borg Orchestrator unavailable (${e.message}). Falling back to native supervisor.`);
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/routers/supervisorRouter.ts
             }
         }
 

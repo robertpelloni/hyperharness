@@ -277,11 +277,7 @@ export function buildSystemStartupNotice(startupStatus: SystemStartupStatusInput
     if (startupStatus?.status === 'degraded') {
         return {
             title: 'Compat fallback active',
-<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/mcp/system/system-status-helpers.ts
             detail: summary || 'Live startup telemetry is unavailable, so HyperCode is showing config-backed compatibility state instead of the full core startup contract.',
-=======
-            detail: summary || 'Live startup telemetry is unavailable, so borg is showing config-backed compatibility state instead of the full core startup contract.',
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/mcp/system/system-status-helpers.ts
             tone: 'warning',
         };
     }
@@ -605,17 +601,10 @@ export function buildSystemComponentHealthRows(
             status: startupTelemetryConnecting ? 'Pending' : (startupStatus?.status === 'running' ? 'Operational' : 'Pending'),
             latency: startupTelemetryConnecting ? 'connecting' : (startupStatus?.ready ? 'ready' : 'warming'),
             detail: startupTelemetryConnecting
-<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/mcp/system/system-status-helpers.ts
                 ? 'Connecting to live startup telemetry from HyperCode Core.'
                 : startupStatus?.ready
                 ? 'Authoritative startup contract is online and reporting readiness.'
                 : 'Waiting for HyperCode Core startup checks to finish reporting.',
-=======
-                ? 'Connecting to live startup telemetry from borg Core.'
-                : startupStatus?.ready
-                ? 'Authoritative startup contract is online and reporting readiness.'
-                : 'Waiting for borg Core startup checks to finish reporting.',
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/mcp/system/system-status-helpers.ts
         },
         {
             name: 'Cached MCP inventory',
@@ -639,11 +628,7 @@ export function buildSystemComponentHealthRows(
             latency: browserStatus?.available ? `${browserStatus?.pageCount ?? 0} pages` : '-',
             detail: browserStatus?.available
                 ? 'Browser automation/runtime endpoints are online.'
-<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/mcp/system/system-status-helpers.ts
                 : 'Browser runtime is not currently reachable from HyperCode.',
-=======
-                : 'Browser runtime is not currently reachable from borg.',
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/mcp/system/system-status-helpers.ts
         },
         {
             name: 'Extension bridge',
@@ -668,11 +653,7 @@ export function buildSystemComponentHealthRows(
             status: execution?.ready ? 'Operational' : 'Pending',
             latency: `${execution?.verifiedToolCount ?? 0}/${execution?.toolCount ?? 0} tools`,
             detail: execution?.ready
-<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/mcp/system/system-status-helpers.ts
                 ? `${execution?.preferredShellLabel ?? 'Preferred shell'} is available for HyperCode task execution.`
-=======
-                ? `${execution?.preferredShellLabel ?? 'Preferred shell'} is available for borg task execution.`
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/mcp/system/system-status-helpers.ts
                 : 'Waiting for shell and tool verification to complete.',
         },
     ];

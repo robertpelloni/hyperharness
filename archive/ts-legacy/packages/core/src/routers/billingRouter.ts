@@ -30,147 +30,10 @@ interface ProviderQuotaRuntime {
     }>;
     source?: string;
     connectionId?: string | null;
-<<<<<<< HEAD:archive/ts-legacy/packages/core/src/routers/billingRouter.ts
     /** @see QuotaDataConfidence */
     quotaConfidence?: string;
     /** ISO-8601 timestamp of last real-time fetch from provider, or null. */
     quotaRefreshedAt?: string | null;
-=======
->>>>>>> origin/rewrite/main-sanitized:packages/core/src/routers/billingRouter.ts
-}
-
-interface BillingSelectorRuntime {
-    getAvailableModels?: () => BillingModelRuntime[];
-    getFallbackChain?: (options?: { routingTaskType?: ProviderTaskType }) => FallbackEntryRuntime[];
-    getProviderSnapshots?: () => ProviderQuotaRuntime[] | Promise<ProviderQuotaRuntime[]>;
-    getRoutingStrategy?: () => ProviderRoutingStrategy;
-    setRoutingStrategy?: (strategy: ProviderRoutingStrategy) => void;
-    getTaskRoutingRules?: () => Record<ProviderTaskType, ProviderRoutingStrategy>;
-    setTaskRoutingStrategy?: (taskType: ProviderTaskType, strategy: ProviderRoutingStrategy) => void;
-    resetTaskRoutingStrategy?: (taskType: ProviderTaskType) => void;
-    getFallbackHistory?: (limit?: number) => ProviderFallbackEventRuntime[];
-    clearFallbackHistory?: () => void;
-}
-
-interface ProviderFallbackEventRuntime {
-    id: number;
-    timestamp: number;
-    requestedProvider?: string;
-    selectedProvider: string;
-    selectedModelId: string;
-    taskType: ProviderTaskType;
-    strategy: ProviderRoutingStrategy;
-    reason: string;
-    causeCode: 'preference_honored' | 'fallback_provider' | 'budget_forced_local' | 'emergency_fallback';
-}
-
-interface BillingModelRuntime {
-    id: string;
-    provider: string;
-    name?: string;
-    inputPrice?: number | null;
-    outputPrice?: number | null;
-    contextWindow?: number | null;
-    tier?: string;
-    recommended?: boolean;
-}
-
-interface FallbackEntryRuntime {
-    provider: string;
-    model?: string;
-    reason?: string;
-}
-
-export const TASK_TYPE_VALUES = ['coding', 'planning', 'research', 'general', 'worker', 'supervisor'] as const satisfies readonly ProviderTaskType[];
-const TASK_TYPES: ProviderTaskType[] = [...TASK_TYPE_VALUES];
-
-function buildBillingUnavailableError(label: string, error: unknown): TRPCError {
-    const message = error instanceof Error ? error.message : String(error);
-    return new TRPCError({
-        code: 'INTERNAL_SERVER_ERROR',
-        message: `${label} is unavailable: ${message}`,
-    });
-}
-
-export function buildFallbackChainResponse(
-    selector: BillingSelectorRuntime,
-    taskType?: ProviderTaskType,
-) {
-    const chain = (selector.getFallbackChain?.(taskType ? { routingTaskType: taskType } : undefined) ?? []) as FallbackEntryRuntime[];
-    return {
-        selectedTaskType: taskType ?? null,
-        chain: chain.map((entry, index: number) => ({
-            priority: index + 1,
-            provider: entry.provider,
-            model: entry.model,
-            reason: entry.reason ?? 'configured',
-        })),
-    };
-}
-
-export const billingRouter = t.router({
-    /** Get current billing status — keys, usage, and provider breakdown */
-    getStatus: publicProcedure.query(async () => {
-        const keys = {
-            openai: !!process.env.OPENAI_API_KEY,
-            anthropic: !!process.env.ANTHROPIC_API_KEY,
-            gemini: !!process.env.GEMINI_API_KEY,
-            mistral: !!process.env.MISTRAL_API_KEY,
-            deepseek: !!process.env.DEEPSEEK_API_KEY,
-            xai: !!process.env.XAI_API_KEY,
-            openrouter: !!process.env.OPENROUTER_API_KEY,
-            groq: !!process.env.GROQ_API_KEY,
-        };
-
-        const llm = getLLMService();
-        const stats = llm.getCostStats();
-        const quota = llm.modelSelector.getQuotaService();
-
-        let breakdown = quota.getUsageByModel();
-        if (breakdown.length === 0) {
-            breakdown = [{ provider: 'No Usage Yet', cost: 0, requests: 0 }];
-        }
-
-        const usage = {
-            currentMonth: stats.estimatedCostUSD,
-            limit: 100.00,
-            breakdown,
-        };
-
-        return { keys, usage };
-    }),
-
-    /** Get quota information per provider — limits, remaining, reset dates */
-    getProviderQuotas: publicProcedure.query(async () => {
-        const llm = getLLMService();
-        const quota = llm.modelSelector.getQuotaService();
-        const selector = llm.modelSelector as typeof llm.modelSelector & BillingSelectorRuntime;
-
-        const normalized = await selector.getProviderSnapshots?.();
-        if (normalized && normalized.length > 0) {
-            return normalized.map((provider) => ({
-                provider: provider.provider,
-                name: provider.name,
-                configured: provider.configured,
-                authenticated: provider.authenticated,
-                authMethod: provider.authMethod,
-                authTruth: provider.authTruth ?? null,
-                tier: provider.tier,
-                limit: provider.limit,
-                used: provider.used,
-                remaining: provider.remaining,
-                resetDate: provider.resetDate,
-                rateLimitRpm: provider.rateLimitRpm,
-                availability: provider.availability,
-                lastError: provider.lastError ?? null,
-                windows: provider.windows ?? [],
-                source: provider.source ?? null,
-                connectionId: provider.connectionId ?? null,
-<<<<<<< HEAD:archive/ts-legacy/packages/core/src/routers/billingRouter.ts
-                quotaConfidence: provider.quotaConfidence ?? 'estimated',
-                quotaRefreshedAt: provider.quotaRefreshedAt ?? null,
-=======
->>>>>>> origin/rewrite/main-sanitized:packages/core/src/routers/billingRouter.ts
             }));
         }
 
@@ -366,11 +229,7 @@ export const billingRouter = t.router({
      * available at all).  Returns entries in reverse-chronological order.
      *
      * The billing dashboard "Recent Fallback Decisions" card consumes this to let
-<<<<<<< HEAD:archive/ts-legacy/packages/core/src/routers/billingRouter.ts
      * operators understand why HyperCode substituted a different provider/model than
-=======
-     * operators understand why borg substituted a different provider/model than
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/routers/billingRouter.ts
      * configured.
      */
     getFallbackHistory: publicProcedure

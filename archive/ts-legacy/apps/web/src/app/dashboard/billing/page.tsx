@@ -2,11 +2,7 @@
 
 import React, { useState } from 'react';
 import { trpc } from '@/utils/trpc';
-<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/billing/page.tsx
 import { Card, CardHeader, CardTitle, CardContent, Button, Badge } from '@hypercode/ui';
-=======
-import { Card, CardHeader, CardTitle, CardContent, Button, Badge } from '@borg/ui';
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/billing/page.tsx
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer } from 'recharts';
 import { Loader2, DollarSign, Activity, Settings, Key, Zap, AlertCircle, Database, Shield, ExternalLink, WalletCards } from 'lucide-react';
 import { toast } from 'sonner';
@@ -22,13 +18,8 @@ import {
     type BillingTaskRoutingRuleSummary,
     type BillingProviderQuotaSummary,
 } from './billing-portal-data';
-<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/billing/page.tsx
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@hypercode/ui';
 import { Input } from '@hypercode/ui';
-=======
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@borg/ui';
-import { Input } from '@borg/ui';
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/billing/page.tsx
 import { PageStatusBanner } from '@/components/PageStatusBanner';
 import {
     formatFallbackCauseLabel,
@@ -95,7 +86,6 @@ type FallbackHistoryRow = {
     causeCode: (typeof FALLBACK_HISTORY_CAUSE_CODES)[number];
 };
 
-<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/billing/page.tsx
 type ProviderConnectionTestResult = {
     provider: string;
     success: boolean;
@@ -103,22 +93,6 @@ type ProviderConnectionTestResult = {
     error?: string | null;
 };
 
-=======
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/billing/page.tsx
-export default function ProviderAuthBillingMatrix() {
-    const [historyDays, setHistoryDays] = useState(30);
-    const [fallbackTaskType, setFallbackTaskType] = useState<BillingTaskRoutingRuleSummary['taskType']>('general');
-    const [fallbackHistoryCauseFilter, setFallbackHistoryCauseFilter] = useState<'all' | 'fallback_provider' | 'budget_forced_local' | 'emergency_fallback'>('all');
-    const [fallbackHistoryTaskFilter, setFallbackHistoryTaskFilter] = useState<'all' | BillingTaskRoutingRuleSummary['taskType']>('all');
-    
-    // Key update dialog state
-    const [activePortalId, setActivePortalId] = useState<string | null>(null);
-    const [activePortalName, setActivePortalName] = useState<string>('');
-    const [newKeyValue, setNewKeyValue] = useState<string>('');
-<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/billing/page.tsx
-    const [lastConnectionTest, setLastConnectionTest] = useState<ProviderConnectionTestResult | null>(null);
-=======
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/billing/page.tsx
 
     // Provider detail sheet state
     const [selectedProvider, setSelectedProvider] = useState<BillingQuotaTableRow | null>(null);
@@ -184,7 +158,6 @@ export default function ProviderAuthBillingMatrix() {
     });
 
     const testConnectionMutation = trpc.settings.testConnection.useMutation({
-<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/billing/page.tsx
         onSuccess: async (result, variables) => {
             const testedProvider = variables && typeof variables === 'object' && 'provider' in variables && typeof variables.provider === 'string'
                 ? variables.provider
@@ -195,9 +168,6 @@ export default function ProviderAuthBillingMatrix() {
                 latencyMs: result.latencyMs,
                 error: result.error ?? null,
             });
-=======
-        onSuccess: async (result) => {
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/billing/page.tsx
             if (result.success) {
                 toast.success(`Connection test successful! (${result.latencyMs}ms)`);
             } else {
@@ -344,7 +314,6 @@ export default function ProviderAuthBillingMatrix() {
                 </Card>
             ) : null}
 
-<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/billing/page.tsx
             {lastConnectionTest ? (
                 <Card className="bg-zinc-900 border-zinc-800 shadow-xl">
                     <CardHeader className="pb-2">
@@ -368,374 +337,6 @@ export default function ProviderAuthBillingMatrix() {
                 </Card>
             ) : null}
 
-=======
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/billing/page.tsx
-            <Card className="bg-zinc-900 border-zinc-800 shadow-xl">
-                <CardHeader className="pb-2">
-                    <CardTitle className="text-sm font-bold text-zinc-400 uppercase tracking-widest flex items-center gap-2">
-                        <Shield className="h-4 w-4 text-cyan-400" />
-                        Provider Data Fidelity
-                    </CardTitle>
-                </CardHeader>
-                <CardContent className="pt-2 space-y-3">
-                    <div className="flex flex-wrap items-center gap-2 text-xs">
-                        <Badge variant="outline" className="border-emerald-500/40 text-emerald-300 bg-emerald-950/20">
-                            Live auth: {authenticatedProviderCount}
-                        </Badge>
-                        <Badge variant="outline" className="border-amber-500/40 text-amber-300 bg-amber-950/20">
-                            Configured only: {configuredOnlyProviderCount}
-                        </Badge>
-                        <Badge variant="outline" className="border-zinc-600 text-zinc-300 bg-zinc-900/60">
-                            Missing auth: {missingAuthProviderCount}
-                        </Badge>
-                        {liveErrorProviderCount > 0 ? (
-                            <Badge variant="outline" className="border-red-500/40 text-red-300 bg-red-950/20">
-                                Provider errors: {liveErrorProviderCount}
-                            </Badge>
-                        ) : null}
-                        {revokedProviderCount > 0 ? (
-                            <Badge variant="outline" className="border-red-500/40 text-red-300 bg-red-950/20">
-                                Revoked auth: {revokedProviderCount}
-                            </Badge>
-                        ) : null}
-                        {throttledProviderCount > 0 ? (
-                            <Badge variant="outline" className="border-amber-500/40 text-amber-300 bg-amber-950/20">
-                                Cooling down: {throttledProviderCount}
-                            </Badge>
-                        ) : null}
-                        {quotaExhaustedProviderCount > 0 ? (
-                            <Badge variant="outline" className="border-orange-500/40 text-orange-300 bg-orange-950/20">
-                                Quota exhausted: {quotaExhaustedProviderCount}
-                            </Badge>
-                        ) : null}
-                    </div>
-                    <p className="text-xs text-zinc-500">
-                        Quota and usage values are strongest when a provider is <span className="text-emerald-300">authenticated</span>. Providers in <span className="text-amber-300">configured only</span> can still route if fallback allows, but billing accuracy and health confidence are lower until a successful connection test completes.
-                    </p>
-                </CardContent>
-            </Card>
-
-            <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-                {/* Left Column - Financial Overview & Fallback */}
-                <div className="xl:col-span-1 space-y-6">
-                    {/* Current Usage Card */}
-                    <Card className="bg-zinc-900 border-zinc-800 shadow-xl relative overflow-hidden">
-                        <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/5 blur-3xl -mr-10 -mt-10 rounded-full" />
-                        <CardHeader className="pb-2">
-                            <CardTitle className="text-sm font-bold text-zinc-400 uppercase tracking-widest flex items-center gap-2">
-                                <Activity className="h-4 w-4 text-emerald-400" />
-                                Current Sprint Usage
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="flex items-end gap-2 mb-2">
-                                <span className="text-4xl font-mono text-white font-bold">
-                                    ${isStatusLoading || statusError ? '—' : usageSummary.currentMonth.toFixed(2)}
-                                </span>
-                                <span className="text-sm text-zinc-500 mb-1 font-mono">
-                                    / ${isStatusLoading || statusError ? '—' : usageSummary.limit.toFixed(2)} Limit
-                                </span>
-                            </div>
-
-                            {/* Simple usage bar */}
-                            <div className="w-full h-2 bg-zinc-950 rounded-full overflow-hidden mt-4">
-                                <div
-                                    className={`h-full transition-all duration-1000 ${statusError ? 'bg-red-500/60' : 'bg-emerald-500'}`}
-                                    style={{ width: `${statusError ? 100 : Math.min(100, ((usageSummary.currentMonth / (usageSummary.limit || 100)) * 100))}%` }}
-                                />
-                            </div>
-
-                            <div className="mt-6 space-y-3">
-                                <div className="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-2">Cost Breakdown</div>
-                                {statusError ? (
-                                    <div className="text-sm text-red-300">{statusError.message}</div>
-                                ) : usageSummary.breakdown.map((item, i: number) => (
-                                    <div key={i} className="flex justify-between items-center text-sm">
-                                        <span className="text-zinc-300 capitalize flex items-center gap-2">
-                                            {item.provider}
-                                        </span>
-                                        <div className="flex items-center gap-4">
-                                            <span className="text-xs text-zinc-500 font-mono">{item.requests} reqs</span>
-                                            <span className="font-mono text-emerald-400">${item.cost.toFixed(4)}</span>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        </CardContent>
-                    </Card>
-
-                        {/* Blocked / Cooling-Down Models */}
-                        {depletedModelsError ? (
-                            <Card className="bg-zinc-900 border-red-900/40 shadow-xl">
-                                <CardContent className="pt-6 text-sm text-red-300">
-                                    {depletedModelsError.message}
-                                </CardContent>
-                            </Card>
-                        ) : depletedModels && depletedModels.length > 0 && (
-                            <Card className="bg-zinc-900 border-red-900/40 shadow-xl">
-                                <CardHeader className="pb-2">
-                                    <CardTitle className="text-sm font-bold text-red-400 uppercase tracking-widest flex items-center gap-2">
-                                        <AlertCircle className="h-4 w-4 text-red-400" />
-                                        Blocked / Cooling-Down Models
-                                    </CardTitle>
-                                </CardHeader>
-                                <CardContent className="pt-2 space-y-2">
-                                    {depletedModels.map((m) => (
-                                        <div key={m.key} className={`flex items-center gap-3 p-2 rounded-lg border text-xs ${m.isPermanent ? 'bg-red-950/30 border-red-900/50' : 'bg-amber-950/20 border-amber-900/40'}`}>
-                                            <div className={`w-2 h-2 rounded-full shrink-0 ${m.isPermanent ? 'bg-red-500' : 'bg-amber-500'}`} />
-                                            <div className="flex-1 min-w-0">
-                                                <div className="font-semibold text-zinc-200 truncate capitalize">{m.provider} / {m.modelId}</div>
-                                                <div className={`mt-0.5 ${m.isPermanent ? 'text-red-400' : 'text-amber-500'}`}>
-                                                    {m.isPermanent ? 'Auth failure — session blocked' : `Cooldown until ${m.coolsDownAt}`}
-                                                </div>
-                                            </div>
-                                            <Badge variant="outline" className={`text-[10px] px-1.5 py-0 shrink-0 ${m.isPermanent ? 'border-red-700 text-red-400' : 'border-amber-700 text-amber-400'}`}>
-                                                {m.isPermanent ? 'BLOCKED' : '429'}
-                                            </Badge>
-                                        </div>
-                                    ))}
-                                </CardContent>
-                            </Card>
-                        )}
-
-                    {/* Recent Fallback Decisions — ring-buffer from CoreModelSelector showing provider substitutions */}
-                    {fallbackHistoryError ? (
-                        <Card className="bg-zinc-900 border-red-900/40 shadow-xl">
-                            <CardHeader className="pb-2">
-                                <CardTitle className="text-sm font-bold text-red-400 uppercase tracking-widest flex items-center gap-2">
-                                    <AlertCircle className="h-4 w-4 text-red-400" />
-                                    Recent Fallback Decisions
-                                </CardTitle>
-                            </CardHeader>
-                            <CardContent className="pt-2 text-sm text-red-300">
-                                {fallbackHistoryError.message}
-                            </CardContent>
-                        </Card>
-                    ) : fallbackHistory && fallbackHistory.length > 0 && (
-                        <Card className="bg-zinc-900 border-amber-900/30 shadow-xl">
-                            <CardHeader className="pb-2 flex flex-row items-center justify-between gap-3">
-                                <CardTitle className="text-sm font-bold text-amber-400 uppercase tracking-widest flex items-center gap-2">
-                                    <Zap className="h-4 w-4 text-amber-400" />
-                                    Recent Fallback Decisions
-                                </CardTitle>
-                                <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() => clearFallbackHistoryMutation.mutate()}
-                                    disabled={clearFallbackHistoryMutation.isPending}
-                                    title="Clear the in-memory fallback decision history"
-                                    aria-label="Clear fallback decision history"
-                                    className="border-zinc-700 text-zinc-300 hover:bg-zinc-800"
-                                >
-                                    {clearFallbackHistoryMutation.isPending ? <Loader2 className="mr-1 h-3 w-3 animate-spin" /> : null}
-                                    Clear
-                                </Button>
-                            </CardHeader>
-                            <CardContent className="pt-2 space-y-1.5 max-h-64 overflow-y-auto">
-                                <div className="mb-2 space-y-2 rounded-lg border border-zinc-800/70 bg-black/30 p-2 text-[10px]">
-                                    <div className="flex flex-wrap items-center gap-2">
-                                        <span className="text-zinc-500 uppercase tracking-wider">Cause</span>
-                                        {([
-                                            { value: 'all', label: 'All' },
-                                            { value: 'fallback_provider', label: 'Fallback' },
-                                            { value: 'budget_forced_local', label: 'Budget' },
-                                            { value: 'emergency_fallback', label: 'Emergency' },
-                                        ] as const).map((option) => {
-                                            const active = fallbackHistoryCauseFilter === option.value;
-                                            const count = option.value === 'all'
-                                                ? fallbackHistoryRows.length
-                                                : (fallbackHistoryCauseCounts[option.value] ?? 0);
-                                            return (
-                                                <button
-                                                    key={`fallback-cause-filter-${option.value}`}
-                                                    type="button"
-                                                    onClick={() => setFallbackHistoryCauseFilter(option.value)}
-                                                    className={`rounded border px-2 py-1 transition-colors ${active
-                                                        ? 'border-amber-500/50 bg-amber-500/15 text-amber-200'
-                                                        : 'border-zinc-700 bg-zinc-950/70 text-zinc-300 hover:bg-zinc-800'
-                                                        }`}
-                                                    title={`Filter fallback history by ${option.label.toLowerCase()} causes`}
-                                                    aria-label={`Filter fallback history by ${option.label} causes`}
-                                                >
-                                                    {option.label} ({count})
-                                                </button>
-                                            );
-                                        })}
-                                    </div>
-
-                                    <div className="flex flex-wrap items-center gap-2">
-                                        <span className="text-zinc-500 uppercase tracking-wider">Task</span>
-                                        <button
-                                            type="button"
-                                            onClick={() => setFallbackHistoryTaskFilter('all')}
-                                            className={`rounded border px-2 py-1 transition-colors ${fallbackHistoryTaskFilter === 'all'
-                                                ? 'border-cyan-500/50 bg-cyan-500/15 text-cyan-200'
-                                                : 'border-zinc-700 bg-zinc-950/70 text-zinc-300 hover:bg-zinc-800'
-                                                }`}
-                                            title="Show all task types"
-                                            aria-label="Show all task types in fallback history"
-                                        >
-                                            All ({fallbackHistoryRows.length})
-                                        </button>
-                                        {fallbackHistoryTaskOptions.map((taskTypeOption) => (
-                                            <button
-                                                key={`fallback-task-filter-${taskTypeOption}`}
-                                                type="button"
-                                                onClick={() => setFallbackHistoryTaskFilter(taskTypeOption)}
-                                                className={`rounded border px-2 py-1 capitalize transition-colors ${fallbackHistoryTaskFilter === taskTypeOption
-                                                    ? 'border-cyan-500/50 bg-cyan-500/15 text-cyan-200'
-                                                    : 'border-zinc-700 bg-zinc-950/70 text-zinc-300 hover:bg-zinc-800'
-                                                    }`}
-                                                title={`Filter fallback history to ${formatTaskRoutingLabel(taskTypeOption).toLowerCase()} decisions`}
-                                                aria-label={`Filter fallback history to ${formatTaskRoutingLabel(taskTypeOption)} decisions`}
-                                            >
-                                                {formatTaskRoutingLabel(taskTypeOption)}
-                                            </button>
-                                        ))}
-                                    </div>
-
-                                    <div className="text-zinc-500">
-                                        showing {filteredFallbackHistoryRows.length} of {fallbackHistoryRows.length} decisions
-                                    </div>
-                                </div>
-
-                                {filteredFallbackHistoryRows.map((event) => {
-                                    const causeColor =
-                                        event.causeCode === 'emergency_fallback' ? 'text-red-400 border-red-800' :
-                                        event.causeCode === 'budget_forced_local' ? 'text-orange-400 border-orange-800' :
-                                        'text-amber-300 border-amber-800';
-                                    const causeLabel = formatFallbackCauseLabel(event.causeCode).toUpperCase();
-                                    const elapsed = Math.round((Date.now() - event.timestamp) / 1000);
-                                    const elapsedLabel = elapsed < 60 ? `${elapsed}s ago` : elapsed < 3600 ? `${Math.round(elapsed / 60)}m ago` : `${Math.round(elapsed / 3600)}h ago`;
-                                    return (
-                                        <div key={event.id} className={`flex items-start gap-2 rounded-lg border p-2 text-xs ${causeColor}`}>
-                                            <div className="shrink-0 mt-0.5">
-                                                <Badge variant="outline" className={`text-[9px] px-1 py-0 ${causeColor}`}>{causeLabel}</Badge>
-                                            </div>
-                                            <div className="flex-1 min-w-0">
-                                                <div className="flex items-center gap-1.5 flex-wrap">
-                                                    {event.requestedProvider && event.requestedProvider !== event.selectedProvider && (
-                                                        <span className="text-zinc-400 line-through">{event.requestedProvider}</span>
-                                                    )}
-                                                    {event.requestedProvider && event.requestedProvider !== event.selectedProvider && (
-                                                        <span className="text-zinc-500">→</span>
-                                                    )}
-                                                    <span className="font-semibold text-zinc-100 capitalize">{event.selectedProvider}/{event.selectedModelId}</span>
-                                                </div>
-                                                <div className="text-zinc-500 mt-0.5">
-                                                    {formatTaskRoutingLabel(event.taskType)} · {formatRoutingStrategyLabel(event.strategy as BillingRoutingStrategy)} · {formatFallbackReasonLabel(event.reason)}
-                                                </div>
-                                            </div>
-                                            <div className="shrink-0 text-zinc-600 text-[10px] pt-0.5">{elapsedLabel}</div>
-                                        </div>
-                                    );
-                                })}
-                                {filteredFallbackHistoryRows.length === 0 ? (
-                                    <div className="rounded-lg border border-dashed border-zinc-800 p-3 text-xs text-zinc-500 text-center">
-                                        No fallback decisions match the selected filters.
-                                    </div>
-                                ) : null}
-                            </CardContent>
-                        </Card>
-                    )}
-
-                    {/* Routing Fallback Chain */}
-                    <Card className="bg-zinc-900 border-zinc-800 shadow-xl">
-                        <CardHeader className="pb-2">
-                            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                                <CardTitle className="text-sm font-bold text-zinc-400 uppercase tracking-widest flex items-center gap-2">
-                                    <Zap className="h-4 w-4 text-amber-500" />
-                                    Execution Fallback Chain
-                                </CardTitle>
-                                <select
-                                    value={fallbackTaskType}
-                                    onChange={(event) => setFallbackTaskType(event.target.value as BillingTaskRoutingRuleSummary['taskType'])}
-                                    className="rounded-md border border-zinc-700 bg-zinc-950 px-2 py-1.5 text-xs text-zinc-200 outline-none focus:border-amber-500"
-                                    aria-label="Inspect fallback chain for task type"
-                                >
-                                    {FALLBACK_TASK_OPTIONS.map((taskType) => (
-                                        <option key={taskType} value={taskType}>{formatTaskRoutingLabel(taskType)}</option>
-                                    ))}
-                                </select>
-                            </div>
-                        </CardHeader>
-                        <CardContent className="pt-2">
-                            {isFallbackLoading ? (
-                                <div className="flex justify-center py-6"><Loader2 className="w-6 h-6 animate-spin text-zinc-500" /></div>
-                            ) : fallbackUnavailable ? (
-                                <div className="rounded-lg border border-red-900/30 bg-red-950/10 px-3 py-4 text-sm text-red-300">
-                                    {fallbackError?.message ?? 'Fallback chain is unavailable.'}
-                                </div>
-                            ) : (
-                                <div className="space-y-3">
-                                    <div className="rounded-lg border border-zinc-800/60 bg-black/30 px-3 py-2 text-[11px] text-zinc-500">
-                                        Ranked providers for <span className="font-semibold text-zinc-300">{formatTaskRoutingLabel(fallbackSelectedTaskType)}</span> work.
-                                    </div>
-                                    {fallbackChain.length ? fallbackChain.map((link, idx: number) => (
-                                        <div key={idx} className="flex items-center gap-3 p-3 rounded-lg bg-black/40 border border-zinc-800/50">
-                                            <div className="w-6 h-6 rounded-full bg-amber-500/10 text-amber-500 flex items-center justify-center font-bold text-xs shrink-0 border border-amber-500/20">
-                                                {link.priority}
-                                            </div>
-                                            <div className="flex-1 min-w-0">
-                                                <div className="flex items-center gap-2">
-                                                    <span className="font-bold text-zinc-200 capitalize text-sm truncate">{link.provider}</span>
-                                                    {link.model ? <Badge variant="outline" className="text-[10px] px-1.5 py-0 bg-zinc-800 text-zinc-400 border-zinc-700 truncate">{link.model}</Badge> : null}
-                                                </div>
-                                                <div className="text-xs text-zinc-500 mt-0.5 truncate">{formatFallbackReasonLabel(link.reason)}</div>
-                                            </div>
-                                        </div>
-                                    )) : (
-                                        <div className="rounded-lg border border-dashed border-zinc-800 bg-black/20 px-3 py-4 text-sm text-zinc-500">
-                                            No ranked providers are currently available for {formatTaskRoutingLabel(fallbackTaskType).toLowerCase()} work.
-                                        </div>
-                                    )}
-                                </div>
-                            )}
-                        </CardContent>
-                    </Card>
-
-                    <Card className="bg-zinc-900 border-zinc-800 shadow-xl">
-                        <CardHeader className="pb-2">
-                            <CardTitle className="text-sm font-bold text-zinc-400 uppercase tracking-widest flex items-center gap-2">
-                                <Settings className="h-4 w-4 text-cyan-400" />
-                                Task Routing Matrix
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent className="pt-2">
-                            {isTaskRoutingLoading ? (
-                                <div className="flex justify-center py-6"><Loader2 className="w-6 h-6 animate-spin text-zinc-500" /></div>
-                            ) : routingUnavailable ? (
-                                <div className="rounded-lg border border-red-900/30 bg-red-950/10 px-3 py-4 text-sm text-red-300">
-                                    {taskRoutingError?.message ?? 'Task routing data is unavailable.'}
-                                </div>
-                            ) : (
-                                <div className="space-y-3">
-                                    <div className="rounded-lg border border-zinc-800/60 bg-black/30 px-3 py-3 text-xs text-zinc-500 space-y-3">
-                                        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                                            <div>
-                                                Default routing strategy: <span className="font-semibold text-zinc-300">{formatRoutingStrategyLabel(taskRouting?.defaultStrategy ?? 'best')}</span>
-                                            </div>
-                                            <div className="flex items-center gap-2">
-                                                {setRoutingStrategyMutation.isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin text-cyan-400" /> : null}
-                                                <select
-                                                    value={defaultRoutingStrategy}
-                                                    onChange={handleDefaultStrategyChange}
-                                                    disabled={setRoutingStrategyMutation.isPending || setTaskRoutingRuleMutation.isPending}
-                                                    className="rounded-md border border-zinc-700 bg-zinc-950 px-2 py-1.5 text-xs text-zinc-200 outline-none focus:border-cyan-500"
-                                                    aria-label="Default provider routing strategy"
-                                                >
-                                                    {ROUTING_STRATEGY_OPTIONS.map((option) => (
-                                                        <option key={option.value} value={option.value}>{option.label}</option>
-                                                    ))}
-                                                </select>
-                                            </div>
-                                        </div>
-                                        <div className="text-[11px] text-zinc-500">
-<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/billing/page.tsx
-                                            Changes apply to the next model-selection decision immediately, so you can tune cost vs quality without restarting HyperCode.
-=======
-                                            Changes apply to the next model-selection decision immediately, so you can tune cost vs quality without restarting borg.
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/billing/page.tsx
                                         </div>
                                     </div>
                                     {routingRules.map((rule) => (
@@ -967,11 +568,7 @@ export default function ProviderAuthBillingMatrix() {
                                 Provider Portals & Subscriptions
                             </CardTitle>
                             <p className="text-sm text-zinc-500 mt-2">
-<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/billing/page.tsx
                                 Jump straight to API keys, usage dashboards, billing consoles, and plan-management pages for the providers HyperCode knows about.
-=======
-                                Jump straight to API keys, usage dashboards, billing consoles, and plan-management pages for the providers borg knows about.
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/billing/page.tsx
                             </p>
                         </CardHeader>
                         <CardContent className="p-6">

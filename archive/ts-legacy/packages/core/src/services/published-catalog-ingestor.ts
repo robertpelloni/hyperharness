@@ -329,11 +329,7 @@ async function safeFetch(url: string, options?: { timeoutMs?: number }): Promise
     try {
         const response = await fetch(url, {
             signal: controller.signal,
-<<<<<<< HEAD:archive/ts-legacy/packages/core/src/services/published-catalog-ingestor.ts
             headers: { "Accept": "application/json", "User-Agent": "HyperCode/MCP-Catalog-Ingestor" },
-=======
-            headers: { "Accept": "application/json", "User-Agent": "borg/MCP-Catalog-Ingestor" },
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/services/published-catalog-ingestor.ts
         });
         const contentType = (readHeader(response.headers, "content-type") ?? "").toLowerCase();
         if (!response.ok) {
@@ -381,16 +377,12 @@ type GlamaServer = {
 
 export class GlamaAiAdapter implements CatalogSourceAdapter {
     readonly name = "glama.ai";
-<<<<<<< HEAD:archive/ts-legacy/packages/core/src/services/published-catalog-ingestor.ts
     // The original /api/mcp/servers endpoint now returns HTML.
     // Try multiple candidate endpoints in order; first success wins.
     private readonly candidateUrls = [
         "https://glama.ai/api/mcp/servers?limit=200",
         "https://glama.ai/api/mcp/servers",
     ];
-=======
-    private readonly baseUrl = "https://glama.ai/api/mcp/servers";
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/services/published-catalog-ingestor.ts
 
     async ingest(): Promise<IngestResult> {
         const result: IngestResult = {
@@ -401,7 +393,6 @@ export class GlamaAiAdapter implements CatalogSourceAdapter {
         };
 
         try {
-<<<<<<< HEAD:archive/ts-legacy/packages/core/src/services/published-catalog-ingestor.ts
             // Glama returns a paginated or flat list — try each candidate URL
             let servers: GlamaServer[] = [];
             for (const url of this.candidateUrls) {
@@ -420,15 +411,6 @@ export class GlamaAiAdapter implements CatalogSourceAdapter {
                     // Try next URL
                 }
             }
-=======
-            // Glama returns a paginated or flat list — attempt to fetch first page
-            const payload = await safeFetch(`${this.baseUrl}?limit=200`) as any;
-            const servers: GlamaServer[] = Array.isArray(payload?.servers)
-                ? payload.servers
-                : Array.isArray(payload)
-                ? payload
-                : [];
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/services/published-catalog-ingestor.ts
 
             result.fetched = servers.length;
 
@@ -452,11 +434,7 @@ export class GlamaAiAdapter implements CatalogSourceAdapter {
                     await publishedCatalogRepository.upsertSource({
                         server_uuid: server.uuid,
                         source_name: this.name,
-<<<<<<< HEAD:archive/ts-legacy/packages/core/src/services/published-catalog-ingestor.ts
                         source_url: `https://glama.ai/api/mcp/servers/${s.slug ?? s.id ?? ""}`,
-=======
-                        source_url: `${this.baseUrl}/${s.slug ?? s.id ?? ""}`,
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/services/published-catalog-ingestor.ts
                         raw_payload: s as Record<string, unknown>,
                     });
 

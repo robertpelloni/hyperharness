@@ -6,17 +6,12 @@ import { shouldIgnoreExpectedStartupError } from '../reactors/HealerReactor.js';
 describe('Healer degraded startup handling', () => {
     it('ignores expected SQLite-unavailable startup errors', () => {
         expect(shouldIgnoreExpectedStartupError(
-<<<<<<< HEAD:archive/ts-legacy/packages/core/src/services/HealerService.test.ts
             'SQLite runtime is unavailable for HyperCode DB-backed features (Could not locate the bindings file. Tried: better_sqlite3.node)',
-=======
-            'SQLite runtime is unavailable for borg DB-backed features (Could not locate the bindings file. Tried: better_sqlite3.node)',
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/services/HealerService.test.ts
         )).toBe(true);
     });
 
     it('parses fenced JSON diagnoses without logging a parse failure', async () => {
         const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
-<<<<<<< HEAD:archive/ts-legacy/packages/core/src/services/HealerService.test.ts
         const generateText = vi.fn(async () => ({
             content: [
                 '```json',
@@ -34,24 +29,6 @@ describe('Healer degraded startup handling', () => {
         const service = new HealerService(
             {
                 generateText,
-=======
-        const service = new HealerService(
-            {
-                generateText: vi.fn(async () => ({
-                    content: [
-                        '```json',
-                        '{',
-                        '  "errorType": "RuntimeError",',
-                        '  "description": "SQLite runtime is unavailable.",',
-                        '  "file": "packages/core/src/db/index.ts",',
-                        '  "line": 724,',
-                        '  "suggestedFix": "Install or rebuild better-sqlite3.",',
-                        '  "confidence": 0.92',
-                        '}',
-                        '```',
-                    ].join('\n'),
-                })),
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/services/HealerService.test.ts
             } as any,
             {} as any,
         );
@@ -70,15 +47,5 @@ describe('Healer degraded startup handling', () => {
             'Failed to parse Healer diagnosis',
             expect.anything(),
         );
-<<<<<<< HEAD:archive/ts-legacy/packages/core/src/services/HealerService.test.ts
-        expect(generateText).toHaveBeenCalledWith(
-            'openrouter',
-            'xiaomi/mimo-v2-flash:free',
-            'You are a JSON-only debugging tool.',
-            expect.any(String),
-            {},
-        );
-=======
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/services/HealerService.test.ts
     });
 });

@@ -1,31 +1,12 @@
 "use client";
 
 import { useState } from 'react';
-<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/mcp/policies/page.tsx
 import { Card, CardHeader, CardTitle, CardContent } from "@hypercode/ui";
 import { Button } from "@hypercode/ui";
-=======
-import { Card, CardHeader, CardTitle, CardContent } from "@borg/ui";
-import { Button } from "@borg/ui";
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/mcp/policies/page.tsx
 import { Loader2, Plus, Shield, Trash2, Edit2 } from "lucide-react";
 import { trpc } from '@/utils/trpc';
 import { toast } from 'sonner';
-<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/mcp/policies/page.tsx
 import { PageStatusBanner } from '@/components/PageStatusBanner';
-=======
->>>>>>> origin/rewrite/main-sanitized:apps/web/src/app/dashboard/mcp/policies/page.tsx
-import { normalizePolicies } from './policies-page-normalizers';
-
-export default function PoliciesDashboard() {
-    const policiesQuery = trpc.policies.list.useQuery();
-    const { data: policies, isLoading, refetch } = policiesQuery;
-    const [isCreateOpen, setIsCreateOpen] = useState(false);
-    const normalizedPolicies = normalizePolicies(policies);
-<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/mcp/policies/page.tsx
-    const policiesUnavailable = policiesQuery.isError || (policies != null && !Array.isArray(policies));
-=======
->>>>>>> origin/rewrite/main-sanitized:apps/web/src/app/dashboard/mcp/policies/page.tsx
 
     return (
         <div className="p-8 space-y-8">
@@ -66,15 +47,6 @@ export default function PoliciesDashboard() {
                     <div className="col-span-3 flex justify-center p-12">
                         <Loader2 className="h-8 w-8 animate-spin text-zinc-500" />
                     </div>
-<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/mcp/policies/page.tsx
-                ) : policiesUnavailable ? (
-                    <div className="col-span-3 text-center p-12 text-red-300 bg-red-950/20 rounded-lg border border-red-900/40">
-                        <Shield className="h-12 w-12 mx-auto mb-4 opacity-60" />
-                        <p className="text-lg font-medium">Policy inventory unavailable</p>
-                        <p className="text-sm mt-1">{policiesQuery.isError ? policiesQuery.error.message : 'Malformed policy payload.'}</p>
-                    </div>
-=======
->>>>>>> origin/rewrite/main-sanitized:apps/web/src/app/dashboard/mcp/policies/page.tsx
                 ) : normalizedPolicies.length === 0 ? (
                     <div className="col-span-3 text-center p-12 text-zinc-500 bg-zinc-900/50 rounded-lg border border-zinc-800 border-dashed">
                         <Shield className="h-12 w-12 mx-auto mb-4 opacity-30" />

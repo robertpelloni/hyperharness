@@ -193,26 +193,7 @@ function createSnapshot(
         authMethod: connection.authMethod,
         configured: true,
         authenticated: true,
-<<<<<<< HEAD:archive/ts-legacy/packages/core/src/providers/ProviderBalanceService.ts
         authTruth: 'authenticated',
-=======
->>>>>>> origin/rewrite/main-sanitized:packages/core/src/providers/ProviderBalanceService.ts
-        detail,
-        used: summary.used,
-        limit: summary.limit,
-        remaining: summary.remaining,
-        resetDate: summary.resetDate,
-        rateLimitRpm: null,
-        tier,
-        availability: 'available',
-        windows,
-        source: 'balance',
-        connectionId: connection.id,
-<<<<<<< HEAD:archive/ts-legacy/packages/core/src/providers/ProviderBalanceService.ts
-        quotaConfidence: 'real-time',
-        quotaRefreshedAt: new Date().toISOString(),
-=======
->>>>>>> origin/rewrite/main-sanitized:packages/core/src/providers/ProviderBalanceService.ts
     };
 }
 
@@ -223,26 +204,7 @@ function createMissingSnapshot(spec: ProviderBalanceSpec): ProviderQuotaSnapshot
         authMethod: spec.defaultAuthMethod,
         configured: false,
         authenticated: false,
-<<<<<<< HEAD:archive/ts-legacy/packages/core/src/providers/ProviderBalanceService.ts
         authTruth: 'not_configured',
-=======
->>>>>>> origin/rewrite/main-sanitized:packages/core/src/providers/ProviderBalanceService.ts
-        detail: `No ${spec.provider} balance connection configured.`,
-        used: 0,
-        limit: null,
-        remaining: null,
-        resetDate: null,
-        rateLimitRpm: null,
-        tier: 'unknown',
-        availability: 'missing_auth',
-        source: 'balance',
-        connectionId: null,
-        windows: [],
-<<<<<<< HEAD:archive/ts-legacy/packages/core/src/providers/ProviderBalanceService.ts
-        quotaConfidence: 'unknown',
-        quotaRefreshedAt: null,
-=======
->>>>>>> origin/rewrite/main-sanitized:packages/core/src/providers/ProviderBalanceService.ts
     };
 }
 
@@ -254,27 +216,7 @@ function createErrorSnapshot(spec: ProviderBalanceSpec, connection: ProviderBala
         authMethod: connection.authMethod,
         configured: true,
         authenticated: true,
-<<<<<<< HEAD:archive/ts-legacy/packages/core/src/providers/ProviderBalanceService.ts
         authTruth: 'authenticated',
-=======
->>>>>>> origin/rewrite/main-sanitized:packages/core/src/providers/ProviderBalanceService.ts
-        detail: 'Balance lookup failed.',
-        used: 0,
-        limit: null,
-        remaining: null,
-        resetDate: null,
-        rateLimitRpm: null,
-        tier: 'unknown',
-        availability: deriveAvailability(error),
-        lastError: message,
-        source: 'balance',
-        connectionId: connection.id,
-        windows: [],
-<<<<<<< HEAD:archive/ts-legacy/packages/core/src/providers/ProviderBalanceService.ts
-        quotaConfidence: 'unknown',
-        quotaRefreshedAt: null,
-=======
->>>>>>> origin/rewrite/main-sanitized:packages/core/src/providers/ProviderBalanceService.ts
     };
 }
 
@@ -611,21 +553,6 @@ class KimiCodingQuotaProvider implements ProviderQuotaProvider {
             headers: {
                 Authorization: `Bearer ${connection.accessToken}`,
                 'Content-Type': 'application/json',
-<<<<<<< HEAD:archive/ts-legacy/packages/core/src/providers/ProviderBalanceService.ts
-<<<<<<< HEAD:archive/ts-legacy/packages/core/src/providers/ProviderBalanceService.ts
-                'X-Msh-Platform': 'hypercode',
-                'X-Msh-Version': '0.1.0',
-                'X-Msh-Device-Model': 'hypercode-core',
-=======
-                'X-Msh-Platform': 'borg',
-                'X-Msh-Version': '0.1.0',
-                'X-Msh-Device-Model': 'borg-core',
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/providers/ProviderBalanceService.ts
-=======
-                'X-Msh-Platform': 'borg',
-                'X-Msh-Version': '0.1.0',
-                'X-Msh-Device-Model': 'borg-core',
->>>>>>> origin/rewrite/main-sanitized:packages/core/src/providers/ProviderBalanceService.ts
                 'X-Msh-Device-Id': connection.id,
             },
         });

@@ -1,15 +1,9 @@
 "use client";
 
 import { useState } from 'react';
-<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/mcp/scripts/page.tsx
 import { Card, CardHeader, CardTitle, CardContent } from "@hypercode/ui";
 import { Button } from "@hypercode/ui";
 import { Loader2, Plus, FileCode, Trash2, Play, Edit2, TerminalSquare, XCircle } from "lucide-react";
-=======
-import { Card, CardHeader, CardTitle, CardContent } from "@borg/ui";
-import { Button } from "@borg/ui";
-import { Loader2, Plus, FileCode, Trash2, Play, Edit2 } from "lucide-react";
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/mcp/scripts/page.tsx
 import { trpc } from '@/utils/trpc';
 import { toast } from 'sonner';
 import { normalizeSavedScripts } from './scripts-page-normalizers';
@@ -28,7 +22,6 @@ function isSavedScriptRowPayload(value: unknown): value is {
         && typeof (value as { code?: unknown }).code === 'string';
 }
 
-<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/mcp/scripts/page.tsx
 type SavedScriptFormData = {
     uuid?: string;
     name: string;
@@ -49,22 +42,10 @@ type SavedScriptExecutionResult = {
     };
 };
 
-=======
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/mcp/scripts/page.tsx
-export default function ScriptsDashboard() {
-    const scriptsQuery = trpc.savedScripts.list.useQuery();
-    const { data: scripts, isLoading, refetch } = scriptsQuery;
-    const [isCreateOpen, setIsCreateOpen] = useState(false);
-<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/mcp/scripts/page.tsx
-    const [editingScript, setEditingScript] = useState<SavedScriptFormData | null>(null);
-    const [lastExecution, setLastExecution] = useState<SavedScriptExecutionResult | null>(null);
-=======
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/mcp/scripts/page.tsx
     const normalizedScripts = normalizeSavedScripts(scripts);
     const scriptsUnavailable = scriptsQuery.isError
         || (scripts != null && (!Array.isArray(scripts) || !scripts.every(isSavedScriptRowPayload)));
 
-<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/mcp/scripts/page.tsx
     const handleCreateSuccess = () => {
         setIsCreateOpen(false);
         refetch();
@@ -75,33 +56,12 @@ export default function ScriptsDashboard() {
         refetch();
     };
 
-=======
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/mcp/scripts/page.tsx
-    return (
-        <div className="p-8 space-y-8">
-            <div className="flex justify-between items-center">
-                <div>
-                    <h1 className="text-3xl font-bold tracking-tight text-white">Saved Scripts</h1>
-                    <p className="text-zinc-500">
-                        Manage and execute reusable automation scripts
-                    </p>
-                </div>
-                <div className="flex gap-2">
-<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/mcp/scripts/page.tsx
-                    <Button onClick={() => {
-                        setEditingScript(null);
-                        setIsCreateOpen((open) => !open);
-                    }} className="bg-blue-600 hover:bg-blue-500">
-=======
-                    <Button onClick={() => setIsCreateOpen(!isCreateOpen)} className="bg-blue-600 hover:bg-blue-500">
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/mcp/scripts/page.tsx
                         <Plus className="mr-2 h-4 w-4" /> New Script
                     </Button>
                 </div>
             </div>
 
             {isCreateOpen && (
-<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/mcp/scripts/page.tsx
                 <ScriptForm
                     mode="create"
                     onCancel={() => setIsCreateOpen(false)}
@@ -160,9 +120,6 @@ export default function ScriptsDashboard() {
                         )}
                     </CardContent>
                 </Card>
-=======
-                <CreateScriptForm onSuccess={() => { setIsCreateOpen(false); refetch(); }} />
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/mcp/scripts/page.tsx
             )}
 
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
@@ -183,7 +140,6 @@ export default function ScriptsDashboard() {
                         <p className="text-sm mt-1">Save your common automation tasks here.</p>
                     </div>
                 ) : normalizedScripts.map((script) => (
-<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/mcp/scripts/page.tsx
                     <ScriptCard
                         key={script.uuid}
                         script={script}
@@ -194,16 +150,12 @@ export default function ScriptsDashboard() {
                             setEditingScript(nextScript);
                         }}
                     />
-=======
-                    <ScriptCard key={script.uuid} script={script} onUpdate={refetch} />
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/mcp/scripts/page.tsx
                 ))}
             </div>
         </div>
     );
 }
 
-<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/mcp/scripts/page.tsx
 function ScriptCard({
     script,
     onUpdate,
@@ -215,9 +167,6 @@ function ScriptCard({
     onExecution: (result: SavedScriptExecutionResult) => void;
     onEdit: (script: SavedScriptFormData) => void;
 }) {
-=======
-function ScriptCard({ script, onUpdate }: { script: any; onUpdate: () => void }) {
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/mcp/scripts/page.tsx
     const deleteMutation = trpc.savedScripts.delete.useMutation({
         onSuccess: () => {
             toast.success("Script deleted");
@@ -231,12 +180,7 @@ function ScriptCard({ script, onUpdate }: { script: any; onUpdate: () => void })
     const runMutation = trpc.savedScripts.execute.useMutation({
         onSuccess: (result) => {
             toast.success("Script executed");
-<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/mcp/scripts/page.tsx
             onExecution(result as SavedScriptExecutionResult);
-=======
-            console.log("Script Result:", result);
-            // Could show a modal result dialog here
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/mcp/scripts/page.tsx
         },
         onError: (err) => {
             toast.error(`Execution failed: ${err.message}`);
@@ -265,7 +209,6 @@ function ScriptCard({ script, onUpdate }: { script: any; onUpdate: () => void })
                     <button
                         onClick={(e) => {
                             e.stopPropagation();
-<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/mcp/scripts/page.tsx
                             onEdit(script);
                         }}
                         className="text-zinc-600 hover:text-blue-400 transition-colors opacity-0 group-hover:opacity-100"
@@ -276,58 +219,6 @@ function ScriptCard({ script, onUpdate }: { script: any; onUpdate: () => void })
                     <button
                         onClick={(e) => {
                             e.stopPropagation();
-=======
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/mcp/scripts/page.tsx
-                            if (confirm(`Delete script "${script.name}"?`)) {
-                                deleteMutation.mutate({ uuid: script.uuid });
-                            }
-                        }}
-                        className="text-zinc-600 hover:text-red-400 transition-colors opacity-0 group-hover:opacity-100"
-                    >
-                        <Trash2 className="h-4 w-4" />
-                    </button>
-                </div>
-            </CardHeader>
-            <CardContent>
-                <div className="space-y-4">
-                    <p className="text-sm text-zinc-400 min-h-[40px] line-clamp-2">
-                        {script.description || "No description."}
-                    </p>
-                    <div className="bg-black/30 p-2 rounded border border-zinc-800">
-                        <pre className="text-[10px] text-zinc-500 font-mono h-20 overflow-hidden opacity-70">
-                            {script.code}
-                        </pre>
-                    </div>
-                </div>
-            </CardContent>
-        </Card>
-    );
-}
-
-<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/mcp/scripts/page.tsx
-function ScriptForm({
-    mode,
-    initialData,
-    onCancel,
-    onSuccess,
-}: {
-    mode: 'create' | 'edit';
-    initialData?: SavedScriptFormData | null;
-    onCancel: () => void;
-    onSuccess: () => void;
-}) {
-    const [formData, setFormData] = useState<SavedScriptFormData>({
-        uuid: initialData?.uuid,
-        name: initialData?.name ?? '',
-        description: initialData?.description ?? '',
-        code: initialData?.code ?? `// Write your script here
-=======
-function CreateScriptForm({ onSuccess }: { onSuccess: () => void }) {
-    const [formData, setFormData] = useState({
-        name: '',
-        description: '',
-        code: `// Write your script here
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/mcp/scripts/page.tsx
 // Use 'await mcp.toolName({...})' to call tools
 
 console.log("Hello World");
@@ -344,7 +235,6 @@ console.log("Hello World");
         }
     });
 
-<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/mcp/scripts/page.tsx
     const updateMutation = trpc.savedScripts.update.useMutation({
         onSuccess: () => {
             toast.success("Script updated");
@@ -373,11 +263,6 @@ console.log("Hello World");
             description: formData.description,
             code: formData.code,
         });
-=======
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        createMutation.mutate(formData);
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/mcp/scripts/page.tsx
     };
 
     return (
@@ -385,16 +270,10 @@ console.log("Hello World");
             <CardContent className="pt-6">
                 <div className="flex justify-between items-start mb-6">
                     <div className="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium bg-yellow-500/10 text-yellow-400 border border-yellow-500/20">
-<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/mcp/scripts/page.tsx
                         {mode === 'create' ? <Plus className="h-3 w-3" /> : <Edit2 className="h-3 w-3" />}
                         {mode === 'create' ? 'New Script' : 'Edit Script'}
                     </div>
                     <Button variant="ghost" size="sm" onClick={onCancel} className="text-zinc-500 hover:text-white h-6 w-6 p-0 rounded-full">
-=======
-                        <Plus className="h-3 w-3" /> New Script
-                    </div>
-                    <Button variant="ghost" size="sm" onClick={onSuccess} className="text-zinc-500 hover:text-white h-6 w-6 p-0 rounded-full">
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/mcp/scripts/page.tsx
                         X
                     </Button>
                 </div>
@@ -429,7 +308,6 @@ console.log("Hello World");
                         />
                     </div>
 
-<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/mcp/scripts/page.tsx
                     <div className="flex justify-end gap-2 pt-2">
                         <Button type="button" variant="ghost" onClick={onCancel} className="text-zinc-400 hover:text-white">
                             Cancel
@@ -437,12 +315,6 @@ console.log("Hello World");
                         <Button type="submit" disabled={isPending} className="bg-yellow-600 hover:bg-yellow-500 text-white font-medium">
                             {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                             {mode === 'create' ? 'Save Script' : 'Update Script'}
-=======
-                    <div className="flex justify-end pt-2">
-                        <Button type="submit" disabled={createMutation.isPending} className="bg-yellow-600 hover:bg-yellow-500 text-white font-medium">
-                            {createMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                            Save Script
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/mcp/scripts/page.tsx
                         </Button>
                     </div>
                 </form>

@@ -29,11 +29,7 @@ Key architectural components include:
 - **CGO-Free Preference**: The project prefers pure Go implementations (like `glebarez/sqlite` over `modernc.org/sqlite`) to simplify cross-platform compilation and deployment.
 
 ## Current State & Recent Wiring
-<<<<<<< HEAD
 - **Deep Tool Wiring**: Recently, dummy stub implementations in the parity layer were successfully wired to their actual backend Go implementations. 
-=======
-- **Deep Tool Wiring**: Recently, dummy stub implementations in the parity layer were successfully wired to their actual backend Go implementations.
->>>>>>> origin/main
   - `TodoWrite` now updates a persistent `SessionTodoStore`.
   - `Agent` connects to the `subagents.Manager` to spawn tasks.
   - Web tools (`WebSearch`, `WebFetch`) map to real HTTP/Exa clients.
@@ -43,10 +39,6 @@ Key architectural components include:
 
 ## Future Roadmap Focus (TODO.md)
 The next primary objectives involve:
-<<<<<<< HEAD
 1. **Memory Enhancements**: Wired up SQLite FTS5 for knowledge bases and vector embeddings for semantic search, as well as project-scoped memory isolation and export/import.
-=======
-1. **Memory Enhancements**: Wiring up SQLite FTS5 for knowledge bases and vector embeddings for semantic search.
->>>>>>> origin/main
 2. **Deep MCP Integration**: Finalizing the bidirectional routing of internal tools exposed over the MCP server interface.
 3. **Comprehensive Testing**: Adding robust integration tests spanning the entire agent loop, tool execution pipelines, and MCP lifecycle.

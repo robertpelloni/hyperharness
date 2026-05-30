@@ -1,9 +1,5 @@
 import { SpecializedAgent } from '../mesh/SpecializedAgent.js';
-<<<<<<< HEAD:archive/ts-legacy/packages/core/src/agents/CoderAgent.ts
 import { LLMService } from '@hypercode/ai';
-=======
-import { LLMService } from '@borg/ai';
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/agents/CoderAgent.ts
 import fs from 'fs/promises';
 import path from 'path';
 
@@ -36,11 +32,7 @@ export class CoderAgent extends SpecializedAgent {
         console.log(`[CoderAgent] 🧠 Analyzing task: "${offer.task}"`);
 
         // 1. Think / Generate Code
-<<<<<<< HEAD:archive/ts-legacy/packages/core/src/agents/CoderAgent.ts
         const prompt = `You are a Coder Agent in the HyperCode Collective.
-=======
-        const prompt = `You are a Coder Agent in the borg Collective.
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/agents/CoderAgent.ts
 Task: ${offer.task}
 
 Return JSON with:

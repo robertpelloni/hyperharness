@@ -30,11 +30,7 @@ const DEFAULT_PASSTHROUGH_VARS = [
 ];
 
 const CLI_SPECIFIC_VARS: Record<CLIType, string[]> = {
-<<<<<<< HEAD:archive/ts-legacy/packages/core/src/orchestrator/council/services/environment-manager.ts
   hypercode: [],
-=======
-  borg: [],
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/orchestrator/council/services/environment-manager.ts
   opencode: ['OPENCODE_*', 'ANTHROPIC_API_KEY', 'OPENAI_API_KEY'],
   antigravity: ['ANTIGRAVITY_*', 'GOOGLE_API_KEY'],
   claude: ['ANTHROPIC_API_KEY', 'CLAUDE_*'],
@@ -233,11 +229,7 @@ class EnvironmentManager {
 
   getRequiredVarsForCLI(cliType: CLIType): string[] {
     const required: Record<CLIType, string[]> = {
-<<<<<<< HEAD:archive/ts-legacy/packages/core/src/orchestrator/council/services/environment-manager.ts
       hypercode: [],
-=======
-      borg: [],
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/orchestrator/council/services/environment-manager.ts
       opencode: [],
       antigravity: [],
       claude: ['ANTHROPIC_API_KEY'],

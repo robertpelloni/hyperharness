@@ -4,11 +4,7 @@ import { tmpdir } from 'node:os';
 
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-<<<<<<< HEAD:archive/ts-legacy/packages/cli/src/control-plane.test.ts
 import { queryTrpc, readLocalStartupProvenance, resolveControlPlaneLocation } from './control-plane.js';
-=======
-import { queryTrpc, resolveControlPlaneLocation } from './control-plane.js';
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/cli/src/control-plane.test.ts
 
 const tempDirs: string[] = [];
 
@@ -22,11 +18,7 @@ afterEach(() => {
 });
 
 function createTempDir(): string {
-<<<<<<< HEAD:archive/ts-legacy/packages/cli/src/control-plane.test.ts
   const dir = mkdtempSync(join(tmpdir(), 'hypercode-control-plane-'));
-=======
-  const dir = mkdtempSync(join(tmpdir(), 'borg-control-plane-'));
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/cli/src/control-plane.test.ts
   tempDirs.push(dir);
   return dir;
 }
@@ -46,11 +38,7 @@ describe('resolveControlPlaneLocation', () => {
   it('uses the lock file when available and rewrites wildcard hosts for local access', () => {
     const dataDir = createTempDir();
     writeFileSync(join(dataDir, 'lock'), JSON.stringify({
-<<<<<<< HEAD:archive/ts-legacy/packages/cli/src/control-plane.test.ts
       instanceId: 'hypercode-test',
-=======
-      instanceId: 'borg-test',
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/cli/src/control-plane.test.ts
       pid: 1234,
       port: 4555,
       host: '0.0.0.0',
@@ -77,7 +65,6 @@ describe('resolveControlPlaneLocation', () => {
   });
 });
 
-<<<<<<< HEAD:archive/ts-legacy/packages/cli/src/control-plane.test.ts
 describe('readLocalStartupProvenance', () => {
   it('derives control-plane port provenance from legacy lock files', () => {
     const dataDir = createTempDir();
@@ -99,72 +86,6 @@ describe('readLocalStartupProvenance', () => {
   });
 });
 
-=======
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/cli/src/control-plane.test.ts
-describe('queryTrpc', () => {
-  it('returns result data from a successful tRPC query', async () => {
-    const fetchImpl = vi.fn().mockResolvedValue({
-      ok: true,
-      status: 200,
-      json: async () => ({
-        result: {
-          data: {
-            nodeId: 'mesh-a',
-            peersCount: 2,
-          },
-        },
-      }),
-    });
-
-    await expect(queryTrpc<{ nodeId: string; peersCount: number }>('mesh.getStatus', undefined, {
-      upstream: 'http://localhost:4000/trpc',
-      fetchImpl: fetchImpl as unknown as typeof fetch,
-    })).resolves.toEqual({
-      nodeId: 'mesh-a',
-      peersCount: 2,
-    });
-
-    expect(fetchImpl).toHaveBeenCalledTimes(1);
-    const [url] = fetchImpl.mock.calls[0];
-    expect(String(url)).toBe('http://localhost:4000/trpc/mesh.getStatus');
-  });
-
-  it('serializes query input into the URL', async () => {
-    const fetchImpl = vi.fn().mockResolvedValue({
-      ok: true,
-      status: 200,
-      json: async () => ({
-        result: {
-          data: {
-            capabilities: ['git'],
-          },
-        },
-      }),
-    });
-
-    await queryTrpc<{ capabilities: string[] }>('mesh.queryCapabilities', {
-      nodeId: 'peer-a',
-      timeoutMs: 1500,
-    }, {
-      upstream: 'http://localhost:4000',
-      fetchImpl: fetchImpl as unknown as typeof fetch,
-    });
-
-    const [url] = fetchImpl.mock.calls[0];
-    expect(String(url)).toBe(
-      'http://localhost:4000/trpc/mesh.queryCapabilities?input=%7B%22nodeId%22%3A%22peer-a%22%2C%22timeoutMs%22%3A1500%7D',
-    );
-  });
-
-  it('surfaces transport failures with the resolved control-plane address', async () => {
-    await expect(queryTrpc('mesh.getStatus', undefined, {
-      upstream: 'http://localhost:4000',
-      fetchImpl: vi.fn().mockRejectedValue(new Error('connect ECONNREFUSED')) as unknown as typeof fetch,
-<<<<<<< HEAD:archive/ts-legacy/packages/cli/src/control-plane.test.ts
-    })).rejects.toThrow('Unable to reach HyperCode control plane at http://localhost:4000/trpc');
-=======
-    })).rejects.toThrow('Unable to reach borg control plane at http://localhost:4000/trpc');
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/cli/src/control-plane.test.ts
   });
 
   it('surfaces tRPC error payloads clearly', async () => {
@@ -179,10 +100,6 @@ describe('queryTrpc', () => {
           },
         }),
       }) as unknown as typeof fetch,
-<<<<<<< HEAD:archive/ts-legacy/packages/cli/src/control-plane.test.ts
     })).rejects.toThrow('HyperCode control plane query failed for mesh.getStatus: mesh unavailable');
-=======
-    })).rejects.toThrow('borg control plane query failed for mesh.getStatus: mesh unavailable');
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/cli/src/control-plane.test.ts
   });
 });

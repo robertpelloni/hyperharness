@@ -1272,11 +1272,7 @@ describe('dashboard home helpers', () => {
     });
   });
 
-<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/dashboard-home-view.test.tsx
   it('surfaces hypercode-memory seeding state in memory/context startup details', () => {
-=======
-  it('surfaces borg-memory seeding state in memory/context startup details', () => {
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/dashboard-home-view.test.tsx
     const startupStatus = {
       status: 'running',
       ready: false,
@@ -1811,11 +1807,7 @@ describe('DashboardHomeView', () => {
     expect(html).toContain('Integration Hub');
     expect(html).toContain('Server health and traffic');
     expect(html).toContain('Startup readiness');
-<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/dashboard-home-view.test.tsx
     expect(html).toContain('Install &amp; connect HyperCode');
-=======
-    expect(html).toContain('Install &amp; connect borg');
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/dashboard-home-view.test.tsx
     expect(html).toContain('Browser extensions');
     expect(html).toContain('Editor surfaces');
     expect(html).toContain('Client config sync');
@@ -1921,96 +1913,6 @@ describe('DashboardHomeView', () => {
     expect(html).toContain('No fallback chain is exposed yet. Configure providers to populate the routing order.');
   });
 
-<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/dashboard-home-view.test.tsx
-  it('renders persisted startup mode provenance when available', () => {
-    const html = renderToStaticMarkup(
-      <DashboardHomeView
-        generatedAtLabel="12:00:00 PM"
-        currentTimestamp={1_700_000_060_000}
-        mcpStatus={{ initialized: true, serverCount: 1, toolCount: 4, connectedCount: 1 }}
-        startupStatus={{
-          status: 'running',
-          ready: true,
-          uptime: 120,
-          startupMode: {
-            requestedRuntime: 'auto',
-            activeRuntime: 'go',
-            requestedPort: 4000,
-            activePort: 4012,
-            portDecision: 'fallback port selected before launch',
-            portReason: 'Port 4000 was already occupied before startup, so HyperCode selected 4012.',
-            launchMode: 'prebuilt Go binary',
-            dashboardMode: 'compatibility-only; skipped for Go runtime',
-            installDecision: 'skipped',
-            installReason: 'Go-primary dependencies already ready',
-            buildDecision: 'skipped',
-            buildReason: 'Go-primary build artifacts already current',
-            updatedAt: new Date(1_700_000_000_000).toISOString(),
-          },
-          checks: {
-            mcpAggregator: {
-              ready: true,
-              liveReady: true,
-              residentReady: true,
-              serverCount: 1,
-              connectedCount: 1,
-              residentConnectedCount: 1,
-              initialization: null,
-              persistedServerCount: 1,
-              persistedToolCount: 4,
-              advertisedServerCount: 1,
-              advertisedToolCount: 4,
-              advertisedAlwaysOnServerCount: 0,
-              advertisedAlwaysOnToolCount: 0,
-              inventoryReady: true,
-            },
-            configSync: { ready: true, status: null },
-            memory: { ready: true, initialized: true, agentMemory: true },
-            browser: { ready: true, active: false, pageCount: 0 },
-            sessionSupervisor: { ready: true, sessionCount: 0, restore: null },
-            extensionBridge: { ready: true, clientCount: 0 },
-            executionEnvironment: {
-              ready: true,
-              preferredShellId: 'pwsh',
-              preferredShellLabel: 'PowerShell 7',
-              shellCount: 1,
-              verifiedShellCount: 1,
-              toolCount: 3,
-              verifiedToolCount: 3,
-              harnessCount: 1,
-              verifiedHarnessCount: 1,
-              supportsPowerShell: true,
-              supportsPosixShell: false,
-            },
-          },
-        }}
-        servers={[]}
-        traffic={[]}
-        providers={[]}
-        fallbackChain={[]}
-        sessions={[]}
-      />,
-    );
-
-    expect(html).toContain('Startup mode');
-    expect(html).toContain('Requested runtime');
-    expect(html).toContain('auto');
-    expect(html).toContain('Active runtime: go');
-    expect(html).toContain('Launch mode');
-    expect(html).toContain('prebuilt Go binary');
-    expect(html).toContain('Dashboard: compatibility-only; skipped for Go runtime');
-    expect(html).toContain('Control-plane port');
-    expect(html).toContain('4012');
-    expect(html).toContain('Requested: 4000');
-    expect(html).toContain('fallback port selected before launch');
-    expect(html).toContain('Install decision');
-    expect(html).toContain('Go-primary dependencies already ready');
-    expect(html).toContain('Build decision');
-    expect(html).toContain('Go-primary build artifacts already current');
-  });
-
-=======
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/dashboard-home-view.test.tsx
   it('renders active alerts when the router, providers, or sessions degrade', () => {
     const html = renderToStaticMarkup(
       <DashboardHomeView

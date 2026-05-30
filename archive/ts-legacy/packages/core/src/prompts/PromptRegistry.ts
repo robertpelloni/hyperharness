@@ -16,11 +16,7 @@ export class PromptRegistry {
     private cache: Map<string, PromptTemplate> = new Map();
 
     constructor(storageDir?: string) {
-<<<<<<< HEAD:archive/ts-legacy/packages/core/src/prompts/PromptRegistry.ts
         this.storageDir = storageDir || path.join(process.cwd(), '.hypercode', 'prompts');
-=======
-        this.storageDir = storageDir || path.join(process.cwd(), '.borg', 'prompts');
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/prompts/PromptRegistry.ts
     }
 
     async initialize() {
@@ -53,7 +49,6 @@ export class PromptRegistry {
         return this.cache.get(id);
     }
 
-<<<<<<< HEAD:archive/ts-legacy/packages/core/src/prompts/PromptRegistry.ts
 =======
     list(): PromptTemplate[] {
         return Array.from(this.cache.values());
@@ -70,15 +65,6 @@ export class PromptRegistry {
     }
 
 <<<<<<< HEAD:archive/ts-legacy/packages/core/src/prompts/PromptRegistry.ts
-=======
-    async delete(id: string) {
-        this.cache.delete(id);
-        try {
-            await fs.unlink(path.join(this.storageDir, `${id}.json`));
-        } catch { }
-    }
-
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/prompts/PromptRegistry.ts
     render(id: string, variables: Record<string, string>): string {
         const prompt = this.get(id);
         if (!prompt) throw new Error(`Prompt ${id} not found`);

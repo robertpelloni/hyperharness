@@ -20,11 +20,7 @@ export function getMcpRouterMetric(
         return {
             status: 'Degraded',
             color: 'text-amber-500',
-<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/health/health-metrics.ts
             detail: summary || 'Live startup telemetry is unavailable while HyperCode serves a compat-fallback router snapshot.',
-=======
-            detail: summary || 'Live startup telemetry is unavailable while borg serves a compat-fallback router snapshot.',
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/health/health-metrics.ts
         };
     }
 
@@ -54,11 +50,7 @@ export function getEventBusMetric(startupStatus?: DashboardStartupStatus): {
         return {
             status: 'Degraded',
             color: 'text-amber-500',
-<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/health/health-metrics.ts
             detail: summary || 'Live startup telemetry is unavailable while HyperCode serves a compat-fallback snapshot.',
-=======
-            detail: summary || 'Live startup telemetry is unavailable while borg serves a compat-fallback snapshot.',
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/health/health-metrics.ts
         };
     }
 

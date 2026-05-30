@@ -4,11 +4,7 @@ import fs from 'fs/promises';
 import { existsSync } from 'fs';
 
 import { ContextPruner, PruningOptions } from './ContextPruner.js';
-<<<<<<< HEAD:archive/ts-legacy/packages/core/src/services/MemoryManager.ts
 import type { GraphMemory } from '@hypercode/memory';
-=======
-import type { GraphMemory } from '@borg/memory';
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/services/MemoryManager.ts
 
 type JsonRecord = Record<string, unknown>;
 
@@ -38,11 +34,7 @@ interface VectorStoreLike {
     listDocuments(where?: string, limit?: number): Promise<VectorStoreDocument[]>;
 }
 
-<<<<<<< HEAD:archive/ts-legacy/packages/core/src/services/MemoryManager.ts
 interface HyperCodeMemoryModule {
-=======
-interface BorgMemoryModule {
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/services/MemoryManager.ts
     LanceDBStore: new (dbPath: string) => VectorStoreLike;
     MemoryVectorStore: new () => VectorStoreLike;
     GraphMemory: new () => GraphMemory;
@@ -124,13 +116,8 @@ export class MemoryManager {
     }
 
     constructor(workspaceRoot: string = process.cwd()) {
-<<<<<<< HEAD:archive/ts-legacy/packages/core/src/services/MemoryManager.ts
         this.dbPath = path.join(workspaceRoot, '.hypercode', 'db');
         this.registryPath = path.join(workspaceRoot, '.hypercode', 'memory', 'contexts.json');
-=======
-        this.dbPath = path.join(workspaceRoot, '.borg', 'db');
-        this.registryPath = path.join(workspaceRoot, '.borg', 'memory', 'contexts.json');
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/services/MemoryManager.ts
         this.pruner = new ContextPruner();
     }
 
@@ -139,15 +126,9 @@ export class MemoryManager {
 
         console.log("[MemoryManager] Initializing Vector Backend...");
 
-<<<<<<< HEAD:archive/ts-legacy/packages/core/src/services/MemoryManager.ts
         // Lazy load the providers from @hypercode/memory
         // This allows switching to Chroma/SQLite/Memory based on config
         const { LanceDBStore, MemoryVectorStore, GraphMemory } = await import('@hypercode/memory') as unknown as HyperCodeMemoryModule;
-=======
-        // Lazy load the providers from @borg/memory
-        // This allows switching to Chroma/SQLite/Memory based on config
-        const { LanceDBStore, MemoryVectorStore, GraphMemory } = await import('@borg/memory') as unknown as BorgMemoryModule;
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/services/MemoryManager.ts
 
         // Select Backend
         let store: VectorStoreLike;
@@ -287,11 +268,7 @@ export class MemoryManager {
         }
 
         try {
-<<<<<<< HEAD:archive/ts-legacy/packages/core/src/services/MemoryManager.ts
             const { CodeSplitter } = await import('@hypercode/memory') as unknown as CodeSplitterModule;
-=======
-            const { CodeSplitter } = await import('@borg/memory') as unknown as CodeSplitterModule;
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/services/MemoryManager.ts
             const chunks = CodeSplitter
                 .split(content, extension, 1000)
                 .map((chunk: string) => chunk.trim())
@@ -338,13 +315,8 @@ export class MemoryManager {
 
         console.log(`[MemoryManager] Indexing symbols at ${rootDir}...`);
 
-<<<<<<< HEAD:archive/ts-legacy/packages/core/src/services/MemoryManager.ts
         // Lazy load Indexer from @hypercode/memory
         const { Indexer } = await import('@hypercode/memory') as unknown as IndexerModule;
-=======
-        // Lazy load Indexer from @borg/memory
-        const { Indexer } = await import('@borg/memory') as unknown as IndexerModule;
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/services/MemoryManager.ts
 
         // Adapter to make VectorProvider look like IndexerStorage
         const storageAdapter = {
@@ -376,13 +348,8 @@ export class MemoryManager {
 
         console.log(`[MemoryManager] Indexing codebase at ${rootDir}...`);
 
-<<<<<<< HEAD:archive/ts-legacy/packages/core/src/services/MemoryManager.ts
         // Lazy load Indexer from @hypercode/memory
         const { Indexer } = await import('@hypercode/memory') as unknown as IndexerModule;
-=======
-        // Lazy load Indexer from @borg/memory
-        const { Indexer } = await import('@borg/memory') as unknown as IndexerModule;
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/services/MemoryManager.ts
 
         // Adapter to make VectorProvider look like IndexerStorage
         const storageAdapter = {

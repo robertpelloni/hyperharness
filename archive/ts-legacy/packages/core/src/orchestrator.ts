@@ -10,25 +10,16 @@ import { createExpressMiddleware } from '@trpc/server/adapters/express';
 import { appRouter } from './trpc.js';
 console.log("[Core:Orchestrator] ✓ trpc.js");
 import { ingestPublishedCatalog } from './services/published-catalog-ingestor.js';
-<<<<<<< HEAD:archive/ts-legacy/packages/core/src/orchestrator.ts
 import { InputTools, SystemStatusTool } from '@hypercode/tools';
-=======
-import { InputTools, SystemStatusTool } from '@borg/tools';
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/orchestrator.ts
 import { MCPServer } from './MCPServer.js';
 import { listenExpress } from './orchestrator-listen.js';
 import { resolveSupervisorEntryPath } from './orchestratorPaths.js';
 import { resolveBridgePort } from './bridge/bridgePort.js';
 import { councilApp } from './orchestrator/council/node-index.js';
-<<<<<<< HEAD:archive/ts-legacy/packages/core/src/orchestrator.ts
 import { jsonConfigProvider } from './services/config/JsonConfigProvider.js';
 import { codeExecutorService } from './services/CodeExecutorService.js';
 
 export const name = "@hypercode/core";
-=======
-
-export const name = "@borg/core";
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/orchestrator.ts
 
 export interface StartOrchestratorOptions {
     host?: string;
@@ -42,11 +33,7 @@ export async function startOrchestrator(options: StartOrchestratorOptions = {}) 
     console.log(`[Core] Initializing ${name}...`);
 
     const host = options.host ?? '0.0.0.0';
-<<<<<<< HEAD:archive/ts-legacy/packages/core/src/orchestrator.ts
     const trpcPort = options.trpcPort ?? 4000;
-=======
-    const trpcPort = options.trpcPort ?? 3847;
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/orchestrator.ts
     const startSupervisor = options.startSupervisor ?? false;
     const startMcp = options.startMcp ?? true;
     const autoDrive = options.autoDrive ?? false;
@@ -104,18 +91,13 @@ export async function startOrchestrator(options: StartOrchestratorOptions = {}) 
     app.get('/health', (_req, res) => {
         res.json({
             status: 'ok',
-<<<<<<< HEAD:archive/ts-legacy/packages/core/src/orchestrator.ts
             name: '@hypercode/core',
-=======
-            name: '@borg/core',
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/orchestrator.ts
             uptime: process.uptime(),
             timestamp: Date.now(),
             mcpReady: !!global.mcpServerInstance,
         });
     });
 
-<<<<<<< HEAD:archive/ts-legacy/packages/core/src/orchestrator.ts
     // REST API: /api/scripts — bridge so the dashboard's native-control-plane
     // fetch reaches the same saved-scripts store that the tRPC router serves.
     // The Go server registers these routes too; this covers the TS-primary path.
@@ -177,34 +159,6 @@ export async function startOrchestrator(options: StartOrchestratorOptions = {}) 
         }
     });
 
-=======
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/orchestrator.ts
-    // tRPC middleware
-    app.use('/trpc', createExpressMiddleware({
-        router: appRouter,
-        createContext: () => ({}),
-    }));
-
-    await listenExpress(app, trpcPort, host);
-    console.log(`[Core] Unified API Server running at http://${host}:${trpcPort}/trpc and /api`);
-
-    // 1.1. Schedule automatic catalog ingestion (startup + 24h interval)
-    scheduleCatalogIngestion();
-
-    // 1.5. Start Supervisor (Native Input / Watchdog)
-    if (startSupervisor) {
-        try {
-<<<<<<< HEAD:archive/ts-legacy/packages/core/src/orchestrator.ts
-            console.log("[Core] 1.5 Starting HyperCode Supervisor...");
-            const supervisorPath = resolveSupervisorEntryPath();
-            if (!supervisorPath) {
-                console.warn("[Core] HyperCode Supervisor build not found. Skipping supervisor startup.");
-=======
-            console.log("[Core] 1.5 Starting borg Supervisor...");
-            const supervisorPath = resolveSupervisorEntryPath();
-            if (!supervisorPath) {
-                console.warn("[Core] borg Supervisor build not found. Skipping supervisor startup.");
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/orchestrator.ts
             } else {
                 const supervisor = spawn('node', [supervisorPath], {
                     stdio: 'inherit',

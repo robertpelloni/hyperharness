@@ -85,11 +85,7 @@ export class SessionSupervisor {
 
     constructor(options: SessionSupervisorOptions = {}) {
         this.rootDir = options.rootDir ?? process.cwd();
-<<<<<<< HEAD:archive/ts-legacy/packages/core/src/supervisor/SessionSupervisor.ts
         this.persistencePath = options.persistencePath ?? path.join(this.rootDir, '.hypercode', 'session-supervisor.json');
-=======
-        this.persistencePath = options.persistencePath ?? path.join(this.rootDir, '.borg', 'session-supervisor.json');
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/supervisor/SessionSupervisor.ts
         this.maxPersistedSessions = options.maxPersistedSessions ?? 100;
         this.maxLogEntries = options.maxLogEntries ?? 200;
         this.autoResumeOnStart = options.autoResumeOnStart ?? true;
@@ -451,7 +447,6 @@ export class SessionSupervisor {
     }
 
     private async shouldUseWorktree(workingDirectory: string, requestedIsolation: boolean): Promise<boolean> {
-<<<<<<< HEAD:archive/ts-legacy/packages/core/src/supervisor/SessionSupervisor.ts
         if (!requestedIsolation || !this.worktreeManager) {
             return false;
         }
@@ -466,9 +461,6 @@ export class SessionSupervisor {
                 path.resolve(session.workingDirectory) === resolvedDir,
         );
         return conflict;
-=======
-        return !!(requestedIsolation && this.worktreeManager);
->>>>>>> origin/rewrite/main-sanitized:packages/core/src/supervisor/SessionSupervisor.ts
     }
 
     private async createWorktree(sessionId: string): Promise<string> {

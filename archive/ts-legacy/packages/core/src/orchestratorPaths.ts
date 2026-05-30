@@ -29,11 +29,7 @@ export function resolveSupervisorEntryPath(startDir: string = process.cwd()): st
   ].filter((value, index, array): value is string => Boolean(value) && array.indexOf(value) === index);
 
   for (const root of candidateRoots) {
-<<<<<<< HEAD:archive/ts-legacy/packages/core/src/orchestratorPaths.ts
     const candidate = path.join(root, 'packages', 'hypercode-supervisor', 'dist', 'index.js');
-=======
-    const candidate = path.join(root, 'packages', 'borg-supervisor', 'dist', 'index.js');
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/orchestratorPaths.ts
     if (fs.existsSync(candidate)) {
       return candidate;
     }
@@ -50,7 +46,6 @@ export function resolveCliEntryPath(startDir: string = process.cwd()): string | 
   ].filter((value, index, array): value is string => Boolean(value) && array.indexOf(value) === index);
 
   for (const root of candidateRoots) {
-<<<<<<< HEAD:archive/ts-legacy/packages/core/src/orchestratorPaths.ts
     const candidates = [
       path.join(root, 'packages', 'cli', 'dist', 'cli', 'src', 'index.js'),
       path.join(root, 'packages', 'cli', 'dist', 'index.js'),
@@ -60,11 +55,6 @@ export function resolveCliEntryPath(startDir: string = process.cwd()): string | 
       if (fs.existsSync(candidate)) {
         return candidate;
       }
-=======
-    const candidate = path.join(root, 'packages', 'cli', 'dist', 'index.js');
-    if (fs.existsSync(candidate)) {
-      return candidate;
->>>>>>> origin/rewrite/main-sanitized:packages/core/src/orchestratorPaths.ts
     }
   }
 

@@ -1,11 +1,7 @@
 "use client";
 
 import { useState } from 'react';
-<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/command/page.tsx
 import { Card, CardHeader, CardTitle, CardContent, Badge, Button, ScrollArea } from "@hypercode/ui";
-=======
-import { Card, CardHeader, CardTitle, CardContent, Badge, Button, ScrollArea } from "@borg/ui";
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/command/page.tsx
 import { Terminal, Play, Loader2, ChevronRight, Search, Trash2 } from "lucide-react";
 import { trpc } from '@/utils/trpc';
 import { toast } from 'sonner';
@@ -106,11 +102,7 @@ export default function CommandDashboard() {
                     Command Center
                 </h1>
                 <p className="text-zinc-500 mt-2">
-<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/command/page.tsx
                     Execute slash commands and inspect available command handlers registered with HyperCode Core.
-=======
-                    Execute slash commands and inspect available command handlers registered with borg Core.
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/command/page.tsx
                 </p>
             </div>
 

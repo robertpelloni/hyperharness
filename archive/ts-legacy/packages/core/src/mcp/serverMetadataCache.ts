@@ -2,11 +2,7 @@ import { createHash } from 'node:crypto';
 
 import type { DatabaseMcpServer } from '../types/mcp-admin/index.js';
 import { deriveSemanticCatalogForServer } from './catalogMetadata.js';
-<<<<<<< HEAD:archive/ts-legacy/packages/core/src/mcp/serverMetadataCache.ts
 import type { HyperCodeMcpServerDiscoveryMetadata, HyperCodeMcpToolMetadata } from './mcpJsonConfig.js';
-=======
-import type { BorgMcpServerDiscoveryMetadata, BorgMcpToolMetadata } from './mcpJsonConfig.js';
->>>>>>> origin/rewrite/main-sanitized:packages/core/src/mcp/serverMetadataCache.ts
 
 export type MetadataReloadStrategy = 'auto' | 'binary' | 'cache' | 'skip';
 
@@ -115,13 +111,8 @@ export function buildBaseServerMetadata(server: Pick<DatabaseMcpServer, 'name' |
 
 function enrichServerMetadata(
     server: Pick<DatabaseMcpServer, 'name' | 'description' | 'always_on'>,
-<<<<<<< HEAD:archive/ts-legacy/packages/core/src/mcp/serverMetadataCache.ts
     metadata: HyperCodeMcpServerDiscoveryMetadata,
 ): HyperCodeMcpServerDiscoveryMetadata {
-=======
-    metadata: BorgMcpServerDiscoveryMetadata,
-): BorgMcpServerDiscoveryMetadata {
->>>>>>> origin/rewrite/main-sanitized:packages/core/src/mcp/serverMetadataCache.ts
     const derived = deriveSemanticCatalogForServer({
         serverName: server.name,
         description: server.description ?? null,
@@ -136,7 +127,6 @@ function enrichServerMetadata(
     });
 
     const derivedTools = new Map(derived.tools.map((tool) => [tool.name, tool]));
-<<<<<<< HEAD:archive/ts-legacy/packages/core/src/mcp/serverMetadataCache.ts
 
     return {
         ...metadata,
@@ -174,45 +164,6 @@ export function buildBinaryDiscoveryMetadata(
         .map((rawTool) => normalizeDiscoveredToolMetadata(rawTool))
         .filter((tool): tool is HyperCodeMcpToolMetadata => Boolean(tool));
 
-=======
-
-    return {
-        ...metadata,
-        displayName: derived.serverDisplayName,
-        description: server.description ?? null,
-        serverTags: derived.serverTags,
-        alwaysOn: derived.alwaysOn,
-        tools: metadata.tools.map((tool) => {
-            const derivedTool = derivedTools.get(tool.name);
-            if (!derivedTool) {
-                return tool;
-            }
-
-            return {
-                ...tool,
-                advertisedName: derivedTool.advertisedName,
-                serverDisplayName: derivedTool.serverDisplayName,
-                serverTags: derivedTool.serverTags,
-                toolTags: derivedTool.toolTags,
-                semanticGroup: derivedTool.semanticGroup,
-                semanticGroupLabel: derivedTool.semanticGroupLabel,
-                keywords: derivedTool.keywords,
-                alwaysOn: derivedTool.alwaysOn,
-            };
-        }),
-    };
-}
-
-export function buildBinaryDiscoveryMetadata(
-    server: Pick<DatabaseMcpServer, 'name' | 'description' | 'always_on' | 'type' | 'command' | 'args' | 'env' | 'url' | 'headers' | 'bearerToken'>,
-    rawTools: unknown[],
-    discoveredAt: string,
-): BorgMcpServerDiscoveryMetadata {
-    const tools = rawTools
-        .map((rawTool) => normalizeDiscoveredToolMetadata(rawTool))
-        .filter((tool): tool is BorgMcpToolMetadata => Boolean(tool));
-
->>>>>>> origin/rewrite/main-sanitized:packages/core/src/mcp/serverMetadataCache.ts
     return enrichServerMetadata(server, {
         ...buildBaseServerMetadata(server),
         status: 'ready',
@@ -228,17 +179,10 @@ export function buildBinaryDiscoveryMetadata(
 
 export function buildFailureDiscoveryMetadata(
     server: Pick<DatabaseMcpServer, 'name' | 'description' | 'always_on' | 'type' | 'command' | 'args' | 'env' | 'url' | 'headers' | 'bearerToken'>,
-<<<<<<< HEAD:archive/ts-legacy/packages/core/src/mcp/serverMetadataCache.ts
     status: HyperCodeMcpServerDiscoveryMetadata['status'],
     discoveredAt: string,
     error: string,
 ): HyperCodeMcpServerDiscoveryMetadata {
-=======
-    status: BorgMcpServerDiscoveryMetadata['status'],
-    discoveredAt: string,
-    error: string,
-): BorgMcpServerDiscoveryMetadata {
->>>>>>> origin/rewrite/main-sanitized:packages/core/src/mcp/serverMetadataCache.ts
     return enrichServerMetadata(server, {
         ...buildBaseServerMetadata(server),
         status,
@@ -277,17 +221,10 @@ export function hasReusableMetadataCache(
 }
 
 export function hydrateMetadataFromCache(
-<<<<<<< HEAD:archive/ts-legacy/packages/core/src/mcp/serverMetadataCache.ts
     metadata: HyperCodeMcpServerDiscoveryMetadata,
     server: Pick<DatabaseMcpServer, 'name' | 'description' | 'always_on' | 'type' | 'command' | 'args' | 'env' | 'url' | 'headers' | 'bearerToken'>,
     hydratedAt: string,
 ): HyperCodeMcpServerDiscoveryMetadata {
-=======
-    metadata: BorgMcpServerDiscoveryMetadata,
-    server: Pick<DatabaseMcpServer, 'name' | 'description' | 'always_on' | 'type' | 'command' | 'args' | 'env' | 'url' | 'headers' | 'bearerToken'>,
-    hydratedAt: string,
-): BorgMcpServerDiscoveryMetadata {
->>>>>>> origin/rewrite/main-sanitized:packages/core/src/mcp/serverMetadataCache.ts
     return enrichServerMetadata(server, {
         ...metadata,
         ...buildBaseServerMetadata(server),

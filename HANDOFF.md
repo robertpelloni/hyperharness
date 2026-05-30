@@ -1,8 +1,4 @@
-<<<<<<< HEAD
 ## Handoff Status Update: 2026-04-27
-=======
-# Handoff
->>>>>>> 31ea398ebda467d8d22925c3ca30d590f2ee2156
 
 **Phase 4/5 Hardening & Integration Finalization**
 
@@ -17,7 +13,6 @@ During this sprint, the HyperHarness infrastructure received major finalizations
 
 All subsystems mapped perfectly. Submodules (`claude-code`, `goose`, `aider`, `smithery`) were entirely fetched remotely and mapped.
 
-<<<<<<< HEAD
 Next Steps:
 - Construct the actual memory-indexed search backend metrics.
 - Build benchmark suite over tool dispatch boundaries.
@@ -136,26 +131,3 @@ go test -buildvcs=false ./... -count=1 -timeout 180s
 - Extracted exact parity tool schemas for Hermes and II Agent tools. Ported to both TypeScript and Go.
 - Added `Council` architecture (Director-Worker agents) capable of `PlanDelegation`, `ExecutePlan`, and `InitiateDebate` loops to both TypeScript and Go backends.
 - Abstracted Containerized Bash support into the Plugin layer/options for better sandboxing.
-=======
->>>>>>> origin/main
-=======
-2. **The Stdio Loader Blindspot**
-   - **Bug**: The `stdioLoader.ts` script (which `pi` and other extensions connect to) was explicitly bypassing the database to remain lightweight. It only read from `mcp.jsonc`. Because the tools were only in the DB and not in `mcp.jsonc` (or were wiped), the proxy served 0 downstream tools.
-   - **Fix**: We changed `syncToMcpJson` to `exportToolCache` and made it write to `.borg/mcp-cache.json`. This new unified cache merges both the SQLite database inventory and the manual `mcp.jsonc` configurations without destroying the manual file. The `stdioLoader` now reads `mcp-cache.json`.
-
-3. **Workspace Config Resolution**
-   - **Bug**: The system hardcoded `os.homedir() + '/.borg'` for the configuration directory, causing confusion when a local `mcp.jsonc` existed at the project root.
-   - **Fix**: Updated `getBorgConfigDir()` in `mcpJsonConfig.ts` to respect `process.env.BORG_CONFIG_DIR`, then check for `process.cwd()/mcp.jsonc`, and finally fall back to the home directory.
-
-4. **Tool Inventory Merging**
-   - **Bug**: `getCachedToolInventory()` returned either the SQLite snapshot OR the JSON snapshot, but never both.
-   - **Fix**: Rewrote the function to cleanly merge both collections, ensuring manual API-imported servers and auto-discovered DB servers coexist.
-
-5. **Universal Instructions Refactor**
-   - Rewrote `CLAUDE.md`, `GEMINI.md`, `GPT.md`, `copilot-instructions.md`, and `AGENTS.md` to cleanly point back to `docs/UNIVERSAL_LLM_INSTRUCTIONS.md`, reducing prompt bloat and ensuring architectural alignment across models.
-
-## Next steps for the next agent
-1. **Validate Stdio Loader**: Run `pi` or test the stdio proxy directly to ensure it now broadcasts the combined DB and manual tool inventory.
-2. **Dashboard Review**: Check if the `always_on` toggles in the React dashboard correctly persist across server restarts now that the destructive wipe bug is gone.
-3. **Continue Porting**: The Go bridge needs more direct mappings. Evaluate `PORTING_MAP.md` and continue porting features safely without violating the `UNIVERSAL_LLM_INSTRUCTIONS.md` stabilization rule.
->>>>>>> 31ea398ebda467d8d22925c3ca30d590f2ee2156

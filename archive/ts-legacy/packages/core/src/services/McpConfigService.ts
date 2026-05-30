@@ -3,11 +3,7 @@ import * as fs from 'fs/promises';
 import { mcpServersRepository } from '../db/repositories/mcp-servers.repo.js';
 import { toolsRepository } from '../db/repositories/tools.repo.js';
 import { formatOptionalSqliteFailure, isSqliteUnavailableError, sqliteErrorMessage } from '../db/sqliteAvailability.js';
-<<<<<<< HEAD:archive/ts-legacy/packages/core/src/services/McpConfigService.ts
 import { loadHyperCodeMcpConfig } from '../mcp/mcpJsonConfig.js';
-=======
-import { loadBorgMcpConfig } from '../mcp/mcpJsonConfig.js';
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/services/McpConfigService.ts
 
 export class McpConfigService {
     private syncState: {
@@ -25,13 +21,8 @@ export class McpConfigService {
     };
 
     /**
-<<<<<<< HEAD:archive/ts-legacy/packages/core/src/services/McpConfigService.ts
      * Reads HyperCode's mcp.jsonc (falling back to mcp.json) and updates the database to match.
      * This makes HyperCode's config file the authoritative source for config entry existence/content.
-=======
-     * Reads borg's mcp.jsonc (falling back to mcp.json) and updates the database to match.
-     * This makes borg's config file the authoritative source for config entry existence/content.
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/services/McpConfigService.ts
      */
     async syncWithDatabase() {
         console.log('[McpConfigService] Syncing Database with mcp.jsonc...');
@@ -52,11 +43,7 @@ export class McpConfigService {
                 throw e;
             }
 
-<<<<<<< HEAD:archive/ts-legacy/packages/core/src/services/McpConfigService.ts
             const config = await loadHyperCodeMcpConfig();
-=======
-            const config = await loadBorgMcpConfig();
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/services/McpConfigService.ts
             const servers = config.mcpServers || {};
             this.syncState.lastServerCount = Object.keys(servers).length;
 
@@ -125,33 +112,6 @@ export class McpConfigService {
         return { ...this.syncState };
     }
 
-<<<<<<< HEAD:archive/ts-legacy/packages/core/src/services/McpConfigService.ts
-    async addServerConfig(name: string, config: any) {
-        console.log(`[McpConfigService] Adding discovered server: ${name}`);
-        // Create in DB
-        let type: any = 'STDIO';
-        if (config.url) {
-            type = 'SSE';
-        }
-
-        const createdServer = await mcpServersRepository.create({
-            name: name,
-            type: type,
-            command: config.command,
-            args: config.args,
-            env: config.env,
-            url: config.url,
-            description: config.description,
-        }, { skipSync: true, skipDiscovery: true });
-
-        // Trigger a sync back to mcp.jsonc if desired, 
-        // or just let it exist in DB until the next full sync.
-        // For now, we'll keep it in DB.
-        return createdServer;
-    }
-
-=======
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/services/McpConfigService.ts
     private async syncStoredMetadataTools(serverUuid: string, serverConfig: unknown): Promise<void> {
         // Do not overwrite database tools if the config doesn't have tools populated.
         // This prevents wiping out tools (and their always_on status) that were discovered by the daemon.

@@ -1,11 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from 'react';
-<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/memory/page.tsx
 import { Card, CardHeader, CardTitle, CardContent, Button, Badge, ScrollArea } from "@hypercode/ui";
-=======
-import { Card, CardHeader, CardTitle, CardContent, Button, Badge, ScrollArea } from "@borg/ui";
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/memory/page.tsx
 import { Loader2, Brain, Search, Database, History, Zap, Filter, Plus, Save, Download, RefreshCw, ChevronRight } from "lucide-react";
 import { trpc } from '@/utils/trpc';
 import { toast } from 'sonner';
@@ -39,11 +35,7 @@ const MEMORY_FORMAT_OPTIONS: Array<{ value: MemoryInterchangeFormat; label: stri
     { value: 'json', label: 'Canonical JSON' },
     { value: 'csv', label: 'Canonical CSV' },
     { value: 'jsonl', label: 'Canonical JSONL' },
-<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/memory/page.tsx
     { value: 'json-provider', label: 'HyperCode JSON Provider' },
-=======
-    { value: 'json-provider', label: 'borg JSON Provider' },
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/memory/page.tsx
     { value: 'sectioned-memory-store', label: 'Sectioned Memory Store' },
 ];
 
@@ -409,17 +401,10 @@ export default function MemoryDashboard() {
                 <div>
                     <h1 className="text-3xl font-bold tracking-tight text-white flex items-center gap-3">
                         <Brain className="h-8 w-8 text-pink-500" />
-<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/memory/page.tsx
                         HyperCode Memory Control
                     </h1>
                     <p className="text-zinc-500 mt-2">
                         Search and inspect HyperCode-native facts, observations, prompts, session summaries, and sectioned-store exports from one control surface.
-=======
-                        borg Memory Control
-                    </h1>
-                    <p className="text-zinc-500 mt-2">
-                        Search and inspect borg-native facts, observations, prompts, session summaries, and sectioned-store exports from one control surface.
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/memory/page.tsx
                     </p>
                 </div>
                 <div className="flex gap-4">
@@ -467,11 +452,7 @@ export default function MemoryDashboard() {
                         <CardHeader className="pb-3">
                             <CardTitle className="text-sm font-bold text-zinc-400 uppercase tracking-widest flex items-center gap-2">
                                 <Brain className="h-4 w-4" />
-<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/memory/page.tsx
                                 HyperCode Memory Model
-=======
-                                borg Memory Model
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/memory/page.tsx
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-3 text-xs text-zinc-300">
@@ -546,11 +527,7 @@ export default function MemoryDashboard() {
                                         const url = URL.createObjectURL(blob);
                                         const a = document.createElement('a');
                                         a.href = url;
-<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/memory/page.tsx
                                         a.download = `hypercode-memories.${extension}`;
-=======
-                                        a.download = `borg-memories.${extension}`;
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/memory/page.tsx
                                         a.click();
                                         URL.revokeObjectURL(url);
                                         toast.success(`Exported as ${MEMORY_FORMAT_OPTIONS.find(option => option.value === exportFormat)?.label || exportFormat}`);
@@ -636,11 +613,7 @@ export default function MemoryDashboard() {
                                             const url = URL.createObjectURL(blob);
                                             const a = document.createElement('a');
                                             a.href = url;
-<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/memory/page.tsx
                                             a.download = `hypercode-memory-converted.${extension}`;
-=======
-                                            a.download = `borg-memory-converted.${extension}`;
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/memory/page.tsx
                                             a.click();
                                             URL.revokeObjectURL(url);
                                             toast.success(`Converted ${exportFormat} → ${convertToFormat}`);

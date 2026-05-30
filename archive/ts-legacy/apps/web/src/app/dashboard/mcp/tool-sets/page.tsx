@@ -1,13 +1,8 @@
 "use client";
 
 import { useState } from 'react';
-<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/mcp/tool-sets/page.tsx
 import { Card, CardHeader, CardTitle, CardContent } from "@hypercode/ui";
 import { Button } from "@hypercode/ui";
-=======
-import { Card, CardHeader, CardTitle, CardContent } from "@borg/ui";
-import { Button } from "@borg/ui";
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/mcp/tool-sets/page.tsx
 import { Loader2, Plus, Box, Trash2, Layers, Wrench, Check } from "lucide-react";
 import { trpc } from '@/utils/trpc';
 import { toast } from 'sonner';
@@ -21,35 +16,8 @@ export default function ToolSetsDashboard() {
     const [isCreateOpen, setIsCreateOpen] = useState(false);
     const normalizedToolSets = normalizeToolSets(toolSets);
     const normalizedSelectableTools = normalizeSelectableTools(tools);
-<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/mcp/tool-sets/page.tsx
     const toolSetsUnavailable = toolSetsQuery.isError || (toolSets != null && !Array.isArray(toolSets));
     const toolsUnavailable = toolsQuery.isError || (tools != null && !Array.isArray(tools));
-=======
->>>>>>> origin/rewrite/main-sanitized:apps/web/src/app/dashboard/mcp/tool-sets/page.tsx
-
-    return (
-        <div className="p-8 space-y-8">
-            <div className="flex justify-between items-center">
-                <div>
-                    <h1 className="text-3xl font-bold tracking-tight text-white">Tool Sets</h1>
-                    <p className="text-zinc-500">
-                        Group multiple tools into reusable logical sets
-                    </p>
-                </div>
-                <div className="flex gap-2">
-                    <Button onClick={() => setIsCreateOpen(!isCreateOpen)} className="bg-blue-600 hover:bg-blue-500">
-                        <Plus className="mr-2 h-4 w-4" /> Create Tool Set
-                    </Button>
-                </div>
-            </div>
-
-            {isCreateOpen && (
-                <CreateToolSetForm
-                    tools={normalizedSelectableTools}
-<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/mcp/tool-sets/page.tsx
-                    toolsUnavailable={toolsUnavailable}
-=======
->>>>>>> origin/rewrite/main-sanitized:apps/web/src/app/dashboard/mcp/tool-sets/page.tsx
                     onSuccess={() => { setIsCreateOpen(false); refetch(); }}
                 />
             )}
@@ -59,15 +27,6 @@ export default function ToolSetsDashboard() {
                     <div className="col-span-3 flex justify-center p-12">
                         <Loader2 className="h-8 w-8 animate-spin text-zinc-500" />
                     </div>
-<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/mcp/tool-sets/page.tsx
-                ) : toolSetsUnavailable ? (
-                    <div className="col-span-3 text-center p-12 text-red-300 bg-red-950/20 rounded-lg border border-red-900/40">
-                        <Layers className="h-12 w-12 mx-auto mb-4 opacity-60" />
-                        <p className="text-lg font-medium">Tool set inventory unavailable</p>
-                        <p className="text-sm mt-1">{toolSetsQuery.isError ? toolSetsQuery.error.message : 'Malformed tool set payload.'}</p>
-                    </div>
-=======
->>>>>>> origin/rewrite/main-sanitized:apps/web/src/app/dashboard/mcp/tool-sets/page.tsx
                 ) : normalizedToolSets.length === 0 ? (
                     <div className="col-span-3 text-center p-12 text-zinc-500 bg-zinc-900/50 rounded-lg border border-zinc-800 border-dashed">
                         <Layers className="h-12 w-12 mx-auto mb-4 opacity-30" />

@@ -2,13 +2,8 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/mcp/registry/page.tsx
 import { Card, CardHeader, CardTitle, CardContent } from "@hypercode/ui";
 import { Button } from "@hypercode/ui";
-=======
-import { Card, CardHeader, CardTitle, CardContent } from "@borg/ui";
-import { Button } from "@borg/ui";
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/mcp/registry/page.tsx
 import { Loader2, Globe, Download, ExternalLink, Database, ArrowRight, CheckCircle2, AlertCircle } from "lucide-react";
 import { trpc } from '@/utils/trpc';
 import { toast } from 'sonner';
@@ -75,102 +70,9 @@ export default function RegistryDashboard() {
 
     const installedServerNames = getInstalledServerNames(installedServers);
     const liveRegistry: RegistryItem[] = normalizeRegistryItems(registry);
-<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/mcp/registry/page.tsx
     const installedServersUnavailable = installedServers != null && !Array.isArray(installedServers);
     const registryUnavailable = Boolean(registryError) || (registry != null && !Array.isArray(registry));
     const catalogStatsUnavailable = catalogStats != null && (typeof catalogStats !== 'object' || Array.isArray(catalogStats));
-=======
->>>>>>> origin/rewrite/main-sanitized:apps/web/src/app/dashboard/mcp/registry/page.tsx
-
-    const source = liveRegistry.length > 0 ? liveRegistry : QUICK_INSTALL_TEMPLATES;
-    const filtered = source.filter((item) =>
-        item.name.toLowerCase().includes(filter.toLowerCase()) ||
-        item.description.toLowerCase().includes(filter.toLowerCase())
-    );
-
-    return (
-        <div className="p-8 space-y-8">
-            <div className="flex justify-between items-center">
-                <div>
-                    <h1 className="text-3xl font-bold tracking-tight text-white">Public Registry</h1>
-                    <p className="text-zinc-500">
-                        Discover and install community MCP servers
-                    </p>
-                </div>
-                <div className="text-xs text-zinc-500 flex items-center gap-2">
-                    <Database className="h-4 w-4" />
-                    {registryUnavailable ? 'Registry unavailable' : liveRegistry.length > 0 ? `Live index (${liveRegistry.length})` : 'Fallback templates'}
-                </div>
-            </div>
-
-            {registryUnavailable ? (
-                <Card className="border-red-900/50 bg-red-950/20">
-                    <CardContent className="pt-6 text-sm text-red-300">
-                        {registryError?.message ?? 'Registry unavailable due to malformed data.'}
-                    </CardContent>
-                </Card>
-            ) : null}
-
-            <div className="relative">
-                <Card className="mb-6 bg-zinc-900/40 border-zinc-800">
-                    <CardHeader className="pb-3">
-                        <CardTitle className="text-zinc-100 flex items-center justify-between gap-3 flex-wrap">
-                            <span>Published Catalog Intelligence</span>
-                            <Link
-                                href="/dashboard/registry"
-                                className="inline-flex items-center gap-1.5 text-sm text-cyan-300 hover:text-cyan-200"
-                            >
-                                Open full catalog <ArrowRight className="h-4 w-4" />
-                            </Link>
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent className="pt-0">
-                        <p className="text-sm text-zinc-400 mb-3">
-                            Use this page for quick installs. Use the full catalog for provenance, validation history, and confidence-ranked discovery.
-                        </p>
-                            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
-                                <div className="rounded border border-zinc-800 bg-zinc-950/40 px-3 py-2">
-                                    <div className="text-zinc-500 text-xs">Catalog total</div>
-                                    <div className="text-zinc-100 font-semibold">{catalogStatsUnavailable ? '—' : catalogStats?.total ?? 0}</div>
-                                </div>
-                                <div className="rounded border border-emerald-900/60 bg-emerald-950/20 px-3 py-2">
-                                    <div className="text-emerald-300 text-xs inline-flex items-center gap-1"><CheckCircle2 className="h-3 w-3" />Validated</div>
-                                    <div className="text-emerald-100 font-semibold">{catalogStatsUnavailable ? '—' : catalogStats?.validated ?? 0}</div>
-                                </div>
-                                <div className="rounded border border-red-900/60 bg-red-950/20 px-3 py-2">
-                                    <div className="text-red-300 text-xs inline-flex items-center gap-1"><AlertCircle className="h-3 w-3" />Broken</div>
-                                    <div className="text-red-100 font-semibold">{catalogStatsUnavailable ? '—' : catalogStats?.broken ?? 0}</div>
-                                </div>
-                                <div className="rounded border border-amber-900/60 bg-amber-950/20 px-3 py-2">
-                                    <div className="text-amber-300 text-xs">Updated 24h</div>
-                                    <div className="text-amber-100 font-semibold">{catalogStatsUnavailable ? '—' : catalogStats?.recentlyUpdated ?? 0}</div>
-                                </div>
-                            </div>
-                        </CardContent>
-                </Card>
-
-                <input
-                    value={filter}
-                    onChange={(e) => setFilter(e.target.value)}
-                    placeholder="Search registry..."
-                    className="w-full max-w-md bg-zinc-900 border border-zinc-800 rounded-md p-3 pl-4 text-sm text-white focus:ring-1 focus:ring-blue-500 outline-none"
-                />
-            </div>
-
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                {loadingRegistry ? (
-                    <div className="col-span-full flex items-center justify-center py-16 text-zinc-500">
-                        <Loader2 className="h-5 w-5 animate-spin mr-2" /> Loading live registry...
-                    </div>
-                ) : filtered.map((item) => (
-                    <RegistryCard
-                        key={item.id || item.name}
-                        item={item}
-<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/mcp/registry/page.tsx
-                        isInstalled={!installedServersUnavailable && installedServerNames.has(item.name)}
-=======
-                        isInstalled={installedServerNames.has(item.name)}
->>>>>>> origin/rewrite/main-sanitized:apps/web/src/app/dashboard/mcp/registry/page.tsx
                     />
                 ))}
             </div>

@@ -3,11 +3,7 @@
 import { Suspense, useEffect, useMemo, useState } from "react";
 import { trpc } from "@/utils/trpc";
 import type { inferRouterOutputs } from "@trpc/server";
-<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/links/page.tsx
 import type { AppRouter } from "@hypercode/core";
-=======
-import type { AppRouter } from "@borg/core";
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/links/page.tsx
 import { useSearchParams } from "next/navigation";
 import { BookMarked, ExternalLink, Loader2, RefreshCw, Search } from "lucide-react";
 import { toast } from "sonner";
@@ -19,71 +15,12 @@ type LinkItem = RouterOutput["linksBacklog"]["list"]["items"][number];
 const PAGE_SIZE = 50;
 const RESEARCH_FILTERS = ["", "pending", "running", "done", "failed", "skipped"] as const;
 
-<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/links/page.tsx
 type LinksSyncResult = {
     upserted: number;
     pages: number;
     baseUrl?: string;
 };
 
-=======
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/links/page.tsx
-function isLinkItem(value: unknown): value is LinkItem {
-    return typeof value === "object"
-        && value !== null
-        && typeof (value as { uuid?: unknown }).uuid === "string"
-        && typeof (value as { url?: unknown }).url === "string"
-        && typeof (value as { normalized_url?: unknown }).normalized_url === "string"
-        && typeof (value as { research_status?: unknown }).research_status === "string"
-        && typeof (value as { source?: unknown }).source === "string";
-}
-
-function isLinksListPayload(value: unknown): value is { items: LinkItem[]; total: number } {
-    return typeof value === "object"
-        && value !== null
-        && Array.isArray((value as { items?: unknown }).items)
-        && ((value as { items: unknown[] }).items).every(isLinkItem)
-        && typeof (value as { total?: unknown }).total === "number";
-}
-
-function isLinksStatsPayload(value: unknown): value is {
-    total: number;
-    unique: number;
-    duplicates: number;
-    pending: number;
-    researched: number;
-    sources: number;
-} {
-    return typeof value === "object"
-        && value !== null
-        && typeof (value as { total?: unknown }).total === "number"
-        && typeof (value as { unique?: unknown }).unique === "number"
-        && typeof (value as { duplicates?: unknown }).duplicates === "number"
-        && typeof (value as { pending?: unknown }).pending === "number"
-        && typeof (value as { researched?: unknown }).researched === "number"
-        && typeof (value as { sources?: unknown }).sources === "number";
-}
-
-export default function LinksBacklogPage() {
-    return (
-        <Suspense fallback={<LinksBacklogPageSkeleton />}>
-            <LinksBacklogPageContent />
-        </Suspense>
-    );
-}
-
-function LinksBacklogPageContent() {
-    const searchParams = useSearchParams();
-
-    const [search, setSearch] = useState("");
-    const [researchStatus, setResearchStatus] = useState<(typeof RESEARCH_FILTERS)[number]>("");
-    const [showDuplicates, setShowDuplicates] = useState(false);
-    const [syncBaseUrl, setSyncBaseUrl] = useState("http://localhost:5000");
-    const [page, setPage] = useState(0);
-<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/links/page.tsx
-    const [lastSyncResult, setLastSyncResult] = useState<LinksSyncResult | null>(null);
-=======
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/links/page.tsx
 
     const querySearch = searchParams.get("search")?.trim() ?? "";
     const querySource = searchParams.get("source")?.trim() ?? "";
@@ -116,58 +53,11 @@ function LinksBacklogPageContent() {
 
     const syncMutation = trpc.linksBacklog.syncFromBobbyBookmarks.useMutation({
         onSuccess: async (result) => {
-<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/links/page.tsx
             setLastSyncResult({
                 upserted: result.upserted,
                 pages: result.pages,
                 baseUrl: syncBaseUrl.trim(),
             });
-=======
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/links/page.tsx
-            toast.success(`Synced ${result.upserted} backlog links from BobbyBookmarks (${result.pages} pages).`);
-            await Promise.all([
-                utils.linksBacklog.list.invalidate(),
-                utils.linksBacklog.stats.invalidate(),
-            ]);
-        },
-        onError: (error) => {
-            toast.error(`Backlog sync failed: ${error.message}`);
-        },
-    });
-
-    const statsUnavailable = Boolean(statsError) || (stats !== undefined && !isLinksStatsPayload(stats));
-    const listUnavailable = Boolean(listError) || (data !== undefined && !isLinksListPayload(data));
-    const items = !listUnavailable && data ? data.items : [];
-    const total = !listUnavailable && data ? data.total : 0;
-    const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
-
-    const sourceSummary = useMemo(() => {
-        return !statsUnavailable && stats ? `${stats.total} total · ${stats.unique} unique · ${stats.duplicates} duplicates` : null;
-    }, [stats, statsUnavailable]);
-
-    const handleSync = () => {
-        if (!syncBaseUrl.trim()) {
-            toast.error("Enter a BobbyBookmarks base URL first.");
-            return;
-        }
-        syncMutation.mutate({
-            baseUrl: syncBaseUrl.trim(),
-            perPage: 100,
-            includeDuplicates: true,
-            includeResearched: true,
-        });
-    };
-
-    return (
-        <div className="p-6 max-w-7xl mx-auto space-y-6">
-            <PageStatusBanner
-                status="beta"
-                message="Link Backlog"
-<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/links/page.tsx
-                note="Canonical HyperCode backlog for BobbyBookmarks-powered link sync, research status, and future universal MCP directory integration."
-=======
-                note="Canonical borg backlog for BobbyBookmarks-powered link sync, research status, and future universal MCP directory integration."
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/links/page.tsx
             />
 
             <div className="flex items-center justify-between gap-4 flex-wrap">
@@ -204,20 +94,6 @@ function LinksBacklogPageContent() {
                 </div>
             </div>
 
-<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/links/page.tsx
-            {lastSyncResult && (
-                <div className="rounded-lg border border-cyan-900/30 bg-cyan-950/10 p-4 text-sm text-cyan-100">
-                    <div className="font-medium text-cyan-300">Last BobbyBookmarks Sync</div>
-                    <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-cyan-100/90">
-                        <span>{lastSyncResult.upserted} links upserted</span>
-                        <span>{lastSyncResult.pages} pages scanned</span>
-                        {lastSyncResult.baseUrl ? <span>Source: {lastSyncResult.baseUrl}</span> : null}
-                    </div>
-                </div>
-            )}
-
-=======
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/web/src/app/dashboard/links/page.tsx
             {statsUnavailable ? (
                 <div className="rounded-lg border border-red-900/30 bg-red-950/10 p-4 text-sm text-red-300">
                     {statsError?.message ?? "Backlog stats are unavailable."}

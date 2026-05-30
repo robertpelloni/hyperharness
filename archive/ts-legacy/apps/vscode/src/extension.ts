@@ -4,11 +4,7 @@ import WebSocket from 'ws';
 let socket: WebSocket | null = null;
 let statusBarItem: vscode.StatusBarItem;
 let outputChannel: vscode.OutputChannel;
-<<<<<<< HEAD:archive/ts-legacy/apps/vscode/src/extension.ts
 let sidebarProvider: HyperCodeSidebarProvider | null = null;
-=======
-let sidebarProvider: BorgSidebarProvider | null = null;
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/vscode/src/extension.ts
 let reconnectTimer: NodeJS.Timeout | null = null;
 let lastActivityTime = Date.now();
 let debounceTimer: NodeJS.Timeout | null = null;
@@ -118,11 +114,7 @@ function log(message: string) {
     emitInspectorLog('info', message);
 }
 
-<<<<<<< HEAD:archive/ts-legacy/apps/vscode/src/extension.ts
 function emitInspectorLog(level: 'info' | 'warn' | 'error', message: string, url = 'vscode://hypercode-vscode-extension') {
-=======
-function emitInspectorLog(level: 'info' | 'warn' | 'error', message: string, url = 'vscode://borg-vscode-extension') {
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/vscode/src/extension.ts
     if (!socket || socket.readyState !== WebSocket.OPEN) {
         return;
     }
@@ -235,11 +227,7 @@ function getWorkspaceState() {
 }
 
 function resolveCoreHttpUrl(): string {
-<<<<<<< HEAD:archive/ts-legacy/apps/vscode/src/extension.ts
     const config = vscode.workspace.getConfiguration('hypercode');
-=======
-    const config = vscode.workspace.getConfiguration('borg');
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/vscode/src/extension.ts
     const wsUrl = config.get<string>('coreUrl', 'ws://localhost:3001');
 
     try {
@@ -252,11 +240,7 @@ function resolveCoreHttpUrl(): string {
 }
 
 function resolveDashboardBaseUrl(): string {
-<<<<<<< HEAD:archive/ts-legacy/apps/vscode/src/extension.ts
     const config = vscode.workspace.getConfiguration('hypercode');
-=======
-    const config = vscode.workspace.getConfiguration('borg');
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/vscode/src/extension.ts
     const configured = config.get<string>('dashboardUrl', 'http://localhost:3000');
     return configured.replace(/\/$/, '');
 }
@@ -317,13 +301,8 @@ async function createSidebarSnapshot(): Promise<SidebarSnapshot> {
     };
 }
 
-<<<<<<< HEAD:archive/ts-legacy/apps/vscode/src/extension.ts
 class HyperCodeSidebarProvider implements vscode.WebviewViewProvider {
     public static readonly viewType = 'hypercode.dispatchView';
-=======
-class BorgSidebarProvider implements vscode.WebviewViewProvider {
-    public static readonly viewType = 'borg.dispatchView';
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/vscode/src/extension.ts
     private view?: vscode.WebviewView;
 
     resolveWebviewView(webviewView: vscode.WebviewView): void | Thenable<void> {
@@ -534,11 +513,7 @@ class BorgSidebarProvider implements vscode.WebviewViewProvider {
 </head>
 <body>
     <div class="card">
-<<<<<<< HEAD:archive/ts-legacy/apps/vscode/src/extension.ts
         <h2>HyperCode Mini Dashboard</h2>
-=======
-        <h2>borg Mini Dashboard</h2>
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/vscode/src/extension.ts
         <div class="grid">
             <div class="metric">
                 <div class="label">Connection</div>
@@ -578,20 +553,12 @@ class BorgSidebarProvider implements vscode.WebviewViewProvider {
             <button id="templatesBtn">Debate Templates</button>
             <button id="architectBtn">Architect Mode</button>
         </div>
-<<<<<<< HEAD:archive/ts-legacy/apps/vscode/src/extension.ts
         <div class="muted" style="margin-top: 8px;">Dashboard-linked actions open the richer HyperCode web UI when a direct Core endpoint does not exist yet.</div>
-=======
-        <div class="muted" style="margin-top: 8px;">Dashboard-linked actions open the richer borg web UI when a direct Core endpoint does not exist yet.</div>
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/vscode/src/extension.ts
     </div>
 
     <div class="card">
         <h3>Research Agent</h3>
-<<<<<<< HEAD:archive/ts-legacy/apps/vscode/src/extension.ts
         <textarea id="researchQuery" placeholder="Ask HyperCode to research a topic…"></textarea>
-=======
-        <textarea id="researchQuery" placeholder="Ask borg to research a topic…"></textarea>
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/vscode/src/extension.ts
         <div class="row">
             <select id="researchDepth">
                 <option value="1">Depth 1</option>
@@ -606,11 +573,7 @@ class BorgSidebarProvider implements vscode.WebviewViewProvider {
 
     <div class="card">
         <h3>Coder Agent</h3>
-<<<<<<< HEAD:archive/ts-legacy/apps/vscode/src/extension.ts
         <textarea id="codeTask" placeholder="Describe a coding task for HyperCode…"></textarea>
-=======
-        <textarea id="codeTask" placeholder="Describe a coding task for borg…"></textarea>
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/vscode/src/extension.ts
         <div class="row">
             <button id="codeBtn">Run Coder</button>
         </div>
@@ -619,11 +582,7 @@ class BorgSidebarProvider implements vscode.WebviewViewProvider {
     <div class="card">
         <h3>Recent Tasks</h3>
         <ul id="feed" class="feed">
-<<<<<<< HEAD:archive/ts-legacy/apps/vscode/src/extension.ts
             <li><span class="muted">Waiting for HyperCode activity…</span></li>
-=======
-            <li><span class="muted">Waiting for borg activity…</span></li>
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/vscode/src/extension.ts
         </ul>
     </div>
 
@@ -713,27 +672,17 @@ class BorgSidebarProvider implements vscode.WebviewViewProvider {
 }
 
 export function activate(context: vscode.ExtensionContext) {
-<<<<<<< HEAD:archive/ts-legacy/apps/vscode/src/extension.ts
     outputChannel = vscode.window.createOutputChannel('HyperCode Bridge');
     sidebarProvider = new HyperCodeSidebarProvider();
     context.subscriptions.push(vscode.window.registerWebviewViewProvider(HyperCodeSidebarProvider.viewType, sidebarProvider));
 
     statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 100);
     statusBarItem.command = 'hypercode.connect';
-=======
-    outputChannel = vscode.window.createOutputChannel('borg Bridge');
-    sidebarProvider = new BorgSidebarProvider();
-    context.subscriptions.push(vscode.window.registerWebviewViewProvider(BorgSidebarProvider.viewType, sidebarProvider));
-
-    statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 100);
-    statusBarItem.command = 'borg.connect';
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/vscode/src/extension.ts
     updateStatusBar(false);
     statusBarItem.show();
     context.subscriptions.push(statusBarItem);
     context.subscriptions.push(outputChannel);
 
-<<<<<<< HEAD:archive/ts-legacy/apps/vscode/src/extension.ts
     context.subscriptions.push(vscode.commands.registerCommand('hypercode.connect', connectToCore));
     context.subscriptions.push(vscode.commands.registerCommand('hypercode.disconnect', disconnectFromCore));
     context.subscriptions.push(vscode.commands.registerCommand('hypercode.showStatus', showHubStatus));
@@ -752,26 +701,6 @@ export function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(vscode.commands.registerCommand('hypercode.architectMode', architectMode));
 
     const config = vscode.workspace.getConfiguration('hypercode');
-=======
-    context.subscriptions.push(vscode.commands.registerCommand('borg.connect', connectToCore));
-    context.subscriptions.push(vscode.commands.registerCommand('borg.disconnect', disconnectFromCore));
-    context.subscriptions.push(vscode.commands.registerCommand('borg.showStatus', showHubStatus));
-    context.subscriptions.push(vscode.commands.registerCommand('borg.runAgent', runAgentDispatch));
-    context.subscriptions.push(vscode.commands.registerCommand('borg.searchMemory', searchMemory));
-    context.subscriptions.push(vscode.commands.registerCommand('borg.ingestSelectionToRag', ingestSelectionToRag));
-    context.subscriptions.push(vscode.commands.registerCommand('borg.ingestUrl', ingestUrl));
-    context.subscriptions.push(vscode.commands.registerCommand('borg.rememberSelection', rememberSelection));
-    context.subscriptions.push(vscode.commands.registerCommand('borg.listTools', listTools));
-    context.subscriptions.push(vscode.commands.registerCommand('borg.invokeTool', invokeTool));
-    context.subscriptions.push(vscode.commands.registerCommand('borg.openDashboard', () => openDashboardRoute(DASHBOARD_ROUTES.home, 'Opened dashboard')));
-    context.subscriptions.push(vscode.commands.registerCommand('borg.showLogs', showLogs));
-    context.subscriptions.push(vscode.commands.registerCommand('borg.startDebate', startDebate));
-    context.subscriptions.push(vscode.commands.registerCommand('borg.viewAnalytics', viewAnalytics));
-    context.subscriptions.push(vscode.commands.registerCommand('borg.listDebateTemplates', listDebateTemplates));
-    context.subscriptions.push(vscode.commands.registerCommand('borg.architectMode', architectMode));
-
-    const config = vscode.workspace.getConfiguration('borg');
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/vscode/src/extension.ts
     if (config.get<boolean>('autoConnect', true)) {
         void connectToCore();
     }
@@ -829,11 +758,7 @@ export function activate(context: vscode.ExtensionContext) {
         addActivity('system', 'Terminal capture unavailable', 'VS Code runtime does not expose terminal write event.');
     }
 
-<<<<<<< HEAD:archive/ts-legacy/apps/vscode/src/extension.ts
     addActivity('system', 'Extension activated', 'HyperCode VS Code bridge is online.');
-=======
-    addActivity('system', 'Extension activated', 'borg VS Code bridge is online.');
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/vscode/src/extension.ts
     addChatHistory('system', 'extension', 'VS Code extension bridge activated.');
 }
 
@@ -843,19 +768,11 @@ export function deactivate() {
 
 function updateStatusBar(connected: boolean) {
     if (connected) {
-<<<<<<< HEAD:archive/ts-legacy/apps/vscode/src/extension.ts
         statusBarItem.text = '$(plug) HyperCode: Connected';
         statusBarItem.tooltip = 'Connected to HyperCode Core';
         statusBarItem.backgroundColor = undefined;
     } else {
         statusBarItem.text = '$(debug-disconnect) HyperCode: Disconnected';
-=======
-        statusBarItem.text = '$(plug) borg: Connected';
-        statusBarItem.tooltip = 'Connected to borg Core';
-        statusBarItem.backgroundColor = undefined;
-    } else {
-        statusBarItem.text = '$(debug-disconnect) borg: Disconnected';
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/vscode/src/extension.ts
         statusBarItem.tooltip = 'Click to Connect';
         statusBarItem.backgroundColor = new vscode.ThemeColor('statusBarItem.warningBackground');
     }
@@ -875,11 +792,7 @@ async function connectToCore() {
         return;
     }
 
-<<<<<<< HEAD:archive/ts-legacy/apps/vscode/src/extension.ts
     const config = vscode.workspace.getConfiguration('hypercode');
-=======
-    const config = vscode.workspace.getConfiguration('borg');
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/vscode/src/extension.ts
     const url = config.get<string>('coreUrl', 'ws://localhost:3001');
     addActivity('system', 'Connecting to core', url);
 
@@ -893,24 +806,14 @@ async function connectToCore() {
                 reconnectTimer = null;
             }
             socket?.send(JSON.stringify({
-<<<<<<< HEAD:archive/ts-legacy/apps/vscode/src/extension.ts
                 type: 'HYPERCODE_CLIENT_HELLO',
                 clientType: 'vscode-extension',
                 clientName: 'HyperCode VS Code Bridge',
-=======
-                type: 'BORG_CLIENT_HELLO',
-                clientType: 'vscode-extension',
-                clientName: 'borg VS Code Bridge',
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/vscode/src/extension.ts
                 platform: `${vscode.env.appName} ${vscode.version}`,
                 capabilities: VSCODE_BRIDGE_CAPABILITIES,
                 hookPhases: VSCODE_BRIDGE_HOOK_PHASES,
             }));
-<<<<<<< HEAD:archive/ts-legacy/apps/vscode/src/extension.ts
             addActivity('status', 'Connected to HyperCode Core', url);
-=======
-            addActivity('status', 'Connected to borg Core', url);
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/vscode/src/extension.ts
             void sidebarProvider?.refreshSnapshot();
         });
 
@@ -926,11 +829,7 @@ async function connectToCore() {
         socket.on('close', () => {
             updateStatusBar(false);
             socket = null;
-<<<<<<< HEAD:archive/ts-legacy/apps/vscode/src/extension.ts
             addActivity('status', 'Disconnected from HyperCode Core', 'Retrying in 5 seconds.');
-=======
-            addActivity('status', 'Disconnected from borg Core', 'Retrying in 5 seconds.');
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/vscode/src/extension.ts
             void sidebarProvider?.refreshSnapshot();
             reconnectTimer = setTimeout(() => {
                 void connectToCore();
@@ -959,11 +858,7 @@ function disconnectFromCore() {
     }
 
     updateStatusBar(false);
-<<<<<<< HEAD:archive/ts-legacy/apps/vscode/src/extension.ts
     addActivity('status', 'Disconnected manually', 'HyperCode Core connection closed.');
-=======
-    addActivity('status', 'Disconnected manually', 'borg Core connection closed.');
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/vscode/src/extension.ts
     void sidebarProvider?.refreshSnapshot();
 }
 
@@ -984,11 +879,7 @@ async function showHubStatus() {
     const status = await fetchHubStatus();
     addActivity('status', 'Hub status checked', `${status.connectionState}; researcher=${status.researcher}; coder=${status.coder}`);
     addChatHistory('system', 'extension', `Hub status checked: ${status.connectionState}; researcher=${status.researcher}; coder=${status.coder}`);
-<<<<<<< HEAD:archive/ts-legacy/apps/vscode/src/extension.ts
     void vscode.window.showInformationMessage(`HyperCode Hub ${status.connectionState} — Researcher: ${status.researcher}, Coder: ${status.coder}`);
-=======
-    void vscode.window.showInformationMessage(`borg Hub ${status.connectionState} — Researcher: ${status.researcher}, Coder: ${status.coder}`);
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/vscode/src/extension.ts
 }
 
 async function dispatchResearchTask(query: string, depth: number): Promise<unknown> {
@@ -1036,11 +927,7 @@ async function runAgentDispatch() {
         { label: 'Research Agent', value: 'research' },
         { label: 'Coder Agent', value: 'code' },
     ], {
-<<<<<<< HEAD:archive/ts-legacy/apps/vscode/src/extension.ts
         placeHolder: 'Choose which HyperCode expert to run',
-=======
-        placeHolder: 'Choose which borg expert to run',
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/vscode/src/extension.ts
     });
 
     if (!target) {
@@ -1088,11 +975,7 @@ async function runAgentDispatch() {
 
 async function rememberSelection() {
     if (!socket || socket.readyState !== WebSocket.OPEN) {
-<<<<<<< HEAD:archive/ts-legacy/apps/vscode/src/extension.ts
         void vscode.window.showWarningMessage('HyperCode Core is not connected. Connect first to save context.');
-=======
-        void vscode.window.showWarningMessage('borg Core is not connected. Connect first to save context.');
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/vscode/src/extension.ts
         return;
     }
 
@@ -1126,11 +1009,7 @@ async function rememberSelection() {
     }));
 
     addActivity('memory', 'Saved editor context to memory', vscode.workspace.asRelativePath(editor.document.uri));
-<<<<<<< HEAD:archive/ts-legacy/apps/vscode/src/extension.ts
     void vscode.window.showInformationMessage(`Saved context from ${vscode.workspace.asRelativePath(editor.document.uri)} to HyperCode memory.`);
-=======
-    void vscode.window.showInformationMessage(`Saved context from ${vscode.workspace.asRelativePath(editor.document.uri)} to borg memory.`);
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/vscode/src/extension.ts
 }
 
 async function ingestSelectionToRag() {
@@ -1163,11 +1042,7 @@ async function ingestSelectionToRag() {
     });
 
     addActivity('rag', 'Ingested editor content into RAG', `${relativePath} (${response.chunksIngested} chunks)`);
-<<<<<<< HEAD:archive/ts-legacy/apps/vscode/src/extension.ts
     void vscode.window.showInformationMessage(`Ingested ${relativePath} into HyperCode RAG (${response.chunksIngested} chunks).`);
-=======
-    void vscode.window.showInformationMessage(`Ingested ${relativePath} into borg RAG (${response.chunksIngested} chunks).`);
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/vscode/src/extension.ts
 }
 
 async function ingestUrl() {
@@ -1180,11 +1055,7 @@ async function ingestUrl() {
     })();
 
     const url = await vscode.window.showInputBox({
-<<<<<<< HEAD:archive/ts-legacy/apps/vscode/src/extension.ts
         prompt: 'URL to ingest into HyperCode Knowledge',
-=======
-        prompt: 'URL to ingest into borg Knowledge',
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/vscode/src/extension.ts
         placeHolder: 'https://example.com/docs',
         value: seededUrl,
         ignoreFocusOut: true,
@@ -1211,11 +1082,7 @@ async function ingestUrl() {
     addChatHistory('user', 'extension', `URL ingest requested: ${trimmedUrl}`);
     addChatHistory('assistant', 'extension', `URL ingest result: ${summarizeText(response.result, 900)}`);
     addActivity('memory', 'Ingested URL into Knowledge', trimmedUrl);
-<<<<<<< HEAD:archive/ts-legacy/apps/vscode/src/extension.ts
     void vscode.window.showInformationMessage(`Ingested URL into HyperCode Knowledge: ${trimmedUrl}`);
-=======
-    void vscode.window.showInformationMessage(`Ingested URL into borg Knowledge: ${trimmedUrl}`);
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/vscode/src/extension.ts
 }
 
 async function searchMemory() {
@@ -1238,11 +1105,7 @@ async function listTools() {
 async function invokeTool() {
     const name = await vscode.window.showInputBox({
         prompt: 'Tool name',
-<<<<<<< HEAD:archive/ts-legacy/apps/vscode/src/extension.ts
         placeHolder: 'Enter the HyperCode tool name to invoke',
-=======
-        placeHolder: 'Enter the borg tool name to invoke',
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/vscode/src/extension.ts
         ignoreFocusOut: true,
     });
     if (!name?.trim()) {
@@ -1274,11 +1137,7 @@ async function invokeTool() {
     outputChannel.show(true);
     outputChannel.appendLine(`\n=== Tool Invocation: ${name.trim()} ===\n${formatResult(response.result.data)}\n`);
     addActivity('tool', 'Invoked tool', name.trim());
-<<<<<<< HEAD:archive/ts-legacy/apps/vscode/src/extension.ts
     void vscode.window.showInformationMessage(`Tool ${name.trim()} executed. See HyperCode Bridge output for details.`);
-=======
-    void vscode.window.showInformationMessage(`Tool ${name.trim()} executed. See borg Bridge output for details.`);
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/vscode/src/extension.ts
 }
 
 async function showLogs() {
@@ -1328,19 +1187,11 @@ async function architectMode() {
     outputChannel.appendLine(`\n=== Architect Mode Research ===\n${formatResult(research)}\n`);
     outputChannel.appendLine(`\n=== Architect Mode Plan ===\n${formatResult(code)}\n`);
     addActivity('code', 'Architect mode completed', task.trim());
-<<<<<<< HEAD:archive/ts-legacy/apps/vscode/src/extension.ts
     void vscode.window.showInformationMessage('Architect mode completed. See HyperCode Bridge output for research and plan details.');
 }
 
 async function handleMessage(msg: Record<string, unknown>) {
     if (msg.type === 'HYPERCODE_CORE_MANIFEST') {
-=======
-    void vscode.window.showInformationMessage('Architect mode completed. See borg Bridge output for research and plan details.');
-}
-
-async function handleMessage(msg: Record<string, unknown>) {
-    if (msg.type === 'BORG_CORE_MANIFEST') {
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:apps/vscode/src/extension.ts
         const manifest = msg.manifest as { connectedClients?: Array<{ clientName?: string }>; supportedHookPhases?: string[] } | undefined;
         addActivity(
             'system',

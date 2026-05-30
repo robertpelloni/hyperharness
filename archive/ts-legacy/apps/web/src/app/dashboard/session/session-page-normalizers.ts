@@ -1,94 +1,12 @@
 type ExecutionProfile = 'auto' | 'powershell' | 'posix' | 'compatibility';
 
-<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/session/session-page-normalizers.ts
 type SessionStatus = 'created' | 'starting' | 'running' | 'stopping' | 'stopped' | 'restarting' | 'error';
-=======
-type SessionStatus = 'created' | 'starting' | 'running' | 'stopped' | 'restarting' | 'error';
->>>>>>> origin/rewrite/main-sanitized:apps/web/src/app/dashboard/session/session-page-normalizers.ts
 
 const SESSION_STATUSES = new Set<SessionStatus>([
     'created',
     'starting',
     'running',
-<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/session/session-page-normalizers.ts
     'stopping',
-=======
->>>>>>> origin/rewrite/main-sanitized:apps/web/src/app/dashboard/session/session-page-normalizers.ts
-    'stopped',
-    'restarting',
-    'error',
-]);
-
-const EXECUTION_PROFILES = new Set<ExecutionProfile>([
-    'auto',
-    'powershell',
-    'posix',
-    'compatibility',
-]);
-
-export interface NormalizedSessionState {
-    activeGoal: string;
-    lastObjective: string;
-    isAutoDriveActive: boolean;
-}
-
-export interface NormalizedSessionLog {
-    stream: 'stdout' | 'stderr' | 'system';
-    timestamp: number;
-    message: string;
-}
-
-export interface NormalizedSessionCatalogEntry {
-    id: string;
-    name: string;
-    command?: string;
-    args?: string[];
-    homepage?: string;
-    docsUrl?: string;
-    installHint?: string;
-    category?: 'cli' | 'cloud' | 'editor';
-    sessionCapable: boolean;
-    versionArgs?: string[];
-    installed: boolean;
-    resolvedPath?: string | null;
-    version?: string | null;
-    detectionError?: string | null;
-}
-
-export interface NormalizedSessionRow {
-    id: string;
-    name: string;
-    cliType: string;
-    workingDirectory: string;
-    worktreePath?: string;
-    executionProfile: ExecutionProfile;
-    executionPolicy?: {
-        requestedProfile?: 'auto' | 'powershell' | 'posix' | 'compatibility';
-        effectiveProfile?: 'powershell' | 'posix' | 'compatibility' | 'fallback';
-        shellId?: string | null;
-        shellLabel?: string | null;
-        shellFamily?: 'powershell' | 'cmd' | 'posix' | 'wsl' | null;
-        shellPath?: string | null;
-        supportsPowerShell?: boolean;
-        supportsPosixShell?: boolean;
-        reason?: string;
-    } | null;
-    autoRestart: boolean;
-    status: SessionStatus;
-    restartCount: number;
-    maxRestartAttempts: number;
-    scheduledRestartAt?: number;
-    lastActivityAt: number;
-    lastError?: string;
-<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/session/session-page-normalizers.ts
-    /** Worktree isolation flag surfaced from the supervisor snapshot. */
-    isolateWorktree: boolean;
-    /** Exit code of the last process run, when available. */
-    lastExitCode?: number;
-    /** Exit signal of the last process run (e.g. 'SIGTERM'), when available. */
-    lastExitSignal?: string;
-=======
->>>>>>> origin/rewrite/main-sanitized:apps/web/src/app/dashboard/session/session-page-normalizers.ts
     logs: NormalizedSessionLog[];
     metadata?: {
         memoryBootstrap?: {
@@ -217,14 +135,6 @@ export const normalizeSessionList = (payload: unknown): NormalizedSessionRow[] =
                 : undefined,
             lastActivityAt: asFiniteNumber(session.lastActivityAt, Date.now()),
             lastError: asOptionalTrimmedString(session.lastError),
-<<<<<<< HEAD:archive/ts-legacy/apps/web/src/app/dashboard/session/session-page-normalizers.ts
-            isolateWorktree: asBoolean(session.isolateWorktree, false),
-            lastExitCode: typeof session.lastExitCode === 'number' && Number.isFinite(session.lastExitCode)
-                ? session.lastExitCode
-                : undefined,
-            lastExitSignal: asOptionalTrimmedString(session.lastExitSignal),
-=======
->>>>>>> origin/rewrite/main-sanitized:apps/web/src/app/dashboard/session/session-page-normalizers.ts
             logs,
             metadata: session.metadata && typeof session.metadata === 'object'
                 ? (session.metadata as NormalizedSessionRow['metadata'])

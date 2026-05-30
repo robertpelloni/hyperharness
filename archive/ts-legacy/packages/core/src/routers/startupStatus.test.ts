@@ -93,7 +93,6 @@ describe('buildStartupStatusSnapshot', () => {
             archivedTranscriptCount: 0,
             missingRetentionSummaryCount: 0,
         });
-<<<<<<< HEAD:archive/ts-legacy/packages/core/src/routers/startupStatus.test.ts
         expect(snapshot.startupMode).toBeNull();
     });
 
@@ -187,190 +186,6 @@ describe('buildStartupStatusSnapshot', () => {
             installDecision: 'skipped',
             buildDecision: 'skipped',
         });
-=======
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/routers/startupStatus.test.ts
-    });
-
-    it('keeps startup pending when the bridge listener is offline', async () => {
-        const snapshot = await buildStartupStatusSnapshot({
-            mcpServer: {
-                memoryManager: {},
-                isMemoryInitialized: true,
-                getBridgeStatus: () => ({
-                    port: 3011,
-                    ready: false,
-                    clientCount: 2,
-                    clients: [
-                        {
-                            clientId: 'stale-client',
-                            clientName: 'Stale bridge client',
-                            connectedAt: '2026-03-25T00:00:00.000Z',
-                            lastSeenAt: '2026-03-25T00:00:30.000Z',
-                        },
-                    ],
-                    supportedCapabilities: ['tool.execute'],
-                    supportedHookPhases: ['before'],
-                    websocketUrl: 'ws://127.0.0.1:3011',
-                    healthUrl: 'http://127.0.0.1:3011/health',
-                    streamUrl: 'http://127.0.0.1:3011/api/mesh/stream',
-                }),
-            },
-            aggregator: {
-                getInitializationStatus: () => ({
-                    inProgress: false,
-                    initialized: true,
-                    connectedClientCount: 1,
-                    configuredServerCount: 1,
-                }),
-            },
-            agentMemory: {},
-            browserService: {},
-            browserStatus: { active: false, pageCount: 0, pageIds: [] },
-            sessionSupervisor: {
-                getRestoreStatus: () => ({
-                    lastRestoreAt: 1_700_000_000_000,
-                    restoredSessionCount: 1,
-                    autoResumeCount: 0,
-                }),
-            },
-            sessionCount: 1,
-            mcpConfigService: {
-                getStatus: () => ({
-                    inProgress: false,
-                    lastCompletedAt: 1_700_000_000_000,
-                    lastSuccessAt: 1_700_000_000_000,
-                    lastServerCount: 1,
-                    lastToolCount: 4,
-                }),
-            },
-            liveServerCount: 1,
-            persistedServerCount: 1,
-            persistedToolCount: 4,
-            persistedAlwaysOnServerCount: 0,
-            persistedAlwaysOnToolCount: 0,
-            executionEnvironment: {
-                ready: true,
-                preferredShellId: 'pwsh',
-                preferredShellLabel: 'PowerShell 7',
-                shellCount: 1,
-                verifiedShellCount: 1,
-                toolCount: 3,
-                verifiedToolCount: 3,
-                harnessCount: 1,
-                verifiedHarnessCount: 1,
-                supportsPowerShell: true,
-                supportsPosixShell: false,
-                notes: ['Prefer PowerShell 7.'],
-            },
-        });
-
-        expect(snapshot.ready).toBe(false);
-        expect(snapshot.checks.extensionBridge.ready).toBe(false);
-        expect(snapshot.checks.extensionBridge.acceptingConnections).toBe(false);
-        expect(snapshot.summary).toContain('Extension bridge listener is offline.');
-        expect(snapshot.blockingReasons).toEqual(
-            expect.arrayContaining([
-                expect.objectContaining({ code: 'extension_bridge_not_ready' }),
-            ]),
-        );
-        expect(snapshot.checks.extensionBridge.port).toBeNull();
-        expect(snapshot.checks.extensionBridge.clientCount).toBe(0);
-        expect(snapshot.checks.extensionBridge.clients).toEqual([]);
-        expect(snapshot.checks.extensionBridge.websocketUrl).toBeNull();
-        expect(snapshot.checks.extensionBridge.healthUrl).toBeNull();
-        expect(snapshot.checks.extensionBridge.streamUrl).toBeNull();
-    });
-
-    it('reports a clear startup summary with blocking reason codes when checks are pending', async () => {
-        const snapshot = await buildStartupStatusSnapshot({
-            mcpServer: {
-                memoryManager: {},
-                isMemoryInitialized: false,
-                getBridgeStatus: () => ({
-                    ready: false,
-                    clientCount: 0,
-                    clients: [],
-                    supportedCapabilities: [],
-                    supportedHookPhases: [],
-                }),
-            },
-            aggregator: {
-                getInitializationStatus: () => ({
-                    inProgress: true,
-                    initialized: false,
-                    connectedClientCount: 0,
-                    configuredServerCount: 2,
-                }),
-            },
-            agentMemory: {},
-            browserService: null,
-            browserStatus: { active: false, pageCount: 0, pageIds: [] },
-            sessionSupervisor: {
-                getRestoreStatus: () => ({
-                    restoredSessionCount: 0,
-                    autoResumeCount: 0,
-                }),
-            },
-            sessionCount: 0,
-            mcpConfigService: {
-                getStatus: () => ({
-                    inProgress: true,
-                    lastServerCount: 2,
-                    lastToolCount: 0,
-                }),
-            },
-            liveServerCount: 0,
-            persistedServerCount: 2,
-            persistedToolCount: 0,
-            persistedAlwaysOnServerCount: 1,
-            persistedAlwaysOnToolCount: 0,
-            executionEnvironment: {
-                ready: false,
-                preferredShellId: null,
-                preferredShellLabel: null,
-                shellCount: 1,
-                verifiedShellCount: 0,
-                toolCount: 0,
-                verifiedToolCount: 0,
-                harnessCount: 0,
-                verifiedHarnessCount: 0,
-                supportsPowerShell: false,
-                supportsPosixShell: false,
-                notes: ['No verified shell.'],
-            },
-        });
-
-        expect(snapshot.ready).toBe(false);
-        expect(snapshot.summary).toContain('Startup pending:');
-        expect(snapshot.blockingReasons).toEqual(
-            expect.arrayContaining([
-                expect.objectContaining({ code: 'mcp_aggregator_not_initialized' }),
-                expect.objectContaining({ code: 'mcp_config_sync_pending' }),
-                expect.objectContaining({ code: 'memory_not_ready' }),
-                expect.objectContaining({ code: 'extension_bridge_not_ready' }),
-                expect.objectContaining({ code: 'execution_environment_not_ready' }),
-            ]),
-        );
-    });
-
-    it('preserves rich bridge client metadata in the startup snapshot', async () => {
-        const connectedAt = 1_700_000_000_000;
-        const lastSeenAt = connectedAt + 5_000;
-        const snapshot = await buildStartupStatusSnapshot({
-            mcpServer: {
-                memoryManager: {},
-                isMemoryInitialized: true,
-                getBridgeStatus: () => ({
-                    ready: true,
-                    clientCount: 1,
-                    clients: [
-                        {
-                            clientId: 'client-1',
-<<<<<<< HEAD:archive/ts-legacy/packages/core/src/routers/startupStatus.test.ts
-                            clientName: 'HyperCode VS Code Bridge',
-=======
-                            clientName: 'borg VS Code Bridge',
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/routers/startupStatus.test.ts
                             clientType: 'vscode-extension',
                             version: '1.2.3',
                             platform: 'VS Code 1.99',
@@ -953,11 +768,7 @@ describe('buildStartupStatusSnapshot', () => {
             },
             sectionedMemory: {
                 enabled: true,
-<<<<<<< HEAD:archive/ts-legacy/packages/core/src/routers/startupStatus.test.ts
                 storePath: '.hypercode/sectioned_memory.json',
-=======
-                storePath: '.borg/sectioned_memory.json',
->>>>>>> origin/dependabot/cargo/packages/zed-extension/cargo-64b2a50fd2:packages/core/src/routers/startupStatus.test.ts
                 storeExists: false,
                 totalEntries: 0,
                 sectionCount: 0,
