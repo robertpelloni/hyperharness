@@ -117,3 +117,9 @@
 - [ ] Monitor new harness releases for new tool surfaces
 - [ ] Maintain test coverage above 80%
 - [ ] Keep documentation synchronized with code
+- [ ] Port Tabby AI Coding Assistant features
+- [ ] Port Warp Terminal AI features (Oz agent, Agent Mode)
+- [ ] Port Wave (Waveterm) AI features (wsh ai)
+- [ ] Port Hermes Agent features
+- [ ] Port Antigravity 2.0 features
+- [ ] Port Codex Desktop features

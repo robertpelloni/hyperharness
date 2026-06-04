@@ -1,133 +1,40 @@
-## Handoff Status Update: 2026-04-27
+# HyperHarness Session Handoff
 
-**Phase 4/5 Hardening & Integration Finalization**
+## Summary of Activities
+This session focused on the comprehensive porting of multiple AI CLI harnesses and terminal assistants into the unified Go-native HyperHarness orchestrator.
 
-During this sprint, the HyperHarness infrastructure received major finalizations required for robustness and speed:
+## Accomplishments
 
-1. **Tool Concurrency:** Rewrote `agent.handleToolCalls` using Goroutines and `sync.WaitGroup`, dispatching independent LLM JSON-RPC tools entirely in parallel. Wait groups lock and execute reliably.
-2. **Tool Input Validation:** Built `internal/toolregistry/validator.go` using `gojsonschema` to dynamically assert JSON schema requirements (like `"required": ["path"]`) securely BEFORE any upstream process allows the tool `Execute` wrapper to run.
-3. **Fuzz Testing Suites:** Created `tools/fuzz_test.go` firing `go test -fuzz` to randomly map JSON payloads explicitly into the execution blocks, ensuring native resistance against API payload corruption. 
-4. **Memory-Mapped Session Loader:** Overhauled `loadSessionFromFile` to read `.jsonl` session boundaries natively via `syscall.Mmap`. Speed increases dynamically slice JSONL via `bytes.Split()` on system cache structures.
-5. **Connection Pooling:** Injected `internal/providers/pool.go` exposing `GetPooledHTTPClient()`. This intercepts massive TCP delays for highly parallel agent requests.
-6. **Cron Backend Manager:** Solidified the backend placeholder execution for `platform__manage_schedule` in `claude_code_parity.go` tying directly into the local `internal/sessions/cron/` manager.
+### 1. Repository Synchronization & Versioning
+- Synced the repository and updated all recursive submodules.
+- Incremented the project version to `0.4.4` (`VERSION`) and `1.0.0-alpha.26` (`VERSION.md`).
+- Established the `docs/analysis/` directory for systematic harness research.
 
-All subsystems mapped perfectly. Submodules (`claude-code`, `goose`, `aider`, `smithery`) were entirely fetched remotely and mapped.
+### 2. Tool Parity Implementation (Go)
+Achieved 1:1 tool signature and parameter parity for the following harnesses:
+- **Tabby AI**: Added `tabby_completion`, `tabby_chat`, and `tabby_search`.
+- **Warp Terminal**: Added `RequestCommandOutput`, `SearchCodebase`, `RunAgents`, and `FileGlob`.
+- **Wave Terminal**: Added `TermGetScrollback`, `CaptureScreenshot`, and `wsh_ai`.
+- **Hermes Agent**: Added `code_execution_tool`, `terminal_tool`, and `browser_tool`.
+- **Antigravity 2.0**: Added `apply_diffs` and `review_artifacts`.
+- **Codex Desktop**: Added `computer_use_linux` and `read_aloud`.
 
-Next Steps:
-- Construct the actual memory-indexed search backend metrics.
-- Build benchmark suite over tool dispatch boundaries.
+### 3. Documentation & Analysis
+Documented the architecture and features of each ported harness in `docs/analysis/`:
+- `tabby.md`, `warp.md`, `wave.md`, `hermes.md`, `antigravity.md`, `codex.md`.
 
----
-## Handoff Status Update: 2026-04-22
+### 4. Verification & Build
+- Registered all new tools in the central `tools.Registry` via `tools/pi_exact_parity.go`.
+- Verified core functionality with unit tests in `tools/tabby_parity_test.go`, `tools/warp_parity_test.go`, and `tools/wave_parity_test.go`.
+- Successfully executed a full system build: `go build -o hyperharness main.go`.
 
-**Phase 4/5 Deep Integrations & Performance Enhancements Complete**
+## Current State
+- All planned harness porting cycles for this session are complete.
+- The system is in a stable state with all new tools wired into the registry.
+- The `hyperharness` binary is confirmed to build correctly.
 
-During this massive sprint, the following major infrastructural architectures and parity requirements were satisfied and integrated directly into the `HyperHarness` Go port:
-
-1. **Bubbletea Terminal Dashboard scaffolded and wired**: Integrated into `tui/dashboard.go` without breaking legacy slash command tests. Activated securely via `/dashboard`.
-2. **Crush Parity Deep Wiring Finished**: `job_start`, `job_list`, `job_cancel` and `batch` are now linked to actual asynchronous wait groups and a background process manager inside `internal/sessions/background/`.
-3. **Claude & Goose Schedule Parity**: The `platform__manage_schedule` tools were deeply wired into a functional `internal/sessions/cron` implementation.
-4. **Git-Aware Context Manager**: Auto-injects current uncommitted diffs (`git diff HEAD`) and last 5 commit logs inside a `<git_context>` XML block preceding the system prompt to provide immediate situational awareness.
-5. **AST-Aware File Chunking**: Extracted Go structural elements via `go/parser` inside `internal/ast/summarizer.go`. If large files blow out context windows, `CompactTokenHeavyMessages` intelligently downsizes the raw files into structural signatures while bypassing bodies.
-6. **Concurrent Tool Execution**: Refactored `agent.handleToolCalls` to use Goroutines and `sync.WaitGroup`, executing independent JSON-RPC calls concurrently while maintaining safe locks on the history queue.
-7. **Tool Result Caching**: Integrated an LRU/TTL cache mechanism specifically for safely executing read-only tools like `ls`, `grep`, and `read_file`. It caches on `tool_name+JSON_args` and returns near-instantly on concurrent execution hits.
-8. **Subagent Permission Manifests**: Added `internal/subagents/manifests.go` to explicitly deny dangerous bash/write tools from specialized Read/Plan agents dynamically inside `buildOpenAITools(subagentType)`.
-9. **MCP Server Extensibility & Discovery**: Exposed the tool registry as a live MCP Server via `internal/mcp/server.go`, and auto-discovers external systems (like Claude Desktop configured servers) using `internal/mcp/discovery.go`.
-
-All tests pass robustly across `agent/`, `mcp/`, `tools/`, `ast/`, and `tui/` paths. 
-
-Next Steps:
-- Address any remaining UI polishes (Token/cost tracking footer, real-time streaming displays).
-- Build Connection pooling for LLM providers.
-- Merge the feature branch into main and sync downstream/upstream dependencies.
-
----
-# HANDOFF.md - Cross-Model Session Continuity
-
-## Current State: v0.3.0
-- **Deep Tool Wiring Complete**: TodoWrite, Agent, LSP, WebSearch, WebFetch, Config, Skill are now wired to real backends.
-- **MCP Transports Complete**: Both stdio and SSE client transports are fully implemented.
-- **509 tests across 33 packages, ALL PASSING**
-- **136+ unique tool surfaces across 15+ harnesses**
-
-## Architecture
-```
-hyperharness/
-├── agent/          - Agent loop with tool calling
-├── agents/         - Multi-agent provider registry
-├── cmd/            - CLI commands (root, serve, tui)
-├── config/         - Configuration management
-├── foundation/     - Core: pi tools, adapters, repomap, orchestration
-├── internal/
-│   ├── borg/       - Borg core engine with adapters
-│   ├── buildinfo/  - Version from VERSION file
-│   ├── cache/      - TTL+LRU cache with events
-│   ├── context/    - Context manager with compaction
-│   ├── controlplane/ - Tool detector (30+ CLI harnesses)
-│   ├── ctxharvester/ - Semantic chunking, token budgets
-│   ├── eventbus/   - Pub/sub with wildcard patterns
-│   ├── extensions/ - MCP extension manager
-│   ├── fs/         - Language detection, gitignore walking
-│   ├── git/        - Git CLI wrapper + submodule mgmt
-│   ├── healer/     - LLM-powered error diagnosis
-│   ├── mcp/        - MCP protocol client/server
-│   ├── memory/     - Knowledge store + SQLite FTS5
-│   ├── providers/  - LLM provider catalog + registry
-│   ├── sessions/   - Session management
-│   ├── skills/     - Skill discovery/execution
-│   └── subagents/  - Subagent lifecycle
-├── llm/            - Multi-provider LLM routing (8 providers)
-├── mcp/            - MCP server, aggregator, stdio client
-├── orchestrator/   - A2A broker, council, priority queue, workflow DAG
-├── repl/           - Read-eval-print loop
-├── rpc/            - JSON-RPC 2.0 server/client
-├── security/       - Permission system
-├── tools/          - 136+ tool implementations (all harnesses)
-└── tui/            - Terminal UI (BubbleTea)
-```
-
-## Key Decisions
-- All tool names match source harnesses EXACTLY (models trained on them)
-- Package `internal/context` aliased as `contextmgr` to avoid stdlib conflict
-- `CouncilDelegate` (not `CouncilMember`) for role constant to avoid struct name clash
-- `PriorityQueue` (not `TaskQueue`) for in-memory queue; existing `TaskQueue` in queue.go uses SQLite
-- `glebarez/sqlite` driver (not modernc) to avoid double-registration with orchestrator/database.go
-- `SessionTodoStore` (not `TodoStore`) to avoid clash with crush_parity.go
-
-## Build Instructions
-```bash
-export PATH="/c/Program Files/Go/bin:$PATH"
-go build -buildvcs=false ./...
-go test -buildvcs=false ./... -count=1 -timeout 180s
-```
-
-## Next Steps
-1. Wire tool detectors into actual tool dispatch (use detected tools as backends)
-2. Memory SQLite backend with vector embeddings
-3. Integration tests with actual AI model tool calling
-4. Port remaining submodule agent loop patterns (streaming, context budgets)
-5. Performance benchmarks
-6. MCP deep integration: Bidirectional routing (expose internal tools via MCP server)
-<<<<<<< HEAD
-
-
-## Latest Updates
-- Implemented memory export/import and project-scoped memory isolation.
-- Fixed all remaining compilation errors in the parity tool adapters.
-- Updated tests for context manager and memory systems.
-
-- Created IDEAS.md summarizing major architectural pivots and improvements for Phase 5 and beyond.
-- Added error recovery and process monitoring to MCP Servers.
-
-## TypeScript Port Synchronization
-- Pivoted back to the `pi-cli/` TypeScript codebase as requested.
-- Scraped `https://shittycodingagent.ai/packages` and the npm registry for `pi-plugin`/`pi-package`, identifying `taskplane`, `babysitter-pi`, `pi-pompom`, and `pi-subagents`.
-- Unified these features into an extensible `PluginManager` architecture in `core/plugins/index.ts`.
-- Ported the Go parity tools (Claude Code, Crush) directly into `core/tools/parity/` matching exact schemas.
-- Synchronized the advanced SQLite FTS5 memory logic, complete with age decay and project isolation, into `core/memory/sqlite-store.ts`.
-
-## Council Architecture & New Parity Tools
-- Integrated Hermes Agent and II Agent submodules for deep analysis.
-- Extracted exact parity tool schemas for Hermes and II Agent tools. Ported to both TypeScript and Go.
-- Added `Council` architecture (Director-Worker agents) capable of `PlanDelegation`, `ExecutePlan`, and `InitiateDebate` loops to both TypeScript and Go backends.
-- Abstracted Containerized Bash support into the Plugin layer/options for better sandboxing.
+## Next Steps for Successor
+- **Integration Tests**: Run project-wide integration tests to ensure no regressions in the agent loop.
+- **Backend Deep Wiring**: Wire the new parity tool stubs to actual backend logic (e.g., connecting `TermGetScrollback` to `internal/sessions`).
+- **Complete TODOs**: Finish the remaining porting tasks in `TODO.md` (if any remain) and move toward Phase 5 (Production).
+- **TUI Updates**: Wire the new tools into the Bubbletea TUI dashboard.

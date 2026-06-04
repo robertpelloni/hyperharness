@@ -4,7 +4,7 @@ import (
 	"github.com/robertpelloni/hyperharness/repl"
 )
 
-var sessions = make(map[string]*repl.Session)
+var replSessions = make(map[string]*repl.Session)
 
 func (r *Registry) registerInterpreterTools() {
 	r.Tools = append(r.Tools, Tool{
@@ -14,14 +14,14 @@ func (r *Registry) registerInterpreterTools() {
 			lang, _ := args["language"].(string)
 			code, _ := args["code"].(string)
 
-			session, ok := sessions[lang]
+			session, ok := replSessions[lang]
 			if !ok {
 				var err error
 				session, err = repl.NewSession(lang)
 				if err != nil {
 					return "", err
 				}
-				sessions[lang] = session
+				replSessions[lang] = session
 			}
 
 			return session.Execute(code)

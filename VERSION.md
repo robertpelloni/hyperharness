@@ -1,7 +1,7 @@
-1.0.0-alpha.25
+1.0.0-alpha.26
 # Version
 
-1.0.0-alpha.1
+1.0.0-alpha.26
 
 ## Version Sync Checklist
 
