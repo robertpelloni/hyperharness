@@ -1,7 +1,7 @@
-## [0.4.4] - 2026-06-05
+## [0.4.4-alpha] - 2026-06-05
 
 ### Added
-- Comprehensive tool parity for 6 major AI harnesses: Tabby AI, Warp Terminal, Wave Terminal, Hermes Agent, Antigravity 2.0, and Codex Desktop.
+- Comprehensive tool signature parity for 6 major AI harnesses: Tabby AI, Warp Terminal, Wave Terminal, Hermes Agent, Antigravity 2.0, and Codex Desktop.
 - Registered 18+ new tool surfaces in the central Go `Registry`.
 - Detailed architectural analysis for each ported harness in `docs/analysis/`.
 - Native Go implementation for Wave's `TermGetScrollback` tool, wired to internal session logs.

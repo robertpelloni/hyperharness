@@ -111,7 +111,12 @@ go test -buildvcs=false ./... -count=1 -timeout 180s
 <<<<<<< HEAD
 
 
-## Latest Updates
+## Latest Updates: 2026-06-05 (v0.4.4 Parity Layer Complete)
+- **Multi-Harness Porting**: Achieved 1:1 tool parity for Tabby, Warp, Wave, Hermes, Antigravity 2.0, and Codex Desktop.
+- **E2E Integration Testing**: Verified functional workflows for code completion (Tabby), command capture (Warp), and scrollback retrieval (Wave) via `agent/harness_e2e_test.go`.
+- **Infrastructure Fixes**: Resolved CI blockers (lockfile, orphaned submodules) and variable name collisions.
+- **Stateful Integration**: Wired `TermGetScrollback` to internal session logs using a thread-safe `GlobalManager` singleton.
+
 - Implemented memory export/import and project-scoped memory isolation.
 - Fixed all remaining compilation errors in the parity tool adapters.
 - Updated tests for context manager and memory systems.

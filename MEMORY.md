@@ -29,7 +29,7 @@ Key architectural components include:
 - **CGO-Free Preference**: The project prefers pure Go implementations (like `glebarez/sqlite` over `modernc.org/sqlite`) to simplify cross-platform compilation and deployment.
 
 ## Current State & Recent Wiring
-- **Multi-Harness Porting (v0.4.4)**: Successfully ported 6 major AI harnesses (Tabby, Warp, Wave, Hermes, Antigravity 2.0, Codex Desktop) with 1:1 tool parity.
+- **Multi-Harness Porting (v0.4.4)**: Implemented tool parity layer for 6 major AI harnesses (Tabby, Warp, Wave, Hermes, Antigravity 2.0, Codex Desktop) with 1:1 tool parity.
 - **Deep Tool Wiring**: Recently, dummy stub implementations in the parity layer were successfully wired to their actual backend Go implementations. 
   - `TodoWrite` now updates a persistent `SessionTodoStore`.
   - `Agent` connects to the `subagents.Manager` to spawn tasks.
