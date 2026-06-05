@@ -29,12 +29,14 @@ Key architectural components include:
 - **CGO-Free Preference**: The project prefers pure Go implementations (like `glebarez/sqlite` over `modernc.org/sqlite`) to simplify cross-platform compilation and deployment.
 
 ## Current State & Recent Wiring
+- **Multi-Harness Porting (v0.4.4)**: Successfully ported 6 major AI harnesses (Tabby, Warp, Wave, Hermes, Antigravity 2.0, Codex Desktop) with 1:1 tool parity.
 - **Deep Tool Wiring**: Recently, dummy stub implementations in the parity layer were successfully wired to their actual backend Go implementations. 
   - `TodoWrite` now updates a persistent `SessionTodoStore`.
   - `Agent` connects to the `subagents.Manager` to spawn tasks.
   - Web tools (`WebSearch`, `WebFetch`) map to real HTTP/Exa clients.
   - `LSP` maps to actual Language Server Protocol clients.
   - `Config` and `Skill` map to their respective internal managers.
+  - `TermGetScrollback` (Wave) now reads directly from the Go session manager logs.
 - **MCP Transport**: Both `stdio` and `sse` transports have been fully implemented, handling JSON-RPC handshakes (`initialize`, `tools/list`, `tools/call`).
 
 ## Future Roadmap Focus (TODO.md)
