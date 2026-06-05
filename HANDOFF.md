@@ -31,10 +31,11 @@ Documented the architecture and features of each ported harness in `docs/analysi
 ## Current State
 - All planned harness porting cycles for this session are complete.
 - The system is in a stable state with all new tools wired into the registry.
+- Core Go test suite (tools, agents, internal packages) is passing.
 - The `hyperharness` binary is confirmed to build correctly.
 
 ## Next Steps for Successor
-- **Integration Tests**: Run project-wide integration tests to ensure no regressions in the agent loop.
-- **Backend Deep Wiring**: Wire the new parity tool stubs to actual backend logic (e.g., connecting `TermGetScrollback` to `internal/sessions`).
+- **Full System Integration Tests**: Continue expanding end-to-end tests with real AI models.
+- **Backend Deep Wiring**: Continue wiring remaining parity tool stubs to actual backend logic.
 - **Complete TODOs**: Finish the remaining porting tasks in `TODO.md` (if any remain) and move toward Phase 5 (Production).
 - **TUI Updates**: Wire the new tools into the Bubbletea TUI dashboard.
