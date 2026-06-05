@@ -43,24 +43,35 @@ func (d *DirectorAgent) PlanDelegation(goal string) []*SubagentTask {
 	return plan
 }
 
-// ExecutePlan runs the queued tasks sequentially (or concurrently in an advanced implementation).
+// ExecutePlan runs the queued tasks sequentially with a self-correction loop.
 func (d *DirectorAgent) ExecutePlan() (string, error) {
 	var results []string
 	
 	for _, task := range d.taskQueue {
 		fmt.Printf("[Director] Dispatching task %s to %s...\n", task.ID, task.Role)
-		task.Status = "running"
 		
-		worker := NewWorkerAgent(task.Role)
-		res, err := worker.Execute(task)
-		if err != nil {
-			task.Status = "failed"
-			return "", fmt.Errorf("task %s failed: %w", task.ID, err)
+		maxAttempts := 3
+		for attempt := 1; attempt <= maxAttempts; attempt++ {
+			task.Status = "running"
+			worker := NewWorkerAgent(task.Role)
+			res, err := worker.Execute(task)
+
+			if err != nil {
+				fmt.Printf("[Director] Task %s failed (attempt %d/%d): %v\n", task.ID, attempt, maxAttempts, err)
+				if attempt == maxAttempts {
+					task.Status = "failed"
+					return "", fmt.Errorf("task %s failed after %d attempts: %w", task.ID, maxAttempts, err)
+				}
+				fmt.Println("[Director] Attempting self-correction...")
+				task.Objective += " (Retry with correction)"
+				continue
+			}
+
+			task.Result = res
+			task.Status = "completed"
+			results = append(results, fmt.Sprintf("[%s output] %s", task.Role, res))
+			break
 		}
-		
-		task.Result = res
-		task.Status = "completed"
-		results = append(results, fmt.Sprintf("[%s output] %s", task.Role, res))
 	}
 	
 	fmt.Println("[Director] Synthesizing final response...")

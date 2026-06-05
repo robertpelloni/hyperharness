@@ -5,6 +5,8 @@ import (
 	"github.com/robertpelloni/hyperharness/internal/cache"
 	"sync"
 	"github.com/robertpelloni/hyperharness/internal/subagents"
+	"github.com/robertpelloni/hyperharness/internal/memory"
+	"github.com/robertpelloni/hyperharness/internal/ingest"
 	"github.com/robertpelloni/hyperharness/internal/git"
 	"context"
 	"encoding/json"
@@ -24,6 +26,7 @@ type Agent struct {
 	tools        *tools.Registry
 	HyperAdapter *adapters.HyperCodeAdapter
 	toolCache    *cache.Cache
+	processor    *ingest.DataProcessor
 }
 
 func NewAgent() *Agent {
@@ -44,6 +47,11 @@ func NewAgent() *Agent {
 	
 	systemPrompt := buildAgentSystemPrompt(baseCtx)
 
+	// Initialize data processor with a temporary knowledge base if one isn't provided
+	// In a real implementation, this would be passed from the session/context
+	kb, _ := memory.NewKnowledgeBase("")
+	processor := ingest.NewDataProcessor(kb)
+
 	config := openai.DefaultConfig(apiKey)
 	config.HTTPClient = providers.GetPooledHTTPClient()
 	
@@ -58,6 +66,7 @@ func NewAgent() *Agent {
 		tools:        registry,
 		HyperAdapter: hyperAdapter,
 		toolCache:    cache.New(cache.CacheOptions{MaxSize: 1000, DefaultTTL: 300000}), // 5 min TTL
+		processor:    processor,
 	}
 }
 
@@ -90,9 +99,15 @@ func (a *Agent) Chat(input string) (string, error) {
 		return "", fmt.Errorf("tool registry is required")
 	}
 
+	// Normalize input using the data processor
+	normalizedInput := input
+	if a.processor != nil {
+		normalizedInput = a.processor.Normalize(input)
+	}
+
 	a.messages = append(a.messages, openai.ChatCompletionMessage{
 		Role:    openai.ChatMessageRoleUser,
-		Content: input,
+		Content: normalizedInput,
 	})
 
 	req := openai.ChatCompletionRequest{

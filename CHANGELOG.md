@@ -1,7 +1,7 @@
-## [0.4.4] - 2026-06-05
+## [0.4.4-alpha] - 2026-06-05
 
 ### Added
-- Comprehensive tool parity for 6 major AI harnesses: Tabby AI, Warp Terminal, Wave Terminal, Hermes Agent, Antigravity 2.0, and Codex Desktop.
+- Comprehensive tool signature parity for 6 major AI harnesses: Tabby AI, Warp Terminal, Wave Terminal, Hermes Agent, Antigravity 2.0, and Codex Desktop.
 - Registered 18+ new tool surfaces in the central Go `Registry`.
 - Detailed architectural analysis for each ported harness in `docs/analysis/`.
 - Native Go implementation for Wave's `TermGetScrollback` tool, wired to internal session logs.
@@ -12,6 +12,10 @@
 - Removed orphaned submodule gitlinks (`archive/claude-mem`) causing git clone failures.
 - Resolved package-level variable name collision between `tools` and `sessions` packages.
 - Fixed unused import regression in `hermes_parity.go`.
+- Added Markdown artifact stripping to the `internal/ingest` module for cleaner LLM context.
+- Optimized Go CI pipeline with updated triggers and test grouping.
+- Implemented file-based and directory-based data ingestion.
+- Added `hypercode ingest` CLI command for batch knowledge indexing.
 
 ## [0.4.3] - 2026-04-27
 

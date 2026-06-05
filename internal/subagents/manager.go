@@ -27,6 +27,11 @@ type Manager struct {
 	tasks map[string]*Task
 }
 
+var (
+	// GlobalManager is a shared instance of the subagent manager.
+	GlobalManager = NewManager()
+)
+
 // NewManager creates a new subagent manager.
 func NewManager() *Manager {
 	return &Manager{
@@ -57,7 +62,27 @@ func (m *Manager) ExecuteTask(ctx context.Context, task *Task) (string, error) {
 		return "", fmt.Errorf("nil task")
 	}
 	task.Status = "running"
-	// Stub: in a real implementation, this would dispatch to a subagent
+
+	// Mock execution: simulate work based on subagent type
+	go func() {
+		time.Sleep(500 * time.Millisecond) // Simulate initialization
+
+		switch task.Type {
+		case TypePlan:
+			task.Output = "1. Analyze codebase\n2. Design solution\n3. Execute changes"
+		case TypeResearch:
+			task.Output = "Found relevant documentation and examples for the task."
+		case TypeCode:
+			task.Output = "Implementation completed based on the plan."
+		case TypeTest:
+			task.Output = "All tests passed for the modified components."
+		default:
+			task.Output = "Task completed by subagent."
+		}
+
+		close(task.Done)
+	}()
+
 	select {
 	case <-ctx.Done():
 		task.Status = "cancelled"

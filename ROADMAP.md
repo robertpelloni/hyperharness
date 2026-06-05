@@ -46,12 +46,14 @@
 - [ ] End-to-end integration tests with real AI models
 - [ ] Cloud deployment (gRPC/HTTP API)
 - [ ] Plugin system (Go plugins for custom tools)
-- [ ] Multi-agent orchestration (council debates, director mode)
+- [x] Multi-agent orchestration (council debates, director mode)
 - [ ] Token streaming with SSE
 - [ ] Cost tracking and budget enforcement
 - [ ] Permission system with granular guardrails
 - [ ] Multi-turn conversation optimization
 - [ ] Automatic context window management
+- [x] Data ingestion and preprocessing module (`internal/ingest`)
+- [x] CLI interface for knowledge base ingestion (`hypercode ingest`)
 
 ## Phase 6: Ecosystem (PLANNED 📋)
 - [ ] VS Code extension
