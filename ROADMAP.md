@@ -53,6 +53,7 @@
 - [ ] Multi-turn conversation optimization
 - [ ] Automatic context window management
 - [x] Data ingestion and preprocessing module (`internal/ingest`)
+- [x] CLI interface for knowledge base ingestion (`hypercode ingest`)
 
 ## Phase 6: Ecosystem (PLANNED 📋)
 - [ ] VS Code extension

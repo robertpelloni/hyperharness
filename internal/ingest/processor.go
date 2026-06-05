@@ -1,10 +1,20 @@
 package ingest
 
 import (
+	"fmt"
+	"os"
+	"path/filepath"
+	"regexp"
 	"strings"
 	"time"
 
+	"github.com/robertpelloni/hyperharness/internal/ast"
 	"github.com/robertpelloni/hyperharness/internal/memory"
+)
+
+var (
+	htmlTagRe     = regexp.MustCompile("<[^>]*>")
+	markdownLinkRe = regexp.MustCompile(`\[([^\]]+)\]\([^\)]+\)`)
 )
 
 // DataProcessor handles normalization and cleaning of input data.
@@ -19,6 +29,16 @@ func NewDataProcessor(kb *memory.KnowledgeBase) *DataProcessor {
 
 // Normalize cleans and standardizes a text input.
 func (p *DataProcessor) Normalize(input string) string {
+	// Strip HTML tags if present (heuristic)
+	if strings.Contains(input, "<") && strings.Contains(input, ">") {
+		input = htmlTagRe.ReplaceAllString(input, "")
+	}
+
+	// Strip Markdown links: [text](url) -> text
+	if strings.Contains(input, "[") && strings.Contains(input, "]") {
+		input = markdownLinkRe.ReplaceAllString(input, "$1")
+	}
+
 	// Remove leading/trailing whitespace
 	cleaned := strings.TrimSpace(input)
 
@@ -48,4 +68,34 @@ func (p *DataProcessor) IngestText(title, content string, tags []string, scope m
 		UpdatedAt: time.Now(),
 	}
 	return p.KnowledgeBase.Store(entry)
+}
+
+// ProcessFile reads and normalizes a file, optionally summarizing it if it's Go code.
+func (p *DataProcessor) ProcessFile(path string) (string, error) {
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return "", fmt.Errorf("failed to read file %s: %w", path, err)
+	}
+
+	ext := strings.ToLower(filepath.Ext(path))
+	if ext == ".go" {
+		summary, err := ast.SummarizeGoFile(path, data)
+		if err == nil {
+			return p.Normalize(summary), nil
+		}
+		// Fallback to raw content if summarization fails
+	}
+
+	return p.Normalize(string(data)), nil
+}
+
+// IngestFile processes a file and stores it in the knowledge base.
+func (p *DataProcessor) IngestFile(path string, tags []string, scope memory.KnowledgeScope) error {
+	content, err := p.ProcessFile(path)
+	if err != nil {
+		return err
+	}
+
+	title := filepath.Base(path)
+	return p.IngestText(title, content, append(tags, "file", filepath.Ext(path)), scope)
 }

@@ -116,8 +116,9 @@ go test -buildvcs=false ./... -count=1 -timeout 180s
 - **E2E Integration Testing**: Verified functional workflows for code completion (Tabby), command capture (Warp), and scrollback retrieval (Wave) via `agent/harness_e2e_test.go`.
 - **Infrastructure Fixes**: Resolved CI blockers (lockfile, orphaned submodules) and variable name collisions.
 - **Stateful Integration**: Wired `TermGetScrollback` to internal session logs using a thread-safe `GlobalManager` singleton.
-- **CI/CD Optimization**: Updated `borg-ci.yml` for root-level Go builds and systematic E2E/unit testing.
-- **Data Ingestion Module**: Implemented `internal/ingest` for structured data normalization and memory storage.
+- **CI/CD Optimization**: Updated `borg-ci.yml` for root-level Go 1.26.1 builds and systematic E2E/unit testing.
+- **Data Ingestion Module**: Implemented `internal/ingest` for structured data normalization, file/directory processing, AST-aware Go summarization, and memory storage.
+- **CLI Enhancements**: Added the `hypercode ingest` command for manual knowledge base seeding.
 
 - Implemented memory export/import and project-scoped memory isolation.
 - Fixed all remaining compilation errors in the parity tool adapters.

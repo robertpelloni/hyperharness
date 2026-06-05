@@ -81,6 +81,16 @@ func TestHarnessE2E(t *testing.T) {
 			},
 			expectedIn: "No session found",
 		},
+		{
+			name:     "Data Ingestion Workflow",
+			toolName: "ingest_data",
+			toolArgs: map[string]interface{}{
+				"title": "E2E Test Snippet",
+				"content": "This is a normalized snippet.",
+				"tags": []interface{}{"e2e", "test"},
+			},
+			expectedIn: "Successfully ingested",
+		},
 	}
 
 	for _, tc := range testCases {
