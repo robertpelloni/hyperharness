@@ -307,6 +307,20 @@ type Manager struct {
 	mu         sync.RWMutex
 }
 
+var (
+	// GlobalManager is a shared instance of the session manager.
+	GlobalManager *Manager
+	globalOnce    sync.Once
+)
+
+// GetGlobalManager returns the shared session manager instance.
+func GetGlobalManager() *Manager {
+	globalOnce.Do(func() {
+		GlobalManager, _ = NewManager("")
+	})
+	return GlobalManager
+}
+
 // NewManager creates a new session manager.
 func NewManager(sessionDir string) (*Manager, error) {
 	if sessionDir == "" {

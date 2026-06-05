@@ -107,14 +107,13 @@ func registerClaudeCodeTools(r *Registry) {
 				sType = subagents.TypeCode
 			}
 
-			task := subagents.NewManager().CreateTask(sType, prompt, prompt, "")
+			task := subagents.GlobalManager.CreateTask(sType, prompt, prompt, "")
 
-			// For this implementation, we would ideally execute it asynchronously or use a background context.
-			// But for parity with the old stub, we format a message indicating spawning/completion.
-			// In the future, this would call ExecuteTask and stream/wait for actual subagent response.
+			// For this implementation, we execute it using the global subagent manager.
+			// This provides persistence and tracking across multiple tool calls.
 
-			// Simulate waiting/executing
-			result, err := subagents.NewManager().ExecuteTask(context.Background(), task)
+			// Execute task
+			result, err := subagents.GlobalManager.ExecuteTask(context.Background(), task)
 			if err != nil {
 				return "", fmt.Errorf("failed to execute subagent: %w", err)
 			}

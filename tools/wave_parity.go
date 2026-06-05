@@ -25,10 +25,10 @@ func (r *Registry) registerWaveParityTools() {
 			blockID := GetStr(args, "blockId")
 			numLines := GetIntDef(args["numLines"], 100)
 
-			// Attempt to read from internal sessions
-			mgr, err := sessions.NewManager("")
-			if err != nil {
-				return "", fmt.Errorf("failed to initialize session manager: %w", err)
+			// Use the global session manager instance
+			mgr := sessions.GetGlobalManager()
+			if mgr == nil {
+				return "", fmt.Errorf("failed to get session manager")
 			}
 
 			// In HyperHarness, we might map blockId to a session ID
