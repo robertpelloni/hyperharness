@@ -1,33 +1,31 @@
-name: borg Native CI
+name: HyperHarness Go CI
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "main", "develop", "jules-*" ]
   pull_request:
-    branches: [ "main" ]
+    branches: [ "main", "develop" ]
 
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
     
-    defaults:
-      run:
-        working-directory: ./submodules/hyperharness
-        working-directory: ./submodules/borg
-
     steps:
     - uses: actions/checkout@v4
 
     - name: Set up Go
       uses: actions/setup-go@v4
       with:
-        go-version: '1.24.x' # Targeting modern Go versions for Fiber/SQLite
+        go-version: '1.24.x'
 
     - name: Ensure Dependencies
       run: go mod tidy
 
-    - name: Build Global Core
+    - name: Build
       run: go build -v ./...
 
-    - name: Run Core Parity Test Suite
+    - name: Run Unit Tests
       run: go test -v -race ./...
+
+    - name: Run E2E Integration Tests
+      run: go test -v ./agent/... -run TestHarnessE2E
