@@ -108,7 +108,6 @@ go test -buildvcs=false ./... -count=1 -timeout 180s
 4. Port remaining submodule agent loop patterns (streaming, context budgets)
 5. Performance benchmarks
 6. MCP deep integration: Bidirectional routing (expose internal tools via MCP server)
-<<<<<<< HEAD
 
 
 ## Latest Updates: 2026-06-05 (v0.4.4 Parity Layer Complete)
