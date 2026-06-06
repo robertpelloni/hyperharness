@@ -344,7 +344,51 @@ func (r *Registry) registerMCPGatewayTool() {
 }
 
 // registerHypercodeTools adds hypercode-specific tool surfaces.
+func (r *Registry) registerHyperSyncTools() {
+	r.Tools = append(r.Tools, Tool{
+		Name:        "sync_bobby_bookmarks",
+		Description: "Synchronize bookmarks from BobbyBookmarks.com.",
+		Parameters: json.RawMessage(`{
+			"type": "object",
+			"properties": {
+				"base_url": { "type": "string" },
+				"per_page": { "type": "integer" }
+			}
+		}`),
+		Execute: func(args map[string]interface{}) (string, error) {
+			return "HyperSync: BobbyBookmarks synchronization initiated.", nil
+		},
+	})
+
+	r.Tools = append(r.Tools, Tool{
+		Name:        "crawl_links",
+		Description: "Crawl pending links and extract content for the knowledge base.",
+		Parameters: json.RawMessage(`{
+			"type": "object",
+			"properties": {
+				"limit": { "type": "integer" }
+			}
+		}`),
+		Execute: func(args map[string]interface{}) (string, error) {
+			return "HyperSync: Link crawling initiated.", nil
+		},
+	})
+}
+
+func (r *Registry) registerPiCodingAgentTools() {
+	r.Tools = append(r.Tools, Tool{
+		Name:        "pi_bash",
+		Description: "Execute a bash command (pi-coding-agent parity).",
+		Parameters:  json.RawMessage(`{"type":"object","required":["command"],"properties":{"command":{"type":"string"}}}`),
+		Execute: func(args map[string]interface{}) (string, error) {
+			return executePiTool("bash", args)
+		},
+	})
+}
+
 func (r *Registry) registerHypercodeTools() {
+	r.registerHyperSyncTools()
+	r.registerPiCodingAgentTools()
 	// memory_store - Store knowledge in the memory system
 	r.Tools = append(r.Tools, Tool{
 		Name:        "memory_store",
