@@ -153,3 +153,15 @@ Version numbers follow [Semantic Versioning](https://semver.org/).
 - 8 LLM providers with auto-routing
 - 30+ CLI tool definitions for detection
 - 136+ unique tool surfaces across 15+ harnesses
+
+## [0.5.0-alpha.1] - 2026-06-05
+
+### Added
+- **Autonomous Core (Phase 5)**: Implemented LLM-driven task decomposition in `DirectorAgent`.
+- **Dynamic Orchestration**: Upgraded `AutopilotMode` to use Council orchestration for complex goal fulfillment.
+- **Executor Interface**: Defined a cross-package interface for agent invocation, breaking circular dependencies.
+- **Self-Correction**: Integrated a self-correction retry loop for subagent task failures in `DirectorAgent`.
+
+### Changed
+- Refactored `internal/council/council.go` to support real-world LLM-based planning and execution.
+- Refactored `agent/autopilot.go` to leverage the Council architecture.
