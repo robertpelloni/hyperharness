@@ -60,3 +60,5 @@ tools/v/test
 # Jules AI session logs (auto-generated, not needed in repo)
 .jules/sessions/
 node_modules/
+hypercode
+hyperharness

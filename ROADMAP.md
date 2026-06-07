@@ -62,3 +62,9 @@
 - [ ] CI/CD GitHub Action
 - [ ] MCP marketplace integration
 - [ ] Cloud-hosted version
+
+## Phase 5: Autonomous Core (IN PROGRESS 🔄)
+- [x] LLM-driven task decomposition in Council Director
+- [x] Multi-agent execution loop with real tool-calling capabilities
+- [x] Autonomous Autopilot mode using Director-Worker paradigm
+- [ ] Self-correction retry logic for subagent task failures

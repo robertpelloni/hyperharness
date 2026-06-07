@@ -1,39 +1,27 @@
-# Deployment Instructions
+# Deployment Instructions - HyperHarness v0.4.5
 
-## borg `1.0.0-alpha.1`
+## Build Requirements
+- Go >= 1.24
 
-### 1. Build Requirements
-- Node.js >= 24
-- pnpm >= 10.28
-- Go >= 1.23 (For experimental sidecar)
-
-### 2. Standard Build & Run
+## Standard Build
 ```bash
-pnpm install
-pnpm run build
-pnpm run start
-```
-This will compile the TypeScript monorepo, build the web assets, and launch the primary Node.js `cli-orchestrator` along with the web dashboard on port `3000`.
-
-### 3. Experimental Go Sidecar
-To run the Go bridge alongside the main control plane:
-```bash
-cd go
-go run ./cmd/borg serve
+go build -o hypercode main.go
 ```
 
-### 4. Extensions
-To build extensions (VS Code, Chrome):
+## Running the Daemon
+To start the control plane server:
 ```bash
-pnpm run build:extensions
+./hypercode serve
 ```
 
-### 5. Production Docker
+## Running the TUI
+To launch the interactive dashboard:
 ```bash
-docker build -f Dockerfile.prod -t borg:latest .
-docker run -p 3000:3000 -p 4000:4000 -v borg-data:/root/.borg borg:latest
+./hypercode tui
 ```
 
-## Health Checks
-- `http://localhost:4000/api/config/status` - Main control plane health
-- `http://localhost:3000` - Dashboard
+## Docker Deployment
+```bash
+docker build -t hyperharness:latest .
+docker run -p 8080:8080 hyperharness:latest
+```

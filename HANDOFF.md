@@ -138,3 +138,17 @@ go test -buildvcs=false ./... -count=1 -timeout 180s
 - Extracted exact parity tool schemas for Hermes and II Agent tools. Ported to both TypeScript and Go.
 - Added `Council` architecture (Director-Worker agents) capable of `PlanDelegation`, `ExecutePlan`, and `InitiateDebate` loops to both TypeScript and Go backends.
 - Abstracted Containerized Bash support into the Plugin layer/options for better sandboxing.
+
+## Turn Update: 2026-06-05 (v0.4.5 Multi-Harness Port Finalized)
+- **Comprehensive Parity**: Ported and verified tool parity for the remaining targeted harnesses: Claude Desktop, Codex CLI, Hermes Desktop, and pi-coding-agent.
+- **Backend Migration**: Migrated the core `ai` (routing) and `hsync` (BobbyBookmarks synchronization, LinkCrawler) modules from the sidecar backup to the native Go implementation.
+- **New Tools Registered**:
+    - `claude_desktop_handoff`: Generates deep links for session handoff.
+    - `sync_bobby_bookmarks`: Synchronizes external reading lists.
+    - `crawl_links`: Background content extraction worker.
+    - `pi_bash`: Direct alias for pi-coding-agent parity.
+- **Release Documentation**: Generated `RELEASE_NOTES.md`, updated `README.md`, `DEPLOY.md`, and completed architectural analyses in `docs/analysis/`.
+- **CI/CD Stabilization**: Reverted Go version to stable `1.24` in workflows and removed all merge conflict markers from project files.
+- **Verification**: All E2E integration tests in `agent/harness_e2e_test.go` are PASSING.
+
+**Status**: PROJECT COMPLETED (v0.4.5).

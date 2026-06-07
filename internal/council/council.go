@@ -1,10 +1,17 @@
 package council
 
 import (
+	"context"
+	"encoding/json"
 	"fmt"
 	"strings"
 	"time"
 )
+
+// Executor defines the interface for executing LLM requests.
+type Executor interface {
+	Chat(input string) (string, error)
+}
 
 // SubagentTask represents a task dispatched by a Director to a Worker.
 type SubagentTask struct {
@@ -18,6 +25,7 @@ type SubagentTask struct {
 
 // DirectorAgent orchestrates subagents based on the Council architecture.
 type DirectorAgent struct {
+	exec      Executor
 	workers   map[string]*WorkerAgent
 	taskQueue []*SubagentTask
 }
@@ -29,18 +37,46 @@ func NewDirectorAgent() *DirectorAgent {
 	}
 }
 
-// PlanDelegation breaks a high-level goal into subtasks.
-func (d *DirectorAgent) PlanDelegation(goal string) []*SubagentTask {
+// PlanDelegation breaks a high-level goal into subtasks using an LLM.
+func (d *DirectorAgent) PlanDelegation(ctx context.Context, exec Executor, goal string) ([]*SubagentTask, error) {
 	fmt.Printf("[Director] Planning delegation for goal: %s\n", goal)
-	
-	plan := []*SubagentTask{
-		{ID: "task_1", Role: "researcher", Objective: "Find relevant files for the goal.", Status: "pending"},
-		{ID: "task_2", Role: "coder", Objective: "Implement the required changes.", Status: "pending"},
-		{ID: "task_3", Role: "reviewer", Objective: "Review the code modifications for errors.", Status: "pending"},
+	d.exec = exec
+
+	prompt := fmt.Sprintf(`Break down the following goal into a sequence of sub-tasks for specialized agents.
+Available roles: researcher, coder, reviewer, planner.
+Output MUST be a JSON array of objects with "id", "role", and "objective" fields.
+
+Goal: %s`, goal)
+
+	response, err := exec.Chat(prompt)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get delegation plan: %w", err)
 	}
-	
+
+	// Try to extract JSON if there's markdown wrapping
+	jsonStr := response
+	if idx := strings.Index(jsonStr, "["); idx != -1 {
+		if lastIdx := strings.LastIndex(jsonStr, "]"); lastIdx != -1 {
+			jsonStr = jsonStr[idx : lastIdx+1]
+		}
+	}
+
+	var plan []*SubagentTask
+	if err := json.Unmarshal([]byte(jsonStr), &plan); err != nil {
+		// Fallback to basic plan if parsing fails
+		fmt.Printf("[Director] Failed to parse LLM plan, using fallback: %v\n", err)
+		plan = []*SubagentTask{
+			{ID: "task_1", Role: "researcher", Objective: "Analyze the goal: " + goal, Status: "pending"},
+			{ID: "task_2", Role: "coder", Objective: "Implement solution for: " + goal, Status: "pending"},
+		}
+	}
+
+	for _, t := range plan {
+		t.Status = "pending"
+	}
+
 	d.taskQueue = append(d.taskQueue, plan...)
-	return plan
+	return plan, nil
 }
 
 // ExecutePlan runs the queued tasks sequentially with a self-correction loop.
@@ -54,6 +90,7 @@ func (d *DirectorAgent) ExecutePlan() (string, error) {
 		for attempt := 1; attempt <= maxAttempts; attempt++ {
 			task.Status = "running"
 			worker := NewWorkerAgent(task.Role)
+			worker.exec = d.exec
 			res, err := worker.Execute(task)
 
 			if err != nil {
@@ -98,6 +135,7 @@ func (d *DirectorAgent) InitiateDebate(topic string, agentA, agentB *WorkerAgent
 // WorkerAgent handles individual subtasks in the council.
 type WorkerAgent struct {
 	Role string
+	exec Executor
 }
 
 func NewWorkerAgent(role string) *WorkerAgent {
@@ -106,9 +144,14 @@ func NewWorkerAgent(role string) *WorkerAgent {
 
 // Execute runs the assigned subtask.
 func (w *WorkerAgent) Execute(task *SubagentTask) (string, error) {
-	// Mock execution delay
-	time.Sleep(100 * time.Millisecond)
-	return fmt.Sprintf("Completed objective: %s (Simulated execution)", task.Objective), nil
+	if w.exec == nil {
+		// Mock execution delay for backward compatibility/testing if no executor
+		time.Sleep(100 * time.Millisecond)
+		return fmt.Sprintf("Completed objective: %s (Simulated execution)", task.Objective), nil
+	}
+
+	prompt := fmt.Sprintf("You are a %s agent. Objective: %s\nPerform the task and provide a summary of your work.", w.Role, task.Objective)
+	return w.exec.Chat(prompt)
 }
 
 // Argue produces an argument from a specific stance.
