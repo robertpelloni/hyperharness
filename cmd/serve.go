@@ -10,6 +10,7 @@ import (
 	"github.com/gofiber/websocket/v2"
 	foundationrepomap "github.com/robertpelloni/hyperharness/foundation/repomap"
 	"github.com/robertpelloni/hyperharness/mcp"
+	"github.com/robertpelloni/hyperharness/internal/buildinfo"
 	"github.com/robertpelloni/hyperharness/orchestrator"
 	"github.com/spf13/cobra"
 )
@@ -22,6 +23,7 @@ var serveCmd = &cobra.Command{
 		app := fiber.New(fiber.Config{
 			DisableStartupMessage: true,
 		})
+
 
 		// Strictly handle CORS for Next.js Frontend parity
 		app.Use(cors.New(cors.Config{
@@ -64,7 +66,7 @@ var serveCmd = &cobra.Command{
 			return c.JSON(fiber.Map{
 				"id":      "cloud-orchestrator-node-1",
 				"name":    "Cloud Orchestrator (Go-Native)",
-				"version": "1.0.0",
+				"version": buildinfo.Version,
 				"capabilities": []string{
 					"cloud_session_management",
 					"autonomous_plan_approval",
@@ -403,41 +405,6 @@ var serveCmd = &cobra.Command{
 			return c.JSON(fiber.Map{"status": "proxied", "actionRoute": idAction})
 		})
 
-		api.Get("/fs/list", func(c *fiber.Ctx) error {
-			dirPath := c.Query("path", ".")
-			absPath, _ := filepath.Abs(dirPath)
-
-			entries, err := os.ReadDir(absPath)
-			if err != nil {
-				return c.Status(500).JSON(fiber.Map{"error": err.Error()})
-			}
-
-			var files []map[string]interface{}
-			for _, e := range entries {
-				files = append(files, map[string]interface{}{
-					"name":        e.Name(),
-					"isDirectory": e.IsDir(),
-				})
-			}
-			return c.JSON(fiber.Map{"files": files, "path": absPath})
-		})
-
-		api.Get("/fs/read", func(c *fiber.Ctx) error {
-			filePath := c.Query("path")
-			if filePath == "" {
-				return c.Status(400).JSON(fiber.Map{"error": "path required"})
-			}
-			cwd, err := os.Getwd()
-			if err != nil {
-				return c.Status(500).JSON(fiber.Map{"error": err.Error()})
-			}
-			content, err := encodeFoundationReadAsString(cwd, filePath)
-			if err != nil {
-				return c.Status(500).JSON(fiber.Map{"error": err.Error()})
-			}
-			return c.SendString(content)
-		})
-
 		api.Post("/rag/query", func(c *fiber.Ctx) error {
 			var body struct {
 				Query string `json:"query"`
@@ -505,7 +472,7 @@ var serveCmd = &cobra.Command{
 		})
 
 		app.Get("/health", func(c *fiber.Ctx) error {
-			return c.JSON(fiber.Map{"status": "hypercode_active", "version": "1.0.0", "daemon": "fiber"})
+			return c.JSON(fiber.Map{"status": "hypercode_active", "version": buildinfo.Version, "daemon": "fiber"})
 		})
 
 		// Render the compiled React Single Page App bridging Localhost execution replacing Vite/Next!
@@ -515,7 +482,7 @@ var serveCmd = &cobra.Command{
 		})
 
 		log.Println("[Server] Hono/Bun Parity Achieved. Listening locally on :8080")
-		log.Fatal(app.Listen(":8080"))
+		log.Fatal(app.Listen("0.0.0.0:8080"))
 	},
 }
 
