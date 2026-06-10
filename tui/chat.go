@@ -308,7 +308,7 @@ func initialModel() model {
 		// enables future wiring to bubbletea commands
 	})
 
-	// Welcome banner
+	// Welcome banner (pi-mono style: logo + keybinding hints + onboarding)
 	m.entries = append(m.entries, ChatEntry{
 		Type:      EntrySystem,
 		Content:   RenderWelcome(wd, gitBranch, displayProvider, displayModel, m.toolCount, regCount, DefaultTheme),
@@ -488,10 +488,6 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case tea.KeyCtrlL:
 			return m.handleSlashCmd("/tree-pane")
 
-		// ── Ctrl+D when not empty: dashboard toggle ──
-		// (handled above for empty input — quit)
-		// With input: we use Ctrl+Shift+D for dashboard
-
 		// ── Ctrl+Y: accept shell proposal / commit ──
 		case tea.KeyCtrlY:
 			return m.handleSlashCmd("/commit")
@@ -570,6 +566,17 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.entries = append(m.entries, ChatEntry{
 				Type:      EntrySystem,
 				Content:   m.theme.AccentText(fmt.Sprintf("[Model] switched to %s/%s", m.provider, m.modelName)),
+				Timestamp: time.Now(),
+			})
+			m.syncViewport()
+			return m, nil
+
+		// ── Ctrl+T: toggle thinking visibility (pi-mono: app.thinking.toggle) ──
+		case tea.KeyCtrlT:
+			m.hidingThink = !m.hidingThink
+			m.entries = append(m.entries, ChatEntry{
+				Type:      EntrySystem,
+				Content:   m.theme.AccentText(fmt.Sprintf("[Thinking] visibility: %s", map[bool]string{true: "hidden", false: "visible"}[m.hidingThink])),
 				Timestamp: time.Now(),
 			})
 			m.syncViewport()
@@ -1358,7 +1365,7 @@ func (m model) View() string {
 		return body + "\n" + m.renderFooter() + "\n" + m.renderInputBar()
 	}
 
-	// Normal mode
+	// Normal mode (pi-mono layout: [chat viewport] [footer] [input])
 	body = m.renderChatArea()
 	return body + "\n" + m.renderFooter() + "\n" + m.renderInputBar()
 }
@@ -1402,47 +1409,10 @@ func (m model) renderFooter() string {
 		m.thinkingLevel, m.theme, m.width)
 }
 
-// ─── Input bar ────────────────────────────────────────────────────────
+// ─── Input bar (pi-mono style) ────────────────────────────────────────
 
 func (m model) renderInputBar() string {
-	t := m.theme
-	var prompt, inputDisplay string
-
-	if m.loading {
-		prompt = t.Bold(t.Fg(t.ThinkingCol, "… "))
-		inputDisplay = t.Fg(t.ThinkingCol, t.Italic(m.thinkingLabel))
-		if len(m.followUpQueue) > 0 {
-			inputDisplay += t.Fg(t.Gold, t.Italic(fmt.Sprintf(" [%d queued]", len(m.followUpQueue))))
-		}
-		inputDisplay += " " + m.spinner.View()
-	} else if m.pasteMode {
-		prompt = t.Bold(t.Fg(t.BashModeCol, "📋 "))
-		preview := m.pasteContent
-		if len(preview) > 60 { preview = preview[:57] + "…" }
-		charCount := len(m.pasteContent)
-		inputDisplay = t.Fg(t.TextColor, preview) + t.Dim(fmt.Sprintf(" (%d chars)", charCount))
-		inputDisplay += "\n" + t.Dim(t.Italic("enter to send · esc to clear"))
-	} else if m.bashMode || strings.HasPrefix(m.input, "!") {
-		prompt = t.Bold(t.Fg(t.BashModeCol, "⚡ "))
-		inputDisplay = t.Fg(t.TextColor, m.input) + "▎"
-	} else {
-		prompt = t.Bold(t.AccentText("> "))
-		inputDisplay = t.Fg(t.TextColor, m.input) + "▎"
-	}
-
-	// Queue indicator (goose-style: "message queued — will send when finished")
-	queueHint := ""
-	if m.loading && len(m.followUpQueue) > 0 {
-		queueHint = "\n" + t.Fg(t.Gold, t.Italic("message queued — will send when agent finishes"))
-	}
-
-	// Autocomplete dropdown
-	autocomplete := ""
-	if m.showAutocomplete && m.isSlashContext() {
-		autocomplete = "\n" + RenderAutocomplete(m.filteredAutocomplete(), m.autocompleteIndex, m.autocompleteMaxVis, t)
-	}
-
-	return prompt + inputDisplay + queueHint + autocomplete
+	return RenderInputBar(m)
 }
 
 // ─── Tool sidebar (dashboard mode) ────────────────────────────────────
