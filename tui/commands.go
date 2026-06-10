@@ -50,6 +50,7 @@ var BuiltinSlashCommands = []SlashCommand{
 
 	// ── Settings / Model (pi-mono + opencode) ──────────────────
 	{Name: "dashboard", Description: "Toggle split-pane dashboard", Category: "settings", Keybind: "Ctrl+D"},
+	{Name: "provider", Description: "Select LLM provider", Category: "model"},
 	{Name: "model", Description: "Show or select model", Category: "model", Keybind: "Ctrl+Shift+M"},
 	{Name: "scoped-models", Description: "Show scoped models (pi-mono)", Category: "model"},
 	{Name: "providers", Description: "Show LLM provider status", Category: "model"},

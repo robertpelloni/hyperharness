@@ -60,6 +60,8 @@ func ProcessSlashCommand(cmd string, m *model) (tea.Model, tea.Cmd) {
 		return handleAdapters(m)
 	case "/mcp", "/mcptools":
 		return handleMCPTools(m)
+	case "/provider":
+		return handleProvider(m, strings.TrimSpace(strings.TrimPrefix(cmd, "/provider")))
 	case "/model":
 		return handleModel(m, strings.TrimSpace(strings.TrimPrefix(cmd, "/model")))
 	case "/settings":
@@ -427,13 +429,89 @@ func handleMCPTools(m *model) (tea.Model, tea.Cmd) {
 	return *m, nil
 }
 
-func handleModel(m *model, arg string) (tea.Model, tea.Cmd) {
+func handleProvider(m *model, arg string) (tea.Model, tea.Cmd) {
+	t := m.theme
+
 	if strings.TrimSpace(arg) != "" {
-		m.modelName = strings.TrimSpace(arg)
-		sysEntry(m, fmt.Sprintf("Model set to: %s", m.modelName))
+		// Set provider by name
+		name := strings.TrimSpace(arg)
+		found := false
+		for _, p := range m.availableProviders {
+			if p == name {
+				found = true
+				break
+			}
+		}
+		if !found {
+			errEntry(m, fmt.Sprintf("Provider '%s' not available. Use /provider to see available providers.", name))
+			return *m, nil
+		}
+		m.selectedProvider = name
+		m.provider = name
+		// Set default model for this provider
+		if models, ok := m.providerModels[name]; ok && len(models) > 0 {
+			m.modelName = models[0]
+		}
+		sysEntry(m, t.SuccessText(fmt.Sprintf("✓ Provider set to %s, model: %s", name, m.modelName)))
 		return *m, nil
 	}
-	sysEntry(m, fmt.Sprintf("Current model: %s/%s", m.provider, m.modelName))
+
+	// Show available providers
+	var b strings.Builder
+	b.WriteString(t.Bold(t.AccentText("╭─ Available Providers ──────────────────────────╮")) + "\n")
+	for _, p := range m.availableProviders {
+		marker := "  "
+		if p == m.provider {
+			marker = t.SuccessText("▸ ")
+		}
+		models := ""
+		if m2, ok := m.providerModels[p]; ok {
+			models = t.Dim(fmt.Sprintf(" (%d models)", len(m2)))
+		}
+		apiKey := "✓"
+		if p == "ollama" || p == "lmstudio" {
+			apiKey = t.Dim("local")
+		} else {
+			apiKey = t.SuccessText("configured")
+		}
+		b.WriteString(fmt.Sprintf("%s%s%s %s\n", marker, t.Fg(t.TextColor, p), models, t.Dim("["+apiKey+"]")))
+	}
+	b.WriteString(t.Bold(t.AccentText("╰───────────────────────────────────────────────╯")) + "\n")
+	b.WriteString(t.Dim("  Usage: /provider <name> to select"))
+	sysEntry(m, b.String())
+	return *m, nil
+}
+
+func handleModel(m *model, arg string) (tea.Model, tea.Cmd) {
+	t := m.theme
+
+	if strings.TrimSpace(arg) != "" {
+		// Set model by name
+		name := strings.TrimSpace(arg)
+		m.modelName = name
+		sysEntry(m, t.SuccessText(fmt.Sprintf("✓ Model set to %s/%s", m.provider, name)))
+		return *m, nil
+	}
+
+	// Show models for current provider
+	var b strings.Builder
+	b.WriteString(t.Bold(t.AccentText(fmt.Sprintf("╭─ Models for %s ────────────────────────────╮", m.provider))) + "\n")
+	models := m.availableModels
+	if m.selectedProvider != "" {
+		if m2, ok := m.providerModels[m.selectedProvider]; ok {
+			models = m2
+		}
+	}
+	for _, mdl := range models {
+		marker := "  "
+		if mdl == m.modelName {
+			marker = t.SuccessText("▸ ")
+		}
+		b.WriteString(fmt.Sprintf("%s%s\n", marker, t.Fg(t.TextColor, mdl)))
+	}
+	b.WriteString(t.Bold(t.AccentText("╰───────────────────────────────────────────────╯")) + "\n")
+	b.WriteString(t.Dim("  Usage: /model <name> to select"))
+	sysEntry(m, b.String())
 	return *m, nil
 }
 

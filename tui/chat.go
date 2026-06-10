@@ -145,6 +145,9 @@ type model struct {
 	gitBranch     string
 	provider      string
 	modelName     string
+	selectedProvider string  // user-selected provider (empty = auto-detect)
+	availableProviders []string  // providers with API keys configured
+	providerModels    map[string][]string  // provider -> models map
 	toolCount     int
 	totalInputTok int
 	totalOutTok   int
@@ -217,6 +220,31 @@ func countInstalledTools() int {
 	detector := controlplane.NewDetector(5*time.Second, 10*time.Minute)
 	detected, _ := detector.DetectAll(ctx)
 	return len(detected)
+}
+
+// detectAvailableProviders returns providers that have API keys set
+func detectAvailableProviders() []string {
+	var providers []string
+	checks := []struct{ env, name string }{
+		{"ANTHROPIC_API_KEY", "anthropic"},
+		{"CLAUDE_API_KEY", "anthropic"},
+		{"OPENAI_API_KEY", "openai"},
+		{"GOOGLE_API_KEY", "google"},
+		{"GEMINI_API_KEY", "google"},
+		{"DEEPSEEK_API_KEY", "deepseek"},
+		{"OPENROUTER_API_KEY", "openrouter"},
+		{"GROQ_API_KEY", "groq"},
+	}
+	seen := map[string]bool{}
+	for _, c := range checks {
+		if os.Getenv(c.env) != "" && !seen[c.name] {
+			providers = append(providers, c.name)
+			seen[c.name] = true
+		}
+	}
+	// Always include local providers
+	providers = append(providers, "ollama", "lmstudio")
+	return providers
 }
 
 func getGitBranch(wd string) string {
@@ -300,6 +328,17 @@ func initialModel() model {
 		contextWindow:       200000,
 		doubleEscAction:     "tree", // pi-mono default
 		availableModels:     []string{"auto", "claude-sonnet-4-20250514", "gpt-4o", "gemini-2.5-flash", "deepseek-chat", "claude-3-5-sonnet-20241022", "o1", "local"},
+	availableProviders: detectAvailableProviders(),
+	providerModels: map[string][]string{
+		"anthropic": {"claude-sonnet-4-20250514", "claude-3-7-sonnet-20250219", "claude-3-5-sonnet-20241022", "claude-3-haiku-20240307"},
+		"openai":    {"gpt-4o", "gpt-4o-mini", "gpt-4-turbo", "o1", "o1-mini", "o3-mini"},
+		"google":    {"gemini-2.5-flash", "gemini-2.5-pro", "gemini-2.0-flash", "gemini-1.5-pro"},
+		"deepseek":  {"deepseek-chat", "deepseek-reasoner"},
+		"openrouter": {"anthropic/claude-3.5-sonnet", "google/gemini-2.0-flash-exp", "openrouter/free"},
+		"groq":      {"llama-3.3-70b-versatile", "mixtral-8x7b-32768", "gemma2-9b-it"},
+		"ollama":    {"gemma:2b", "llama3:8b", "codellama:7b", "mistral:7b"},
+		"lmstudio":  {"local-model"},
+	},
 	}
 
 	// Subscribe to session events for real-time tool/streaming display
