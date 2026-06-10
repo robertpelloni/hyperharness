@@ -25,6 +25,7 @@ import (
 	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+	"github.com/robertpelloni/hyperharness/agent"
 	"github.com/robertpelloni/hyperharness/agents"
 	"github.com/robertpelloni/hyperharness/foundation/adapters"
 	foundationorchestration "github.com/robertpelloni/hyperharness/foundation/orchestration"
@@ -48,15 +49,30 @@ type ToolExecMsg struct {
 	Duration  time.Duration
 	IsError   bool
 	Streaming bool
+	Running   bool // true when tool starts, false when completes
 }
 type AgentResponseMsg struct {
 	Content  string
 	Provider string
 	Model    string
 	Plan     *foundationorchestration.PlanResult
+	InputTok int
+	OutTok   int
+	Cost     float64
 }
 type GitBranchMsg struct{ Branch string }
 type StreamChunkMsg struct{ Chunk string }
+
+// ThinkingStartMsg signals the start of LLM processing
+type ThinkingStartMsg struct {
+	Provider string
+	Model    string
+}
+
+// AgentCompleteMsg signals the agent loop has finished
+type AgentCompleteMsg struct {
+	Content string
+}
 
 // ═══════════════════════════════════════════════════════════════════════
 // Model — the central TUI state (mirrors pi-mono's InteractiveMode fields)
@@ -157,6 +173,7 @@ type model struct {
 
 	// Tool registry
 	registry *tools.Registry
+	agentBridge    *AgentBridge
 
 	// Tool execution tracking
 	toolMu   sync.Mutex
@@ -195,8 +212,10 @@ func getWorkingDir() string {
 }
 
 func countInstalledTools() int {
-	detector := controlplane.NewDetector(30*time.Second, 10*time.Minute)
-	detected, _ := detector.DetectAll(context.Background())
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	detector := controlplane.NewDetector(5*time.Second, 10*time.Minute)
+	detected, _ := detector.DetectAll(ctx)
 	return len(detected)
 }
 
@@ -222,7 +241,13 @@ func initialModel() model {
 	s.Style = lipgloss.NewStyle().Foreground(lipgloss.Color(DefaultTheme.Accent))
 
 	wd := getWorkingDir()
-	provider := agents.NewHyperCodeProvider()
+	// Use offline provider when no API key, real provider when available
+	var provider agents.ILLMProvider
+	if _, _, _, err := agent.ResolveProvider(); err != nil {
+		provider = agents.NewOfflineProvider(wd)
+	} else {
+		provider = agents.NewHyperCodeProvider()
+	}
 	director := agents.NewDirector(provider)
 	director.WorkingDir = wd
 
@@ -230,6 +255,18 @@ func initialModel() model {
 	regCount := len(reg.Tools)
 	cliToolCount := countInstalledTools()
 	gitBranch := getGitBranch(wd)
+
+	// Auto-resolve provider info from env vars
+	resolvedProvider, resolvedName, resolvedModel, _ := agent.ResolveProvider()
+	displayProvider := "hypercode"
+	displayModel := "auto"
+	if resolvedProvider != nil {
+		displayProvider = resolvedName
+		displayModel = resolvedModel
+	}
+
+	// Create agent bridge for real LLM streaming
+	bridge := NewAgentBridge(displayProvider, displayModel, wd, reg)
 
 	// Create AgentSession with tool adapter
 	adapter := NewRegistryAdapter(reg)
@@ -250,10 +287,11 @@ func initialModel() model {
 		browserPanePreview:  true,
 		workingDir:       wd,
 		gitBranch:        gitBranch,
-		provider:         "hypercode",
-		modelName:        "auto",
+		provider: displayProvider,
+		modelName: displayModel,
 		toolCount:        regCount + cliToolCount,
 		registry:         reg,
+		agentBridge: bridge,
 		autocompleteItems:   BuiltinSlashCommands,
 		autocompleteMaxVis:  8,
 		hidingThink:         true,
@@ -261,7 +299,7 @@ func initialModel() model {
 		thinkingLevel:       "off",
 		contextWindow:       200000,
 		doubleEscAction:     "tree", // pi-mono default
-		availableModels:     []string{"auto", "gemini-1.5-pro", "gpt-4", "claude-3-5-sonnet", "claude-3-opus", "llama-3", "local"},
+		availableModels:     []string{"auto", "claude-sonnet-4-20250514", "gpt-4o", "gemini-2.5-flash", "deepseek-chat", "claude-3-5-sonnet-20241022", "o1", "local"},
 	}
 
 	// Subscribe to session events for real-time tool/streaming display
@@ -273,7 +311,7 @@ func initialModel() model {
 	// Welcome banner
 	m.entries = append(m.entries, ChatEntry{
 		Type:      EntrySystem,
-		Content:   RenderWelcome(wd, gitBranch, "hypercode", "auto", m.toolCount, regCount, DefaultTheme),
+		Content:   RenderWelcome(wd, gitBranch, displayProvider, displayModel, m.toolCount, regCount, DefaultTheme),
 		Timestamp: time.Now(),
 	})
 
@@ -730,15 +768,24 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.loading = false
 		m.streaming = false
 		entry := ChatEntry{
-			Type:      EntryAssistant,
-			Content:   msg.Content,
-			Provider:  msg.Provider,
-			Model:     msg.Model,
+			Type: EntryAssistant,
+			Content: msg.Content,
+			Provider: msg.Provider,
+			Model: msg.Model,
 			Timestamp: time.Now(),
 		}
 		if msg.Plan != nil {
-			entry.Content = fmt.Sprintf("[Director Plan]\n  task: %s\n  route: %s/%s\n\n%s",
+			entry.Content = fmt.Sprintf("[Director Plan]\n task: %s\n route: %s/%s\n\n%s",
 				msg.Plan.TaskType, msg.Plan.Execution.Route.Provider, msg.Plan.Execution.Route.Model, msg.Content)
+		}
+		// Track tokens and cost from real LLM calls
+		if msg.InputTok > 0 || msg.OutTok > 0 {
+			m.totalInputTok += msg.InputTok
+			m.totalOutTok += msg.OutTok
+			m.totalCost += msg.Cost
+			used := float64(m.totalInputTok+m.totalOutTok) / float64(m.contextWindow) * 100
+			if used > 100 { used = 100 }
+			m.contextPct = used
 		}
 		m.entries = append(m.entries, entry)
 		m.syncViewport()
@@ -754,6 +801,26 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case StreamChunkMsg:
 		m.streamContent += msg.Chunk
 		m.syncViewport()
+	case ThinkingStartMsg:
+		m.loading = true
+		m.streaming = true
+		if msg.Provider != "" {
+			m.provider = msg.Provider
+		}
+		if msg.Model != "" {
+			m.modelName = msg.Model
+		}
+	case AgentCompleteMsg:
+		m.loading = false
+		m.streaming = false
+		// Process follow-up queue after agent finishes
+		if len(m.followUpQueue) > 0 {
+			next := m.followUpQueue[0]
+			m.followUpQueue = m.followUpQueue[1:]
+			m.input = next
+			cmds = append(cmds, func() tea.Msg { return tea.KeyMsg{Type: tea.KeyEnter} })
+		}
+		cmds = append(cmds, fetchGitBranch(m.workingDir))
 
 	case string:
 		m.loading = false
@@ -896,24 +963,26 @@ func (m model) handleEnter() (tea.Model, tea.Cmd) {
 	m.entries = append(m.entries, ChatEntry{Type: EntryUser, Content: req, Timestamp: time.Now()})
 	m.loading = true
 	m.syncViewport()
-
 	if sessionID, err := ensureFoundationSession(&m); err == nil {
 		m.foundationSessionID = sessionID
 		_ = appendFoundationUserText(m.director.WorkingDir, m.foundationSessionID, req)
 		refreshPinnedFoundationTreeBrowser(&m)
 	}
-
+	// Use agent bridge for real LLM calls with streaming events
+	if m.agentBridge != nil && m.agentBridge.HasProvider() {
+		bridge := m.agentBridge
+		return m, func() tea.Msg {
+			go bridge.RunPrompt(req) // async, events stream via p.Send()
+			return AgentCompleteMsg{} // sentinel, real events come via p.Send()
+		}
+	}
+	// Fallback: synchronous Director/OfflineProvider call
 	return m, func() tea.Msg {
 		response, err := buildPromptResponse(m.director, req)
 		if err != nil {
 			return AgentResponseMsg{Content: fmt.Sprintf("Error: %v", err), Provider: m.provider, Model: m.modelName}
 		}
-		plan, _ := m.director.State["lastPlan"].(foundationorchestration.PlanResult)
-		provider := m.provider
-		model := m.modelName
-		if plan.Execution.Route.Provider != "" { provider = plan.Execution.Route.Provider }
-		if plan.Execution.Route.Model != "" { model = plan.Execution.Route.Model }
-		return AgentResponseMsg{Content: response.Display, Provider: provider, Model: model, Plan: &plan}
+		return AgentResponseMsg{Content: response.Display, Provider: m.provider, Model: m.modelName}
 	}
 }
 

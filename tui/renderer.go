@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/charmbracelet/lipgloss"
+	"github.com/robertpelloni/hyperharness/internal/buildinfo"
 )
 
 // RenderEntry dispatches to the correct renderer based on entry type
@@ -447,6 +448,7 @@ func RenderWelcome(cwd, gitBranch, provider, model string, toolCount, regCount i
 	b.WriteString("\n")
 
 	// Status line
+	b.WriteString(t.Dim(fmt.Sprintf(" v%s", buildinfo.Version)) + "\n")
 	b.WriteString(t.Dim("  cwd:   ") + t.Fg(t.TextColor, cwd) + "\n")
 	if gitBranch != "" {
 		b.WriteString(t.Dim("  git:   ") + t.Fg(t.Accent, "⎇ "+gitBranch) + "\n")
@@ -512,7 +514,7 @@ func RenderFooter(cwd, gitBranch, provider, model string, toolCount, inputTok, o
 	}
 
 	// Line 2: model + thinking + tools
-	line2 := t.Dim(" ") + t.Fg(t.Accent, provider) + t.Dim("/") + t.Fg(t.TextColor, model)
+	line2 := t.Dim(" ") + t.Fg(t.Accent, provider) + t.Dim("/") + t.Fg(t.TextColor, model) + t.Dim(" v" + buildinfo.Version)
 	if thinkingLevel != "" && thinkingLevel != "off" {
 		line2 += t.Dim(" │ 💭 ") + t.Fg(t.ThinkingBorder(thinkingLevel), thinkingLevel)
 	}

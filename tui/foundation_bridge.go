@@ -12,7 +12,8 @@ import (
 	foundationorchestration "github.com/robertpelloni/hyperharness/foundation/orchestration"
 )
 
-// buildPromptResponse calls the Director's HandleInput and returns a PromptDisplayMsg.
+// buildPromptResponse delegates to the Director for responses.
+// When a real LLM API key is available, the AgentBridge handles streaming instead.
 func buildPromptResponse(director *agents.Director, input string) (PromptDisplayMsg, error) {
 	response, err := director.HandleInput(context.Background(), input)
 	if err != nil {
@@ -47,7 +48,7 @@ func ensureFoundationSession(m *model) (string, error) {
 	return fmt.Sprintf("session-%s-%d", filepath.Base(wd), os.Getpid()), nil
 }
 
-func appendFoundationUserText(workingDir, sessionID, text string) bool  { return true }
+func appendFoundationUserText(workingDir, sessionID, text string) bool     { return true }
 func appendFoundationAssistantText(workingDir, sessionID, text string) bool { return true }
 
 // ─── Foundation tree helpers ──────────────────────────────────────────
@@ -80,7 +81,9 @@ func buildFoundationTreeDisplay(workingDir, sessionID string) (string, error) {
 	var lines []string
 	for _, item := range items {
 		icon := "📄"
-		if item.IsDir { icon = "📁" }
+		if item.IsDir {
+			icon = "📁"
+		}
 		lines = append(lines, fmt.Sprintf("%s %s", icon, item.Name))
 	}
 	return strings.Join(lines, "\n"), nil

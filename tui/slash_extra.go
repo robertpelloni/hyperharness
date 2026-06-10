@@ -12,6 +12,7 @@ import (
 	"runtime"
 	"strings"
 	"time"
+	"github.com/robertpelloni/hyperharness/internal/buildinfo"
 
 	tea "github.com/charmbracelet/bubbletea"
 )
@@ -106,22 +107,51 @@ func handleStats(m *model, arg string) (tea.Model, tea.Cmd) {
 
 func handleDoctor(m *model, arg string) (tea.Model, tea.Cmd) {
 	var lines []string
-	lines = append(lines, m.theme.AccentText("[Doctor] Diagnostics"))
+	lines = append(lines, m.theme.AccentText(fmt.Sprintf("[Doctor] Diagnostics (v%s)", buildinfo.Version)))
+	// Git check
 	if _, err := exec.LookPath("git"); err == nil {
-		lines = append(lines, m.theme.SuccessText("  ✓ git installed"))
-	} else { lines = append(lines, m.theme.ErrorText("  ✗ git not found")) }
+		lines = append(lines, m.theme.SuccessText(" ✓ git installed"))
+	} else {
+		lines = append(lines, m.theme.ErrorText(" ✗ git not found"))
+	}
+	// Agent session
 	if m.session != nil {
-		lines = append(lines, m.theme.SuccessText("  ✓ agent session active"))
-	} else { lines = append(lines, m.theme.ErrorText("  ✗ no agent session")) }
-	if m.director != nil && m.director.Provider != nil {
-		lines = append(lines, m.theme.SuccessText("  ✓ LLM provider configured"))
-	} else { lines = append(lines, m.theme.ErrorText("  ✗ no LLM provider")) }
+		lines = append(lines, m.theme.SuccessText(" ✓ agent session active"))
+	} else {
+		lines = append(lines, m.theme.ErrorText(" ✗ no agent session"))
+	}
+	// Real LLM provider check (via agent bridge)
+	if m.agentBridge != nil && m.agentBridge.HasProvider() {
+		lines = append(lines, m.theme.SuccessText(" ✓ real LLM API key detected"))
+	} else if m.director != nil && m.director.Provider != nil {
+		lines = append(lines, m.theme.WarningText(" ⚖ plan-only provider (no API key)"))
+	} else {
+		lines = append(lines, m.theme.ErrorText(" ✗ no LLM provider"))
+	}
+	// Tool registry
 	if m.registry != nil {
-		lines = append(lines, m.theme.SuccessText(fmt.Sprintf("  ✓ %d tools registered", len(m.registry.Tools))))
-	} else { lines = append(lines, m.theme.ErrorText("  ✗ no tool registry")) }
+		lines = append(lines, m.theme.SuccessText(fmt.Sprintf(" ✓ %d tools registered", len(m.registry.Tools))))
+	} else {
+		lines = append(lines, m.theme.ErrorText(" ✗ no tool registry"))
+	}
+	// Memory
+	memDir := filepath.Join(m.workingDir, ".hyperharness", "memory")
+	if files, err := os.ReadDir(memDir); err == nil && len(files) > 0 {
+		lines = append(lines, m.theme.SuccessText(fmt.Sprintf(" ✓ %d memory files", len(files))))
+	} else {
+		lines = append(lines, m.theme.Dim(" ○ no memory files"))
+	}
+	// Sessions
+	sessDir := filepath.Join(m.workingDir, ".hyperharness", "sessions")
+	if files, err := os.ReadDir(sessDir); err == nil && len(files) > 0 {
+		lines = append(lines, m.theme.SuccessText(fmt.Sprintf(" ✓ %d sessions", len(files))))
+	} else {
+		lines = append(lines, m.theme.Dim(" ○ no sessions"))
+	}
 	sysEntry(m, strings.Join(lines, "\n"))
 	return *m, nil
 }
+
 
 func handleTheme(m *model, arg string) (tea.Model, tea.Cmd) {
 	name := strings.TrimSpace(arg)
