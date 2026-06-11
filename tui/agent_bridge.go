@@ -16,6 +16,7 @@ import (
 	"github.com/robertpelloni/hyperharness/agent"
 	"github.com/robertpelloni/hyperharness/agents"
 	foundationorchestration "github.com/robertpelloni/hyperharness/foundation/orchestration"
+	"github.com/robertpelloni/hyperharness/internal/ai"
 	"github.com/robertpelloni/hyperharness/tools"
 )
 
@@ -71,35 +72,36 @@ func (b *AgentBridge) RunPrompt(input string) {
 	b.mu.Lock()
 	b.accumulated = ""
 	b.toolCalls = nil
+	userProvider := b.provider
+	userModel := b.model
 	b.mu.Unlock()
 
-	// Use user-selected provider if set, otherwise resolve from env
-	provider, providerName, modelName, err := agent.ResolveProvider()
+	var provider ai.Provider
+	var providerName, modelName string
+	var err error
+
+	// If user selected a provider via /provider, use that first
+	if userProvider != "" && userProvider != "hyperharness" {
+		provider, providerName, modelName, err = agent.CreateProvider(userProvider)
+	}
+
+	// Fall back to env-based resolution if no user selection or creation failed
+	if provider == nil {
+		provider, providerName, modelName, err = agent.ResolveProvider()
+	}
+
 	if err != nil || provider == nil {
-		// Check if user selected a provider via /provider command
-		b.mu.Lock()
-		userProvider := b.provider
-		userModel := b.model
-		b.mu.Unlock()
-		if userProvider != "" && userProvider != "hyperharness" {
-			// Create provider from user selection
-			provider, providerName, modelName, err = agent.CreateProvider(userProvider)
-			if err != nil || provider == nil {
-				b.sendMsg(AgentResponseMsg{
-					Content: fmt.Sprintf("No API key for %s. Set %s_API_KEY environment variable.", userProvider, strings.ToUpper(userProvider)),
-					Provider: userProvider,
-					Model:    userModel,
-				})
-				return
-			}
-		} else {
-			b.sendMsg(AgentResponseMsg{
-				Content: fmt.Sprintf("No LLM provider configured. Set one of: ANTHROPIC_API_KEY, OPENAI_API_KEY, GOOGLE_API_KEY, GEMINI_API_KEY, DEEPSEEK_API_KEY, OPENROUTER_API_KEY, XIAOMI_API_KEY\n\nError: %v", err),
-				Provider: "none",
-				Model:    "none",
-			})
-			return
-		}
+		b.sendMsg(AgentResponseMsg{
+			Content: fmt.Sprintf("No LLM provider configured. Set one of: ANTHROPIC_API_KEY, OPENAI_API_KEY, GOOGLE_API_KEY, GEMINI_API_KEY, DEEPSEEK_API_KEY, OPENROUTER_API_KEY, XIAOMI_API_KEY\n\nError: %v", err),
+			Provider: "none",
+			Model:    "none",
+		})
+		return
+	}
+
+	// Override model if user selected one
+	if userModel != "" && userModel != "auto" {
+		modelName = userModel
 	}
 
 	registry := b.registry

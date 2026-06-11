@@ -773,8 +773,8 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		// ── Up arrow: history cycling (pi-mono style) ──
 		case tea.KeyUp:
-			// History cycling when input is empty or has history, viewport scroll otherwise
-			if m.input == "" && len(m.inputHistory) > 0 {
+			// History cycling (always works when history exists, like pi-mono)
+			if len(m.inputHistory) > 0 {
 				if m.historyIdx < len(m.inputHistory)-1 {
 					m.historyIdx++
 					m.input = m.inputHistory[len(m.inputHistory)-1-m.historyIdx]
@@ -785,10 +785,10 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		// ── Down arrow: history cycling (pi-mono style) ──
 		case tea.KeyDown:
-			if m.input == "" && m.historyIdx > 0 {
+			if m.historyIdx > 0 {
 				m.historyIdx--
 				m.input = m.inputHistory[len(m.inputHistory)-1-m.historyIdx]
-			} else if m.input == "" && m.historyIdx == 0 {
+			} else if m.historyIdx == 0 {
 				m.historyIdx = -1
 				m.input = ""
 			} else if m.ready {
@@ -878,11 +878,14 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case ThinkingStartMsg:
 		m.loading = true
 		m.streaming = true
-		if msg.Provider != "" {
-			m.provider = msg.Provider
-		}
-		if msg.Model != "" {
-			m.modelName = msg.Model
+		// Only update provider/model from API if user hasn't selected one
+		if m.selectedProvider == "" {
+			if msg.Provider != "" {
+				m.provider = msg.Provider
+			}
+			if msg.Model != "" {
+				m.modelName = msg.Model
+			}
 		}
 	case AgentCompleteMsg:
 		m.loading = false
