@@ -134,6 +134,12 @@ type model struct {
 	modelSelectorIdx    int
 	modelSelectorFilter string
 	availableModels     []string
+	
+	// Provider selector (pi-mono style)
+	showProviderSelector   bool
+	providerSelectorIdx    int
+	providerSelectorFilter string
+	providerList           []string
 
 	// Command palette (opencode style)
 	showCommandPalette  bool
@@ -294,7 +300,7 @@ func initialModel() model {
 
 	// Auto-resolve provider info from env vars
 	resolvedProvider, resolvedName, resolvedModel, _ := agent.ResolveProvider()
-	displayProvider := "hypercode"
+	displayProvider := "hyperharness"
 	displayModel := "auto"
 	if resolvedProvider != nil {
 		displayProvider = resolvedName
@@ -418,6 +424,11 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m.updatePermissionDialog(msg)
 		}
 
+		// Provider selector (pi-mono style: ↑↓ navigate, Enter select, Esc cancel)
+		if m.showProviderSelector {
+			return m.updateProviderSelector(msg)
+		}
+		
 		// Model selector (pi-mono/opencode: ↑↓ navigate, Enter select, Esc cancel)
 		if m.showModelSelector {
 			return m.updateModelSelector(msg)
@@ -760,9 +771,9 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 			return m.handleEnter()
 
-		// ── Up arrow: scroll or history ──
+		// ── Up arrow: history cycling (pi-mono style) ──
 		case tea.KeyUp:
-			if m.input == "" && len(m.inputHistory) > 0 {
+			if len(m.inputHistory) > 0 {
 				if m.historyIdx < len(m.inputHistory)-1 {
 					m.historyIdx++
 					m.input = m.inputHistory[len(m.inputHistory)-1-m.historyIdx]
@@ -771,11 +782,14 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.viewport.LineUp(1)
 			}
 
-		// ── Down arrow: scroll or history ──
+		// ── Down arrow: history cycling (pi-mono style) ──
 		case tea.KeyDown:
-			if m.input == "" && m.historyIdx > 0 {
+			if m.historyIdx > 0 {
 				m.historyIdx--
 				m.input = m.inputHistory[len(m.inputHistory)-1-m.historyIdx]
+			} else if m.historyIdx == 0 {
+				m.historyIdx = -1
+				m.input = ""
 			} else if m.ready {
 				m.viewport.LineDown(1)
 			}
@@ -1028,7 +1042,11 @@ func (m model) handleEnter() (tea.Model, tea.Cmd) {
 		refreshPinnedFoundationTreeBrowser(&m)
 	}
 	// Use agent bridge for real LLM calls with streaming events
-	if m.agentBridge != nil && m.agentBridge.HasProvider() {
+	if m.agentBridge != nil {
+		// Update bridge with user-selected provider/model
+		if m.selectedProvider != "" {
+			m.agentBridge.SetProvider(m.selectedProvider, m.modelName)
+		}
 		bridge := m.agentBridge
 		return m, func() tea.Msg {
 			go bridge.RunPrompt(req) // async, events stream via p.Send()
@@ -1108,6 +1126,52 @@ func (m model) updatePermissionDialog(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 		}
 	}
 	return m, nil
+}
+
+// ─── Provider selector (pi-mono style) ──────────────────────────────
+
+func (m model) updateProviderSelector(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
+	switch msg.Type {
+	case tea.KeyUp:
+		if m.providerSelectorIdx > 0 { m.providerSelectorIdx-- }
+		return m, nil
+	case tea.KeyDown:
+		if m.providerSelectorIdx < len(m.providerList)-1 { m.providerSelectorIdx++ }
+		return m, nil
+	case tea.KeyEnter:
+		if m.providerSelectorIdx >= 0 && m.providerSelectorIdx < len(m.providerList) {
+			name := m.providerList[m.providerSelectorIdx]
+			m.selectedProvider = name
+			m.provider = name
+			// Set default model for this provider
+			if models, ok := m.providerModels[name]; ok && len(models) > 0 {
+				m.modelName = models[0]
+				m.availableModels = models
+			}
+			m.entries = append(m.entries, ChatEntry{
+				Type:      EntrySystem,
+				Content:   m.theme.AccentText(fmt.Sprintf("[Provider] set to %s, model: %s", name, m.modelName)),
+				Timestamp: time.Now(),
+			})
+		}
+		m.showProviderSelector = false
+		m.syncViewport()
+		return m, nil
+	case tea.KeyEsc:
+		m.showProviderSelector = false
+		return m, nil
+	default:
+		// Filter by typing
+		if msg.Type == tea.KeyRunes || msg.Type == tea.KeySpace {
+			m.providerSelectorFilter += msg.String()
+			m.providerSelectorIdx = 0
+		}
+		if msg.Type == tea.KeyBackspace && len(m.providerSelectorFilter) > 0 {
+			m.providerSelectorFilter = m.providerSelectorFilter[:len(m.providerSelectorFilter)-1]
+			m.providerSelectorIdx = 0
+		}
+		return m, nil
+	}
 }
 
 // ─── Model selector (pi-mono/opencode style) ──────────────────────────
@@ -1364,6 +1428,13 @@ func (m model) View() string {
 		return chatView + "\n" + overlay + "\n" + m.renderInputBar()
 	}
 
+	// Provider selector overlay (pi-mono style)
+	if m.showProviderSelector {
+		overlay := RenderProviderSelector(m.provider, m.providerList, m.theme)
+		chatView := m.renderChatArea()
+		return chatView + "\n" + overlay + "\n" + m.renderInputBar()
+	}
+	
 	// Model selector overlay (pi-mono/opencode style)
 	if m.showModelSelector {
 		overlay := RenderModelSelector(m.modelName, m.availableModels, m.theme)

@@ -58,6 +58,14 @@ func (b *AgentBridge) SetProgram(p *tea.Program) {
 	b.program = p
 }
 
+// SetProvider updates the provider and model for user-selected providers
+func (b *AgentBridge) SetProvider(provider, model string) {
+	b.mu.Lock()
+	defer b.mu.Unlock()
+	b.provider = provider
+	b.model = model
+}
+
 // RunPrompt executes a prompt through the real agent loop and streams events to the TUI
 func (b *AgentBridge) RunPrompt(input string) {
 	b.mu.Lock()
@@ -65,16 +73,33 @@ func (b *AgentBridge) RunPrompt(input string) {
 	b.toolCalls = nil
 	b.mu.Unlock()
 
-	// Resolve provider from env
+	// Use user-selected provider if set, otherwise resolve from env
 	provider, providerName, modelName, err := agent.ResolveProvider()
 	if err != nil || provider == nil {
-		// No API key available — send error message
-		b.sendMsg(AgentResponseMsg{
-			Content: fmt.Sprintf("No LLM provider configured. Set one of: ANTHROPIC_API_KEY, OPENAI_API_KEY, GOOGLE_API_KEY, GEMINI_API_KEY, DEEPSEEK_API_KEY, OPENROUTER_API_KEY\n\nError: %v", err),
-			Provider: "none",
-			Model:    "none",
-		})
-		return
+		// Check if user selected a provider via /provider command
+		b.mu.Lock()
+		userProvider := b.provider
+		userModel := b.model
+		b.mu.Unlock()
+		if userProvider != "" && userProvider != "hyperharness" {
+			// Try to create provider from user selection
+			provider, providerName, modelName, err = agent.ResolveProvider()
+			if err != nil || provider == nil {
+				b.sendMsg(AgentResponseMsg{
+					Content: fmt.Sprintf("No API key for %s. Set %s_API_KEY environment variable.", userProvider, strings.ToUpper(userProvider)),
+					Provider: userProvider,
+					Model:    userModel,
+				})
+				return
+			}
+		} else {
+			b.sendMsg(AgentResponseMsg{
+				Content: fmt.Sprintf("No LLM provider configured. Set one of: ANTHROPIC_API_KEY, OPENAI_API_KEY, GOOGLE_API_KEY, GEMINI_API_KEY, DEEPSEEK_API_KEY, OPENROUTER_API_KEY, XIAOMI_API_KEY\n\nError: %v", err),
+				Provider: "none",
+				Model:    "none",
+			})
+			return
+		}
 	}
 
 	registry := b.registry

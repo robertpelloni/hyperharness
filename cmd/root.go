@@ -8,9 +8,9 @@ import (
 )
 
 var rootCmd = &cobra.Command{
-	Use:   "hypercode",
-	Short: "The ultimate AI CLI assistant, assimilated by Borg",
-	Long:  `Hypercode is an AI pair programmer and terminal assistant with 100% feature parity with top tools.`,
+	Use:   "hyperharness",
+	Short: "The ultimate AI CLI assistant with 100% feature parity",
+	Long:  `HyperHarness is an AI pair programmer and terminal assistant with 100% feature parity with top tools.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		tui.StartREPL()
 	},

@@ -822,6 +822,28 @@ func RenderHotkeys(t Theme) string {
 }
 
 // ═══════════════════════════════════════════════════════════════════════
+// Provider selector — pi-mono style (up/down to navigate, enter to select)
+// ═══════════════════════════════════════════════════════════════════════
+
+func RenderProviderSelector(current string, providers []string, t Theme) string {
+	var b strings.Builder
+	b.WriteString(t.Bold(t.AccentText("Provider Selector")) + "\n\n")
+	for _, p := range providers {
+		icon := "  "
+		if p == current {
+			icon = t.SuccessText("> ")
+		}
+		b.WriteString(icon + t.Fg(t.TextColor, p))
+		if p == current {
+			b.WriteString(t.Dim(" (active)"))
+		}
+		b.WriteString("\n")
+	}
+	b.WriteString("\n" + t.Dim("Up/Down to navigate, Enter to select, Esc to cancel"))
+	return b.String()
+}
+
+// ═══════════════════════════════════════════════════════════════════════
 // Model selector — pi-mono/opencode style
 // ═══════════════════════════════════════════════════════════════════════
 

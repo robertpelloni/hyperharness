@@ -466,29 +466,11 @@ func handleProvider(m *model, arg string) (tea.Model, tea.Cmd) {
 		return *m, nil
 	}
 
-	// Show available providers
-	var b strings.Builder
-	b.WriteString(t.Bold(t.AccentText("╭─ Available Providers ──────────────────────────╮")) + "\n")
-	for _, p := range m.availableProviders {
-		marker := "  "
-		if p == m.provider {
-			marker = t.SuccessText("▸ ")
-		}
-		models := ""
-		if m2, ok := m.providerModels[p]; ok {
-			models = t.Dim(fmt.Sprintf(" (%d models)", len(m2)))
-		}
-		apiKey := "✓"
-		if p == "ollama" || p == "lmstudio" {
-			apiKey = t.Dim("local")
-		} else {
-			apiKey = t.SuccessText("configured")
-		}
-		b.WriteString(fmt.Sprintf("%s%s%s %s\n", marker, t.Fg(t.TextColor, p), models, t.Dim("["+apiKey+"]")))
-	}
-	b.WriteString(t.Bold(t.AccentText("╰───────────────────────────────────────────────╯")) + "\n")
-	b.WriteString(t.Dim("  Usage: /provider <name> to select"))
-	sysEntry(m, b.String())
+	// Show interactive provider selector (up/down to navigate, enter to select)
+	m.showProviderSelector = true
+	m.providerSelectorIdx = 0
+	m.providerSelectorFilter = ""
+	m.providerList = m.availableProviders
 	return *m, nil
 }
 
@@ -503,25 +485,16 @@ func handleModel(m *model, arg string) (tea.Model, tea.Cmd) {
 		return *m, nil
 	}
 
-	// Show models for current provider
-	var b strings.Builder
-	b.WriteString(t.Bold(t.AccentText(fmt.Sprintf("╭─ Models for %s ────────────────────────────╮", m.provider))) + "\n")
-	models := m.availableModels
+	// Show interactive model selector (up/down to navigate, enter to select)
+	m.showModelSelector = true
+	m.modelSelectorIdx = 0
+	m.modelSelectorFilter = ""
+	// Update available models for current provider
 	if m.selectedProvider != "" {
-		if m2, ok := m.providerModels[m.selectedProvider]; ok {
-			models = m2
+		if models, ok := m.providerModels[m.selectedProvider]; ok {
+			m.availableModels = models
 		}
 	}
-	for _, mdl := range models {
-		marker := "  "
-		if mdl == m.modelName {
-			marker = t.SuccessText("▸ ")
-		}
-		b.WriteString(fmt.Sprintf("%s%s\n", marker, t.Fg(t.TextColor, mdl)))
-	}
-	b.WriteString(t.Bold(t.AccentText("╰───────────────────────────────────────────────╯")) + "\n")
-	b.WriteString(t.Dim("  Usage: /model <name> to select"))
-	sysEntry(m, b.String())
 	return *m, nil
 }
 
