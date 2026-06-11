@@ -434,6 +434,33 @@ func (p *GroqProvider) GenerateText(ctx context.Context, model string, messages 
 }
 
 // ---------------------------------------------------------------------------
+// Xiaomi MiMo Provider (OpenAI-compatible, Singapore region)
+// ---------------------------------------------------------------------------
+
+// XiaomiProvider uses Xiaomi's MiMo API (OpenAI-compatible).
+// API endpoint: https://api.xiaomi.com/v1/chat/completions
+// Env var: XIAOMI_API_KEY or MIMO_API_KEY
+type XiaomiProvider struct{ APIKey string }
+
+func (p *XiaomiProvider) Name() string { return "xiaomi" }
+
+func (p *XiaomiProvider) Models() []string {
+	return []string{"mimo-v2.5-pro", "mimo-v2.5-flash", "mimo-v2-pro", "mimo-v2-flash", "mimo-v1"}
+}
+
+func (p *XiaomiProvider) GenerateText(ctx context.Context, model string, messages []Message) (*LLMResponse, error) {
+	resp, err := (&OpenAIProvider{
+		APIKey:  p.APIKey,
+		BaseURL: "https://api.xiaomi.com/v1/chat/completions",
+	}).GenerateText(ctx, model, messages)
+	if err != nil {
+		return nil, err
+	}
+	resp.Provider = "xiaomi"
+	return resp, nil
+}
+
+// ---------------------------------------------------------------------------
 // Auto-Router
 // ---------------------------------------------------------------------------
 
@@ -455,6 +482,8 @@ var ProviderPriority = []ProviderEntry{
 	{"DEEPSEEK_API_KEY", "deepseek", "deepseek-chat", func(k string) Provider { return &DeepSeekProvider{APIKey: k} }},
 	{"OPENROUTER_API_KEY", "openrouter", "openrouter/free", func(k string) Provider { return &OpenRouterProvider{APIKey: k} }},
 	{"GROQ_API_KEY", "groq", "llama-3.3-70b-versatile", func(k string) Provider { return &GroqProvider{APIKey: k} }},
+	{"XIAOMI_API_KEY", "xiaomi", "mimo-v2.5-pro", func(k string) Provider { return &XiaomiProvider{APIKey: k} }},
+	{"MIMO_API_KEY", "xiaomi", "mimo-v2.5-pro", func(k string) Provider { return &XiaomiProvider{APIKey: k} }},
 	{"", "lmstudio", "local-model", func(_ string) Provider { return &LMStudioProvider{} }},
 	{"", "ollama", "gemma:2b", func(_ string) Provider { return &OllamaProvider{} }},
 }

@@ -155,6 +155,8 @@ func ResolveProvider() (ai.Provider, string, string, error) {
 		{"OPENAI_API_KEY", "openai", "gpt-4o", func(k string) ai.Provider { return &ai.OpenAIProvider{APIKey: k} }},
 		{"DEEPSEEK_API_KEY", "deepseek", "deepseek-chat", func(k string) ai.Provider { return &ai.DeepSeekProvider{APIKey: k} }},
 		{"OPENROUTER_API_KEY", "openrouter", "anthropic/claude-3.5-sonnet", func(k string) ai.Provider { return &ai.OpenRouterProvider{APIKey: k} }},
+		{"XIAOMI_API_KEY", "xiaomi", "mimo-v2.5-pro", func(k string) ai.Provider { return &ai.XiaomiProvider{APIKey: k} }},
+		{"MIMO_API_KEY", "xiaomi", "mimo-v2.5-pro", func(k string) ai.Provider { return &ai.XiaomiProvider{APIKey: k} }},
 	} {
 		if key := os.Getenv(c.envVar); key != "" {
 			return c.factory(key), c.pName, c.dModel, nil

@@ -177,6 +177,12 @@ type model struct {
 	// Tool registry
 	registry *tools.Registry
 	agentBridge    *AgentBridge
+	
+	// Extension stores (pi-mono top 50 addons)
+	todoStore      *TodoStore
+	bookmarkStore  *BookmarkStore
+	planMode       *PlanMode
+	gitCheckpoints *GitCheckpoints
 
 	// Tool execution tracking
 	toolMu   sync.Mutex
@@ -234,6 +240,8 @@ func detectAvailableProviders() []string {
 		{"DEEPSEEK_API_KEY", "deepseek"},
 		{"OPENROUTER_API_KEY", "openrouter"},
 		{"GROQ_API_KEY", "groq"},
+		{"XIAOMI_API_KEY", "xiaomi"},
+		{"MIMO_API_KEY", "xiaomi"},
 	}
 	seen := map[string]bool{}
 	for _, c := range checks {
@@ -329,6 +337,10 @@ func initialModel() model {
 		doubleEscAction:     "tree", // pi-mono default
 		availableModels:     []string{"auto", "claude-sonnet-4-20250514", "gpt-4o", "gemini-2.5-flash", "deepseek-chat", "claude-3-5-sonnet-20241022", "o1", "local"},
 	availableProviders: detectAvailableProviders(),
+	todoStore:      NewTodoStore(),
+	bookmarkStore:  NewBookmarkStore(),
+	planMode:       NewPlanMode(),
+	gitCheckpoints: NewGitCheckpoints(),
 	providerModels: map[string][]string{
 		"anthropic": {"claude-sonnet-4-20250514", "claude-3-7-sonnet-20250219", "claude-3-5-sonnet-20241022", "claude-3-haiku-20240307"},
 		"openai":    {"gpt-4o", "gpt-4o-mini", "gpt-4-turbo", "o1", "o1-mini", "o3-mini"},
@@ -338,6 +350,7 @@ func initialModel() model {
 		"groq":      {"llama-3.3-70b-versatile", "mixtral-8x7b-32768", "gemma2-9b-it"},
 		"ollama":    {"gemma:2b", "llama3:8b", "codellama:7b", "mistral:7b"},
 		"lmstudio":  {"local-model"},
+		"xiaomi":    {"mimo-v2.5-pro", "mimo-v2.5-flash", "mimo-v2-pro", "mimo-v2-flash", "mimo-v1"},
 	},
 	}
 

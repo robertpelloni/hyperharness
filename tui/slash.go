@@ -62,6 +62,16 @@ func ProcessSlashCommand(cmd string, m *model) (tea.Model, tea.Cmd) {
 		return handleMCPTools(m)
 	case "/provider":
 		return handleProvider(m, strings.TrimSpace(strings.TrimPrefix(cmd, "/provider")))
+	case "/todos":
+		return handleTodos(m)
+	case "/bookmark":
+		return handleBookmark(m, arg)
+	case "/plan-mode":
+		return handlePlanMode(m)
+	case "/handoff":
+		return handleHandoff(m, arg)
+	case "/notify":
+		return handleNotifyTest(m)
 	case "/model":
 		return handleModel(m, strings.TrimSpace(strings.TrimPrefix(cmd, "/model")))
 	case "/settings":

@@ -97,4 +97,9 @@ var BuiltinSlashCommands = []SlashCommand{
 	{Name: "tree-browser-clear", Description: "Clear browser state", Category: "navigation"},
 	{Name: "changelog", Description: "Show changelog", Category: "session"},
 	{Name: "release-notes", Description: "Show release notes (claude-code)", Category: "session"},
+	{Name: "todos", Description: "Show todo list (pi-mono)", Category: "tools"},
+	{Name: "bookmark", Description: "Bookmark last message (pi-mono)", Category: "navigation"},
+	{Name: "plan-mode", Description: "Toggle read-only plan mode (pi-mono)", Category: "agent"},
+	{Name: "handoff", Description: "Transfer context to new session (pi-mono)", Category: "session"},
+	{Name: "notify", Description: "Test desktop notification (pi-mono)", Category: "debug"},
 }

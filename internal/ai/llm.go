@@ -382,6 +382,19 @@ func (p *OllamaProvider) GenerateText(ctx context.Context, model string, message
 	}, nil
 }
 
+// XiaomiProvider uses Xiaomi's MiMo API (OpenAI-compatible, Singapore region).
+type XiaomiProvider struct{
+	APIKey  string
+	BaseURL string
+}
+
+func (p *XiaomiProvider) GenerateText(ctx context.Context, model string, messages []Message) (*LLMResponse, error) {
+	if p.BaseURL == "" {
+		p.BaseURL = "https://api.xiaomi.com/v1/chat/completions"
+	}
+	return (&OpenAIProvider{APIKey: p.APIKey, BaseURL: p.BaseURL}).GenerateText(ctx, model, messages)
+}
+
 // ProviderPriority defines the order for auto-routing
 var ProviderPriority = []struct {
 	EnvVar       string
@@ -395,6 +408,8 @@ var ProviderPriority = []struct {
 	{"OPENAI_API_KEY", "openai", "gpt-4o", func(k string) Provider { return &OpenAIProvider{APIKey: k} }},
 	{"DEEPSEEK_API_KEY", "deepseek", "deepseek-chat", func(k string) Provider { return &DeepSeekProvider{APIKey: k} }},
 	{"OPENROUTER_API_KEY", "openrouter", "openrouter/free", func(k string) Provider { return &OpenRouterProvider{APIKey: k} }},
+	{"XIAOMI_API_KEY", "xiaomi", "mimo-v2.5-pro", func(k string) Provider { return &XiaomiProvider{APIKey: k} }},
+	{"MIMO_API_KEY", "xiaomi", "mimo-v2.5-pro", func(k string) Provider { return &XiaomiProvider{APIKey: k} }},
 	{"", "lmstudio", "local-model", func(k string) Provider { return &LMStudioProvider{} }},
 	{"", "ollama", "gemma:2b", func(k string) Provider { return &OllamaProvider{} }},
 }

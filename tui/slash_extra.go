@@ -303,3 +303,83 @@ func handleScopedModels(m *model, arg string) (tea.Model, tea.Cmd) {
 		m.theme.Dim("  auto, gemini-1.5-pro, gpt-4, claude-3-5-sonnet, claude-3-opus, llama-3, local"))
 	return *m, nil
 }
+
+// ═══════════════════════════════════════════════════════════════════════
+// Extension slash commands (pi-mono top 50 addons)
+// ═══════════════════════════════════════════════════════════════════════
+
+func handleTodos(m *model) (tea.Model, tea.Cmd) {
+	t := m.theme
+	var b strings.Builder
+	b.WriteString(t.Bold(t.AccentText("╭─ Todos ─────────────────────────────────────╮")) + "\n")
+	if len(m.todoStore.Todos) == 0 {
+		b.WriteString(t.Dim("  No todos yet. Ask the agent to add some!") + "\n")
+	} else {
+		done := 0
+		for _, todo := range m.todoStore.Todos {
+			check := t.Dim("○")
+			if todo.Done {
+				check = t.SuccessText("✓")
+				done++
+			}
+			b.WriteString(fmt.Sprintf("  %s %s %s\n", check, t.Fg(t.Accent, fmt.Sprintf("#%d", todo.ID)), t.Fg(t.TextColor, todo.Text)))
+		}
+		b.WriteString(t.Dim(fmt.Sprintf("  %d/%d completed", done, len(m.todoStore.Todos))) + "\n")
+	}
+	b.WriteString(t.Bold(t.AccentText("╰───────────────────────────────────────────────╯")) + "\n")
+	b.WriteString(t.Dim("  The agent can add/toggle/clear todos via the todo tool"))
+	sysEntry(m, b.String())
+	return *m, nil
+}
+
+func handleBookmark(m *model, arg string) (tea.Model, tea.Cmd) {
+	t := m.theme
+	label := strings.TrimSpace(arg)
+	if label == "" {
+		label = fmt.Sprintf("bookmark-%d", time.Now().UnixMilli())
+	}
+	// Find last assistant entry
+	for i := len(m.entries) - 1; i >= 0; i-- {
+		if m.entries[i].Type == EntryAssistant {
+			m.bookmarkStore.Set(fmt.Sprintf("%d", i), label)
+			sysEntry(m, t.SuccessText(fmt.Sprintf("✓ Bookmarked as: %s", label)))
+			return *m, nil
+		}
+	}
+	sysEntry(m, t.WarningText("No assistant message to bookmark"))
+	return *m, nil
+}
+
+func handlePlanMode(m *model) (tea.Model, tea.Cmd) {
+	t := m.theme
+	m.planMode.Toggle()
+	if m.planMode.Active {
+		sysEntry(m, t.AccentText("[Plan Mode] Activated — read-only exploration")+"\n"+
+			t.Dim("  Only read-only tools available (read, grep, find, ls)") + "\n"+
+			t.Dim("  Use /plan-mode again to deactivate"))
+	} else {
+		sysEntry(m, t.Dim("[Plan Mode] Deactivated — all tools available"))
+	}
+	return *m, nil
+}
+
+func handleHandoff(m *model, arg string) (tea.Model, tea.Cmd) {
+	t := m.theme
+	goal := strings.TrimSpace(arg)
+	if goal == "" {
+		sysEntry(m, t.Dim("[Handoff] Usage: /handoff <goal for new session>"))
+		return *m, nil
+	}
+	prompt := GenerateHandoffPrompt(m.entries, goal)
+	m.input = prompt
+	sysEntry(m, t.AccentText("[Handoff] Generated prompt for new session")+"\n"+
+		t.Dim("  The prompt has been placed in your editor.")+"\n"+
+		t.Dim("  Review and press Enter to start a new session with this context."))
+	return *m, nil
+}
+
+func handleNotifyTest(m *model) (tea.Model, tea.Cmd) {
+	Notify("HyperHarness", "Agent finished — waiting for input")
+	sysEntry(m, m.theme.SuccessText("✓ Notification sent (check your terminal/system notifications)"))
+	return *m, nil
+}
