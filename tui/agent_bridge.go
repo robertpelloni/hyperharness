@@ -80,23 +80,28 @@ func (b *AgentBridge) RunPrompt(input string) {
 	var providerName, modelName string
 	var err error
 
-	// If user selected a provider via /provider, use that first
+	// If user selected a provider via /provider, use that (no fallback)
 	if userProvider != "" && userProvider != "hyperharness" {
 		provider, providerName, modelName, err = agent.CreateProvider(userProvider)
-	}
-
-	// Fall back to env-based resolution if no user selection or creation failed
-	if provider == nil {
+		if err != nil || provider == nil {
+			b.sendMsg(AgentResponseMsg{
+				Content: fmt.Sprintf("No API key for %s. Set %s_API_KEY environment variable.", userProvider, strings.ToUpper(userProvider)),
+				Provider: userProvider,
+				Model:    userModel,
+			})
+			return
+		}
+	} else {
+		// No user selection, resolve from env
 		provider, providerName, modelName, err = agent.ResolveProvider()
-	}
-
-	if err != nil || provider == nil {
-		b.sendMsg(AgentResponseMsg{
-			Content: fmt.Sprintf("No LLM provider configured. Set one of: ANTHROPIC_API_KEY, OPENAI_API_KEY, GOOGLE_API_KEY, GEMINI_API_KEY, DEEPSEEK_API_KEY, OPENROUTER_API_KEY, XIAOMI_API_KEY\n\nError: %v", err),
-			Provider: "none",
-			Model:    "none",
-		})
-		return
+		if err != nil || provider == nil {
+			b.sendMsg(AgentResponseMsg{
+				Content: fmt.Sprintf("No LLM provider configured. Set one of: ANTHROPIC_API_KEY, OPENAI_API_KEY, GOOGLE_API_KEY, GEMINI_API_KEY, DEEPSEEK_API_KEY, OPENROUTER_API_KEY, XIAOMI_API_KEY\n\nError: %v", err),
+				Provider: "none",
+				Model:    "none",
+			})
+			return
+		}
 	}
 
 	// Override model if user selected one

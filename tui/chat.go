@@ -1442,7 +1442,7 @@ func (m model) View() string {
 
 	// Provider selector overlay (pi-mono style)
 	if m.showProviderSelector {
-		overlay := RenderProviderSelector(m.provider, m.providerList, m.theme)
+		overlay := RenderProviderSelector(m.provider, m.providerList, m.providerSelectorIdx, m.theme)
 		chatView := m.renderChatArea()
 		return chatView + "\n" + overlay + "\n" + m.renderInputBar()
 	}

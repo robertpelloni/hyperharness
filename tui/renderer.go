@@ -825,12 +825,12 @@ func RenderHotkeys(t Theme) string {
 // Provider selector — pi-mono style (up/down to navigate, enter to select)
 // ═══════════════════════════════════════════════════════════════════════
 
-func RenderProviderSelector(current string, providers []string, t Theme) string {
+func RenderProviderSelector(current string, providers []string, selectedIdx int, t Theme) string {
 	var b strings.Builder
 	b.WriteString(t.Bold(t.AccentText("Provider Selector")) + "\n\n")
-	for _, p := range providers {
+	for i, p := range providers {
 		icon := "  "
-		if p == current {
+		if i == selectedIdx {
 			icon = t.SuccessText("> ")
 		}
 		b.WriteString(icon + t.Fg(t.TextColor, p))
