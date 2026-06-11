@@ -773,7 +773,8 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		// ── Up arrow: history cycling (pi-mono style) ──
 		case tea.KeyUp:
-			if len(m.inputHistory) > 0 {
+			// History cycling when input is empty or has history, viewport scroll otherwise
+			if m.input == "" && len(m.inputHistory) > 0 {
 				if m.historyIdx < len(m.inputHistory)-1 {
 					m.historyIdx++
 					m.input = m.inputHistory[len(m.inputHistory)-1-m.historyIdx]
@@ -784,10 +785,10 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		// ── Down arrow: history cycling (pi-mono style) ──
 		case tea.KeyDown:
-			if m.historyIdx > 0 {
+			if m.input == "" && m.historyIdx > 0 {
 				m.historyIdx--
 				m.input = m.inputHistory[len(m.inputHistory)-1-m.historyIdx]
-			} else if m.historyIdx == 0 {
+			} else if m.input == "" && m.historyIdx == 0 {
 				m.historyIdx = -1
 				m.input = ""
 			} else if m.ready {
@@ -989,6 +990,7 @@ func (m model) handleEnter() (tea.Model, tea.Cmd) {
 	m.inputHistory = append(m.inputHistory, req)
 	if len(m.inputHistory) > 100 { m.inputHistory = m.inputHistory[len(m.inputHistory)-100:] }
 	m.input = ""
+	m.historyIdx = 0
 
 	// Bash mode: ! prefix runs shell directly (pi-mono feature)
 	if strings.HasPrefix(req, "!!") {

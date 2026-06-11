@@ -82,8 +82,8 @@ func (b *AgentBridge) RunPrompt(input string) {
 		userModel := b.model
 		b.mu.Unlock()
 		if userProvider != "" && userProvider != "hyperharness" {
-			// Try to create provider from user selection
-			provider, providerName, modelName, err = agent.ResolveProvider()
+			// Create provider from user selection
+			provider, providerName, modelName, err = agent.CreateProvider(userProvider)
 			if err != nil || provider == nil {
 				b.sendMsg(AgentResponseMsg{
 					Content: fmt.Sprintf("No API key for %s. Set %s_API_KEY environment variable.", userProvider, strings.ToUpper(userProvider)),

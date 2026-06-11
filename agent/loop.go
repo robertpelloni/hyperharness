@@ -141,6 +141,40 @@ func (l *AgentLoop) emit(event LoopEvent) {
 	}
 }
 
+// CreateProvider creates a provider by name using the appropriate API key from env
+func CreateProvider(providerName string) (ai.Provider, string, string, error) {
+	type c struct {
+		pName, dModel string
+		envVars       []string
+		factory       func(string) ai.Provider
+	}
+	providers := []c{
+		{"anthropic", "claude-sonnet-4-20250514", []string{"ANTHROPIC_API_KEY", "CLAUDE_API_KEY"}, func(k string) ai.Provider { return &ai.AnthropicProvider{APIKey: k} }},
+		{"openai", "gpt-4o", []string{"OPENAI_API_KEY"}, func(k string) ai.Provider { return &ai.OpenAIProvider{APIKey: k} }},
+		{"google", "gemini-2.5-flash", []string{"GOOGLE_API_KEY", "GEMINI_API_KEY"}, func(k string) ai.Provider { return &ai.GeminiProvider{APIKey: k} }},
+		{"deepseek", "deepseek-chat", []string{"DEEPSEEK_API_KEY"}, func(k string) ai.Provider { return &ai.DeepSeekProvider{APIKey: k} }},
+		{"openrouter", "anthropic/claude-3.5-sonnet", []string{"OPENROUTER_API_KEY"}, func(k string) ai.Provider { return &ai.OpenRouterProvider{APIKey: k} }},
+		{"xiaomi", "mimo-v2.5-pro", []string{"XIAOMI_API_KEY", "MIMO_API_KEY"}, func(k string) ai.Provider { return &ai.XiaomiProvider{APIKey: k} }},
+		{"ollama", "llama3:8b", []string{}, func(_ string) ai.Provider { return &ai.OllamaProvider{} }},
+		{"lmstudio", "local-model", []string{}, func(_ string) ai.Provider { return &ai.LMStudioProvider{} }},
+	}
+	for _, p := range providers {
+		if p.pName == providerName {
+			for _, env := range p.envVars {
+				if key := os.Getenv(env); key != "" {
+					return p.factory(key), p.pName, p.dModel, nil
+				}
+			}
+			// For local providers (ollama, lmstudio), no key needed
+			if len(p.envVars) == 0 {
+				return p.factory(""), p.pName, p.dModel, nil
+			}
+			return nil, "", "", fmt.Errorf("no API key for %s (set %s)", providerName, strings.Join(p.envVars, " or "))
+		}
+	}
+	return nil, "", "", fmt.Errorf("unknown provider: %s", providerName)
+}
+
 // ResolveProvider creates a provider based on environment variables
 func ResolveProvider() (ai.Provider, string, string, error) {
 	type c struct {
