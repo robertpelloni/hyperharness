@@ -841,11 +841,18 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case AgentResponseMsg:
 		m.loading = false
 		m.streaming = false
+		// Use user-selected provider/model if set, otherwise from API response
+		displayProvider := msg.Provider
+		displayModel := msg.Model
+		if m.selectedProvider != "" {
+			displayProvider = m.provider
+			displayModel = m.modelName
+		}
 		entry := ChatEntry{
 			Type: EntryAssistant,
 			Content: msg.Content,
-			Provider: msg.Provider,
-			Model: msg.Model,
+			Provider: displayProvider,
+			Model: displayModel,
 			Timestamp: time.Now(),
 		}
 		if msg.Plan != nil {

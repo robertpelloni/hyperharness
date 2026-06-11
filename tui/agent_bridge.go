@@ -178,8 +178,10 @@ func (b *AgentBridge) RunPrompt(input string) {
 		}
 	})
 
-	// Run the agent loop (blocking — but events stream via the listener)
-	result, err := loop.Run(context.Background(), input)
+	// Run the agent loop with timeout (blocking — but events stream via the listener)
+	ctx, cancel := context.WithTimeout(context.Background(), 120*time.Second)
+	defer cancel()
+	result, err := loop.Run(ctx, input)
 	if err != nil {
 		b.sendMsg(AgentResponseMsg{
 			Content:  fmt.Sprintf("Agent error: %v", err),
