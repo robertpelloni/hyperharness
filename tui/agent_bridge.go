@@ -76,6 +76,11 @@ func (b *AgentBridge) RunPrompt(input string) {
 	userModel := b.model
 	b.mu.Unlock()
 
+	// Ensure we always send a completion message when done
+	defer func() {
+		b.sendMsg(AgentCompleteMsg{})
+	}()
+
 	var provider ai.Provider
 	var providerName, modelName string
 	var err error
@@ -184,7 +189,7 @@ func (b *AgentBridge) RunPrompt(input string) {
 	})
 
 	// Run the agent loop with timeout (blocking — but events stream via the listener)
-	ctx, cancel := context.WithTimeout(context.Background(), 120*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 90*time.Second)
 	defer cancel()
 	result, err := loop.Run(ctx, input)
 	if err != nil {
