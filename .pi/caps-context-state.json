@@ -1,7 +1,6 @@
 {
 	"ANALYSIS.md": true,
 	"ANALYSIS_GO_PORT.md": true,
-	"CHANGELOG.md": true,
 	"DEPLOY.md": true,
 	"FINAL.md": true,
 	"GEMINI.md": true,
@@ -13,8 +12,7 @@
 	"PROJECT_MEMORY.md": true,
 	"PROJECT_MEMORY_FINAL.md": true,
 	"PROJECT_MEMORY_FINAL2.md": true,
-	"README.md": true,
-	"ROADMAP.md": true,
+	"RELEASE_NOTES.md": true,
 	"TODO.md": true,
 	"VERSION.md": true,
 	"VISION.md": true
