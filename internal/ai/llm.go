@@ -29,6 +29,7 @@ type LLMResponse struct {
 
 type Provider interface {
 	GenerateText(ctx context.Context, model string, messages []Message) (*LLMResponse, error)
+	StreamChat(ctx context.Context, model string, messages []Message, callback func(string) error) (*LLMResponse, error)
 }
 
 type OpenAIProvider struct {
@@ -475,4 +476,38 @@ func ListConfiguredProviders() []string {
 		configured = append(configured, entry.ProviderName)
 	}
 	return configured
+}
+
+// ── StreamChat stub implementations for all providers ──
+
+func (p *OpenAIProvider) StreamChat(ctx context.Context, model string, messages []Message, callback func(string) error) (*LLMResponse, error) {
+	return p.GenerateText(ctx, model, messages)
+}
+
+func (p *AnthropicProvider) StreamChat(ctx context.Context, model string, messages []Message, callback func(string) error) (*LLMResponse, error) {
+	return p.GenerateText(ctx, model, messages)
+}
+
+func (p *GeminiProvider) StreamChat(ctx context.Context, model string, messages []Message, callback func(string) error) (*LLMResponse, error) {
+	return p.GenerateText(ctx, model, messages)
+}
+
+func (p *DeepSeekProvider) StreamChat(ctx context.Context, model string, messages []Message, callback func(string) error) (*LLMResponse, error) {
+	return p.GenerateText(ctx, model, messages)
+}
+
+func (p *OpenRouterProvider) StreamChat(ctx context.Context, model string, messages []Message, callback func(string) error) (*LLMResponse, error) {
+	return p.GenerateText(ctx, model, messages)
+}
+
+func (p *LMStudioProvider) StreamChat(ctx context.Context, model string, messages []Message, callback func(string) error) (*LLMResponse, error) {
+	return p.GenerateText(ctx, model, messages)
+}
+
+func (p *OllamaProvider) StreamChat(ctx context.Context, model string, messages []Message, callback func(string) error) (*LLMResponse, error) {
+	return p.GenerateText(ctx, model, messages)
+}
+
+func (p *XiaomiProvider) StreamChat(ctx context.Context, model string, messages []Message, callback func(string) error) (*LLMResponse, error) {
+	return p.GenerateText(ctx, model, messages)
 }
