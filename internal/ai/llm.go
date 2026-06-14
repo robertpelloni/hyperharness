@@ -1,6 +1,7 @@
 package ai
 
 import (
+	"bufio"
 	"bytes"
 	"context"
 	"encoding/json"
@@ -97,6 +98,102 @@ func (p *OpenAIProvider) GenerateText(ctx context.Context, model string, message
 		}{
 			InputTokens:  payload.Usage.PromptTokens,
 			OutputTokens: payload.Usage.CompletionTokens,
+		},
+	}, nil
+}
+
+func (p *OpenAIProvider) StreamChat(ctx context.Context, model string, messages []Message, callback func(string) error) (*LLMResponse, error) {
+	if p.BaseURL == "" {
+		p.BaseURL = "https://api.openai.com/v1/chat/completions"
+	}
+
+	reqBody, _ := json.Marshal(map[string]interface{}{
+		"model":    model,
+		"messages": messages,
+		"stream":   true,
+	})
+
+	req, err := http.NewRequestWithContext(ctx, "POST", p.BaseURL, bytes.NewBuffer(reqBody))
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", "Bearer "+p.APIKey)
+	req.Header.Set("Accept", "text/event-stream")
+
+	client := &http.Client{Timeout: 120 * time.Second}
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		body, _ := io.ReadAll(resp.Body)
+		return nil, fmt.Errorf("OpenAI API error: %s - %s", resp.Status, string(body))
+	}
+
+	var fullContent strings.Builder
+	var totalTokens int
+
+	scan := bufio.NewScanner(resp.Body)
+	scan.Buffer(make([]byte, 1024), 1024*64)
+
+	for scan.Scan() {
+		line := scan.Text()
+		if !strings.HasPrefix(line, "data: ") {
+			continue
+		}
+		data := strings.TrimPrefix(line, "data: ")
+		if data == "[DONE]" {
+			break
+		}
+
+		var delta struct {
+			Choices []struct {
+				Delta struct {
+					Content string `json:"content"`
+				} `json:"delta"`
+				FinishReason string `json:"finish_reason"`
+			} `json:"choices"`
+			Usage struct {
+				CompletionTokens int `json:"completion_tokens"`
+			} `json:"usage"`
+		}
+
+		if err := json.Unmarshal([]byte(data), &delta); err != nil {
+			continue
+		}
+
+		if len(delta.Choices) > 0 && delta.Choices[0].Delta.Content != "" {
+			chunk := delta.Choices[0].Delta.Content
+			fullContent.WriteString(chunk)
+			if callback != nil {
+				if err := callback(chunk); err != nil {
+					return nil, err
+				}
+			}
+		}
+
+		if delta.Usage.CompletionTokens > 0 {
+			totalTokens = delta.Usage.CompletionTokens
+		}
+	}
+
+	if err := scan.Err(); err != nil {
+		return nil, err
+	}
+
+	return &LLMResponse{
+		Content:  fullContent.String(),
+		Provider: "openai",
+		Model:    model,
+		Usage: struct {
+			InputTokens  int
+			OutputTokens int
+		}{
+			OutputTokens: totalTokens,
 		},
 	}, nil
 }
@@ -479,10 +576,6 @@ func ListConfiguredProviders() []string {
 }
 
 // ── StreamChat stub implementations for all providers ──
-
-func (p *OpenAIProvider) StreamChat(ctx context.Context, model string, messages []Message, callback func(string) error) (*LLMResponse, error) {
-	return p.GenerateText(ctx, model, messages)
-}
 
 func (p *AnthropicProvider) StreamChat(ctx context.Context, model string, messages []Message, callback func(string) error) (*LLMResponse, error) {
 	return p.GenerateText(ctx, model, messages)

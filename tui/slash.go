@@ -235,6 +235,16 @@ func ProcessSlashCommand(cmd string, m *model) (tea.Model, tea.Cmd) {
 	case "/release-notes":
 		return handleReleaseNotes(m, arg)
 
+	// ── Council / Debate ──
+	case "/debate":
+		return handleDebate(m, arg)
+
+	// ── Session persistence ──
+	case "/save":
+		return handleSave(m, arg)
+	case "/load":
+		return handleLoad(m, arg)
+
 	default:
 		return handleUnknown(m, parts[0])
 	}

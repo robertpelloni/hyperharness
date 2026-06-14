@@ -1,32 +1,40 @@
-## Handoff Status Update: 2026-06-12
+## Handoff Status Update: 2026-06-14
 
-**v0.5.0-alpha.3 — TUI Fixes & Provider Selection**
+**v0.5.0-alpha.4 — Budget Enforcement, Feature Registry, Tool Dispatcher**
 
-### What Was Done This Session (Latest Commits)
+### What Was Done This Session
 
-1. **Provider Selector Arrow Movement** (`tui/renderer.go`, `tui/chat.go`):
-   - `RenderProviderSelector` now accepts `selectedIdx` parameter
-   - Up/Down arrows move the `>` indicator correctly
-   - Active provider still marked with `(active)`
+1. **Budget Tracker Fix & Enhancements** (`agents/budget.go`):
+   - Fixed critical timestamp bug: `sessionCostLocked` used `e.Timestamp.After(bt.sessionStart)` which returned false when entry timestamps matched session start exactly (same `time.Now()` call resolution)
+   - Changed to `!e.Timestamp.Before(bt.sessionStart)` so entries created within the same nanosecond are counted
+   - All 12 budget tests now pass
+   - Added `CurrentSession()` and `CurrentDaily()` convenience methods for UI consumption
 
-2. **Provider Selection Priority** (`tui/agent_bridge.go`):
-   - User-selected provider (`/provider xiaomi`) takes priority over env fallback
-   - If API key missing for selected provider → clear error message
-   - No silent fallback to anthropic/openai
+2. **Feature Registry** (`internal/features/registry.go`, `extensions.go`):
+   - Created `Register()`, `Get()`, `List()`, `InitAll()` with proper error handling
+   - `RegisterAllExtensions()` registers 80+ features spanning: TUI components, git, todos, notifications, plan mode, handoff, bookmarks, providers, foundation tools, parity harnesses, memory, MCP, and council
+   - Enables runtime discovery and initialization of all harness features
 
-3. **Provider Display in Responses** (`tui/chat.go`):
-   - `AgentResponseMsg` uses user-selected provider/model in chat entries
-   - Footer shows correct provider after `/provider` selection
+3. **Markdown Renderer** (`tui/markdown_renderer.go`):
+   - Added `github.com/charmbracelet/glamour` dependency
+   - `RenderMarkdown()` converts markdown to terminal-formatted text with auto-style detection
+   - Ready for integration into chat display
 
-4. **History Cycling** (`tui/chat.go`):
-   - Up/Down always cycles history (not just when input empty)
-   - Multiple Up presses go further back
-   - Down past last entry clears input
+4. **Tool Execution Dispatcher** (`agents/tool_dispatcher.go`):
+   - Created `ToolDispatcher` with `Register()`, `Dispatch()`, `RegisterDefaultStubs()`
+   - Default stubs for: read, write, edit, bash (with basic safety checks), grep, find, ls, tree, websearch, webfetch
+   - Includes infrastructure for replacing stubs with full implementations later
 
-5. **Message Freeze Prevention** (`tui/agent_bridge.go`):
-   - 90s timeout on agent loop (was 120s)
-   - `defer AgentCompleteMsg{}` ensures loading state always clears
-   - Error response shown if API call fails/times out
+5. **Director Integration** (`agents/director.go`):
+   - Added `ToolDispatcher *ToolDispatcher` field
+   - Initialized with default stubs in `NewDirector()`
+   - `HandleInput` now dispatches any `ToolCall`s from LLM responses
+   - Each tool execution recorded as nominal cost via `BudgetTracker`
+   - Budget enforcement (session cost, session tokens, daily cost, daily tokens) checked before any LLM call
+
+6. **Adapter Interfaces** (`internal/adapters/adapters.go`):
+   - `ProviderAdapter` defines Chat and Stream contract for all LLM providers
+   - Enables plug-and-play provider swapping without touching the orchestration layer
 
 ### Verified Working
 

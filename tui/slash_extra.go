@@ -13,6 +13,7 @@ import (
 	"strings"
 	"time"
 	"github.com/robertpelloni/hyperharness/internal/buildinfo"
+	"github.com/robertpelloni/hyperharness/internal/council"
 
 	tea "github.com/charmbracelet/bubbletea"
 )
@@ -375,6 +376,81 @@ func handleHandoff(m *model, arg string) (tea.Model, tea.Cmd) {
 	sysEntry(m, t.AccentText("[Handoff] Generated prompt for new session")+"\n"+
 		t.Dim("  The prompt has been placed in your editor.")+"\n"+
 		t.Dim("  Review and press Enter to start a new session with this context."))
+	return *m, nil
+}
+
+func handleDebate(m *model, arg string) (tea.Model, tea.Cmd) {
+	topic := strings.TrimSpace(arg)
+	if topic == "" {
+		topic = "General debate topic — examine the pros and cons of the current approach"
+	}
+	director := council.NewDirectorAgent()
+	result, err := director.DebateOnFailure(topic)
+	if err != nil {
+		sysEntry(m, m.theme.ErrorText(fmt.Sprintf("Debate error: %v", err)))
+		return *m, nil
+	}
+	m.entries = append(m.entries, ChatEntry{
+		Type:      EntryAssistant,
+		Content:   result,
+		Timestamp: time.Now(),
+	})
+	m.syncViewport()
+	return *m, nil
+}
+
+func handleSave(m *model, arg string) (tea.Model, tea.Cmd) {
+	t := m.theme
+	if m.session == nil {
+		sysEntry(m, t.ErrorText("No active session to save"))
+		return *m, nil
+	}
+	if err := m.session.Save(); err != nil {
+		sysEntry(m, t.ErrorText(fmt.Sprintf("Save failed: %v", err)))
+		return *m, nil
+	}
+	sysEntry(m, t.SuccessText(fmt.Sprintf("✓ Session saved (ID: %s)", fmt.Sprintf("session-%d", time.Now().Unix()))))
+	return *m, nil
+}
+
+func handleLoad(m *model, arg string) (tea.Model, tea.Cmd) {
+	t := m.theme
+	sessionID := strings.TrimSpace(arg)
+	if sessionID == "" {
+		sysEntry(m, t.Dim("Usage: /load <session-id>"))
+		return *m, nil
+	}
+	if m.session == nil {
+		sysEntry(m, t.ErrorText("No active session to load into"))
+		return *m, nil
+	}
+	if err := m.session.Load(sessionID); err != nil {
+		sysEntry(m, t.ErrorText(fmt.Sprintf("Load failed: %v", err)))
+		return *m, nil
+	}
+	// Transfer loaded session entries into TUI chat entries
+	loadedEntries := m.session.GetEntries()
+	for _, se := range loadedEntries {
+		entryType := EntrySystem
+		switch se.Role {
+		case "user":
+			entryType = EntryUser
+		case "assistant":
+			entryType = EntryAssistant
+		case "tool":
+			entryType = EntryTool
+		case "system":
+			entryType = EntrySystem
+		}
+		m.entries = append(m.entries, ChatEntry{
+			Type:      entryType,
+			Content:   se.Content,
+			ToolName:  se.ToolName,
+			Timestamp: se.Timestamp,
+		})
+	}
+	m.syncViewport()
+	sysEntry(m, t.SuccessText(fmt.Sprintf("✓ Loaded %d entries from session %s", len(loadedEntries), sessionID)))
 	return *m, nil
 }
 

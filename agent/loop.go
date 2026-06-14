@@ -220,41 +220,110 @@ func (l *AgentLoop) Run(ctx context.Context, input string) (string, error) {
 		}
 
 		l.emit(LoopEvent{Type: LoopEventMessageStart, Provider: l.providerName, Model: l.modelName})
-		resp, err := l.provider.GenerateText(ctx, l.modelName, l.messages)
-		if err != nil {
-			l.emit(LoopEvent{Type: LoopEventError, Err: err})
-			return finalContent, fmt.Errorf("LLM: %w", err)
-		}
 
-		l.totalInTok += resp.Usage.InputTokens
-		l.totalOutTok += resp.Usage.OutputTokens
-		l.totalCost += estimateCost(l.providerName, l.modelName, resp.Usage.InputTokens, resp.Usage.OutputTokens)
+		// Try streaming first (allows real-time TUI updates)
+		var contentBuilder strings.Builder
+		var streamingResp *ai.LLMResponse
+		var streamErr error
 
-		l.emit(LoopEvent{
-			Type:      LoopEventMessageEnd,
-			Content:   resp.Content,
-			Provider:  resp.Provider,
-			Model:     resp.Model,
-			InputTok:  resp.Usage.InputTokens,
-			OutputTok: resp.Usage.OutputTokens,
-			Cost:      l.totalCost,
+		streamingResp, streamErr = l.provider.StreamChat(ctx, l.modelName, l.messages, func(chunk string) error {
+			l.mu.Lock()
+			l.emit(LoopEvent{
+				Type:    LoopEventMessageDelta,
+				Content: chunk,
+			})
+			l.mu.Unlock()
+			return nil
 		})
 
-		l.messages = append(l.messages, ai.Message{Role: "assistant", Content: resp.Content})
+		if streamErr == nil && streamingResp != nil {
+			// Streaming succeeded
+			content := streamingResp.Content
+			l.totalInTok += streamingResp.Usage.InputTokens
+			l.totalOutTok += streamingResp.Usage.OutputTokens
+			l.totalCost += estimateCost(l.providerName, l.modelName, streamingResp.Usage.InputTokens, streamingResp.Usage.OutputTokens)
 
-		toolCalls := parseToolCalls(resp.Content)
-		if len(toolCalls) == 0 {
-			finalContent = resp.Content
+			l.emit(LoopEvent{
+				Type:      LoopEventMessageEnd,
+				Content:   content,
+				Provider:  streamingResp.Provider,
+				Model:     streamingResp.Model,
+				InputTok:  streamingResp.Usage.InputTokens,
+				OutputTok: streamingResp.Usage.OutputTokens,
+				Cost:      l.totalCost,
+			})
+
+			l.messages = append(l.messages, ai.Message{Role: "assistant", Content: content})
+
+			toolCalls := parseToolCalls(content)
+			if len(toolCalls) == 0 {
+				finalContent = content
+				break
+			}
+
+			toolResults := l.executeToolCalls(ctx, toolCalls)
+			var rp []string
+			for _, tr := range toolResults {
+				rp = append(rp, fmt.Sprintf("Tool: %s\nResult: %s", tr.Name, tr.Result))
+			}
+			l.messages = append(l.messages, ai.Message{Role: "user", Content: strings.Join(rp, "\n\n")})
+			finalContent = content
+		} else if contentBuilder.Len() > 0 {
+			// Partial streaming content available
+			content := contentBuilder.String()
+			l.emit(LoopEvent{
+				Type:    LoopEventMessageEnd,
+				Content: content,
+			})
+			l.messages = append(l.messages, ai.Message{Role: "assistant", Content: content})
+			finalContent = content
 			break
-		}
+		} else {
+			// Streaming not available (e.g. Anthropic, Gemini not yet streaming) — fall back to blocking GenerateText
+			if streamErr != nil {
+				// Only emit error if streaming truly failed (not "not supported")
+				if !strings.Contains(streamErr.Error(), "not implemented") &&
+					!strings.Contains(streamErr.Error(), "not supported") {
+					l.emit(LoopEvent{Type: LoopEventError, Err: streamErr})
+				}
+			}
 
-		toolResults := l.executeToolCalls(ctx, toolCalls)
-		var rp []string
-		for _, tr := range toolResults {
-			rp = append(rp, fmt.Sprintf("Tool: %s\nResult: %s", tr.Name, tr.Result))
+			resp, err := l.provider.GenerateText(ctx, l.modelName, l.messages)
+			if err != nil {
+				l.emit(LoopEvent{Type: LoopEventError, Err: err})
+				return finalContent, fmt.Errorf("LLM: %w", err)
+			}
+
+			l.totalInTok += resp.Usage.InputTokens
+			l.totalOutTok += resp.Usage.OutputTokens
+			l.totalCost += estimateCost(l.providerName, l.modelName, resp.Usage.InputTokens, resp.Usage.OutputTokens)
+
+			l.emit(LoopEvent{
+				Type:      LoopEventMessageEnd,
+				Content:   resp.Content,
+				Provider:  resp.Provider,
+				Model:     resp.Model,
+				InputTok:  resp.Usage.InputTokens,
+				OutputTok: resp.Usage.OutputTokens,
+				Cost:      l.totalCost,
+			})
+
+			l.messages = append(l.messages, ai.Message{Role: "assistant", Content: resp.Content})
+
+			toolCalls := parseToolCalls(resp.Content)
+			if len(toolCalls) == 0 {
+				finalContent = resp.Content
+				break
+			}
+
+			toolResults := l.executeToolCalls(ctx, toolCalls)
+			var rp []string
+			for _, tr := range toolResults {
+				rp = append(rp, fmt.Sprintf("Tool: %s\nResult: %s", tr.Name, tr.Result))
+			}
+			l.messages = append(l.messages, ai.Message{Role: "user", Content: strings.Join(rp, "\n\n")})
+			finalContent = resp.Content
 		}
-		l.messages = append(l.messages, ai.Message{Role: "user", Content: strings.Join(rp, "\n\n")})
-		finalContent = resp.Content
 	}
 
 	l.emit(LoopEvent{Type: LoopEventComplete, Content: finalContent})

@@ -1,8 +1,13 @@
 package context
 
 import (
+	"fmt"
 	"sort"
 	"sync"
+
+	"github.com/robertpelloni/hyperharness/internal/ai"
+	"github.com/robertpelloni/hyperharness/internal/summarizer"
+	gocontext "context"
 )
 
 type Message struct {
@@ -24,10 +29,12 @@ type Status struct {
 }
 
 type Manager struct {
-	mu        sync.RWMutex
-	messages  []Message
-	maxItems  int
-	maxTokens int
+	mu          sync.RWMutex
+	messages    []Message
+	maxItems    int
+	maxTokens   int
+	summarizer  *summarizer.Summarizer
+	autoCompact bool
 }
 
 func NewManager(maxItems, maxTokens int) *Manager {
@@ -38,10 +45,67 @@ func NewManager(maxItems, maxTokens int) *Manager {
 		maxTokens = 200000
 	}
 	return &Manager{
-		messages:  make([]Message, 0),
-		maxItems:  maxItems,
-		maxTokens: maxTokens,
+		messages:    make([]Message, 0),
+		maxItems:    maxItems,
+		maxTokens:   maxTokens,
+		autoCompact: false,
 	}
+}
+
+// SetSummarizer configures LLM-based summarization for automatic context compaction
+func (m *Manager) SetSummarizer(s *summarizer.Summarizer) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	m.summarizer = s
+	m.autoCompact = true
+}
+
+// EnableAutoCompact enables/disables automatic summarization-based compaction
+func (m *Manager) EnableAutoCompact(enabled bool) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	m.autoCompact = enabled
+}
+
+// CompactWithSummarizer uses LLM summarization to compress old messages
+func (m *Manager) CompactWithSummarizer(ctx gocontext.Context, keepRecent int) error {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+
+	if m.summarizer == nil {
+		return fmt.Errorf("no summarizer configured")
+	}
+
+	if len(m.messages) <= keepRecent {
+		return nil
+	}
+
+	// Convert to ai.Message format (only Role and Content fields)
+	aiMsgs := make([]ai.Message, len(m.messages))
+	for i, msg := range m.messages {
+		aiMsgs[i] = ai.Message{
+			Role:    msg.Role,
+			Content: msg.Content,
+		}
+	}
+
+	// Use summarizer to compact
+	compacted, err := m.summarizer.CompactMessages(ctx, aiMsgs, keepRecent)
+	if err != nil {
+		return err
+	}
+
+	// Convert back and update
+	m.messages = make([]Message, len(compacted))
+	for i, msg := range compacted {
+		m.messages[i] = Message{
+			Role:    msg.Role,
+			Content: msg.Content,
+			Tokens:  len(msg.Content) / 4,
+		}
+	}
+
+	return nil
 }
 
 func (m *Manager) Add(msg Message) {

@@ -136,6 +136,8 @@ func (b *AgentBridge) RunPrompt(input string) {
 				Model:    event.Model,
 			})
 
+		case agent.LoopEventMessageDelta:
+			b.sendMsg(StreamChunkMsg{Chunk: event.Content})
 		case agent.LoopEventMessageEnd:
 			b.mu.Lock()
 			b.accumulated = event.Content

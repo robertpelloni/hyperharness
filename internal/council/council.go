@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"strings"
 	"time"
+
+	"github.com/robertpelloni/hyperharness/internal/debate"
 )
 
 // Executor defines the interface for executing LLM requests.
@@ -130,6 +132,20 @@ func (d *DirectorAgent) InitiateDebate(topic string, agentA, agentB *WorkerAgent
 	}
 	
 	return fmt.Sprintf("Debate Resolution:\nAgent A: %s\nAgent B: %s\nConsensus reached by Director.", responseA, responseB), nil
+}
+
+// DebateOnFailure triggers a structured debate between two subagents on a
+// given topic (typically a failed code edit or validation error) and returns
+// a formatted result. This is used when code edits fail validation or tests.
+func (d *DirectorAgent) DebateOnFailure(topic string) (string, error) {
+	fmt.Printf("[Director] Debate on failure triggered for: %s\n", topic)
+	pro := NewWorkerAgent("coder")
+	con := NewWorkerAgent("reviewer")
+	res, err := debate.Run(topic, pro, con)
+	if err != nil {
+		return "", fmt.Errorf("debate on failure: %w", err)
+	}
+	return debate.FormatResult(res), nil
 }
 
 // WorkerAgent handles individual subtasks in the council.
