@@ -1598,8 +1598,64 @@ func (m model) renderToolSidebar() string {
 // ─── Metrics ──────────────────────────────────────────────────────────
 
 func (m model) renderMetrics() string {
-	return fmt.Sprintf("Tokens: %s in / %s out │ Cost: $%.3f │ Scope: Project │ Tools: %d",
-		formatTokens(m.totalInputTok), formatTokens(m.totalOutTok), m.totalCost, m.toolCount)
+	t := m.theme
+	var b strings.Builder
+
+	// ── Line 1: Provider / Model / Tokens / Cost ──
+	b.WriteString(t.AccentText("╭─ Metrics ──────────────────────────────────────────────────────────────╮"))
+	b.WriteString("\n")
+	b.WriteString(fmt.Sprintf(" %s Provider: %s │ Model: %s", t.Dim("▸"), t.Fg(t.TextColor, m.provider), t.Fg(t.TextColor, m.modelName)))
+	b.WriteString("\n")
+	b.WriteString(fmt.Sprintf(" %s Tokens: %s in / %s out │ Cost: $%.4f │ Entries: %d",
+		t.Dim("▸"),
+		t.Fg(t.TextColor, formatTokens(m.totalInputTok)),
+		t.Fg(t.TextColor, formatTokens(m.totalOutTok)),
+		m.totalCost,
+		len(m.entries),
+	))
+	b.WriteString("\n")
+
+	// Streaming status
+	streamStatus := t.Dim("idle")
+	if m.streaming {
+		streamStatus = t.AccentText("▶ streaming")
+	}
+	if m.loading && !m.streaming {
+		streamStatus = t.AccentText("⟳ processing")
+	}
+	b.WriteString(fmt.Sprintf(" %s Status: %s │ Tools: %d",
+		t.Dim("▸"), streamStatus, m.toolCount))
+
+	// Budget info — only if director has a budget tracker
+	if m.director != nil && m.director.Budget != nil && m.director.Budget.GetConfig().Enabled {
+		status := m.director.Budget.BudgetStatus()
+		b.WriteString("\n")
+		b.WriteString(fmt.Sprintf(" %s Budget: Session $%.2f/%.2f (%.0f%%) │ Daily $%.2f/%.2f (%.0f%%)",
+			t.Dim("▸"),
+			status.SessionCost, status.SessionCostLimit, status.SessionCostPct,
+			status.DailyCost, status.DailyCostLimit, status.DailyCostPct,
+		))
+		b.WriteString("\n")
+		b.WriteString(fmt.Sprintf(" %s Session tokens: %d/%d (%.0f%%) │ Daily tokens: %d/%d (%.0f%%)",
+			t.Dim("▸"),
+			status.SessionTokens, status.SessionTokenLimit, status.SessionTokenPct,
+			status.DailyTokens, status.DailyTokenLimit, status.DailyTokenPct,
+		))
+	}
+
+	// Context usage
+	b.WriteString("\n")
+	pct := float64(m.totalInputTok+m.totalOutTok) / float64(m.contextWindow) * 100
+	if pct > 100 {
+		pct = 100
+	}
+	b.WriteString(fmt.Sprintf(" %s Context: %.0f%% (%d / %d)",
+		t.Dim("▸"), pct, m.totalInputTok+m.totalOutTok, m.contextWindow))
+
+	b.WriteString("\n")
+	b.WriteString(t.AccentText("╰──────────────────────────────────────────────────────────────────────────╯"))
+
+	return b.String()
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────

@@ -578,29 +578,349 @@ func ListConfiguredProviders() []string {
 // ── StreamChat stub implementations for all providers ──
 
 func (p *AnthropicProvider) StreamChat(ctx context.Context, model string, messages []Message, callback func(string) error) (*LLMResponse, error) {
-	return p.GenerateText(ctx, model, messages)
+	if p.BaseURL == "" {
+		p.BaseURL = "https://api.anthropic.com/v1/messages"
+	}
+
+	reqBody, _ := json.Marshal(map[string]interface{}{
+		"model":      model,
+		"max_tokens": 4096,
+		"messages":   messages,
+		"stream":     true,
+	})
+
+	req, err := http.NewRequestWithContext(ctx, "POST", p.BaseURL, bytes.NewBuffer(reqBody))
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("x-api-key", p.APIKey)
+	req.Header.Set("anthropic-version", "2023-06-01")
+	req.Header.Set("Accept", "text/event-stream")
+
+	client := &http.Client{Timeout: 120 * time.Second}
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		body, _ := io.ReadAll(resp.Body)
+		return nil, fmt.Errorf("Anthropic API error: %s - %s", resp.Status, string(body))
+	}
+
+	var fullContent strings.Builder
+	scan := bufio.NewScanner(resp.Body)
+	scan.Buffer(make([]byte, 1024), 1024*64)
+
+	for scan.Scan() {
+		line := scan.Text()
+		if !strings.HasPrefix(line, "data: ") {
+			continue
+		}
+		data := strings.TrimPrefix(line, "data: ")
+
+		var event struct {
+			Type  string `json:"type"`
+			Index int    `json:"index"`
+			Delta *struct {
+				Type string `json:"type"`
+				Text string `json:"text"`
+			} `json:"delta"`
+			ContentBlock *struct {
+				Type string `json:"type"`
+				Text string `json:"text"`
+			} `json:"content_block"`
+		}
+
+		if err := json.Unmarshal([]byte(data), &event); err != nil {
+			continue
+		}
+
+		switch event.Type {
+		case "content_block_delta":
+			if event.Delta != nil && event.Delta.Text != "" {
+				fullContent.WriteString(event.Delta.Text)
+				if callback != nil {
+					if err := callback(event.Delta.Text); err != nil {
+						return nil, err
+					}
+				}
+			}
+		case "content_block_start":
+			if event.ContentBlock != nil && event.ContentBlock.Text != "" {
+				fullContent.WriteString(event.ContentBlock.Text)
+				if callback != nil {
+					if err := callback(event.ContentBlock.Text); err != nil {
+						return nil, err
+					}
+				}
+			}
+		case "message_stop":
+			break
+		}
+	}
+
+	if err := scan.Err(); err != nil {
+		return nil, err
+	}
+
+	return &LLMResponse{
+		Content:  fullContent.String(),
+		Provider: "anthropic",
+		Model:    model,
+	}, nil
 }
 
 func (p *GeminiProvider) StreamChat(ctx context.Context, model string, messages []Message, callback func(string) error) (*LLMResponse, error) {
-	return p.GenerateText(ctx, model, messages)
+	if p.BaseURL == "" {
+		p.BaseURL = "https://generativelanguage.googleapis.com/v1beta"
+	}
+
+	// Convert messages to Gemini content format
+	contents := make([]map[string]interface{}, 0, len(messages))
+	var systemInstruction string
+	for _, msg := range messages {
+		if msg.Role == "system" {
+			systemInstruction = msg.Content
+			continue
+		}
+		role := msg.Role
+		if role == "assistant" {
+			role = "model"
+		}
+		contents = append(contents, map[string]interface{}{
+			"role":  role,
+			"parts": []map[string]string{{"text": msg.Content}},
+		})
+	}
+
+	body := map[string]interface{}{
+		"contents": contents,
+	}
+	if systemInstruction != "" {
+		body["systemInstruction"] = map[string]interface{}{
+			"parts": []map[string]string{{"text": systemInstruction}},
+		}
+	}
+
+	reqBody, _ := json.Marshal(body)
+	url := fmt.Sprintf("%s/models/%s:streamGenerateContent?key=%s", p.BaseURL, model, p.APIKey)
+	req, err := http.NewRequestWithContext(ctx, "POST", url, bytes.NewBuffer(reqBody))
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("Content-Type", "application/json")
+
+	client := &http.Client{Timeout: 120 * time.Second}
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		respBody, _ := io.ReadAll(resp.Body)
+		return nil, fmt.Errorf("Gemini API error: %s - %s", resp.Status, string(respBody))
+	}
+
+	var fullContent strings.Builder
+	var totalInputTok, totalOutputTok int
+
+	scan := bufio.NewScanner(resp.Body)
+	scan.Buffer(make([]byte, 1024), 1024*64)
+
+	for scan.Scan() {
+		line := scan.Text()
+		line = strings.TrimSpace(line)
+		if line == "" {
+			continue
+		}
+
+		var chunk struct {
+			Candidates []struct {
+				Content struct {
+					Parts []struct {
+						Text string `json:"text"`
+					} `json:"parts"`
+				} `json:"content"`
+				FinishReason string `json:"finishReason"`
+			} `json:"candidates"`
+			UsageMetadata struct {
+				PromptTokenCount     int `json:"promptTokenCount"`
+				CandidatesTokenCount int `json:"candidatesTokenCount"`
+			} `json:"usageMetadata"`
+		}
+
+		if err := json.Unmarshal([]byte(line), &chunk); err != nil {
+			continue
+		}
+
+		if len(chunk.Candidates) > 0 && len(chunk.Candidates[0].Content.Parts) > 0 {
+			text := chunk.Candidates[0].Content.Parts[0].Text
+			if text != "" {
+				fullContent.WriteString(text)
+				if callback != nil {
+					if err := callback(text); err != nil {
+						return nil, err
+					}
+				}
+			}
+		}
+
+		if chunk.UsageMetadata.PromptTokenCount > 0 {
+			totalInputTok = chunk.UsageMetadata.PromptTokenCount
+		}
+		if chunk.UsageMetadata.CandidatesTokenCount > 0 {
+			totalOutputTok = chunk.UsageMetadata.CandidatesTokenCount
+		}
+	}
+
+	if err := scan.Err(); err != nil {
+		return nil, err
+	}
+
+	return &LLMResponse{
+		Content:  fullContent.String(),
+		Provider: "google",
+		Model:    model,
+		Usage: struct {
+			InputTokens  int
+			OutputTokens int
+		}{
+			InputTokens:  totalInputTok,
+			OutputTokens: totalOutputTok,
+		},
+	}, nil
 }
 
 func (p *DeepSeekProvider) StreamChat(ctx context.Context, model string, messages []Message, callback func(string) error) (*LLMResponse, error) {
-	return p.GenerateText(ctx, model, messages)
+	oai := &OpenAIProvider{
+		APIKey:  p.APIKey,
+		BaseURL: "https://api.deepseek.com/v1/chat/completions",
+	}
+	resp, err := oai.StreamChat(ctx, model, messages, callback)
+	if err != nil {
+		return nil, err
+	}
+	resp.Provider = "deepseek"
+	return resp, nil
 }
 
 func (p *OpenRouterProvider) StreamChat(ctx context.Context, model string, messages []Message, callback func(string) error) (*LLMResponse, error) {
-	return p.GenerateText(ctx, model, messages)
+	oai := &OpenAIProvider{
+		APIKey:  p.APIKey,
+		BaseURL: "https://openrouter.ai/api/v1/chat/completions",
+	}
+	resp, err := oai.StreamChat(ctx, model, messages, callback)
+	if err != nil {
+		return nil, err
+	}
+	resp.Provider = "openrouter"
+	return resp, nil
 }
 
 func (p *LMStudioProvider) StreamChat(ctx context.Context, model string, messages []Message, callback func(string) error) (*LLMResponse, error) {
-	return p.GenerateText(ctx, model, messages)
+	if p.BaseURL == "" {
+		p.BaseURL = "http://localhost:1234/v1/chat/completions"
+	}
+	oai := &OpenAIProvider{
+		APIKey:  "lm-studio",
+		BaseURL: p.BaseURL,
+	}
+	resp, err := oai.StreamChat(ctx, model, messages, callback)
+	if err != nil {
+		return nil, err
+	}
+	resp.Provider = "lmstudio"
+	return resp, nil
 }
 
 func (p *OllamaProvider) StreamChat(ctx context.Context, model string, messages []Message, callback func(string) error) (*LLMResponse, error) {
-	return p.GenerateText(ctx, model, messages)
+	if p.BaseURL == "" {
+		p.BaseURL = "http://localhost:11434/api/chat"
+	}
+
+	body := map[string]interface{}{
+		"model":    model,
+		"messages": messages,
+		"stream":   true,
+	}
+	reqBody, _ := json.Marshal(body)
+
+	req, err := http.NewRequestWithContext(ctx, "POST", p.BaseURL, bytes.NewBuffer(reqBody))
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("Content-Type", "application/json")
+
+	client := &http.Client{Timeout: 120 * time.Second}
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	var fullContent strings.Builder
+	scan := bufio.NewScanner(resp.Body)
+	scan.Buffer(make([]byte, 1024), 1024*64)
+
+	for scan.Scan() {
+		line := scan.Text()
+		line = strings.TrimSpace(line)
+		if line == "" {
+			continue
+		}
+
+		var chunk struct {
+			Message struct {
+				Content string `json:"content"`
+			} `json:"message"`
+			Done bool `json:"done"`
+			PromptEvalCount int `json:"prompt_eval_count"`
+			EvalCount       int `json:"eval_count"`
+		}
+
+		if err := json.Unmarshal([]byte(line), &chunk); err != nil {
+			continue
+		}
+
+		if chunk.Message.Content != "" {
+			fullContent.WriteString(chunk.Message.Content)
+			if callback != nil {
+				if err := callback(chunk.Message.Content); err != nil {
+					return nil, err
+				}
+			}
+		}
+
+		if chunk.Done {
+			break
+		}
+	}
+
+	if err := scan.Err(); err != nil {
+		return nil, err
+	}
+
+	return &LLMResponse{
+		Content:  fullContent.String(),
+		Provider: "ollama",
+		Model:    model,
+	}, nil
 }
 
 func (p *XiaomiProvider) StreamChat(ctx context.Context, model string, messages []Message, callback func(string) error) (*LLMResponse, error) {
-	return p.GenerateText(ctx, model, messages)
+	oai := &OpenAIProvider{
+		APIKey:  p.APIKey,
+		BaseURL: p.BaseURL,
+	}
+	resp, err := oai.StreamChat(ctx, model, messages, callback)
+	if err != nil {
+		return nil, err
+	}
+	resp.Provider = "xiaomi"
+	return resp, nil
 }

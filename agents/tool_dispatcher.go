@@ -4,12 +4,16 @@ import (
     "context"
     "encoding/json"
     "fmt"
+    "io"
+    "net/http"
+    "net/url"
     "os"
     "os/exec"
     "path/filepath"
     "regexp"
     "strings"
     "sync"
+    "time"
 )
 
 // ToolHandler is the signature for functions that implement a tool.
@@ -88,13 +92,44 @@ func (d *ToolDispatcher) RegisterDefaultStubs() {
         return "ok", nil
     })
 
-    // edit – placeholder that simply returns the newText (no in‑place edit).
+    // edit – replaces text in a file. Supports:
+    //   - path + oldText + newText: replace first occurrence of oldText with newText
+    //   - path + newText: overwrite entire file
     d.Register("edit", func(ctx context.Context, args map[string]interface{}) (string, error) {
-        nt, ok := args["newText"].(string)
-        if !ok {
+        path, okPath := args["path"].(string)
+        newText, okNew := args["newText"].(string)
+        oldText, okOld := args["oldText"].(string)
+        if !okPath {
+            return "", fmt.Errorf("edit: missing path")
+        }
+        if !okNew {
             return "", fmt.Errorf("edit: missing newText")
         }
-        return nt, nil
+
+        // Read current content
+        data, err := os.ReadFile(path)
+        if err != nil {
+            return "", fmt.Errorf("edit: read: %w", err)
+        }
+
+        // If oldText is provided, do replacement
+        if okOld && oldText != "" {
+            content := string(data)
+            if !strings.Contains(content, oldText) {
+                return "", fmt.Errorf("edit: oldText not found in file")
+            }
+            newContent := strings.Replace(content, oldText, newText, 1)
+            if err := os.WriteFile(path, []byte(newContent), 0644); err != nil {
+                return "", fmt.Errorf("edit: write: %w", err)
+            }
+            return fmt.Sprintf("✓ Replaced 1 occurrence in %s", path), nil
+        }
+
+        // Otherwise, overwrite entire file
+        if err := os.WriteFile(path, []byte(newText), 0644); err != nil {
+            return "", fmt.Errorf("edit: write: %w", err)
+        }
+        return fmt.Sprintf("✓ Wrote %d bytes to %s", len(newText), path), nil
     })
 
     // bash – executes a shell command and returns stdout.
@@ -169,27 +204,117 @@ func (d *ToolDispatcher) RegisterDefaultStubs() {
         return strings.Join(out, "\n"), nil
     })
 
-    // tree – stub that just returns a placeholder.
+    // tree – returns a simple directory tree view.
     d.Register("tree", func(ctx context.Context, args map[string]interface{}) (string, error) {
-        return "[tree view not implemented]", nil
+        root, ok := args["path"].(string)
+        if !ok || root == "" {
+            root = "."
+        }
+        // Walk the directory tree
+        var lines []string
+        err := filepath.Walk(root, func(p string, info os.FileInfo, err error) error {
+            if err != nil {
+                return err
+            }
+            // Compute relative path for indentation
+            rel, _ := filepath.Rel(root, p)
+            if rel == "." {
+                // Skip root itself
+                return nil
+            }
+            depth := strings.Count(rel, string(os.PathSeparator))
+            indent := strings.Repeat("│   ", depth)
+            name := info.Name()
+            if info.IsDir() {
+                name += "/"
+            }
+            lines = append(lines, fmt.Sprintf("%s%s", indent, name))
+            return nil
+        })
+        if err != nil {
+            return "", fmt.Errorf("tree: %w", err)
+        }
+        if len(lines) == 0 {
+            return "(empty)", nil
+        }
+        return strings.Join(lines, "\n"), nil
     })
 
-    // websearch – placeholder that returns a static message.
+    // websearch – searches the web using DuckDuckGo's Instant Answer API
     d.Register("websearch", func(ctx context.Context, args map[string]interface{}) (string, error) {
-        q, ok := args["query"].(string)
+        query, ok := args["query"].(string)
         if !ok {
             return "", fmt.Errorf("websearch: missing query")
         }
-        return fmt.Sprintf("search results for %s (stub)", q), nil
+        apiURL := fmt.Sprintf("https://api.duckduckgo.com/?q=%s&format=json&no_html=1", url.QueryEscape(query))
+        req, err := http.NewRequestWithContext(ctx, "GET", apiURL, nil)
+        if err != nil {
+            return "", fmt.Errorf("websearch: %w", err)
+        }
+        client := &http.Client{Timeout: 30 * time.Second}
+        resp, err := client.Do(req)
+        if err != nil {
+            return "", fmt.Errorf("websearch: %w", err)
+        }
+        defer resp.Body.Close()
+        body, err := io.ReadAll(resp.Body)
+        if err != nil {
+            return "", fmt.Errorf("websearch: read: %w", err)
+        }
+        // Parse JSON response
+        var result struct {
+            AbstractText string `json:"AbstractText"`
+            Heading      string `json:"Heading"`
+            Results      []struct {
+                Title string `json:"Title"`
+                Text  string `json:"Text"`
+                URL   string `json:"URL"`
+            } `json:"Results"`
+        }
+        if err := json.Unmarshal(body, &result); err != nil {
+            return string(body), nil
+        }
+        var lines []string
+        if result.Heading != "" {
+            lines = append(lines, fmt.Sprintf("**%s**", result.Heading))
+        }
+        if result.AbstractText != "" {
+            lines = append(lines, result.AbstractText)
+            lines = append(lines, "")
+        }
+        for _, r := range result.Results {
+            lines = append(lines, fmt.Sprintf("• %s\n  %s\n  %s", r.Title, r.Text, r.URL))
+        }
+        if len(lines) == 0 {
+            return "No results found", nil
+        }
+        return strings.Join(lines, "\n\n"), nil
     })
 
-    // webfetch – stub that returns a static message.
+    // webfetch – fetches content from a URL
     d.Register("webfetch", func(ctx context.Context, args map[string]interface{}) (string, error) {
-        url, ok := args["url"].(string)
+        urlStr, ok := args["url"].(string)
         if !ok {
             return "", fmt.Errorf("webfetch: missing url")
         }
-        return fmt.Sprintf("fetched content from %s (stub)", url), nil
+        req, err := http.NewRequestWithContext(ctx, "GET", urlStr, nil)
+        if err != nil {
+            return "", fmt.Errorf("webfetch: %w", err)
+        }
+        client := &http.Client{Timeout: 30 * time.Second}
+        resp, err := client.Do(req)
+        if err != nil {
+            return "", fmt.Errorf("webfetch: %w", err)
+        }
+        defer resp.Body.Close()
+        if resp.StatusCode != http.StatusOK {
+            return "", fmt.Errorf("webfetch: %s", resp.Status)
+        }
+        body, err := io.ReadAll(resp.Body)
+        if err != nil {
+            return "", fmt.Errorf("webfetch: read: %w", err)
+        }
+        return string(body), nil
     })
 }
 
