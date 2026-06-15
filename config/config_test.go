@@ -9,10 +9,10 @@ import (
 
 func TestDefaultConfig(t *testing.T) {
 	cfg := DefaultConfig()
-	if cfg.Provider != "anthropic" {
+	if cfg.Provider != "freellm" {
 		t.Errorf("default provider: %s", cfg.Provider)
 	}
-	if cfg.Model != "claude-sonnet-4-20250514" {
+	if cfg.Model != "local-model" {
 		t.Errorf("default model: %s", cfg.Model)
 	}
 	if !cfg.AutoCompact {
@@ -100,7 +100,7 @@ func TestReset(t *testing.T) {
 	m.Reset()
 
 	cfg := m.GetConfig()
-	if cfg.Provider != "anthropic" {
+	if cfg.Provider != "freellm" {
 		t.Errorf("after reset, provider should be default: %s", cfg.Provider)
 	}
 }

@@ -106,6 +106,14 @@ var Catalog = []CatalogEntry{
 		BaseURL: "http://localhost:1234",
 	},
 	{
+		Provider: "freellm", Name: "FreeLLM", AuthMethod: "local",
+		DefaultModel: "local-model",
+		PreferredTasks: []string{"local-inference", "coding"},
+		Executable: true,
+		Models: []string{"local-model"},
+		BaseURL: "http://localhost:4000",
+	},
+	{
 		Provider: "ollama", Name: "Ollama", AuthMethod: "local",
 		DefaultModel: "gemma:2b",
 		PreferredTasks: []string{"local-inference", "coding"},

@@ -1,3 +1,29 @@
+## [0.5.0-alpha.5] - 2026-06-14
+
+### Added
+- **Custom spinner**: Four-frame Unicode animation (`⠋ ⠙ ⠹ ⠸`) at 8 FPS matching Pi-Mono style.
+- **Block cursor**: Solid block cursor (`█`) for input bar in both normal and Bash modes.
+- **Status bar separator**: Dimmed vertical bar (`│`) separating left and right sections of the footer.
+- **Underline theme helper**: New `Underline()` method for consistent text styling.
+
+### Changed
+- **Markdown headings**: Now rendered with **bold + underline** styling (Pi-Mono style), preserving indentation levels.
+- **Code blocks**: Now use background color (`MdCodeBlock`) with foreground color (`MdCode`) for better visual distinction.
+- **Chat viewport**: Subtle normal border with dim color around the scrollable viewport area.
+- **Input bar margin**: Added extra blank line above input bar for visual breathing room in all view modes.
+- **Dashboard metrics**: Added trailing newline for bottom padding in split-pane view.
+- **Footer alignment**: Fixed padding calculation to account for separator width, preventing text overflow.
+- **Default provider**: Changed default configuration to `freellm` provider with `local-model`.
+
+### Fixed
+- Removed duplicate `Underline` method declaration in theme helpers.
+- Updated config tests to match new default provider and model values.
+
+### Internal
+- Updated `internal/buildinfo/buildinfo.go` version constant to match `VERSION` file.
+
+---
+
 ## [0.4.4-alpha] - 2026-06-05
 
 ### Added

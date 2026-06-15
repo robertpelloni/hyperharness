@@ -279,7 +279,7 @@ func shortenPath(path string) string {
 
 func initialModel() model {
 	s := spinner.New()
-	s.Spinner = spinner.Dot
+	s.Spinner = spinner.Spinner{Frames: []string{"⠋","⠙","⠹","⠸"}, FPS: 8}
 	s.Style = lipgloss.NewStyle().Foreground(lipgloss.Color(DefaultTheme.Accent))
 
 	wd := getWorkingDir()
@@ -1437,21 +1437,21 @@ func (m model) View() string {
 	if m.showPermission && m.permissionEntry != nil {
 		overlay := RenderEntry(*m.permissionEntry, m.theme)
 		chatView := m.renderChatArea()
-		return chatView + "\n" + overlay + "\n" + m.renderInputBar()
+		return chatView + "\n" + overlay + "\n\n" + m.renderInputBar()
 	}
 
 	// Provider selector overlay (pi-mono style)
 	if m.showProviderSelector {
 		overlay := RenderProviderSelector(m.provider, m.providerList, m.providerSelectorIdx, m.theme)
 		chatView := m.renderChatArea()
-		return chatView + "\n" + overlay + "\n" + m.renderInputBar()
+		return chatView + "\n" + overlay + "\n\n" + m.renderInputBar()
 	}
 	
 	// Model selector overlay (pi-mono/opencode style)
 	if m.showModelSelector {
 		overlay := RenderModelSelector(m.modelName, m.availableModels, m.theme)
 		chatView := m.renderChatArea()
-		return chatView + "\n" + overlay + "\n" + m.renderInputBar()
+		return chatView + "\n" + overlay + "\n\n" + m.renderInputBar()
 	}
 
 	// Command palette overlay (opencode style)
@@ -1459,7 +1459,7 @@ func (m model) View() string {
 		filtered := m.filteredCommands()
 		overlay := RenderAutocomplete(filtered, m.commandPaletteIdx, 10, m.theme)
 		chatView := m.renderChatArea()
-		return chatView + "\n" + overlay + "\n" + m.renderInputBar()
+		return chatView + "\n" + overlay + "\n\n" + m.renderInputBar()
 	}
 
 	// Dashboard mode
@@ -1479,7 +1479,7 @@ func (m model) View() string {
 			m.browserConfirmPending, m.browserCollapsed, m.browserGrouped,
 			0, m.theme.AccentText("[File Tree Browser]"), true)
 		body = chatView + "\n" + browserView
-		return body + "\n" + m.renderFooter() + "\n" + m.renderInputBar()
+		return body + "\n" + m.renderFooter() + "\n\n" + m.renderInputBar()
 	}
 
 	// Pinned tree pane
@@ -1497,18 +1497,24 @@ func (m model) View() string {
 		} else {
 			body = pane + "\n" + divider + "\n" + m.renderChatArea()
 		}
-		return body + "\n" + m.renderFooter() + "\n" + m.renderInputBar()
+		return body + "\n" + m.renderFooter() + "\n\n" + m.renderInputBar()
 	}
 
 	// Normal mode (pi-mono layout: [chat viewport] [footer] [input])
 	body = m.renderChatArea()
-	return body + "\n" + m.renderFooter() + "\n" + m.renderInputBar()
+	return body + "\n" + m.renderFooter() + "\n\n" + m.renderInputBar()
 }
 
 // ─── Chat area (scrollable viewport) ──────────────────────────────────
 
 func (m model) renderChatArea() string {
-	if m.ready { return m.viewport.View() }
+	if m.ready {
+		border := lipgloss.NewStyle().
+			Border(lipgloss.NormalBorder()).
+			BorderForeground(lipgloss.Color(m.theme.DimColor)).
+			Padding(0, 1)
+		return border.Render(m.viewport.View())
+	}
 	return m.renderAllEntries()
 }
 

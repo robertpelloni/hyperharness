@@ -486,17 +486,26 @@ func RenderSimpleMarkdown(text string, t Theme) string {
 			continue
 		}
 		if inCodeBlock {
-			rendered = append(rendered, t.Fg(t.MdCode, line))
+			codeStyle := lipgloss.NewStyle().
+				Foreground(lipgloss.Color(t.MdCode)).
+				Background(lipgloss.Color(t.MdCodeBlock))
+			rendered = append(rendered, codeStyle.Render(line))
 			continue
 		}
 
 		// Headings
 		if strings.HasPrefix(line, "### ") {
-			rendered = append(rendered, t.Fg(t.MdHeading, t.Bold("   "+line[4:])))
+			content := line[4:]
+			styled := t.Bold(t.Underline(content))
+			rendered = append(rendered, t.Fg(t.MdHeading, "   "+styled))
 		} else if strings.HasPrefix(line, "## ") {
-			rendered = append(rendered, t.Fg(t.MdHeading, t.Bold("  "+line[3:])))
+			content := line[3:]
+			styled := t.Bold(t.Underline(content))
+			rendered = append(rendered, t.Fg(t.MdHeading, "  "+styled))
 		} else if strings.HasPrefix(line, "# ") {
-			rendered = append(rendered, t.Fg(t.MdHeading, t.Bold(line[2:])))
+			content := line[2:]
+			styled := t.Bold(t.Underline(content))
+			rendered = append(rendered, t.Fg(t.MdHeading, styled))
 		} else if strings.HasPrefix(line, "> ") {
 			rendered = append(rendered, t.Fg(t.MdQuoteBorder, "│ ")+t.Fg(t.MdQuote, line[2:]))
 		} else if strings.HasPrefix(line, "- ") || strings.HasPrefix(line, "* ") {
@@ -641,11 +650,13 @@ func RenderFooter(cwd, gitBranch, provider, model string, toolCount, inputTok, o
 	}
 
 	leftSide := t.Dim(fmt.Sprintf("tools %d", toolCount))
-	padding2 := width - utf8.RuneCountInString(leftSide) - utf8.RuneCountInString(rightSide)
+	sepWidth := utf8.RuneCountInString(" │ ")
+	padding2 := width - utf8.RuneCountInString(leftSide) - sepWidth - utf8.RuneCountInString(rightSide)
 	if padding2 < 2 {
 		padding2 = 2
 	}
-	line2 := leftSide + strings.Repeat(" ", padding2) + t.Dim(rightSide)
+	separator := t.Dim(" │ ")
+	line2 := leftSide + separator + strings.Repeat(" ", padding2) + t.Dim(rightSide)
 
 	// Horizontal rule
 	hr := t.Dim("─" + strings.Repeat("─", width-1))
@@ -679,10 +690,10 @@ func RenderInputBar(m model) string {
 		inputDisplay += "\n" + t.Dim(t.Italic("enter to send · esc to clear"))
 	} else if m.bashMode || strings.HasPrefix(m.input, "!") {
 		prompt = t.Bold(t.Fg(t.BashModeCol, "⚡ "))
-		inputDisplay = t.Fg(t.TextColor, m.input) + "▎"
+		inputDisplay = t.Fg(t.TextColor, m.input) + "█"
 	} else {
 		prompt = t.Bold(t.AccentText("> "))
-		inputDisplay = t.Fg(t.TextColor, m.input) + "▎"
+		inputDisplay = t.Fg(t.TextColor, m.input) + "█"
 	}
 
 	// Queue hint (pi-mono: message queued — will send when finished)
@@ -772,7 +783,7 @@ func RenderDashboard(chatContent, toolSidebar, metrics string) string {
 		b.WriteString(left + "│" + right + "\n")
 	}
 	b.WriteString(strings.Repeat("─", leftW) + "│" + strings.Repeat("─", rightW) + "\n")
-	b.WriteString(metrics)
+	b.WriteString(metrics + "\n")
 
 	return b.String()
 }

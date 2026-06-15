@@ -119,8 +119,8 @@ type MCPServerConfig struct {
 // DefaultConfig returns the default application configuration.
 func DefaultConfig() *AppConfig {
 	return &AppConfig{
-		Provider:       "anthropic",
-		Model:          "claude-sonnet-4-20250514",
+		Provider:       "freellm",
+		Model:          "local-model",
 		ThinkingLevel:  "medium",
 		AutoCompact:    true,
 		CompactAtPct:   80,
