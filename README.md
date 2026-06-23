@@ -1,3 +1,5 @@
+# 🚧 UNDER CONSTRUCTION — ALPHA STATE! 🚧
+
 # HyperHarness (HyperCode)
 
 **The ultimate Go-native control plane for AI development.**
