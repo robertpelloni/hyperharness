@@ -42,7 +42,7 @@
 - [x] Synchronize Memory Isolation and FTS5 to TypeScript client
 - [x] Sync parity tools (Claude, Crush) to TS `tools/parity` folder
 
-- [x] Performance benchmarks (sub-ms tool dispatch)
+- [ ] Performance benchmarks (sub-ms tool dispatch)
 - [ ] End-to-end integration tests with real AI models
 - [ ] Cloud deployment (gRPC/HTTP API)
 - [ ] Plugin system (Go plugins for custom tools)
