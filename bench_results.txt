@@ -1,0 +1,14 @@
+goos: linux
+goarch: amd64
+pkg: github.com/robertpelloni/hyperharness/bench
+cpu: Intel(R) Xeon(R) Processor @ 2.30GHz
+BenchmarkContextCompaction/Size_10-4  	      10	       278.8 ns/op	       0 B/op	       0 allocs/op
+BenchmarkContextCompaction/Size_100-4 	      10	       311.9 ns/op	       0 B/op	       0 allocs/op
+BenchmarkContextCompaction/Size_1000-4         	      10	       489.0 ns/op	       0 B/op	       0 allocs/op
+BenchmarkMemorySearch-4                        	      10	   5469422 ns/op	   20916 B/op	     426 allocs/op
+BenchmarkMemorySearchScoped-4                  	      10	   3705780 ns/op	   20996 B/op	     428 allocs/op
+BenchmarkSubagentSpawning-4                    	      10	      2728 ns/op	     406 B/op	       4 allocs/op
+BenchmarkToolInvocationFoundation-4            	      10	      7458 ns/op	     772 B/op	      19 allocs/op
+BenchmarkToolInvocationParity-4                	      10	      2067 ns/op	      72 B/op	       2 allocs/op
+PASS
+ok  	github.com/robertpelloni/hyperharness/bench	3.952s
