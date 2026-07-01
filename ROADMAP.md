@@ -43,9 +43,9 @@
 - [x] Sync parity tools (Claude, Crush) to TS `tools/parity` folder
 
 - [x] Performance benchmarks (sub-ms tool dispatch)
-- [ ] End-to-end integration tests with real AI models
-- [ ] Cloud deployment (gRPC/HTTP API)
-- [ ] Plugin system (Go plugins for custom tools)
+- [x] End-to-end integration tests with real AI models
+- [x] Cloud deployment (gRPC/HTTP API)
+- [x] Plugin system (Go plugins for custom tools)
 - [x] Multi-agent orchestration (council debates, director mode)
 - [ ] Token streaming with SSE
 - [ ] Cost tracking and budget enforcement
