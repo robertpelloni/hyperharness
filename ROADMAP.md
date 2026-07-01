@@ -56,6 +56,9 @@
 - [x] CLI interface for knowledge base ingestion (`hypercode ingest`)
 
 ## Phase 6: Ecosystem (PLANNED 📋)
+- [ ] Daemon hardening and crash recovery
+- [ ] Auto-restart logic
+- [ ] Comprehensive observability hooks
 - [ ] VS Code extension
 - [ ] JetBrains plugin
 - [ ] Neovim integration
