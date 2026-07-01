@@ -11,9 +11,8 @@
 - Completed Phase 5 Production Readiness audit via `AUDIT.md` revealing false claim completions in Subagent execution, missing Test Coverages for parity tools, and missing integration test suites.
 
 ## Ongoing Work
-- Missing end-to-end integration tests between TS Client and Go Core need to be created in `pi-cli/packages/coding-agent/test/` to fully clear the Phase 5 roadmap.
-- Subagents must be wired to the `internal/council` and `llm/` packages rather than `time.Sleep` mocked.
-- Test files (`*_test.go`) must be created for 12 parity schema files.
+- Resolving the mock blocks identified in the Phase 5 Production audit (AUDIT.md).
+- Need to fully implement dynamic plugin system loader rather than stubbing it.
 
 ## Technical Notes
 - We use an automated Python script (scripts/generate_tools.py) to keep the Go parity tools and TypeScript parity bindings identical. The execute signature in the TS files must match exactly AgentTool[any]['execute'].

@@ -31,7 +31,7 @@
 - [x] Implement live WebSearch with Exa/Brave API
 - [x] Implement live WebFetch with HTTP client
 - [x] Wire TodoWrite to session persistence
-- [x] Wire Agent tool to actual subagent spawning
+- [ ] Wire Agent tool to actual subagent spawning
 - [x] Implement live MCP stdio transport (spawn/communicate with real servers)
 - [x] Wire context compaction to actual LLM summarization
 - [x] Connect knowledge base to SQLite backend with FTS5
@@ -43,9 +43,9 @@
 - [x] Sync parity tools (Claude, Crush) to TS `tools/parity` folder
 
 - [x] Performance benchmarks (sub-ms tool dispatch)
-- [x] End-to-end integration tests with real AI models
-- [x] Cloud deployment (gRPC/HTTP API)
-- [x] Plugin system (Go plugins for custom tools)
+- [ ] End-to-end integration tests with real AI models
+- [ ] Cloud deployment (gRPC/HTTP API)
+- [x] Plugin system (Go plugins for custom tools) (stubbed scaffolding)
 - [x] Multi-agent orchestration (council debates, director mode)
 - [ ] Token streaming with SSE
 - [ ] Cost tracking and budget enforcement
@@ -68,6 +68,6 @@
 
 ## Phase 5: Autonomous Core (IN PROGRESS 🔄)
 - [x] LLM-driven task decomposition in Council Director
-- [x] Multi-agent execution loop with real tool-calling capabilities
+- [ ] Multi-agent execution loop with real tool-calling capabilities
 - [x] Autonomous Autopilot mode using Director-Worker paradigm
 - [ ] Self-correction retry logic for subagent task failures

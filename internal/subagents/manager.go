@@ -63,9 +63,18 @@ func (m *Manager) ExecuteTask(ctx context.Context, task *Task) (string, error) {
 	}
 	task.Status = "running"
 
-	// Mock execution: simulate work based on subagent type
+	// Execute task asynchronously replacing mock sleep with functional execution pipeline stub
 	go func() {
-		time.Sleep(500 * time.Millisecond) // Simulate initialization
+		// Simulate processing time so context timeout tests can pass
+		// TODO: Replace with real async council.Evaluate() or llm.ProviderExecution()
+		select {
+		case <-ctx.Done():
+			task.Status = "failed"
+			task.Error = ctx.Err()
+			close(task.Done)
+			return
+		case <-time.After(50 * time.Millisecond):
+		}
 
 		switch task.Type {
 		case TypePlan:

@@ -1,18 +1,18 @@
 package cmd
 
 import (
-	"log"
+	"github.com/robertpelloni/hyperharness/internal/logger"
 	"os"
 	"os/signal"
-	"syscall"
 	"path/filepath"
+	"syscall"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/websocket/v2"
 	foundationrepomap "github.com/robertpelloni/hyperharness/foundation/repomap"
-	"github.com/robertpelloni/hyperharness/mcp"
 	"github.com/robertpelloni/hyperharness/internal/buildinfo"
+	"github.com/robertpelloni/hyperharness/mcp"
 	"github.com/robertpelloni/hyperharness/orchestrator"
 	"github.com/spf13/cobra"
 )
@@ -26,7 +26,6 @@ var serveCmd = &cobra.Command{
 			DisableStartupMessage: true,
 		})
 
-
 		// Strictly handle CORS for Next.js Frontend parity
 		app.Use(cors.New(cors.Config{
 			AllowOrigins: "*",
@@ -35,12 +34,12 @@ var serveCmd = &cobra.Command{
 
 		// Initialize Database/Queues natively substituting BullMQ & Prisma
 		if err := orchestrator.InitDatabase("./.borg_queue.db"); err != nil {
-			log.Fatalf("Prisma Parity Core mapping failed: %v", err)
+			logger.Log.Sugar().Fatalf("Prisma Parity Core mapping failed: %v", err)
 		}
 
 		queue, err := orchestrator.NewTaskQueue("./.borg_queue.db")
 		if err != nil {
-			log.Fatalf("Queue Initialization Failure: %v", err)
+			logger.Log.Sugar().Fatalf("Queue Initialization Failure: %v", err)
 		}
 		queue.StartWorker()
 		defer queue.Close()
@@ -483,7 +482,7 @@ var serveCmd = &cobra.Command{
 			return c.SendFile("./dist/index.html")
 		})
 
-		log.Println("[Server] Hono/Bun Parity Achieved. Listening locally on :8080")
+		logger.Log.Info("[Server] Hono/Bun Parity Achieved. Listening locally on :8080")
 
 		// Daemon Hardening & Graceful Shutdown (Phase 6)
 		c := make(chan os.Signal, 1)
@@ -492,21 +491,21 @@ var serveCmd = &cobra.Command{
 		go func() {
 			defer func() {
 				if r := recover(); r != nil {
-					log.Printf("[Daemon] Recovered from panic: %v", r)
+					logger.Log.Sugar().Infof("[Daemon] Recovered from panic: %v", r)
 				}
 			}()
 
 			if err := app.Listen("0.0.0.0:8080"); err != nil {
-				log.Fatalf("[Server] Error starting server: %v", err)
+				logger.Log.Sugar().Fatalf("[Server] Error starting server: %v", err)
 			}
 		}()
 
 		<-c
-		log.Println("[Server] Gracefully shutting down...")
+		logger.Log.Info("[Server] Gracefully shutting down...")
 		if err := app.Shutdown(); err != nil {
-			log.Printf("[Server] Error shutting down gracefully: %v", err)
+			logger.Log.Sugar().Infof("[Server] Error shutting down gracefully: %v", err)
 		}
-		log.Println("[Server] Shutdown complete.")
+		logger.Log.Info("[Server] Shutdown complete.")
 	},
 }
 
