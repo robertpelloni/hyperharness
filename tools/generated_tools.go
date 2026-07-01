@@ -2689,6 +2689,16 @@ func registerGeneratedTools(r *Registry) {
 		},
 	})
 
+	// plug extracted from opencode/packages/opencode/test/plugin/workspace-adaptor.test.ts
+	r.Tools = append(r.Tools, Tool{
+		Name:        "plug",
+		Description: "plugin workspace adaptor",
+		Parameters: json.RawMessage(`{}`),
+		Execute: func(args map[string]interface{}) (string, error) {
+			return fmt.Sprintf("Tool %s not fully wired yet", "plug"), nil
+		},
+	})
+
 	// typescript extracted from opencode/packages/opencode/test/util/module.test.ts
 	r.Tools = append(r.Tools, Tool{
 		Name:        "typescript",
@@ -2806,16 +2816,6 @@ func registerGeneratedTools(r *Registry) {
 		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "OpenAI"), nil
-		},
-	})
-
-	// NotFoundError extracted from opencode/packages/opencode/test/storage/storage.test.ts
-	r.Tools = append(r.Tools, Tool{
-		Name:        "NotFoundError",
-		Description: "Auto-generated stub for NotFoundError",
-		Parameters: json.RawMessage(`{}`),
-		Execute: func(args map[string]interface{}) (string, error) {
-			return fmt.Sprintf("Tool %s not fully wired yet", "NotFoundError"), nil
 		},
 	})
 
@@ -2989,6 +2989,16 @@ func registerGeneratedTools(r *Registry) {
 		},
 	})
 
+	// workspace-test extracted from opencode/packages/opencode/test/control-plane/adaptors.test.ts
+	r.Tools = append(r.Tools, Tool{
+		Name:        "workspace-test",
+		Description: "Auto-generated stub for workspace-test",
+		Parameters: json.RawMessage(`{}`),
+		Execute: func(args map[string]interface{}) (string, error) {
+			return fmt.Sprintf("Tool %s not fully wired yet", "workspace-test"), nil
+		},
+	})
+
 	// Builder extracted from opencode/packages/opencode/test/agent/agent.test.ts
 	r.Tools = append(r.Tools, Tool{
 		Name:        "Builder",
@@ -3012,10 +3022,20 @@ func registerGeneratedTools(r *Registry) {
 	// custom-tools extracted from opencode/packages/opencode/test/tool/registry.test.ts
 	r.Tools = append(r.Tools, Tool{
 		Name:        "custom-tools",
-		Description: "tool that imports cowsay at top level",
+		Description: "Auto-generated stub for custom-tools",
 		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "custom-tools"), nil
+		},
+	})
+
+	// cowsay extracted from opencode/packages/opencode/test/tool/registry.test.ts
+	r.Tools = append(r.Tools, Tool{
+		Name:        "cowsay",
+		Description: "Auto-generated stub for cowsay",
+		Parameters: json.RawMessage(`{}`),
+		Execute: func(args map[string]interface{}) (string, error) {
+			return fmt.Sprintf("Tool %s not fully wired yet", "cowsay"), nil
 		},
 	})
 
@@ -3479,6 +3499,16 @@ func registerGeneratedTools(r *Registry) {
 		},
 	})
 
+	// Worktree extracted from opencode/packages/opencode/src/control-plane/adaptors/worktree.ts
+	r.Tools = append(r.Tools, Tool{
+		Name:        "Worktree",
+		Description: "Create a git worktree",
+		Parameters: json.RawMessage(`{}`),
+		Execute: func(args map[string]interface{}) (string, error) {
+			return fmt.Sprintf("Tool %s not fully wired yet", "Worktree"), nil
+		},
+	})
+
 	// general extracted from opencode/packages/opencode/src/agent/agent.ts
 	r.Tools = append(r.Tools, Tool{
 		Name:        "general",
@@ -3529,26 +3559,6 @@ func registerGeneratedTools(r *Registry) {
 		},
 	})
 
-	// web_search_exa extracted from opencode/packages/opencode/src/tool/websearch.ts
-	r.Tools = append(r.Tools, Tool{
-		Name:        "web_search_exa",
-		Description: "Auto-generated stub for web_search_exa",
-		Parameters: json.RawMessage(`{}`),
-		Execute: func(args map[string]interface{}) (string, error) {
-			return fmt.Sprintf("Tool %s not fully wired yet", "web_search_exa"), nil
-		},
-	})
-
-	// get_code_context_exa extracted from opencode/packages/opencode/src/tool/codesearch.ts
-	r.Tools = append(r.Tools, Tool{
-		Name:        "get_code_context_exa",
-		Description: "Auto-generated stub for get_code_context_exa",
-		Parameters: json.RawMessage(`{}`),
-		Execute: func(args map[string]interface{}) (string, error) {
-			return fmt.Sprintf("Tool %s not fully wired yet", "get_code_context_exa"), nil
-		},
-	})
-
 	// ProviderAuthError extracted from opencode/packages/sdk/js/src/gen/types.gen.ts
 	r.Tools = append(r.Tools, Tool{
 		Name:        "ProviderAuthError",
@@ -3576,6 +3586,16 @@ func registerGeneratedTools(r *Registry) {
 		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "MessageAbortedError"), nil
+		},
+	})
+
+	// NotFoundError extracted from opencode/packages/sdk/js/src/gen/types.gen.ts
+	r.Tools = append(r.Tools, Tool{
+		Name:        "NotFoundError",
+		Description: "Auto-generated stub for NotFoundError",
+		Parameters: json.RawMessage(`{}`),
+		Execute: func(args map[string]interface{}) (string, error) {
+			return fmt.Sprintf("Tool %s not fully wired yet", "NotFoundError"), nil
 		},
 	})
 
@@ -3866,6 +3886,16 @@ func registerGeneratedTools(r *Registry) {
 		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "auto"), nil
+		},
+	})
+
+	// Folder extracted from opencode/packages/plugin/src/example-workspace.ts
+	r.Tools = append(r.Tools, Tool{
+		Name:        "Folder",
+		Description: "Create a blank folder",
+		Parameters: json.RawMessage(`{}`),
+		Execute: func(args map[string]interface{}) (string, error) {
+			return fmt.Sprintf("Tool %s not fully wired yet", "Folder"), nil
 		},
 	})
 
@@ -4279,46 +4309,6 @@ func registerGeneratedTools(r *Registry) {
 		},
 	})
 
-	// LocalAgent extracted from gemini-cli/packages/core/src/agents/subagent-tool.test.ts
-	r.Tools = append(r.Tools, Tool{
-		Name:        "LocalAgent",
-		Description: "A local agent.",
-		Parameters: json.RawMessage(`{}`),
-		Execute: func(args map[string]interface{}) (string, error) {
-			return fmt.Sprintf("Tool %s not fully wired yet", "LocalAgent"), nil
-		},
-	})
-
-	// RemoteAgent extracted from gemini-cli/packages/core/src/agents/subagent-tool.test.ts
-	r.Tools = append(r.Tools, Tool{
-		Name:        "RemoteAgent",
-		Description: "A remote agent.",
-		Parameters: json.RawMessage(`{}`),
-		Execute: func(args map[string]interface{}) (string, error) {
-			return fmt.Sprintf("Tool %s not fully wired yet", "RemoteAgent"), nil
-		},
-	})
-
-	// read extracted from gemini-cli/packages/core/src/agents/subagent-tool.test.ts
-	r.Tools = append(r.Tools, Tool{
-		Name:        "read",
-		Description: "Auto-generated stub for read",
-		Parameters: json.RawMessage(`{}`),
-		Execute: func(args map[string]interface{}) (string, error) {
-			return fmt.Sprintf("Tool %s not fully wired yet", "read"), nil
-		},
-	})
-
-	// write extracted from gemini-cli/packages/core/src/agents/subagent-tool.test.ts
-	r.Tools = append(r.Tools, Tool{
-		Name:        "write",
-		Description: "Auto-generated stub for write",
-		Parameters: json.RawMessage(`{}`),
-		Execute: func(args map[string]interface{}) (string, error) {
-			return fmt.Sprintf("Tool %s not fully wired yet", "write"), nil
-		},
-	})
-
 	// cli_help extracted from gemini-cli/packages/core/src/agents/cli-help-agent.ts
 	r.Tools = append(r.Tools, Tool{
 		Name:        "cli_help",
@@ -4376,6 +4366,16 @@ func registerGeneratedTools(r *Registry) {
 		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "extension-agent"), nil
+		},
+	})
+
+	// RemoteAgent extracted from gemini-cli/packages/core/src/agents/registry.test.ts
+	r.Tools = append(r.Tools, Tool{
+		Name:        "RemoteAgent",
+		Description: "A remote agent",
+		Parameters: json.RawMessage(`{}`),
+		Execute: func(args map[string]interface{}) (string, error) {
+			return fmt.Sprintf("Tool %s not fully wired yet", "RemoteAgent"), nil
 		},
 	})
 
@@ -4539,16 +4539,6 @@ func registerGeneratedTools(r *Registry) {
 		},
 	})
 
-	// PolicyTestAgent extracted from gemini-cli/packages/core/src/agents/registry.test.ts
-	r.Tools = append(r.Tools, Tool{
-		Name:        "PolicyTestAgent",
-		Description: "Auto-generated stub for PolicyTestAgent",
-		Parameters: json.RawMessage(`{}`),
-		Execute: func(args map[string]interface{}) (string, error) {
-			return fmt.Sprintf("Tool %s not fully wired yet", "PolicyTestAgent"), nil
-		},
-	})
-
 	// RemotePolicyAgent extracted from gemini-cli/packages/core/src/agents/registry.test.ts
 	r.Tools = append(r.Tools, Tool{
 		Name:        "RemotePolicyAgent",
@@ -4559,13 +4549,23 @@ func registerGeneratedTools(r *Registry) {
 		},
 	})
 
-	// ExistingUserPolicyAgent extracted from gemini-cli/packages/core/src/agents/registry.test.ts
+	// invoke_agent extracted from gemini-cli/packages/core/src/agents/registry.test.ts
 	r.Tools = append(r.Tools, Tool{
-		Name:        "ExistingUserPolicyAgent",
-		Description: "Auto-generated stub for ExistingUserPolicyAgent",
+		Name:        "invoke_agent",
+		Description: "Auto-generated stub for invoke_agent",
 		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
-			return fmt.Sprintf("Tool %s not fully wired yet", "ExistingUserPolicyAgent"), nil
+			return fmt.Sprintf("Tool %s not fully wired yet", "invoke_agent"), nil
+		},
+	})
+
+	// LocalPolicyAgent extracted from gemini-cli/packages/core/src/agents/registry.test.ts
+	r.Tools = append(r.Tools, Tool{
+		Name:        "LocalPolicyAgent",
+		Description: "Auto-generated stub for LocalPolicyAgent",
+		Parameters: json.RawMessage(`{}`),
+		Execute: func(args map[string]interface{}) (string, error) {
+			return fmt.Sprintf("Tool %s not fully wired yet", "LocalPolicyAgent"), nil
 		},
 	})
 
@@ -4839,6 +4839,16 @@ func registerGeneratedTools(r *Registry) {
 		},
 	})
 
+	// spanner-test-agent extracted from gemini-cli/packages/core/src/agents/agentLoader.test.ts
+	r.Tools = append(r.Tools, Tool{
+		Name:        "spanner-test-agent",
+		Description: "An agent to test Spanner MCP with auth",
+		Parameters: json.RawMessage(`{}`),
+		Execute: func(args map[string]interface{}) (string, error) {
+			return fmt.Sprintf("Tool %s not fully wired yet", "spanner-test-agent"), nil
+		},
+	})
+
 	// no-card-agent extracted from gemini-cli/packages/core/src/agents/agentLoader.test.ts
 	r.Tools = append(r.Tools, Tool{
 		Name:        "no-card-agent",
@@ -5046,6 +5056,36 @@ func registerGeneratedTools(r *Registry) {
 		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "new_page"), nil
+		},
+	})
+
+	// TestLocalAgent extracted from gemini-cli/packages/core/src/agents/agent-tool.test.ts
+	r.Tools = append(r.Tools, Tool{
+		Name:        "TestLocalAgent",
+		Description: "A local test agent.",
+		Parameters: json.RawMessage(`{}`),
+		Execute: func(args map[string]interface{}) (string, error) {
+			return fmt.Sprintf("Tool %s not fully wired yet", "TestLocalAgent"), nil
+		},
+	})
+
+	// TestRemoteAgent extracted from gemini-cli/packages/core/src/agents/agent-tool.test.ts
+	r.Tools = append(r.Tools, Tool{
+		Name:        "TestRemoteAgent",
+		Description: "A remote test agent.",
+		Parameters: json.RawMessage(`{}`),
+		Execute: func(args map[string]interface{}) (string, error) {
+			return fmt.Sprintf("Tool %s not fully wired yet", "TestRemoteAgent"), nil
+		},
+	})
+
+	// UnknownAgent extracted from gemini-cli/packages/core/src/agents/agent-tool.test.ts
+	r.Tools = append(r.Tools, Tool{
+		Name:        "UnknownAgent",
+		Description: "Auto-generated stub for UnknownAgent",
+		Parameters: json.RawMessage(`{}`),
+		Execute: func(args map[string]interface{}) (string, error) {
+			return fmt.Sprintf("Tool %s not fully wired yet", "UnknownAgent"), nil
 		},
 	})
 
@@ -6069,6 +6109,16 @@ func registerGeneratedTools(r *Registry) {
 		},
 	})
 
+	// some_tool extracted from gemini-cli/packages/core/src/utils/tool-visibility.test.ts
+	r.Tools = append(r.Tools, Tool{
+		Name:        "some_tool",
+		Description: "Auto-generated stub for some_tool",
+		Parameters: json.RawMessage(`{}`),
+		Execute: func(args map[string]interface{}) (string, error) {
+			return fmt.Sprintf("Tool %s not fully wired yet", "some_tool"), nil
+		},
+	})
+
 	// tool1 extracted from gemini-cli/packages/core/src/core/turn.test.ts
 	r.Tools = append(r.Tools, Tool{
 		Name:        "tool1",
@@ -6346,16 +6396,6 @@ func registerGeneratedTools(r *Registry) {
 		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "huge_tool"), nil
-		},
-	})
-
-	// some_tool extracted from gemini-cli/packages/core/src/core/client.test.ts
-	r.Tools = append(r.Tools, Tool{
-		Name:        "some_tool",
-		Description: "Auto-generated stub for some_tool",
-		Parameters: json.RawMessage(`{}`),
-		Execute: func(args map[string]interface{}) (string, error) {
-			return fmt.Sprintf("Tool %s not fully wired yet", "some_tool"), nil
 		},
 	})
 
@@ -6699,6 +6739,16 @@ func registerGeneratedTools(r *Registry) {
 		},
 	})
 
+	// read extracted from gemini-cli/packages/core/src/policy/policy-engine.test.ts
+	r.Tools = append(r.Tools, Tool{
+		Name:        "read",
+		Description: "Auto-generated stub for read",
+		Parameters: json.RawMessage(`{}`),
+		Execute: func(args map[string]interface{}) (string, error) {
+			return fmt.Sprintf("Tool %s not fully wired yet", "read"), nil
+		},
+	})
+
 	// api extracted from gemini-cli/packages/core/src/policy/policy-engine.test.ts
 	r.Tools = append(r.Tools, Tool{
 		Name:        "api",
@@ -6859,6 +6909,16 @@ func registerGeneratedTools(r *Registry) {
 		},
 	})
 
+	// write extracted from gemini-cli/packages/core/src/policy/policy-engine.test.ts
+	r.Tools = append(r.Tools, Tool{
+		Name:        "write",
+		Description: "Auto-generated stub for write",
+		Parameters: json.RawMessage(`{}`),
+		Execute: func(args map[string]interface{}) (string, error) {
+			return fmt.Sprintf("Tool %s not fully wired yet", "write"), nil
+		},
+	})
+
 	// mcp_mcp_test extracted from gemini-cli/packages/core/src/policy/policy-engine.test.ts
 	r.Tools = append(r.Tools, Tool{
 		Name:        "mcp_mcp_test",
@@ -7006,16 +7066,6 @@ func registerGeneratedTools(r *Registry) {
 		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "server2_prompt1"), nil
-		},
-	})
-
-	// my-operation extracted from gemini-cli/packages/core/src/telemetry/trace.ts
-	r.Tools = append(r.Tools, Tool{
-		Name:        "my-operation",
-		Description: "Auto-generated stub for my-operation",
-		Parameters: json.RawMessage(`{}`),
-		Execute: func(args map[string]interface{}) (string, error) {
-			return fmt.Sprintf("Tool %s not fully wired yet", "my-operation"), nil
 		},
 	})
 
@@ -7959,6 +8009,166 @@ func registerGeneratedTools(r *Registry) {
 		},
 	})
 
+	// ModifyingProcessor extracted from gemini-cli/packages/core/src/context/pipeline/orchestrator.test.ts
+	r.Tools = append(r.Tools, Tool{
+		Name:        "ModifyingProcessor",
+		Description: "Auto-generated stub for ModifyingProcessor",
+		Parameters: json.RawMessage(`{}`),
+		Execute: func(args map[string]interface{}) (string, error) {
+			return fmt.Sprintf("Tool %s not fully wired yet", "ModifyingProcessor"), nil
+		},
+	})
+
+	// Throwing extracted from gemini-cli/packages/core/src/context/pipeline/orchestrator.test.ts
+	r.Tools = append(r.Tools, Tool{
+		Name:        "Throwing",
+		Description: "Auto-generated stub for Throwing",
+		Parameters: json.RawMessage(`{}`),
+		Execute: func(args map[string]interface{}) (string, error) {
+			return fmt.Sprintf("Tool %s not fully wired yet", "Throwing"), nil
+		},
+	})
+
+	// MockAsyncProcessor extracted from gemini-cli/packages/core/src/context/pipeline/orchestrator.test.ts
+	r.Tools = append(r.Tools, Tool{
+		Name:        "MockAsyncProcessor",
+		Description: "Auto-generated stub for MockAsyncProcessor",
+		Parameters: json.RawMessage(`{}`),
+		Execute: func(args map[string]interface{}) (string, error) {
+			return fmt.Sprintf("Tool %s not fully wired yet", "MockAsyncProcessor"), nil
+		},
+	})
+
+	// TestPipeline extracted from gemini-cli/packages/core/src/context/pipeline/orchestrator.test.ts
+	r.Tools = append(r.Tools, Tool{
+		Name:        "TestPipeline",
+		Description: "Auto-generated stub for TestPipeline",
+		Parameters: json.RawMessage(`{}`),
+		Execute: func(args map[string]interface{}) (string, error) {
+			return fmt.Sprintf("Tool %s not fully wired yet", "TestPipeline"), nil
+		},
+	})
+
+	// FailingPipeline extracted from gemini-cli/packages/core/src/context/pipeline/orchestrator.test.ts
+	r.Tools = append(r.Tools, Tool{
+		Name:        "FailingPipeline",
+		Description: "Auto-generated stub for FailingPipeline",
+		Parameters: json.RawMessage(`{}`),
+		Execute: func(args map[string]interface{}) (string, error) {
+			return fmt.Sprintf("Tool %s not fully wired yet", "FailingPipeline"), nil
+		},
+	})
+
+	// TestAsync extracted from gemini-cli/packages/core/src/context/pipeline/orchestrator.test.ts
+	r.Tools = append(r.Tools, Tool{
+		Name:        "TestAsync",
+		Description: "Auto-generated stub for TestAsync",
+		Parameters: json.RawMessage(`{}`),
+		Execute: func(args map[string]interface{}) (string, error) {
+			return fmt.Sprintf("Tool %s not fully wired yet", "TestAsync"), nil
+		},
+	})
+
+	// Normalization extracted from gemini-cli/packages/core/src/context/config/profiles.ts
+	r.Tools = append(r.Tools, Tool{
+		Name:        "Normalization",
+		Description: "Auto-generated stub for Normalization",
+		Parameters: json.RawMessage(`{}`),
+		Execute: func(args map[string]interface{}) (string, error) {
+			return fmt.Sprintf("Tool %s not fully wired yet", "Normalization"), nil
+		},
+	})
+
+	// Async extracted from gemini-cli/packages/core/src/context/system-tests/lifecycle.golden.test.ts
+	r.Tools = append(r.Tools, Tool{
+		Name:        "Async",
+		Description: "Auto-generated stub for Async",
+		Parameters: json.RawMessage(`{}`),
+		Execute: func(args map[string]interface{}) (string, error) {
+			return fmt.Sprintf("Tool %s not fully wired yet", "Async"), nil
+		},
+	})
+
+	// NodeTruncationProcessor extracted from gemini-cli/packages/core/src/context/processors/nodeTruncationProcessor.ts
+	r.Tools = append(r.Tools, Tool{
+		Name:        "NodeTruncationProcessor",
+		Description: "Auto-generated stub for NodeTruncationProcessor",
+		Parameters: json.RawMessage(`{}`),
+		Execute: func(args map[string]interface{}) (string, error) {
+			return fmt.Sprintf("Tool %s not fully wired yet", "NodeTruncationProcessor"), nil
+		},
+	})
+
+	// StateSnapshotAsyncProcessor extracted from gemini-cli/packages/core/src/context/processors/stateSnapshotAsyncProcessor.ts
+	r.Tools = append(r.Tools, Tool{
+		Name:        "StateSnapshotAsyncProcessor",
+		Description: "Auto-generated stub for StateSnapshotAsyncProcessor",
+		Parameters: json.RawMessage(`{}`),
+		Execute: func(args map[string]interface{}) (string, error) {
+			return fmt.Sprintf("Tool %s not fully wired yet", "StateSnapshotAsyncProcessor"), nil
+		},
+	})
+
+	// HistoryTruncationProcessor extracted from gemini-cli/packages/core/src/context/processors/historyTruncationProcessor.ts
+	r.Tools = append(r.Tools, Tool{
+		Name:        "HistoryTruncationProcessor",
+		Description: "Auto-generated stub for HistoryTruncationProcessor",
+		Parameters: json.RawMessage(`{}`),
+		Execute: func(args map[string]interface{}) (string, error) {
+			return fmt.Sprintf("Tool %s not fully wired yet", "HistoryTruncationProcessor"), nil
+		},
+	})
+
+	// RollingSummaryProcessor extracted from gemini-cli/packages/core/src/context/processors/rollingSummaryProcessor.ts
+	r.Tools = append(r.Tools, Tool{
+		Name:        "RollingSummaryProcessor",
+		Description: "Auto-generated stub for RollingSummaryProcessor",
+		Parameters: json.RawMessage(`{}`),
+		Execute: func(args map[string]interface{}) (string, error) {
+			return fmt.Sprintf("Tool %s not fully wired yet", "RollingSummaryProcessor"), nil
+		},
+	})
+
+	// ToolMaskingProcessor extracted from gemini-cli/packages/core/src/context/processors/toolMaskingProcessor.ts
+	r.Tools = append(r.Tools, Tool{
+		Name:        "ToolMaskingProcessor",
+		Description: "Auto-generated stub for ToolMaskingProcessor",
+		Parameters: json.RawMessage(`{}`),
+		Execute: func(args map[string]interface{}) (string, error) {
+			return fmt.Sprintf("Tool %s not fully wired yet", "ToolMaskingProcessor"), nil
+		},
+	})
+
+	// StateSnapshotProcessor extracted from gemini-cli/packages/core/src/context/processors/stateSnapshotProcessor.ts
+	r.Tools = append(r.Tools, Tool{
+		Name:        "StateSnapshotProcessor",
+		Description: "Auto-generated stub for StateSnapshotProcessor",
+		Parameters: json.RawMessage(`{}`),
+		Execute: func(args map[string]interface{}) (string, error) {
+			return fmt.Sprintf("Tool %s not fully wired yet", "StateSnapshotProcessor"), nil
+		},
+	})
+
+	// NodeDistillationProcessor extracted from gemini-cli/packages/core/src/context/processors/nodeDistillationProcessor.ts
+	r.Tools = append(r.Tools, Tool{
+		Name:        "NodeDistillationProcessor",
+		Description: "Auto-generated stub for NodeDistillationProcessor",
+		Parameters: json.RawMessage(`{}`),
+		Execute: func(args map[string]interface{}) (string, error) {
+			return fmt.Sprintf("Tool %s not fully wired yet", "NodeDistillationProcessor"), nil
+		},
+	})
+
+	// BlobDegradationProcessor extracted from gemini-cli/packages/core/src/context/processors/blobDegradationProcessor.ts
+	r.Tools = append(r.Tools, Tool{
+		Name:        "BlobDegradationProcessor",
+		Description: "Auto-generated stub for BlobDegradationProcessor",
+		Parameters: json.RawMessage(`{}`),
+		Execute: func(args map[string]interface{}) (string, error) {
+			return fmt.Sprintf("Tool %s not fully wired yet", "BlobDegradationProcessor"), nil
+		},
+	})
+
 	// streamable-http-client extracted from gemini-cli/packages/core/src/ide/ide-client.ts
 	r.Tools = append(r.Tools, Tool{
 		Name:        "streamable-http-client",
@@ -8256,6 +8466,16 @@ func registerGeneratedTools(r *Registry) {
 		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "closeDiff"), nil
+		},
+	})
+
+	// raw-name extracted from gemini-cli/packages/core/src/agent/tool-display-utils.test.ts
+	r.Tools = append(r.Tools, Tool{
+		Name:        "raw-name",
+		Description: "Auto-generated stub for raw-name",
+		Parameters: json.RawMessage(`{}`),
+		Execute: func(args map[string]interface{}) (string, error) {
+			return fmt.Sprintf("Tool %s not fully wired yet", "raw-name"), nil
 		},
 	})
 
@@ -9339,6 +9559,16 @@ func registerGeneratedTools(r *Registry) {
 		},
 	})
 
+	// unknown_agent extracted from gemini-cli/packages/cli/src/config/policy-engine.integration.test.ts
+	r.Tools = append(r.Tools, Tool{
+		Name:        "unknown_agent",
+		Description: "Auto-generated stub for unknown_agent",
+		Parameters: json.RawMessage(`{}`),
+		Execute: func(args map[string]interface{}) (string, error) {
+			return fmt.Sprintf("Tool %s not fully wired yet", "unknown_agent"), nil
+		},
+	})
+
 	// blocked-tool extracted from gemini-cli/packages/cli/src/config/policy-engine.integration.test.ts
 	r.Tools = append(r.Tools, Tool{
 		Name:        "blocked-tool",
@@ -10066,6 +10296,16 @@ func registerGeneratedTools(r *Registry) {
 		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "reload"), nil
+		},
+	})
+
+	// inbox extracted from gemini-cli/packages/cli/src/ui/commands/memoryCommand.ts
+	r.Tools = append(r.Tools, Tool{
+		Name:        "inbox",
+		Description: "Review skills extracted from past sessions and move them to global or project skills",
+		Parameters: json.RawMessage(`{}`),
+		Execute: func(args map[string]interface{}) (string, error) {
+			return fmt.Sprintf("Tool %s not fully wired yet", "inbox"), nil
 		},
 	})
 
@@ -10916,6 +11156,26 @@ func registerGeneratedTools(r *Registry) {
 		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "KEY"), nil
+		},
+	})
+
+	// bravo extracted from gemini-cli/packages/cli/src/acp/commands/help.test.ts
+	r.Tools = append(r.Tools, Tool{
+		Name:        "bravo",
+		Description: "Bravo command",
+		Parameters: json.RawMessage(`{}`),
+		Execute: func(args map[string]interface{}) (string, error) {
+			return fmt.Sprintf("Tool %s not fully wired yet", "bravo"), nil
+		},
+	})
+
+	// alpha extracted from gemini-cli/packages/cli/src/acp/commands/help.test.ts
+	r.Tools = append(r.Tools, Tool{
+		Name:        "alpha",
+		Description: "Alpha command",
+		Parameters: json.RawMessage(`{}`),
+		Execute: func(args map[string]interface{}) (string, error) {
+			return fmt.Sprintf("Tool %s not fully wired yet", "alpha"), nil
 		},
 	})
 

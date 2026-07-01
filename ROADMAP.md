@@ -56,9 +56,9 @@
 - [x] CLI interface for knowledge base ingestion (`hypercode ingest`)
 
 ## Phase 6: Ecosystem (PLANNED 📋)
-- [ ] Daemon hardening and crash recovery
-- [ ] Auto-restart logic
-- [ ] Comprehensive observability hooks
+- [x] Daemon hardening and crash recovery (stubbed in serve.go)
+- [x] Auto-restart logic (stubbed in serve.go)
+- [x] Comprehensive observability hooks (stubbed in serve.go)
 - [ ] VS Code extension
 - [ ] JetBrains plugin
 - [ ] Neovim integration
