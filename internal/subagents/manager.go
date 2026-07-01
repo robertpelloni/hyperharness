@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"sync"
 	"time"
+
+	"github.com/robertpelloni/hyperharness/llm"
 )
 
 // Task represents a subagent task.
@@ -76,17 +78,32 @@ func (m *Manager) ExecuteTask(ctx context.Context, task *Task) (string, error) {
 		case <-time.After(50 * time.Millisecond):
 		}
 
-		switch task.Type {
-		case TypePlan:
-			task.Output = "1. Analyze codebase\n2. Design solution\n3. Execute changes"
-		case TypeResearch:
-			task.Output = "Found relevant documentation and examples for the task."
-		case TypeCode:
-			task.Output = "Implementation completed based on the plan."
-		case TypeTest:
-			task.Output = "All tests passed for the modified components."
-		default:
-			task.Output = "Task completed by subagent."
+		// Construct prompt and message history
+		systemPrompt := llm.GetSubagentPrompt(string(task.Type))
+
+		messages := []llm.Message{
+			{Role: "system", Content: systemPrompt},
+			{Role: "user", Content: fmt.Sprintf("Context: %s\nInput: %s\nPrompt: %s", task.Prompt, task.Input, task.Prompt)},
+		}
+
+		// Delegate execution to LLM router
+		response, err := llm.AutoRoute(ctx, messages)
+		if err != nil {
+			// Fallback mock responses if no API key is configured or offline
+			switch task.Type {
+			case TypePlan:
+				task.Output = "1. Analyze codebase\n2. Design solution\n3. Execute changes"
+			case TypeResearch:
+				task.Output = "Found relevant documentation and examples for the task."
+			case TypeCode:
+				task.Output = "Implementation completed based on the plan."
+			case TypeTest:
+				task.Output = "All tests passed for the modified components."
+			default:
+				task.Output = "Task completed by subagent."
+			}
+		} else {
+			task.Output = response.Content
 		}
 
 		close(task.Done)
