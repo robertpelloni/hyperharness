@@ -3,6 +3,8 @@ package cmd
 import (
 	"log"
 	"os"
+	"os/signal"
+	"syscall"
 	"path/filepath"
 
 	"github.com/gofiber/fiber/v2"
@@ -482,7 +484,29 @@ var serveCmd = &cobra.Command{
 		})
 
 		log.Println("[Server] Hono/Bun Parity Achieved. Listening locally on :8080")
-		log.Fatal(app.Listen("0.0.0.0:8080"))
+
+		// Daemon Hardening & Graceful Shutdown (Phase 6)
+		c := make(chan os.Signal, 1)
+		signal.Notify(c, os.Interrupt, syscall.SIGTERM)
+
+		go func() {
+			defer func() {
+				if r := recover(); r != nil {
+					log.Printf("[Daemon] Recovered from panic: %v", r)
+				}
+			}()
+
+			if err := app.Listen("0.0.0.0:8080"); err != nil {
+				log.Fatalf("[Server] Error starting server: %v", err)
+			}
+		}()
+
+		<-c
+		log.Println("[Server] Gracefully shutting down...")
+		if err := app.Shutdown(); err != nil {
+			log.Printf("[Server] Error shutting down gracefully: %v", err)
+		}
+		log.Println("[Server] Shutdown complete.")
 	},
 }
 
