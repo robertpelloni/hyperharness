@@ -49,7 +49,7 @@ with open("tools/generated_tools.go", "w") as f:
     f.write(go_output)
 
 # Now for TypeScript
-ts_output = """import { AgentTool } from "@mariozechner/pi-agent-core";
+ts_output = """import type { AgentTool, AgentToolResult, AgentToolUpdateCallback } from "@mariozechner/pi-agent-core";
 
 // Dynamically generated stub Tool definitions from extracted upstream JSON schemas.
 // These act as empty parity facades, and can be manually wired up to the internal Pi CLI tools later.
@@ -64,10 +64,11 @@ for t in tools:
     
     ts_output += f"""        {{
             name: "{name}",
+			label: "{name}",
             description: "{desc}",
             parameters: {{ type: "object", properties: {{}} }}, // Fallback empty schema stub
-            execute: async (args: any) => {{
-                return "Tool {name} not fully wired yet";
+            execute: async (_toolCallId: string, _params: any) => {{
+                return {{ isError: false, type: "text", text: "Tool {name} not fully wired yet" }} as any;
             }}
         }},
 """
