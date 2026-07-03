@@ -27,13 +27,18 @@ func InitLogger(debug bool) {
 	consoleEncoder := zapcore.NewConsoleEncoder(encoderConfig)
 
 	// Open file for writing logs (append mode)
-	file, _ := os.OpenFile("hyperharness.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-	fileEncoder := zapcore.NewJSONEncoder(encoderConfig)
+	file, err := os.OpenFile("hyperharness.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 
-	core := zapcore.NewTee(
-		zapcore.NewCore(consoleEncoder, zapcore.AddSync(os.Stdout), level),
-		zapcore.NewCore(fileEncoder, zapcore.AddSync(file), level),
-	)
+	var core zapcore.Core
+	if err != nil {
+		core = zapcore.NewCore(consoleEncoder, zapcore.AddSync(os.Stdout), level)
+	} else {
+		fileEncoder := zapcore.NewJSONEncoder(encoderConfig)
+		core = zapcore.NewTee(
+			zapcore.NewCore(consoleEncoder, zapcore.AddSync(os.Stdout), level),
+			zapcore.NewCore(fileEncoder, zapcore.AddSync(file), level),
+		)
+	}
 
 	Log = zap.New(core, zap.AddCaller())
 }
