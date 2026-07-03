@@ -7,6 +7,7 @@
 package llm
 
 import (
+	"bufio"
 	"bytes"
 	"context"
 	"encoding/json"
@@ -42,10 +43,12 @@ type LLMResponse struct {
 type Provider interface {
 	// Name returns the provider identifier (e.g. "openai", "anthropic").
 	Name() string
-	// GenerateText sends messages to the LLM and returns a response.
-	GenerateText(ctx context.Context, model string, messages []Message) (*LLMResponse, error)
 	// Models returns the list of known model IDs for this provider.
 	Models() []string
+	// GenerateText sends messages to the LLM and returns a response.
+	GenerateText(ctx context.Context, model string, messages []Message) (*LLMResponse, error)
+	// StreamChat streams the response via callback
+	StreamChat(ctx context.Context, model string, messages []Message, callback func(string) error) (*LLMResponse, error)
 }
 
 // ---------------------------------------------------------------------------
@@ -632,4 +635,154 @@ func doOpenAICompatibleRequest(req *http.Request, provider, model string) (*LLMR
 			OutputTokens: payload.Usage.CompletionTokens,
 		},
 	}, nil
+}
+
+// ── StreamChat stub implementations for all providers ──
+
+func (p *AnthropicProvider) StreamChat(ctx context.Context, model string, messages []Message, callback func(string) error) (*LLMResponse, error) {
+	resp, err := p.GenerateText(ctx, model, messages)
+	if err == nil && callback != nil {
+		_ = callback(resp.Content)
+	}
+	return resp, err
+}
+
+func (p *OpenAIProvider) StreamChat(ctx context.Context, model string, messages []Message, callback func(string) error) (*LLMResponse, error) {
+	if p.BaseURL == "" {
+		p.BaseURL = "https://api.openai.com/v1/chat/completions"
+	}
+
+	type MessagePayload struct {
+		Role    string `json:"role"`
+		Content string `json:"content"`
+	}
+	var payloadMessages []MessagePayload
+	for _, m := range messages {
+		payloadMessages = append(payloadMessages, MessagePayload{Role: m.Role, Content: m.Content})
+	}
+
+	payload := map[string]interface{}{
+		"model":    model,
+		"messages": payloadMessages,
+		"stream":   true,
+	}
+
+	payloadBytes, _ := json.Marshal(payload)
+	req, err := http.NewRequestWithContext(ctx, "POST", p.BaseURL, bytes.NewBuffer(payloadBytes))
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("Content-Type", "application/json")
+	if p.APIKey != "" {
+		req.Header.Set("Authorization", "Bearer "+p.APIKey)
+	}
+
+	client := &http.Client{Timeout: 60 * time.Second}
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		bodyBytes, _ := io.ReadAll(resp.Body)
+		return nil, fmt.Errorf("OpenAI stream API error (status %d): %s", resp.StatusCode, string(bodyBytes))
+	}
+
+	var fullContent strings.Builder
+	scanner := bufio.NewScanner(resp.Body)
+
+	for scanner.Scan() {
+		line := scanner.Text()
+		if line == "" || line == "data: [DONE]" {
+			continue
+		}
+		if strings.HasPrefix(line, "data: ") {
+			line = strings.TrimPrefix(line, "data: ")
+			var chunk struct {
+				Choices []struct {
+					Delta struct {
+						Content string `json:"content"`
+					} `json:"delta"`
+				} `json:"choices"`
+			}
+			if err := json.Unmarshal([]byte(line), &chunk); err == nil {
+				if len(chunk.Choices) > 0 {
+					text := chunk.Choices[0].Delta.Content
+					if text != "" {
+						fullContent.WriteString(text)
+						if callback != nil {
+							_ = callback(text)
+						}
+					}
+				}
+			}
+		}
+	}
+
+	if err := scanner.Err(); err != nil {
+		return nil, fmt.Errorf("error reading stream: %v", err)
+	}
+
+	return &LLMResponse{
+		Content:  fullContent.String(),
+		Provider: p.Name(),
+		Model:    model,
+	}, nil
+}
+
+func (p *GeminiProvider) StreamChat(ctx context.Context, model string, messages []Message, callback func(string) error) (*LLMResponse, error) {
+	resp, err := p.GenerateText(ctx, model, messages)
+	if err == nil && callback != nil {
+		_ = callback(resp.Content)
+	}
+	return resp, err
+}
+
+func (p *DeepSeekProvider) StreamChat(ctx context.Context, model string, messages []Message, callback func(string) error) (*LLMResponse, error) {
+	resp, err := p.GenerateText(ctx, model, messages)
+	if err == nil && callback != nil {
+		_ = callback(resp.Content)
+	}
+	return resp, err
+}
+
+func (p *OpenRouterProvider) StreamChat(ctx context.Context, model string, messages []Message, callback func(string) error) (*LLMResponse, error) {
+	resp, err := p.GenerateText(ctx, model, messages)
+	if err == nil && callback != nil {
+		_ = callback(resp.Content)
+	}
+	return resp, err
+}
+
+func (p *LMStudioProvider) StreamChat(ctx context.Context, model string, messages []Message, callback func(string) error) (*LLMResponse, error) {
+	resp, err := p.GenerateText(ctx, model, messages)
+	if err == nil && callback != nil {
+		_ = callback(resp.Content)
+	}
+	return resp, err
+}
+
+func (p *OllamaProvider) StreamChat(ctx context.Context, model string, messages []Message, callback func(string) error) (*LLMResponse, error) {
+	resp, err := p.GenerateText(ctx, model, messages)
+	if err == nil && callback != nil {
+		_ = callback(resp.Content)
+	}
+	return resp, err
+}
+
+func (p *GroqProvider) StreamChat(ctx context.Context, model string, messages []Message, callback func(string) error) (*LLMResponse, error) {
+	resp, err := p.GenerateText(ctx, model, messages)
+	if err == nil && callback != nil {
+		_ = callback(resp.Content)
+	}
+	return resp, err
+}
+
+func (p *XiaomiProvider) StreamChat(ctx context.Context, model string, messages []Message, callback func(string) error) (*LLMResponse, error) {
+	resp, err := p.GenerateText(ctx, model, messages)
+	if err == nil && callback != nil {
+		_ = callback(resp.Content)
+	}
+	return resp, err
 }
