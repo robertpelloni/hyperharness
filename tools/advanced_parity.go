@@ -22,6 +22,8 @@ import (
 	"fmt"
 	"strings"
 	"sync"
+
+	"github.com/robertpelloni/hyperharness/internal/subagents"
 )
 
 // registerAdvancedParityTools registers the advanced tool surfaces from
@@ -485,8 +487,19 @@ func registerAdvancedParityTools(r *Registry) {
 					taskID = fmt.Sprintf("task_%d", generateTaskID())
 				}
 
+				sType := subagents.SubagentType(subagentType)
+
+				streamCallback := func(chunk string) {
+					fmt.Print(chunk)
+				}
+
+				result, err := subagents.GlobalManager.Spawn(context.Background(), sType, prompt, prompt, "", streamCallback)
+				if err != nil {
+					return "", fmt.Errorf("failed to execute subagent: %w", err)
+				}
+
 				return fmt.Sprintf("task_id: %s (for resuming to continue this task if needed)\n\n<task_result>\n[subagent:%s] %s\n%s\n</task_result>",
-					taskID, subagentType, description, TruncateString(prompt, 200)), nil
+					taskID, subagentType, description, result), nil
 			},
 		},
 
