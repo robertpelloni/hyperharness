@@ -1,4 +1,4 @@
-# HyperHarness Roadmap
+# borg Roadmap
 
 ## Phase 1: Foundation (COMPLETE ✅)
 - [x] Port Pi's core tools to Go (read, write, edit, bash, grep, find, ls)

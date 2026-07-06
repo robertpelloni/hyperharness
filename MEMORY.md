@@ -1,9 +1,9 @@
 [PROJECT_MEMORY]
 
-# HyperHarness Project Architecture & Findings
+# borg Project Architecture & Findings
 
 ## Overview
-HyperHarness is a highly ambitious project designed to assimilate, port, and integrate the functionalities of multiple AI CLI harnesses (such as Claude Code, Aider, Copilot CLI, Gemini CLI, etc.) into a single, unified, Go-native orchestrator. The primary goal is achieving 100% exact tool parity, matching parameter schemas and naming conventions, since major LLMs have been specifically trained on these exact tool signatures.
+borg is a highly ambitious project designed to assimilate, port, and integrate the functionalities of multiple AI CLI harnesses (such as Claude Code, Aider, Copilot CLI, Gemini CLI, etc.) into a single, unified, Go-native orchestrator. The primary goal is achieving 100% exact tool parity, matching parameter schemas and naming conventions, since major LLMs have been specifically trained on these exact tool signatures.
 
 ## Core Architecture
 The system is built with a modular, highly decoupled architecture heavily utilizing the Adapter pattern.
