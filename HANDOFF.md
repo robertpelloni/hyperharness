@@ -8,10 +8,10 @@
 - Synced remaining parity tools (Goose, OpenCode, Kimi, Cursor, Windsurf) by updating the Python schema extraction targets and regenerating TS tool facades.
 - Began stubbing Phase 6 Daemon Hardening in `cmd/serve.go` (Catching SIGTERM / SIGINT and panic wrapper deferrals).
 - Updated `DEPLOY.md` to note new TUI telemetry and debug flag modes.
-- Completed Phase 5 Production Readiness audit via `AUDIT.md` revealing false claim completions in Subagent execution, missing Test Coverages for parity tools, and missing integration test suites (Resolved: added subagents/manager_integration_test.go).
+- Completed Phase 5 Production Readiness audit via `AUDIT.md` revealing false claim completions in Subagent execution, missing Test Coverages for parity tools, and missing integration test suites.
 
 ## Ongoing Work
-- Phase 4 integration gap and Phase 5 Production audit (AUDIT.md) mock blocks resolved (Subagent LLM task loops and TS tool schema tests verified).
+- Resolving the mock blocks identified in the Phase 5 Production audit (AUDIT.md).
 - Need to fully implement dynamic plugin system loader rather than stubbing it.
 
 ## Technical Notes
