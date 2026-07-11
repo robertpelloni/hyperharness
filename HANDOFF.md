@@ -11,7 +11,7 @@
 - Completed Phase 5 Production Readiness audit via `AUDIT.md` revealing false claim completions in Subagent execution, missing Test Coverages for parity tools, and missing integration test suites.
 
 ## Ongoing Work
-- Resolving the mock blocks identified in the Phase 5 Production audit (AUDIT.md).
+- [RESOLVED] Wired actual LLM logic and StreamChat hooks to subagents.GlobalManager, replacing mock blocks identified in AUDIT.md.
 - Need to fully implement dynamic plugin system loader rather than stubbing it.
 
 ## Technical Notes

@@ -4,7 +4,7 @@ This audit evaluates the delta between the stated roadmap completions and the ac
 
 ## 1. Subagent Spawning & Execution (CRITICAL)
 - **Claim:** Roadmap Phase 4 & 5 claim "Multi-agent execution loop with real tool-calling capabilities" and "Wire Agent tool to actual subagent spawning" are COMPLETE.
-- **Reality:** In `internal/subagents/manager.go`, `ExecuteTask` is a mock stub with a `time.Sleep` simulator:
+- **Resolved:** `subagents.GlobalManager.Spawn` now implements native LLM StreamChat streaming and fallback functionality, integrating all parity tools (Agent, RunAgents, task, delegate).:
   ```go
   // Mock execution: simulate work based on subagent type
   go func() {
