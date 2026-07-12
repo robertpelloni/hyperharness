@@ -4,7 +4,9 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+
 	"github.com/robertpelloni/hyperharness/internal/extensions"
+	"github.com/robertpelloni/hyperharness/internal/subagents"
 	"io/fs"
 	"os"
 	"os/exec"
@@ -170,21 +172,59 @@ func (r *Registry) registerGooseTools() {
 			taskID := fmt.Sprintf("task_%d", time.Now().UnixNano())
 
 			if mode == "async" {
-				// Store the task for async execution
+				// Queue async task tracking using GlobalJobManager pattern from earlier
 				GlobalJobManager.mu.Lock()
 				GlobalJobManager.jobs[taskID] = &Job{
 					ID:          taskID,
-					Command:     fmt.Sprintf("[delegate] %s", description),
-					Description: task,
-					StartTime:   time.Now(),
-					Output:      &strings.Builder{},
+					Description: description,
+
+					StartTime: time.Now(),
+					Output:    &strings.Builder{},
 				}
 				GlobalJobManager.mu.Unlock()
+
+				// Launch detached subagent task
+				go func() {
+					streamCallback := func(chunk string) {
+						GlobalJobManager.mu.Lock()
+						if job, ok := GlobalJobManager.jobs[taskID]; ok {
+							job.Output.WriteString(chunk)
+						}
+						GlobalJobManager.mu.Unlock()
+					}
+
+					result, err := subagents.GlobalManager.Spawn(context.Background(), subagents.SubagentType(subagentType), task, task, "", streamCallback)
+
+					GlobalJobManager.mu.Lock()
+					if job, ok := GlobalJobManager.jobs[taskID]; ok {
+						if err != nil {
+							job.Done = true
+							job.ExitCode = 1
+							job.Output.WriteString(fmt.Sprintf("\nError: %v", err))
+						} else {
+							job.Done = true
+							job.ExitCode = 0
+							job.Output.WriteString(fmt.Sprintf("\n\nFinal Result:\n%s", result))
+						}
+
+					}
+					GlobalJobManager.mu.Unlock()
+				}()
 
 				return fmt.Sprintf("Delegated task %s to %s subagent (async)\nTask ID: %s\nUse job_output to check progress.", description, subagentType, taskID), nil
 			}
 
-			return fmt.Sprintf("Delegated task '%s' to %s subagent.\nTask ID: %s\nStatus: completed synchronously.\n\n<task_result>\nTask executed: %s\n</task_result>", description, subagentType, taskID, task), nil
+			// Synchronous execution using subagents Manager Spawn with stream stdout
+			streamCallback := func(chunk string) {
+				fmt.Print(chunk)
+			}
+
+			result, err := subagents.GlobalManager.Spawn(context.Background(), subagents.SubagentType(subagentType), task, task, "", streamCallback)
+			if err != nil {
+				return "", fmt.Errorf("delegate subagent failed: %w", err)
+			}
+
+			return fmt.Sprintf("Delegated task '%s' to %s subagent.\nTask ID: %s\nStatus: completed synchronously.\n\n<task_result>\n%s\n</task_result>", description, subagentType, taskID, result), nil
 		},
 	})
 
@@ -392,13 +432,23 @@ func (r *Registry) registerOpenCodeAdvancedTools() {
 				taskID = fmt.Sprintf("task_%d", time.Now().UnixNano())
 			}
 
+			streamCallback := func(chunk string) {
+				fmt.Print(chunk)
+			}
+
+			result, err := subagents.GlobalManager.Spawn(context.Background(), subagents.SubagentType(subagentType), prompt, prompt, "", streamCallback)
+			if err != nil {
+				return "", fmt.Errorf("task subagent failed: %w", err)
+			}
+
 			return fmt.Sprintf(`task_id: %s (for resuming to continue this task if needed)
 
 <task_result>
 Task '%s' assigned to %s subagent.
 Prompt: %s
 Status: completed.
-</task_result>`, taskID, description, subagentType, prompt), nil
+%s
+</task_result>`, taskID, description, subagentType, prompt, result), nil
 		},
 	})
 

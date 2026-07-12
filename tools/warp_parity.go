@@ -1,7 +1,11 @@
 package tools
 
 import (
+	"context"
 	"encoding/json"
+	"fmt"
+
+	"github.com/robertpelloni/hyperharness/internal/subagents"
 )
 
 // registerWarpParityTools registers tool schemas matching Warp's AI Agent actions.
@@ -69,7 +73,45 @@ func (r *Registry) registerWarpParityTools() {
 			"required": ["summary", "agent_run_configs"]
 		}`),
 		Execute: func(args map[string]interface{}) (string, error) {
-			return "Warp: Orchestrating agents...", nil
+			summary, _ := args["summary"].(string)
+			basePrompt, _ := args["base_prompt"].(string)
+
+			// We iterate through run configs and spawn tasks in sequence for Warp's orchestration.
+			// Since we want to return a single result, we concatenate the outputs.
+			resultText := fmt.Sprintf("Warp RunAgents Orchestration: %s\n", summary)
+
+			configs, ok := args["agent_run_configs"].([]interface{})
+			if !ok || len(configs) == 0 {
+				return "", fmt.Errorf("no valid agent_run_configs provided")
+			}
+
+			for i, cfgRaw := range configs {
+				cfg, ok := cfgRaw.(map[string]interface{})
+				if !ok {
+					continue
+				}
+				name, _ := cfg["name"].(string)
+				prompt, _ := cfg["prompt"].(string)
+
+				fullPrompt := fmt.Sprintf("%s\n%s", basePrompt, prompt)
+
+				streamCallback := func(chunk string) {
+					fmt.Print(chunk)
+				}
+
+				result, err := subagents.GlobalManager.Spawn(context.Background(), subagents.TypePlan, fullPrompt, fullPrompt, "", streamCallback)
+				if err != nil {
+					resultText += fmt.Sprintf("\n[Agent: %s (Failed)]\nError: %v\n", name, err)
+				} else {
+					resultText += fmt.Sprintf("\n[Agent: %s (Completed)]\n%s\n", name, result)
+				}
+
+				if i < len(configs)-1 {
+					resultText += "\n---\n"
+				}
+			}
+
+			return resultText, nil
 		},
 	})
 

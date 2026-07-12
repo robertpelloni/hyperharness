@@ -107,13 +107,13 @@ func registerClaudeCodeTools(r *Registry) {
 				sType = subagents.TypeCode
 			}
 
-			task := subagents.GlobalManager.CreateTask(sType, prompt, prompt, "")
+			// Core engine delegation with streaming (Phase 4 integration requirement)
+			// Print chunks directly to stdout to mimic CLI output during spawning
+			streamCallback := func(chunk string) {
+				fmt.Print(chunk)
+			}
 
-			// For this implementation, we execute it using the global subagent manager.
-			// This provides persistence and tracking across multiple tool calls.
-
-			// Execute task
-			result, err := subagents.GlobalManager.ExecuteTask(context.Background(), task)
+			result, err := subagents.GlobalManager.Spawn(context.Background(), sType, prompt, prompt, "", streamCallback)
 			if err != nil {
 				return "", fmt.Errorf("failed to execute subagent: %w", err)
 			}

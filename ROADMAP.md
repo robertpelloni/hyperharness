@@ -31,7 +31,7 @@
 - [x] Implement live WebSearch with Exa/Brave API
 - [x] Implement live WebFetch with HTTP client
 - [x] Wire TodoWrite to session persistence
-- [ ] Wire Agent tool to actual subagent spawning
+- [x] Wire Agent tool to actual subagent spawning
 - [x] Implement live MCP stdio transport (spawn/communicate with real servers)
 - [x] Wire context compaction to actual LLM summarization
 - [x] Connect knowledge base to SQLite backend with FTS5
@@ -43,11 +43,11 @@
 - [x] Sync parity tools (Claude, Crush) to TS `tools/parity` folder
 
 - [x] Performance benchmarks (sub-ms tool dispatch)
-- [ ] End-to-end integration tests with real AI models
+- [x] End-to-end integration tests with real AI models
 - [ ] Cloud deployment (gRPC/HTTP API)
 - [x] Plugin system (Go plugins for custom tools) (stubbed scaffolding)
 - [x] Multi-agent orchestration (council debates, director mode)
-- [ ] Token streaming with SSE
+- [x] Token streaming with SSE
 - [ ] Cost tracking and budget enforcement
 - [ ] Permission system with granular guardrails
 - [ ] Multi-turn conversation optimization

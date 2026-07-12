@@ -786,3 +786,12 @@ func (p *XiaomiProvider) StreamChat(ctx context.Context, model string, messages 
 	}
 	return resp, err
 }
+
+// AutoRouteStream selects the best available provider and streams the response.
+func AutoRouteStream(ctx context.Context, messages []Message, callback func(string) error) (*LLMResponse, error) {
+	sel, ok := resolveProvider()
+	if !ok {
+		return nil, fmt.Errorf("no LLM provider configured")
+	}
+	return sel.Factory(sel.APIKey).StreamChat(ctx, sel.DefaultModel, messages, callback)
+}
