@@ -13,6 +13,7 @@
 ## Ongoing Work
 - [RESOLVED] Wired actual LLM logic and StreamChat hooks to subagents.GlobalManager, replacing mock blocks identified in AUDIT.md.
 - Need to fully implement dynamic plugin system loader rather than stubbing it.
+- Configured `e2e_parity_test.go` to explicitly validate the full call chain of `Goose delegate`, `OpenCode task`, and `Claude Code Agent` parity tools through the GlobalManager spawning framework.
 
 ## Technical Notes
 - We use an automated Python script (scripts/generate_tools.py) to keep the Go parity tools and TypeScript parity bindings identical. The execute signature in the TS files must match exactly AgentTool[any]['execute'].
