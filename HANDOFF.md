@@ -17,3 +17,5 @@
 ## Technical Notes
 - We use an automated Python script (scripts/generate_tools.py) to keep the Go parity tools and TypeScript parity bindings identical. The execute signature in the TS files must match exactly AgentTool[any]['execute'].
 - Tests should always exclude submodules like aider and kilocode using 'go test $(go list ./... | grep -v aider\\|kilocode) -v' to avoid timeouts or unmanaged code builds.
+
+- Created `internal/subagents/manager_integration_test.go` to explicitly assert subagent tool permissions, task assignments, and context handover, fulfilling Phase 5 end-to-end integration constraints.
