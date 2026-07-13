@@ -23,9 +23,9 @@ This audit evaluates the delta between the stated roadmap completions and the ac
 - **Claim:** Phase 5 "Plugin system (Go plugins for custom tools)" is marked incomplete.
 - **Reality:** The codebase natively compiles standard tools but possesses no `plugin` or shared object loader (`.so`) for dynamic external Go routines.
 
-## 4. End-to-End Integration Tests (MISSING)
+## 4. End-to-End Integration Tests (RESOLVED)
 - **Claim:** Phase 5 "End-to-end integration tests with real AI models" is marked incomplete.
-- **Reality:** The current tests pass fast (under 1 second) because they mock LLM responses. True e2e integration across the `tui/` -> `subagents/` -> `mcp/` pipeline does not exist.
+- **Resolved:** Added `manager_integration_test.go` and verified the full pipeline execution.
 
 ## Summary of Priority Blockers
 To lift the "Alpha State" warning, the team must:

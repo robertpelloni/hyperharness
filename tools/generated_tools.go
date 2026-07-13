@@ -1,11 +1,8 @@
 package tools
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
-
-	"github.com/robertpelloni/hyperharness/internal/subagents"
 )
 
 // registerGeneratedTools dynamically generates stub Tool definitions from extracted upstream JSON schemas.
@@ -16,7 +13,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "insights",
 		Description: "Generate a report analyzing your Claude Code sessions",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "insights"), nil
 		},
@@ -26,7 +23,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "brief",
 		Description: "Toggle brief-only mode",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "brief"), nil
 		},
@@ -36,7 +33,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "review",
 		Description: "Review a pull request",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "review"), nil
 		},
@@ -46,7 +43,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "ultrareview",
 		Description: "Auto-generated stub for ultrareview",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "ultrareview"), nil
 		},
@@ -56,7 +53,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "security-review",
 		Description: "Complete a security review of the pending changes on the current branch",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "security-review"), nil
 		},
@@ -66,7 +63,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "version",
 		Description: "Print the version this session is running (not what autoupdate downloaded)",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "version"), nil
 		},
@@ -76,7 +73,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "init",
 		Description: "Auto-generated stub for init",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "init"), nil
 		},
@@ -86,7 +83,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "commit-push-pr",
 		Description: "Commit, push, and open a PR",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "commit-push-pr"), nil
 		},
@@ -96,7 +93,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "init-verifiers",
 		Description: "Create verifier skill(s) for automated verification of code changes",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "init-verifiers"), nil
 		},
@@ -106,7 +103,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "bridge-kick",
 		Description: "Inject bridge failure states for manual recovery testing",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "bridge-kick"), nil
 		},
@@ -116,7 +113,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "advisor",
 		Description: "Configure the advisor model",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "advisor"), nil
 		},
@@ -126,7 +123,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "commit",
 		Description: "Create a git commit",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "commit"), nil
 		},
@@ -136,7 +133,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "project_areas",
 		Description: "Auto-generated stub for project_areas",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "project_areas"), nil
 		},
@@ -146,7 +143,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "interaction_style",
 		Description: "Auto-generated stub for interaction_style",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "interaction_style"), nil
 		},
@@ -156,7 +153,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "what_works",
 		Description: "Auto-generated stub for what_works",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "what_works"), nil
 		},
@@ -166,7 +163,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "friction_analysis",
 		Description: "Auto-generated stub for friction_analysis",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "friction_analysis"), nil
 		},
@@ -176,7 +173,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "suggestions",
 		Description: "Auto-generated stub for suggestions",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "suggestions"), nil
 		},
@@ -186,7 +183,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "on_the_horizon",
 		Description: "Auto-generated stub for on_the_horizon",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "on_the_horizon"), nil
 		},
@@ -196,7 +193,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "cc_team_improvements",
 		Description: "Auto-generated stub for cc_team_improvements",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "cc_team_improvements"), nil
 		},
@@ -206,7 +203,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "model_behavior_improvements",
 		Description: "Auto-generated stub for model_behavior_improvements",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "model_behavior_improvements"), nil
 		},
@@ -216,7 +213,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "fun_ending",
 		Description: "Auto-generated stub for fun_ending",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "fun_ending"), nil
 		},
@@ -226,7 +223,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "at_a_glance",
 		Description: "Auto-generated stub for at_a_glance",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "at_a_glance"), nil
 		},
@@ -236,7 +233,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "tag",
 		Description: "Toggle a searchable tag on the current session",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "tag"), nil
 		},
@@ -246,7 +243,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "passes",
 		Description: "Auto-generated stub for passes",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "passes"), nil
 		},
@@ -256,7 +253,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "remote-env",
 		Description: "Configure the default remote environment for teleport sessions",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "remote-env"), nil
 		},
@@ -266,7 +263,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "thinkback-play",
 		Description: "Play the thinkback animation",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "thinkback-play"), nil
 		},
@@ -276,7 +273,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "usage",
 		Description: "Show plan usage limits",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "usage"), nil
 		},
@@ -286,7 +283,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "rate-limit-options",
 		Description: "Show options when rate limit is reached",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "rate-limit-options"), nil
 		},
@@ -296,7 +293,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "compact",
 		Description: "Clear conversation history but keep a summary in context. Optional: /compact [instructions for summarization]",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "compact"), nil
 		},
@@ -306,7 +303,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "terminal-setup",
 		Description: "Auto-generated stub for terminal-setup",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "terminal-setup"), nil
 		},
@@ -316,7 +313,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "export",
 		Description: "Export the current conversation to a file or clipboard",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "export"), nil
 		},
@@ -326,17 +323,9 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "agents",
 		Description: "Manage agent configurations",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
-			streamCallback := func(chunk string) {
-				fmt.Print(chunk)
-			}
-
-			result, err := subagents.GlobalManager.Spawn(context.Background(), subagents.TypePlan, "Manage agent configurations", "Configure active agents", "", streamCallback)
-			if err != nil {
-				return "", fmt.Errorf("agents config failed: %w", err)
-			}
-			return fmt.Sprintf("Agent configurations updated:\n%s", result), nil
+			return fmt.Sprintf("Tool %s not fully wired yet", "agents"), nil
 		},
 	})
 
@@ -344,7 +333,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "permissions",
 		Description: "Manage allow & deny tool permission rules",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "permissions"), nil
 		},
@@ -354,7 +343,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "branch",
 		Description: "Create a branch of the current conversation at this point",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "branch"), nil
 		},
@@ -364,7 +353,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "reload-plugins",
 		Description: "Activate pending plugin changes in the current session",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "reload-plugins"), nil
 		},
@@ -374,7 +363,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "mobile",
 		Description: "Show QR code to download the Claude mobile app",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "mobile"), nil
 		},
@@ -384,7 +373,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "install-slack-app",
 		Description: "Install the Claude Slack app",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "install-slack-app"), nil
 		},
@@ -394,7 +383,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "remote-control",
 		Description: "Connect this terminal for remote-control sessions",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "remote-control"), nil
 		},
@@ -404,7 +393,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "rewind",
 		Description: "Auto-generated stub for rewind",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "rewind"), nil
 		},
@@ -414,7 +403,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "upgrade",
 		Description: "Upgrade to Max for higher rate limits and more Opus",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "upgrade"), nil
 		},
@@ -424,7 +413,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "vim",
 		Description: "Toggle between Vim and Normal editing modes",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "vim"), nil
 		},
@@ -434,7 +423,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "hooks",
 		Description: "View hook configurations for tool events",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "hooks"), nil
 		},
@@ -444,7 +433,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "color",
 		Description: "Set the prompt bar color for this session",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "color"), nil
 		},
@@ -454,7 +443,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "tasks",
 		Description: "List and manage background tasks",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "tasks"), nil
 		},
@@ -464,7 +453,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "heapdump",
 		Description: "Dump the JS heap to ~/Desktop",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "heapdump"), nil
 		},
@@ -474,7 +463,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "btw",
 		Description: "Ask a quick side question without interrupting the main conversation",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "btw"), nil
 		},
@@ -484,7 +473,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "effort",
 		Description: "Set effort level for model usage",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "effort"), nil
 		},
@@ -494,7 +483,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "release-notes",
 		Description: "View release notes",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "release-notes"), nil
 		},
@@ -504,7 +493,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "diff",
 		Description: "View uncommitted changes and per-turn diffs",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "diff"), nil
 		},
@@ -514,7 +503,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "mcp",
 		Description: "Manage MCP servers",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "mcp"), nil
 		},
@@ -524,7 +513,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "help",
 		Description: "Show help and available commands",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "help"), nil
 		},
@@ -534,7 +523,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "privacy-settings",
 		Description: "View and update your privacy settings",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "privacy-settings"), nil
 		},
@@ -544,7 +533,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "cost",
 		Description: "Show the total cost and duration of the current session",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "cost"), nil
 		},
@@ -554,7 +543,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "copy",
 		Description: "Copy Claude's last response to clipboard (or /copy N for the Nth-latest)",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "copy"), nil
 		},
@@ -564,7 +553,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "stickers",
 		Description: "Order Claude Code stickers",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "stickers"), nil
 		},
@@ -574,7 +563,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "extra-usage",
 		Description: "Configure extra usage to keep working when limits are hit",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "extra-usage"), nil
 		},
@@ -584,7 +573,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "clear",
 		Description: "Clear conversation history and free up context",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "clear"), nil
 		},
@@ -594,7 +583,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "stats",
 		Description: "Show your Claude Code usage statistics and activity",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "stats"), nil
 		},
@@ -604,7 +593,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "resume",
 		Description: "Resume a previous conversation",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "resume"), nil
 		},
@@ -614,7 +603,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "doctor",
 		Description: "Diagnose and verify your Claude Code installation and settings",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "doctor"), nil
 		},
@@ -624,7 +613,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "think-back",
 		Description: "Your 2025 Claude Code Year in Review",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "think-back"), nil
 		},
@@ -634,7 +623,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "voice",
 		Description: "Toggle voice mode",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "voice"), nil
 		},
@@ -644,7 +633,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "feedback",
 		Description: "Auto-generated stub for feedback",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "feedback"), nil
 		},
@@ -654,7 +643,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "desktop",
 		Description: "Continue the current session in Claude Desktop",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "desktop"), nil
 		},
@@ -664,7 +653,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "sandbox",
 		Description: "Auto-generated stub for sandbox",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "sandbox"), nil
 		},
@@ -674,7 +663,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "chrome",
 		Description: "Claude in Chrome (Beta) settings",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "chrome"), nil
 		},
@@ -684,7 +673,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "web-setup",
 		Description: "Setup Claude Code on the web (requires connecting your GitHub account)",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "web-setup"), nil
 		},
@@ -694,7 +683,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "Default",
 		Description: "Default - trusted network access",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "Default"), nil
 		},
@@ -704,7 +693,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "python",
 		Description: "Auto-generated stub for python",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "python"), nil
 		},
@@ -714,7 +703,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "node",
 		Description: "Auto-generated stub for node",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "node"), nil
 		},
@@ -724,7 +713,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "session",
 		Description: "Show remote session URL and QR code",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "session"), nil
 		},
@@ -734,7 +723,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "logout",
 		Description: "Sign out from your Anthropic account",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "logout"), nil
 		},
@@ -744,7 +733,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "exit",
 		Description: "Exit the REPL",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "exit"), nil
 		},
@@ -754,7 +743,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "model",
 		Description: "Auto-generated stub for model",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "model"), nil
 		},
@@ -764,7 +753,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "output-style",
 		Description: "Deprecated: use /config to change output style",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "output-style"), nil
 		},
@@ -774,7 +763,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "memory",
 		Description: "Edit Claude memory files",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "memory"), nil
 		},
@@ -784,7 +773,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "pr-comments",
 		Description: "Get comments from a GitHub pull request",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "pr-comments"), nil
 		},
@@ -794,7 +783,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "install-github-app",
 		Description: "Set up Claude GitHub Actions for a repository",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "install-github-app"), nil
 		},
@@ -804,7 +793,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "keybindings",
 		Description: "Open or create your keybindings configuration file",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "keybindings"), nil
 		},
@@ -814,7 +803,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "skills",
 		Description: "List available skills",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "skills"), nil
 		},
@@ -824,7 +813,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "fast",
 		Description: "Auto-generated stub for fast",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "fast"), nil
 		},
@@ -834,7 +823,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "status",
 		Description: "Show Claude Code status including version, model, account, API connectivity, and tool statuses",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "status"), nil
 		},
@@ -844,7 +833,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "login",
 		Description: "Auto-generated stub for login",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "login"), nil
 		},
@@ -854,7 +843,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "context",
 		Description: "Visualize current context usage as a colored grid",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "context"), nil
 		},
@@ -864,7 +853,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "theme",
 		Description: "Change the theme",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "theme"), nil
 		},
@@ -874,7 +863,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "ide",
 		Description: "Manage IDE integrations and show status",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "ide"), nil
 		},
@@ -884,7 +873,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "rename",
 		Description: "Rename the current conversation",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "rename"), nil
 		},
@@ -894,7 +883,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "add-dir",
 		Description: "Add a new working directory",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "add-dir"), nil
 		},
@@ -904,7 +893,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "plan",
 		Description: "Enable plan mode or view the current session plan",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "plan"), nil
 		},
@@ -914,7 +903,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "files",
 		Description: "List all files currently in context",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "files"), nil
 		},
@@ -924,7 +913,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "Unknown",
 		Description: "Auto-generated stub for Unknown",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "Unknown"), nil
 		},
@@ -934,7 +923,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "unknown",
 		Description: "Auto-generated stub for unknown",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "unknown"), nil
 		},
@@ -944,7 +933,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "claude-code",
 		Description: "Anthropic's agentic coding tool",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "claude-code"), nil
 		},
@@ -954,7 +943,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "mcp__",
 		Description: "Auto-generated stub for mcp__",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "mcp__"), nil
 		},
@@ -964,7 +953,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "none",
 		Description: "Auto-generated stub for none",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "none"), nil
 		},
@@ -974,7 +963,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "red",
 		Description: "Auto-generated stub for red",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "red"), nil
 		},
@@ -984,7 +973,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "displayText",
 		Description: "Auto-generated stub for displayText",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "displayText"), nil
 		},
@@ -994,7 +983,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "name",
 		Description: "Auto-generated stub for name",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "name"), nil
 		},
@@ -1004,7 +993,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "server",
 		Description: "Auto-generated stub for server",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "server"), nil
 		},
@@ -1014,7 +1003,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "description",
 		Description: "Auto-generated stub for description",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "description"), nil
 		},
@@ -1024,7 +1013,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "agentType",
 		Description: "Auto-generated stub for agentType",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "agentType"), nil
 		},
@@ -1034,7 +1023,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "Skills",
 		Description: "Auto-generated stub for Skills",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "Skills"), nil
 		},
@@ -1044,7 +1033,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "Messages",
 		Description: "Auto-generated stub for Messages",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "Messages"), nil
 		},
@@ -1054,7 +1043,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "claude-local",
 		Description: "Auto-generated stub for claude-local",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "claude-local"), nil
 		},
@@ -1064,7 +1053,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "Microcompact",
 		Description: "Auto-generated stub for Microcompact",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "Microcompact"), nil
 		},
@@ -1074,7 +1063,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "Autocompact",
 		Description: "Auto-generated stub for Autocompact",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "Autocompact"), nil
 		},
@@ -1084,7 +1073,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "zsh",
 		Description: "Auto-generated stub for zsh",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "zsh"), nil
 		},
@@ -1094,7 +1083,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "bash",
 		Description: "Auto-generated stub for bash",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "bash"), nil
 		},
@@ -1104,7 +1093,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "fish",
 		Description: "Auto-generated stub for fish",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "fish"), nil
 		},
@@ -1114,7 +1103,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "x",
 		Description: "Auto-generated stub for x",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "x"), nil
 		},
@@ -1124,7 +1113,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "PreToolUse",
 		Description: "Auto-generated stub for PreToolUse",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "PreToolUse"), nil
 		},
@@ -1134,7 +1123,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "PostToolUse",
 		Description: "Auto-generated stub for PostToolUse",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "PostToolUse"), nil
 		},
@@ -1144,7 +1133,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "PostToolUseFailure",
 		Description: "Auto-generated stub for PostToolUseFailure",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "PostToolUseFailure"), nil
 		},
@@ -1154,7 +1143,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "PermissionDenied",
 		Description: "Auto-generated stub for PermissionDenied",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "PermissionDenied"), nil
 		},
@@ -1164,7 +1153,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "Notification",
 		Description: "Auto-generated stub for Notification",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "Notification"), nil
 		},
@@ -1174,7 +1163,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "StopFailure",
 		Description: "Auto-generated stub for StopFailure",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "StopFailure"), nil
 		},
@@ -1184,17 +1173,9 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "SubagentStop",
 		Description: "Auto-generated stub for SubagentStop",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
-			streamCallback := func(chunk string) {
-				fmt.Print(chunk)
-			}
-
-			result, err := subagents.GlobalManager.Spawn(context.Background(), subagents.TypePlan, "Autogenerated subagent task", "Execute delegated task", "", streamCallback)
-			if err != nil {
-				return "", fmt.Errorf("subagent %s failed: %w", "SubagentStop", err)
-			}
-			return fmt.Sprintf("Subagent %s completed:\n%s", "SubagentStop", result), nil
+			return fmt.Sprintf("Tool %s not fully wired yet", "SubagentStop"), nil
 		},
 	})
 
@@ -1202,7 +1183,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "Stop",
 		Description: "Auto-generated stub for Stop",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "Stop"), nil
 		},
@@ -1212,7 +1193,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "TeammateIdle",
 		Description: "Auto-generated stub for TeammateIdle",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "TeammateIdle"), nil
 		},
@@ -1222,7 +1203,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "TaskCreated",
 		Description: "Auto-generated stub for TaskCreated",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "TaskCreated"), nil
 		},
@@ -1232,7 +1213,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "TaskCompleted",
 		Description: "Auto-generated stub for TaskCompleted",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "TaskCompleted"), nil
 		},
@@ -1242,7 +1223,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "UserPromptSubmit",
 		Description: "Auto-generated stub for UserPromptSubmit",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "UserPromptSubmit"), nil
 		},
@@ -1252,7 +1233,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "SessionStart",
 		Description: "Auto-generated stub for SessionStart",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "SessionStart"), nil
 		},
@@ -1262,7 +1243,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "Setup",
 		Description: "Auto-generated stub for Setup",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "Setup"), nil
 		},
@@ -1272,17 +1253,9 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "SubagentStart",
 		Description: "Auto-generated stub for SubagentStart",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
-			streamCallback := func(chunk string) {
-				fmt.Print(chunk)
-			}
-
-			result, err := subagents.GlobalManager.Spawn(context.Background(), subagents.TypePlan, "Autogenerated subagent task", "Execute delegated task", "", streamCallback)
-			if err != nil {
-				return "", fmt.Errorf("subagent %s failed: %w", "SubagentStart", err)
-			}
-			return fmt.Sprintf("Subagent %s completed:\n%s", "SubagentStart", result), nil
+			return fmt.Sprintf("Tool %s not fully wired yet", "SubagentStart"), nil
 		},
 	})
 
@@ -1290,7 +1263,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "PreCompact",
 		Description: "Auto-generated stub for PreCompact",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "PreCompact"), nil
 		},
@@ -1300,7 +1273,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "PostCompact",
 		Description: "Auto-generated stub for PostCompact",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "PostCompact"), nil
 		},
@@ -1310,7 +1283,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "SessionEnd",
 		Description: "Auto-generated stub for SessionEnd",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "SessionEnd"), nil
 		},
@@ -1320,7 +1293,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "PermissionRequest",
 		Description: "Auto-generated stub for PermissionRequest",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "PermissionRequest"), nil
 		},
@@ -1330,7 +1303,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "ConfigChange",
 		Description: "Auto-generated stub for ConfigChange",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "ConfigChange"), nil
 		},
@@ -1340,7 +1313,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "CwdChanged",
 		Description: "Auto-generated stub for CwdChanged",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "CwdChanged"), nil
 		},
@@ -1350,7 +1323,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "FileChanged",
 		Description: "Auto-generated stub for FileChanged",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "FileChanged"), nil
 		},
@@ -1360,7 +1333,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "InstructionsLoaded",
 		Description: "Auto-generated stub for InstructionsLoaded",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "InstructionsLoaded"), nil
 		},
@@ -1370,7 +1343,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "Elicitation",
 		Description: "Auto-generated stub for Elicitation",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "Elicitation"), nil
 		},
@@ -1380,7 +1353,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "ElicitationResult",
 		Description: "Auto-generated stub for ElicitationResult",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "ElicitationResult"), nil
 		},
@@ -1390,7 +1363,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "WorktreeCreate",
 		Description: "Auto-generated stub for WorktreeCreate",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "WorktreeCreate"), nil
 		},
@@ -1400,7 +1373,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "WorktreeRemove",
 		Description: "Auto-generated stub for WorktreeRemove",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "WorktreeRemove"), nil
 		},
@@ -1410,7 +1383,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "function",
 		Description: "Auto-generated stub for function",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "function"), nil
 		},
@@ -1420,7 +1393,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "callback",
 		Description: "Auto-generated stub for callback",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "callback"), nil
 		},
@@ -1430,7 +1403,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "explain_command",
 		Description: "Provide an explanation of a shell command",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "explain_command"), nil
 		},
@@ -1440,7 +1413,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "skill_improvement",
 		Description: "Auto-generated stub for skill_improvement",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "skill_improvement"), nil
 		},
@@ -1450,7 +1423,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "settings",
 		Description: "Auto-generated stub for settings",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "settings"), nil
 		},
@@ -1460,7 +1433,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "HEAD",
 		Description: "Auto-generated stub for HEAD",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "HEAD"), nil
 		},
@@ -1470,7 +1443,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "claude-native-installer",
 		Description: "Auto-generated stub for claude-native-installer",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "claude-native-installer"), nil
 		},
@@ -1480,7 +1453,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "plaintext",
 		Description: "Auto-generated stub for plaintext",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "plaintext"), nil
 		},
@@ -1490,7 +1463,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "keychain",
 		Description: "Auto-generated stub for keychain",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "keychain"), nil
 		},
@@ -1500,7 +1473,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "commandName",
 		Description: "Auto-generated stub for commandName",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "commandName"), nil
 		},
@@ -1510,7 +1483,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "partKey",
 		Description: "Auto-generated stub for partKey",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "partKey"), nil
 		},
@@ -1520,7 +1493,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "aliasKey",
 		Description: "Auto-generated stub for aliasKey",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "aliasKey"), nil
 		},
@@ -1530,7 +1503,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "descriptionKey",
 		Description: "Auto-generated stub for descriptionKey",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "descriptionKey"), nil
 		},
@@ -1540,7 +1513,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "workflowName",
 		Description: "Auto-generated stub for workflowName",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "workflowName"), nil
 		},
@@ -1550,7 +1523,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "trace_truncated",
 		Description: "Auto-generated stub for trace_truncated",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "trace_truncated"), nil
 		},
@@ -1560,7 +1533,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "process_name",
 		Description: "Auto-generated stub for process_name",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "process_name"), nil
 		},
@@ -1570,7 +1543,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "thread_name",
 		Description: "Auto-generated stub for thread_name",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "thread_name"), nil
 		},
@@ -1580,7 +1553,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "parent_agent",
 		Description: "Auto-generated stub for parent_agent",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "parent_agent"), nil
 		},
@@ -1590,7 +1563,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "Sampling",
 		Description: "Auto-generated stub for Sampling",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "Sampling"), nil
 		},
@@ -1600,7 +1573,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "Interaction",
 		Description: "Auto-generated stub for Interaction",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "Interaction"), nil
 		},
@@ -1610,7 +1583,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "third-party",
 		Description: "Auto-generated stub for third-party",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "third-party"), nil
 		},
@@ -1620,7 +1593,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "Brave",
 		Description: "Auto-generated stub for Brave",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "Brave"), nil
 		},
@@ -1630,7 +1603,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "Arc",
 		Description: "Auto-generated stub for Arc",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "Arc"), nil
 		},
@@ -1640,7 +1613,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "Chromium",
 		Description: "Auto-generated stub for Chromium",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "Chromium"), nil
 		},
@@ -1650,7 +1623,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "Vivaldi",
 		Description: "Auto-generated stub for Vivaldi",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "Vivaldi"), nil
 		},
@@ -1660,7 +1633,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "Opera",
 		Description: "Auto-generated stub for Opera",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "Opera"), nil
 		},
@@ -1670,7 +1643,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "iTerm2",
 		Description: "Auto-generated stub for iTerm2",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "iTerm2"), nil
 		},
@@ -1680,7 +1653,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "Ghostty",
 		Description: "Auto-generated stub for Ghostty",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "Ghostty"), nil
 		},
@@ -1690,7 +1663,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "Kitty",
 		Description: "Auto-generated stub for Kitty",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "Kitty"), nil
 		},
@@ -1700,7 +1673,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "Alacritty",
 		Description: "Auto-generated stub for Alacritty",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "Alacritty"), nil
 		},
@@ -1710,7 +1683,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "WezTerm",
 		Description: "Auto-generated stub for WezTerm",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "WezTerm"), nil
 		},
@@ -1720,7 +1693,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "x-terminal-emulator",
 		Description: "Auto-generated stub for x-terminal-emulator",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "x-terminal-emulator"), nil
 		},
@@ -1730,7 +1703,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "PowerShell",
 		Description: "Auto-generated stub for PowerShell",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "PowerShell"), nil
 		},
@@ -1740,7 +1713,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "pyright",
 		Description: "Type checker for Python",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "pyright"), nil
 		},
@@ -1750,7 +1723,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "--version",
 		Description: "Show help message",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "--version"), nil
 		},
@@ -1760,7 +1733,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "-",
 		Description: "Read file or directory list from stdin",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "-"), nil
 		},
@@ -1770,7 +1743,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "--createstub",
 		Description: "Read file or directory list from stdin",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "--createstub"), nil
 		},
@@ -1780,7 +1753,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "IMPORT",
 		Description: "Create type stub file(s) for import",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "IMPORT"), nil
 		},
@@ -1790,7 +1763,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "DIRECTORY",
 		Description: "Use typeshed type stubs at this location",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "DIRECTORY"), nil
 		},
@@ -1800,7 +1773,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "--verifytypes",
 		Description: "Verify completeness of types in py.typed package",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "--verifytypes"), nil
 		},
@@ -1810,7 +1783,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "--ignoreexternal",
 		Description: "Ignore external imports for --verifytypes",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "--ignoreexternal"), nil
 		},
@@ -1820,7 +1793,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "--pythonpath",
 		Description: "Ignore external imports for --verifytypes",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "--pythonpath"), nil
 		},
@@ -1830,7 +1803,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "FILE",
 		Description: "Path to the Python interpreter",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "FILE"), nil
 		},
@@ -1840,7 +1813,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "--pythonplatform",
 		Description: "Path to the Python interpreter",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "--pythonplatform"), nil
 		},
@@ -1850,7 +1823,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "PLATFORM",
 		Description: "Analyze for platform",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "PLATFORM"), nil
 		},
@@ -1860,7 +1833,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "--pythonversion",
 		Description: "Analyze for platform",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "--pythonversion"), nil
 		},
@@ -1870,7 +1843,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "VERSION",
 		Description: "Analyze for Python version",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "VERSION"), nil
 		},
@@ -1880,7 +1853,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "--outputjson",
 		Description: "Output results in JSON format",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "--outputjson"), nil
 		},
@@ -1890,7 +1863,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "--verbose",
 		Description: "Output results in JSON format",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "--verbose"), nil
 		},
@@ -1900,7 +1873,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "--stats",
 		Description: "Emit verbose diagnostics",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "--stats"), nil
 		},
@@ -1910,7 +1883,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "--dependencies",
 		Description: "Print detailed performance stats",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "--dependencies"), nil
 		},
@@ -1920,7 +1893,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "--level",
 		Description: "Emit import dependency information",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "--level"), nil
 		},
@@ -1930,7 +1903,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "LEVEL",
 		Description: "Minimum diagnostic level",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "LEVEL"), nil
 		},
@@ -1940,7 +1913,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "--skipunannotated",
 		Description: "Minimum diagnostic level",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "--skipunannotated"), nil
 		},
@@ -1950,7 +1923,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "--warnings",
 		Description: "Skip type analysis of unannotated functions",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "--warnings"), nil
 		},
@@ -1960,7 +1933,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "--threads",
 		Description: "Use exit code of 1 if warnings are reported",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "--threads"), nil
 		},
@@ -1970,7 +1943,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "N",
 		Description: "Use up to N threads to parallelize type checking",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "N"), nil
 		},
@@ -1980,7 +1953,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "sleep",
 		Description: "Delay for a specified amount of time",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "sleep"), nil
 		},
@@ -1990,7 +1963,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "duration",
 		Description: "Delay for a specified amount of time",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "duration"), nil
 		},
@@ -2000,7 +1973,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "srun",
 		Description: "Run a command on SLURM cluster nodes",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "srun"), nil
 		},
@@ -2010,7 +1983,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "count",
 		Description: "Number of tasks",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "count"), nil
 		},
@@ -2020,7 +1993,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "command",
 		Description: "Number of nodes to allocate",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "command"), nil
 		},
@@ -2030,7 +2003,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "timeout",
 		Description: "Run a command with a time limit",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "timeout"), nil
 		},
@@ -2040,7 +2013,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "nohup",
 		Description: "Run a command immune to hangups",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "nohup"), nil
 		},
@@ -2050,7 +2023,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "alias",
 		Description: "Create or list command aliases",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "alias"), nil
 		},
@@ -2060,7 +2033,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "definition",
 		Description: "Create or list command aliases",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "definition"), nil
 		},
@@ -2070,7 +2043,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "time",
 		Description: "Time a command",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "time"), nil
 		},
@@ -2080,7 +2053,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "DreamTask",
 		Description: "Auto-generated stub for DreamTask",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "DreamTask"), nil
 		},
@@ -2090,7 +2063,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "verify",
 		Description: "Auto-generated stub for verify",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "verify"), nil
 		},
@@ -2100,7 +2073,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "claude-in-chrome",
 		Description: "Automates your Chrome browser to interact with web pages - clicking elements, filling forms, capturing screenshots, reading console logs, and navigating sites. Opens pages in new tabs within your existing Chrome session. Requires site-level permissions before executing (configured in the extension).",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "claude-in-chrome"), nil
 		},
@@ -2110,7 +2083,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "keybindings-help",
 		Description: "Use when the user wants to customize keyboard shortcuts, rebind keys, add chord bindings, or modify ~/.claude/keybindings.json. Examples: \"rebind ctrl+s\", \"add a chord shortcut\", \"change the submit key\", \"customize keybindings\".",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "keybindings-help"), nil
 		},
@@ -2120,7 +2093,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "loop",
 		Description: "Run a prompt or slash command on a recurring interval (e.g. /loop 5m /foo, defaults to 10m)",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "loop"), nil
 		},
@@ -2130,7 +2103,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "skillify",
 		Description: "Capture this session's repeatable process into a skill. Call at end of the process you want to capture with an optional description.",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "skillify"), nil
 		},
@@ -2140,7 +2113,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "simplify",
 		Description: "Review changed code for reuse, quality, and efficiency, then fix any issues found.",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "simplify"), nil
 		},
@@ -2150,7 +2123,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "lorem-ipsum",
 		Description: "Generate filler text for long context testing. Specify token count as argument (e.g., /lorem-ipsum 50000). Outputs approximately the requested number of tokens. Ant-only.",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "lorem-ipsum"), nil
 		},
@@ -2160,7 +2133,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "batch",
 		Description: "Research and plan a large-scale change, then execute it in parallel across 5–30 isolated worktree agents that each open a PR.",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "batch"), nil
 		},
@@ -2170,7 +2143,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "stuck",
 		Description: "[ANT-ONLY] Investigate frozen/stuck/slow Claude Code sessions on this machine and post a diagnostic report to #claude-code-feedback.",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "stuck"), nil
 		},
@@ -2180,7 +2153,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "update-config",
 		Description: "Auto-generated stub for update-config",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "update-config"), nil
 		},
@@ -2190,7 +2163,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "debug",
 		Description: "Auto-generated stub for debug",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "debug"), nil
 		},
@@ -2200,7 +2173,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "claude-api",
 		Description: "Build apps with the Claude API or Anthropic SDK.\n",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "claude-api"), nil
 		},
@@ -2210,7 +2183,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "schedule",
 		Description: "Create, update, list, or run scheduled remote agents (triggers) that execute on a cron schedule.",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "schedule"), nil
 		},
@@ -2220,7 +2193,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "remember",
 		Description: "Review auto-memory entries and propose promotions to CLAUDE.md, CLAUDE.local.md, or shared memory. Also detects outdated, conflicting, and duplicate entries across memory layers.",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "remember"), nil
 		},
@@ -2230,7 +2203,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "ship-audit",
 		Description: "Branch ship-readiness audit",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "ship-audit"), nil
 		},
@@ -2240,7 +2213,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "migration-review",
 		Description: "Independent migration review",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "migration-review"), nil
 		},
@@ -2250,7 +2223,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "web_search",
 		Description: "Auto-generated stub for web_search",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "web_search"), nil
 		},
@@ -2260,7 +2233,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "in-process",
 		Description: "Auto-generated stub for in-process",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "in-process"), nil
 		},
@@ -2270,7 +2243,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "ReadMcpResourceTool",
 		Description: "Auto-generated stub for ReadMcpResourceTool",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "ReadMcpResourceTool"), nil
 		},
@@ -2280,7 +2253,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "remote_skill",
 		Description: "Auto-generated stub for remote_skill",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "remote_skill"), nil
 		},
@@ -2290,7 +2263,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "Explanatory",
 		Description: "Claude explains its implementation choices and codebase patterns",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "Explanatory"), nil
 		},
@@ -2300,7 +2273,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "Learning",
 		Description: "Claude pauses and asks you to write small pieces of code for hands-on practice",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "Learning"), nil
 		},
@@ -2310,7 +2283,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "opencode",
 		Description: "Auto-generated stub for opencode",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "opencode"), nil
 		},
@@ -2320,7 +2293,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "SYNC_SERVER",
 		Description: "Auto-generated stub for SYNC_SERVER",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "SYNC_SERVER"), nil
 		},
@@ -2330,7 +2303,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "production",
 		Description: "Auto-generated stub for production",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "production"), nil
 		},
@@ -2340,7 +2313,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "f",
 		Description: "Auto-generated stub for f",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "f"), nil
 		},
@@ -2350,7 +2323,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "g",
 		Description: "Auto-generated stub for g",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "g"), nil
 		},
@@ -2360,7 +2333,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "h",
 		Description: "Auto-generated stub for h",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "h"), nil
 		},
@@ -2370,7 +2343,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "return",
 		Description: "Auto-generated stub for return",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "return"), nil
 		},
@@ -2380,7 +2353,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "f2",
 		Description: "Auto-generated stub for f2",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "f2"), nil
 		},
@@ -2390,7 +2363,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "pgup",
 		Description: "Auto-generated stub for pgup",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "pgup"), nil
 		},
@@ -2400,7 +2373,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "z",
 		Description: "Auto-generated stub for z",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "z"), nil
 		},
@@ -2410,7 +2383,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "a",
 		Description: "Auto-generated stub for a",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "a"), nil
 		},
@@ -2420,7 +2393,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "c",
 		Description: "Auto-generated stub for c",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "c"), nil
 		},
@@ -2430,7 +2403,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "y",
 		Description: "Auto-generated stub for y",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "y"), nil
 		},
@@ -2440,7 +2413,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "u",
 		Description: "Auto-generated stub for u",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "u"), nil
 		},
@@ -2450,7 +2423,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "q",
 		Description: "Auto-generated stub for q",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "q"), nil
 		},
@@ -2460,7 +2433,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "j",
 		Description: "Auto-generated stub for j",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "j"), nil
 		},
@@ -2470,7 +2443,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "testuser",
 		Description: "Auto-generated stub for testuser",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "testuser"), nil
 		},
@@ -2480,7 +2453,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "base",
 		Description: "Auto-generated stub for base",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "base"), nil
 		},
@@ -2490,7 +2463,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "helper",
 		Description: "Auto-generated stub for helper",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "helper"), nil
 		},
@@ -2500,7 +2473,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "config-fixture",
 		Description: "Auto-generated stub for config-fixture",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "config-fixture"), nil
 		},
@@ -2510,7 +2483,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "demo-plugin",
 		Description: "Auto-generated stub for demo-plugin",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "demo-plugin"), nil
 		},
@@ -2520,7 +2493,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "project-user",
 		Description: "Auto-generated stub for project-user",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "project-user"), nil
 		},
@@ -2530,7 +2503,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "test_tool",
 		Description: "A test tool",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "test_tool"), nil
 		},
@@ -2540,7 +2513,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "do_thing",
 		Description: "does a thing",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "do_thing"), nil
 		},
@@ -2550,7 +2523,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "next_tool",
 		Description: "next",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "next_tool"), nil
 		},
@@ -2560,7 +2533,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "my_tool",
 		Description: "a tool",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "my_tool"), nil
 		},
@@ -2570,7 +2543,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "good_tool",
 		Description: "works",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "good_tool"), nil
 		},
@@ -2580,7 +2553,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "my-prompt",
 		Description: "A test prompt",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "my-prompt"), nil
 		},
@@ -2590,7 +2563,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "my-resource",
 		Description: "A test resource",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "my-resource"), nil
 		},
@@ -2600,7 +2573,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "hidden-prompt",
 		Description: "Should not appear",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "hidden-prompt"), nil
 		},
@@ -2610,7 +2583,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "tool-a",
 		Description: "Tool A",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "tool-a"), nil
 		},
@@ -2620,7 +2593,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "One",
 		Description: "Auto-generated stub for One",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "One"), nil
 		},
@@ -2630,7 +2603,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "portkey",
 		Description: "Auto-generated stub for portkey",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "portkey"), nil
 		},
@@ -2640,7 +2613,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "acme-plugin",
 		Description: "Auto-generated stub for acme-plugin",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "acme-plugin"), nil
 		},
@@ -2650,7 +2623,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "dir-plugin",
 		Description: "Auto-generated stub for dir-plugin",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "dir-plugin"), nil
 		},
@@ -2660,7 +2633,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "demo-install-plugin",
 		Description: "Auto-generated stub for demo-install-plugin",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "demo-install-plugin"), nil
 		},
@@ -2670,7 +2643,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "github",
 		Description: "Auto-generated stub for github",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "github"), nil
 		},
@@ -2680,7 +2653,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "Anthropic",
 		Description: "Auto-generated stub for Anthropic",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "Anthropic"), nil
 		},
@@ -2690,7 +2663,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "acme",
 		Description: "Auto-generated stub for acme",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "acme"), nil
 		},
@@ -2700,7 +2673,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "scope-plugin",
 		Description: "Auto-generated stub for scope-plugin",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "scope-plugin"), nil
 		},
@@ -2710,7 +2683,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "GPT-4o",
 		Description: "Auto-generated stub for GPT-4o",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "GPT-4o"), nil
 		},
@@ -2720,7 +2693,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "plug",
 		Description: "plugin workspace adaptor",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "plug"), nil
 		},
@@ -2730,7 +2703,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "typescript",
 		Description: "Auto-generated stub for typescript",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "typescript"), nil
 		},
@@ -2740,7 +2713,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "eslint",
 		Description: "Auto-generated stub for eslint",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "eslint"), nil
 		},
@@ -2750,7 +2723,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "biome",
 		Description: "Auto-generated stub for biome",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "biome"), nil
 		},
@@ -2760,7 +2733,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "Test",
 		Description: "Auto-generated stub for Test",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "Test"), nil
 		},
@@ -2770,7 +2743,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "build",
 		Description: "Auto-generated stub for build",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "build"), nil
 		},
@@ -2780,7 +2753,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "other",
 		Description: "Auto-generated stub for other",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "other"), nil
 		},
@@ -2790,7 +2763,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "John",
 		Description: "Auto-generated stub for John",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "John"), nil
 		},
@@ -2800,7 +2773,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "dir",
 		Description: "desc",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "dir"), nil
 		},
@@ -2810,7 +2783,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "ContextOverflowError",
 		Description: "Auto-generated stub for ContextOverflowError",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "ContextOverflowError"), nil
 		},
@@ -2820,7 +2793,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "APIError",
 		Description: "Auto-generated stub for APIError",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "APIError"), nil
 		},
@@ -2830,7 +2803,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "UnknownError",
 		Description: "Auto-generated stub for UnknownError",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "UnknownError"), nil
 		},
@@ -2840,7 +2813,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "OpenAI",
 		Description: "Auto-generated stub for OpenAI",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "OpenAI"), nil
 		},
@@ -2850,7 +2823,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "big-pickle",
 		Description: "build",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "big-pickle"), nil
 		},
@@ -2860,7 +2833,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "home",
 		Description: "Auto-generated stub for home",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "home"), nil
 		},
@@ -2870,7 +2843,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "test-workspace",
 		Description: "Auto-generated stub for test-workspace",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "test-workspace"), nil
 		},
@@ -2880,7 +2853,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "first",
 		Description: "Auto-generated stub for first",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "first"), nil
 		},
@@ -2890,7 +2863,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "second",
 		Description: "Auto-generated stub for second",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "second"), nil
 		},
@@ -2900,7 +2873,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "replayed",
 		Description: "Auto-generated stub for replayed",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "replayed"), nil
 		},
@@ -2910,7 +2883,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "bad",
 		Description: "Auto-generated stub for bad",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "bad"), nil
 		},
@@ -2920,7 +2893,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "GPT-4",
 		Description: "Auto-generated stub for GPT-4",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "GPT-4"), nil
 		},
@@ -2930,7 +2903,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "Random",
 		Description: "Auto-generated stub for Random",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "Random"), nil
 		},
@@ -2940,7 +2913,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "Other",
 		Description: "Auto-generated stub for Other",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "Other"), nil
 		},
@@ -2950,7 +2923,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "Model",
 		Description: "Auto-generated stub for Model",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "Model"), nil
 		},
@@ -2960,7 +2933,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "GPT-5",
 		Description: "Auto-generated stub for GPT-5",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "GPT-5"), nil
 		},
@@ -2970,7 +2943,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "get_weather",
 		Description: "Get the weather for a location",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "get_weather"), nil
 		},
@@ -2980,7 +2953,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "calculator",
 		Description: "Auto-generated stub for calculator",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "calculator"), nil
 		},
@@ -2990,7 +2963,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "thwomp",
 		Description: "Auto-generated stub for thwomp",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "thwomp"), nil
 		},
@@ -3000,7 +2973,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "searchTool",
 		Description: "Auto-generated stub for searchTool",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "searchTool"), nil
 		},
@@ -3010,7 +2983,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "mapsTool",
 		Description: "Auto-generated stub for mapsTool",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "mapsTool"), nil
 		},
@@ -3020,7 +2993,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "workspace-test",
 		Description: "Auto-generated stub for workspace-test",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "workspace-test"), nil
 		},
@@ -3030,7 +3003,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "Builder",
 		Description: "Auto-generated stub for Builder",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "Builder"), nil
 		},
@@ -3040,7 +3013,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "tool-skill",
 		Description: "Auto-generated stub for tool-skill",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "tool-skill"), nil
 		},
@@ -3050,7 +3023,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "custom-tools",
 		Description: "Auto-generated stub for custom-tools",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "custom-tools"), nil
 		},
@@ -3060,7 +3033,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "cowsay",
 		Description: "Auto-generated stub for cowsay",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "cowsay"), nil
 		},
@@ -3070,7 +3043,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "npm",
 		Description: "Auto-generated stub for npm",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "npm"), nil
 		},
@@ -3080,7 +3053,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "yarn",
 		Description: "Auto-generated stub for yarn",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "yarn"), nil
 		},
@@ -3090,7 +3063,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "pnpm",
 		Description: "Auto-generated stub for pnpm",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "pnpm"), nil
 		},
@@ -3100,7 +3073,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "bun",
 		Description: "Auto-generated stub for bun",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "bun"), nil
 		},
@@ -3110,7 +3083,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "brew",
 		Description: "Auto-generated stub for brew",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "brew"), nil
 		},
@@ -3120,7 +3093,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "scoop",
 		Description: "Auto-generated stub for scoop",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "scoop"), nil
 		},
@@ -3130,7 +3103,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "choco",
 		Description: "Auto-generated stub for choco",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "choco"), nil
 		},
@@ -3140,7 +3113,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "gofmt",
 		Description: "Auto-generated stub for gofmt",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "gofmt"), nil
 		},
@@ -3150,7 +3123,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "mix",
 		Description: "Auto-generated stub for mix",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "mix"), nil
 		},
@@ -3160,7 +3133,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "prettier",
 		Description: "Auto-generated stub for prettier",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "prettier"), nil
 		},
@@ -3170,7 +3143,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "oxfmt",
 		Description: "Auto-generated stub for oxfmt",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "oxfmt"), nil
 		},
@@ -3180,7 +3153,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "zig",
 		Description: "Auto-generated stub for zig",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "zig"), nil
 		},
@@ -3190,7 +3163,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "clang-format",
 		Description: "Auto-generated stub for clang-format",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "clang-format"), nil
 		},
@@ -3200,7 +3173,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "ktlint",
 		Description: "Auto-generated stub for ktlint",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "ktlint"), nil
 		},
@@ -3210,7 +3183,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "ruff",
 		Description: "Auto-generated stub for ruff",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "ruff"), nil
 		},
@@ -3220,7 +3193,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "air",
 		Description: "Auto-generated stub for air",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "air"), nil
 		},
@@ -3230,7 +3203,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "uv",
 		Description: "Auto-generated stub for uv",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "uv"), nil
 		},
@@ -3240,7 +3213,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "rubocop",
 		Description: "Auto-generated stub for rubocop",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "rubocop"), nil
 		},
@@ -3250,7 +3223,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "standardrb",
 		Description: "Auto-generated stub for standardrb",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "standardrb"), nil
 		},
@@ -3260,7 +3233,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "htmlbeautifier",
 		Description: "Auto-generated stub for htmlbeautifier",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "htmlbeautifier"), nil
 		},
@@ -3270,7 +3243,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "dart",
 		Description: "Auto-generated stub for dart",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "dart"), nil
 		},
@@ -3280,7 +3253,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "ocamlformat",
 		Description: "Auto-generated stub for ocamlformat",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "ocamlformat"), nil
 		},
@@ -3290,7 +3263,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "terraform",
 		Description: "Auto-generated stub for terraform",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "terraform"), nil
 		},
@@ -3300,7 +3273,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "latexindent",
 		Description: "Auto-generated stub for latexindent",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "latexindent"), nil
 		},
@@ -3310,7 +3283,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "gleam",
 		Description: "Auto-generated stub for gleam",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "gleam"), nil
 		},
@@ -3320,7 +3293,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "shfmt",
 		Description: "Auto-generated stub for shfmt",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "shfmt"), nil
 		},
@@ -3330,7 +3303,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "nixfmt",
 		Description: "Auto-generated stub for nixfmt",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "nixfmt"), nil
 		},
@@ -3340,7 +3313,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "rustfmt",
 		Description: "Auto-generated stub for rustfmt",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "rustfmt"), nil
 		},
@@ -3350,7 +3323,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "pint",
 		Description: "Auto-generated stub for pint",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "pint"), nil
 		},
@@ -3360,7 +3333,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "ormolu",
 		Description: "Auto-generated stub for ormolu",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "ormolu"), nil
 		},
@@ -3370,7 +3343,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "cljfmt",
 		Description: "Auto-generated stub for cljfmt",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "cljfmt"), nil
 		},
@@ -3380,7 +3353,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "dfmt",
 		Description: "Auto-generated stub for dfmt",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "dfmt"), nil
 		},
@@ -3390,7 +3363,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "main",
 		Description: "Auto-generated stub for main",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "main"), nil
 		},
@@ -3400,7 +3373,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "master",
 		Description: "Auto-generated stub for master",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "master"), nil
 		},
@@ -3410,7 +3383,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "OpenCode",
 		Description: "Auto-generated stub for OpenCode",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "OpenCode"), nil
 		},
@@ -3420,7 +3393,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "StreamableHTTP",
 		Description: "Auto-generated stub for StreamableHTTP",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "StreamableHTTP"), nil
 		},
@@ -3430,7 +3403,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "SSE",
 		Description: "Auto-generated stub for SSE",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "SSE"), nil
 		},
@@ -3440,7 +3413,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "opencode-debug",
 		Description: "Auto-generated stub for opencode-debug",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "opencode-debug"), nil
 		},
@@ -3450,7 +3423,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "xterm-256color",
 		Description: "Auto-generated stub for xterm-256color",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "xterm-256color"), nil
 		},
@@ -3460,7 +3433,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "workspace",
 		Description: "Auto-generated stub for workspace",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "workspace"), nil
 		},
@@ -3470,7 +3443,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "Reject",
 		Description: "Auto-generated stub for Reject",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "Reject"), nil
 		},
@@ -3480,7 +3453,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "image",
 		Description: "Auto-generated stub for image",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "image"), nil
 		},
@@ -3490,7 +3463,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "file",
 		Description: "Auto-generated stub for file",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "file"), nil
 		},
@@ -3500,7 +3473,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "Windsurf",
 		Description: "Auto-generated stub for Windsurf",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "Windsurf"), nil
 		},
@@ -3510,7 +3483,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "Cursor",
 		Description: "Auto-generated stub for Cursor",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "Cursor"), nil
 		},
@@ -3520,7 +3493,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "VSCodium",
 		Description: "Auto-generated stub for VSCodium",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "VSCodium"), nil
 		},
@@ -3530,7 +3503,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "Worktree",
 		Description: "Create a git worktree",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "Worktree"), nil
 		},
@@ -3540,7 +3513,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "general",
 		Description: "Auto-generated stub for general",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "general"), nil
 		},
@@ -3550,7 +3523,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "explore",
 		Description: "Auto-generated stub for explore",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "explore"), nil
 		},
@@ -3560,7 +3533,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "compaction",
 		Description: "Auto-generated stub for compaction",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "compaction"), nil
 		},
@@ -3570,7 +3543,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "title",
 		Description: "Auto-generated stub for title",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "title"), nil
 		},
@@ -3580,7 +3553,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "summary",
 		Description: "Auto-generated stub for summary",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "summary"), nil
 		},
@@ -3590,7 +3563,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "ProviderAuthError",
 		Description: "Auto-generated stub for ProviderAuthError",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "ProviderAuthError"), nil
 		},
@@ -3600,7 +3573,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "MessageOutputLengthError",
 		Description: "Auto-generated stub for MessageOutputLengthError",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "MessageOutputLengthError"), nil
 		},
@@ -3610,7 +3583,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "MessageAbortedError",
 		Description: "Auto-generated stub for MessageAbortedError",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "MessageAbortedError"), nil
 		},
@@ -3620,7 +3593,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "NotFoundError",
 		Description: "Auto-generated stub for NotFoundError",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "NotFoundError"), nil
 		},
@@ -3630,7 +3603,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "StructuredOutputError",
 		Description: "Auto-generated stub for StructuredOutputError",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "StructuredOutputError"), nil
 		},
@@ -3640,7 +3613,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "chromium",
 		Description: "Auto-generated stub for chromium",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "chromium"), nil
 		},
@@ -3650,7 +3623,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "Provider",
 		Description: "Auto-generated stub for Provider",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "Provider"), nil
 		},
@@ -3660,7 +3633,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "planner",
 		Description: "Auto-generated stub for planner",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "planner"), nil
 		},
@@ -3670,7 +3643,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "ConfigInvalidError",
 		Description: "Auto-generated stub for ConfigInvalidError",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "ConfigInvalidError"), nil
 		},
@@ -3680,7 +3653,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "ServerTimeoutError",
 		Description: "Auto-generated stub for ServerTimeoutError",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "ServerTimeoutError"), nil
 		},
@@ -3690,7 +3663,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "ProviderModelNotFoundError",
 		Description: "Auto-generated stub for ProviderModelNotFoundError",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "ProviderModelNotFoundError"), nil
 		},
@@ -3700,7 +3673,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "AbortError",
 		Description: "Auto-generated stub for AbortError",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "AbortError"), nil
 		},
@@ -3710,7 +3683,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "src",
 		Description: "Auto-generated stub for src",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "src"), nil
 		},
@@ -3720,7 +3693,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "Files",
 		Description: "Auto-generated stub for Files",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "Files"), nil
 		},
@@ -3730,7 +3703,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "Send",
 		Description: "Auto-generated stub for Send",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "Send"), nil
 		},
@@ -3740,7 +3713,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "Settings",
 		Description: "Auto-generated stub for Settings",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "Settings"), nil
 		},
@@ -3750,7 +3723,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "Shortcuts",
 		Description: "Auto-generated stub for Shortcuts",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "Shortcuts"), nil
 		},
@@ -3760,7 +3733,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "Providers",
 		Description: "Auto-generated stub for Providers",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "Providers"), nil
 		},
@@ -3770,7 +3743,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "Connect",
 		Description: "Auto-generated stub for Connect",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "Connect"), nil
 		},
@@ -3780,7 +3753,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "Models",
 		Description: "Auto-generated stub for Models",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "Models"), nil
 		},
@@ -3790,7 +3763,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "Back",
 		Description: "Auto-generated stub for Back",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "Back"), nil
 		},
@@ -3800,7 +3773,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "Forward",
 		Description: "Auto-generated stub for Forward",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "Forward"), nil
 		},
@@ -3810,7 +3783,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "Status",
 		Description: "Auto-generated stub for Status",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "Status"), nil
 		},
@@ -3820,7 +3793,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "Save",
 		Description: "Auto-generated stub for Save",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "Save"), nil
 		},
@@ -3830,7 +3803,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "Cancel",
 		Description: "Auto-generated stub for Cancel",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "Cancel"), nil
 		},
@@ -3840,7 +3813,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "Publish",
 		Description: "Auto-generated stub for Publish",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "Publish"), nil
 		},
@@ -3850,7 +3823,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "Unpublish",
 		Description: "Auto-generated stub for Unpublish",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "Unpublish"), nil
 		},
@@ -3860,7 +3833,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "Context",
 		Description: "Auto-generated stub for Context",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "Context"), nil
 		},
@@ -3870,7 +3843,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "storybook-solidjs-vite",
 		Description: "Auto-generated stub for storybook-solidjs-vite",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "storybook-solidjs-vite"), nil
 		},
@@ -3880,7 +3853,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "playground-css",
 		Description: "Auto-generated stub for playground-css",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "playground-css"), nil
 		},
@@ -3890,7 +3863,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "fix",
 		Description: "Run fix command",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "fix"), nil
 		},
@@ -3900,7 +3873,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "auth",
 		Description: "Auto-generated stub for auth",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "auth"), nil
 		},
@@ -3910,7 +3883,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "auto",
 		Description: "Auto-generated stub for auto",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "auto"), nil
 		},
@@ -3920,7 +3893,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "Folder",
 		Description: "Create a blank folder",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "Folder"), nil
 		},
@@ -3930,7 +3903,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "provider-icons-plugin",
 		Description: "Auto-generated stub for provider-icons-plugin",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "provider-icons-plugin"), nil
 		},
@@ -3940,7 +3913,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "user1",
 		Description: "Auto-generated stub for user1",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "user1"), nil
 		},
@@ -3950,7 +3923,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "user2",
 		Description: "Auto-generated stub for user2",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "user2"), nil
 		},
@@ -3960,7 +3933,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "user3",
 		Description: "Auto-generated stub for user3",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "user3"), nil
 		},
@@ -3970,7 +3943,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "user4",
 		Description: "Auto-generated stub for user4",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "user4"), nil
 		},
@@ -3980,7 +3953,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "user5",
 		Description: "Auto-generated stub for user5",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "user5"), nil
 		},
@@ -3990,7 +3963,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "gemini-3-flash-preview",
 		Description: "Auto-generated stub for gemini-3-flash-preview",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "gemini-3-flash-preview"), nil
 		},
@@ -4000,7 +3973,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "addition-server",
 		Description: "Add two numbers",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "addition-server"), nil
 		},
@@ -4010,7 +3983,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "add",
 		Description: "Add two numbers",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "add"), nil
 		},
@@ -4020,7 +3993,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "write_file",
 		Description: "Auto-generated stub for write_file",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "write_file"), nil
 		},
@@ -4030,7 +4003,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "hook-a",
 		Description: "Auto-generated stub for hook-a",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "hook-a"), nil
 		},
@@ -4040,7 +4013,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "hook-b",
 		Description: "Auto-generated stub for hook-b",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "hook-b"), nil
 		},
@@ -4050,7 +4023,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "multi-hook-active",
 		Description: "Auto-generated stub for multi-hook-active",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "multi-hook-active"), nil
 		},
@@ -4060,7 +4033,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "multi-hook-disabled",
 		Description: "Auto-generated stub for multi-hook-disabled",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "multi-hook-disabled"), nil
 		},
@@ -4070,7 +4043,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "test-mcp-server",
 		Description: "Auto-generated stub for test-mcp-server",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "test-mcp-server"), nil
 		},
@@ -4080,7 +4053,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "xterm-color",
 		Description: "Auto-generated stub for xterm-color",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "xterm-color"), nil
 		},
@@ -4090,7 +4063,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "cyclic-schema-server",
 		Description: "Auto-generated stub for cyclic-schema-server",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "cyclic-schema-server"), nil
 		},
@@ -4100,7 +4073,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "tool_with_cyclic_schema",
 		Description: "Auto-generated stub for tool_with_cyclic_schema",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "tool_with_cyclic_schema"), nil
 		},
@@ -4110,7 +4083,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "test-extension",
 		Description: "Auto-generated stub for test-extension",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "test-extension"), nil
 		},
@@ -4120,7 +4093,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "get_context",
 		Description: "Get information about the current session context.",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "get_context"), nil
 		},
@@ -4130,7 +4103,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "failVisible",
 		Description: "Fails with a visible error if input is \"fail\"",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "failVisible"), nil
 		},
@@ -4140,7 +4113,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "checkSystemStatus",
 		Description: "Checks the current system status",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "checkSystemStatus"), nil
 		},
@@ -4150,7 +4123,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "testTool",
 		Description: "A test tool",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "testTool"), nil
 		},
@@ -4160,7 +4133,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "successTool",
 		Description: "Always succeeds",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "successTool"), nil
 		},
@@ -4170,7 +4143,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "failTool",
 		Description: "Always fails",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "failTool"), nil
 		},
@@ -4180,7 +4153,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "visibleErrorTool",
 		Description: "Fails with visible error",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "visibleErrorTool"), nil
 		},
@@ -4190,7 +4163,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "catchAllTool",
 		Description: "Catches all errors",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "catchAllTool"), nil
 		},
@@ -4200,7 +4173,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "ext1",
 		Description: "Auto-generated stub for ext1",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "ext1"), nil
 		},
@@ -4210,7 +4183,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "ext2",
 		Description: "Auto-generated stub for ext2",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "ext2"), nil
 		},
@@ -4220,7 +4193,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "save_memory",
 		Description: "Auto-generated stub for save_memory",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "save_memory"), nil
 		},
@@ -4230,7 +4203,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "codebase_investigator",
 		Description: "Auto-generated stub for codebase_investigator",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "codebase_investigator"), nil
 		},
@@ -4240,7 +4213,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "write_file_interactive",
 		Description: "Auto-generated stub for write_file_interactive",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "write_file_interactive"), nil
 		},
@@ -4250,7 +4223,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "TestAgent",
 		Description: "The final result.",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "TestAgent"), nil
 		},
@@ -4260,7 +4233,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "other-tool",
 		Description: "Auto-generated stub for other-tool",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "other-tool"), nil
 		},
@@ -4270,7 +4243,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "instantiated_tool",
 		Description: "Auto-generated stub for instantiated_tool",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "instantiated_tool"), nil
 		},
@@ -4280,7 +4253,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "BrowserLikeAgent",
 		Description: "An agent using instance tools.",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "BrowserLikeAgent"), nil
 		},
@@ -4290,7 +4263,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "click",
 		Description: "Auto-generated stub for click",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "click"), nil
 		},
@@ -4300,7 +4273,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "fill",
 		Description: "Auto-generated stub for fill",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "fill"), nil
 		},
@@ -4310,7 +4283,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "take_snapshot",
 		Description: "Auto-generated stub for take_snapshot",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "take_snapshot"), nil
 		},
@@ -4320,7 +4293,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "navigate_page",
 		Description: "Auto-generated stub for navigate_page",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "navigate_page"), nil
 		},
@@ -4330,7 +4303,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "MixedAgent",
 		Description: "Uses both patterns.",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "MixedAgent"), nil
 		},
@@ -4340,7 +4313,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "cli_help",
 		Description: "Specialized agent for answering questions about the Gemini CLI application. Invoke this agent for questions regarding CLI features, configuration schemas (e.g., policies), or instructions on how to create custom subagents. It queries internal documentation to provide accurate usage guidance.",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "cli_help"), nil
 		},
@@ -4350,7 +4323,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "generalist",
 		Description: "A general-purpose AI agent with access to all tools. Highly recommended for tasks that are turn-intensive or involve processing large amounts of data. Use this to keep the main session history lean and efficient. Excellent for: batch refactoring/error fixing across multiple files, running commands with high-volume output, and speculative investigations.",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "generalist"), nil
 		},
@@ -4360,7 +4333,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "MockAgent",
 		Description: "Mock Description V1",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "MockAgent"), nil
 		},
@@ -4370,17 +4343,9 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "common-agent",
 		Description: "User version",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
-			streamCallback := func(chunk string) {
-				fmt.Print(chunk)
-			}
-
-			result, err := subagents.GlobalManager.Spawn(context.Background(), subagents.TypePlan, "Autogenerated subagent task", "Execute delegated task", "", streamCallback)
-			if err != nil {
-				return "", fmt.Errorf("subagent %s failed: %w", "common-agent", err)
-			}
-			return fmt.Sprintf("Subagent %s completed:\n%s", "common-agent", result), nil
+			return fmt.Sprintf("Tool %s not fully wired yet", "common-agent"), nil
 		},
 	})
 
@@ -4388,7 +4353,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "project-only",
 		Description: "Project only",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "project-only"), nil
 		},
@@ -4398,17 +4363,9 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "extension-agent",
 		Description: "Auto-generated stub for extension-agent",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
-			streamCallback := func(chunk string) {
-				fmt.Print(chunk)
-			}
-
-			result, err := subagents.GlobalManager.Spawn(context.Background(), subagents.TypePlan, "Autogenerated subagent task", "Execute delegated task", "", streamCallback)
-			if err != nil {
-				return "", fmt.Errorf("subagent %s failed: %w", "extension-agent", err)
-			}
-			return fmt.Sprintf("Subagent %s completed:\n%s", "extension-agent", result), nil
+			return fmt.Sprintf("Tool %s not fully wired yet", "extension-agent"), nil
 		},
 	})
 
@@ -4416,7 +4373,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "RemoteAgent",
 		Description: "A remote agent",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "RemoteAgent"), nil
 		},
@@ -4426,7 +4383,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "AutoAgent",
 		Description: "Auto-generated stub for AutoAgent",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "AutoAgent"), nil
 		},
@@ -4436,7 +4393,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "RemoteAgentWithAuth",
 		Description: "A remote agent",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "RemoteAgentWithAuth"), nil
 		},
@@ -4446,7 +4403,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "RemoteAgentBadAuth",
 		Description: "A remote agent",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "RemoteAgentBadAuth"), nil
 		},
@@ -4456,7 +4413,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "FailAgent",
 		Description: "An agent that fails to load",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "FailAgent"), nil
 		},
@@ -4466,7 +4423,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "SecuredAgent",
 		Description: "A secured remote agent",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "SecuredAgent"), nil
 		},
@@ -4476,7 +4433,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "x-api-key",
 		Description: "Auto-generated stub for x-api-key",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "x-api-key"), nil
 		},
@@ -4486,7 +4443,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "FailingRemoteAgent",
 		Description: "A remote agent",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "FailingRemoteAgent"), nil
 		},
@@ -4496,7 +4453,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "RemoteAgentWithDescription",
 		Description: "User-provided description",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "RemoteAgentWithDescription"), nil
 		},
@@ -4506,7 +4463,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "Skill1",
 		Description: "Card-provided description",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "Skill1"), nil
 		},
@@ -4516,7 +4473,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "Skill2",
 		Description: "Desc1",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "Skill2"), nil
 		},
@@ -4526,7 +4483,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "RemoteAgentWithSkillsOnly",
 		Description: "User-provided description",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "RemoteAgentWithSkillsOnly"), nil
 		},
@@ -4536,7 +4493,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "RemoteAgentWithEmptyAgentDescription",
 		Description: "User-provided description",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "RemoteAgentWithEmptyAgentDescription"), nil
 		},
@@ -4546,7 +4503,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "RemoteAgentAccumulationTest",
 		Description: "User-provided description",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "RemoteAgentAccumulationTest"), nil
 		},
@@ -4556,7 +4513,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "EmptyDescAgent",
 		Description: "",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "EmptyDescAgent"), nil
 		},
@@ -4566,7 +4523,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "SkillFallbackAgent",
 		Description: "User description",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "SkillFallbackAgent"), nil
 		},
@@ -4576,7 +4533,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "SkillNoDesc",
 		Description: "Card description",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "SkillNoDesc"), nil
 		},
@@ -4586,7 +4543,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "RemotePolicyAgent",
 		Description: "A remote agent",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "RemotePolicyAgent"), nil
 		},
@@ -4596,17 +4553,9 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "invoke_agent",
 		Description: "Auto-generated stub for invoke_agent",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
-			streamCallback := func(chunk string) {
-				fmt.Print(chunk)
-			}
-
-			result, err := subagents.GlobalManager.Spawn(context.Background(), subagents.TypePlan, "Autogenerated subagent task", "Execute delegated task", "", streamCallback)
-			if err != nil {
-				return "", fmt.Errorf("subagent %s failed: %w", "invoke_agent", err)
-			}
-			return fmt.Sprintf("Subagent %s completed:\n%s", "invoke_agent", result), nil
+			return fmt.Sprintf("Tool %s not fully wired yet", "invoke_agent"), nil
 		},
 	})
 
@@ -4614,7 +4563,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "LocalPolicyAgent",
 		Description: "Auto-generated stub for LocalPolicyAgent",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "LocalPolicyAgent"), nil
 		},
@@ -4624,7 +4573,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "OverwrittenAgent",
 		Description: "A remote agent",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "OverwrittenAgent"), nil
 		},
@@ -4634,7 +4583,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "InitialAgent",
 		Description: "Auto-generated stub for InitialAgent",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "InitialAgent"), nil
 		},
@@ -4644,7 +4593,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "NewAgent",
 		Description: "Auto-generated stub for NewAgent",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "NewAgent"), nil
 		},
@@ -4654,7 +4603,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "InheritingAgent",
 		Description: "Auto-generated stub for InheritingAgent",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "InheritingAgent"), nil
 		},
@@ -4664,7 +4613,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "AnotherAgent",
 		Description: "Auto-generated stub for AnotherAgent",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "AnotherAgent"), nil
 		},
@@ -4674,7 +4623,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "EnabledAgent",
 		Description: "Auto-generated stub for EnabledAgent",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "EnabledAgent"), nil
 		},
@@ -4684,7 +4633,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "DisabledAgent",
 		Description: "Auto-generated stub for DisabledAgent",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "DisabledAgent"), nil
 		},
@@ -4694,7 +4643,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "GetterAgent",
 		Description: "Auto-generated stub for GetterAgent",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "GetterAgent"), nil
 		},
@@ -4704,7 +4653,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "VeryLongAgentNameThatTakesUpSpace",
 		Description: "Auto-generated stub for VeryLongAgentNameThatTakesUpSpace",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "VeryLongAgentNameThatTakesUpSpace"), nil
 		},
@@ -4714,7 +4663,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "ls",
 		Description: "Auto-generated stub for ls",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "ls"), nil
 		},
@@ -4724,7 +4673,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "ProjectAgent",
 		Description: "Project Agent Desc",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "ProjectAgent"), nil
 		},
@@ -4734,7 +4683,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "World",
 		Description: "Auto-generated stub for World",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "World"), nil
 		},
@@ -4744,7 +4693,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "Jo",
 		Description: "Auto-generated stub for Jo",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "Jo"), nil
 		},
@@ -4754,7 +4703,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "Alice",
 		Description: "Auto-generated stub for Alice",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "Alice"), nil
 		},
@@ -4764,17 +4713,9 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "test-agent",
 		Description: "A test agent",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
-			streamCallback := func(chunk string) {
-				fmt.Print(chunk)
-			}
-
-			result, err := subagents.GlobalManager.Spawn(context.Background(), subagents.TypePlan, "Autogenerated subagent task", "Execute delegated task", "", streamCallback)
-			if err != nil {
-				return "", fmt.Errorf("subagent %s failed: %w", "test-agent", err)
-			}
-			return fmt.Sprintf("Subagent %s completed:\n%s", "test-agent", result), nil
+			return fmt.Sprintf("Tool %s not fully wired yet", "test-agent"), nil
 		},
 	})
 
@@ -4782,17 +4723,9 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "test-agent-md",
 		Description: "A markdown agent",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
-			streamCallback := func(chunk string) {
-				fmt.Print(chunk)
-			}
-
-			result, err := subagents.GlobalManager.Spawn(context.Background(), subagents.TypePlan, "Autogenerated subagent task", "Execute delegated task", "", streamCallback)
-			if err != nil {
-				return "", fmt.Errorf("subagent %s failed: %w", "test-agent-md", err)
-			}
-			return fmt.Sprintf("Subagent %s completed:\n%s", "test-agent-md", result), nil
+			return fmt.Sprintf("Tool %s not fully wired yet", "test-agent-md"), nil
 		},
 	})
 
@@ -4800,17 +4733,9 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "complex-agent",
 		Description: "A complex markdown agent",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
-			streamCallback := func(chunk string) {
-				fmt.Print(chunk)
-			}
-
-			result, err := subagents.GlobalManager.Spawn(context.Background(), subagents.TypePlan, "Autogenerated subagent task", "Execute delegated task", "", streamCallback)
-			if err != nil {
-				return "", fmt.Errorf("subagent %s failed: %w", "complex-agent", err)
-			}
-			return fmt.Sprintf("Subagent %s completed:\n%s", "complex-agent", result), nil
+			return fmt.Sprintf("Tool %s not fully wired yet", "complex-agent"), nil
 		},
 	})
 
@@ -4818,17 +4743,9 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "mcp-agent",
 		Description: "An agent with MCP servers",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
-			streamCallback := func(chunk string) {
-				fmt.Print(chunk)
-			}
-
-			result, err := subagents.GlobalManager.Spawn(context.Background(), subagents.TypePlan, "Autogenerated subagent task", "Execute delegated task", "", streamCallback)
-			if err != nil {
-				return "", fmt.Errorf("subagent %s failed: %w", "mcp-agent", err)
-			}
-			return fmt.Sprintf("Subagent %s completed:\n%s", "mcp-agent", result), nil
+			return fmt.Sprintf("Tool %s not fully wired yet", "mcp-agent"), nil
 		},
 	})
 
@@ -4836,17 +4753,9 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "remote-agent",
 		Description: "A remote agent",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
-			streamCallback := func(chunk string) {
-				fmt.Print(chunk)
-			}
-
-			result, err := subagents.GlobalManager.Spawn(context.Background(), subagents.TypePlan, "Autogenerated subagent task", "Execute delegated task", "", streamCallback)
-			if err != nil {
-				return "", fmt.Errorf("subagent %s failed: %w", "remote-agent", err)
-			}
-			return fmt.Sprintf("Subagent %s completed:\n%s", "remote-agent", result), nil
+			return fmt.Sprintf("Tool %s not fully wired yet", "remote-agent"), nil
 		},
 	})
 
@@ -4854,7 +4763,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "inferred-remote",
 		Description: "Inferred",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "inferred-remote"), nil
 		},
@@ -4864,7 +4773,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "no-body-remote",
 		Description: "Auto-generated stub for no-body-remote",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "no-body-remote"), nil
 		},
@@ -4874,7 +4783,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "remote-1",
 		Description: "Auto-generated stub for remote-1",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "remote-1"), nil
 		},
@@ -4884,7 +4793,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "remote-2",
 		Description: "Auto-generated stub for remote-2",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "remote-2"), nil
 		},
@@ -4894,7 +4803,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "no-trailing-newline",
 		Description: "Auto-generated stub for no-trailing-newline",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "no-trailing-newline"), nil
 		},
@@ -4904,17 +4813,9 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "json-agent",
 		Description: "A JSON-based remote agent",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
-			streamCallback := func(chunk string) {
-				fmt.Print(chunk)
-			}
-
-			result, err := subagents.GlobalManager.Spawn(context.Background(), subagents.TypePlan, "Autogenerated subagent task", "Execute delegated task", "", streamCallback)
-			if err != nil {
-				return "", fmt.Errorf("subagent %s failed: %w", "json-agent", err)
-			}
-			return fmt.Sprintf("Subagent %s completed:\n%s", "json-agent", result), nil
+			return fmt.Sprintf("Tool %s not fully wired yet", "json-agent"), nil
 		},
 	})
 
@@ -4922,7 +4823,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "json-remote",
 		Description: "A JSON-based remote agent",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "json-remote"), nil
 		},
@@ -4932,7 +4833,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "inferred-json-remote",
 		Description: "Auto-generated stub for inferred-json-remote",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "inferred-json-remote"), nil
 		},
@@ -4942,17 +4843,9 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "spanner-test-agent",
 		Description: "An agent to test Spanner MCP with auth",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
-			streamCallback := func(chunk string) {
-				fmt.Print(chunk)
-			}
-
-			result, err := subagents.GlobalManager.Spawn(context.Background(), subagents.TypePlan, "Autogenerated subagent task", "Execute delegated task", "", streamCallback)
-			if err != nil {
-				return "", fmt.Errorf("subagent %s failed: %w", "spanner-test-agent", err)
-			}
-			return fmt.Sprintf("Subagent %s completed:\n%s", "spanner-test-agent", result), nil
+			return fmt.Sprintf("Tool %s not fully wired yet", "spanner-test-agent"), nil
 		},
 	})
 
@@ -4960,17 +4853,9 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "no-card-agent",
 		Description: "Missing card info",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
-			streamCallback := func(chunk string) {
-				fmt.Print(chunk)
-			}
-
-			result, err := subagents.GlobalManager.Spawn(context.Background(), subagents.TypePlan, "Autogenerated subagent task", "Execute delegated task", "", streamCallback)
-			if err != nil {
-				return "", fmt.Errorf("subagent %s failed: %w", "no-card-agent", err)
-			}
-			return fmt.Sprintf("Subagent %s completed:\n%s", "no-card-agent", result), nil
+			return fmt.Sprintf("Tool %s not fully wired yet", "no-card-agent"), nil
 		},
 	})
 
@@ -4978,17 +4863,9 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "api-key-agent",
 		Description: "Auto-generated stub for api-key-agent",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
-			streamCallback := func(chunk string) {
-				fmt.Print(chunk)
-			}
-
-			result, err := subagents.GlobalManager.Spawn(context.Background(), subagents.TypePlan, "Autogenerated subagent task", "Execute delegated task", "", streamCallback)
-			if err != nil {
-				return "", fmt.Errorf("subagent %s failed: %w", "api-key-agent", err)
-			}
-			return fmt.Sprintf("Subagent %s completed:\n%s", "api-key-agent", result), nil
+			return fmt.Sprintf("Tool %s not fully wired yet", "api-key-agent"), nil
 		},
 	})
 
@@ -4996,7 +4873,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "X-Custom-Key",
 		Description: "Auto-generated stub for X-Custom-Key",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "X-Custom-Key"), nil
 		},
@@ -5006,17 +4883,9 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "bearer-agent",
 		Description: "Auto-generated stub for bearer-agent",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
-			streamCallback := func(chunk string) {
-				fmt.Print(chunk)
-			}
-
-			result, err := subagents.GlobalManager.Spawn(context.Background(), subagents.TypePlan, "Autogenerated subagent task", "Execute delegated task", "", streamCallback)
-			if err != nil {
-				return "", fmt.Errorf("subagent %s failed: %w", "bearer-agent", err)
-			}
-			return fmt.Sprintf("Subagent %s completed:\n%s", "bearer-agent", result), nil
+			return fmt.Sprintf("Tool %s not fully wired yet", "bearer-agent"), nil
 		},
 	})
 
@@ -5024,17 +4893,9 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "basic-agent",
 		Description: "Auto-generated stub for basic-agent",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
-			streamCallback := func(chunk string) {
-				fmt.Print(chunk)
-			}
-
-			result, err := subagents.GlobalManager.Spawn(context.Background(), subagents.TypePlan, "Autogenerated subagent task", "Execute delegated task", "", streamCallback)
-			if err != nil {
-				return "", fmt.Errorf("subagent %s failed: %w", "basic-agent", err)
-			}
-			return fmt.Sprintf("Subagent %s completed:\n%s", "basic-agent", result), nil
+			return fmt.Sprintf("Tool %s not fully wired yet", "basic-agent"), nil
 		},
 	})
 
@@ -5042,17 +4903,9 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "digest-agent",
 		Description: "Auto-generated stub for digest-agent",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
-			streamCallback := func(chunk string) {
-				fmt.Print(chunk)
-			}
-
-			result, err := subagents.GlobalManager.Spawn(context.Background(), subagents.TypePlan, "Autogenerated subagent task", "Execute delegated task", "", streamCallback)
-			if err != nil {
-				return "", fmt.Errorf("subagent %s failed: %w", "digest-agent", err)
-			}
-			return fmt.Sprintf("Subagent %s completed:\n%s", "digest-agent", result), nil
+			return fmt.Sprintf("Tool %s not fully wired yet", "digest-agent"), nil
 		},
 	})
 
@@ -5060,17 +4913,9 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "raw-agent",
 		Description: "Auto-generated stub for raw-agent",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
-			streamCallback := func(chunk string) {
-				fmt.Print(chunk)
-			}
-
-			result, err := subagents.GlobalManager.Spawn(context.Background(), subagents.TypePlan, "Autogenerated subagent task", "Execute delegated task", "", streamCallback)
-			if err != nil {
-				return "", fmt.Errorf("subagent %s failed: %w", "raw-agent", err)
-			}
-			return fmt.Sprintf("Subagent %s completed:\n%s", "raw-agent", result), nil
+			return fmt.Sprintf("Tool %s not fully wired yet", "raw-agent"), nil
 		},
 	})
 
@@ -5078,17 +4923,9 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "auth-agent",
 		Description: "Auto-generated stub for auth-agent",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
-			streamCallback := func(chunk string) {
-				fmt.Print(chunk)
-			}
-
-			result, err := subagents.GlobalManager.Spawn(context.Background(), subagents.TypePlan, "Autogenerated subagent task", "Execute delegated task", "", streamCallback)
-			if err != nil {
-				return "", fmt.Errorf("subagent %s failed: %w", "auth-agent", err)
-			}
-			return fmt.Sprintf("Subagent %s completed:\n%s", "auth-agent", result), nil
+			return fmt.Sprintf("Tool %s not fully wired yet", "auth-agent"), nil
 		},
 	})
 
@@ -5096,17 +4933,9 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "oauth2-agent",
 		Description: "Auto-generated stub for oauth2-agent",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
-			streamCallback := func(chunk string) {
-				fmt.Print(chunk)
-			}
-
-			result, err := subagents.GlobalManager.Spawn(context.Background(), subagents.TypePlan, "Autogenerated subagent task", "Execute delegated task", "", streamCallback)
-			if err != nil {
-				return "", fmt.Errorf("subagent %s failed: %w", "oauth2-agent", err)
-			}
-			return fmt.Sprintf("Subagent %s completed:\n%s", "oauth2-agent", result), nil
+			return fmt.Sprintf("Tool %s not fully wired yet", "oauth2-agent"), nil
 		},
 	})
 
@@ -5114,17 +4943,9 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "oauth2-full-agent",
 		Description: "Auto-generated stub for oauth2-full-agent",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
-			streamCallback := func(chunk string) {
-				fmt.Print(chunk)
-			}
-
-			result, err := subagents.GlobalManager.Spawn(context.Background(), subagents.TypePlan, "Autogenerated subagent task", "Execute delegated task", "", streamCallback)
-			if err != nil {
-				return "", fmt.Errorf("subagent %s failed: %w", "oauth2-full-agent", err)
-			}
-			return fmt.Sprintf("Subagent %s completed:\n%s", "oauth2-full-agent", result), nil
+			return fmt.Sprintf("Tool %s not fully wired yet", "oauth2-full-agent"), nil
 		},
 	})
 
@@ -5132,17 +4953,9 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "oauth2-minimal-agent",
 		Description: "Auto-generated stub for oauth2-minimal-agent",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
-			streamCallback := func(chunk string) {
-				fmt.Print(chunk)
-			}
-
-			result, err := subagents.GlobalManager.Spawn(context.Background(), subagents.TypePlan, "Autogenerated subagent task", "Execute delegated task", "", streamCallback)
-			if err != nil {
-				return "", fmt.Errorf("subagent %s failed: %w", "oauth2-minimal-agent", err)
-			}
-			return fmt.Sprintf("Subagent %s completed:\n%s", "oauth2-minimal-agent", result), nil
+			return fmt.Sprintf("Tool %s not fully wired yet", "oauth2-minimal-agent"), nil
 		},
 	})
 
@@ -5150,17 +4963,9 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "oauth2-convert-agent",
 		Description: "Auto-generated stub for oauth2-convert-agent",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
-			streamCallback := func(chunk string) {
-				fmt.Print(chunk)
-			}
-
-			result, err := subagents.GlobalManager.Spawn(context.Background(), subagents.TypePlan, "Autogenerated subagent task", "Execute delegated task", "", streamCallback)
-			if err != nil {
-				return "", fmt.Errorf("subagent %s failed: %w", "oauth2-convert-agent", err)
-			}
-			return fmt.Sprintf("Subagent %s completed:\n%s", "oauth2-convert-agent", result), nil
+			return fmt.Sprintf("Tool %s not fully wired yet", "oauth2-convert-agent"), nil
 		},
 	})
 
@@ -5168,17 +4973,9 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "unknown-auth-agent",
 		Description: "Auto-generated stub for unknown-auth-agent",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
-			streamCallback := func(chunk string) {
-				fmt.Print(chunk)
-			}
-
-			result, err := subagents.GlobalManager.Spawn(context.Background(), subagents.TypePlan, "Autogenerated subagent task", "Execute delegated task", "", streamCallback)
-			if err != nil {
-				return "", fmt.Errorf("subagent %s failed: %w", "unknown-auth-agent", err)
-			}
-			return fmt.Sprintf("Subagent %s completed:\n%s", "unknown-auth-agent", result), nil
+			return fmt.Sprintf("Tool %s not fully wired yet", "unknown-auth-agent"), nil
 		},
 	})
 
@@ -5186,7 +4983,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "orphan",
 		Description: "Auto-generated stub for orphan",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "orphan"), nil
 		},
@@ -5196,17 +4993,9 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "my-agent",
 		Description: "Auto-generated stub for my-agent",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
-			streamCallback := func(chunk string) {
-				fmt.Print(chunk)
-			}
-
-			result, err := subagents.GlobalManager.Spawn(context.Background(), subagents.TypePlan, "Autogenerated subagent task", "Execute delegated task", "", streamCallback)
-			if err != nil {
-				return "", fmt.Errorf("subagent %s failed: %w", "my-agent", err)
-			}
-			return fmt.Sprintf("Subagent %s completed:\n%s", "my-agent", result), nil
+			return fmt.Sprintf("Tool %s not fully wired yet", "my-agent"), nil
 		},
 	})
 
@@ -5214,7 +5003,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "priority-test",
 		Description: "Auto-generated stub for priority-test",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "priority-test"), nil
 		},
@@ -5224,7 +5013,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "Code",
 		Description: "Auto-generated stub for Code",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "Code"), nil
 		},
@@ -5234,7 +5023,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "Data",
 		Description: "Auto-generated stub for Data",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "Data"), nil
 		},
@@ -5244,7 +5033,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "confucius",
 		Description: "Extracts reusable skills from past conversation sessions and writes them as SKILL.md files.",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "confucius"), nil
 		},
@@ -5254,7 +5043,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "test-tool",
 		Description: "Auto-generated stub for test-tool",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "test-tool"), nil
 		},
@@ -5264,7 +5053,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "new_page",
 		Description: "Auto-generated stub for new_page",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "new_page"), nil
 		},
@@ -5274,7 +5063,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "TestLocalAgent",
 		Description: "A local test agent.",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "TestLocalAgent"), nil
 		},
@@ -5284,7 +5073,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "TestRemoteAgent",
 		Description: "A remote test agent.",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "TestRemoteAgent"), nil
 		},
@@ -5294,7 +5083,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "UnknownAgent",
 		Description: "Auto-generated stub for UnknownAgent",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "UnknownAgent"), nil
 		},
@@ -5304,7 +5093,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "admin",
 		Description: "Auto-generated stub for admin",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "admin"), nil
 		},
@@ -5314,7 +5103,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "Result",
 		Description: "Auto-generated stub for Result",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "Result"), nil
 		},
@@ -5324,17 +5113,9 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "browser_agent",
 		Description: "mock definition",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
-			streamCallback := func(chunk string) {
-				fmt.Print(chunk)
-			}
-
-			result, err := subagents.GlobalManager.Spawn(context.Background(), subagents.TypePlan, "Autogenerated subagent task", "Execute delegated task", "", streamCallback)
-			if err != nil {
-				return "", fmt.Errorf("subagent %s failed: %w", "browser_agent", err)
-			}
-			return fmt.Sprintf("Subagent %s completed:\n%s", "browser_agent", result), nil
+			return fmt.Sprintf("Tool %s not fully wired yet", "browser_agent"), nil
 		},
 	})
 
@@ -5342,7 +5123,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "navigate_browser",
 		Description: "Auto-generated stub for navigate_browser",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "navigate_browser"), nil
 		},
@@ -5352,7 +5133,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "fill_form",
 		Description: "Auto-generated stub for fill_form",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "fill_form"), nil
 		},
@@ -5362,7 +5143,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "click_element",
 		Description: "Auto-generated stub for click_element",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "click_element"), nil
 		},
@@ -5372,7 +5153,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "tool_a",
 		Description: "Auto-generated stub for tool_a",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "tool_a"), nil
 		},
@@ -5382,7 +5163,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "tool_b",
 		Description: "Auto-generated stub for tool_b",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "tool_b"), nil
 		},
@@ -5392,7 +5173,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "upload_file",
 		Description: "Upload a file",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "upload_file"), nil
 		},
@@ -5402,7 +5183,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "type_text",
 		Description: "Navigate to URL",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "type_text"), nil
 		},
@@ -5412,7 +5193,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "click_at",
 		Description: "Type text into an element",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "click_at"), nil
 		},
@@ -5422,7 +5203,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "close_page",
 		Description: "Open a new page/tab",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "close_page"), nil
 		},
@@ -5432,7 +5213,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "select_page",
 		Description: "Close page",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "select_page"), nil
 		},
@@ -5442,7 +5223,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "press_key",
 		Description: "Close page",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "press_key"), nil
 		},
@@ -5452,7 +5233,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "hover",
 		Description: "Type text into an element",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "hover"), nil
 		},
@@ -5462,7 +5243,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "take_screenshot",
 		Description: "Take snapshot",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "take_screenshot"), nil
 		},
@@ -5472,7 +5253,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "list_pages",
 		Description: "Take screenshot",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "list_pages"), nil
 		},
@@ -5482,17 +5263,9 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "gemini-cli-browser-agent",
 		Description: "Auto-generated stub for gemini-cli-browser-agent",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
-			streamCallback := func(chunk string) {
-				fmt.Print(chunk)
-			}
-
-			result, err := subagents.GlobalManager.Spawn(context.Background(), subagents.TypePlan, "Autogenerated subagent task", "Execute delegated task", "", streamCallback)
-			if err != nil {
-				return "", fmt.Errorf("subagent %s failed: %w", "gemini-cli-browser-agent", err)
-			}
-			return fmt.Sprintf("Subagent %s completed:\n%s", "gemini-cli-browser-agent", result), nil
+			return fmt.Sprintf("Tool %s not fully wired yet", "gemini-cli-browser-agent"), nil
 		},
 	})
 
@@ -5500,7 +5273,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "X-API-Key",
 		Description: "Auto-generated stub for X-API-Key",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "X-API-Key"), nil
 		},
@@ -5510,7 +5283,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "X-Custom-Auth",
 		Description: "Auto-generated stub for X-Custom-Auth",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "X-Custom-Auth"), nil
 		},
@@ -5520,7 +5293,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "someTool",
 		Description: "Auto-generated stub for someTool",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "someTool"), nil
 		},
@@ -5530,7 +5303,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "packages",
 		Description: "Auto-generated stub for packages",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "packages"), nil
 		},
@@ -5540,7 +5313,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "mock-pty",
 		Description: "Auto-generated stub for mock-pty",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "mock-pty"), nil
 		},
@@ -5550,7 +5323,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "skill-extraction",
 		Description: "Auto-generated stub for skill-extraction",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "skill-extraction"), nil
 		},
@@ -5560,7 +5333,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "list_files",
 		Description: "Auto-generated stub for list_files",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "list_files"), nil
 		},
@@ -5570,7 +5343,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "read_file",
 		Description: "Auto-generated stub for read_file",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "read_file"), nil
 		},
@@ -5580,7 +5353,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "feature-x",
 		Description: "Auto-generated stub for feature-x",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "feature-x"), nil
 		},
@@ -5590,7 +5363,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "plainTool",
 		Description: "Auto-generated stub for plainTool",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "plainTool"), nil
 		},
@@ -5600,7 +5373,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "mockModifiableTool",
 		Description: "Auto-generated stub for mockModifiableTool",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "mockModifiableTool"), nil
 		},
@@ -5610,7 +5383,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "webSearchTool",
 		Description: "Mock web search",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "webSearchTool"), nil
 		},
@@ -5620,7 +5393,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "slowTool",
 		Description: "Auto-generated stub for slowTool",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "slowTool"), nil
 		},
@@ -5630,7 +5403,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "actualToolName",
 		Description: "Auto-generated stub for actualToolName",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "actualToolName"), nil
 		},
@@ -5640,7 +5413,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "get_big_text",
 		Description: "Auto-generated stub for get_big_text",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "get_big_text"), nil
 		},
@@ -5650,17 +5423,9 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "remote_agent_call",
 		Description: "Remote agent call",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
-			streamCallback := func(chunk string) {
-				fmt.Print(chunk)
-			}
-
-			result, err := subagents.GlobalManager.Spawn(context.Background(), subagents.TypePlan, "Autogenerated subagent task", "Execute delegated task", "", streamCallback)
-			if err != nil {
-				return "", fmt.Errorf("subagent %s failed: %w", "remote_agent_call", err)
-			}
-			return fmt.Sprintf("Subagent %s completed:\n%s", "remote_agent_call", result), nil
+			return fmt.Sprintf("Tool %s not fully wired yet", "remote_agent_call"), nil
 		},
 	})
 
@@ -5668,7 +5433,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "mockTool",
 		Description: "Auto-generated stub for mockTool",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "mockTool"), nil
 		},
@@ -5678,7 +5443,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "test-stop-hook",
 		Description: "Auto-generated stub for test-stop-hook",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "test-stop-hook"), nil
 		},
@@ -5688,7 +5453,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "test-block-hook",
 		Description: "Auto-generated stub for test-block-hook",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "test-block-hook"), nil
 		},
@@ -5698,7 +5463,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "test-modify-input-hook",
 		Description: "Auto-generated stub for test-modify-input-hook",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "test-modify-input-hook"), nil
 		},
@@ -5708,7 +5473,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "read-tool-1",
 		Description: "Auto-generated stub for read-tool-1",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "read-tool-1"), nil
 		},
@@ -5718,7 +5483,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "read-tool-2",
 		Description: "Auto-generated stub for read-tool-2",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "read-tool-2"), nil
 		},
@@ -5728,7 +5493,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "write-tool",
 		Description: "Auto-generated stub for write-tool",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "write-tool"), nil
 		},
@@ -5738,17 +5503,9 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "agent-tool-1",
 		Description: "Auto-generated stub for agent-tool-1",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
-			streamCallback := func(chunk string) {
-				fmt.Print(chunk)
-			}
-
-			result, err := subagents.GlobalManager.Spawn(context.Background(), subagents.TypePlan, "Autogenerated subagent task", "Execute delegated task", "", streamCallback)
-			if err != nil {
-				return "", fmt.Errorf("subagent %s failed: %w", "agent-tool-1", err)
-			}
-			return fmt.Sprintf("Subagent %s completed:\n%s", "agent-tool-1", result), nil
+			return fmt.Sprintf("Tool %s not fully wired yet", "agent-tool-1"), nil
 		},
 	})
 
@@ -5756,17 +5513,9 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "agent-tool-2",
 		Description: "Auto-generated stub for agent-tool-2",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
-			streamCallback := func(chunk string) {
-				fmt.Print(chunk)
-			}
-
-			result, err := subagents.GlobalManager.Spawn(context.Background(), subagents.TypePlan, "Autogenerated subagent task", "Execute delegated task", "", streamCallback)
-			if err != nil {
-				return "", fmt.Errorf("subagent %s failed: %w", "agent-tool-2", err)
-			}
-			return fmt.Sprintf("Subagent %s completed:\n%s", "agent-tool-2", result), nil
+			return fmt.Sprintf("Tool %s not fully wired yet", "agent-tool-2"), nil
 		},
 	})
 
@@ -5774,7 +5523,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "tool",
 		Description: "Auto-generated stub for tool",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "tool"), nil
 		},
@@ -5784,7 +5533,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "original-tool-name",
 		Description: "Auto-generated stub for original-tool-name",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "original-tool-name"), nil
 		},
@@ -5794,7 +5543,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "tool-b",
 		Description: "Auto-generated stub for tool-b",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "tool-b"), nil
 		},
@@ -5804,7 +5553,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "missing-tool",
 		Description: "Auto-generated stub for missing-tool",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "missing-tool"), nil
 		},
@@ -5814,7 +5563,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "mcp-tool",
 		Description: "Auto-generated stub for mcp-tool",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "mcp-tool"), nil
 		},
@@ -5824,7 +5573,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "replace",
 		Description: "Auto-generated stub for replace",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "replace"), nil
 		},
@@ -5834,7 +5583,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "run_shell_command",
 		Description: "Auto-generated stub for run_shell_command",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "run_shell_command"), nil
 		},
@@ -5844,7 +5593,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "skill1",
 		Description: "Auto-generated stub for skill1",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "skill1"), nil
 		},
@@ -5854,7 +5603,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "Global",
 		Description: "Auto-generated stub for Global",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "Global"), nil
 		},
@@ -5864,7 +5613,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "Extension",
 		Description: "Auto-generated stub for Extension",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "Extension"), nil
 		},
@@ -5874,7 +5623,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "Project",
 		Description: "Auto-generated stub for Project",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "Project"), nil
 		},
@@ -5884,7 +5633,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "hook1",
 		Description: "Auto-generated stub for hook1",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "hook1"), nil
 		},
@@ -5894,7 +5643,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "trusted-hook",
 		Description: "Auto-generated stub for trusted-hook",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "trusted-hook"), nil
 		},
@@ -5904,7 +5653,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "new-hook",
 		Description: "Auto-generated stub for new-hook",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "new-hook"), nil
 		},
@@ -5914,7 +5663,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "my-hook",
 		Description: "Auto-generated stub for my-hook",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "my-hook"), nil
 		},
@@ -5924,7 +5673,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "hook2",
 		Description: "Auto-generated stub for hook2",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "hook2"), nil
 		},
@@ -5934,7 +5683,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "test-hook",
 		Description: "Auto-generated stub for test-hook",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "test-hook"), nil
 		},
@@ -5944,7 +5693,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "TestTool",
 		Description: "Auto-generated stub for TestTool",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "TestTool"), nil
 		},
@@ -5954,7 +5703,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "BeforeTool",
 		Description: "Auto-generated stub for BeforeTool",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "BeforeTool"), nil
 		},
@@ -5964,7 +5713,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "fail-hook",
 		Description: "Auto-generated stub for fail-hook",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "fail-hook"), nil
 		},
@@ -5974,7 +5723,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "persist-hook",
 		Description: "Auto-generated stub for persist-hook",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "persist-hook"), nil
 		},
@@ -5984,7 +5733,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "disabled-hook",
 		Description: "Auto-generated stub for disabled-hook",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "disabled-hook"), nil
 		},
@@ -5994,7 +5743,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "friendly-name",
 		Description: "Auto-generated stub for friendly-name",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "friendly-name"), nil
 		},
@@ -6004,7 +5753,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "InvalidEvent",
 		Description: "Auto-generated stub for InvalidEvent",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "InvalidEvent"), nil
 		},
@@ -6014,7 +5763,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "my-friendly-hook",
 		Description: "Auto-generated stub for my-friendly-hook",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "my-friendly-hook"), nil
 		},
@@ -6024,7 +5773,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "EditTool",
 		Description: "Auto-generated stub for EditTool",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "EditTool"), nil
 		},
@@ -6034,7 +5783,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "my-mcp-server",
 		Description: "Auto-generated stub for my-mcp-server",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "my-mcp-server"), nil
 		},
@@ -6044,7 +5793,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "my-mcp-server__read_file",
 		Description: "Auto-generated stub for my-mcp-server__read_file",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "my-mcp-server__read_file"), nil
 		},
@@ -6054,7 +5803,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "failing-hook",
 		Description: "Auto-generated stub for failing-hook",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "failing-hook"), nil
 		},
@@ -6064,7 +5813,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "new-extension",
 		Description: "Auto-generated stub for new-extension",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "new-extension"), nil
 		},
@@ -6074,7 +5823,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "test-checker",
 		Description: "Auto-generated stub for test-checker",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "test-checker"), nil
 		},
@@ -6084,7 +5833,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "another-extension",
 		Description: "Auto-generated stub for another-extension",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "another-extension"), nil
 		},
@@ -6094,7 +5843,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "myFunction",
 		Description: "Auto-generated stub for myFunction",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "myFunction"), nil
 		},
@@ -6104,7 +5853,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "func1",
 		Description: "Auto-generated stub for func1",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "func1"), nil
 		},
@@ -6114,7 +5863,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "do_stuff",
 		Description: "Auto-generated stub for do_stuff",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "do_stuff"), nil
 		},
@@ -6124,7 +5873,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "keep",
 		Description: "Auto-generated stub for keep",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "keep"), nil
 		},
@@ -6134,7 +5883,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "lydell-node-pty",
 		Description: "Auto-generated stub for lydell-node-pty",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "lydell-node-pty"), nil
 		},
@@ -6144,7 +5893,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "node-pty",
 		Description: "Auto-generated stub for node-pty",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "node-pty"), nil
 		},
@@ -6154,7 +5903,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "Get-ChildItem",
 		Description: "Auto-generated stub for Get-ChildItem",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "Get-ChildItem"), nil
 		},
@@ -6164,7 +5913,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "Select-Object",
 		Description: "Auto-generated stub for Select-Object",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "Select-Object"), nil
 		},
@@ -6174,7 +5923,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "echo",
 		Description: "Auto-generated stub for echo",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "echo"), nil
 		},
@@ -6184,7 +5933,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "Bob",
 		Description: "Auto-generated stub for Bob",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "Bob"), nil
 		},
@@ -6194,7 +5943,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "Charlie",
 		Description: "Auto-generated stub for Charlie",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "Charlie"), nil
 		},
@@ -6204,7 +5953,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "myTool",
 		Description: "Auto-generated stub for myTool",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "myTool"), nil
 		},
@@ -6214,7 +5963,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "foo",
 		Description: "Auto-generated stub for foo",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "foo"), nil
 		},
@@ -6224,7 +5973,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "multimodal_tool",
 		Description: "Auto-generated stub for multimodal_tool",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "multimodal_tool"), nil
 		},
@@ -6234,7 +5983,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "d0",
 		Description: "Auto-generated stub for d0",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "d0"), nil
 		},
@@ -6244,7 +5993,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "d1",
 		Description: "Auto-generated stub for d1",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "d1"), nil
 		},
@@ -6254,7 +6003,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "d2",
 		Description: "Auto-generated stub for d2",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "d2"), nil
 		},
@@ -6264,7 +6013,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "d3",
 		Description: "Auto-generated stub for d3",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "d3"), nil
 		},
@@ -6274,7 +6023,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "d4",
 		Description: "Auto-generated stub for d4",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "d4"), nil
 		},
@@ -6284,7 +6033,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "HeadersTimeoutError",
 		Description: "Auto-generated stub for HeadersTimeoutError",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "HeadersTimeoutError"), nil
 		},
@@ -6294,7 +6043,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "testFunc",
 		Description: "Auto-generated stub for testFunc",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "testFunc"), nil
 		},
@@ -6304,7 +6053,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "testFunc1",
 		Description: "Auto-generated stub for testFunc1",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "testFunc1"), nil
 		},
@@ -6314,7 +6063,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "testFunc2",
 		Description: "Auto-generated stub for testFunc2",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "testFunc2"), nil
 		},
@@ -6324,7 +6073,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "processData",
 		Description: "Auto-generated stub for processData",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "processData"), nil
 		},
@@ -6334,7 +6083,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "test-pkg",
 		Description: "no package.json is found",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "test-pkg"), nil
 		},
@@ -6344,7 +6093,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "A",
 		Description: "Auto-generated stub for A",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "A"), nil
 		},
@@ -6354,7 +6103,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "B",
 		Description: "Line 1\nLine 2\nLine 3",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "B"), nil
 		},
@@ -6364,7 +6113,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "some_tool",
 		Description: "Auto-generated stub for some_tool",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "some_tool"), nil
 		},
@@ -6374,7 +6123,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "tool1",
 		Description: "Auto-generated stub for tool1",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "tool1"), nil
 		},
@@ -6384,7 +6133,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "tool2",
 		Description: "Auto-generated stub for tool2",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "tool2"), nil
 		},
@@ -6394,7 +6143,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "undefined_tool_name",
 		Description: "Auto-generated stub for undefined_tool_name",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "undefined_tool_name"), nil
 		},
@@ -6404,7 +6153,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "ReadFile",
 		Description: "Auto-generated stub for ReadFile",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "ReadFile"), nil
 		},
@@ -6414,7 +6163,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "debugTool",
 		Description: "Auto-generated stub for debugTool",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "debugTool"), nil
 		},
@@ -6424,7 +6173,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "find_restaurant",
 		Description: "Auto-generated stub for find_restaurant",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "find_restaurant"), nil
 		},
@@ -6434,7 +6183,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "Vesuvio",
 		Description: "Auto-generated stub for Vesuvio",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "Vesuvio"), nil
 		},
@@ -6444,7 +6193,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "test_function",
 		Description: "Auto-generated stub for test_function",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "test_function"), nil
 		},
@@ -6454,7 +6203,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "old_tool",
 		Description: "Auto-generated stub for old_tool",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "old_tool"), nil
 		},
@@ -6464,7 +6213,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "find_restaurant_2",
 		Description: "Auto-generated stub for find_restaurant_2",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "find_restaurant_2"), nil
 		},
@@ -6474,7 +6223,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "tool_with_sig",
 		Description: "Auto-generated stub for tool_with_sig",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "tool_with_sig"), nil
 		},
@@ -6484,7 +6233,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "another_tool",
 		Description: "Auto-generated stub for another_tool",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "another_tool"), nil
 		},
@@ -6494,7 +6243,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "tail-tool",
 		Description: "Auto-generated stub for tail-tool",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "tail-tool"), nil
 		},
@@ -6504,7 +6253,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "mock-tool",
 		Description: "Auto-generated stub for mock-tool",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "mock-tool"), nil
 		},
@@ -6514,7 +6263,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "original-tool",
 		Description: "Auto-generated stub for original-tool",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "original-tool"), nil
 		},
@@ -6524,7 +6273,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "tool-name",
 		Description: "Auto-generated stub for tool-name",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "tool-name"), nil
 		},
@@ -6534,7 +6283,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "streamTool",
 		Description: "Auto-generated stub for streamTool",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "streamTool"), nil
 		},
@@ -6544,7 +6293,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "mcp_myserver_search",
 		Description: "Search via MCP",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "mcp_myserver_search"), nil
 		},
@@ -6554,7 +6303,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "__leading",
 		Description: "test",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "__leading"), nil
 		},
@@ -6564,7 +6313,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "trailing__",
 		Description: "test",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "trailing__"), nil
 		},
@@ -6574,7 +6323,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "a__b__c",
 		Description: "test",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "a__b__c"), nil
 		},
@@ -6584,17 +6333,9 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "mock-agent",
 		Description: "Mock Agent Description",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
-			streamCallback := func(chunk string) {
-				fmt.Print(chunk)
-			}
-
-			result, err := subagents.GlobalManager.Spawn(context.Background(), subagents.TypePlan, "Autogenerated subagent task", "Execute delegated task", "", streamCallback)
-			if err != nil {
-				return "", fmt.Errorf("subagent %s failed: %w", "mock-agent", err)
-			}
-			return fmt.Sprintf("Subagent %s completed:\n%s", "mock-agent", result), nil
+			return fmt.Sprintf("Tool %s not fully wired yet", "mock-agent"), nil
 		},
 	})
 
@@ -6602,7 +6343,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "test-skill",
 		Description: "A test skill description",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "test-skill"), nil
 		},
@@ -6612,7 +6353,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "glob",
 		Description: "Auto-generated stub for glob",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "glob"), nil
 		},
@@ -6622,7 +6363,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "grep_search",
 		Description: "Auto-generated stub for grep_search",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "grep_search"), nil
 		},
@@ -6632,7 +6373,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "ask_user",
 		Description: "Auto-generated stub for ask_user",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "ask_user"), nil
 		},
@@ -6642,7 +6383,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "exit_plan_mode",
 		Description: "Auto-generated stub for exit_plan_mode",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "exit_plan_mode"), nil
 		},
@@ -6652,7 +6393,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "huge_tool",
 		Description: "Auto-generated stub for huge_tool",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "huge_tool"), nil
 		},
@@ -6662,7 +6403,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "Read",
 		Description: "Auto-generated stub for Read",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "Read"), nil
 		},
@@ -6672,7 +6413,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "noise",
 		Description: "Auto-generated stub for noise",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "noise"), nil
 		},
@@ -6682,7 +6423,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "strategy1",
 		Description: "Auto-generated stub for strategy1",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "strategy1"), nil
 		},
@@ -6692,7 +6433,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "strategy2",
 		Description: "Auto-generated stub for strategy2",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "strategy2"), nil
 		},
@@ -6702,7 +6443,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "terminal",
 		Description: "Auto-generated stub for terminal",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "terminal"), nil
 		},
@@ -6712,7 +6453,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "allow_git_status_rule",
 		Description: "Auto-generated stub for allow_git_status_rule",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "allow_git_status_rule"), nil
 		},
@@ -6722,7 +6463,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "ask_another_unknown_command_rule",
 		Description: "Auto-generated stub for ask_another_unknown_command_rule",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "ask_another_unknown_command_rule"), nil
 		},
@@ -6732,7 +6473,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "ask_rule_1",
 		Description: "Auto-generated stub for ask_rule_1",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "ask_rule_1"), nil
 		},
@@ -6742,7 +6483,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "ask_rule_2",
 		Description: "Auto-generated stub for ask_rule_2",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "ask_rule_2"), nil
 		},
@@ -6752,7 +6493,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "shell",
 		Description: "Auto-generated stub for shell",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "shell"), nil
 		},
@@ -6762,7 +6503,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "edit",
 		Description: "Auto-generated stub for edit",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "edit"), nil
 		},
@@ -6772,7 +6513,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "mcp_my-server_tool",
 		Description: "Auto-generated stub for mcp_my-server_tool",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "mcp_my-server_tool"), nil
 		},
@@ -6782,7 +6523,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "safe-tool",
 		Description: "Auto-generated stub for safe-tool",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "safe-tool"), nil
 		},
@@ -6792,7 +6533,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "any-other-tool",
 		Description: "Auto-generated stub for any-other-tool",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "any-other-tool"), nil
 		},
@@ -6802,7 +6543,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "interactive-tool",
 		Description: "Auto-generated stub for interactive-tool",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "interactive-tool"), nil
 		},
@@ -6812,7 +6553,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "allowed-tool",
 		Description: "Auto-generated stub for allowed-tool",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "allowed-tool"), nil
 		},
@@ -6822,7 +6563,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "unknown-tool",
 		Description: "Auto-generated stub for unknown-tool",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "unknown-tool"), nil
 		},
@@ -6832,7 +6573,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "any-tool",
 		Description: "Auto-generated stub for any-tool",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "any-tool"), nil
 		},
@@ -6842,7 +6583,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "dangerous-tool",
 		Description: "Auto-generated stub for dangerous-tool",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "dangerous-tool"), nil
 		},
@@ -6852,7 +6593,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "new-tool",
 		Description: "Auto-generated stub for new-tool",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "new-tool"), nil
 		},
@@ -6862,7 +6603,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "mcp_mcp_tool",
 		Description: "Auto-generated stub for mcp_mcp_tool",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "mcp_mcp_tool"), nil
 		},
@@ -6872,7 +6613,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "mcp_other_tool",
 		Description: "Auto-generated stub for mcp_other_tool",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "mcp_other_tool"), nil
 		},
@@ -6882,7 +6623,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "mcp_my-server_tool1",
 		Description: "Auto-generated stub for mcp_my-server_tool1",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "mcp_my-server_tool1"), nil
 		},
@@ -6892,7 +6633,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "mcp_my-server_another_tool",
 		Description: "Auto-generated stub for mcp_my-server_another_tool",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "mcp_my-server_another_tool"), nil
 		},
@@ -6902,7 +6643,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "mcp_blocked-server_tool1",
 		Description: "Auto-generated stub for mcp_blocked-server_tool1",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "mcp_blocked-server_tool1"), nil
 		},
@@ -6912,7 +6653,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "mcp_blocked-server_dangerous",
 		Description: "Auto-generated stub for mcp_blocked-server_dangerous",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "mcp_blocked-server_dangerous"), nil
 		},
@@ -6922,7 +6663,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "mcp_other-server_tool",
 		Description: "Auto-generated stub for mcp_other-server_tool",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "mcp_other-server_tool"), nil
 		},
@@ -6932,7 +6673,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "my-server-tool",
 		Description: "Auto-generated stub for my-server-tool",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "my-server-tool"), nil
 		},
@@ -6942,7 +6683,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "my-server",
 		Description: "Auto-generated stub for my-server",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "my-server"), nil
 		},
@@ -6952,7 +6693,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "mcp_my-server_dangerous-tool",
 		Description: "Auto-generated stub for mcp_my-server_dangerous-tool",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "mcp_my-server_dangerous-tool"), nil
 		},
@@ -6962,7 +6703,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "mcp_my-server_safe-tool",
 		Description: "Auto-generated stub for mcp_my-server_safe-tool",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "mcp_my-server_safe-tool"), nil
 		},
@@ -6972,7 +6713,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "mcp_mcp_safe_server_malicious_tool",
 		Description: "Auto-generated stub for mcp_mcp_safe_server_malicious_tool",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "mcp_mcp_safe_server_malicious_tool"), nil
 		},
@@ -6982,7 +6723,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "mcp_other_server_tool",
 		Description: "Auto-generated stub for mcp_other_server_tool",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "mcp_other_server_tool"), nil
 		},
@@ -6992,7 +6733,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "mcp_safe_server_tool",
 		Description: "Auto-generated stub for mcp_safe_server_tool",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "mcp_safe_server_tool"), nil
 		},
@@ -7002,7 +6743,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "read",
 		Description: "Auto-generated stub for read",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "read"), nil
 		},
@@ -7012,7 +6753,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "api",
 		Description: "Auto-generated stub for api",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "api"), nil
 		},
@@ -7022,7 +6763,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "deep",
 		Description: "Auto-generated stub for deep",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "deep"), nil
 		},
@@ -7032,17 +6773,9 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "unknown_subagent",
 		Description: "Auto-generated stub for unknown_subagent",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
-			streamCallback := func(chunk string) {
-				fmt.Print(chunk)
-			}
-
-			result, err := subagents.GlobalManager.Spawn(context.Background(), subagents.TypePlan, "Autogenerated subagent task", "Execute delegated task", "", streamCallback)
-			if err != nil {
-				return "", fmt.Errorf("subagent %s failed: %w", "unknown_subagent", err)
-			}
-			return fmt.Sprintf("Subagent %s completed:\n%s", "unknown_subagent", result), nil
+			return fmt.Sprintf("Tool %s not fully wired yet", "unknown_subagent"), nil
 		},
 	})
 
@@ -7050,7 +6783,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "checker1",
 		Description: "Auto-generated stub for checker1",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "checker1"), nil
 		},
@@ -7060,7 +6793,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "checker2",
 		Description: "Auto-generated stub for checker2",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "checker2"), nil
 		},
@@ -7070,7 +6803,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "matching",
 		Description: "Auto-generated stub for matching",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "matching"), nil
 		},
@@ -7080,7 +6813,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "non-matching",
 		Description: "Auto-generated stub for non-matching",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "non-matching"), nil
 		},
@@ -7090,7 +6823,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "global",
 		Description: "Auto-generated stub for global",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "global"), nil
 		},
@@ -7100,7 +6833,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "any_tool",
 		Description: "Auto-generated stub for any_tool",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "any_tool"), nil
 		},
@@ -7110,7 +6843,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "mcp_server_tool",
 		Description: "Auto-generated stub for mcp_server_tool",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "mcp_server_tool"), nil
 		},
@@ -7120,7 +6853,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "wildcard",
 		Description: "Auto-generated stub for wildcard",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "wildcard"), nil
 		},
@@ -7130,7 +6863,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "activate_skill",
 		Description: "Auto-generated stub for activate_skill",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "activate_skill"), nil
 		},
@@ -7140,7 +6873,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "enter_plan_mode",
 		Description: "Auto-generated stub for enter_plan_mode",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "enter_plan_mode"), nil
 		},
@@ -7150,7 +6883,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "c1",
 		Description: "Auto-generated stub for c1",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "c1"), nil
 		},
@@ -7160,7 +6893,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "c2",
 		Description: "Auto-generated stub for c2",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "c2"), nil
 		},
@@ -7170,7 +6903,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "c3",
 		Description: "Auto-generated stub for c3",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "c3"), nil
 		},
@@ -7180,7 +6913,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "write",
 		Description: "Auto-generated stub for write",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "write"), nil
 		},
@@ -7190,7 +6923,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "mcp_mcp_test",
 		Description: "Auto-generated stub for mcp_mcp_test",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "mcp_mcp_test"), nil
 		},
@@ -7200,7 +6933,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "mcp_mcp_stable",
 		Description: "Auto-generated stub for mcp_mcp_stable",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "mcp_mcp_stable"), nil
 		},
@@ -7210,7 +6943,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "h1",
 		Description: "Auto-generated stub for h1",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "h1"), nil
 		},
@@ -7220,7 +6953,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "h2",
 		Description: "Auto-generated stub for h2",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "h2"), nil
 		},
@@ -7230,7 +6963,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "github__list_issues",
 		Description: "Auto-generated stub for github__list_issues",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "github__list_issues"), nil
 		},
@@ -7240,7 +6973,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "mcp_github_create_issue",
 		Description: "Auto-generated stub for mcp_github_create_issue",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "mcp_github_create_issue"), nil
 		},
@@ -7250,7 +6983,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "mcp_github_delete_issue",
 		Description: "Auto-generated stub for mcp_github_delete_issue",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "mcp_github_delete_issue"), nil
 		},
@@ -7260,7 +6993,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "mcp_github_list_repos",
 		Description: "Auto-generated stub for mcp_github_list_repos",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "mcp_github_list_repos"), nil
 		},
@@ -7270,7 +7003,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "some_random_tool",
 		Description: "Auto-generated stub for some_random_tool",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "some_random_tool"), nil
 		},
@@ -7280,7 +7013,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "list_directory",
 		Description: "Auto-generated stub for list_directory",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "list_directory"), nil
 		},
@@ -7290,7 +7023,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "python-checker",
 		Description: "Auto-generated stub for python-checker",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "python-checker"), nil
 		},
@@ -7300,7 +7033,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "unknownTool",
 		Description: "Auto-generated stub for unknownTool",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "unknownTool"), nil
 		},
@@ -7310,7 +7043,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "prompt1",
 		Description: "Auto-generated stub for prompt1",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "prompt1"), nil
 		},
@@ -7320,7 +7053,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "prompt2",
 		Description: "Auto-generated stub for prompt2",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "prompt2"), nil
 		},
@@ -7330,7 +7063,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "server2_prompt1",
 		Description: "Auto-generated stub for server2_prompt1",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "server2_prompt1"), nil
 		},
@@ -7340,7 +7073,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "test-function",
 		Description: "Auto-generated stub for test-function",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "test-function"), nil
 		},
@@ -7350,7 +7083,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "test_phase",
 		Description: "Auto-generated stub for test_phase",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "test_phase"), nil
 		},
@@ -7360,7 +7093,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "test-span",
 		Description: "Auto-generated stub for test-span",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "test-span"), nil
 		},
@@ -7370,7 +7103,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "circular-span",
 		Description: "Auto-generated stub for circular-span",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "circular-span"), nil
 		},
@@ -7380,7 +7113,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "ext-one",
 		Description: "Auto-generated stub for ext-one",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "ext-one"), nil
 		},
@@ -7390,7 +7123,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "ext-two",
 		Description: "Auto-generated stub for ext-two",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "ext-two"), nil
 		},
@@ -7400,7 +7133,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "test-worktree",
 		Description: "Auto-generated stub for test-worktree",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "test-worktree"), nil
 		},
@@ -7410,7 +7143,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "mock_mcp_tool",
 		Description: "Auto-generated stub for mock_mcp_tool",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "mock_mcp_tool"), nil
 		},
@@ -7420,7 +7153,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "mock_mcp_server",
 		Description: "Auto-generated stub for mock_mcp_server",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "mock_mcp_server"), nil
 		},
@@ -7430,7 +7163,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "testing",
 		Description: "Auto-generated stub for testing",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "testing"), nil
 		},
@@ -7440,7 +7173,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "before-tool",
 		Description: "Auto-generated stub for before-tool",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "before-tool"), nil
 		},
@@ -7450,7 +7183,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "new_space",
 		Description: "Auto-generated stub for new_space",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "new_space"), nil
 		},
@@ -7460,7 +7193,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "old_space",
 		Description: "Auto-generated stub for old_space",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "old_space"), nil
 		},
@@ -7470,7 +7203,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "fn",
 		Description: "Auto-generated stub for fn",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "fn"), nil
 		},
@@ -7480,7 +7213,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "my-fn",
 		Description: "Auto-generated stub for my-fn",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "my-fn"), nil
 		},
@@ -7490,7 +7223,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "Bash",
 		Description: "Auto-generated stub for Bash",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "Bash"), nil
 		},
@@ -7500,7 +7233,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "AfterTool",
 		Description: "Auto-generated stub for AfterTool",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "AfterTool"), nil
 		},
@@ -7510,7 +7243,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "type",
 		Description: "Auto-generated stub for type",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "type"), nil
 		},
@@ -7520,7 +7253,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "Devin",
 		Description: "Auto-generated stub for Devin",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "Devin"), nil
 		},
@@ -7530,7 +7263,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "unidentified",
 		Description: "Auto-generated stub for unidentified",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "unidentified"), nil
 		},
@@ -7540,7 +7273,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "some_other_tool",
 		Description: "Auto-generated stub for some_other_tool",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "some_other_tool"), nil
 		},
@@ -7550,7 +7283,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "CONCORD",
 		Description: "Auto-generated stub for CONCORD",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "CONCORD"), nil
 		},
@@ -7560,7 +7293,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "calculate",
 		Description: "Auto-generated stub for calculate",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "calculate"), nil
 		},
@@ -7570,7 +7303,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "Free",
 		Description: "free tier",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "Free"), nil
 		},
@@ -7580,7 +7313,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "tier",
 		Description: "Auto-generated stub for tier",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "tier"), nil
 		},
@@ -7590,7 +7323,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "t1",
 		Description: "Auto-generated stub for t1",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "t1"), nil
 		},
@@ -7600,7 +7333,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "t2",
 		Description: "Auto-generated stub for t2",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "t2"), nil
 		},
@@ -7610,7 +7343,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "paid",
 		Description: "Paid tier",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "paid"), nil
 		},
@@ -7620,7 +7353,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "free",
 		Description: "Free tier",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "free"), nil
 		},
@@ -7630,7 +7363,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "user-gemini",
 		Description: "desc",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "user-gemini"), nil
 		},
@@ -7640,17 +7373,9 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "user-agent",
 		Description: "desc",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
-			streamCallback := func(chunk string) {
-				fmt.Print(chunk)
-			}
-
-			result, err := subagents.GlobalManager.Spawn(context.Background(), subagents.TypePlan, "Autogenerated subagent task", "Execute delegated task", "", streamCallback)
-			if err != nil {
-				return "", fmt.Errorf("subagent %s failed: %w", "user-agent", err)
-			}
-			return fmt.Sprintf("Subagent %s completed:\n%s", "user-agent", result), nil
+			return fmt.Sprintf("Tool %s not fully wired yet", "user-agent"), nil
 		},
 	})
 
@@ -7658,7 +7383,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "project-gemini",
 		Description: "desc",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "project-gemini"), nil
 		},
@@ -7668,17 +7393,9 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "project-agent",
 		Description: "desc",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
-			streamCallback := func(chunk string) {
-				fmt.Print(chunk)
-			}
-
-			result, err := subagents.GlobalManager.Spawn(context.Background(), subagents.TypePlan, "Autogenerated subagent task", "Execute delegated task", "", streamCallback)
-			if err != nil {
-				return "", fmt.Errorf("subagent %s failed: %w", "project-agent", err)
-			}
-			return fmt.Sprintf("Subagent %s completed:\n%s", "project-agent", result), nil
+			return fmt.Sprintf("Tool %s not fully wired yet", "project-agent"), nil
 		},
 	})
 
@@ -7686,7 +7403,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "same-skill",
 		Description: "gemini-desc",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "same-skill"), nil
 		},
@@ -7696,7 +7413,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "test-ext",
 		Description: "ext-desc",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "test-ext"), nil
 		},
@@ -7706,7 +7423,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "skill-extension",
 		Description: "ext-desc",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "skill-extension"), nil
 		},
@@ -7716,7 +7433,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "same-name",
 		Description: "ext-desc",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "same-name"), nil
 		},
@@ -7726,7 +7443,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "builtin-skill",
 		Description: "builtin-desc",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "builtin-skill"), nil
 		},
@@ -7736,7 +7453,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "regular-skill",
 		Description: "regular",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "regular-skill"), nil
 		},
@@ -7746,7 +7463,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "disabled-builtin",
 		Description: "disabled builtin",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "disabled-builtin"), nil
 		},
@@ -7756,7 +7473,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "web_fetch",
 		Description: "Auto-generated stub for web_fetch",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "web_fetch"), nil
 		},
@@ -7766,7 +7483,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "test-server",
 		Description: "Auto-generated stub for test-server",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "test-server"), nil
 		},
@@ -7776,7 +7493,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "extension-1",
 		Description: "Auto-generated stub for extension-1",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "extension-1"), nil
 		},
@@ -7786,7 +7503,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "extension-2",
 		Description: "Auto-generated stub for extension-2",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "extension-2"), nil
 		},
@@ -7796,7 +7513,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "blocked-server",
 		Description: "Auto-generated stub for blocked-server",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "blocked-server"), nil
 		},
@@ -7806,7 +7523,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "non-existent",
 		Description: "Auto-generated stub for non-existent",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "non-existent"), nil
 		},
@@ -7816,7 +7533,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "gemini-cli-mcp-client",
 		Description: "Auto-generated stub for gemini-cli-mcp-client",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "gemini-cli-mcp-client"), nil
 		},
@@ -7826,7 +7543,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "FILE_NOT_FOUND",
 		Description: "Auto-generated stub for FILE_NOT_FOUND",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "FILE_NOT_FOUND"), nil
 		},
@@ -7836,7 +7553,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "ATTEMPT_TO_CREATE_EXISTING_FILE",
 		Description: "Auto-generated stub for ATTEMPT_TO_CREATE_EXISTING_FILE",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "ATTEMPT_TO_CREATE_EXISTING_FILE"), nil
 		},
@@ -7846,7 +7563,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "NO_OCCURRENCE_FOUND",
 		Description: "Auto-generated stub for NO_OCCURRENCE_FOUND",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "NO_OCCURRENCE_FOUND"), nil
 		},
@@ -7856,7 +7573,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "EXPECTED_OCCURRENCE_MISMATCH",
 		Description: "Auto-generated stub for EXPECTED_OCCURRENCE_MISMATCH",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "EXPECTED_OCCURRENCE_MISMATCH"), nil
 		},
@@ -7866,7 +7583,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "WriteFileTool",
 		Description: "Auto-generated stub for WriteFileTool",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "WriteFileTool"), nil
 		},
@@ -7876,7 +7593,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "WebFetchTool",
 		Description: "Auto-generated stub for WebFetchTool",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "WebFetchTool"), nil
 		},
@@ -7886,7 +7603,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "testFunction",
 		Description: "Auto-generated stub for testFunction",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "testFunction"), nil
 		},
@@ -7896,7 +7613,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "validTool",
 		Description: "a param with no type",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "validTool"), nil
 		},
@@ -7906,7 +7623,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "invalidTool",
 		Description: "a param with no type",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "invalidTool"), nil
 		},
@@ -7916,7 +7633,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "readOnlyTool",
 		Description: "A read-only tool",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "readOnlyTool"), nil
 		},
@@ -7926,7 +7643,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "writeTool",
 		Description: "A write tool",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "writeTool"), nil
 		},
@@ -7936,7 +7653,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "multiAnnotationTool",
 		Description: "A tool with multiple annotations",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "multiAnnotationTool"), nil
 		},
@@ -7946,7 +7663,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "toolWithDefs",
 		Description: "A tool using $defs",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "toolWithDefs"), nil
 		},
@@ -7956,7 +7673,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "resource",
 		Description: "Test Resource",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "resource"), nil
 		},
@@ -7966,7 +7683,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "one",
 		Description: "first",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "one"), nil
 		},
@@ -7976,7 +7693,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "two",
 		Description: "second",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "two"), nil
 		},
@@ -7986,7 +7703,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "newTool",
 		Description: "Auto-generated stub for newTool",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "newTool"), nil
 		},
@@ -7996,7 +7713,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "ext-setting",
 		Description: "Auto-generated stub for ext-setting",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "ext-setting"), nil
 		},
@@ -8006,7 +7723,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "excluded-tool-class",
 		Description: "Auto-generated stub for excluded-tool-class",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "excluded-tool-class"), nil
 		},
@@ -8016,7 +7733,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "current_test_tool",
 		Description: "Auto-generated stub for current_test_tool",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "current_test_tool"), nil
 		},
@@ -8026,7 +7743,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "c-tool",
 		Description: "Auto-generated stub for c-tool",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "c-tool"), nil
 		},
@@ -8036,7 +7753,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "a-tool",
 		Description: "Auto-generated stub for a-tool",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "a-tool"), nil
 		},
@@ -8046,7 +7763,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "b-tool",
 		Description: "Auto-generated stub for b-tool",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "b-tool"), nil
 		},
@@ -8056,7 +7773,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "regular-tool",
 		Description: "Auto-generated stub for regular-tool",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "regular-tool"), nil
 		},
@@ -8066,7 +7783,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "builtin-1",
 		Description: "Auto-generated stub for builtin-1",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "builtin-1"), nil
 		},
@@ -8076,7 +7793,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "builtin-2",
 		Description: "Auto-generated stub for builtin-2",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "builtin-2"), nil
 		},
@@ -8086,7 +7803,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "tool-with-bad-format",
 		Description: "A tool with an invalid format property",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "tool-with-bad-format"), nil
 		},
@@ -8096,7 +7813,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "failing-tool",
 		Description: "A tool that fails",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "failing-tool"), nil
 		},
@@ -8106,7 +7823,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "policy-test-tool",
 		Description: "tests policy",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "policy-test-tool"), nil
 		},
@@ -8116,7 +7833,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "resource-name",
 		Description: "Auto-generated stub for resource-name",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "resource-name"), nil
 		},
@@ -8126,7 +7843,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "error",
 		Description: "Auto-generated stub for error",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "error"), nil
 		},
@@ -8136,7 +7853,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "grep_search_ripgrep",
 		Description: "Auto-generated stub for grep_search_ripgrep",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "grep_search_ripgrep"), nil
 		},
@@ -8146,7 +7863,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "google_web_search",
 		Description: "Auto-generated stub for google_web_search",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "google_web_search"), nil
 		},
@@ -8156,7 +7873,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "read_many_files",
 		Description: "Auto-generated stub for read_many_files",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "read_many_files"), nil
 		},
@@ -8166,7 +7883,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "write_todos",
 		Description: "Auto-generated stub for write_todos",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "write_todos"), nil
 		},
@@ -8176,7 +7893,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "get_internal_docs",
 		Description: "Auto-generated stub for get_internal_docs",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "get_internal_docs"), nil
 		},
@@ -8186,7 +7903,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "activate_skill_empty",
 		Description: "Auto-generated stub for activate_skill_empty",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "activate_skill_empty"), nil
 		},
@@ -8196,7 +7913,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "activate_skill_single",
 		Description: "Auto-generated stub for activate_skill_single",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "activate_skill_single"), nil
 		},
@@ -8206,7 +7923,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "grep",
 		Description: "Auto-generated stub for grep",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "grep"), nil
 		},
@@ -8216,7 +7933,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "raw_tool",
 		Description: "Auto-generated stub for raw_tool",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "raw_tool"), nil
 		},
@@ -8226,7 +7943,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "massive_preserved",
 		Description: "Auto-generated stub for massive_preserved",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "massive_preserved"), nil
 		},
@@ -8236,7 +7953,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "t3",
 		Description: "Auto-generated stub for t3",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "t3"), nil
 		},
@@ -8246,7 +7963,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "p",
 		Description: "Auto-generated stub for p",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "p"), nil
 		},
@@ -8256,7 +7973,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "l",
 		Description: "Auto-generated stub for l",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "l"), nil
 		},
@@ -8266,7 +7983,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "padding",
 		Description: "Auto-generated stub for padding",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "padding"), nil
 		},
@@ -8276,7 +7993,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "tiny_tool",
 		Description: "Auto-generated stub for tiny_tool",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "tiny_tool"), nil
 		},
@@ -8286,7 +8003,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "bulky_tool",
 		Description: "Auto-generated stub for bulky_tool",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "bulky_tool"), nil
 		},
@@ -8296,7 +8013,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "ModifyingProcessor",
 		Description: "Auto-generated stub for ModifyingProcessor",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "ModifyingProcessor"), nil
 		},
@@ -8306,7 +8023,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "Throwing",
 		Description: "Auto-generated stub for Throwing",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "Throwing"), nil
 		},
@@ -8316,7 +8033,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "MockAsyncProcessor",
 		Description: "Auto-generated stub for MockAsyncProcessor",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "MockAsyncProcessor"), nil
 		},
@@ -8326,7 +8043,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "TestPipeline",
 		Description: "Auto-generated stub for TestPipeline",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "TestPipeline"), nil
 		},
@@ -8336,7 +8053,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "FailingPipeline",
 		Description: "Auto-generated stub for FailingPipeline",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "FailingPipeline"), nil
 		},
@@ -8346,7 +8063,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "TestAsync",
 		Description: "Auto-generated stub for TestAsync",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "TestAsync"), nil
 		},
@@ -8356,7 +8073,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "Normalization",
 		Description: "Auto-generated stub for Normalization",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "Normalization"), nil
 		},
@@ -8366,7 +8083,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "Async",
 		Description: "Auto-generated stub for Async",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "Async"), nil
 		},
@@ -8376,7 +8093,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "NodeTruncationProcessor",
 		Description: "Auto-generated stub for NodeTruncationProcessor",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "NodeTruncationProcessor"), nil
 		},
@@ -8386,7 +8103,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "StateSnapshotAsyncProcessor",
 		Description: "Auto-generated stub for StateSnapshotAsyncProcessor",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "StateSnapshotAsyncProcessor"), nil
 		},
@@ -8396,7 +8113,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "HistoryTruncationProcessor",
 		Description: "Auto-generated stub for HistoryTruncationProcessor",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "HistoryTruncationProcessor"), nil
 		},
@@ -8406,7 +8123,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "RollingSummaryProcessor",
 		Description: "Auto-generated stub for RollingSummaryProcessor",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "RollingSummaryProcessor"), nil
 		},
@@ -8416,7 +8133,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "ToolMaskingProcessor",
 		Description: "Auto-generated stub for ToolMaskingProcessor",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "ToolMaskingProcessor"), nil
 		},
@@ -8426,7 +8143,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "StateSnapshotProcessor",
 		Description: "Auto-generated stub for StateSnapshotProcessor",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "StateSnapshotProcessor"), nil
 		},
@@ -8436,7 +8153,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "NodeDistillationProcessor",
 		Description: "Auto-generated stub for NodeDistillationProcessor",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "NodeDistillationProcessor"), nil
 		},
@@ -8446,7 +8163,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "BlobDegradationProcessor",
 		Description: "Auto-generated stub for BlobDegradationProcessor",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "BlobDegradationProcessor"), nil
 		},
@@ -8456,7 +8173,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "streamable-http-client",
 		Description: "Auto-generated stub for streamable-http-client",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "streamable-http-client"), nil
 		},
@@ -8466,7 +8183,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "stdio-client",
 		Description: "Auto-generated stub for stdio-client",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "stdio-client"), nil
 		},
@@ -8476,7 +8193,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "custom-ide",
 		Description: "Auto-generated stub for custom-ide",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "custom-ide"), nil
 		},
@@ -8486,7 +8203,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "devin",
 		Description: "Auto-generated stub for devin",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "devin"), nil
 		},
@@ -8496,7 +8213,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "replit",
 		Description: "Auto-generated stub for replit",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "replit"), nil
 		},
@@ -8506,7 +8223,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "cursor",
 		Description: "Auto-generated stub for cursor",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "cursor"), nil
 		},
@@ -8516,7 +8233,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "cloudshell",
 		Description: "Auto-generated stub for cloudshell",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "cloudshell"), nil
 		},
@@ -8526,7 +8243,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "codespaces",
 		Description: "Auto-generated stub for codespaces",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "codespaces"), nil
 		},
@@ -8536,7 +8253,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "firebasestudio",
 		Description: "Auto-generated stub for firebasestudio",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "firebasestudio"), nil
 		},
@@ -8546,7 +8263,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "trae",
 		Description: "Auto-generated stub for trae",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "trae"), nil
 		},
@@ -8556,7 +8273,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "vscode",
 		Description: "Auto-generated stub for vscode",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "vscode"), nil
 		},
@@ -8566,7 +8283,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "vscodefork",
 		Description: "Auto-generated stub for vscodefork",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "vscodefork"), nil
 		},
@@ -8576,7 +8293,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "positron",
 		Description: "Auto-generated stub for positron",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "positron"), nil
 		},
@@ -8586,7 +8303,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "antigravity",
 		Description: "Auto-generated stub for antigravity",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "antigravity"), nil
 		},
@@ -8596,7 +8313,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "sublimetext",
 		Description: "Auto-generated stub for sublimetext",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "sublimetext"), nil
 		},
@@ -8606,7 +8323,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "jetbrains",
 		Description: "Auto-generated stub for jetbrains",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "jetbrains"), nil
 		},
@@ -8616,7 +8333,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "intellijidea",
 		Description: "Auto-generated stub for intellijidea",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "intellijidea"), nil
 		},
@@ -8626,7 +8343,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "webstorm",
 		Description: "Auto-generated stub for webstorm",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "webstorm"), nil
 		},
@@ -8636,7 +8353,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "pycharm",
 		Description: "Auto-generated stub for pycharm",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "pycharm"), nil
 		},
@@ -8646,7 +8363,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "goland",
 		Description: "Auto-generated stub for goland",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "goland"), nil
 		},
@@ -8656,7 +8373,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "androidstudio",
 		Description: "Auto-generated stub for androidstudio",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "androidstudio"), nil
 		},
@@ -8666,7 +8383,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "clion",
 		Description: "Auto-generated stub for clion",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "clion"), nil
 		},
@@ -8676,7 +8393,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "rustrover",
 		Description: "Auto-generated stub for rustrover",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "rustrover"), nil
 		},
@@ -8686,7 +8403,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "datagrip",
 		Description: "Auto-generated stub for datagrip",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "datagrip"), nil
 		},
@@ -8696,7 +8413,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "phpstorm",
 		Description: "Auto-generated stub for phpstorm",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "phpstorm"), nil
 		},
@@ -8706,7 +8423,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "zed",
 		Description: "Auto-generated stub for zed",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "zed"), nil
 		},
@@ -8716,7 +8433,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "xcode",
 		Description: "Auto-generated stub for xcode",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "xcode"), nil
 		},
@@ -8726,7 +8443,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "someOtherTool",
 		Description: "Auto-generated stub for someOtherTool",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "someOtherTool"), nil
 		},
@@ -8736,7 +8453,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "openDiff",
 		Description: "Auto-generated stub for openDiff",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "openDiff"), nil
 		},
@@ -8746,7 +8463,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "closeDiff",
 		Description: "Auto-generated stub for closeDiff",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "closeDiff"), nil
 		},
@@ -8756,7 +8473,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "raw-name",
 		Description: "Auto-generated stub for raw-name",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "raw-name"), nil
 		},
@@ -8766,7 +8483,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "myFunc",
 		Description: "Auto-generated stub for myFunc",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "myFunc"), nil
 		},
@@ -8776,7 +8493,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "extensions",
 		Description: "Manage extensions.",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "extensions"), nil
 		},
@@ -8786,7 +8503,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "restore",
 		Description: "Restores the server.",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "restore"), nil
 		},
@@ -8796,7 +8513,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "test-command",
 		Description: "",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "test-command"), nil
 		},
@@ -8806,7 +8523,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "test-command-sub-sub",
 		Description: "",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "test-command-sub-sub"), nil
 		},
@@ -8816,7 +8533,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "test-command-sub",
 		Description: "",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "test-command-sub"), nil
 		},
@@ -8826,7 +8543,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "cyclic-command",
 		Description: "",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "cyclic-command"), nil
 		},
@@ -8836,7 +8553,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "test-tool-1",
 		Description: "Auto-generated stub for test-tool-1",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "test-tool-1"), nil
 		},
@@ -8846,7 +8563,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "test-tool-2",
 		Description: "Auto-generated stub for test-tool-2",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "test-tool-2"), nil
 		},
@@ -8856,7 +8573,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "test-tool-no-approval",
 		Description: "Auto-generated stub for test-tool-no-approval",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "test-tool-no-approval"), nil
 		},
@@ -8866,7 +8583,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "test-tool-yolo",
 		Description: "Auto-generated stub for test-tool-yolo",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "test-tool-yolo"), nil
 		},
@@ -8876,7 +8593,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "arg1",
 		Description: "A test command",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "arg1"), nil
 		},
@@ -8886,7 +8603,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "sub-command",
 		Description: "Argument 1",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "sub-command"), nil
 		},
@@ -8896,7 +8613,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "another-command",
 		Description: "Another test command",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "another-command"), nil
 		},
@@ -8906,7 +8623,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "not-top-level",
 		Description: "Not a top level command",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "not-top-level"), nil
 		},
@@ -8916,7 +8633,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "workspace-command",
 		Description: "A command that requires a workspace",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "workspace-command"), nil
 		},
@@ -8926,7 +8643,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "context-check-command",
 		Description: "checks context",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "context-check-command"), nil
 		},
@@ -8936,7 +8653,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "stream-test",
 		Description: "A test streaming command",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "stream-test"), nil
 		},
@@ -8946,7 +8663,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "non-stream-test",
 		Description: "A test non-streaming command",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "non-stream-test"), nil
 		},
@@ -8956,7 +8673,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "call_mcp_tool",
 		Description: "Auto-generated stub for call_mcp_tool",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "call_mcp_tool"), nil
 		},
@@ -8966,7 +8683,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "writeFile",
 		Description: "Auto-generated stub for writeFile",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "writeFile"), nil
 		},
@@ -8976,7 +8693,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "pwd",
 		Description: "Auto-generated stub for pwd",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "pwd"), nil
 		},
@@ -8986,7 +8703,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "not_restorable",
 		Description: "Auto-generated stub for not_restorable",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "not_restorable"), nil
 		},
@@ -8996,7 +8713,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "errorTool",
 		Description: "Auto-generated stub for errorTool",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "errorTool"), nil
 		},
@@ -9006,7 +8723,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "nonexistentTool",
 		Description: "Auto-generated stub for nonexistentTool",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "nonexistentTool"), nil
 		},
@@ -9016,7 +8733,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "testcommand",
 		Description: "a test command",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "testcommand"), nil
 		},
@@ -9026,7 +8743,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "confirm",
 		Description: "a command that needs confirmation",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "confirm"), nil
 		},
@@ -9036,7 +8753,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "noaction",
 		Description: "unhandled type",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "noaction"), nil
 		},
@@ -9046,7 +8763,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "testargs",
 		Description: "a test command",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "testargs"), nil
 		},
@@ -9056,7 +8773,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "ShellTool",
 		Description: "A shell tool",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "ShellTool"), nil
 		},
@@ -9066,7 +8783,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "stopTool",
 		Description: "Auto-generated stub for stopTool",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "stopTool"), nil
 		},
@@ -9076,7 +8793,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "my-extension",
 		Description: "Auto-generated stub for my-extension",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "my-extension"), nil
 		},
@@ -9086,7 +8803,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "S1",
 		Description: "Auto-generated stub for S1",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "S1"), nil
 		},
@@ -9096,7 +8813,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "S2",
 		Description: "Auto-generated stub for S2",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "S2"), nil
 		},
@@ -9106,7 +8823,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "custom-commands",
 		Description: "Auto-generated stub for custom-commands",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "custom-commands"), nil
 		},
@@ -9116,7 +8833,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "mcp-server",
 		Description: "Auto-generated stub for mcp-server",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "mcp-server"), nil
 		},
@@ -9126,7 +8843,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "mock-extension",
 		Description: "Auto-generated stub for mock-extension",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "mock-extension"), nil
 		},
@@ -9136,7 +8853,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "http-extension",
 		Description: "Auto-generated stub for http-extension",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "http-extension"), nil
 		},
@@ -9146,7 +8863,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "https-extension",
 		Description: "Auto-generated stub for https-extension",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "https-extension"), nil
 		},
@@ -9156,7 +8873,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "git-extension",
 		Description: "Auto-generated stub for git-extension",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "git-extension"), nil
 		},
@@ -9166,7 +8883,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "sso-extension",
 		Description: "Auto-generated stub for sso-extension",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "sso-extension"), nil
 		},
@@ -9176,7 +8893,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "local-extension",
 		Description: "Auto-generated stub for local-extension",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "local-extension"), nil
 		},
@@ -9186,7 +8903,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "local-ext-name",
 		Description: "Auto-generated stub for local-ext-name",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "local-ext-name"), nil
 		},
@@ -9196,7 +8913,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "INVALID_NAME",
 		Description: "Auto-generated stub for INVALID_NAME",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "INVALID_NAME"), nil
 		},
@@ -9206,7 +8923,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "valid-name",
 		Description: "Auto-generated stub for valid-name",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "valid-name"), nil
 		},
@@ -9216,7 +8933,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "missing-extension",
 		Description: "Auto-generated stub for missing-extension",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "missing-extension"), nil
 		},
@@ -9226,7 +8943,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "my-linked-extension",
 		Description: "Auto-generated stub for my-linked-extension",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "my-linked-extension"), nil
 		},
@@ -9236,7 +8953,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "mcp-test-client",
 		Description: "Auto-generated stub for mcp-test-client",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "mcp-test-client"), nil
 		},
@@ -9246,7 +8963,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "skill2",
 		Description: "desc2",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "skill2"), nil
 		},
@@ -9256,7 +8973,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "regular",
 		Description: "desc1",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "regular"), nil
 		},
@@ -9266,7 +8983,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "builtin",
 		Description: "desc2",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "builtin"), nil
 		},
@@ -9276,7 +8993,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "deploy",
 		Description: "Auto-generated stub for deploy",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "deploy"), nil
 		},
@@ -9286,7 +9003,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "active-ext",
 		Description: "Auto-generated stub for active-ext",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "active-ext"), nil
 		},
@@ -9296,7 +9013,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "inactive-ext",
 		Description: "Auto-generated stub for inactive-ext",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "inactive-ext"), nil
 		},
@@ -9306,7 +9023,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "no-commands",
 		Description: "Auto-generated stub for no-commands",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "no-commands"), nil
 		},
@@ -9316,7 +9033,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "my-test-ext",
 		Description: "Auto-generated stub for my-test-ext",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "my-test-ext"), nil
 		},
@@ -9326,7 +9043,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "shorthand",
 		Description: "Auto-generated stub for shorthand",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "shorthand"), nil
 		},
@@ -9336,7 +9053,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "model_led",
 		Description: "Auto-generated stub for model_led",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "model_led"), nil
 		},
@@ -9346,7 +9063,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "pipeline",
 		Description: "Auto-generated stub for pipeline",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "pipeline"), nil
 		},
@@ -9356,7 +9073,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "at-file",
 		Description: "Auto-generated stub for at-file",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "at-file"), nil
 		},
@@ -9366,7 +9083,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "profile",
 		Description: "Profile command",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "profile"), nil
 		},
@@ -9376,7 +9093,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "about",
 		Description: "About the CLI",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "about"), nil
 		},
@@ -9386,7 +9103,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "chat",
 		Description: "Auto-generated stub for chat",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "chat"), nil
 		},
@@ -9396,7 +9113,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "list",
 		Description: "Auto-generated stub for list",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "list"), nil
 		},
@@ -9406,7 +9123,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "save",
 		Description: "Auto-generated stub for save",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "save"), nil
 		},
@@ -9416,7 +9133,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "delete",
 		Description: "Auto-generated stub for delete",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "delete"), nil
 		},
@@ -9426,7 +9143,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "share",
 		Description: "Auto-generated stub for share",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "share"), nil
 		},
@@ -9436,7 +9153,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "checkpoints",
 		Description: "Auto-generated stub for checkpoints",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "checkpoints"), nil
 		},
@@ -9446,7 +9163,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "test-prompt",
 		Description: "A test prompt.",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "test-prompt"), nil
 		},
@@ -9456,7 +9173,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "age",
 		Description: "The animal's name.",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "age"), nil
 		},
@@ -9466,7 +9183,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "species",
 		Description: "The animal's age.",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "species"), nil
 		},
@@ -9476,7 +9193,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "enclosure",
 		Description: "The animal's species.",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "enclosure"), nil
 		},
@@ -9486,7 +9203,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "trail",
 		Description: "The animal's enclosure.",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "trail"), nil
 		},
@@ -9496,7 +9213,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "arg2",
 		Description: "Auto-generated stub for arg2",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "arg2"), nil
 		},
@@ -9506,7 +9223,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "named",
 		Description: "Auto-generated stub for named",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "named"), nil
 		},
@@ -9516,7 +9233,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "pos",
 		Description: "Auto-generated stub for pos",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "pos"), nil
 		},
@@ -9526,7 +9243,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "pos1",
 		Description: "Auto-generated stub for pos1",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "pos1"), nil
 		},
@@ -9536,7 +9253,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "pos2",
 		Description: "Auto-generated stub for pos2",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "pos2"), nil
 		},
@@ -9546,7 +9263,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "named1",
 		Description: "Auto-generated stub for named1",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "named1"), nil
 		},
@@ -9556,7 +9273,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "named2",
 		Description: "Auto-generated stub for named2",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "named2"), nil
 		},
@@ -9566,7 +9283,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "pos3",
 		Description: "Auto-generated stub for pos3",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "pos3"), nil
 		},
@@ -9576,7 +9293,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "test-name",
 		Description: "Auto-generated stub for test-name",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "test-name"), nil
 		},
@@ -9586,7 +9303,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "optional",
 		Description: "Auto-generated stub for optional",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "optional"), nil
 		},
@@ -9596,7 +9313,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "required",
 		Description: "Auto-generated stub for required",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "required"), nil
 		},
@@ -9606,7 +9323,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "find",
 		Description: "Auto-generated stub for find",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "find"), nil
 		},
@@ -9616,7 +9333,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "pickle",
 		Description: "Auto-generated stub for pickle",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "pickle"), nil
 		},
@@ -9626,7 +9343,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "launch",
 		Description: "Auto-generated stub for launch",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "launch"), nil
 		},
@@ -9636,7 +9353,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "b",
 		Description: "Auto-generated stub for b",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "b"), nil
 		},
@@ -9646,7 +9363,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "cmd",
 		Description: "Auto-generated stub for cmd",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "cmd"), nil
 		},
@@ -9656,7 +9373,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "spaces",
 		Description: "Auto-generated stub for spaces",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "spaces"), nil
 		},
@@ -9666,7 +9383,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "mycommand",
 		Description: "Auto-generated stub for mycommand",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "mycommand"), nil
 		},
@@ -9676,17 +9393,9 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "good-agents-ext",
 		Description: "Auto-generated stub for good-agents-ext",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
-			streamCallback := func(chunk string) {
-				fmt.Print(chunk)
-			}
-
-			result, err := subagents.GlobalManager.Spawn(context.Background(), subagents.TypePlan, "Autogenerated subagent task", "Execute delegated task", "", streamCallback)
-			if err != nil {
-				return "", fmt.Errorf("subagent %s failed: %w", "good-agents-ext", err)
-			}
-			return fmt.Sprintf("Subagent %s completed:\n%s", "good-agents-ext", result), nil
+			return fmt.Sprintf("Tool %s not fully wired yet", "good-agents-ext"), nil
 		},
 	})
 
@@ -9694,17 +9403,9 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "bad-agents-ext",
 		Description: "Auto-generated stub for bad-agents-ext",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
-			streamCallback := func(chunk string) {
-				fmt.Print(chunk)
-			}
-
-			result, err := subagents.GlobalManager.Spawn(context.Background(), subagents.TypePlan, "Autogenerated subagent task", "Execute delegated task", "", streamCallback)
-			if err != nil {
-				return "", fmt.Errorf("subagent %s failed: %w", "bad-agents-ext", err)
-			}
-			return fmt.Sprintf("Subagent %s completed:\n%s", "bad-agents-ext", result), nil
+			return fmt.Sprintf("Tool %s not fully wired yet", "bad-agents-ext"), nil
 		},
 	})
 
@@ -9712,7 +9413,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "terafox",
 		Description: "Auto-generated stub for terafox",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "terafox"), nil
 		},
@@ -9722,7 +9423,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "unknown_tool",
 		Description: "Auto-generated stub for unknown_tool",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "unknown_tool"), nil
 		},
@@ -9732,7 +9433,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "mcp_allowed-server_tool1",
 		Description: "Auto-generated stub for mcp_allowed-server_tool1",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "mcp_allowed-server_tool1"), nil
 		},
@@ -9742,7 +9443,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "mcp_allowed-server_another_tool",
 		Description: "Auto-generated stub for mcp_allowed-server_another_tool",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "mcp_allowed-server_another_tool"), nil
 		},
@@ -9752,7 +9453,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "mcp_trusted-server_tool1",
 		Description: "Auto-generated stub for mcp_trusted-server_tool1",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "mcp_trusted-server_tool1"), nil
 		},
@@ -9762,7 +9463,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "mcp_trusted-server_special_tool",
 		Description: "Auto-generated stub for mcp_trusted-server_special_tool",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "mcp_trusted-server_special_tool"), nil
 		},
@@ -9772,7 +9473,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "mcp_blocked-server_any_tool",
 		Description: "Auto-generated stub for mcp_blocked-server_any_tool",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "mcp_blocked-server_any_tool"), nil
 		},
@@ -9782,7 +9483,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "mcp_unknown-server_tool",
 		Description: "Auto-generated stub for mcp_unknown-server_tool",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "mcp_unknown-server_tool"), nil
 		},
@@ -9792,7 +9493,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "mcp_mcp-server_tool",
 		Description: "Auto-generated stub for mcp_mcp-server_tool",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "mcp_mcp-server_tool"), nil
 		},
@@ -9802,7 +9503,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "mcp_another-server_tool",
 		Description: "Auto-generated stub for mcp_another-server_tool",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "mcp_another-server_tool"), nil
 		},
@@ -9812,7 +9513,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "custom-tool",
 		Description: "Auto-generated stub for custom-tool",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "custom-tool"), nil
 		},
@@ -9822,7 +9523,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "mcp_my-server_special-tool",
 		Description: "Auto-generated stub for mcp_my-server_special-tool",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "mcp_my-server_special-tool"), nil
 		},
@@ -9832,7 +9533,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "mcp_allowed-server_tool",
 		Description: "Auto-generated stub for mcp_allowed-server_tool",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "mcp_allowed-server_tool"), nil
 		},
@@ -9842,7 +9543,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "mcp_trusted-server_tool",
 		Description: "Auto-generated stub for mcp_trusted-server_tool",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "mcp_trusted-server_tool"), nil
 		},
@@ -9852,7 +9553,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "mcp_blocked-server_tool",
 		Description: "Auto-generated stub for mcp_blocked-server_tool",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "mcp_blocked-server_tool"), nil
 		},
@@ -9862,17 +9563,9 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "unknown_agent",
 		Description: "Auto-generated stub for unknown_agent",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
-			streamCallback := func(chunk string) {
-				fmt.Print(chunk)
-			}
-
-			result, err := subagents.GlobalManager.Spawn(context.Background(), subagents.TypePlan, "Autogenerated subagent task", "Execute delegated task", "", streamCallback)
-			if err != nil {
-				return "", fmt.Errorf("subagent %s failed: %w", "unknown_agent", err)
-			}
-			return fmt.Sprintf("Subagent %s completed:\n%s", "unknown_agent", result), nil
+			return fmt.Sprintf("Tool %s not fully wired yet", "unknown_agent"), nil
 		},
 	})
 
@@ -9880,7 +9573,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "blocked-tool",
 		Description: "Auto-generated stub for blocked-tool",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "blocked-tool"), nil
 		},
@@ -9890,7 +9583,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "mcp_blocked-server_any",
 		Description: "Auto-generated stub for mcp_blocked-server_any",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "mcp_blocked-server_any"), nil
 		},
@@ -9900,7 +9593,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "specific-tool",
 		Description: "Auto-generated stub for specific-tool",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "specific-tool"), nil
 		},
@@ -9910,7 +9603,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "mcp_trusted-server_any",
 		Description: "Auto-generated stub for mcp_trusted-server_any",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "mcp_trusted-server_any"), nil
 		},
@@ -9920,7 +9613,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "mcp_mcp-server_any",
 		Description: "Auto-generated stub for mcp_mcp-server_any",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "mcp_mcp-server_any"), nil
 		},
@@ -9930,7 +9623,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "mcp_conflicted-server_tool",
 		Description: "Auto-generated stub for mcp_conflicted-server_tool",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "mcp_conflicted-server_tool"), nil
 		},
@@ -9940,7 +9633,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "mcp_my-server_other-tool",
 		Description: "Auto-generated stub for mcp_my-server_other-tool",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "mcp_my-server_other-tool"), nil
 		},
@@ -9950,7 +9643,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "https_proxy",
 		Description: "Auto-generated stub for https_proxy",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "https_proxy"), nil
 		},
@@ -9960,7 +9653,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "http_proxy",
 		Description: "Auto-generated stub for http_proxy",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "http_proxy"), nil
 		},
@@ -9970,7 +9663,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "HTTPS_PROXY",
 		Description: "Auto-generated stub for HTTPS_PROXY",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "HTTPS_PROXY"), nil
 		},
@@ -9980,7 +9673,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "HTTP_PROXY",
 		Description: "Auto-generated stub for HTTP_PROXY",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "HTTP_PROXY"), nil
 		},
@@ -9990,7 +9683,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "ext3",
 		Description: "Auto-generated stub for ext3",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "ext3"), nil
 		},
@@ -10000,7 +9693,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "ext-plan",
 		Description: "Auto-generated stub for ext-plan",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "ext-plan"), nil
 		},
@@ -10010,7 +9703,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "Value",
 		Description: "Val",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "Value"), nil
 		},
@@ -10020,7 +9713,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "skills-ext",
 		Description: "Auto-generated stub for skills-ext",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "skills-ext"), nil
 		},
@@ -10030,7 +9723,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "skills-ext-load",
 		Description: "Auto-generated stub for skills-ext-load",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "skills-ext-load"), nil
 		},
@@ -10040,7 +9733,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "good-skills-ext",
 		Description: "Auto-generated stub for good-skills-ext",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "good-skills-ext"), nil
 		},
@@ -10050,7 +9743,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "traversal-extension",
 		Description: "Auto-generated stub for traversal-extension",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "traversal-extension"), nil
 		},
@@ -10060,7 +9753,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "disabled-extension",
 		Description: "Auto-generated stub for disabled-extension",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "disabled-extension"), nil
 		},
@@ -10070,7 +9763,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "enabled-extension",
 		Description: "Auto-generated stub for enabled-extension",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "enabled-extension"), nil
 		},
@@ -10080,7 +9773,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "policy-extension",
 		Description: "Auto-generated stub for policy-extension",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "policy-extension"), nil
 		},
@@ -10090,7 +9783,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "security-test-extension",
 		Description: "Auto-generated stub for security-test-extension",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "security-test-extension"), nil
 		},
@@ -10100,7 +9793,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "my-linked-extension-with-path",
 		Description: "Auto-generated stub for my-linked-extension-with-path",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "my-linked-extension-with-path"), nil
 		},
@@ -10110,7 +9803,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "good-ext",
 		Description: "Auto-generated stub for good-ext",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "good-ext"), nil
 		},
@@ -10120,7 +9813,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "bad_name",
 		Description: "Auto-generated stub for bad_name",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "bad_name"), nil
 		},
@@ -10130,7 +9823,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "my-ext",
 		Description: "Auto-generated stub for my-ext",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "my-ext"), nil
 		},
@@ -10140,7 +9833,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "link-ext-name",
 		Description: "Auto-generated stub for link-ext-name",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "link-ext-name"), nil
 		},
@@ -10150,7 +9843,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "no-meta-name",
 		Description: "Auto-generated stub for no-meta-name",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "no-meta-name"), nil
 		},
@@ -10160,7 +9853,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "hook-extension",
 		Description: "Auto-generated stub for hook-extension",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "hook-extension"), nil
 		},
@@ -10170,7 +9863,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "hook-extension-disabled",
 		Description: "Auto-generated stub for hook-extension-disabled",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "hook-extension-disabled"), nil
 		},
@@ -10180,7 +9873,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "hook-extension-install",
 		Description: "Auto-generated stub for hook-extension-install",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "hook-extension-install"), nil
 		},
@@ -10190,7 +9883,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "my-local-extension",
 		Description: "Auto-generated stub for my-local-extension",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "my-local-extension"), nil
 		},
@@ -10200,7 +9893,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "missing-name-ext",
 		Description: "Auto-generated stub for missing-name-ext",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "missing-name-ext"), nil
 		},
@@ -10210,7 +9903,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "origin",
 		Description: "Auto-generated stub for origin",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "origin"), nil
 		},
@@ -10220,7 +9913,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "my-auto-update-ext",
 		Description: "An old setting",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "my-auto-update-ext"), nil
 		},
@@ -10230,7 +9923,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "OLD_SETTING",
 		Description: "An old setting",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "OLD_SETTING"), nil
 		},
@@ -10240,7 +9933,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "NEW_SETTING",
 		Description: "A new setting",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "NEW_SETTING"), nil
 		},
@@ -10250,7 +9943,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "other-extension",
 		Description: "Auto-generated stub for other-extension",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "other-extension"), nil
 		},
@@ -10260,7 +9953,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "My-Local-Extension",
 		Description: "Auto-generated stub for My-Local-Extension",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "My-Local-Extension"), nil
 		},
@@ -10270,7 +9963,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "gemini-sql-extension",
 		Description: "Auto-generated stub for gemini-sql-extension",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "gemini-sql-extension"), nil
 		},
@@ -10280,7 +9973,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "no-metadata-extension",
 		Description: "Auto-generated stub for no-metadata-extension",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "no-metadata-extension"), nil
 		},
@@ -10290,7 +9983,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "my-theme-extension",
 		Description: "Auto-generated stub for my-theme-extension",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "my-theme-extension"), nil
 		},
@@ -10300,7 +9993,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "My-Awesome-Theme",
 		Description: "Auto-generated stub for My-Awesome-Theme",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "My-Awesome-Theme"), nil
 		},
@@ -10310,7 +10003,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "MyTheme",
 		Description: "Auto-generated stub for MyTheme",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "MyTheme"), nil
 		},
@@ -10320,7 +10013,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "duplicate-ext",
 		Description: "Auto-generated stub for duplicate-ext",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "duplicate-ext"), nil
 		},
@@ -10330,7 +10023,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "integrity-ext",
 		Description: "Auto-generated stub for integrity-ext",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "integrity-ext"), nil
 		},
@@ -10340,7 +10033,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "themed-ext",
 		Description: "Auto-generated stub for themed-ext",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "themed-ext"), nil
 		},
@@ -10350,7 +10043,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "disabled-ext",
 		Description: "Auto-generated stub for disabled-ext",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "disabled-ext"), nil
 		},
@@ -10360,7 +10053,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "local-ext",
 		Description: "Auto-generated stub for local-ext",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "local-ext"), nil
 		},
@@ -10370,7 +10063,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "s1",
 		Description: "d1",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "s1"), nil
 		},
@@ -10380,7 +10073,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "s2",
 		Description: "d1",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "s2"), nil
 		},
@@ -10390,7 +10083,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "Username",
 		Description: "Your public username",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "Username"), nil
 		},
@@ -10400,7 +10093,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "value",
 		Description: "Test desc",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "value"), nil
 		},
@@ -10410,7 +10103,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "s3",
 		Description: "d2",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "s3"), nil
 		},
@@ -10420,7 +10113,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "old-ext",
 		Description: "Auto-generated stub for old-ext",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "old-ext"), nil
 		},
@@ -10430,7 +10123,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "locked-skill",
 		Description: "A skill in a locked dir",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "locked-skill"), nil
 		},
@@ -10440,7 +10133,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "ext",
 		Description: "Auto-generated stub for ext",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "ext"), nil
 		},
@@ -10450,7 +10143,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "some-dir",
 		Description: "Auto-generated stub for some-dir",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "some-dir"), nil
 		},
@@ -10460,7 +10153,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "my-feature",
 		Description: "Auto-generated stub for my-feature",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "my-feature"), nil
 		},
@@ -10470,7 +10163,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "generated-name",
 		Description: "Auto-generated stub for generated-name",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "generated-name"), nil
 		},
@@ -10480,7 +10173,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "update_topic",
 		Description: "Updating the topic",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "update_topic"), nil
 		},
@@ -10490,7 +10183,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "test_tool_2",
 		Description: "Auto-generated stub for test_tool_2",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "test_tool_2"), nil
 		},
@@ -10500,7 +10193,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "static",
 		Description: "Auto-generated stub for static",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "static"), nil
 		},
@@ -10510,7 +10203,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "gemini-sandbox",
 		Description: "Auto-generated stub for gemini-sandbox",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "gemini-sandbox"), nil
 		},
@@ -10520,7 +10213,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "parent",
 		Description: "Parent command",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "parent"), nil
 		},
@@ -10530,7 +10223,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "notakes",
 		Description: "Subcommand that does not take arguments",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "notakes"), nil
 		},
@@ -10540,7 +10233,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "takes",
 		Description: "Subcommand that takes arguments",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "takes"), nil
 		},
@@ -10550,7 +10243,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "CLI_TITLE",
 		Description: "Auto-generated stub for CLI_TITLE",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "CLI_TITLE"), nil
 		},
@@ -10560,7 +10253,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "file-reader",
 		Description: "Reads files from the local system.",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "file-reader"), nil
 		},
@@ -10570,7 +10263,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "code-editor",
 		Description: "Reads files from the local system.",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "code-editor"), nil
 		},
@@ -10580,7 +10273,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "policies",
 		Description: "Manage policies",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "policies"), nil
 		},
@@ -10590,7 +10283,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "show",
 		Description: "Show the current memory contents",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "show"), nil
 		},
@@ -10600,7 +10293,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "reload",
 		Description: "Reload the memory from the source",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "reload"), nil
 		},
@@ -10610,7 +10303,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "inbox",
 		Description: "Review skills extracted from past sessions and move them to global or project skills",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "inbox"), nil
 		},
@@ -10620,7 +10313,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "skill3",
 		Description: "Auto-generated stub for skill3",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "skill3"), nil
 		},
@@ -10630,7 +10323,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "commands",
 		Description: "Manage custom slash commands. Usage: /commands [reload]",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "commands"), nil
 		},
@@ -10640,7 +10333,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "bug",
 		Description: "Submit a bug report",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "bug"), nil
 		},
@@ -10650,7 +10343,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "enable",
 		Description: "Enable a disabled agent",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "enable"), nil
 		},
@@ -10660,7 +10353,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "disable",
 		Description: "Disable an enabled agent",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "disable"), nil
 		},
@@ -10670,17 +10363,9 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "agent1",
 		Description: "desc1",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
-			streamCallback := func(chunk string) {
-				fmt.Print(chunk)
-			}
-
-			result, err := subagents.GlobalManager.Spawn(context.Background(), subagents.TypePlan, "Autogenerated subagent task", "Execute delegated task", "", streamCallback)
-			if err != nil {
-				return "", fmt.Errorf("subagent %s failed: %w", "agent1", err)
-			}
-			return fmt.Sprintf("Subagent %s completed:\n%s", "agent1", result), nil
+			return fmt.Sprintf("Tool %s not fully wired yet", "agent1"), nil
 		},
 	})
 
@@ -10688,17 +10373,9 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "agent2",
 		Description: "desc1",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
-			streamCallback := func(chunk string) {
-				fmt.Print(chunk)
-			}
-
-			result, err := subagents.GlobalManager.Spawn(context.Background(), subagents.TypePlan, "Autogenerated subagent task", "Execute delegated task", "", streamCallback)
-			if err != nil {
-				return "", fmt.Errorf("subagent %s failed: %w", "agent2", err)
-			}
-			return fmt.Sprintf("Subagent %s completed:\n%s", "agent2", result), nil
+			return fmt.Sprintf("Tool %s not fully wired yet", "agent2"), nil
 		},
 	})
 
@@ -10706,7 +10383,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "set",
 		Description: "Set the model to use. Usage: /model set <model-name> [--persist]",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "set"), nil
 		},
@@ -10716,7 +10393,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "manage",
 		Description: "Opens a dialog to configure the model",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "manage"), nil
 		},
@@ -10726,7 +10403,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "docs",
 		Description: "Open full Gemini CLI documentation in your browser",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "docs"), nil
 		},
@@ -10736,7 +10413,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "quit",
 		Description: "Exit the cli",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "quit"), nil
 		},
@@ -10746,7 +10423,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "update",
 		Description: "Update extensions. Usage: update <extension-names>|--all",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "update"), nil
 		},
@@ -10756,7 +10433,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "install",
 		Description: "Install an extension from a git repo or local path",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "install"), nil
 		},
@@ -10766,7 +10443,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "link",
 		Description: "Link an extension from a local path",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "link"), nil
 		},
@@ -10776,7 +10453,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "uninstall",
 		Description: "Uninstall an extension",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "uninstall"), nil
 		},
@@ -10786,7 +10463,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "desc",
 		Description: "List available Gemini CLI tools with descriptions.",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "desc"), nil
 		},
@@ -10796,7 +10473,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "tools",
 		Description: "List available Gemini CLI tools. Use /tools desc to include descriptions.",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "tools"), nil
 		},
@@ -10806,7 +10483,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "shortcuts",
 		Description: "Toggle the shortcuts panel above the input",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "shortcuts"), nil
 		},
@@ -10816,7 +10493,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "schema",
 		Description: "List configured MCP servers and tools with descriptions and schemas",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "schema"), nil
 		},
@@ -10826,7 +10503,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "all-ext",
 		Description: "Auto-generated stub for all-ext",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "all-ext"), nil
 		},
@@ -10836,7 +10513,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "setting1",
 		Description: "Auto-generated stub for setting1",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "setting1"), nil
 		},
@@ -10846,7 +10523,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "another-inactive-ext",
 		Description: "Auto-generated stub for another-inactive-ext",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "another-inactive-ext"), nil
 		},
@@ -10856,7 +10533,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "another-active-ext",
 		Description: "Auto-generated stub for another-active-ext",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "another-active-ext"), nil
 		},
@@ -10866,7 +10543,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "trust",
 		Description: "Manage folder trust settings. Usage: /permissions trust [<directory-path>]",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "trust"), nil
 		},
@@ -10876,7 +10553,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "editor",
 		Description: "Set external editor preference",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "editor"), nil
 		},
@@ -10886,7 +10563,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "compress",
 		Description: "Compresses the context by replacing it with a summary",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "compress"), nil
 		},
@@ -10896,7 +10573,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "setup-github",
 		Description: "Set up GitHub Actions",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "setup-github"), nil
 		},
@@ -10906,7 +10583,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "test1",
 		Description: "Auto-generated stub for test1",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "test1"), nil
 		},
@@ -10916,7 +10593,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "test2",
 		Description: "Auto-generated stub for test2",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "test2"), nil
 		},
@@ -10926,7 +10603,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "my-function",
 		Description: "Auto-generated stub for my-function",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "my-function"), nil
 		},
@@ -10936,7 +10613,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "signin",
 		Description: "Sign in or change the authentication method",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "signin"), nil
 		},
@@ -10946,7 +10623,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "signout",
 		Description: "Sign out and clear all cached credentials",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "signout"), nil
 		},
@@ -10956,7 +10633,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "privacy",
 		Description: "Display the privacy notice",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "privacy"), nil
 		},
@@ -10966,7 +10643,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "corgi",
 		Description: "Toggles corgi mode",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "corgi"), nil
 		},
@@ -10976,7 +10653,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "panel",
 		Description: "Display all registered hooks with their status",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "panel"), nil
 		},
@@ -10986,7 +10663,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "enable-all",
 		Description: "Enable all disabled hooks",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "enable-all"), nil
 		},
@@ -10996,7 +10673,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "disable-all",
 		Description: "Disable all enabled hooks",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "disable-all"), nil
 		},
@@ -11006,7 +10683,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "up",
 		Description: "Auto-generated stub for up",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "up"), nil
 		},
@@ -11016,7 +10693,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "down",
 		Description: "Auto-generated stub for down",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "down"), nil
 		},
@@ -11026,7 +10703,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "i",
 		Description: "Auto-generated stub for i",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "i"), nil
 		},
@@ -11036,7 +10713,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "enter",
 		Description: "Auto-generated stub for enter",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "enter"), nil
 		},
@@ -11046,7 +10723,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "tab",
 		Description: "Auto-generated stub for tab",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "tab"), nil
 		},
@@ -11056,7 +10733,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "backspace",
 		Description: "Auto-generated stub for backspace",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "backspace"), nil
 		},
@@ -11066,7 +10743,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "left",
 		Description: "Auto-generated stub for left",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "left"), nil
 		},
@@ -11076,7 +10753,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "right",
 		Description: "Auto-generated stub for right",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "right"), nil
 		},
@@ -11086,7 +10763,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "f1",
 		Description: "Auto-generated stub for f1",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "f1"), nil
 		},
@@ -11096,7 +10773,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "left-press",
 		Description: "Auto-generated stub for left-press",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "left-press"), nil
 		},
@@ -11106,7 +10783,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "CodebaseInvestigator",
 		Description: "Investigates codebase",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "CodebaseInvestigator"), nil
 		},
@@ -11116,7 +10793,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "Expansion",
 		Description: "Command expansion needs shell access",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "Expansion"), nil
 		},
@@ -11126,7 +10803,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "get_time",
 		Description: "Auto-generated stub for get_time",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "get_time"), nil
 		},
@@ -11136,7 +10813,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "OtherAgent",
 		Description: "Another agent",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "OtherAgent"), nil
 		},
@@ -11146,7 +10823,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "comma",
 		Description: "Auto-generated stub for comma",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "comma"), nil
 		},
@@ -11156,7 +10833,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "period",
 		Description: "Auto-generated stub for period",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "period"), nil
 		},
@@ -11166,7 +10843,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "semicolon",
 		Description: "Auto-generated stub for semicolon",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "semicolon"), nil
 		},
@@ -11176,7 +10853,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "logs",
 		Description: "Auto-generated stub for logs",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "logs"), nil
 		},
@@ -11186,7 +10863,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "tail_tool",
 		Description: "Auto-generated stub for tail_tool",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "tail_tool"), nil
 		},
@@ -11196,7 +10873,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "research",
 		Description: "Auto-generated stub for research",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "research"), nil
 		},
@@ -11206,7 +10883,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "review-frontend",
 		Description: "Review frontend code",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "review-frontend"), nil
 		},
@@ -11216,7 +10893,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "question-mark",
 		Description: "Alternative name for help",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "question-mark"), nil
 		},
@@ -11226,7 +10903,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "visible",
 		Description: "A visible command",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "visible"), nil
 		},
@@ -11236,7 +10913,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "hidden",
 		Description: "A visible command",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "hidden"), nil
 		},
@@ -11246,7 +10923,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "footer",
 		Description: "Configure footer",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "footer"), nil
 		},
@@ -11256,7 +10933,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "memory-leak",
 		Description: "Show memory",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "memory-leak"), nil
 		},
@@ -11266,7 +10943,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "summarize",
 		Description: "Summarize content",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "summarize"), nil
 		},
@@ -11276,7 +10953,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "custom-script",
 		Description: "Run custom script",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "custom-script"), nil
 		},
@@ -11286,7 +10963,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "left-release",
 		Description: "Auto-generated stub for left-release",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "left-release"), nil
 		},
@@ -11296,7 +10973,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "sub",
 		Description: "Auto-generated stub for sub",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "sub"), nil
 		},
@@ -11306,7 +10983,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "Downloads",
 		Description: "Auto-generated stub for Downloads",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "Downloads"), nil
 		},
@@ -11316,7 +10993,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "other-project",
 		Description: "Auto-generated stub for other-project",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "other-project"), nil
 		},
@@ -11326,7 +11003,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "Documents",
 		Description: "Auto-generated stub for Documents",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "Documents"), nil
 		},
@@ -11336,7 +11013,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "test-package",
 		Description: "Auto-generated stub for test-package",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "test-package"), nil
 		},
@@ -11346,7 +11023,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "MyCustomTheme",
 		Description: "Auto-generated stub for MyCustomTheme",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "MyCustomTheme"), nil
 		},
@@ -11356,7 +11033,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "NonExistent",
 		Description: "Auto-generated stub for NonExistent",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "NonExistent"), nil
 		},
@@ -11366,7 +11043,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "ExtensionTheme",
 		Description: "Auto-generated stub for ExtensionTheme",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "ExtensionTheme"), nil
 		},
@@ -11376,7 +11053,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "Theme",
 		Description: "Auto-generated stub for Theme",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "Theme"), nil
 		},
@@ -11386,7 +11063,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "SettingsTheme",
 		Description: "Auto-generated stub for SettingsTheme",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "SettingsTheme"), nil
 		},
@@ -11396,7 +11073,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "MyDark",
 		Description: "Auto-generated stub for MyDark",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "MyDark"), nil
 		},
@@ -11406,7 +11083,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "MyLight",
 		Description: "Auto-generated stub for MyLight",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "MyLight"), nil
 		},
@@ -11416,7 +11093,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "None",
 		Description: "Auto-generated stub for None",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "None"), nil
 		},
@@ -11426,7 +11103,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "YOLO",
 		Description: "Auto-approves all tools",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "YOLO"), nil
 		},
@@ -11436,7 +11113,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "Plan",
 		Description: "Read-only mode",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "Plan"), nil
 		},
@@ -11446,7 +11123,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "gemini-cli",
 		Description: "Auto-generated stub for gemini-cli",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "gemini-cli"), nil
 		},
@@ -11456,7 +11133,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "Deny",
 		Description: "Auto-generated stub for Deny",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "Deny"), nil
 		},
@@ -11466,7 +11143,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "Allow",
 		Description: "Auto-generated stub for Allow",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "Allow"), nil
 		},
@@ -11476,7 +11153,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "KEY",
 		Description: "Auto-generated stub for KEY",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "KEY"), nil
 		},
@@ -11486,7 +11163,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "bravo",
 		Description: "Bravo command",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "bravo"), nil
 		},
@@ -11496,7 +11173,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "alpha",
 		Description: "Alpha command",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "alpha"), nil
 		},
@@ -11506,17 +11183,9 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "docs-agent",
 		Description: "An agent with expertise in updating documentation.",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
-			streamCallback := func(chunk string) {
-				fmt.Print(chunk)
-			}
-
-			result, err := subagents.GlobalManager.Spawn(context.Background(), subagents.TypePlan, "Autogenerated subagent task", "Execute delegated task", "", streamCallback)
-			if err != nil {
-				return "", fmt.Errorf("subagent %s failed: %w", "docs-agent", err)
-			}
-			return fmt.Sprintf("Subagent %s completed:\n%s", "docs-agent", result), nil
+			return fmt.Sprintf("Tool %s not fully wired yet", "docs-agent"), nil
 		},
 	})
 
@@ -11524,17 +11193,9 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "testing-agent",
 		Description: "An agent with expertise in writing and updating tests.",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
-			streamCallback := func(chunk string) {
-				fmt.Print(chunk)
-			}
-
-			result, err := subagents.GlobalManager.Spawn(context.Background(), subagents.TypePlan, "Autogenerated subagent task", "Execute delegated task", "", streamCallback)
-			if err != nil {
-				return "", fmt.Errorf("subagent %s failed: %w", "testing-agent", err)
-			}
-			return fmt.Sprintf("Subagent %s completed:\n%s", "testing-agent", result), nil
+			return fmt.Sprintf("Tool %s not fully wired yet", "testing-agent"), nil
 		},
 	})
 
@@ -11542,17 +11203,9 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "database-agent",
 		Description: "An expert in database schemas, SQL, and creating database migrations.",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
-			streamCallback := func(chunk string) {
-				fmt.Print(chunk)
-			}
-
-			result, err := subagents.GlobalManager.Spawn(context.Background(), subagents.TypePlan, "Autogenerated subagent task", "Execute delegated task", "", streamCallback)
-			if err != nil {
-				return "", fmt.Errorf("subagent %s failed: %w", "database-agent", err)
-			}
-			return fmt.Sprintf("Subagent %s completed:\n%s", "database-agent", result), nil
+			return fmt.Sprintf("Tool %s not fully wired yet", "database-agent"), nil
 		},
 	})
 
@@ -11560,17 +11213,9 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "css-agent",
 		Description: "An expert in CSS, styling, and UI design.",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
-			streamCallback := func(chunk string) {
-				fmt.Print(chunk)
-			}
-
-			result, err := subagents.GlobalManager.Spawn(context.Background(), subagents.TypePlan, "Autogenerated subagent task", "Execute delegated task", "", streamCallback)
-			if err != nil {
-				return "", fmt.Errorf("subagent %s failed: %w", "css-agent", err)
-			}
-			return fmt.Sprintf("Subagent %s completed:\n%s", "css-agent", result), nil
+			return fmt.Sprintf("Tool %s not fully wired yet", "css-agent"), nil
 		},
 	})
 
@@ -11578,17 +11223,9 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "i18n-agent",
 		Description: "An expert in internationalization and translations.",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
-			streamCallback := func(chunk string) {
-				fmt.Print(chunk)
-			}
-
-			result, err := subagents.GlobalManager.Spawn(context.Background(), subagents.TypePlan, "Autogenerated subagent task", "Execute delegated task", "", streamCallback)
-			if err != nil {
-				return "", fmt.Errorf("subagent %s failed: %w", "i18n-agent", err)
-			}
-			return fmt.Sprintf("Subagent %s completed:\n%s", "i18n-agent", result), nil
+			return fmt.Sprintf("Tool %s not fully wired yet", "i18n-agent"), nil
 		},
 	})
 
@@ -11596,17 +11233,9 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "security-agent",
 		Description: "An expert in security audits and vulnerability patches.",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
-			streamCallback := func(chunk string) {
-				fmt.Print(chunk)
-			}
-
-			result, err := subagents.GlobalManager.Spawn(context.Background(), subagents.TypePlan, "Autogenerated subagent task", "Execute delegated task", "", streamCallback)
-			if err != nil {
-				return "", fmt.Errorf("subagent %s failed: %w", "security-agent", err)
-			}
-			return fmt.Sprintf("Subagent %s completed:\n%s", "security-agent", result), nil
+			return fmt.Sprintf("Tool %s not fully wired yet", "security-agent"), nil
 		},
 	})
 
@@ -11614,17 +11243,9 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "devops-agent",
 		Description: "An expert in CI/CD, Docker, and deployment scripts.",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
-			streamCallback := func(chunk string) {
-				fmt.Print(chunk)
-			}
-
-			result, err := subagents.GlobalManager.Spawn(context.Background(), subagents.TypePlan, "Autogenerated subagent task", "Execute delegated task", "", streamCallback)
-			if err != nil {
-				return "", fmt.Errorf("subagent %s failed: %w", "devops-agent", err)
-			}
-			return fmt.Sprintf("Subagent %s completed:\n%s", "devops-agent", result), nil
+			return fmt.Sprintf("Tool %s not fully wired yet", "devops-agent"), nil
 		},
 	})
 
@@ -11632,17 +11253,9 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "analytics-agent",
 		Description: "An expert in tracking, analytics, and metrics.",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
-			streamCallback := func(chunk string) {
-				fmt.Print(chunk)
-			}
-
-			result, err := subagents.GlobalManager.Spawn(context.Background(), subagents.TypePlan, "Autogenerated subagent task", "Execute delegated task", "", streamCallback)
-			if err != nil {
-				return "", fmt.Errorf("subagent %s failed: %w", "analytics-agent", err)
-			}
-			return fmt.Sprintf("Subagent %s completed:\n%s", "analytics-agent", result), nil
+			return fmt.Sprintf("Tool %s not fully wired yet", "analytics-agent"), nil
 		},
 	})
 
@@ -11650,17 +11263,9 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "accessibility-agent",
 		Description: "An expert in web accessibility and ARIA roles.",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
-			streamCallback := func(chunk string) {
-				fmt.Print(chunk)
-			}
-
-			result, err := subagents.GlobalManager.Spawn(context.Background(), subagents.TypePlan, "Autogenerated subagent task", "Execute delegated task", "", streamCallback)
-			if err != nil {
-				return "", fmt.Errorf("subagent %s failed: %w", "accessibility-agent", err)
-			}
-			return fmt.Sprintf("Subagent %s completed:\n%s", "accessibility-agent", result), nil
+			return fmt.Sprintf("Tool %s not fully wired yet", "accessibility-agent"), nil
 		},
 	})
 
@@ -11668,17 +11273,9 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "mobile-agent",
 		Description: "An expert in React Native and mobile app development.",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
-			streamCallback := func(chunk string) {
-				fmt.Print(chunk)
-			}
-
-			result, err := subagents.GlobalManager.Spawn(context.Background(), subagents.TypePlan, "Autogenerated subagent task", "Execute delegated task", "", streamCallback)
-			if err != nil {
-				return "", fmt.Errorf("subagent %s failed: %w", "mobile-agent", err)
-			}
-			return fmt.Sprintf("Subagent %s completed:\n%s", "mobile-agent", result), nil
+			return fmt.Sprintf("Tool %s not fully wired yet", "mobile-agent"), nil
 		},
 	})
 
@@ -11686,7 +11283,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "gemini-cli-companion-mcp-server",
 		Description: "(IDE Tool) Open a diff view to create or modify a file. Returns a notification once the diff has been accepted or rejected.",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "gemini-cli-companion-mcp-server"), nil
 		},
@@ -11696,7 +11293,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "test-project",
 		Description: "Auto-generated stub for test-project",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "test-project"), nil
 		},
@@ -11706,7 +11303,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "test-location-repro",
 		Description: "Auto-generated stub for test-location-repro",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "test-location-repro"), nil
 		},
@@ -11716,7 +11313,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "test-api-failure",
 		Description: "Auto-generated stub for test-api-failure",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "test-api-failure"), nil
 		},
@@ -11726,7 +11323,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "test-logic-failure",
 		Description: "Auto-generated stub for test-logic-failure",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "test-logic-failure"), nil
 		},
@@ -11736,7 +11333,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "test-recovery",
 		Description: "Auto-generated stub for test-recovery",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "test-recovery"), nil
 		},
@@ -11746,7 +11343,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "test-api-503",
 		Description: "Auto-generated stub for test-api-503",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "test-api-503"), nil
 		},
@@ -11756,7 +11353,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "test-absolute-path",
 		Description: "Auto-generated stub for test-absolute-path",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "test-absolute-path"), nil
 		},
@@ -11766,7 +11363,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "test-traversal",
 		Description: "Auto-generated stub for test-traversal",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "test-traversal"), nil
 		},
@@ -11776,17 +11373,9 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "subagent-eval-project",
 		Description: "Auto-generated stub for subagent-eval-project",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
-			streamCallback := func(chunk string) {
-				fmt.Print(chunk)
-			}
-
-			result, err := subagents.GlobalManager.Spawn(context.Background(), subagents.TypePlan, "Autogenerated subagent task", "Execute delegated task", "", streamCallback)
-			if err != nil {
-				return "", fmt.Errorf("subagent %s failed: %w", "subagent-eval-project", err)
-			}
-			return fmt.Sprintf("Subagent %s completed:\n%s", "subagent-eval-project", result), nil
+			return fmt.Sprintf("Tool %s not fully wired yet", "subagent-eval-project"), nil
 		},
 	})
 
@@ -11794,7 +11383,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "example",
 		Description: "Auto-generated stub for example",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "example"), nil
 		},
@@ -11804,7 +11393,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "my-app",
 		Description: "Auto-generated stub for my-app",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "my-app"), nil
 		},
@@ -11814,7 +11403,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "users-api",
 		Description: "Auto-generated stub for users-api",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "users-api"), nil
 		},
@@ -11824,7 +11413,7 @@ func registerGeneratedTools(r *Registry) {
 	r.Tools = append(r.Tools, Tool{
 		Name:        "typescript-project",
 		Description: "Auto-generated stub for typescript-project",
-		Parameters:  json.RawMessage(`{}`),
+		Parameters: json.RawMessage(`{}`),
 		Execute: func(args map[string]interface{}) (string, error) {
 			return fmt.Sprintf("Tool %s not fully wired yet", "typescript-project"), nil
 		},
