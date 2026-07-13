@@ -55,7 +55,7 @@
 - [x] Data ingestion and preprocessing module (`internal/ingest`)
 - [x] CLI interface for knowledge base ingestion (`hypercode ingest`)
 
-## Phase 6: Ecosystem (IN PROGRESS 🔄)
+## Phase 6: Ecosystem (PLANNED 📋)
 - [x] Daemon hardening and crash recovery (stubbed in serve.go)
 - [x] Auto-restart logic (stubbed in serve.go)
 - [x] Comprehensive observability hooks (stubbed in serve.go)

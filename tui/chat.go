@@ -80,9 +80,9 @@ type AgentCompleteMsg struct {
 
 type model struct {
 	// Core
-	director  *agents.Director
-	session   *agents.AgentSession
-	theme     Theme
+	director *agents.Director
+	session  *agents.AgentSession
+	theme    Theme
 	themeName string
 
 	// Chat history (structured entries, not plain strings)
@@ -142,24 +142,24 @@ type model struct {
 	providerList           []string
 
 	// Command palette (opencode style)
-	showCommandPalette   bool
-	commandPaletteIdx    int
+	showCommandPalette  bool
+	commandPaletteIdx   int
 	commandPaletteFilter string
 
 	// Footer data
-	workingDir         string
-	gitBranch          string
-	provider           string
-	modelName          string
-	selectedProvider   string              // user-selected provider (empty = auto-detect)
-	availableProviders []string            // providers with API keys configured
-	providerModels     map[string][]string // provider -> models map
-	toolCount          int
-	totalInputTok      int
-	totalOutTok        int
-	totalCost          float64
-	contextPct         float64
-	contextWindow      int
+	workingDir    string
+	gitBranch     string
+	provider      string
+	modelName     string
+	selectedProvider string  // user-selected provider (empty = auto-detect)
+	availableProviders []string  // providers with API keys configured
+	providerModels    map[string][]string  // provider -> models map
+	toolCount     int
+	totalInputTok int
+	totalOutTok   int
+	totalCost     float64
+	contextPct    float64
+	contextWindow int
 
 	// Input history (Up/Down navigation)
 	inputHistory []string
@@ -169,7 +169,7 @@ type model struct {
 	followUpQueue []string
 
 	// Double-escape (pi-mono: Esc Esc triggers tree/fork selector)
-	lastEscapeTime  int64
+	lastEscapeTime int64
 	doubleEscAction string // "tree" or "fork" (mirrors pi-mono's doubleEscapeAction setting)
 
 	// Thinking
@@ -181,8 +181,8 @@ type model struct {
 	toolOutputExpanded bool
 
 	// Tool registry
-	registry    *tools.Registry
-	agentBridge *AgentBridge
+	registry *tools.Registry
+	agentBridge    *AgentBridge
 
 	// Extension stores (pi-mono top 50 addons)
 	todoStore      *TodoStore
@@ -202,8 +202,8 @@ type model struct {
 	bashMode bool
 
 	// Permission dialog (goose-style)
-	showPermission  bool
-	permissionEntry *ChatEntry
+	showPermission    bool
+	permissionEntry   *ChatEntry
 
 	// Paste mode (goose-style: large paste gets special handling)
 	pasteMode    bool
@@ -222,9 +222,7 @@ type model struct {
 
 func getWorkingDir() string {
 	wd, err := os.Getwd()
-	if err != nil {
-		return "."
-	}
+	if err != nil { return "." }
 	return wd
 }
 
@@ -267,9 +265,7 @@ func getGitBranch(wd string) string {
 	cmd := exec.Command("git", "rev-parse", "--abbrev-ref", "HEAD")
 	cmd.Dir = wd
 	out, err := cmd.Output()
-	if err != nil {
-		return ""
-	}
+	if err != nil { return "" }
 	return strings.TrimSpace(string(out))
 }
 
@@ -283,7 +279,7 @@ func shortenPath(path string) string {
 
 func initialModel() model {
 	s := spinner.New()
-	s.Spinner = spinner.Spinner{Frames: []string{"⠋", "⠙", "⠹", "⠸"}, FPS: 8}
+	s.Spinner = spinner.Spinner{Frames: []string{"⠋","⠙","⠹","⠸"}, FPS: 8}
 	s.Style = lipgloss.NewStyle().Foreground(lipgloss.Color(DefaultTheme.Accent))
 
 	wd := getWorkingDir()
@@ -319,25 +315,25 @@ func initialModel() model {
 	session := agents.NewAgentSession(director, adapter, filepath.Join(wd, ".hyperharness", "sessions"))
 
 	m := model{
-		director:            director,
-		session:             session,
-		theme:               DefaultTheme,
-		themeName:           "default",
-		input:               "",
-		entries:             []ChatEntry{},
-		loading:             false,
-		spinner:             s,
-		viewport:            viewport.New(80, 20),
+		director:         director,
+		session:          session,
+		theme:            DefaultTheme,
+		themeName:        "default",
+		input:            "",
+		entries:          []ChatEntry{},
+		loading:          false,
+		spinner:          s,
+		viewport:         viewport.New(80, 20),
 		browserPaneHeight:   8,
 		browserPanePosition: "top",
 		browserPanePreview:  true,
-		workingDir:          wd,
-		gitBranch:           gitBranch,
-		provider:            displayProvider,
-		modelName:           displayModel,
-		toolCount:           regCount + cliToolCount,
-		registry:            reg,
-		agentBridge:         bridge,
+		workingDir:       wd,
+		gitBranch:        gitBranch,
+		provider: displayProvider,
+		modelName: displayModel,
+		toolCount:        regCount + cliToolCount,
+		registry:         reg,
+		agentBridge: bridge,
 		autocompleteItems:   BuiltinSlashCommands,
 		autocompleteMaxVis:  8,
 		hidingThink:         true,
@@ -346,22 +342,22 @@ func initialModel() model {
 		contextWindow:       200000,
 		doubleEscAction:     "tree", // pi-mono default
 		availableModels:     []string{"auto", "claude-sonnet-4-20250514", "gpt-4o", "gemini-2.5-flash", "deepseek-chat", "claude-3-5-sonnet-20241022", "o1", "local"},
-		availableProviders:  detectAvailableProviders(),
-		todoStore:           NewTodoStore(),
-		bookmarkStore:       NewBookmarkStore(),
-		planMode:            NewPlanMode(),
-		gitCheckpoints:      NewGitCheckpoints(),
-		providerModels: map[string][]string{
-			"anthropic":  {"claude-sonnet-4-20250514", "claude-3-7-sonnet-20250219", "claude-3-5-sonnet-20241022", "claude-3-haiku-20240307"},
-			"openai":     {"gpt-4o", "gpt-4o-mini", "gpt-4-turbo", "o1", "o1-mini", "o3-mini"},
-			"google":     {"gemini-2.5-flash", "gemini-2.5-pro", "gemini-2.0-flash", "gemini-1.5-pro"},
-			"deepseek":   {"deepseek-chat", "deepseek-reasoner"},
-			"openrouter": {"anthropic/claude-3.5-sonnet", "google/gemini-2.0-flash-exp", "openrouter/free"},
-			"groq":       {"llama-3.3-70b-versatile", "mixtral-8x7b-32768", "gemma2-9b-it"},
-			"ollama":     {"gemma:2b", "llama3:8b", "codellama:7b", "mistral:7b"},
-			"lmstudio":   {"local-model"},
-			"xiaomi":     {"mimo-v2.5-pro", "mimo-v2.5-flash", "mimo-v2-pro", "mimo-v2-flash", "mimo-v1"},
-		},
+	availableProviders: detectAvailableProviders(),
+	todoStore:      NewTodoStore(),
+	bookmarkStore:  NewBookmarkStore(),
+	planMode:       NewPlanMode(),
+	gitCheckpoints: NewGitCheckpoints(),
+	providerModels: map[string][]string{
+		"anthropic": {"claude-sonnet-4-20250514", "claude-3-7-sonnet-20250219", "claude-3-5-sonnet-20241022", "claude-3-haiku-20240307"},
+		"openai":    {"gpt-4o", "gpt-4o-mini", "gpt-4-turbo", "o1", "o1-mini", "o3-mini"},
+		"google":    {"gemini-2.5-flash", "gemini-2.5-pro", "gemini-2.0-flash", "gemini-1.5-pro"},
+		"deepseek":  {"deepseek-chat", "deepseek-reasoner"},
+		"openrouter": {"anthropic/claude-3.5-sonnet", "google/gemini-2.0-flash-exp", "openrouter/free"},
+		"groq":      {"llama-3.3-70b-versatile", "mixtral-8x7b-32768", "gemma2-9b-it"},
+		"ollama":    {"gemma:2b", "llama3:8b", "codellama:7b", "mistral:7b"},
+		"lmstudio":  {"local-model"},
+		"xiaomi":    {"mimo-v2.5-pro", "mimo-v2.5-flash", "mimo-v2-pro", "mimo-v2-flash", "mimo-v1"},
+	},
 	}
 
 	// Subscribe to session events for real-time tool/streaming display
@@ -457,23 +453,17 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if m.showAutocomplete {
 			switch msg.Type {
 			case tea.KeyUp:
-				if m.autocompleteIndex > 0 {
-					m.autocompleteIndex--
-				}
+				if m.autocompleteIndex > 0 { m.autocompleteIndex-- }
 				return m, nil
 			case tea.KeyDown:
-				if m.autocompleteIndex < len(m.filteredAutocomplete())-1 {
-					m.autocompleteIndex++
-				}
+				if m.autocompleteIndex < len(m.filteredAutocomplete())-1 { m.autocompleteIndex++ }
 				return m, nil
 			case tea.KeyTab:
 				items := m.filteredAutocomplete()
 				if m.autocompleteIndex >= 0 && m.autocompleteIndex < len(items) {
 					parts := strings.SplitN(m.input, " ", 2)
 					m.input = "/" + items[m.autocompleteIndex].Name
-					if len(parts) > 1 {
-						m.input += " " + parts[1]
-					}
+					if len(parts) > 1 { m.input += " " + parts[1] }
 					m.showAutocomplete = false
 				}
 				m.showAutocomplete = false
@@ -491,9 +481,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if m.loading {
 				m.loading = false
 				m.streaming = false
-				if m.session != nil {
-					m.session.Abort()
-				}
+				if m.session != nil { m.session.Abort() }
 				m.entries = append(m.entries, ChatEntry{
 					Type:      EntrySystem,
 					Content:   m.theme.WarningText("⏹ Operation cancelled"),
@@ -511,10 +499,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		// ── Esc: multi-purpose (pi-mono's onEscape chain) ──
 		case tea.KeyEsc:
-			if m.showAutocomplete {
-				m.showAutocomplete = false
-				return m, nil
-			}
+			if m.showAutocomplete { m.showAutocomplete = false; return m, nil }
 			if m.dashboardActive {
 				m.dashboardActive = false
 				m.entries = append(m.entries, ChatEntry{Type: EntrySystem, Content: m.theme.Dim("[Dashboard] closed"), Timestamp: time.Now()})
@@ -613,10 +598,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			} else {
 				idx := 0
 				for i, m2 := range m.availableModels {
-					if m2 == m.modelName {
-						idx = i
-						break
-					}
+					if m2 == m.modelName { idx = i; break }
 				}
 				idx = (idx + 1) % len(m.availableModels)
 				m.modelName = m.availableModels[idx]
@@ -639,10 +621,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			} else {
 				idx := 0
 				for i, m2 := range m.availableModels {
-					if m2 == m.modelName {
-						idx = i
-						break
-					}
+					if m2 == m.modelName { idx = i; break }
 				}
 				idx = (idx - 1 + len(m.availableModels)) % len(m.availableModels)
 				m.modelName = m.availableModels[idx]
@@ -670,9 +649,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case tea.KeyCtrlE:
 			if m.input != "" {
 				editor := os.Getenv("EDITOR")
-				if editor == "" {
-					editor = "vim"
-				}
+				if editor == "" { editor = "vim" }
 				tmpFile := filepath.Join(os.TempDir(), "hyperharness-input.md")
 				os.WriteFile(tmpFile, []byte(m.input), 0644)
 				cmd := exec.Command(editor, tmpFile)
@@ -788,9 +765,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				if m.autocompleteIndex >= 0 && m.autocompleteIndex < len(items) {
 					parts := strings.SplitN(m.input, " ", 2)
 					m.input = "/" + items[m.autocompleteIndex].Name
-					if len(parts) > 1 {
-						m.input += " " + parts[1]
-					}
+					if len(parts) > 1 { m.input += " " + parts[1] }
 				}
 				m.showAutocomplete = false
 			}
@@ -822,21 +797,13 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		// ── PgUp/PgDn/Home/End: viewport scrolling ──
 		case tea.KeyPgUp:
-			if m.ready {
-				m.viewport.HalfViewUp()
-			}
+			if m.ready { m.viewport.HalfViewUp() }
 		case tea.KeyPgDown:
-			if m.ready {
-				m.viewport.HalfViewDown()
-			}
+			if m.ready { m.viewport.HalfViewDown() }
 		case tea.KeyHome:
-			if m.ready {
-				m.viewport.GotoTop()
-			}
+			if m.ready { m.viewport.GotoTop() }
 		case tea.KeyEnd:
-			if m.ready {
-				m.viewport.GotoBottom()
-			}
+			if m.ready { m.viewport.GotoBottom() }
 
 		// ── Backspace ──
 		case tea.KeyBackspace:
@@ -847,9 +814,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		// ── Delete ──
 		case tea.KeyDelete:
-			if len(m.input) > 0 {
-				m.input = m.input[:len(m.input)-1]
-			}
+			if len(m.input) > 0 { m.input = m.input[:len(m.input)-1] }
 
 		// ── Regular key input ──
 		case tea.KeyRunes, tea.KeySpace:
@@ -884,10 +849,10 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			displayModel = m.modelName
 		}
 		entry := ChatEntry{
-			Type:      EntryAssistant,
-			Content:   msg.Content,
-			Provider:  displayProvider,
-			Model:     displayModel,
+			Type: EntryAssistant,
+			Content: msg.Content,
+			Provider: displayProvider,
+			Model: displayModel,
 			Timestamp: time.Now(),
 		}
 		if msg.Plan != nil {
@@ -900,9 +865,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.totalOutTok += msg.OutTok
 			m.totalCost += msg.Cost
 			used := float64(m.totalInputTok+m.totalOutTok) / float64(m.contextWindow) * 100
-			if used > 100 {
-				used = 100
-			}
+			if used > 100 { used = 100 }
 			m.contextPct = used
 		}
 		m.entries = append(m.entries, entry)
@@ -977,21 +940,19 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case ToolExecMsg:
 		m.toolMu.Lock()
 		m.toolRuns = append(m.toolRuns, msg)
-		if len(m.toolRuns) > 50 {
-			m.toolRuns = m.toolRuns[len(m.toolRuns)-50:]
-		}
+		if len(m.toolRuns) > 50 { m.toolRuns = m.toolRuns[len(m.toolRuns)-50:] }
 		m.toolMu.Unlock()
 		m.entries = append(m.entries, ChatEntry{
-			Type:       EntryTool,
-			Content:    msg.Output,
-			ToolName:   msg.ToolName,
-			ToolArgs:   msg.Args,
-			ToolDur:    msg.Duration,
-			ToolErr:    msg.IsError,
-			ToolKind:   DetectToolKind(msg.ToolName),
+			Type:      EntryTool,
+			Content:   msg.Output,
+			ToolName:  msg.ToolName,
+			ToolArgs:  msg.Args,
+			ToolDur:   msg.Duration,
+			ToolErr:   msg.IsError,
+			ToolKind:  DetectToolKind(msg.ToolName),
 			ToolStatus: "completed",
-			Expanded:   m.toolOutputExpanded,
-			Timestamp:  time.Now(),
+			Expanded:  m.toolOutputExpanded,
+			Timestamp: time.Now(),
 		})
 		m.syncViewport()
 
@@ -1031,17 +992,13 @@ func (m model) handleEnter() (tea.Model, tea.Cmd) {
 		}
 	}
 
-	if strings.TrimSpace(m.input) == "" {
-		return m, nil
-	}
+	if strings.TrimSpace(m.input) == "" { return m, nil }
 
 	req := strings.TrimSpace(m.input)
 
 	// Store in input history
 	m.inputHistory = append(m.inputHistory, req)
-	if len(m.inputHistory) > 100 {
-		m.inputHistory = m.inputHistory[len(m.inputHistory)-100:]
-	}
+	if len(m.inputHistory) > 100 { m.inputHistory = m.inputHistory[len(m.inputHistory)-100:] }
 	m.input = ""
 	m.historyIdx = 0
 
@@ -1072,9 +1029,7 @@ func (m model) handleEnter() (tea.Model, tea.Cmd) {
 	}
 
 	// Slash command
-	if strings.HasPrefix(req, "/") {
-		return m.handleSlashCmd(req)
-	}
+	if strings.HasPrefix(req, "/") { return m.handleSlashCmd(req) }
 
 	// Shell proposal (pi-mono: ?? prefix)
 	if strings.HasPrefix(req, "??") {
@@ -1084,9 +1039,7 @@ func (m model) handleEnter() (tea.Model, tea.Cmd) {
 		m.syncViewport()
 		return m, func() tea.Msg {
 			response, err := buildShellProposal(m.director, query)
-			if err != nil {
-				return fmt.Sprintf("Error: %v", err)
-			}
+			if err != nil { return fmt.Sprintf("Error: %v", err) }
 			return response
 		}
 	}
@@ -1108,7 +1061,7 @@ func (m model) handleEnter() (tea.Model, tea.Cmd) {
 		}
 		bridge := m.agentBridge
 		return m, func() tea.Msg {
-			go bridge.RunPrompt(req)  // async, events stream via p.Send()
+			go bridge.RunPrompt(req) // async, events stream via p.Send()
 			return AgentCompleteMsg{} // sentinel, real events come via p.Send()
 		}
 	}
@@ -1139,14 +1092,10 @@ func (m model) updatePermissionDialog(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	opts := m.permissionEntry.PermissionOptions
 	switch msg.Type {
 	case tea.KeyUp:
-		if m.permissionEntry.PermissionIdx > 0 {
-			m.permissionEntry.PermissionIdx--
-		}
+		if m.permissionEntry.PermissionIdx > 0 { m.permissionEntry.PermissionIdx-- }
 		return m, nil
 	case tea.KeyDown:
-		if m.permissionEntry.PermissionIdx < len(opts)-1 {
-			m.permissionEntry.PermissionIdx++
-		}
+		if m.permissionEntry.PermissionIdx < len(opts)-1 { m.permissionEntry.PermissionIdx++ }
 		return m, nil
 	case tea.KeyEnter:
 		if m.permissionEntry.PermissionIdx < len(opts) {
@@ -1196,14 +1145,10 @@ func (m model) updatePermissionDialog(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 func (m model) updateProviderSelector(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	switch msg.Type {
 	case tea.KeyUp:
-		if m.providerSelectorIdx > 0 {
-			m.providerSelectorIdx--
-		}
+		if m.providerSelectorIdx > 0 { m.providerSelectorIdx-- }
 		return m, nil
 	case tea.KeyDown:
-		if m.providerSelectorIdx < len(m.providerList)-1 {
-			m.providerSelectorIdx++
-		}
+		if m.providerSelectorIdx < len(m.providerList)-1 { m.providerSelectorIdx++ }
 		return m, nil
 	case tea.KeyEnter:
 		if m.providerSelectorIdx >= 0 && m.providerSelectorIdx < len(m.providerList) {
@@ -1246,21 +1191,15 @@ func (m model) updateProviderSelector(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 func (m model) updateModelSelector(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	switch msg.Type {
 	case tea.KeyUp:
-		if m.modelSelectorIdx > 0 {
-			m.modelSelectorIdx--
-		}
+		if m.modelSelectorIdx > 0 { m.modelSelectorIdx-- }
 		return m, nil
 	case tea.KeyDown:
-		if m.modelSelectorIdx < len(m.availableModels)-1 {
-			m.modelSelectorIdx++
-		}
+		if m.modelSelectorIdx < len(m.availableModels)-1 { m.modelSelectorIdx++ }
 		return m, nil
 	case tea.KeyEnter:
 		if m.modelSelectorIdx >= 0 && m.modelSelectorIdx < len(m.availableModels) {
 			m.modelName = m.availableModels[m.modelSelectorIdx]
-			if m.session != nil {
-				m.session.SetModel(m.modelName)
-			}
+			if m.session != nil { m.session.SetModel(m.modelName) }
 			m.entries = append(m.entries, ChatEntry{
 				Type:      EntrySystem,
 				Content:   m.theme.AccentText(fmt.Sprintf("[Model] set to %s/%s", m.provider, m.modelName)),
@@ -1293,14 +1232,10 @@ func (m model) updateCommandPalette(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	filtered := m.filteredCommands()
 	switch msg.Type {
 	case tea.KeyUp:
-		if m.commandPaletteIdx > 0 {
-			m.commandPaletteIdx--
-		}
+		if m.commandPaletteIdx > 0 { m.commandPaletteIdx-- }
 		return m, nil
 	case tea.KeyDown:
-		if m.commandPaletteIdx < len(filtered)-1 {
-			m.commandPaletteIdx++
-		}
+		if m.commandPaletteIdx < len(filtered)-1 { m.commandPaletteIdx++ }
 		return m, nil
 	case tea.KeyEnter:
 		if m.commandPaletteIdx >= 0 && m.commandPaletteIdx < len(filtered) {
@@ -1329,9 +1264,7 @@ func (m model) updateCommandPalette(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 }
 
 func (m model) filteredCommands() []SlashCommand {
-	if m.commandPaletteFilter == "" {
-		return BuiltinSlashCommands
-	}
+	if m.commandPaletteFilter == "" { return BuiltinSlashCommands }
 	prefix := strings.ToLower(m.commandPaletteFilter)
 	var filtered []SlashCommand
 	for _, cmd := range BuiltinSlashCommands {
@@ -1387,15 +1320,11 @@ func (m model) isSlashContext() bool {
 
 func (m model) filteredAutocomplete() []SlashCommand {
 	prefix := strings.ToLower(m.input)
-	if !strings.HasPrefix(prefix, "/") {
-		return BuiltinSlashCommands
-	}
+	if !strings.HasPrefix(prefix, "/") { return BuiltinSlashCommands }
 	prefix = prefix[1:]
 	var filtered []SlashCommand
 	for _, cmd := range BuiltinSlashCommands {
-		if strings.HasPrefix(cmd.Name, prefix) {
-			filtered = append(filtered, cmd)
-		}
+		if strings.HasPrefix(cmd.Name, prefix) { filtered = append(filtered, cmd) }
 	}
 	return filtered
 }
@@ -1406,13 +1335,8 @@ func (m model) updateTreeBrowser(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	visible := visibleTreeBrowserItems(m.browserItems, m.browserFilter, m.browserCollapsed)
 	switch msg.Type {
 	case tea.KeyEsc:
-		if m.browserConfirmPending {
-			m.browserConfirmPending = false
-			return m, nil
-		}
-		m.browserActive = false
-		m.browserFilter = ""
-		m.browserConfirmPending = false
+		if m.browserConfirmPending { m.browserConfirmPending = false; return m, nil }
+		m.browserActive = false; m.browserFilter = ""; m.browserConfirmPending = false
 		m.entries = append(m.entries, ChatEntry{Type: EntrySystem, Content: m.theme.Dim("[Tree Browser] closed"), Timestamp: time.Now()})
 		m.syncViewport()
 		return m, nil
@@ -1420,73 +1344,52 @@ func (m model) updateTreeBrowser(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 		if !m.browserConfirmPending && m.browserIndex >= 0 && m.browserIndex < len(visible) {
 			item := visible[m.browserIndex]
 			if item.ChildCount > 0 {
-				if m.browserCollapsed == nil {
-					m.browserCollapsed = map[string]bool{}
-				}
+				if m.browserCollapsed == nil { m.browserCollapsed = map[string]bool{} }
 				m.browserCollapsed[item.ID] = true
 				visible = visibleTreeBrowserItems(m.browserItems, m.browserFilter, m.browserCollapsed)
-				if m.browserIndex >= len(visible) {
-					m.browserIndex = max(0, len(visible)-1)
-				}
+				if m.browserIndex >= len(visible) { m.browserIndex = max(0, len(visible)-1) }
 			}
 		}
 		return m, nil
 	case tea.KeyRight:
 		if !m.browserConfirmPending && m.browserIndex >= 0 && m.browserIndex < len(visible) {
 			item := visible[m.browserIndex]
-			if m.browserCollapsed != nil {
-				delete(m.browserCollapsed, item.ID)
-			}
+			if m.browserCollapsed != nil { delete(m.browserCollapsed, item.ID) }
 		}
 		return m, nil
 	case tea.KeyUp:
-		if !m.browserConfirmPending {
-			m.browserIndex = max(0, m.browserIndex-1)
-		}
+		if !m.browserConfirmPending { m.browserIndex = max(0, m.browserIndex-1) }
 		return m, nil
 	case tea.KeyDown:
-		if !m.browserConfirmPending {
-			m.browserIndex = min(len(visible)-1, m.browserIndex+1)
-		}
+		if !m.browserConfirmPending { m.browserIndex = min(len(visible)-1, m.browserIndex+1) }
 		return m, nil
 	case tea.KeyHome:
-		m.browserIndex = 0
-		return m, nil
+		m.browserIndex = 0; return m, nil
 	case tea.KeyEnd:
-		m.browserIndex = max(0, len(visible)-1)
-		return m, nil
+		m.browserIndex = max(0, len(visible)-1); return m, nil
 	case tea.KeyPgUp:
-		m.browserIndex = max(0, m.browserIndex-10)
-		return m, nil
+		m.browserIndex = max(0, m.browserIndex-10); return m, nil
 	case tea.KeyPgDown:
-		m.browserIndex = min(len(visible)-1, m.browserIndex+10)
-		return m, nil
+		m.browserIndex = min(len(visible)-1, m.browserIndex+10); return m, nil
 	case tea.KeyEnter:
 		if m.browserIndex >= 0 && m.browserIndex < len(visible) {
-			if !m.browserConfirmPending {
-				m.browserConfirmPending = true
-				return m, nil
-			}
+			if !m.browserConfirmPending { m.browserConfirmPending = true; return m, nil }
 			display, err := openSelectedTreeBrowser(m.director.WorkingDir, m.foundationSessionID, visible, m.browserIndex, 128)
 			if err != nil {
 				m.entries = append(m.entries, ChatEntry{Type: EntrySystem, Content: m.theme.ErrorText(fmt.Sprintf("[Error] %v", err)), Timestamp: time.Now()})
 			} else {
 				m.entries = append(m.entries, ChatEntry{Type: EntrySystem, Content: m.theme.SuccessText(display), Timestamp: time.Now()})
 			}
-			m.browserActive = false
-			m.browserFilter = ""
-			m.browserConfirmPending = false
+			m.browserActive = false; m.browserFilter = ""; m.browserConfirmPending = false
 			m.syncViewport()
 		}
 		return m, nil
 	default:
 		if msg.Type == tea.KeyRunes || msg.Type == tea.KeySpace {
-			m.browserFilter += msg.String()
-			m.browserIndex = 0
+			m.browserFilter += msg.String(); m.browserIndex = 0
 		}
 		if msg.Type == tea.KeyBackspace && len(m.browserFilter) > 0 {
-			m.browserFilter = m.browserFilter[:len(m.browserFilter)-1]
-			m.browserIndex = 0
+			m.browserFilter = m.browserFilter[:len(m.browserFilter)-1]; m.browserIndex = 0
 		}
 		return m, nil
 	}
@@ -1496,26 +1399,18 @@ func (m model) updatePinnedPane(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	visible := visibleTreeBrowserItems(m.browserItems, m.browserFilter, m.browserCollapsed)
 	switch msg.Type {
 	case tea.KeyEsc, tea.KeyTab:
-		m.browserPinnedFocus = false
-		return m, nil
+		m.browserPinnedFocus = false; return m, nil
 	case tea.KeyUp:
-		m.browserIndex = max(0, m.browserIndex-1)
-		return m, nil
+		m.browserIndex = max(0, m.browserIndex-1); return m, nil
 	case tea.KeyDown:
-		m.browserIndex = min(len(visible)-1, m.browserIndex+1)
-		return m, nil
+		m.browserIndex = min(len(visible)-1, m.browserIndex+1); return m, nil
 	case tea.KeyHome:
-		m.browserIndex = 0
-		return m, nil
+		m.browserIndex = 0; return m, nil
 	case tea.KeyEnd:
-		m.browserIndex = max(0, len(visible)-1)
-		return m, nil
+		m.browserIndex = max(0, len(visible)-1); return m, nil
 	case tea.KeyEnter:
 		if m.browserIndex >= 0 && m.browserIndex < len(visible) {
-			if !m.browserConfirmPending {
-				m.browserConfirmPending = true
-				return m, nil
-			}
+			if !m.browserConfirmPending { m.browserConfirmPending = true; return m, nil }
 			display, err := openSelectedTreeBrowser(m.director.WorkingDir, m.foundationSessionID, visible, m.browserIndex, 128)
 			if err != nil {
 				m.entries = append(m.entries, ChatEntry{Type: EntrySystem, Content: m.theme.ErrorText(fmt.Sprintf("[Error] %v", err)), Timestamp: time.Now()})
@@ -1536,9 +1431,7 @@ func (m model) updatePinnedPane(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 // ═══════════════════════════════════════════════════════════════════════
 
 func (m model) View() string {
-	if m.quitting {
-		return m.theme.Dim("Goodbye.\n")
-	}
+	if m.quitting { return m.theme.Dim("Goodbye.\n") }
 
 	// Permission dialog overlay (goose-style)
 	if m.showPermission && m.permissionEntry != nil {
@@ -1572,9 +1465,7 @@ func (m model) View() string {
 	// Dashboard mode
 	if m.dashboardActive {
 		chatContent := m.renderAllEntries()
-		dash := NewDashboard()
-		dash.Init()
-		toolContent := dash.View()
+		toolContent := m.renderToolSidebar()
 		metrics := m.renderMetrics()
 		return RenderDashboard(chatContent, toolContent, metrics)
 	}
@@ -1594,13 +1485,9 @@ func (m model) View() string {
 	// Pinned tree pane
 	if m.browserPinned {
 		paneHeight := m.browserPaneHeight
-		if paneHeight <= 0 {
-			paneHeight = 8
-		}
+		if paneHeight <= 0 { paneHeight = 8 }
 		title := m.theme.Dim("[Tree Pane]")
-		if m.browserPinnedFocus {
-			title = m.theme.AccentText("[Tree Pane :: Focused]")
-		}
+		if m.browserPinnedFocus { title = m.theme.AccentText("[Tree Pane :: Focused]") }
 		pane := renderTreeBrowser(m.browserItems, m.browserIndex, m.browserFilter,
 			m.browserConfirmPending && m.browserPinnedFocus, m.browserCollapsed, m.browserGrouped,
 			paneHeight, title, m.browserPanePreview)
@@ -1699,17 +1586,13 @@ func (m model) renderToolSidebar() string {
 	m.toolMu.Lock()
 	recent := m.toolRuns
 	m.toolMu.Unlock()
-	if len(recent) > 5 {
-		recent = recent[len(recent)-5:]
-	}
+	if len(recent) > 5 { recent = recent[len(recent)-5:] }
 	if len(recent) > 0 {
 		lines = append(lines, "")
 		lines = append(lines, t.Bold(t.Dim("Recent Executions")))
 		for _, run := range recent {
 			icon := t.SuccessText("✓")
-			if run.IsError {
-				icon = t.ErrorText("✗")
-			}
+			if run.IsError { icon = t.ErrorText("✗") }
 			kindIcon := ToolKindIcon(DetectToolKind(run.ToolName))
 			lines = append(lines, icon+" "+kindIcon+" "+t.Fg(t.ToolTitle, run.ToolName)+t.Dim(fmt.Sprintf(" (%v)", run.Duration.Round(time.Millisecond))))
 		}
@@ -1789,37 +1672,25 @@ func (m *model) syncViewport() {
 }
 
 func formatTokens(count int) string {
-	if count < 1000 {
-		return fmt.Sprintf("%d", count)
-	}
-	if count < 10000 {
-		return fmt.Sprintf("%.1fk", float64(count)/1000)
-	}
-	if count < 1000000 {
-		return fmt.Sprintf("%dk", count/1000)
-	}
+	if count < 1000 { return fmt.Sprintf("%d", count) }
+	if count < 10000 { return fmt.Sprintf("%.1fk", float64(count)/1000) }
+	if count < 1000000 { return fmt.Sprintf("%dk", count/1000) }
 	return fmt.Sprintf("%.1fM", float64(count)/1000000)
 }
 
 func toolGroupName(name string) string {
 	parts := strings.SplitN(name, "_", 2)
-	if len(parts) > 0 {
-		return parts[0]
-	}
+	if len(parts) > 0 { return parts[0] }
 	return name
 }
 
 func max(a, b int) int {
-	if a > b {
-		return a
-	}
+	if a > b { return a }
 	return b
 }
 
 func min(a, b int) int {
-	if a < b {
-		return a
-	}
+	if a < b { return a }
 	return b
 }
 

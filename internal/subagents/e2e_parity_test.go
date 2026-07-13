@@ -7,10 +7,10 @@ import (
 	"github.com/robertpelloni/hyperharness/tools"
 )
 
-// TestE2EParityToSubagent explicitly tests the flow from a parity tool interface
+// TestE2EParityToSubagent_And_DoubleSpawn explicitly tests the flow from a parity tool interface
 // directly into the subagents.GlobalManager.Spawn loop, verifying that descriptions,
 // prompts, and stream chunks are preserved.
-func TestE2EParityToSubagent(t *testing.T) {
+func TestE2EParityToSubagent_And_DoubleSpawn(t *testing.T) {
 	registry := tools.NewRegistry()
 
 	tests := []struct {
