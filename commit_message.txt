@@ -1,9 +1,0 @@
-feat: deep wire Claude Code parity tools
-
-- Wire `TodoWrite` tool to session-level state persistence
-- Wire `Agent` tool to actual `internal/subagents` Manager
-- Wire `LSP` tool to gopls/other language servers via stdio
-- Wire `WebSearch` to Exa API
-- Wire `WebFetch` to actual HTTP client
-- Wire `Skill` tool to actual `internal/skills` Manager
-- Wire `Config` tool to actual `internal/config` Manager
