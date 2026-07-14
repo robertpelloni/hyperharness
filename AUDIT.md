@@ -30,5 +30,6 @@ This audit evaluates the delta between the stated roadmap completions and the ac
 ## Summary of Priority Blockers
 To lift the "Alpha State" warning, the team must:
 1. [RESOLVED] Implemented real LLM processing loops in `internal/subagents.Manager.ExecuteTask` and `Spawn`.
-2. Generate or write `_test.go` files for the 12 parity tool definitions.
-3. Replace the `time.Sleep` stubs with asynchronous HTTP/RPC provider calls.
+2. [RESOLVED] Wrote `_test.go` files for the 12 parity tool definitions.
+3. [RESOLVED] Replaced the `time.Sleep` stubs with asynchronous HTTP/RPC provider calls and verified session handoffs.
+4. [RESOLVED] Verified cross-subagent session continuity and isolated LLM test mocking across all 10 specialized agent types via `TestAllSubagentTypes`.
