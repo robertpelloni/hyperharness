@@ -1,7 +1,10 @@
 package tui
 
 import (
+	"fmt"
 	"strings"
+
+	"github.com/robertpelloni/hyperharness/internal/subagents"
 
 	"github.com/charmbracelet/lipgloss"
 )
@@ -11,20 +14,20 @@ import (
 // ═══════════════════════════════════════════════════════════════════════
 
 var (
-	docStyle = lipgloss.NewStyle().Margin(1, 2)
+	docStyle      = lipgloss.NewStyle().Margin(1, 2)
 	chatPaneStyle = lipgloss.NewStyle().
-		Border(lipgloss.RoundedBorder()).
-		BorderForeground(lipgloss.Color(DefaultTheme.BorderAccent)).
-		Padding(0, 1)
+			Border(lipgloss.RoundedBorder()).
+			BorderForeground(lipgloss.Color(DefaultTheme.BorderAccent)).
+			Padding(0, 1)
 	toolPaneStyle = lipgloss.NewStyle().
-		Border(lipgloss.RoundedBorder()).
-		BorderForeground(lipgloss.Color(DefaultTheme.Border)).
-		Padding(0, 1)
+			Border(lipgloss.RoundedBorder()).
+			BorderForeground(lipgloss.Color(DefaultTheme.Border)).
+			Padding(0, 1)
 	footerDashStyle = lipgloss.NewStyle().
-		Foreground(lipgloss.Color(DefaultTheme.DimColor)).
-		Background(lipgloss.Color("#1F2937")).
-		Padding(0, 1).
-		MarginTop(1)
+			Foreground(lipgloss.Color(DefaultTheme.DimColor)).
+			Background(lipgloss.Color("#1F2937")).
+			Padding(0, 1).
+			MarginTop(1)
 )
 
 // RenderDashboardLipgloss renders a split-pane dashboard using lipgloss join.
@@ -46,10 +49,38 @@ func GenerateDashboardPlaceholders() (string, string, string) {
 	chat.WriteString(t.AccentText("System: Dashboard Initialized") + "\n")
 	chat.WriteString(t.Dim("> Ready for commands...") + "\n")
 	var tools strings.Builder
+
+	// Fetch real-time subagents
+	tasks := subagents.GlobalManager.ListTasks()
+
 	tools.WriteString(t.Bold(t.AccentText("Active Tools")) + "\n")
 	tools.WriteString(t.Fg(t.ToolTitle, "- Memory Search") + "\n")
 	tools.WriteString(t.Fg(t.ToolTitle, "- Agent Delegation") + "\n")
 	tools.WriteString(t.Fg(t.ToolTitle, "- Code Execution") + "\n")
+
+	tools.WriteString("\n" + t.Bold(t.AccentText("Active Subagents")) + "\n")
+	// We cap display to prevent UI overflow
+	taskCount := 0
+	if len(tasks) == 0 {
+		tools.WriteString("  No active tasks.\n")
+	} else {
+		for _, task := range tasks {
+			taskCount++
+			if taskCount > 10 {
+				tools.WriteString(fmt.Sprintf("  ... and %d more\n", len(tasks)-10))
+				break
+			}
+			statusColor := t.DimColor
+			if task.Status == "running" {
+				statusColor = "#04B575" // green
+			} else if task.Status == "failed" {
+				statusColor = "#FF4D4D" // red
+			} else if task.Status == "completed" {
+				statusColor = "#5694F4" // blue
+			}
+			tools.WriteString(t.Fg(statusColor, "● ") + t.Fg(t.ToolTitle, string(task.Type)+" - "+task.ID) + "\n")
+		}
+	}
 	metrics := "Tokens: 0 | Cost: $0.000 | Scope: Project"
 	return chat.String(), tools.String(), metrics
 }

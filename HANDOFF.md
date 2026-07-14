@@ -5,6 +5,7 @@
 - Enhanced the TUI Dashboard (tui/dashboard.go, tui/chat.go) to represent core features (Memory Search, Agent Delegation, Code Execution, MCP Servers) visually with detailed tooltip [i] descriptions, now natively wired to `internal/sessions` and `internal/subagents` GlobalManagers to observe state in real-time.
 - Implemented and tuned a performance benchmark suite (bench/ folder) measuring Tool Dispatch Overhead, Context Compaction, Memory Search (SQLite FTS5), and Subagent Spawning, and documented baselines into BENCHMARKS.md.
 - Implemented TS client parity for Memory Isolation and SQLite FTS5 in `pi-cli/packages/coding-agent/src/core/memory/sqlite-store.ts`.
+- Verified TUI real-time dashboard instrumentation (`tui/dashboard.go`) displaying subagent states under concurrent load (`internal/subagents/manager_load_test.go`).
 - Synced remaining parity tools (Goose, OpenCode, Kimi, Cursor, Windsurf) by updating the Python schema extraction targets and regenerating TS tool facades.
 - Began stubbing Phase 6 Daemon Hardening in `cmd/serve.go` (Catching SIGTERM / SIGINT and panic wrapper deferrals).
 - Updated `DEPLOY.md` to note new TUI telemetry and debug flag modes.
