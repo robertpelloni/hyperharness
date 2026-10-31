@@ -1,77 +1,34 @@
-╔══════════════════════════════════════════════════════════════════════════════╗
-║                                                                              ║
-║                     ██╗   ██╗███╗   ██╗██████╗ ███████╗██████╗              ║
-║                     ██║   ██║████╗  ██║██╔══██╗██╔════╝██╔══██╗             ║
-║                     ██║   ██║██╔██╗ ██║██║  ██║█████╗  ██████╔╝             ║
-║                     ██║   ██║██║╚██╗██║██║  ██║██╔══╝  ██╔══██╗             ║
-║                     ╚██████╔╝██║ ╚████║██████╔╝███████╗██║  ██║             ║
-║                      ╚═════╝ ╚═╝  ╚═══╝╚═════╝ ╚══════╝╚═╝  ╚═╝             ║
-║                                                                              ║
-║                     ██████╗ ██████╗ ███╗   ██╗███████╗████████╗██████╗      ║
-║                    ██╔════╝██╔═══██╗████╗  ██║██╔════╝╚══██╔══╝██╔══██╗     ║
-║                    ██║     ██║   ██║██╔██╗ ██║███████╗   ██║   ██████╔╝     ║
-║                    ██║     ██║   ██║██║╚██╗██║╚════██║   ██║   ██╔══██╗     ║
-║                    ╚██████╗╚██████╔╝██║ ╚████║███████║   ██║   ██║  ██║     ║
-║                     ╚═════╝ ╚═════╝ ╚═╝  ╚═══╝╚══════╝   ╚═╝   ╚═╝  ╚═╝     ║
-║                                                                              ║
-║                     █████╗ ██╗     ██████╗ ██╗  ██╗ █████╗                  ║
-║                    ██╔══██╗██║     ██╔══██╗██║  ██║██╔══██╗                 ║
-║                    ███████║██║     ██████╔╝███████║███████║                 ║
-║                    ██╔══██║██║     ██╔═══╝ ██╔══██║██╔══██║                 ║
-║                    ██║  ██║███████╗██║     ██║  ██║██║  ██║                 ║
-║                    ╚═╝  ╚═╝╚══════╝╚═╝     ╚═╝  ╚═╝╚═╝  ╚═╝                 ║
-║                                                                              ║
-║                    ╔══════════════════════════════════════╗                  ║
-║                    ║     ⚠️  ALPHA SOFTWARE  ⚠️           ║                  ║
-║                    ║  EXPECT BREAKING CHANGES & BUGS     ║                  ║
-║                    ║  NOT READY FOR PRODUCTION USE       ║                  ║
-║                    ╚══════════════════════════════════════╝                  ║
-║                                                                              ║
-╚══════════════════════════════════════════════════════════════════════════════╝
-
 # HyperHarness (HyperCode)
 
-**The ultimate Go-native control plane for AI development.**
+HyperHarness is a Go control plane for AI development harnesses: the goal is a single local-first substrate that exposes the tool surface of the popular AI coding harnesses (Claude Code, Codex, Aider, and 15+ others) through one binary — with a TUI dashboard, session continuity, MCP tooling, and knowledge-base ingest. The binary is called `hypercode`.
 
-HyperHarness achieves 100% tool parity with the most popular AI coding harnesses, providing a unified, local-first substrate for multi-agent workflows, MCP tooling, and session continuity.
+Version **0.5.0-alpha.5** (see `VERSION`) — alpha; interfaces are still moving.
 
-## Key Features
+## A note on what's in this repo
 
-- **1:1 Tool Parity**: Supports tool signatures from 15+ harnesses including Claude Code, Codex, Warp, Wave, Tabby, Aider, and more.
-- **Go-Native Performance**: Built from the ground up in Go for speed, safety, and cross-platform compatibility.
-- **HyperSync (hsync)**: Automated background content extraction and bookmark synchronization.
-- **Modular Architecture**: Easy to extend with new tools, MCP servers, and LLM providers.
-- **TUI Dashboard**: Advanced terminal interface for interactive orchestration.
+GitHub reports this repo's language as TypeScript, which is misleading: the project's own code is **Go** (module `github.com/robertpelloni/hyperharness`, `go.mod` at the root, `cmd/`, `cli/`, `agent/`, `foundation/`). The bulk of the tree is **34 git submodules / vendored reference codebases** — the harness implementations under study for tool-parity work (directories named after the harnesses: `claude-code`, `aider`, `crush`, `copilot-cli`, `gemini-cli`, …) — plus bot-workflow state files (`.borg_queue.db`, session markers) from the development process.
 
-## Getting Started
+A near-duplicate of this repo exists under the candlestixxx account (`candlestixxx/hyperharness`, a fork); this is the primary copy.
 
-### Prerequisites
-- Go 1.24+
+## Build & run
 
-### Installation
+Prerequisite: Go (the module targets Go 1.26; the previous README said 1.24+ — go.mod is authoritative). `build.sh` / `build.bat` at the root wrap the build.
+
 ```bash
 git clone https://github.com/robertpelloni/hyperharness.git
 cd hyperharness
-go build -o hypercode main.go
+go build ./...
 ./hypercode --help
+./hypercode tui              # TUI dashboard
+./hypercode ingest ./src     # ingest a tree into the knowledge base
 ```
 
-### Usage
-Run the TUI:
-```bash
-./hypercode tui
-```
+There is also a `Dockerfile` / `Dockerfile.prod` and `docker-compose.yml`.
 
-Ingest data into the knowledge base:
-```bash
-./hypercode ingest ./src
-```
+## Docs
 
-## Documentation
-- [Vision](VISION.md)
-- [Deployment](DEPLOY.md)
-- [Architecture](docs/PROJECT_STRUCTURE.md)
-- [Harness Analysis](docs/analysis/)
+`VISION.md`, `DEPLOY.md`, `docs/PROJECT_STRUCTURE.md`, `docs/analysis/` (harness-by-harness analysis), plus the working notes (`ANALYSIS.md`, `ANALYSIS_GO_PORT.md`, `PORTING_MAP.md`, `AUDIT.md`, `TODO.md`, `HANDOFF.md`) — development artifacts of varying age; where they conflict with the code, believe the code.
 
 ## License
-MIT
+
+MIT (per the project's stated license).
