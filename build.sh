@@ -1,26 +1,27 @@
 #!/bin/bash
-# Build script for HyperHarness
+# Build script for Borg / HyperHarness / HyperCode
 # Usage: ./build.sh [clean]
 
 set -e
 
-VERSION=$(cat VERSION 2>/dev/null || echo "0.5.0-alpha.1")
-BINARY="hyperharness.exe"
-LDFLAGS="-s -w -X internal/buildinfo.Version=${VERSION}"
+VERSION=$(cat VERSION 2>/dev/null || echo "0.5.0-alpha.5")
+BINARY="hypercode"
+BINARY_ALT="hyperharness"
+LDFLAGS="-s -w -X github.com/robertpelloni/hyperharness/internal/buildinfo.Version=${VERSION}"
 
 echo "╔════════════════════════════════════════════════════════════╗"
-echo "║           HyperHarness Build System v${VERSION}           ║"
+echo "║             Borg Build System v${VERSION}                  ║"
 echo "╚════════════════════════════════════════════════════════════╝"
 
 if [ "$1" = "clean" ]; then
-	echo "Cleaning..."
-	rm -f ${BINARY}
+	echo "Cleaning build cache..."
 	go clean -cache
 fi
 
 echo ""
-echo "🏗  Building..."
+echo "🏗  Building ${BINARY} and ${BINARY_ALT}..."
 go build -buildvcs=false -ldflags="${LDFLAGS}" -o ${BINARY} .
+cp -f ${BINARY} ${BINARY_ALT} 2>/dev/null || true
 
 if [ $? -eq 0 ]; then
 	SIZE=$(ls -la ${BINARY} | awk '{print $5}')

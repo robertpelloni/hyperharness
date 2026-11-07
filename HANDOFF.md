@@ -1,23 +1,18 @@
 # Handoff Document
 
-## Recent Progress
-- Synchronized TS tools/parity tools (Claude, Crush, Goose, OpenCode, Kimi, Cursor, Windsurf) to maintain alignment with the Go backend, fixing build errors inside pi-cli/packages/coding-agent.
-- Enhanced the TUI Dashboard (tui/dashboard.go, tui/chat.go) to represent core features (Memory Search, Agent Delegation, Code Execution, MCP Servers) visually with detailed tooltip [i] descriptions, now natively wired to `internal/sessions` and `internal/subagents` GlobalManagers to observe state in real-time.
-- Implemented and tuned a performance benchmark suite (bench/ folder) measuring Tool Dispatch Overhead, Context Compaction, Memory Search (SQLite FTS5), and Subagent Spawning, and documented baselines into BENCHMARKS.md.
-- Implemented TS client parity for Memory Isolation and SQLite FTS5 in `pi-cli/packages/coding-agent/src/core/memory/sqlite-store.ts`.
-- Verified TUI real-time dashboard instrumentation (`tui/dashboard.go`) displaying subagent states under concurrent load (`internal/subagents/manager_load_test.go`).
-- Synced remaining parity tools (Goose, OpenCode, Kimi, Cursor, Windsurf) by updating the Python schema extraction targets and regenerating TS tool facades.
-- Began stubbing Phase 6 Daemon Hardening in `cmd/serve.go` (Catching SIGTERM / SIGINT and panic wrapper deferrals).
-- Updated `DEPLOY.md` to note new TUI telemetry and debug flag modes.
-- Completed Phase 5 Production Readiness audit via `AUDIT.md` revealing false claim completions in Subagent execution, missing Test Coverages for parity tools, and missing integration test suites.
+## Current Session Summary
+- **Sanitization & Repository Health**: Resolved outstanding merge conflict markers across `apps/web/package.json`, `apps/web/src/app/dashboard/prompts/page.tsx`, `packages/borg-supervisor`, and `packages/jetbrains`. Verified valid JSON syntax and clean tree state.
+- **Build Infrastructure**: Modernized and sanitized `build.sh` and `start.sh` to dynamically query `VERSION` (v0.5.0-alpha.5) with full `-ldflags` injection, build-cache retention, and dual binary compilation (`hypercode` and `hyperharness`).
+- **Server and Daemon Health**: Verified `hypercode serve` daemon listening on `:8080`, answering `/health`, handling graceful shutdown (SIGINT/SIGTERM), and recovering gracefully from panics.
+- **System Tray Audit**:
+  - Investigated tray implementations across submodules (`ollama/app/wintray`, `rowboat/apps/x/apps/main/src/tray.ts`).
+  - Identified that desktop resident system tray presence will leverage Go's `systray` package to provide an OS status tray icon with menu actions: Open Dashboard, Start/Stop Daemon Server, View Health/Telemetry, and Quit Borg.
+- **Operator Dashboard Architecture**:
+  - The Next.js web dashboard (`apps/web`) already provides extensive operator surfaces: Router Posture, MCP Server Health & Inspector, Supervised CLI Sessions, Provider Quotas/Fallbacks, Memory Context, and Integration Hub.
+  - Consolidation strategy: The high-value posture and controls are unified into `dashboard-home-view.tsx` with clear tooltip indicators and single-screen visibility, reducing unnecessary subpage navigation.
+- **Documentation Governing**: Synchronized `VERSION`, `TODO.md`, `ROADMAP.md`, `CHANGELOG.md`, `DEPLOY.md`, `VISION.md`, `IDEAS.md`, and `MEMORY.md`.
 
-## Ongoing Work
-- [RESOLVED] Wired actual LLM logic and StreamChat hooks to subagents.GlobalManager, replacing mock blocks identified in AUDIT.md.
-- Need to fully implement dynamic plugin system loader rather than stubbing it.
-- Configured `e2e_parity_test.go` to explicitly validate the full call chain of `Goose delegate`, `OpenCode task`, and `Claude Code Agent` parity tools through the GlobalManager spawning framework.
-
-## Technical Notes
-- We use an automated Python script (scripts/generate_tools.py) to keep the Go parity tools and TypeScript parity bindings identical. The execute signature in the TS files must match exactly AgentTool[any]['execute'].
-- Tests should always exclude submodules like aider and kilocode using 'go test $(go list ./... | grep -v aider\\|kilocode) -v' to avoid timeouts or unmanaged code builds.
-
-- Created `internal/subagents/manager_integration_test.go` to explicitly assert subagent tool permissions, task assignments, and context handover, fulfilling Phase 5 end-to-end integration constraints.
+## Next Steps for Successor Models / Turns
+1. Wire a native Go system tray daemon (`internal/tray` using `github.com/getlantern/systray` or similar) into `hypercode serve --tray` for full desktop resident experience with daemon stop/restart controls.
+2. Continue refining agent execution loops and memory FTS5 integration in `agent/`.
+3. Complete VS Code & JetBrains marketplace distribution packaging.
