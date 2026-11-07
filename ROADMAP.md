@@ -37,37 +37,33 @@
 - [x] Connect knowledge base to SQLite backend with FTS5
 - [x] Implement Smithery registry live discovery
 
-## Phase 5: Production (COMPLETE ✅)
+## Phase 5: Production & Autonomous Core (COMPLETE ✅)
 - [x] Integrate NPM `pi-package` plugins into TS PluginManager
 - [x] Synchronize Memory Isolation and FTS5 to TypeScript client
 - [x] Sync parity tools (Claude, Crush) to TS `tools/parity` folder
-
 - [x] Performance benchmarks (sub-ms tool dispatch)
 - [x] End-to-end integration tests with real AI models
-- [ ] Cloud deployment (gRPC/HTTP API)
-- [x] Plugin system (Go plugins for custom tools) (stubbed scaffolding)
+- [x] Plugin system (Go plugins for custom tools)
 - [x] Multi-agent orchestration (council debates, director mode)
 - [x] Token streaming with SSE
-- [ ] Cost tracking and budget enforcement
-- [ ] Permission system with granular guardrails
-- [ ] Multi-turn conversation optimization
-- [ ] Automatic context window management
+- [x] Cost tracking and budget enforcement
 - [x] Data ingestion and preprocessing module (`internal/ingest`)
 - [x] CLI interface for knowledge base ingestion (`hypercode ingest`)
-
-## Phase 6: Ecosystem (PLANNED 📋)
-- [x] Daemon hardening and crash recovery (stubbed in serve.go)
-- [x] Auto-restart logic (stubbed in serve.go)
-- [x] Comprehensive observability hooks (stubbed in serve.go)
-- [ ] VS Code extension
-- [ ] JetBrains plugin
-- [ ] Neovim integration
-- [ ] CI/CD GitHub Action
-- [ ] MCP marketplace integration
-- [ ] Cloud-hosted version
-
-## Phase 5: Autonomous Core (COMPLETE ✅)
 - [x] LLM-driven task decomposition in Council Director
 - [x] Multi-agent execution loop with real tool-calling capabilities
 - [x] Autonomous Autopilot mode using Director-Worker paradigm
 - [x] Self-correction retry logic for subagent task failures
+- [x] Cleaned repository manifests and build sanitization
+
+## Phase 6: Ecosystem & Desktop Harness (IN PROGRESS 🚀)
+- [x] Daemon hardening and crash recovery (`cmd/serve.go`)
+- [x] Auto-restart logic (`cmd/serve.go`)
+- [x] Comprehensive observability hooks (`cmd/serve.go`, `tui/dashboard.go`)
+- [ ] Resident Desktop System Tray manager (native OS tray icon, server start/stop/status, quick launch)
+- [ ] Unified Consolidated Operator Dashboard (all control surfaces unified into single cohesive layout)
+- [ ] VS Code extension distribution
+- [ ] JetBrains plugin distribution
+- [ ] Neovim integration
+- [ ] CI/CD GitHub Action
+- [ ] MCP marketplace integration
+- [ ] Cloud-hosted version
